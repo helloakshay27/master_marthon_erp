@@ -1,6 +1,6 @@
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Members from './pages/Members';
+import Members from './pages/members';
 import ErpStockRegister13B from './pages/erp-stock-register13b';
 import ErpStockRegisterCreation13C from './pages/erp-stock-register-creation13c';
 import ErpStockRegisterCreationDetail13C from './pages/erp-stock-register-creation-detail-13c';

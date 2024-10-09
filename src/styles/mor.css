@@ -1894,7 +1894,7 @@ section ul {
   overflow-x: hidden; */
 /* overflow: hidden; */
 /* } */
-*/ .flat-type-container {
+.flat-type-container {
   overflow-x: auto;
   white-space: nowrap;
 }
