@@ -2,8 +2,21 @@ import React from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
+import { useState } from "react";
 
 export default function ErpRfqAuctionEvents4f() {
+  const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+
+  const bulkToggleCardBody = () => {
+    setBulkIsCollapsed(!bulkIsCollapsed);
+  };
+  
+  const toggleCardBody = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <>
       <Header />
@@ -52,14 +65,14 @@ export default function ErpRfqAuctionEvents4f() {
               </div>
             </div>
             <div className="card mt-3 pb-3">
-              <div className="card mx-3 mt-3 collapsed-card">
+              <div className="card mx-3 mt-3">
                 <div className="card-header3">
                   <h3 className="card-title">Quick Filter</h3>
                   <div className="card-tools">
                     <button
                       type="button"
                       className="btn btn-tool"
-                      data-card-widget="collapse"
+                      onClick={toggleCardBody} // Toggle the card body visibility
                     >
                       <svg
                         width={32}
@@ -70,105 +83,105 @@ export default function ErpRfqAuctionEvents4f() {
                       >
                         <circle cx={16} cy={16} r={16} fill="#8B0203" />
                         <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
+                          d={
+                            isCollapsed
+                              ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                              : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                          } // Arrow changes direction on collapse
                           fill="white"
                         />
                       </svg>
                     </button>
                   </div>
                 </div>
-                <div className="card-body pt-0 mt-0">
-                  <div className="row my-2 align-items-end">
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Company</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
+
+                {/* Conditionally render the card-body based on collapse state */}
+                {!isCollapsed && (
+                  <div className="card-body pt-0 mt-0">
+                    <div className="row my-2 align-items-end">
+                      <div className="col-md-2">
+                        <div className="form-group">
+                          <label>Company</label>
+                          <select
+                            className="form-control form-select"
+                            style={{ width: "100%" }}
+                          >
+                            <option selected="selected">Alabama</option>
+                            <option>Alaska</option>
+                            <option>California</option>
+                            <option>Delaware</option>
+                            <option>Tennessee</option>
+                            <option>Texas</option>
+                            <option>Washington</option>
+                          </select>
+                        </div>
                       </div>
-                      {/* /.form-group */}
-                      {/* /.form-group */}
-                    </div>
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Project </label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
+                      <div className="col-md-2">
+                        <div className="form-group">
+                          <label>Project</label>
+                          <select
+                            className="form-control form-select"
+                            style={{ width: "100%" }}
+                          >
+                            <option selected="selected">Alabama</option>
+                            <option>Alaska</option>
+                            <option>California</option>
+                            <option>Delaware</option>
+                            <option>Tennessee</option>
+                            <option>Texas</option>
+                            <option>Washington</option>
+                          </select>
+                        </div>
                       </div>
-                      {/* /.form-group */}
-                      {/* /.form-group */}
-                    </div>
-                    {/* /.col */}
-                    <div className="col-md-2">
-                      {/* /.form-group */}
-                      <div className="form-group">
-                        <label>Sub-Project </label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
+                      <div className="col-md-2">
+                        <div className="form-group">
+                          <label>Sub-Project</label>
+                          <select
+                            className="form-control form-select"
+                            style={{ width: "100%" }}
+                          >
+                            <option selected="selected">Alabama</option>
+                            <option>Alaska</option>
+                            <option>California</option>
+                            <option>Delaware</option>
+                            <option>Tennessee</option>
+                            <option>Texas</option>
+                            <option>Washington</option>
+                          </select>
+                        </div>
                       </div>
-                      {/* /.form-group */}
-                    </div>
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Last Created</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Material</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
+                      <div className="col-md-2">
+                        <div className="form-group">
+                          <label>Last Created</label>
+                          <select
+                            className="form-control form-select"
+                            style={{ width: "100%" }}
+                          >
+                            <option selected="selected">Material</option>
+                            <option>Alaska</option>
+                            <option>California</option>
+                            <option>Delaware</option>
+                            <option>Tennessee</option>
+                            <option>Texas</option>
+                            <option>Washington</option>
+                          </select>
+                        </div>
                       </div>
-                      {/* /.form-group */}
-                    </div>
-                    <div className="col-md-2">
-                      <button className="purple-btn2 m-0">Go</button>
+                      <div className="col-md-2">
+                        <button className="purple-btn2 m-0">Go</button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-              <div className="card mx-3 collapsed-card">
+              <div className="card mx-3">
                 <div className="card-header3">
                   <h3 className="card-title">Bulk Action</h3>
                   <div className="card-tools">
                     <button
                       type="button"
                       className="btn btn-tool"
-                      data-card-widget="collapse"
+                      onClick={bulkToggleCardBody} // Toggle the card body visibility
                     >
                       <svg
                         width={32}
@@ -179,63 +192,71 @@ export default function ErpRfqAuctionEvents4f() {
                       >
                         <circle cx={16} cy={16} r={16} fill="#8B0203" />
                         <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
+                          d={
+                            bulkIsCollapsed
+                              ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                              : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                          } // Arrow changes direction on collapse
                           fill="white"
                         />
                       </svg>
                     </button>
                   </div>
                 </div>
-                <div className="card-body mt-0 pt-0">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label>From Status</label>
-                        <select
-                          name="from_status"
-                          id="from_status"
-                          className="form-control form-select from"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="send_for_approval">
-                            Sent For Approval
-                          </option>
-                        </select>
+
+                {/* Conditionally render the card-body based on collapse state */}
+                {!bulkIsCollapsed && (
+                  <div className="card-body mt-0 pt-0">
+                    <div className="row align-items-center">
+                      <div className="col-md-4">
+                        <div className="form-group">
+                          <label>From Status</label>
+                          <select
+                            name="from_status"
+                            id="from_status"
+                            className="form-control form-select from"
+                          >
+                            <option value="">Select Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="send_for_approval">
+                              Sent For Approval
+                            </option>
+                          </select>
+                        </div>
+                        <div className="form-group mt-3">
+                          <label>To Status</label>
+                          <select
+                            name="to_status"
+                            id="to_status"
+                            className="form-control form-select to"
+                          >
+                            <option value="">Select Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="send_for_approval">
+                              Sent For Approval
+                            </option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="form-group mt-3">
-                        <label>To Status</label>
-                        <select
-                          name="to_status"
-                          id="to_status"
-                          className="form-control form-select to"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="send_for_approval">
-                            Sent For Approval
-                          </option>
-                        </select>
+                      <div className="col-md-4">
+                        <div className="form-group">
+                          <label>Remark</label>
+                          <textarea
+                            className="form-control remark"
+                            rows={4}
+                            placeholder="Enter ..."
+                            defaultValue={""}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label>Remark</label>
-                        <textarea
-                          className="form-control remark"
-                          rows={4}
-                          placeholder="Enter ..."
-                          defaultValue={""}
-                        />
+                      <div className="offset-md-1 col-md-2">
+                        <button className="purple-btn2 m-0 status">
+                          <a style={{ color: "white !important" }}> Submit </a>
+                        </button>
                       </div>
-                    </div>
-                    <div className="offset-md-1 col-md-2">
-                      <button className="purple-btn2 m-0 status">
-                        <a style={{ color: "white !important" }}> Submit </a>
-                      </button>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
               <div className="d-flex mt-3 align-items-end px-3">
                 <div className="col-md-6">

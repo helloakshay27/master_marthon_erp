@@ -8,6 +8,8 @@ import CreateRfq from './pages/create-rfq';
 import ErpRfqAuctionEvents4f from './pages/erp-rfq-auction-events-4f';
 import ErpRfqAuctionEvents4h from './pages/erp-rfq-auction-events-4h';
 import ErpRfqDetailPriceTrends4h from './pages/erp-rfq-detail-price-trends4h';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 function App() {
   return (
