@@ -2753,6 +2753,7 @@ input[type="checkbox"].violet-check {
 
 .modal-header{
   color: var(--red);
+  padding: 5px;
 }
 
 .modal-footer a{
@@ -3871,7 +3872,7 @@ margin: 5px 0px;
 
 .card-title {
   border-top-left-radius: 12px;
-  color: #fff;
+  color: var(--body-bg-color);
   padding: 0.7rem 2rem;
   background: var(--red);
   left: 0;
@@ -4466,15 +4467,26 @@ left: 0 !important;
 }
 
 .modal-dialog-scrollable .modal-content {
-  max-height: 100%;
+  max-height: 100vh;
   overflow: unset !important;
 }
 
-.card.collapsed-card .card-body, .card.collapsed-card .card-footer {
-  display: none;
+.modal-right .modal-dialog {
+  position: fixed;
+  right: 0;
+  top: 0;
+  margin: 0;
+  height: 100%;
+}
+.modal-right .modal-content {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
 }
 
-
+.modal-body{
+  overflow-y: auto;
+}
 
 .wf_rnd {
   background-color: var(--red);
