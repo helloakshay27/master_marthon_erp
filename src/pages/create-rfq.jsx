@@ -2,8 +2,23 @@ import React from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
+import { useState } from "react";
 
 export default function CreateRfq() {
+  const [orderDetails, setOrderDetails] = useState(false);
+  const [materialOne, setMaterialOne] = useState(false);
+  const [materialTwo, setMaterialTwo] = useState(false);
+
+  const orderDropdown = () => {
+    setOrderDetails(!orderDetails);
+  };
+  const materialOneDropdown = () => {
+    setMaterialOne(!materialOne);
+  };
+  const materialTwoDropdown = () => {
+    setMaterialTwo(!materialTwo);
+  };
+
   return (
     <>
       <Header />
@@ -369,6 +384,7 @@ export default function CreateRfq() {
                               className="btn btn-tool"
                               data-card-widget="collapse"
                               fdprocessedid="7rbmxj"
+                              onClick={orderDropdown}
                             >
                               <svg
                                 width={32}
@@ -386,902 +402,927 @@ export default function CreateRfq() {
                             </button>
                           </div>
                         </div>
-                        <div className="card-body ">
-                          <div
-                            className="card card-default"
-                            id="mor-material-details"
-                          >
-                            <div className="card-header">
-                              <h3 className="card-title">
-                                Material Details (1/2)
-                              </h3>
-                              <div className="card-tools">
-                                <button
-                                  type="button"
-                                  className="btn btn-tool"
-                                  data-card-widget="collapse"
-                                  fdprocessedid="7rbmxj"
-                                >
-                                  <svg
-                                    width={32}
-                                    height={32}
-                                    viewBox="0 0 32 32"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <circle
-                                      cx={16}
-                                      cy={16}
-                                      r={16}
-                                      fill="#8B0203"
-                                    />
-                                    <path
-                                      d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                            {/* /.card-header */}
+                        {orderDetails && (
+                          <div className="card-body">
                             <div
-                              className="card-body1 p-3"
-                              style={{ display: "none" }}
+                              className="card card-default"
+                              id="mor-material-details"
                             >
-                              <div className="row">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      MOR No
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="MOR/MAR/101/02/2024"
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Material
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Plain grey tiles"
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Order Qty
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={12000}
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="card-body">
-                              <div className="row">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Compony</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">MNRL</option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Project</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        Neo-valley
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Sub-Project</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        NeoValley- Building
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>MOR Number</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="MOR/MAR/101/02/2024"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Material Sub Type</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Tiles"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Material</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Plain white tiles"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>UOM</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Nos"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Order Qty</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={10000}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Minimum Tick Size</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder=""
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Price Cap</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Nos"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Tick Size %age</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={10000}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Vendor Enable Fields</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        5 Fields Selected
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label>Material Specification</label>
-                                    <textarea
-                                      className="form-control"
-                                      rows={3}
-                                      placeholder="Enter ..."
-                                      defaultValue={""}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label>Material Description</label>
-                                    <textarea
-                                      className="form-control"
-                                      rows={3}
-                                      placeholder="Enter ..."
-                                      defaultValue={""}
-                                    />
-                                  </div>
-                                </div>
-                                <div className=" d-flex justify-content-between align-items-center mt-2">
-                                  <h5 className=" mt-3">Document Attachment</h5>
+                              <div className="card-header">
+                                <h3 className="card-title">
+                                  Material Details (1/2)
+                                </h3>
+                                <div className="card-tools">
                                   <button
-                                    className="purple-btn2 m-0"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#file_attchement"
+                                    type="button"
+                                    className="btn btn-tool"
+                                    data-card-widget="collapse"
+                                    fdprocessedid="7rbmxj"
+                                    onClick={materialOneDropdown}
                                   >
                                     <svg
-                                      width={16}
-                                      height={17}
-                                      viewBox="0 0 16 17"
+                                      width={32}
+                                      height={32}
+                                      viewBox="0 0 32 32"
                                       fill="none"
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
-                                      <path
-                                        d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
-                                        fill="white"
+                                      <circle
+                                        cx={16}
+                                        cy={16}
+                                        r={16}
+                                        fill="#8B0203"
                                       />
                                       <path
-                                        d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
+                                        d="M16 24L9.0718 12L22.9282 12L16 24Z"
                                         fill="white"
                                       />
                                     </svg>
-                                    <span className="ms-2">
-                                      Attchment File{" "}
-                                    </span>
                                   </button>
                                 </div>
-                                <div className="  mt-2">
-                                  <div className="tbl-container px-0  m-0">
-                                    <table className="w-100">
-                                      <thead className="w-100">
-                                        <tr>
-                                          <th className="main2-th">Sr. No.</th>
-                                          <th className="main2-th">
-                                            Document Name
-                                          </th>
-                                          <th className="main2-th">
-                                            File Name
-                                          </th>
-                                          <th className="main2-th">
-                                            File Type
-                                          </th>
-                                          <th className="main2-th">
-                                            Upload Date
-                                          </th>
-                                          <th className="main2-th">Action</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <th>1</th>
-                                          <td>03-03-2024</td>
-                                          <th>MTO Copy.pdf</th>
-                                          <td>03-03-2024</td>
-                                          <th>MTO Copy.pdf</th>
-                                          <td>
-                                            <i
-                                              className="fa-regular fa-eye"
-                                              data-bs-toggle="modal"
-                                              data-bs-target="#document_attchment"
-                                              style={{ fontSize: 18 }}
-                                            />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                                <div className="d-flex justify-content-between align-items-center mt-2">
-                                  <h5 className=" ">Delivery Schedule</h5>
-                                  <div className="card-tools">
-                                    <button className="purple-btn2">
-                                      <span className="material-symbols-outlined align-text-top me-2">
-                                        add{" "}
-                                      </span>
-                                      <span>Add</span>
-                                    </button>
-                                  </div>
-                                </div>
-                                <div className="tbl-container px-0 mt-3 mx-2">
-                                  <table className="w-100">
-                                    <thead>
-                                      <tr>
-                                        <th>PO Delivery Date</th>
-                                        <th>Sch. Delivery Qty</th>
-                                        <th>Supplier Delivery Date</th>
-                                        <th>Supplier Delivery Qty</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td>40</td>
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                                <div className="d-flex justify-content-between mt-2">
-                                  <h5 className=" ">
-                                    Special Terms &amp; Conditions
-                                  </h5>
-                                </div>
-                                <div className="form-group">
-                                  <textarea
-                                    className="form-control"
-                                    rows={5}
-                                    placeholder=""
-                                    defaultValue={""}
-                                  />
-                                </div>
                               </div>
-                            </div>
-                          </div>
-                          {/* form-select EXAMPLE */}
-                          <div
-                            className="card card-default mt-4"
-                            id="mor-material-details"
-                          >
-                            <div className="card-header">
-                              <h3 className="card-title">
-                                Material Details (2/2)
-                              </h3>
-                              <div className="card-tools">
-                                <button
-                                  type="button"
-                                  className="btn btn-tool"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#"
-                                  data-card-widget="collapse"
-                                  fdprocessedid="7rbmxj"
-                                >
-                                  <svg
-                                    width={32}
-                                    height={32}
-                                    viewBox="0 0 32 32"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <circle
-                                      cx={16}
-                                      cy={16}
-                                      r={16}
-                                      fill="#8B0203"
-                                    />
-                                    <path
-                                      d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                            <div
-                              className="card-body1 p-3"
-                              style={{ display: "none" }}
-                            >
-                              <div className="row">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      MOR No
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="MOR/MAR/101/02/2024"
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Material
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Plain grey tiles"
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Order Qty
-                                    </label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={12000}
-                                      fdprocessedid="vn2c2n"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="card-body">
                               {/* /.card-header */}
-                              <div className="row">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Compony</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">MNRL</option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
+                              <div
+                                className="card-body1 p-3"
+                                style={{ display: "none" }}
+                              >
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        MOR No
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder="MOR/MAR/101/02/2024"
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Project</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        Neo-valley
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        Material
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder="Plain grey tiles"
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Sub-Project</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        NeoValley- Building
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        Order Qty
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder={12000}
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>MOR Number</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="MOR/MAR/101/02/2024"
-                                    />
+
+                              {materialOne && (
+                                <div className="card-body">
+                                  <div className="row">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Compony</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            MNRL
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Project</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            Neo-valley
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Sub-Project</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            NeoValley- Building
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>MOR Number</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="MOR/MAR/101/02/2024"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Material Sub Type</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Tiles"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Material</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Plain white tiles"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>UOM</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Nos"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Order Qty</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder={10000}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Minimum Tick Size</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder=""
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Price Cap</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Nos"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Tick Size %age</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder={10000}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Vendor Enable Fields</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            5 Fields Selected
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-6 mt-2">
+                                      <div className="form-group">
+                                        <label>Material Specification</label>
+                                        <textarea
+                                          className="form-control"
+                                          rows={3}
+                                          placeholder="Enter ..."
+                                          defaultValue={""}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-6 mt-2">
+                                      <div className="form-group">
+                                        <label>Material Description</label>
+                                        <textarea
+                                          className="form-control"
+                                          rows={3}
+                                          placeholder="Enter ..."
+                                          defaultValue={""}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className=" d-flex justify-content-between align-items-center mt-2">
+                                      <h5 className=" mt-3">
+                                        Document Attachment
+                                      </h5>
+                                      <button
+                                        className="purple-btn2 m-0"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#file_attchement"
+                                      >
+                                        <svg
+                                          width={16}
+                                          height={17}
+                                          viewBox="0 0 16 17"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
+                                            fill="white"
+                                          />
+                                          <path
+                                            d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                        <span className="ms-2">
+                                          Attchment File{" "}
+                                        </span>
+                                      </button>
+                                    </div>
+                                    <div className="  mt-2">
+                                      <div className="tbl-container px-0  m-0">
+                                        <table className="w-100">
+                                          <thead className="w-100">
+                                            <tr>
+                                              <th className="main2-th">
+                                                Sr. No.
+                                              </th>
+                                              <th className="main2-th">
+                                                Document Name
+                                              </th>
+                                              <th className="main2-th">
+                                                File Name
+                                              </th>
+                                              <th className="main2-th">
+                                                File Type
+                                              </th>
+                                              <th className="main2-th">
+                                                Upload Date
+                                              </th>
+                                              <th className="main2-th">
+                                                Action
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <th>1</th>
+                                              <td>03-03-2024</td>
+                                              <th>MTO Copy.pdf</th>
+                                              <td>03-03-2024</td>
+                                              <th>MTO Copy.pdf</th>
+                                              <td>
+                                                <i
+                                                  className="fa-regular fa-eye"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#document_attchment"
+                                                  style={{ fontSize: 18 }}
+                                                />
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                    <div className="d-flex justify-content-between align-items-center mt-2">
+                                      <h5 className=" ">Delivery Schedule</h5>
+                                      <div className="card-tools">
+                                        <button className="purple-btn2">
+                                          <span className="material-symbols-outlined align-text-top me-2">
+                                            add{" "}
+                                          </span>
+                                          <span>Add</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div className="tbl-container px-0 mt-3 mx-2">
+                                      <table className="w-100">
+                                        <thead>
+                                          <tr>
+                                            <th>PO Delivery Date</th>
+                                            <th>Sch. Delivery Qty</th>
+                                            <th>Supplier Delivery Date</th>
+                                            <th>Supplier Delivery Qty</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td>40</td>
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <div className="d-flex justify-content-between mt-2">
+                                      <h5 className=" ">
+                                        Special Terms &amp; Conditions
+                                      </h5>
+                                    </div>
+                                    <div className="form-group">
+                                      <textarea
+                                        className="form-control"
+                                        rows={5}
+                                        placeholder=""
+                                        defaultValue={""}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Material Sub Type</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Tiles"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Material</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Plain white tiles"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>UOM</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Nos"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Order Qty</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={10000}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Minimum Tick Size</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder=""
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="row mt-4">
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Price Cap</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder="Nos"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Tick Size %age</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      placeholder={10000}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-4">
-                                  <div className="form-group">
-                                    <label>Vendor Enable Fields</label>
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">
-                                        5 Fields Selected
-                                      </option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label>Material Specification</label>
-                                    <textarea
-                                      className="form-control"
-                                      rows={3}
-                                      placeholder="Enter ..."
-                                      defaultValue={""}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label>Material Description</label>
-                                    <textarea
-                                      className="form-control"
-                                      rows={3}
-                                      placeholder="Enter ..."
-                                      defaultValue={""}
-                                    />
-                                  </div>
-                                </div>
-                                <div className=" d-flex justify-content-between align-items-center mt-2">
-                                  <h5 className=" mt-3">Document Attachment</h5>
+                              )}
+                            </div>
+                            {/* form-select EXAMPLE */}
+                            <div
+                              className="card card-default mt-4"
+                              id="mor-material-details"
+                            >
+                              <div className="card-header">
+                                <h3 className="card-title">
+                                  Material Details (2/2)
+                                </h3>
+                                <div className="card-tools">
                                   <button
-                                    className="purple-btn2 m-0"
+                                    type="button"
+                                    className="btn btn-tool"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#file_attchement"
+                                    data-bs-target="#"
+                                    data-card-widget="collapse"
+                                    fdprocessedid="7rbmxj"
+                                    onClick={materialTwoDropdown}
                                   >
                                     <svg
-                                      width={16}
-                                      height={17}
-                                      viewBox="0 0 16 17"
+                                      width={32}
+                                      height={32}
+                                      viewBox="0 0 32 32"
                                       fill="none"
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
-                                      <path
-                                        d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
-                                        fill="white"
+                                      <circle
+                                        cx={16}
+                                        cy={16}
+                                        r={16}
+                                        fill="#8B0203"
                                       />
                                       <path
-                                        d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
+                                        d="M16 24L9.0718 12L22.9282 12L16 24Z"
                                         fill="white"
                                       />
                                     </svg>
-                                    <span className="ms-2">
-                                      Attchment File{" "}
-                                    </span>
                                   </button>
                                 </div>
-                                <div className="  mt-2">
-                                  <div className="tbl-container px-0  m-0">
-                                    <table className="w-100">
-                                      <thead className="w-100">
-                                        <tr>
-                                          <th className="main2-th">Sr. No.</th>
-                                          <th className="main2-th">
-                                            Document Name
-                                          </th>
-                                          <th className="main2-th">
-                                            File Name
-                                          </th>
-                                          <th className="main2-th">
-                                            File Type
-                                          </th>
-                                          <th className="main2-th">
-                                            Upload Date
-                                          </th>
-                                          <th className="main2-th">Action</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <th>1</th>
-                                          <td>03-03-2024</td>
-                                          <th>MTO Copy.pdf</th>
-                                          <td>03-03-2024</td>
-                                          <th>MTO Copy.pdf</th>
-                                          <td>
-                                            <i
-                                              className="fa-regular fa-eye"
-                                              data-bs-toggle="modal"
-                                              data-bs-target="#document_attchment"
-                                              style={{ fontSize: 18 }}
-                                            />
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
+                              </div>
+                              <div
+                                className="card-body1 p-3"
+                                style={{ display: "none" }}
+                              >
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        MOR No
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder="MOR/MAR/101/02/2024"
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        Material
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder="Plain grey tiles"
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label className="po-fontBold">
+                                        Order Qty
+                                      </label>
+                                      <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder={12000}
+                                        fdprocessedid="vn2c2n"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="d-flex justify-content-between mt-2 align-items-center">
-                                  <h5 className=" ">Delivery Schedule</h5>
-                                  <div className="card-tools">
-                                    <button className="purple-btn2">
-                                      <span className="material-symbols-outlined align-text-top me-2">
-                                        add{" "}
-                                      </span>
-                                      <span>Add</span>
-                                    </button>
+                              </div>
+                              {materialTwo && (
+                                <div className="card-body">
+                                  {/* /.card-header */}
+                                  <div className="row">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Compony</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            MNRL
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Project</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            Neo-valley
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Sub-Project</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            NeoValley- Building
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>MOR Number</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="MOR/MAR/101/02/2024"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Material Sub Type</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Tiles"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Material</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Plain white tiles"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>UOM</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Nos"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Order Qty</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder={10000}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Minimum Tick Size</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder=""
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="row mt-4">
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Price Cap</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder="Nos"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Tick Size %age</label>
+                                        <input
+                                          className="form-control"
+                                          type="text"
+                                          placeholder={10000}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                      <div className="form-group">
+                                        <label>Vendor Enable Fields</label>
+                                        <select
+                                          className="form-control form-select"
+                                          style={{ width: "100%" }}
+                                        >
+                                          <option selected="selected">
+                                            5 Fields Selected
+                                          </option>
+                                          <option>Alaska</option>
+                                          <option>California</option>
+                                          <option>Delaware</option>
+                                          <option>Tennessee</option>
+                                          <option>Texas</option>
+                                          <option>Washington</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div className="col-md-6 mt-2">
+                                      <div className="form-group">
+                                        <label>Material Specification</label>
+                                        <textarea
+                                          className="form-control"
+                                          rows={3}
+                                          placeholder="Enter ..."
+                                          defaultValue={""}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="col-md-6 mt-2">
+                                      <div className="form-group">
+                                        <label>Material Description</label>
+                                        <textarea
+                                          className="form-control"
+                                          rows={3}
+                                          placeholder="Enter ..."
+                                          defaultValue={""}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className=" d-flex justify-content-between align-items-center mt-2">
+                                      <h5 className=" mt-3">
+                                        Document Attachment
+                                      </h5>
+                                      <button
+                                        className="purple-btn2 m-0"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#file_attchement"
+                                      >
+                                        <svg
+                                          width={16}
+                                          height={17}
+                                          viewBox="0 0 16 17"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
+                                            fill="white"
+                                          />
+                                          <path
+                                            d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                        <span className="ms-2">
+                                          Attchment File{" "}
+                                        </span>
+                                      </button>
+                                    </div>
+                                    <div className="  mt-2">
+                                      <div className="tbl-container px-0  m-0">
+                                        <table className="w-100">
+                                          <thead className="w-100">
+                                            <tr>
+                                              <th className="main2-th">
+                                                Sr. No.
+                                              </th>
+                                              <th className="main2-th">
+                                                Document Name
+                                              </th>
+                                              <th className="main2-th">
+                                                File Name
+                                              </th>
+                                              <th className="main2-th">
+                                                File Type
+                                              </th>
+                                              <th className="main2-th">
+                                                Upload Date
+                                              </th>
+                                              <th className="main2-th">
+                                                Action
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <th>1</th>
+                                              <td>03-03-2024</td>
+                                              <th>MTO Copy.pdf</th>
+                                              <td>03-03-2024</td>
+                                              <th>MTO Copy.pdf</th>
+                                              <td>
+                                                <i
+                                                  className="fa-regular fa-eye"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#document_attchment"
+                                                  style={{ fontSize: 18 }}
+                                                />
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                    <div className="d-flex justify-content-between mt-2 align-items-center">
+                                      <h5 className=" ">Delivery Schedule</h5>
+                                      <div className="card-tools">
+                                        <button className="purple-btn2">
+                                          <span className="material-symbols-outlined align-text-top me-2">
+                                            add{" "}
+                                          </span>
+                                          <span>Add</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div className="tbl-container px-0 mt-3 mx-2">
+                                      <table className="w-100">
+                                        <thead>
+                                          <tr>
+                                            <th>PO Delivery Date</th>
+                                            <th>Sch. Delivery Qty</th>
+                                            <th>Supplier Delivery Date</th>
+                                            <th>Supplier Delivery Qty</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td>40</td>
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                          <tr>
+                                            <td>10-04-2024</td>
+                                            <td />
+                                            <td />
+                                            <td />
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <div className="d-flex justify-content-between mt-2">
+                                      <h5 className=" ">
+                                        Special Terms &amp; Conditions
+                                      </h5>
+                                    </div>
+                                    <div className="form-group">
+                                      <textarea
+                                        className="form-control"
+                                        rows={5}
+                                        placeholder=""
+                                        defaultValue={""}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="tbl-container px-0 mt-3 mx-2">
+                              )}
+                            </div>
+                            <div className="row mt-2 justify-content-center">
+                              <div className="d-flex justify-content-between align-items-end">
+                                <h5 className=" ">Select Vendors</h5>
+                                <div className="card-tools">
+                                  <button
+                                    className="purple-btn2"
+                                    fdprocessedid="kgmxwj"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#venderModal"
+                                  >
+                                    <span className="material-symbols-outlined align-text-top me-2">
+                                      add{" "}
+                                    </span>
+                                    <span>Add</span>
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="row justify-content-center">
+                                <div className="tbl-container px-0 mx-3  mt-3 ">
                                   <table className="w-100">
                                     <thead>
                                       <tr>
-                                        <th>PO Delivery Date</th>
-                                        <th>Sch. Delivery Qty</th>
-                                        <th>Supplier Delivery Date</th>
-                                        <th>Supplier Delivery Qty</th>
+                                        <th>Vendor Name</th>
+                                        <th>Mob No.</th>
+                                        <th>Status</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       <tr>
-                                        <td>10-04-2024</td>
-                                        <td>40</td>
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <td>10-04-2024</td>
-                                        <td />
-                                        <td />
+                                        <td>Vendor 1</td>
+                                        <td>99999999</td>
                                         <td />
                                       </tr>
                                     </tbody>
                                   </table>
                                 </div>
-                                <div className="d-flex justify-content-between mt-2">
-                                  <h5 className=" ">
-                                    Special Terms &amp; Conditions
-                                  </h5>
-                                </div>
-                                <div className="form-group">
-                                  <textarea
-                                    className="form-control"
-                                    rows={5}
-                                    placeholder=""
-                                    defaultValue={""}
-                                  />
+                              </div>
+                              <div className="d-flex justify-content-between mt-2">
+                                <h5 className=" ">
+                                  General Terms &amp; Conditions
+                                </h5>
+                              </div>
+                              <div className="form-group">
+                                <textarea
+                                  className="form-control"
+                                  rows={5}
+                                  placeholder=""
+                                  defaultValue={""}
+                                />
+                              </div>
+                            </div>
+                            <div className="row mt-4 justify-content-end">
+                              <div className="col-md-3">
+                                <div className="form-group d-flex gap-3 align-items-center">
+                                  <label style={{ fontSize: "1.1rem" }}>
+                                    status
+                                  </label>
+                                  <select
+                                    className="form-control form-select"
+                                    style={{ width: "100%" }}
+                                  >
+                                    <option selected="selected">Alabama</option>
+                                    <option>Alaska</option>
+                                    <option>California</option>
+                                    <option>Delaware</option>
+                                    <option>Tennessee</option>
+                                    <option>Texas</option>
+                                    <option>Washington</option>
+                                  </select>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="row mt-2 justify-content-center">
-                            <div className="d-flex justify-content-between align-items-end">
-                              <h5 className=" ">Select Vendors</h5>
-                              <div className="card-tools">
-                                <button
-                                  className="purple-btn2"
-                                  fdprocessedid="kgmxwj"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#venderModal"
-                                >
-                                  <span className="material-symbols-outlined align-text-top me-2">
-                                    add{" "}
-                                  </span>
-                                  <span>Add</span>
+                            <div className="row mt-2 justify-content-end">
+                              <div className="col-md-2">
+                                <button className="purple-btn2 w-100">
+                                  Preview
+                                </button>
+                              </div>
+                              <div className="col-md-2">
+                                <button className="purple-btn2 w-100">
+                                  Submit
+                                </button>
+                              </div>
+                              <div className="col-md-2">
+                                <button className="purple-btn1 w-100">
+                                  Cancel
                                 </button>
                               </div>
                             </div>
-                            <div className="row justify-content-center">
-                              <div className="tbl-container px-0 mx-3  mt-3 ">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Vendor Name</th>
-                                      <th>Mob No.</th>
-                                      <th>Status</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td>Vendor 1</td>
-                                      <td>99999999</td>
-                                      <td />
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                            <div className="d-flex justify-content-between mt-2">
-                              <h5 className=" ">
-                                General Terms &amp; Conditions
-                              </h5>
-                            </div>
-                            <div className="form-group">
-                              <textarea
-                                className="form-control"
-                                rows={5}
-                                placeholder=""
-                                defaultValue={""}
-                              />
-                            </div>
                           </div>
-                          <div className="row mt-4 justify-content-end">
-                            <div className="col-md-3">
-                              <div className="form-group d-flex gap-3 align-items-center">
-                                <label style={{ fontSize: "1.1rem" }}>
-                                  status
-                                </label>
-                                <select
-                                  className="form-control form-select"
-                                  style={{ width: "100%" }}
-                                >
-                                  <option selected="selected">Alabama</option>
-                                  <option>Alaska</option>
-                                  <option>California</option>
-                                  <option>Delaware</option>
-                                  <option>Tennessee</option>
-                                  <option>Texas</option>
-                                  <option>Washington</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="row mt-2 justify-content-end">
-                            <div className="col-md-2">
-                              <button className="purple-btn2 w-100">
-                                Preview
-                              </button>
-                            </div>
-                            <div className="col-md-2">
-                              <button className="purple-btn2 w-100">
-                                Submit
-                              </button>
-                            </div>
-                            <div className="col-md-2">
-                              <button className="purple-btn1 w-100">
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                     <div className="row mt-2 px-4">

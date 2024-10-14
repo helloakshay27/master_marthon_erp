@@ -25,6 +25,16 @@ function Members() {
               <li>
                 <Link to="/erp-rfq-detail-price-trends4h">erp_rfq_detail_price_trends4h</Link>
               </li>
+              <li>
+                <Link to="/erp-stock-register-creation-detail-13c">erp_stock_register_creation_detail_13c</Link>
+              </li>
+              <li>
+                <Link to="/erp-stock-register-creation13c">erp_stock_register_creation13c</Link>
+              </li>
+              <li>
+                <Link to="/erp-stock-register13b">erp_stock_register13b</Link>
+              </li>
+
             </ul>
           </div>
           <Footer />
