@@ -3872,7 +3872,7 @@ margin: 5px 0px;
 
 .card-title {
   border-top-left-radius: 12px;
-  color: var(--body-bg-color);
+  color: var(--body-bg-color) !important;
   padding: 0.7rem 2rem;
   background: var(--red);
   left: 0;
