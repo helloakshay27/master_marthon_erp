@@ -12,8 +12,8 @@ export default function ErpRfqAuctionEvents4h() {
   const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
-  const [show, setShow] = useState(false);
   const handleSettingClose = () => setSettingShow(false);
+  const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
 
   const handleSettingModalShow = () => setSettingShow(true);
@@ -853,9 +853,9 @@ export default function ErpRfqAuctionEvents4h() {
         size="sm"
         show={settingShow}
         onHide={handleSettingClose}
-        backdrop="true" // Modal closes on backdrop click
-        keyboard={true} // Modal closes on 'ESC' key press
-        className="modal-centered-custom" // Custom class to handle centering
+        backdrop="true" 
+        keyboard={true} 
+        className="modal-centered-custom"
       >
         <Modal.Header>
           <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
@@ -875,7 +875,7 @@ export default function ErpRfqAuctionEvents4h() {
         </Modal.Header>
 
         <Modal.Body>
-          {[...Array(3)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div
               className="row justify-content-between align-items-center mt-2"
               key={i}

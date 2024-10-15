@@ -755,7 +755,7 @@ const ErpStockRegister13B = () => {
         </Modal.Header>
 
         <Modal.Body>
-          {[...Array(3)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div
               className="row justify-content-between align-items-center mt-2"
               key={i}
