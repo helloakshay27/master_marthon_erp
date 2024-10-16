@@ -153,7 +153,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
                 )}
               </div>
 
-              <div className="row mt-3 align-items-end">
+              <div className="row mt-3 align-items-end pb-3">
                 <div className="col-md-3">
                   <label htmlFor="">Delivery Date</label>
                   <input className="form-control" type="date" />

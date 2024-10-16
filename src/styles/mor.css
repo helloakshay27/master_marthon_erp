@@ -7260,6 +7260,17 @@ background-color: white !important;
   content: " ";
 }
 
+.no-hover:hover,
+.no-hover.btn-check:checked + .btn,
+.no-hover.btn.active,
+.no-hover.btn.show,
+.no-hover.btn:first-child:active,
+.no-hover:not(.btn-check) + .btn:active {
+    color: inherit !important;
+    background-color: transparent !important;
+    border-color: inherit !important;
+}
+
 @keyframes antRadioEffect {
   0% {
     visibility: visible;

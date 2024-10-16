@@ -65,19 +65,21 @@ const NotificationInfoModal = ({ show, handleClose }) => {
           >
             {[...Array(6)].map((_, index) => (
               <div
-                className="event-setting-trMain mt-3 d-flex align-items-center"
+                className="d-flex align-items-center justify-content-between mt-3"
                 key={index}
               >
-                <div className="event-setting-child d-flex align-items-center event-setting-child-main">
-                  <p className="event-setting-p1">
-                    MAHESH TIMBER AND ASSOCIATES LLP
-                  </p>
-                </div>
-                <div className="event-setting-child event-setting-child-icon">
-                  <i
-                    className="fa-solid fa-bell"
-                    style={{ color: "var(--red)" }}
-                  />
+                <p>MAHESH TIMBER AND ASSOCIATES LLP</p>
+                <div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="#8b0203"
+                    class="bi bi-bell-fill"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901" />
+                  </svg>
                 </div>
               </div>
             ))}
@@ -92,19 +94,23 @@ const NotificationInfoModal = ({ show, handleClose }) => {
             {/* Content for Delivered notifications */}
             {[...Array(6)].map((_, index) => (
               <div
-                className="event-setting-trMain mt-3 d-flex align-items-center"
+                className="mt-3 d-flex align-items-center justify-content-between"
                 key={index}
               >
-                <div className="event-setting-child d-flex align-items-center event-setting-child-main">
-                  <p className="event-setting-p1">
-                    DELIVERED NOTIFICATION {index + 1}
-                  </p>
-                </div>
-                <div className="event-setting-child event-setting-child-icon">
-                  <i
-                    className="fa-solid fa-check"
-                    style={{ color: "var(--green)" }}
-                  />
+                <p>
+                  DELIVERED NOTIFICATION {index + 1}
+                </p>
+                <div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="#8b0203"
+                    class="bi bi-bell-fill"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901" />
+                  </svg>
                 </div>
               </div>
             ))}
@@ -119,19 +125,23 @@ const NotificationInfoModal = ({ show, handleClose }) => {
             {/* Content for Seen notifications */}
             {[...Array(6)].map((_, index) => (
               <div
-                className="event-setting-trMain mt-3 d-flex align-items-center"
+                className="mt-3 d-flex align-items-center justify-content-between"
                 key={index}
               >
-                <div className="event-setting-child d-flex align-items-center event-setting-child-main">
-                  <p className="event-setting-p1">
+                  <p>
                     SEEN NOTIFICATION {index + 1}
                   </p>
-                </div>
-                <div className="event-setting-child event-setting-child-icon">
-                  <i
-                    className="fa-solid fa-eye"
-                    style={{ color: "var(--blue)" }}
-                  />
+                <div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="#8b0203"
+                    class="bi bi-bell-fill"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901" />
+                  </svg>
                 </div>
               </div>
             ))}
@@ -139,8 +149,12 @@ const NotificationInfoModal = ({ show, handleClose }) => {
         </div>
         <div></div>
         <div class="modal-footer justify-content-center">
-          <button class="purple-btn1" onClick={handleClose} >Cancel</button>
-          <button class="purple-btn2" onClick={handleClose} >Save</button>
+          <button class="purple-btn1" onClick={handleClose}>
+            Cancel
+          </button>
+          <button class="purple-btn2" onClick={handleClose}>
+            Save
+          </button>
         </div>
       </Modal.Body>
     </Modal>

@@ -2,21 +2,36 @@ import React from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
-import { Dropdown, Modal, Button } from "react-bootstrap";
+import { Dropdown, Collapse } from "react-bootstrap";
 import { useState } from "react";
-import RecreateOrderModal from '../components/RecreateOrderModal';  
-import NotificationInfoModal from '../components/NotificationInfoModal';  
-import IncreaseEventTimeModal from '../components/IncreaseEventTimeModal';  
-import WithdrawOrderModal from '../components/WithdrawOrderModal';  
-import ConvertToAuctionModal from '../components/ConvertToAuctionModal';  
-import RejectedBidsModal from '../components/RejectedBidsModal';  
-import ActivityModal from '../components/ActivityModal'; // New Modal  
-import AddEvaluationTimeModal from '../components/AddEvaluationTime'; // New Modal  
-import BulkCounterOfferModal from '../components/BulkCounterOfferModal';  
+import RecreateOrderModal from "../components/RecreateOrderModal";
+import NotificationInfoModal from "../components/NotificationInfoModal";
+import IncreaseEventTimeModal from "../components/IncreaseEventTimeModal";
+import WithdrawOrderModal from "../components/WithdrawOrderModal";
+import ConvertToAuctionModal from "../components/ConvertToAuctionModal";
+import RejectedBidsModal from "../components/RejectedBidsModal";
+import ActivityModal from "../components/ActivityModal";
+import AddEvaluationTimeModal from "../components/AddEvaluationTime";
+import BulkCounterOfferModal from "../components/BulkCounterOfferModal";
+import ScatterChart from "../components/ScatterChart";
 
 export default function ErpRfqDetailPriceTrends4h() {
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [participantsOpen, setParticipantsOpen] = useState(true);
+  const [savingsOpen, setSavingsOpen] = useState(false);
+  const [biddingOpen, setBiddingOpen] = useState(false);
+  const [productOpen, setProductOpen] = useState(false);
+  const [isOthersOpen, setIsOthersOpen] = useState(false);
+
+  const toggleAccordion = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const toggleOthersAccordion = () => {
+    setIsOthersOpen(!isOthersOpen);
+  };
 
   const handleShowModal = (modalType) => {
     setCurrentModal(modalType);
@@ -33,14 +48,19 @@ export default function ErpRfqDetailPriceTrends4h() {
       case "Recreate":
         return (
           <>
-          <RecreateOrderModal
-            show={showModal}
-            handleClose={handleCloseModal}
-          />
+            <RecreateOrderModal
+              show={showModal}
+              handleClose={handleCloseModal}
+            />
           </>
         );
       case "Shared":
-        return <NotificationInfoModal show={showModal} handleClose={handleCloseModal} />;
+        return (
+          <NotificationInfoModal
+            show={showModal}
+            handleClose={handleCloseModal}
+          />
+        );
       case "Extend":
         return (
           <IncreaseEventTimeModal
@@ -202,7 +222,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                     >
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link active buyEvent-mainBtn event-participant-btn"
+                          className="nav-link active setting-link"
                           id="responses-tab"
                           data-bs-toggle="tab"
                           data-bs-target="#responses"
@@ -216,7 +236,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link  buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="responses-tab"
                           data-bs-toggle="tab"
                           data-bs-target="#Comaprison"
@@ -230,7 +250,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="overview-tab "
                           data-bs-toggle="tab"
                           data-bs-target="#overview"
@@ -244,7 +264,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="participants-tab "
                           data-bs-toggle="tab"
                           data-bs-target="#participants"
@@ -258,7 +278,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="analytics-tab "
                           data-bs-toggle="tab"
                           data-bs-target="#analytics"
@@ -272,7 +292,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="priceTrends-tab "
                           data-bs-toggle="tab"
                           data-bs-target="#priceTrends"
@@ -286,7 +306,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </li>
                       <li className="nav-item" role="presentation">
                         <button
-                          className="nav-link buyEvent-mainBtn event-participant-btn"
+                          className="nav-link setting-link"
                           id="participantRemarks-tab "
                           data-bs-toggle="tab"
                           data-bs-target="#participantRemarks"
@@ -307,8 +327,32 @@ export default function ErpRfqDetailPriceTrends4h() {
                     </ul>
                     <div className="dropdown pe-4">
                       <Dropdown>
-                        <Dropdown.Toggle variant="link" id="dropdownMenuButton">
-                          Settings
+                        <Dropdown.Toggle
+                          variant="outline-dark"
+                          className="btn dropdown-toggle no-hover"
+                          id="dropdownMenuButton"
+                        >
+                          <svg
+                            width={16}
+                            height={18}
+                            viewBox="0 0 16 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M8.00034 5.5918C6.2357 5.5918 4.80518 7.02232 4.80518 8.78696C4.80518 10.5516 6.2357 11.9821 8.00034 11.9821C9.76498 11.9821 11.1955 10.5516 11.1955 8.78696C11.1955 7.02232 9.76498 5.5918 8.00034 5.5918ZM6.40275 8.78696C6.40275 7.90464 7.11802 7.18939 8.00034 7.18939C8.88265 7.18939 9.59792 7.90464 9.59792 8.78696C9.59792 9.66929 8.88265 10.3845 8.00034 10.3845C7.11802 10.3845 6.40275 9.66929 6.40275 8.78696Z"
+                              fill="black"
+                            />
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M10.5072 2.23226C10.1675 -0.744078 5.83252 -0.744096 5.49281 2.23226L5.42185 2.85396C5.35211 3.46498 4.70596 3.84201 4.13158 3.59304L3.55569 3.34341C0.828386 2.16124 -1.38968 5.87814 1.0506 7.67629L1.55554 8.04836C2.05439 8.41596 2.05439 9.15745 1.55554 9.52503L1.0506 9.8971C-1.38966 11.6952 0.828374 15.4122 3.55569 14.23L4.13158 13.9804C4.70596 13.7314 5.35211 14.1085 5.42185 14.7194L5.49281 15.3412C5.83252 18.3175 10.1675 18.3175 10.5072 15.3412L10.5781 14.7194C10.6479 14.1085 11.2941 13.7314 11.8683 13.9804L12.4443 14.23C15.1716 15.4121 17.3897 11.6952 14.9494 9.8971L14.4444 9.52503C13.9456 9.15744 13.9456 8.41596 14.4444 8.04836L14.9494 7.67629C17.3897 5.87815 15.1716 2.16123 12.4443 3.34341L11.8685 3.59304C11.2941 3.84201 10.6479 3.46498 10.5781 2.85397L10.5072 2.23226ZM7.08008 2.41343C7.20424 1.32564 8.79575 1.32563 8.91991 2.41343L8.99086 3.03513C9.1831 4.7194 10.952 5.73149 12.5037 5.05884L13.0797 4.80921C14.1171 4.35954 14.8623 5.75602 14.0017 6.39017L13.4968 6.76224C12.1313 7.76832 12.1313 9.80508 13.4968 10.8112L14.0017 11.1832C14.8623 11.8174 14.1171 13.2139 13.0797 12.7642L12.5037 12.5145C10.952 11.8419 9.1831 12.854 8.99086 14.5383L8.91991 15.16C8.79575 16.2477 7.20424 16.2478 7.08008 15.16L7.00912 14.5383C6.81689 12.854 5.04803 11.8419 3.49622 12.5145L2.92031 12.7642C1.88291 13.2139 1.1377 11.8174 1.99831 11.1832L2.50325 10.8112C3.8686 9.80507 3.86859 7.76832 2.50325 6.76224L1.99829 6.39016C1.13771 5.75603 1.8829 4.35953 2.92032 4.80922L3.49622 5.05884C5.04803 5.73149 6.81689 4.7194 7.00912 3.03513L7.08008 2.41343Z"
+                              fill="black"
+                            />
+                          </svg>{" "}
+                          Setting
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu>
@@ -362,25 +406,6 @@ export default function ErpRfqDetailPriceTrends4h() {
 
                       {renderModal()}
                     </div>
-                    {/* Modals */}
-                    {/* {currentModal && (
-                      <Modal show={showModal} onHide={handleCloseModal}>
-                        <Modal.Header closeButton>
-                          <Modal.Title>{currentModal}</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                          <p>Content for {currentModal} modal goes here.</p>
-                        </Modal.Body>
-                        <Modal.Footer>
-                          <Button
-                            variant="secondary"
-                            onClick={handleCloseModal}
-                          >
-                            Close
-                          </Button>
-                        </Modal.Footer>
-                      </Modal>
-                    )} */}
                   </div>
                   <div className="tab-content mt-3 main-scroll-div">
                     <div
@@ -1064,9 +1089,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                               <button
                                 className="accordion-button viewBy-collapT1"
                                 type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#collapseOne"
-                                aria-expanded="true"
+                                onClick={toggleAccordion}
+                                aria-expanded={isOpen}
                                 aria-controls="collapseOne"
                               >
                                 <span className="pe-3">
@@ -1076,6 +1100,12 @@ export default function ErpRfqDetailPriceTrends4h() {
                                     viewBox="0 0 24 27"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
+                                    style={{
+                                      transform: isOpen
+                                        ? "rotate(0deg)"
+                                        : "rotate(300deg)",
+                                      transition: "transform 0.3s",
+                                    }}
                                   >
                                     <g filter="url(#filter0_d_105_1158)">
                                       <rect
@@ -1143,18 +1173,49 @@ export default function ErpRfqDetailPriceTrends4h() {
                                       </filter>
                                     </defs>
                                   </svg>
-                                </span>{" "}
-                                Wooden Frd Door{" "}
-                                <span className="viewBy-collapT1-span">
+                                </span>
+                                <span
+                                  style={{ color: isOpen ? "#e95420" : "" }}
+                                >
+                                  Wooden Frd Door{" "}
+                                </span>
+                                <span
+                                  style={{ color: isOpen ? "#e95420" : "" }}
+                                >
                                   (WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN
                                   DOOR))
                                 </span>
-                                1 257 Nos Requested at Sanvo Resorts Pvt. Ltd.
+                                <span
+                                  style={{ color: isOpen ? "#e95420" : "" }}
+                                >
+                                  1 257 Nos Requested at Sanvo Resorts Pvt. Ltd.
+                                </span>
+                                <span className="ms-auto">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="56"
+                                    height="56"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="thin"
+                                    style={{
+                                      transform: isOpen
+                                        ? "rotate(180deg)"
+                                        : "rotate(0deg)",
+                                      transition: "transform 0.3s",
+                                    }}
+                                  >
+                                    <polyline points="6 9 8 11 10 9"></polyline>
+                                  </svg>
+                                </span>
                               </button>
                             </h2>
                             <div
                               id="collapseOne"
-                              className="accordion-collapse collapse"
+                              className={`accordion-collapse collapse ${
+                                isOpen ? "show" : ""
+                              }`}
                               aria-labelledby="headingOne"
                               data-bs-parent="#accordionExample1"
                             >
@@ -1358,10 +1419,9 @@ export default function ErpRfqDetailPriceTrends4h() {
                               <button
                                 className="accordion-button viewBy-collapT1"
                                 type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#collapseTwo"
-                                aria-expanded="true"
-                                aria-controls="collapseTwo"
+                                onClick={toggleOthersAccordion}
+                                aria-expanded={isOthersOpen}
+                                aria-controls="collapseOne"
                               >
                                 <span className="pe-3">
                                   <svg
@@ -1370,6 +1430,12 @@ export default function ErpRfqDetailPriceTrends4h() {
                                     viewBox="0 0 24 27"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
+                                    style={{
+                                      transform: isOthersOpen
+                                        ? "rotate(0deg)"
+                                        : "rotate(300deg)",
+                                      transition: "transform 0.3s",
+                                    }}
                                   >
                                     <g filter="url(#filter0_d_105_1158)">
                                       <rect
@@ -1438,13 +1504,40 @@ export default function ErpRfqDetailPriceTrends4h() {
                                     </defs>
                                   </svg>
                                 </span>{" "}
-                                Other Charges
+                                <span
+                                  style={{
+                                    color: isOthersOpen ? "#e95420" : "",
+                                  }}
+                                >
+                                  Other Charges
+                                </span>
+                                <span className="ms-auto">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="56"
+                                    height="56"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="thin"
+                                    style={{
+                                      transform: isOthersOpen
+                                        ? "rotate(180deg)"
+                                        : "rotate(0deg)",
+                                      transition: "transform 0.3s",
+                                    }}
+                                  >
+                                    <polyline points="6 9 8 11 10 9"></polyline>
+                                  </svg>
+                                </span>
                               </button>
                             </h2>
                             <div
                               id="collapseTwo"
-                              className="accordion-collapse collapse"
                               aria-labelledby="headingTwo"
+                              className={`accordion-collapse collapse ${
+                                isOthersOpen ? "show" : ""
+                              }`}
                               data-bs-parent="#accordionExample2"
                             >
                               <div className="accordion-body">
@@ -2066,10 +2159,9 @@ export default function ErpRfqDetailPriceTrends4h() {
                       tabIndex={0}
                     >
                       <section className="Erp-overview overflow-auto">
-                        <div className="row my-2 mx-3">
+                        <div className="row my-2">
                           <div
                             className="viewBy-main"
-                            style={{ justifyContent: "end" }}
                           >
                             <div className="viewBy-main-child2">
                               <p className="viewBy-main-child2P">
@@ -2169,210 +2261,255 @@ export default function ErpRfqDetailPriceTrends4h() {
                               </div>
                             </div>
                           </div>
+                        </div>
                           <div className="col-12 my-3">
                             <a
                               className="btn"
                               data-bs-toggle="collapse"
                               href="#participation-summary"
                               role="button"
-                              aria-expanded="false"
+                              aria-expanded={participantsOpen}
                               aria-controls="participation-summary"
-                              onclick="toggleIcon('participation-summary')"
+                              onClick={() =>
+                                setParticipantsOpen(!participantsOpen)
+                              }
+                              style={{fontSize:'16px', fontWeight: 'normal'}}
                             >
                               <span
                                 id="participation-summary-icon"
                                 className="icon-1"
                               >
-                                <i className="fa-solid fa-plus" />
+                                {participantsOpen ? (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-dash" // Corrected from `class` to `className`
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-plus" // Corrected from `class` to `className`
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                  </svg>
+                                )}
                               </span>
                               Participation Summary
                             </a>
-                            <div
-                              className="collapse multi-collapse participation-summary show"
-                              id="participation-summary"
-                            >
-                              <div className="card card-body">
-                                <div className="participate-sec d-flex align-items-center">
-                                  <div className="totals-activity d-flex align-items-center">
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="total-participants">3</span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="active-participants">3</span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="total-bids">3</span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="revised-bids">3</span>
-                                    </div>
-                                  </div>
-                                  <div className="rejected-bids d-flex align-items-center">
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="rejected-bids">3</span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="counter-offers">3</span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="accepted-counter-offers">
-                                        3
-                                      </span>
-                                    </div>
-                                    <div className="total-activity">
-                                      <p>Total Participants</p>
-                                      <span id="dynamic-time-extended">3</span>
+                            {participantsOpen && (
+                              <div id="participation-summary">
+                                <div className="card card-body p-2">
+                                  <div className="participate-sec">
+                                    <div className="totals-activity d-flex align-items-center" style={{gap:'0'}}>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="total-participants">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="active-participants">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="total-bids">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="revised-bids">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="rejected-bids">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="counter-offers">3</p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="accepted-counter-offers">
+                                          3
+                                        </p>
+                                      </div>
+                                      <div className="total-activity">
+                                        <p>Total Participants</p>
+                                        <p id="dynamic-time-extended">
+                                          3
+                                        </p>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                           <div className="col-12 my-3">
-                            <div className="saving-summary-btn">
-                              <a
-                                className="btn"
-                                data-bs-toggle="collapse"
-                                href="#savings-summary"
-                                role="button"
-                                aria-expanded="false"
-                                aria-controls="savings-summary"
-                                onclick="toggleIcon('savings-summary')"
-                              >
-                                <span
-                                  id="savings-summary-icon"
-                                  className="icon-1"
-                                >
-                                  <i className="fa-solid fa-plus" />
-                                </span>
-                                Savings Summary
-                              </a>
-                            </div>
-                            <div
-                              className="collapse multi-collapse savings-summary"
-                              id="savings-summary"
+                            <a
+                              className="btn"
+                              data-bs-toggle="collapse"
+                              href="#savings-summary"
+                              role="button"
+                              aria-expanded={savingsOpen}
+                              aria-controls="savings-summary"
+                              onClick={() => setSavingsOpen(!savingsOpen)}
+                              style={{fontSize:'16px', fontWeight: 'normal'}}
                             >
-                              <div className="card card-body">
-                                <div
-                                  className="viewBy-main"
-                                  style={{
-                                    justifyContent: "end",
-                                    margin: "0!important",
-                                  }}
-                                >
-                                  <div className="viewBy-main-child2">
-                                    <div className="view">View</div>
-                                  </div>
-                                </div>
-                                <div className="saving-ref">
-                                  <div className="deafut-sec d-flex align-items-center">
-                                    <div className="default d-flex gap-2">
-                                      <svg
-                                        width={13}
-                                        height={14}
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <path
-                                          d="M4.35725 0.572266H0.285819C0.167962 0.572266 0.0715332 0.668694 0.0715332 0.786551V4.85798C0.0715332 4.97584 0.167962 5.07227 0.285819 5.07227H4.35725C4.4751 5.07227 4.57153 4.97584 4.57153 4.85798V0.786551C4.57153 0.668694 4.4751 0.572266 4.35725 0.572266ZM3.66082 4.16155H0.982248V1.48298H3.66082V4.16155ZM9.71439 0.572266H5.64296C5.52511 0.572266 5.42868 0.668694 5.42868 0.786551V4.85798C5.42868 4.97584 5.52511 5.07227 5.64296 5.07227H9.71439C9.83225 5.07227 9.92868 4.97584 9.92868 4.85798V0.786551C9.92868 0.668694 9.83225 0.572266 9.71439 0.572266ZM9.01796 4.16155H6.33939V1.48298H9.01796V4.16155ZM4.35725 5.92941H0.285819C0.167962 5.92941 0.0715332 6.02584 0.0715332 6.14369V10.2151C0.0715332 10.333 0.167962 10.4294 0.285819 10.4294H4.35725C4.4751 10.4294 4.57153 10.333 4.57153 10.2151V6.14369C4.57153 6.02584 4.4751 5.92941 4.35725 5.92941ZM3.66082 9.51869H0.982248V6.84012H3.66082V9.51869ZM9.71439 5.92941H5.64296C5.52511 5.92941 5.42868 6.02584 5.42868 6.14369V10.2151C5.42868 10.333 5.52511 10.4294 5.64296 10.4294H9.71439C9.83225 10.4294 9.92868 10.333 9.92868 10.2151V6.14369C9.92868 6.02584 9.83225 5.92941 9.71439 5.92941ZM9.01796 9.51869H6.33939V6.84012H9.01796V9.51869Z"
-                                          fill="#262626"
-                                        />
-                                      </svg>
-                                      <span>Default</span>
+                              <span
+                                id="savings-summary-icon"
+                                className="icon-1"
+                              >
+                                {savingsOpen ? (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    class="bi bi-dash"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    class="bi bi-plus"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                  </svg>
+                                )}
+                              </span>
+                              Savings Summary
+                            </a>
+                            {savingsOpen && (
+                              <div id="savings-summary">
+                                <div className="card card-body p-2">
+                                  <div
+                                    className="viewBy-main"
+                                    style={{
+                                      justifyContent: "end",
+                                      margin: "0!important",
+                                    }}
+                                  >
+                                    <div className="viewBy-main-child2">
+                                      <div className="view">View</div>
                                     </div>
-                                    <span>-</span>
                                   </div>
-                                  <div className="saving-sec d-flex">
-                                    <div className="saving-text">
-                                      SAVINGS REFERENCE
-                                    </div>
-                                    <div className="default d-flex align-items-center gap-3">
+                                  <div className="saving-ref">
+                                    <div className="deafut-sec d-flex align-items-center">
+                                      <div className="default d-flex gap-2">
+                                        <svg
+                                          width={13}
+                                          height={14}
+                                          viewBox="0 0 10 11"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M4.35725 0.572266H0.285819C0.167962 0.572266 0.0715332 0.668694 0.0715332 0.786551V4.85798C0.0715332 4.97584 0.167962 5.07227 0.285819 5.07227H4.35725C4.4751 5.07227 4.57153 4.97584 4.57153 4.85798V0.786551C4.57153 0.668694 4.4751 0.572266 4.35725 0.572266ZM3.66082 4.16155H0.982248V1.48298H3.66082V4.16155ZM9.71439 0.572266H5.64296C5.52511 0.572266 5.42868 0.668694 5.42868 0.786551V4.85798C5.42868 4.97584 5.52511 5.07227 5.64296 5.07227H9.71439C9.83225 5.07227 9.92868 4.97584 9.92868 4.85798V0.786551C9.92868 0.668694 9.83225 0.572266 9.71439 0.572266ZM9.01796 4.16155H6.33939V1.48298H9.01796V4.16155ZM4.35725 5.92941H0.285819C0.167962 5.92941 0.0715332 6.02584 0.0715332 6.14369V10.2151C0.0715332 10.333 0.167962 10.4294 0.285819 10.4294H4.35725C4.4751 10.4294 4.57153 10.333 4.57153 10.2151V6.14369C4.57153 6.02584 4.4751 5.92941 4.35725 5.92941ZM3.66082 9.51869H0.982248V6.84012H3.66082V9.51869ZM9.71439 5.92941H5.64296C5.52511 5.92941 5.42868 6.02584 5.42868 6.14369V10.2151C5.42868 10.333 5.52511 10.4294 5.64296 10.4294H9.71439C9.83225 10.4294 9.92868 10.333 9.92868 10.2151V6.14369C9.92868 6.02584 9.83225 5.92941 9.71439 5.92941ZM9.01796 9.51869H6.33939V6.84012H9.01796V9.51869Z"
+                                            fill="#262626"
+                                          />
+                                        </svg>
+                                        <span>Default</span>
+                                      </div>
                                       <span>-</span>
-                                      <span className="saving-amount">
-                                        {" "}
-                                        ₹58,05,671.79
-                                      </span>
+                                    </div>
+                                    <div className="saving-sec d-flex">
+                                      <div className="saving-text">
+                                        SAVINGS REFERENCE
+                                      </div>
+                                      <div className="default d-flex align-items-center gap-3">
+                                        <span>-</span>
+                                        <span className="saving-amount">
+                                          {" "}
+                                          ₹58,05,671.79
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="tbl-container mt-3">
-                                  <table className="w-100">
-                                    <thead>
-                                      <tr>
-                                        <th>Product</th>
-                                        <th>Variant</th>
-                                        <th>Default Reference</th>
-                                        <th>Default Savings</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                      <tr>
-                                        <td>Wooden Frd Door</td>
-                                        <td>
-                                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED
-                                          (MAIN DOOR)
-                                        </td>
-                                        <td>₹ 12850 /Nos</td>
-                                        <td>₹ 0/Nos </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
+                                  <div className="tbl-container mt-3">
+                                    <table className="w-100">
+                                      <thead>
+                                        <tr>
+                                          <th>Product</th>
+                                          <th>Variant</th>
+                                          <th>Default Reference</th>
+                                          <th>Default Savings</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Wooden Frd Door</td>
+                                          <td>
+                                            WOODEN DOOR SHUTTER 2 HRS FIRE RATED
+                                            (MAIN DOOR)
+                                          </td>
+                                          <td>₹ 12850 /Nos</td>
+                                          <td>₹ 0/Nos </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                           <div className="col-12 my-3">
                             <a
@@ -2380,377 +2517,442 @@ export default function ErpRfqDetailPriceTrends4h() {
                               data-bs-toggle="collapse"
                               href="#bidding-summary"
                               role="button"
-                              aria-expanded="false"
+                              aria-expanded={biddingOpen}
                               aria-controls="bidding-summary"
-                              onclick="toggleIcon('bidding-summary')"
+                              onClick={() => setBiddingOpen(!biddingOpen)} 
+                              style={{fontSize:'16px', fontWeight: 'normal'}}
                             >
                               <span
                                 id="bidding-summary-icon"
                                 className="icon-1"
                               >
-                                <i className="fa-solid fa-plus" />
+                                {biddingOpen ? (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-dash" // Corrected className
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-plus" // Corrected className
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                  </svg>
+                                )}
                               </span>
                               Bidding Summary
                             </a>
-                            <div
-                              className="collapse multi-collapse bidding-summary"
-                              id="bidding-summary"
-                            >
-                              <div className="card card-body">
-                                <div className="container table-responsive pb-5">
-                                  <h5>Quotation / Bid Revision Details</h5>
-                                  <div className="tbl-container">
-                                    <table className="">
-                                      <thead className="thead-dark">
-                                        <tr>
-                                          <th scope="col">Vendor Name</th>
-                                          <th scope="col">Initial Rate </th>
-                                          <th scope="col">Initial Amount </th>
-                                          <th scope="col">Revised Rate</th>
-                                          <th scope="col">Revised Amount</th>
-                                          <th>Difference in Amount</th>
-                                          <th>Difference in %</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>₹ 61,50,643.6</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                          <td>2</td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                  <h5>Line Item Wise</h5>
-                                  <div className="tbl-container">
-                                    <table>
-                                      <thead>
-                                        <tr>
-                                          <th scope="row" />
-                                          <th>Best Market Price</th>
-                                          <th>Rank 2 Market Price</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <th
-                                            colSpan={4}
-                                            style={{ textAlign: "left" }}
-                                          >
-                                            SITC of Electrical w...(As per
-                                            Tec...&nbsp;-&nbsp;1 Lumpsum)
-                                          </th>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Vendor Name</th>
-                                          <td>ELECTRIC PRIVATE LIM...</td>
-                                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Price Quoted</th>
-                                          <td>₹ 52,12,409.83/Lumpsum</td>
-                                          <td>Ampere Electrical Services</td>
-                                        </tr>
-                                        <tr>
-                                          <th
-                                            colSpan={4}
-                                            style={{ textAlign: "left" }}
-                                          >
-                                            SITC of Electrical w...(As per
-                                            Tec...&nbsp;-&nbsp;1 Lumpsum)
-                                          </th>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Vendor Name</th>
-                                          <td>ELECTRIC PRIVATE LIM...</td>
-                                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Price Quoted</th>
-                                          <td>₹ 52,12,409.83/Lumpsum</td>
-                                          <td>Ampere Electrical Services</td>
-                                        </tr>
-                                        <tr>
-                                          <th
-                                            colSpan={4}
-                                            style={{ textAlign: "left" }}
-                                          >
-                                            SITC of Electrical w...(As per
-                                            Tec...&nbsp;-&nbsp;1 Lumpsum)
-                                          </th>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Vendor Name</th>
-                                          <td>ELECTRIC PRIVATE LIM...</td>
-                                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Price Quoted</th>
-                                          <td>₹ 52,12,409.83/Lumpsum</td>
-                                          <td>Ampere Electrical Services</td>
-                                        </tr>
-                                        <tr>
-                                          <th
-                                            colSpan={4}
-                                            style={{ textAlign: "left" }}
-                                          >
-                                            SITC of Electrical w...(As per
-                                            Tec...&nbsp;-&nbsp;1 Lumpsum)
-                                          </th>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Vendor Name</th>
-                                          <td>ELECTRIC PRIVATE LIM...</td>
-                                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Price Quoted</th>
-                                          <td>₹ 52,12,409.83/Lumpsum</td>
-                                          <td>Ampere Electrical Services</td>
-                                        </tr>
-                                        <tr>
-                                          <th
-                                            colSpan={4}
-                                            style={{ textAlign: "left" }}
-                                          >
-                                            SITC of Electrical w...(As per
-                                            Tec...&nbsp;-&nbsp;1 Lumpsum)
-                                          </th>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Vendor Name</th>
-                                          <td>ELECTRIC PRIVATE LIM...</td>
-                                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                                        </tr>
-                                        <tr>
-                                          <th scope="row">Price Quoted</th>
-                                          <td>₹ 52,12,409.83/Lumpsum</td>
-                                          <td>Ampere Electrical Services</td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
+                            {biddingOpen && (
+                              <div id="bidding-summary">
+                                <div className="card card-body p-2">
+                                  <div className="container table-responsive pb-5">
+                                    <h5>Quotation / Bid Revision Details</h5>
+                                    <div className="tbl-container">
+                                      <table className="">
+                                        <thead className="thead-dark">
+                                          <tr>
+                                            <th scope="col">Vendor Name</th>
+                                            <th scope="col">Initial Rate </th>
+                                            <th scope="col">Initial Amount </th>
+                                            <th scope="col">Revised Rate</th>
+                                            <th scope="col">Revised Amount</th>
+                                            <th>Difference in Amount</th>
+                                            <th>Difference in %</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <th scope="row">1</th>
+                                            <td>Mark</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">1</th>
+                                            <td>Mark</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">1</th>
+                                            <td>Mark</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>₹ 61,50,643.6</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                            <td>2</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <h5>Line Item Wise</h5>
+                                    <div className="tbl-container">
+                                      <table>
+                                        <thead>
+                                          <tr>
+                                            <th scope="row" />
+                                            <th>Best Market Price</th>
+                                            <th>Rank 2 Market Price</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <th
+                                              colSpan={4}
+                                              style={{ textAlign: "left" }}
+                                            >
+                                              SITC of Electrical w...(As per
+                                              Tec...&nbsp;-&nbsp;1 Lumpsum)
+                                            </th>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Vendor Name</th>
+                                            <td>ELECTRIC PRIVATE LIM...</td>
+                                            <td>
+                                              AXIS ELECTRICAL COMPONENT...
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Price Quoted</th>
+                                            <td>₹ 52,12,409.83/Lumpsum</td>
+                                            <td>Ampere Electrical Services</td>
+                                          </tr>
+                                          <tr>
+                                            <th
+                                              colSpan={4}
+                                              style={{ textAlign: "left" }}
+                                            >
+                                              SITC of Electrical w...(As per
+                                              Tec...&nbsp;-&nbsp;1 Lumpsum)
+                                            </th>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Vendor Name</th>
+                                            <td>ELECTRIC PRIVATE LIM...</td>
+                                            <td>
+                                              AXIS ELECTRICAL COMPONENT...
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Price Quoted</th>
+                                            <td>₹ 52,12,409.83/Lumpsum</td>
+                                            <td>Ampere Electrical Services</td>
+                                          </tr>
+                                          <tr>
+                                            <th
+                                              colSpan={4}
+                                              style={{ textAlign: "left" }}
+                                            >
+                                              SITC of Electrical w...(As per
+                                              Tec...&nbsp;-&nbsp;1 Lumpsum)
+                                            </th>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Vendor Name</th>
+                                            <td>ELECTRIC PRIVATE LIM...</td>
+                                            <td>
+                                              AXIS ELECTRICAL COMPONENT...
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Price Quoted</th>
+                                            <td>₹ 52,12,409.83/Lumpsum</td>
+                                            <td>Ampere Electrical Services</td>
+                                          </tr>
+                                          <tr>
+                                            <th
+                                              colSpan={4}
+                                              style={{ textAlign: "left" }}
+                                            >
+                                              SITC of Electrical w...(As per
+                                              Tec...&nbsp;-&nbsp;1 Lumpsum)
+                                            </th>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Vendor Name</th>
+                                            <td>ELECTRIC PRIVATE LIM...</td>
+                                            <td>
+                                              AXIS ELECTRICAL COMPONENT...
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Price Quoted</th>
+                                            <td>₹ 52,12,409.83/Lumpsum</td>
+                                            <td>Ampere Electrical Services</td>
+                                          </tr>
+                                          <tr>
+                                            <th
+                                              colSpan={4}
+                                              style={{ textAlign: "left" }}
+                                            >
+                                              SITC of Electrical w...(As per
+                                              Tec...&nbsp;-&nbsp;1 Lumpsum)
+                                            </th>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Vendor Name</th>
+                                            <td>ELECTRIC PRIVATE LIM...</td>
+                                            <td>
+                                              AXIS ELECTRICAL COMPONENT...
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <th scope="row">Price Quoted</th>
+                                            <td>₹ 52,12,409.83/Lumpsum</td>
+                                            <td>Ampere Electrical Services</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                           <div className="col-12 my-3">
                             <a
                               className="btn"
                               data-bs-toggle="collapse"
-                              href="#product-sheet"
                               role="button"
-                              aria-expanded="false"
+                              href="#product-sheet"
                               aria-controls="product-sheet"
-                              onclick="toggleIcon('product-sheet')"
+                              aria-expanded={productOpen}
+                              onClick={() => setProductOpen(!productOpen)}
+                              style={{fontSize:'16px', fontWeight: 'normal'}}
                             >
                               <span id="product-sheet-icon" className="icon-1">
-                                <i className="fa-solid fa-plus" />
+                                {productOpen ? (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-dash" // Corrected from `class` to `className`
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-plus" // Corrected from `class` to `className`
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                  </svg>
+                                )}
                               </span>
                               Product Sheet
                             </a>
-                            <div
-                              className="collapse multi-collapse product-sheet"
-                              id="product-sheet"
-                            >
-                              <div className="card card-body">
-                                <div className="tbl-container">
-                                  <table className="">
-                                    <thead className="thead-dark">
-                                      <tr>
-                                        <th scope="col">Product*</th>
-                                        <th scope="col">Best Total Amount</th>
-                                        <th scope="col">Product Variant*</th>
-                                        <th scope="col">Quantity Requested*</th>
-                                        <th scope="col">Delivery location*</th>
-                                        <th scope="col">Creator Attachment</th>
-                                        <th scope="col">AIDDITIONAL INFO</th>
-                                        <th scope="col">Quantity Available</th>
-                                        <th scope="col">Price*</th>
-                                        <th scope="col">Discount</th>
-                                        <th scope="col">Realised Discount*</th>
-                                        <th scope="col">GST*</th>
-                                        <th scope="col">Realised GST</th>
-                                        <th scope="col">Landed Amount*</th>
-                                        <th scope="col">
-                                          Participant Attachment
-                                        </th>
-                                        <th scope="col">DOOR FRAME MATERIAL</th>
-                                        <th>DENSITY OF WOOD</th>
-                                        <th>MOISTURE OF WOOD</th>
-                                        <th>Total Amount*</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <th scope="row">
-                                          Wooden Frd Door{" "}
-                                          <span
-                                            style={{
-                                              color: "var(--red)",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            {" "}
-                                            Details
-                                          </span>
-                                        </th>
-                                        <td />
-                                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                                        <td>257 Nos</td>
-                                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                                        <td />
-                                        <td>Main door Outer size of ...</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">
-                                          Wooden Frd Door{" "}
-                                          <span
-                                            style={{
-                                              color: "var(--red)",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            {" "}
-                                            Details
-                                          </span>
-                                        </th>
-                                        <td />
-                                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                                        <td>257 Nos</td>
-                                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                                        <td />
-                                        <td>Main door Outer size of ...</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">
-                                          Wooden Frd Door{" "}
-                                          <span
-                                            style={{
-                                              color: "var(--red)",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            {" "}
-                                            Details
-                                          </span>
-                                        </th>
-                                        <td />
-                                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                                        <td>257 Nos</td>
-                                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                                        <td />
-                                        <td>Main door Outer size of ...</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">
-                                          Wooden Frd Door{" "}
-                                          <span
-                                            style={{
-                                              color: "var(--red)",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            {" "}
-                                            Details
-                                          </span>
-                                        </th>
-                                        <td />
-                                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                                        <td>257 Nos</td>
-                                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                                        <td />
-                                        <td>Main door Outer size of ...</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                      <tr>
-                                        <th scope="row">
-                                          Wooden Frd Door{" "}
-                                          <span
-                                            style={{
-                                              color: "var(--red)",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            {" "}
-                                            Details
-                                          </span>
-                                        </th>
-                                        <td />
-                                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                                        <td>257 Nos</td>
-                                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                                        <td />
-                                        <td>Main door Outer size of ...</td>
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                        <td />
-                                      </tr>
-                                    </tbody>
-                                  </table>
+                            {productOpen && (
+                              <div id="product-sheet">
+                                <div className="card card-body p-2">
+                                  <div className="tbl-container">
+                                    <table className="">
+                                      <thead className="thead-dark">
+                                        <tr>
+                                          <th scope="col">Product*</th>
+                                          <th scope="col">Best Total Amount</th>
+                                          <th scope="col">Product Variant*</th>
+                                          <th scope="col">
+                                            Quantity Requested*
+                                          </th>
+                                          <th scope="col">
+                                            Delivery location*
+                                          </th>
+                                          <th scope="col">
+                                            Creator Attachment
+                                          </th>
+                                          <th scope="col">AIDDITIONAL INFO</th>
+                                          <th scope="col">
+                                            Quantity Available
+                                          </th>
+                                          <th scope="col">Price*</th>
+                                          <th scope="col">Discount</th>
+                                          <th scope="col">
+                                            Realised Discount*
+                                          </th>
+                                          <th scope="col">GST*</th>
+                                          <th scope="col">Realised GST</th>
+                                          <th scope="col">Landed Amount*</th>
+                                          <th scope="col">
+                                            Participant Attachment
+                                          </th>
+                                          <th scope="col">
+                                            DOOR FRAME MATERIAL
+                                          </th>
+                                          <th>DENSITY OF WOOD</th>
+                                          <th>MOISTURE OF WOOD</th>
+                                          <th>Total Amount*</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <th scope="row">
+                                            Wooden Frd Door{" "}
+                                            <span
+                                              style={{
+                                                color: "var(--red)",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {" "}
+                                              Details
+                                            </span>
+                                          </th>
+                                          <td />
+                                          <td>WOODEN DOOR SHUTTER 2 HRS...</td>
+                                          <td>257 Nos</td>
+                                          <td>Sanvo Resorts Pvt. Ltd. </td>
+                                          <td />
+                                          <td>Main door Outer size of ...</td>
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">
+                                            Wooden Frd Door{" "}
+                                            <span
+                                              style={{
+                                                color: "var(--red)",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {" "}
+                                              Details
+                                            </span>
+                                          </th>
+                                          <td />
+                                          <td>WOODEN DOOR SHUTTER 2 HRS...</td>
+                                          <td>257 Nos</td>
+                                          <td>Sanvo Resorts Pvt. Ltd. </td>
+                                          <td />
+                                          <td>Main door Outer size of ...</td>
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">
+                                            Wooden Frd Door{" "}
+                                            <span
+                                              style={{
+                                                color: "var(--red)",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {" "}
+                                              Details
+                                            </span>
+                                          </th>
+                                          <td />
+                                          <td>WOODEN DOOR SHUTTER 2 HRS...</td>
+                                          <td>257 Nos</td>
+                                          <td>Sanvo Resorts Pvt. Ltd. </td>
+                                          <td />
+                                          <td>Main door Outer size of ...</td>
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">
+                                            Wooden Frd Door{" "}
+                                            <span
+                                              style={{
+                                                color: "var(--red)",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {" "}
+                                              Details
+                                            </span>
+                                          </th>
+                                          <td />
+                                          <td>WOODEN DOOR SHUTTER 2 HRS...</td>
+                                          <td>257 Nos</td>
+                                          <td>Sanvo Resorts Pvt. Ltd. </td>
+                                          <td />
+                                          <td>Main door Outer size of ...</td>
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">
+                                            Wooden Frd Door{" "}
+                                            <span
+                                              style={{
+                                                color: "var(--red)",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {" "}
+                                              Details
+                                            </span>
+                                          </th>
+                                          <td />
+                                          <td>WOODEN DOOR SHUTTER 2 HRS...</td>
+                                          <td>257 Nos</td>
+                                          <td>Sanvo Resorts Pvt. Ltd. </td>
+                                          <td />
+                                          <td>Main door Outer size of ...</td>
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                          <td />
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                           </div>
-                        </div>
                       </section>
                     </div>
                     <div
@@ -3015,7 +3217,9 @@ export default function ErpRfqDetailPriceTrends4h() {
                             </div>
                           </div>
                         </div>
-                        <div id="container" />
+                        <div id="container" >
+                          <ScatterChart />
+                        </div>
                       </div>
                     </div>
                     <div
@@ -3026,8 +3230,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                       tabIndex={0}
                     >
                       <div className="priceTrends-list-main">
-                        <div className="mt-2 priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="mt-2 ">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
@@ -3036,8 +3240,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                             <p className="eventList-p1 mb-0">copper make</p>
                           </div>
                         </div>
-                        <div className="priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
@@ -3046,8 +3250,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                             <p className="eventList-p1 mb-0">copper make</p>
                           </div>
                         </div>
-                        <div className="priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
@@ -3056,8 +3260,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                             <p className="eventList-p1 mb-0">copper make</p>
                           </div>
                         </div>
-                        <div className="priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
@@ -3066,8 +3270,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                             <p className="eventList-p1 mb-0">copper make</p>
                           </div>
                         </div>
-                        <div className="priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
@@ -3076,8 +3280,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                             <p className="eventList-p1 mb-0">copper make</p>
                           </div>
                         </div>
-                        <div className="priceTrends-list-parent">
-                          <div className="priceTrends-tag">A</div>
+                        <div className="">
+                          <div>A</div>
                           <div className="mt-0 priceTrends-list-child go-shadow-k">
                             <p className="eventList-p2 mb-0 fw-bold">
                               AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA
