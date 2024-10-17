@@ -34,6 +34,9 @@ function Members() {
               <li>
                 <Link to="/erp-stock-register13b">erp_stock_register13b</Link>
               </li>
+              <li>
+                <Link to="/approvals-list">approvals_list</Link>
+              </li>
 
             </ul>
           </div>

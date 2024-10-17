@@ -209,7 +209,7 @@ export default function BulkCounterOfferModal({ show, handleClose }) {
             </tbody>
           </table>
         </div>
-        <div className="tbl-container mt-3">
+        <div className="tbl-container">
           <table className="w-100">
             <tbody>
               <tr>
@@ -235,7 +235,7 @@ export default function BulkCounterOfferModal({ show, handleClose }) {
             </tbody>
           </table>
         </div>
-        <div className="form-group">
+        <div className="form-group mb-3">
           <label htmlFor="counterOfferRemarks">Counter Offer Remarks</label>
           <input
             className="form-control"

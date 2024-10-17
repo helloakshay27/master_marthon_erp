@@ -8,9 +8,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 
 export default function CreateRfq() {
-  const [orderDetails, setOrderDetails] = useState(false);
-  const [materialOne, setMaterialOne] = useState(false);
-  const [materialTwo, setMaterialTwo] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(true);
+  const [materialOne, setMaterialOne] = useState(true);
+  const [materialTwo, setMaterialTwo] = useState(true);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
   const [eventSchedule, setEventSchedule] = useState(false);
@@ -45,7 +45,7 @@ export default function CreateRfq() {
   };
 
   const handleRadioChange = (strategy) => {
-    setSelectedStrategy(strategy); // Update the selected strategy
+    setSelectedStrategy(strategy);
   };
 
   const handleEventTypeModalShow = () => {
@@ -293,13 +293,11 @@ export default function CreateRfq() {
                             />
                           </div>
                           <div className="col-md-4 mt-2 ">
-                            <button className="purple-btn1 m-0">
-                              <a href="./erp-material-order-request-create.html">
+                            <button className="purple-btn1 m-0 color-#fff">
                                 <span className="material-symbols-outlined align-text-top">
                                   add
                                 </span>
                                 Additional Vendor Fields
-                              </a>
                             </button>
                           </div>
                         </div>
@@ -430,13 +428,13 @@ export default function CreateRfq() {
                       {/* form-select EXAMPLE */}
                     </div>
                     <div className="row">
-                      <div className="card pb-3 px-0">
-                        <div className="card-header bg-white border-none rounded-3">
+                      <div className="card pb-3 px-0 rounded-4">
+                        <div className="card-header bg-white border-0 rounded-0 ">
                           <h3 className="card-title">Order Details</h3>
                           <div className="card-tools">
                             <button
                               type="button"
-                              className="btn btn-tool"
+                              className="btn btn-tool mt-0"
                               data-card-widget="collapse"
                               fdprocessedid="7rbmxj"
                               onClick={orderDropdown}
@@ -463,14 +461,14 @@ export default function CreateRfq() {
                               className="card card-default"
                               id="mor-material-details"
                             >
-                              <div className="card-header bg-white border-none">
+                              <div className="card-header bg-white border-0">
                                 <h3 className="card-title">
                                   Material Details (1/2)
                                 </h3>
                                 <div className="card-tools">
                                   <button
                                     type="button"
-                                    className="btn btn-tool"
+                                    className="btn btn-tool mt-0"
                                     data-card-widget="collapse"
                                     fdprocessedid="7rbmxj"
                                     onClick={materialOneDropdown}
@@ -549,7 +547,7 @@ export default function CreateRfq() {
                                   <div className="row">
                                     <div className="col-md-4">
                                       <div className="form-group">
-                                        <label>Compony</label>
+                                        <label>Company</label>
                                         <select
                                           className="form-control form-select"
                                           style={{ width: "100%" }}
@@ -738,7 +736,8 @@ export default function CreateRfq() {
                                       <button
                                         className="purple-btn2 m-0"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#file_attchement"
+                                        data-bs-target="#file_attachement"
+                                        onClick={handleAttachmentModalShow}
                                       >
                                         <svg
                                           width={16}
@@ -889,14 +888,14 @@ export default function CreateRfq() {
                               className="card card-default mt-4"
                               id="mor-material-details"
                             >
-                              <div className="card-header bg-white border-none">
+                              <div className="card-header bg-white border-0">
                                 <h3 className="card-title">
                                   Material Details (2/2)
                                 </h3>
                                 <div className="card-tools">
                                   <button
                                     type="button"
-                                    className="btn btn-tool"
+                                    className="btn btn-tool mt-0"
                                     data-bs-toggle="modal"
                                     data-bs-target="#"
                                     data-card-widget="collapse"
@@ -976,7 +975,7 @@ export default function CreateRfq() {
                                   <div className="row">
                                     <div className="col-md-4">
                                       <div className="form-group">
-                                        <label>Compony</label>
+                                        <label>Company</label>
                                         <select
                                           className="form-control form-select"
                                           style={{ width: "100%" }}
@@ -1165,7 +1164,8 @@ export default function CreateRfq() {
                                       <button
                                         className="purple-btn2 m-0"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#file_attchement"
+                                        data-bs-target="#file_attachement"
+                                        onClick={handleAttachmentModalShow}
                                       >
                                         <svg
                                           width={16}
@@ -1184,7 +1184,7 @@ export default function CreateRfq() {
                                           />
                                         </svg>
                                         <span className="ms-2">
-                                          Attchment File{" "}
+                                          Attachment File{" "}
                                         </span>
                                       </button>
                                     </div>
@@ -2312,7 +2312,7 @@ export default function CreateRfq() {
                 <button
                   className="purple-btn2 m-0"
                   data-bs-toggle="modal"
-                  data-bs-target="#file_attchement"
+                  data-bs-target="#file_attachement"
                   data-bs-dismiss="modal"
                   aria-label="Close"
                   onClick={handleAttachmentModalShow}
@@ -2333,7 +2333,7 @@ export default function CreateRfq() {
                       fill="white"
                     />
                   </svg>
-                  <span className="ms-2">Attchment File </span>
+                  <span className="ms-2">Attachment File </span>
                 </button>
               </div>
               <div className="tbl-container px-0 mt-3">

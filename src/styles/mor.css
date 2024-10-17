@@ -3759,7 +3759,6 @@ ul#pills-tab{
 
 .card-header {
   background-color: transparent;
-  border-bottom: unset;
   padding: 1rem 1.25rem;
   position: relative;
   border-top-left-radius: 0.25rem;

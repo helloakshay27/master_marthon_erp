@@ -8,8 +8,11 @@ import CreateRfq from './pages/create-rfq';
 import ErpRfqAuctionEvents4f from './pages/erp-rfq-auction-events-4f';
 import ErpRfqAuctionEvents4h from './pages/erp-rfq-auction-events-4h';
 import ErpRfqDetailPriceTrends4h from './pages/erp-rfq-detail-price-trends4h';
+import ApprovalsList from './pages/approvals-list';
+import EditApprovals from './pages/edit-approvals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import AddApprovals from './pages/add-approvals';
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
       <div>
         <Routes>
           <Route path='/' element={<Members />} />
+          <Route path='/approvals-list' element={<ApprovalsList />} />
+          <Route path='/edit-approvals' element={<EditApprovals />} />
+          <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} />
           <Route path='/erp-stock-register-creation-detail-13c' element={<ErpStockRegisterCreationDetail13C />} />
           <Route path='/erp-stock-register13b' element={<ErpStockRegister13B />} />
