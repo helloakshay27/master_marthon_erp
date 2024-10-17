@@ -13,6 +13,9 @@ function Members() {
           <div className="module-data-section container-fluid">
             <h1>ERP_Store</h1>
             <ul>
+            <li>
+                <Link to="/grn/grn_detail">grn_detail</Link>
+              </li>
               <li>
                 <Link to="/create-rfq">create_rfq</Link>
               </li>
