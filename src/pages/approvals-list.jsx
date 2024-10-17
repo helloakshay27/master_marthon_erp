@@ -5,9 +5,7 @@ export default function ApprovalsList() {
   const navigate = useNavigate();
   return (
     <div className="p-4">
-      <a href="" className="color-red">
-        Home &gt; Purchase &gt; Procurement &gt; Create RFQ &amp; Auction
-      </a>
+      <p style={{ color: "#8b0203" }}>Setup &gt; Invoice Approvals</p>
       <h3>INVOICE APPROVALS </h3>
 
       <div className="row">
@@ -68,7 +66,10 @@ export default function ApprovalsList() {
           </thead>
           <tbody>
             <tr>
-              <td style={{ textAlign: "center" }} onClick={() => navigate('/edit-approvals')}>
+              <td
+                style={{ textAlign: "center" }}
+                onClick={() => navigate("/edit-approvals")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -90,7 +91,10 @@ export default function ApprovalsList() {
               <td style={{ textAlign: "center" }}>Locked Demo</td>
             </tr>
             <tr>
-              <td style={{ textAlign: "center" }} onClick={() => navigate('/edit-approvals')}>
+              <td
+                style={{ textAlign: "center" }}
+                onClick={() => navigate("/edit-approvals")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -112,7 +116,10 @@ export default function ApprovalsList() {
               <td style={{ textAlign: "center" }}>Locked Demo</td>
             </tr>
             <tr>
-              <td style={{ textAlign: "center" }} onClick={() => navigate('/edit-approvals')}>
+              <td
+                style={{ textAlign: "center" }}
+                onClick={() => navigate("/edit-approvals")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -134,7 +141,10 @@ export default function ApprovalsList() {
               <td style={{ textAlign: "center" }}>Locked Demo</td>
             </tr>
             <tr>
-              <td style={{ textAlign: "center" }} onClick={() => navigate('/edit-approvals')}>
+              <td
+                style={{ textAlign: "center" }}
+                onClick={() => navigate("/edit-approvals")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -156,7 +166,10 @@ export default function ApprovalsList() {
               <td style={{ textAlign: "center" }}>Locked Demo</td>
             </tr>
             <tr>
-              <td style={{ textAlign: "center" }} onClick={() => navigate('/edit-approvals')}>
+              <td
+                style={{ textAlign: "center" }}
+                onClick={() => navigate("/edit-approvals")}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
