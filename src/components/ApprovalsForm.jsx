@@ -90,7 +90,7 @@ export default function ApprovalsForm({ mode }) {
 
       <div className="card mt-3">
         <div className="card-header3">
-          <h3 className="card-title">Quick Filter</h3>
+          <h3 className="card-title">Approval Levels</h3>
           <div className="card-tools">
             <button
               type="button"

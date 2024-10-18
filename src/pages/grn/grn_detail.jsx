@@ -1,9 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function GrnDetail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [materialOneCollapse, setMaterialOneCollapse] = useState(true)
+  const [materialTwoCollapse, setMaterialTwoCollapse] = useState(true)
+
+  const handleMaterialOne = () => {
+    setMaterialOneCollapse(!materialOneCollapse)
+  }
+  const handleMaterialTwo = () => {
+    setMaterialTwoCollapse(!materialTwoCollapse)
+  }
+
 
   const fetchData = async () => {
     try {
@@ -336,7 +346,7 @@ export default function GrnDetail() {
                       <button
                         type="button"
                         className="btn btn-tool"
-                        data-card-widget="collapse"
+                        onClick={handleMaterialOne}
                       >
                         <svg
                           width={32}
@@ -354,6 +364,7 @@ export default function GrnDetail() {
                       </button>
                     </div>
                   </div>
+                  {materialOneCollapse && (
                   <div className="card-body mt-1 pt-1">
                     <div className="mt-2">
                       <h5 className=" ">Materials</h5>
@@ -508,6 +519,7 @@ export default function GrnDetail() {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
                 <div className="card">
                   <div className="card-header">
@@ -516,7 +528,7 @@ export default function GrnDetail() {
                       <button
                         type="button"
                         className="btn btn-tool"
-                        data-card-widget="collapse"
+                        onClick={handleMaterialTwo}
                       >
                         <svg
                           width={32}
@@ -534,6 +546,7 @@ export default function GrnDetail() {
                       </button>
                     </div>
                   </div>
+                  {materialTwoCollapse && (
                   <div className="card-body pt-1 mt-1">
                     <div className="mt-2">
                       <h5 className=" ">Materials</h5>
@@ -687,6 +700,7 @@ export default function GrnDetail() {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
                 <div className=" d-flex justify-content-between align-items-center">
                   <h5 className=" mt-3">Document Attachment</h5>
