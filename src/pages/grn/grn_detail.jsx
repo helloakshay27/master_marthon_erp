@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
+
 
 export default function GrnDetail() {
+  const { id } = useParams(); // Extract the 'id' from the route
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +24,7 @@ export default function GrnDetail() {
       setError(null);
       setLoading(true);
 
-      const response = await fetch("/api/good_receive_notes.json");
+      const response = await fetch(`/api/good_receive_notes/${id}.json`);;
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
@@ -160,7 +164,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:- </span>
+                          <span className="me-3">: </span>
                           {data[4]?.company_name}
                         </label>
                       </div>
@@ -171,7 +175,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Sanvo Resorts Pvt.
+                          <span className="me-3">:</span>Sanvo Resorts Pvt.
                           Ltd.-II
                         </label>
                       </div>
@@ -182,7 +186,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Nexzone - Phase II
+                          <span className="me-3">:</span>Nexzone - Phase II
                         </label>
                       </div>
                     </div>
@@ -192,7 +196,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo Wing
+                          <span className="me-3">:</span>Demo Wing
                         </label>
                       </div>
                     </div>
@@ -202,7 +206,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>82423
+                          <span className="me-3">:</span>82423
                         </label>
                       </div>
                     </div>
@@ -212,7 +216,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.grn_number}
                         </label>
                       </div>
@@ -223,7 +227,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.grn_date}
                         </label>
                       </div>
@@ -234,7 +238,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>INR 0.00
+                          <span className="me-3">:</span>INR 0.00
                         </label>
                       </div>
                     </div>
@@ -244,8 +248,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>LANDMARK REALTY(L-06),
-                          Mumbai (Bombay)
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -255,7 +258,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.challan_number}
                         </label>
                       </div>
@@ -266,8 +269,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>LANDMARK REALTY(L-06),
-                          Mumbai (Bombay)
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -277,7 +279,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.challan_date}
                         </label>
                       </div>
@@ -288,7 +290,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.remark}
                         </label>
                       </div>
@@ -299,8 +301,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>LANDMARK REALTY(L-06),
-                          Mumbai (Bombay)
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -310,7 +311,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>
+                          <span className="me-3">:</span>
                           {data[4]?.description}
                         </label>
                       </div>
@@ -321,8 +322,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>LANDMARK REALTY(L-06),
-                          Mumbai (Bombay)
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -332,8 +332,7 @@ export default function GrnDetail() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>LANDMARK REALTY(L-06),
-                          Mumbai (Bombay)
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -394,7 +393,7 @@ export default function GrnDetail() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data[1].grn_materials.slice(0, 4).map((item, id) => {
+                          {data.grn_materials.slice(0, 4).map((item, id) => {
                             return (
                               <tr key={id}>
                                 <td>Tiles- Ceramic- Flooring Tiles- -300 x 300 Sperenza
@@ -436,7 +435,7 @@ export default function GrnDetail() {
                             </tr>
                           </thead>
                           <tbody>
-                            {data[1].grn_materials
+                            {data.grn_materials
                               .slice(0, 4)
                               .map((item, id) => {
                                 return (
@@ -576,7 +575,7 @@ export default function GrnDetail() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data[1].grn_materials.slice(0, 4).map((item, id) => {
+                          {data.grn_materials.slice(0, 4).map((item, id) => {
                             return (
                               <tr key={id}>
                                 <td>{item.description}</td>
@@ -617,7 +616,7 @@ export default function GrnDetail() {
                             </tr>
                           </thead>
                           <tbody>
-                            {data[1].grn_materials
+                            {data.grn_materials
                               .slice(0, 4)
                               .map((item, id) => {
                                 return (

@@ -24,7 +24,7 @@ function App() {
           <Route path='/approvals-list' element={<ApprovalsList />} />
           <Route path='/edit-approvals' element={<EditApprovals />} />
           <Route path='/add-approvals' element={<AddApprovals />} />
-          <Route path='/grn/grn_detail' element={< GrnDetail />} />
+          <Route path="/grn/:id" element={<GrnDetail />} />
 
           <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} />
           <Route path='/erp-stock-register-creation-detail-13c' element={<ErpStockRegisterCreationDetail13C />} />
