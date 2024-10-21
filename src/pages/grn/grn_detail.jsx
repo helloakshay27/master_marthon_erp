@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 
-export default function GrnDetail() {
-  const { id } = useParams(); // Extract the 'id' from the route
-
+export default function GoodReceiveNoteDetails() {
+  const { id } = useParams(); // Extract 'id' from the URL
+  const location = useLocation(); // Access the location object
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,33 +20,44 @@ export default function GrnDetail() {
   }
 
 
-  const fetchData = async () => {
-    try {
-      setError(null);
-      setLoading(true);
-
-      const response = await fetch(`/api/good_receive_notes/${id}.json`);;
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      setData(result);
-    } catch (err) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Get the token from the query parameters
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
 
-  console.log(data);
+    // Check if the token is present
+    if (!token) {
+      // Redirect to login if token is missing
+      navigate('/login');
+      return;
+    }
+
+    // Construct the API URL using the id and token
+    const apiUrl = `/api/good_receive_notes/${id}.json?token=${token}`;
+
+    fetch(apiUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch details.');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [id, location.search, navigate]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
+
+
+  console.log(data);
+
 
   return (
     <div>

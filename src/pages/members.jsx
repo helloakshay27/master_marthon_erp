@@ -14,7 +14,7 @@ function Members() {
             <h1>ERP_Store</h1>
             <ul>
             <li>
-                <Link to="/grn/grn_detail">grn_detail</Link>
+                <Link to="good_receive_notes/:id">grn_detail</Link>
               </li>
               <li>
                 <Link to="/create-rfq">create_rfq</Link>
