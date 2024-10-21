@@ -165,7 +165,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data[4]?.company_name}
+                          {data?.company_name}
                         </label>
                       </div>
                     </div>
@@ -217,7 +217,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.grn_number}
+                          {data?.grn_number}
                         </label>
                       </div>
                     </div>
@@ -228,7 +228,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.grn_date}
+                          {data?.grn_date}
                         </label>
                       </div>
                     </div>
@@ -259,7 +259,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.challan_number}
+                          {data?.challan_number}
                         </label>
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.challan_date}
+                          {data?.challan_date}
                         </label>
                       </div>
                     </div>
@@ -291,7 +291,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.remark}
+                          {data?.remark}
                         </label>
                       </div>
                     </div>
@@ -312,7 +312,7 @@ export default function GrnDetail() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data[4]?.description}
+                          {data?.description}
                         </label>
                       </div>
                     </div>
@@ -575,7 +575,7 @@ export default function GrnDetail() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data.grn_materials.slice(0, 4).map((item, id) => {
+                          {data.grn_materials.map((item, id) => {
                             return (
                               <tr key={id}>
                                 <td>{item.description}</td>
@@ -616,9 +616,7 @@ export default function GrnDetail() {
                             </tr>
                           </thead>
                           <tbody>
-                            {data.grn_materials
-                              .slice(0, 4)
-                              .map((item, id) => {
+                            {data.grn_materials.map((item, id) => {
                                 return (
                                   <tr key={3}>
                                     <td>{item.mor_inventory?.mor_id}</td>

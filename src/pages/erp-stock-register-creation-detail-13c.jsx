@@ -1,14 +1,44 @@
-import React from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
+import React, { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
 
 const ErpStockRegisterCreationDetail13C = () => {
+
+  const { id } = useParams(); // Extract the 'id' from the route
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const response = await fetch(`/api/pms/inventories/44.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47`);;
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setData(result);
+      console.log(result);
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
     <>
-      <Header />
-      <div className="main-content">
-        <Sidebar />
+ 
         <div className="website-content overflow-auto">
           <div className="module-data-section container-fluid details_page">
             <a href="">
@@ -31,7 +61,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                             </div>
                             <div className="col-6">
                               <label className="text">
-                                <span className="me-3">:-</span>Material
+                                <span className="me-3">:-</span>{data?.name}
                               </label>
                             </div>
                           </div>
@@ -323,7 +353,6 @@ const ErpStockRegisterCreationDetail13C = () => {
           </div>
         </div>
         <Footer />
-      </div>
     </>
   );
 };
