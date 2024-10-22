@@ -187,8 +187,7 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>Sanvo Resorts Pvt.
-                          Ltd.-II
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -198,7 +197,7 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>Nexzone - Phase II
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -208,7 +207,7 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>Demo Wing
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -218,7 +217,7 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>82423
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -250,7 +249,7 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>INR 0.00
+                          <span className="me-3">:</span>
                         </label>
                       </div>
                     </div>
@@ -588,8 +587,8 @@ export default function GoodReceiveNoteDetails() {
                             return (
                               <tr key={id}>
                                 <td>{item.description}</td>
-                                <td>No</td>
-                                <td>Yes</td>
+                                <td></td>
+                                <td></td>
                                 <td>
                                   {item.mor_inventory?.inventory?.uom_name}
                                 </td>
@@ -726,7 +725,7 @@ export default function GoodReceiveNoteDetails() {
                       </thead>
                       <tbody>
                         <tr>
-                          <th>1</th>
+                          <th></th>
                           <td></td>
                           <th></th>
                           <td></td>
