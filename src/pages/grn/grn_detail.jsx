@@ -655,13 +655,13 @@ export default function GoodReceiveNoteDetails() {
                           </thead>
                           <tbody>
                             <tr>
-                              <td>05-03-2024</td>
-                              <td>20</td>
-                              <td>1</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
                             </tr>
                             <tr>
                               <th>Total</th>
-                              <th>20</th>
+                              <th></th>
                               <th />
                             </tr>
                           </tbody>
@@ -683,9 +683,9 @@ export default function GoodReceiveNoteDetails() {
                         </thead>
                         <tbody>
                           <tr>
-                            <td>TIL01122023</td>
-                            <td>40</td>
-                            <td>01-12-2023</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td />
                           </tr>
                         </tbody>
