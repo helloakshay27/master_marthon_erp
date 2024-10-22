@@ -446,11 +446,9 @@ export default function GoodReceiveNoteDetails() {
                             </tr>
                           </thead>
                           <tbody>
-                            {data.grn_materials
-                              .slice(0, 4)
-                              .map((item, id) => {
+                            {data.grn_materials.map((item, id) => {
                                 return (
-                                  <tr key={3}>
+                                  <tr key={id}>
                                     <td>{item.mor_inventory?.mor_id}</td>
                                     <td>
                                       {item.mor_inventory?.ordered_quantity}
@@ -601,9 +599,9 @@ export default function GoodReceiveNoteDetails() {
                                 <td>{item.breakage}</td>
                                 <td>{item.defective}</td>
                                 <td>{item.accepted}</td>
-                                <td>40</td>
+                                <td></td>
                                 <td>{item.tolerence_quantity}</td>
-                                <td>8</td>
+                                <td></td>
                                 <td />
                               </tr>
                             );
@@ -629,7 +627,7 @@ export default function GoodReceiveNoteDetails() {
                           <tbody>
                             {data.grn_materials.map((item, id) => {
                                 return (
-                                  <tr key={3}>
+                                  <tr key={id}>
                                     <td>{item.mor_inventory?.mor_id}</td>
                                     <td>
                                       {item.mor_inventory?.ordered_quantity}
