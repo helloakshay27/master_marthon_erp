@@ -62,7 +62,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3">:-</span>
-                              {data?.name}
+                             
                             </label>
                           </div>
                         </div>
