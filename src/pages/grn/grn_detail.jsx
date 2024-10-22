@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is included
 
 
 export default function GoodReceiveNoteDetails() {
@@ -26,11 +28,7 @@ export default function GoodReceiveNoteDetails() {
     const token = urlParams.get('token');
 
     // Check if the token is present
-    if (!token) {
-      // Redirect to login if token is missing
-      navigate('/login');
-      return;
-    }
+
 
     // Construct the API URL using the id and token
     const apiUrl = `/api/good_receive_notes/${id}.json?token=${token}`;
@@ -60,9 +58,11 @@ export default function GoodReceiveNoteDetails() {
 
 
   return (
-    <div>
-      <div className="website-content overflow-auto details_page">
-        <div className="module-data-section container-fluid details_page">
+  
+  
+  <>      
+    <div className="website-content overflow-auto details_page">
+        <div className="module-data-section container-fluid details_page p-3">
           <a href="">Home &gt; Store &gt; Store Operations &gt; GRN</a>
           <h5 className="mt-3">Create Goods Received Note</h5>
           <div className="row my-4 align-items-center">
@@ -350,7 +350,7 @@ export default function GoodReceiveNoteDetails() {
                     </div>
                   </div>
                 </div>
-                <div className="card">
+                <div className="card mt-3">
                   <div className="card-header">
                     <h3 className="card-title">Material Details (1/2)</h3>
                     <div className="card-tools">
@@ -405,26 +405,25 @@ export default function GoodReceiveNoteDetails() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data.grn_materials.slice(0, 4).map((item, id) => {
+                          {data.grn_materials.map((item, id) => {
                             return (
                               <tr key={id}>
-                                <td>Tiles- Ceramic- Flooring Tiles- -300 x 300 Sperenza
-                                White</td>
-                                <td>No</td>
-                                <td>Yes</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                                 <td>
                                   {item.mor_inventory?.inventory?.uom_name}
                                 </td>
                                 <td>{item.mor_inventory?.ordered_quantity}</td>
-                                <td>0</td>
+                                <td></td>
                                 <td>{item.received}</td>
                                 <td>{item.breakage}</td>
                                 <td>{item.defective}</td>
                                 <td>{item.accepted}</td>
-                                <td>40</td>
+                                <td></td>
                                 <td>{item.tolerence_quantity}</td>
-                                <td>8</td>
-                                <td>06-03-24</td>
+                                <td></td>
+                                <td></td>
                               </tr>
                             );
                           })}
@@ -457,7 +456,7 @@ export default function GoodReceiveNoteDetails() {
                                       {item.mor_inventory?.ordered_quantity}
                                     </td>
                                     <td>{item?.received}</td>
-                                    <td>40</td>
+                                    <td></td>
                                     <td>{item?.accepted}</td>
                                   </tr>
                                 );
@@ -479,13 +478,13 @@ export default function GoodReceiveNoteDetails() {
                           </thead>
                           <tbody>
                             <tr>
-                              <td>05-03-2024</td>
-                              <td>20</td>
-                              <td>1</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
                             </tr>
                             <tr>
-                              <th>Total</th>
-                              <th>20</th>
+                              <th></th>
+                              <th></th>
                               <th />
                             </tr>
                           </tbody>
@@ -507,9 +506,9 @@ export default function GoodReceiveNoteDetails() {
                         </thead>
                         <tbody>
                           <tr>
-                            <td>TIL01122023</td>
-                            <td>40</td>
-                            <td>01-12-2023</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td />
                           </tr>
                         </tbody>
@@ -524,7 +523,7 @@ export default function GoodReceiveNoteDetails() {
                           <input
                             className="form-control"
                             placeholder="Material"
-                            type="text"
+                            type="text" disabled
                           />
                         </div>
                       </div>
@@ -636,7 +635,7 @@ export default function GoodReceiveNoteDetails() {
                                       {item.mor_inventory?.ordered_quantity}
                                     </td>
                                     <td>{item?.received}</td>
-                                    <td>40</td>
+                                    <td>-</td>
                                     <td>{item?.accepted}</td>
                                   </tr>
                                 );
@@ -703,7 +702,7 @@ export default function GoodReceiveNoteDetails() {
                           <input
                             className="form-control"
                             placeholder="Material"
-                            type="text"
+                            type="text" disabled
                           />
                         </div>
                       </div>
@@ -730,10 +729,10 @@ export default function GoodReceiveNoteDetails() {
                       <tbody>
                         <tr>
                           <th>1</th>
-                          <td>03-03-2024</td>
-                          <th>MTO Copy.pdf</th>
-                          <td>03-03-2024</td>
-                          <th>MTO Copy.pdf</th>
+                          <td></td>
+                          <th></th>
+                          <td></td>
+                          <th></th>
                           <td>
                             <i
                               className="fa-regular fa-eye"
@@ -817,375 +816,11 @@ export default function GoodReceiveNoteDetails() {
               </div>
             </div>
           </div>
-          <footer className="footer">
-            <p className="">
-              Powered by <img src="./images/go-logo.JPG" />
-            </p>
-          </footer>
+        
         </div>
       </div>
-      <div
-        className="modal fade"
-        id="zenithModal"
-        tabIndex={-1}
-        aria-labelledby="zenithModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-xl">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title fs-5" id="exampleModalLabel">
-                Search Purchase Orders
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              />
-            </div>
-            <div className="modal-body">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label className="po-fontBold">Company</label>
-                  <select
-                    className="form-control form-select"
-                    style={{ width: "100%" }}
-                    fdprocessedid="qwyjl"
-                  >
-                    <option selected="selected">[Select One]</option>
-                    <option>Alaska</option>
-                    <option>California</option>
-                    <option>Delaware</option>
-                    <option>Tennessee</option>
-                    <option>Texas</option>
-                    <option>Washington</option>
-                  </select>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-sm-3">
-                    <p className="fw-bold">Category of PO</p>
-                  </div>
-                  <div className="col-sm-2">
-                    <div className="form-group">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="radio1"
-                        />
-                        <label className="form-check-label">Material</label>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-2">
-                    <div className="form-group">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="radio1"
-                        />
-                        <label className="form-check-label">Asset</label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Project</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Not Selected"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Sub Project</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Not Selected"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">PO Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Not Selected"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Supplier</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">PO Start Date</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">PO End Date</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Indent</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Work Order</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Work Category</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6 mt-0">
-                    <div className="form-group">
-                      <label className="po-fontBold">Contractor</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="row mt-1"
-                  style={{ borderTop: "1px solid black" }}
-                >
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label className="po-fontBold">Material Type</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="i7hpfh"
-                      >
-                        <option selected="selected">[Show All]</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label className="po-fontBold">Material Sub Type</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="i7hpfh"
-                      >
-                        <option selected="selected">[Show All]</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label className="po-fontBold">Material</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="i7hpfh"
-                      >
-                        <option selected="selected">[Show All]</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-1 justify-content-center d-flex">
-                  <button className="purple-btn2" fdprocessedid="e5fvu5">
-                    Search
-                  </button>
-                  <button className="purple-btn2" fdprocessedid="80m63s">
-                    show All
-                  </button>
-                  <button className="purple-btn1" fdprocessedid="80m63s">
-                    Reset
-                  </button>
-                  <button className="purple-btn1" fdprocessedid="80m63s">
-                    Close
-                  </button>
-                </div>
-                <div>
-                  <div>
-                    <h5>Search Result</h5>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <div>
-                      <p>Displaying page 1 of 9</p>
-                    </div>
-                    <div className="d-flex">
-                      <div className="form-group">
-                        <label className="po-fontBold">Display</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                          fdprocessedid="z2s78m"
-                        >
-                          <option selected="selected">Default(5)</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                      <p> Items Per Page</p>
-                    </div>
-                  </div>
-                  <div className="card mt-1">
-                    <nav
-                      aria-label="Page navigation example"
-                      style={{ height: 50 }}
-                    >
-                      <ul className="pagination">
-                        <li className="page-item">
-                          <a
-                            className="page-link"
-                            href="#"
-                            aria-label="Previous"
-                          >
-                            <span aria-hidden="true">«</span>
-                          </a>
-                        </li>
-                        <li className="page-item">
-                          <a className="page-link" href="#">
-                            1
-                          </a>
-                        </li>
-                        <li className="page-item">
-                          <a className="page-link" href="#">
-                            2
-                          </a>
-                        </li>
-                        <li className="page-item">
-                          <a className="page-link" href="#">
-                            3
-                          </a>
-                        </li>
-                        <li className="page-item">
-                          <a className="page-link" href="#" aria-label="Next">
-                            <span aria-hidden="true">»</span>
-                          </a>
-                        </li>
-                      </ul>
-                    </nav>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th />
-                            <th>PO Number</th>
-                            <th>PO Date</th>
-                            <th>Supplier Name</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <input type="radio" />
-                            </td>
-                            <td>PO/CDoM/MB001/3203</td>
-                            <td>Feb 08, 2021</td>
-                            <td>AMBUJA CEMENTS LIMITED</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <input type="radio" />
-                            </td>
-                            <td>PO/CDoM/MB001/3203</td>
-                            <td>Feb 08, 2021</td>
-                            <td>AMBUJA CEMENTS LIMITED</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <input type="radio" />
-                            </td>
-                            <td>PO/CDoM/MB001/3203</td>
-                            <td>Feb 08, 2021</td>
-                            <td>AMBUJA CEMENTS LIMITED</td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <input type="radio" />
-                            </td>
-                            <td>PO/CDoM/MB001/3203</td>
-                            <td>Feb 08, 2021</td>
-                            <td>AMBUJA CEMENTS LIMITED</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    
+      </>  
+      
+    );
 }
