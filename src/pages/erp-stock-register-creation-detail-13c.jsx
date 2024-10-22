@@ -252,7 +252,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     {data?.stock_details.map((item, id) => {
                                       return (
                                         <tr key={id}>
-                                          <td></td>
+                                          <td>{id + 1}</td>
                                           <td></td>
                                           <td>{item?.created_at}</td>
                                           <td>{item?.mor}</td>
