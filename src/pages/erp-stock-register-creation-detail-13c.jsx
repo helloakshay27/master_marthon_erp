@@ -61,7 +61,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
+<<<<<<< HEAD
                               <span className="me-3">:-</span>Null
+=======
+                              <span className="me-3">:</span>
+>>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
                              
                             </label>
                           </div>
@@ -72,7 +76,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.category}
                             </label>
                           </div>
@@ -83,7 +87,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.material_code}
                             </label>
                           </div>
@@ -94,7 +98,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.material_type}
                             </label>
                           </div>
@@ -105,7 +109,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               PO/SRPL/NXZPh2/18254
                             </label>
                           </div>
@@ -116,7 +120,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.name}
                             </label>
                           </div>
@@ -127,7 +131,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.material_description}
                             </label>
                           </div>
@@ -138,7 +142,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>LANDMARK REALTY
+                              <span className="me-3">:</span>LANDMARK REALTY
                             </label>
                           </div>
                         </div> */}
@@ -148,7 +152,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:</span>
                               {data?.uom_name}
                             </label>
                           </div>
@@ -159,7 +163,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
+<<<<<<< HEAD
                               <span className="me-3">:-</span>Null
+=======
+                              <span className="me-3">:</span>LANDMARK REALTY
+>>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
                             </label>
                           </div>
                         </div>
@@ -169,7 +177,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
+<<<<<<< HEAD
                               <span className="me-3">:-</span>Null
+=======
+                              <span className="me-3">:</span>LANDMARK REALTY
+>>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
                             </label>
                           </div>
                         </div>
@@ -179,7 +191,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
+<<<<<<< HEAD
                               <span className="me-3">:-</span>Null
+=======
+                              <span className="me-3">:</span>LANDMARK REALTY
+>>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
                             </label>
                           </div>
                         </div>

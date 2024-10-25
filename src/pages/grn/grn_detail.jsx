@@ -217,7 +217,8 @@ export default function GoodReceiveNoteDetails() {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:</span>
+                          <span className="me-3">: </span>
+
                         </label>
                       </div>
                     </div>
@@ -407,7 +408,8 @@ export default function GoodReceiveNoteDetails() {
                           {data.grn_materials.map((item, id) => {
                             return (
                               <tr key={id}>
-                                <td></td>
+                                <td>         {item.mor_inventory?.inventory?.material_description}
+                                </td>
                                 <td></td>
                                 <td></td>
                                 <td>
@@ -448,13 +450,13 @@ export default function GoodReceiveNoteDetails() {
                             {data.grn_materials.map((item, id) => {
                                 return (
                                   <tr key={id}>
-                                    <td>{item.mor_inventory?.mor_id}</td>
+                                    <td>{item.mor_details?.mor_number}</td>
                                     <td>
-                                      {item.mor_inventory?.ordered_quantity}
+                                      {item.mor_details?.ordered_qty}
                                     </td>
                                     <td>{item?.received}</td>
                                     <td></td>
-                                    <td>{item?.accepted}</td>
+                                    <td>{item.mor_details?.accepted_qty}</td>
                                   </tr>
                                 );
                               })}
@@ -474,16 +476,27 @@ export default function GoodReceiveNoteDetails() {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td></td>
-                              <td></td>
-                              <td></td>
+
+
+
+
+
+                            
+                          {data.grn_materials.map((item, id) => {
+                                return (
+                                   <tr>
+                              <td>{item.mor_delivery_details?.po_delivery_date}</td>
+                              <td>{item.mor_delivery_details?.po_delivery_qty}</td>
+                              <td>{item?.batch_no}</td>
                             </tr>
-                            <tr>
-                              <th></th>
-                              <th></th>
-                              <th />
-                            </tr>
+
+                                );
+                                <tr>
+                                <th></th>
+                                <th></th>
+                                <th />
+                              </tr>
+                             })}
                           </tbody>
                         </table>
                       </div>
@@ -519,7 +532,7 @@ export default function GoodReceiveNoteDetails() {
                           </label>
                           <input
                             className="form-control"
-                            placeholder="Material"
+                            placeholder={data?.remark}
                             type="text" disabled
                           />
                         </div>
@@ -528,7 +541,7 @@ export default function GoodReceiveNoteDetails() {
                   </div>
                   )}
                 </div>
-                <div className="card">
+                {/* <div className="card">
                   <div className="card-header">
                     <h3 className="card-title">Material Details (2/2)</h3>
                     <div className="card-tools">
@@ -706,7 +719,7 @@ export default function GoodReceiveNoteDetails() {
                     </div>
                   </div>
                   )}
-                </div>
+                </div> */}
                 <div className=" d-flex justify-content-between align-items-center">
                   <h5 className=" mt-3">Document Attachment</h5>
                 </div>
@@ -761,10 +774,10 @@ export default function GoodReceiveNoteDetails() {
                     <div className="form-group">
                       <label>Comments</label>
                       <textarea
-                        className="form-control"
-                        rows={3}
-                        placeholder="Enter ..."
-                        defaultValue={""}
+                        type="text"
+                        placeholder={data?.comment || 'Null'}
+                        defaultValue={""} disabled
+                        
                       />
                     </div>
                   </div>
@@ -778,7 +791,7 @@ export default function GoodReceiveNoteDetails() {
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
-                      PO Draft
+                    GRN Draft
                     </button>
                     <ul className="dropdown-menu">
                       <li>
