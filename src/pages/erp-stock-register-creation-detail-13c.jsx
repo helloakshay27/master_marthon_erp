@@ -61,11 +61,9 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-<<<<<<< HEAD
-                              <span className="me-3">:-</span>Null
-=======
-                              <span className="me-3">:</span>
->>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
+
+                              <span className="me-3">:</span>Null
+                             
                              
                             </label>
                           </div>
@@ -163,11 +161,10 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-<<<<<<< HEAD
+
                               <span className="me-3">:-</span>Null
-=======
-                              <span className="me-3">:</span>LANDMARK REALTY
->>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
+
+                           
                             </label>
                           </div>
                         </div>
@@ -177,11 +174,10 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-<<<<<<< HEAD
+
                               <span className="me-3">:-</span>Null
-=======
-                              <span className="me-3">:</span>LANDMARK REALTY
->>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
+
+                             
                             </label>
                           </div>
                         </div>
@@ -191,11 +187,10 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-<<<<<<< HEAD
                               <span className="me-3">:-</span>Null
-=======
-                              <span className="me-3">:</span>LANDMARK REALTY
->>>>>>> 3e3ad10d1aaf9d936cb81570cd91c9f2c42bf8e2
+
+                             
+
                             </label>
                           </div>
                         </div>
