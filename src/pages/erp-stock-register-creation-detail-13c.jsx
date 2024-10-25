@@ -61,7 +61,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>
+                              <span className="me-3">:-</span>Null
                              
                             </label>
                           </div>
@@ -74,7 +74,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                             <label className="text">
                               <span className="me-3">:-</span>
                               {data?.category}
-                              Ltd.-II
                             </label>
                           </div>
                         </div>
@@ -86,7 +85,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                             <label className="text">
                               <span className="me-3">:-</span>
                               {data?.material_code}
-                              II
                             </label>
                           </div>
                         </div>
@@ -161,7 +159,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>LANDMARK REALTY
+                              <span className="me-3">:-</span>Null
                             </label>
                           </div>
                         </div>
@@ -171,7 +169,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>LANDMARK REALTY
+                              <span className="me-3">:-</span>Null
                             </label>
                           </div>
                         </div>
@@ -181,7 +179,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:-</span>LANDMARK REALTY
+                              <span className="me-3">:-</span>Null
                             </label>
                           </div>
                         </div>
@@ -235,7 +233,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                                   <thead>
                                     <tr>
                                       <th>Sr. No.</th>
-                                      <th>Description of Material</th>
                                       <th>Date</th>
                                       <th>MOR</th>
                                       <th>Supplier/Contractor/Store</th>
@@ -244,7 +241,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>UOM</th>
                                       <th>Received Qty</th>
                                       <th>Issued Qty</th>
-                                      <th>Current Stock</th>
+                                      <th>Returned Qty</th>
                                       <th>Remark</th>
                                     </tr>
                                   </thead>
@@ -253,7 +250,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       return (
                                         <tr key={id}>
                                           <td>{id + 1}</td>
-                                          <td></td>
                                           <td>{item?.created_at}</td>
                                           <td>{item?.mor}</td>
                                           <td />
@@ -262,13 +258,12 @@ const ErpStockRegisterCreationDetail13C = () => {
                                           <td>Nos</td>
                                           <td>{item?.received_qty}</td>
                                           <td>{item?.issued_qty}</td>
-                                          <td>200</td>
+                                          <td></td>
                                           <td />
                                         </tr>
                                       );
                                     })}
                                     <tr>
-                                      <td></td>
                                       <td></td>
                                       <td>Balanced Qty</td>
                                       <td></td>
