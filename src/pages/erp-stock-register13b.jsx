@@ -30,7 +30,7 @@ const ErpStockRegister13B = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "/api/pms/inventories/stock_data.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47",
+          "https://marathon.lockated.com/pms/inventories/stock_data.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47",
         ); // Replace with your API endpoint
 
         if (!response.ok) {
