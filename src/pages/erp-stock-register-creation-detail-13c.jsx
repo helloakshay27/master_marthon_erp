@@ -241,7 +241,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>UOM</th>
                                       <th>Received Qty</th>
                                       <th>Issued Qty</th>
-                                      <th>Returned Qty</th>
+                                      <th>Requested Qty</th>
                                       <th>Remark</th>
                                     </tr>
                                   </thead>
