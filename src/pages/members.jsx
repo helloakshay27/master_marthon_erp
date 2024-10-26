@@ -29,13 +29,13 @@ function Members() {
                 <Link to="/erp-rfq-detail-price-trends4h">erp_rfq_detail_price_trends4h</Link>
               </li>
               <li>
-                <Link to="/erp-stock-register-creation-detail-13c">erp_stock_register_creation_detail_13c</Link>
+                <Link to="/stock_register_detail/47">stock_register detail</Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/erp-stock-register-creation13c">erp_stock_register_creation13c</Link>
-              </li>
+              </li> */}
               <li>
-                <Link to="/erp-stock-register13b">erp_stock_register13b</Link>
+                <Link to="/stock_register_list?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47"> stock register list</Link>
               </li>
               <li>
                 <Link to="/approvals-list">approvals_list</Link>

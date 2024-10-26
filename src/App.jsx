@@ -26,9 +26,9 @@ function App() {
           <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
 
-          <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} />
-          <Route path='/erp-stock-register-creation-detail-13c' element={<ErpStockRegisterCreationDetail13C />} />
-          <Route path='/erp-stock-register13b' element={<ErpStockRegister13B />} />
+          {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}
+          <Route path='/stock_register_detail/:id' element={<ErpStockRegisterCreationDetail13C />} />
+          <Route path='/stock_register_list' element={<ErpStockRegister13B />} />
           <Route path='/erp-rfq-auction-events-4f' element={<ErpRfqAuctionEvents4f />} />
           <Route path='/erp-rfq-auction-events-4h' element={<ErpRfqAuctionEvents4h />} />
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />

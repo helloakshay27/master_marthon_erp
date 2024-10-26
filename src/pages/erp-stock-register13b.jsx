@@ -1,8 +1,12 @@
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
+
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
@@ -11,6 +15,7 @@ import DT from "datatables.net-dt";
 DataTable.use(DT);
 
 const ErpStockRegister13B = () => {
+
   const [data, setData] = useState([]); // State to hold the fetched data
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,13 +29,20 @@ const ErpStockRegister13B = () => {
 
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
+  const location = useLocation(); // Access the location object
+
 
 
   useEffect(() => {
     const fetchData = async () => {
+      
       try {
+
+        const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+
         const response = await fetch(
-          "https://marathon.lockated.com/pms/inventories/stock_data.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47",
+          `https://marathon.lockated.com/pms/inventories/stock_data.json?token=${token}`
         ); // Replace with your API endpoint
 
         if (!response.ok) {
@@ -41,8 +53,9 @@ const ErpStockRegister13B = () => {
         const transformedData = result.map((item, index) => ({
           srNo: index + 1,
           material: item.name || "-",
-          material_type: item.material_type || "-",
-          materialSubType: item.inventory_sub_type_id || "-",
+          materialUrl: `/stock_register_detail/${item.id}`, // Add material-specific URL here
+        material_type: item.material_type || "-",
+        materialSubType: item.inventory_sub_type_id || "-",
           materialDescription: item.material_description || "-",
           specification: item.specification || "-",
           lastReceived: item.last_received_on || "-",
@@ -100,23 +113,16 @@ const ErpStockRegister13B = () => {
     setFilteredData(filtered);
   }, [searchTerm, data]);
 
-  const StarIcon = () => (
-    <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="currentColor"
-    className="bi bi-star-fill"
-    viewBox="0 0 16 16"
-    style={{ color: '#8b0203' }} // Your custom color
-  >
-    <path d="M3.612 15.443c-.398.195-.857-.115-.857-.54l-.001-4.117-4.305-.001c-.404 0-.578-.486-.293-.743l3.5-3.074-1.307-4.356c-.193-.638.39-1.177 1.033-1.177h4.085l1.104-3.674c.195-.641 1.115-.641 1.31 0l1.104 3.674h4.085c.643 0 1.226.539 1.033 1.177l-1.307 4.356 3.5 3.074c.285.257.11.743-.293.743l-4.305.001-.001 4.117c0 .425-.459.735-.857.54l-3.907-1.945-3.907 1.945z" />
-  </svg>
-  );
+
   
   const columns = [
     { data: "srNo", title: "Sr. No." },
-    { data: "material", title: "Material / Asset" },
+    {
+      data: "material",
+      title: "Material / Asset",
+      render: (data, type, row) =>
+        `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
+    },    
     { data: "material_type", title: "Material Type" },
     { data: "materialSubType", title: "Material Sub-type" },
     { data: "materialDescription", title: "Material Description" },

@@ -17,7 +17,7 @@ const ErpStockRegisterCreationDetail13C = () => {
       setLoading(true);
 
       const response = await fetch(
-        `/api/pms/inventories/44.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47`
+        `https://marathon.lockated.com/pms/inventories/${id}.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
