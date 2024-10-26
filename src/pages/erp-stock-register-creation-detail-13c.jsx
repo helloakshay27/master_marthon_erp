@@ -74,7 +74,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                             <label className="text">
                               <span className="me-3">:</span>
                               {data?.category}
-                              Ltd.-II
                             </label>
                           </div>
                         </div>
@@ -86,7 +85,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                             <label className="text">
                               <span className="me-3">:</span>
                               {data?.material_code}
-                              II
                             </label>
                           </div>
                         </div>
@@ -259,10 +257,10 @@ const ErpStockRegisterCreationDetail13C = () => {
                                           <td />
                                           <td>{item?.resource_number}</td>
                                           <td>{item?.status}</td>
-                                          <td>Nos</td>
+                                          <td></td>
                                           <td>{item?.received_qty}</td>
                                           <td>{item?.issued_qty}</td>
-                                          <td>200</td>
+                                          <td></td>
                                           <td />
                                         </tr>
                                       );
