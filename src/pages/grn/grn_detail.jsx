@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is included
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function GoodReceiveNoteDetails() {
   const { id } = useParams(); // Extract 'id' from the URL
@@ -11,15 +12,102 @@ export default function GoodReceiveNoteDetails() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [materialOneCollapse, setMaterialOneCollapse] = useState(true)
-  const [materialTwoCollapse, setMaterialTwoCollapse] = useState(true)
 
-  const handleMaterialOne = () => {
-    setMaterialOneCollapse(!materialOneCollapse)
-  }
-  const handleMaterialTwo = () => {
-    setMaterialTwoCollapse(!materialTwoCollapse)
-  }
+
+  const [statuses, setStatuses] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [remarks, setRemarks] = useState('');
+  const [comments, setComments] = useState('');
+
+  useEffect(() => {
+    // Simulating fetching data from an API
+    const fetchData = () => {
+      // Assuming the status data is received here
+      const statusData = {
+        "status_logs": [
+          {
+            "status_log": {
+              "remarks": "Status updated",
+              "comments": "Changed status to submitted",
+              "status": "submitted"
+            }
+          },
+          {
+            "status_log": {
+              "remarks": "Draft created",
+              "comments": "Draft status is now active",
+              "status": "draft"
+            }
+          },
+          {
+            "status_log": {
+              "remarks": "Status updated",
+              "comments": "Changed status to approved",
+              "status": "approved"
+            }
+          }
+        ]
+      };
+
+      // Extracting statuses
+      const extractedStatuses = statusData.status_logs.map(log => log.status_log.status);
+      setStatuses(extractedStatuses);
+      setSelectedStatus(extractedStatuses[0]); // Default to the first status
+    };
+
+    fetchData();
+  }, []);
+
+  const handleStatusChange = (event) => {
+    setSelectedStatus(event.target.value);
+  };
+
+ 
+
+
+
+  const handleRemarksChange = (event) => {
+    setRemarks(event.target.value); // Update remarks dynamically
+  };
+  const handleCommentsChange = (event) => {
+    setComments(event.target.value); // Update remarks dynamically
+  };
+
+  const handleUpdateStatus = async () => {
+    const payload = {
+      status_log: {
+        remarks: remarks,
+        comments: comments,
+        status: selectedStatus,
+      }
+    };
+
+    console.log(JSON.stringify(payload));
+
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get('token');
+
+      const response = await fetch('https://marathon.lockated.com/good_receive_notes/15/update_status.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+     
+
+      const data = await response.json();
+      toast.success('Status updated successfully!');
+
+      alert("Status updated successfully!");
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+
+
 
 
   useEffect(() => {
@@ -177,7 +265,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data?.company_name}
+                          {data?.company_name || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -188,6 +276,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.project || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -198,6 +288,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.sub_project || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -208,6 +300,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.wing || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -218,7 +312,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-
+                          {data?.id || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -229,7 +323,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_number}
+                          {data?.grn_number || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -240,7 +334,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_date}
+                          {data?.grn_date || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -251,6 +345,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.to_store || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -261,6 +357,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.supplier || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -271,7 +369,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_number}
+                          {data?.challan_number || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -282,6 +380,9 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+
+                          {data?.gate_entry_no || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -292,7 +393,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_date}
+                          {data?.challan_date || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -303,7 +404,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.remark}
+                          {data?.remark || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -314,6 +415,8 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.vehicle_no || "NULL"}
+
                         </label>
                       </div>
                     </div>
@@ -324,7 +427,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.description}
+                          {data?.description || "NULL"}
                         </label>
                       </div>
                     </div>
@@ -335,6 +438,9 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.po_number || "NULL"}
+
+
                         </label>
                       </div>
                     </div>
@@ -345,20 +451,21 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
+                          {data?.gate_number || "NULL"}
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="card mt-3">
+                {data?.grn_materials?.map((item, index) => (
+                <div className="card mt-3" key={item.id || item.mor_inventory?.id}>
                   <div className="card-header">
-                    <h3 className="card-title">Material Details (1/2)</h3>
+                    <h3 className="card-title">Material Details ({index + 1}/{data.grn_materials.length})</h3>
                     <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        onClick={handleMaterialOne}
-                      >
+                    <button
+                type="button"
+                className="btn btn-tool"
+              >
                         <svg
                           width={32}
                           height={32}
@@ -375,351 +482,153 @@ export default function GoodReceiveNoteDetails() {
                       </button>
                     </div>
                   </div>
-                  {materialOneCollapse && (
-                  <div className="card-body mt-1 pt-1">
-                    <div className="mt-2">
-                      <h5 className=" ">Materials</h5>
-                    </div>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th rowSpan={2}>Material Description</th>
-                            <th rowSpan={2}>Is QC Required</th>
-                            <th rowSpan={2}>Is MTC Received</th>
-                            <th rowSpan={2}>UOM</th>
-                            <th colSpan={9}>Quantity</th>
-                            <th />
-                          </tr>
-                          <tr>
-                            <th>Ordered</th>
-                            <th>Received Up to</th>
-                            <th>Received</th>
-                            <th>Breakage</th>
-                            <th>Defective</th>
-                            <th>Accepted</th>
-                            <th>Cumulative</th>
-                            <th>Tolerance Qty</th>
-                            <th>Inspection Date</th>
-                            <th>Warranty Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.grn_materials.map((item, id) => {
-                            return (
-                              <tr key={id}>
-                                <td>         {item.mor_inventory?.inventory?.material_description}
-                                </td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                  {item.mor_inventory?.inventory?.uom_name}
-                                </td>
-                                <td>{item.mor_inventory?.ordered_quantity}</td>
-                                <td></td>
-                                <td>{item.received}</td>
-                                <td>{item.breakage}</td>
-                                <td>{item.defective}</td>
-                                <td>{item.accepted}</td>
-                                <td></td>
-                                <td>{item.tolerence_quantity}</td>
-                                <td></td>
-                                <td></td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="card p-3">
+                  {   ( // Assuming `materialCollapse` is an array that tracks visibility for each material
+                    <div className="card-body mt-1 pt-1">
                       <div className="mt-2">
-                        <h5 className=" ">MOR Details</h5>
+                        <h5>Materials</h5>
                       </div>
                       <div className="tbl-container me-2 mt-3">
                         <table className="w-100">
                           <thead>
                             <tr>
-                              <th>MOR No.</th>
-                              <th>MOR Ordered</th>
-                              <th>Received Upto GRN</th>
-                              <th>Received Upto Date</th>
-                              <th>MOR Accepted</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {data.grn_materials.map((item, id) => {
-                                return (
-                                  <tr key={id}>
-                                    <td>{item.mor_details?.mor_number}</td>
-                                    <td>
-                                      {item.mor_details?.ordered_qty}
-                                    </td>
-                                    <td>{item?.received}</td>
-                                    <td></td>
-                                    <td>{item.mor_details?.accepted_qty}</td>
-                                  </tr>
-                                );
-                              })}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="mt-2">
-                        <h5 className=" ">Delivery Details</h5>
-                      </div>
-                      <div className="tbl-container me-2 mt-3">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th className="fw-bold">Delivery Date</th>
-                              <th className="fw-bold">Delivery Qty</th>
-                              <th className="fw-bold">Batch No.</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-
-
-
-
-
-                            
-                          {data.grn_materials.map((item, id) => {
-                                return (
-                                   <tr>
-                              <td>{item.mor_delivery_details?.po_delivery_date}</td>
-                              <td>{item.mor_delivery_details?.po_delivery_qty}</td>
-                              <td>{item?.batch_no}</td>
-                            </tr>
-
-                                );
-                                <tr>
-                                <th></th>
-                                <th></th>
-                                <th />
-                              </tr>
-                             })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div className="">
-                      <h5>Material Batches</h5>
-                    </div>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th>Material Batch No.</th>
-                            <th>Qty</th>
-                            <th>Mfg. Date</th>
-                            <th>Expiry Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td />
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="row mt-3">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label className="po-fontBold">
-                            Defective Material Remark
-                          </label>
-                          <input
-                            className="form-control"
-                            placeholder={data?.remark}
-                            type="text" disabled
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  )}
-                </div>
-                {/* <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title">Material Details (2/2)</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        onClick={handleMaterialTwo}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {materialTwoCollapse && (
-                  <div className="card-body pt-1 mt-1">
-                    <div className="mt-2">
-                      <h5 className=" ">Materials</h5>
-                    </div>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th rowSpan={2}>Material Description</th>
-                            <th rowSpan={2}>Is QC Required</th>
-                            <th rowSpan={2}>Is MTC Received</th>
-                            <th rowSpan={2}>UOM</th>
-                            <th colSpan={9}>Quantity</th>
-                            <th />
-                          </tr>
-                          <tr>
-                            <th>Ordered</th>
-                            <th>Received Up to</th>
-                            <th>Received</th>
-                            <th>Breakage</th>
-                            <th>Defective</th>
-                            <th>Accepted</th>
-                            <th>Cumulative</th>
-                            <th>Tolerance Qty</th>
-                            <th>Inspection Date</th>
-                            <th>Warranty Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.grn_materials.map((item, id) => {
-                            return (
-                              <tr key={id}>
-                                <td>{item.description}</td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                  {item.mor_inventory?.inventory?.uom_name}
-                                </td>
-                                <td>{item.mor_inventory?.ordered_quantity}</td>
-                                <td>{item.received_till_date}</td>
-                                <td>{item.received}</td>
-                                <td>{item.breakage}</td>
-                                <td>{item.defective}</td>
-                                <td>{item.accepted}</td>
-                                <td></td>
-                                <td>{item.tolerence_quantity}</td>
-                                <td></td>
-                                <td />
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="card p-3">
-                      <div className="mt-2">
-                        <h5 className=" ">MOR Details</h5>
-                      </div>
-                      <div className="tbl-container me-2 mt-3">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th>MOR No.</th>
-                              <th>MOR Ordered</th>
-                              <th>Received Upto GRN</th>
-                              <th>Received Upto Date</th>
-                              <th>MOR Accepted</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {data.grn_materials.map((item, id) => {
-                                return (
-                                  <tr key={id}>
-                                    <td>{item.mor_inventory?.mor_id}</td>
-                                    <td>
-                                      {item.mor_inventory?.ordered_quantity}
-                                    </td>
-                                    <td>{item?.received}</td>
-                                    <td>-</td>
-                                    <td>{item?.accepted}</td>
-                                  </tr>
-                                );
-                              })}
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="mt-2">
-                        <h5 className=" ">Delivery Details</h5>
-                      </div>
-                      <div className="tbl-container me-2 mt-3">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th className="fw-bold">Delivery Date</th>
-                              <th className="fw-bold">Delivery Qty</th>
-                              <th className="fw-bold">Batch No.</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td></td>
-                              <td></td>
-                              <td></td>
-                            </tr>
-                            <tr>
-                              <th>Total</th>
-                              <th></th>
+                              <th rowSpan={2}>Material Description</th>
+                              <th rowSpan={2}>Is QC Required</th>
+                              <th rowSpan={2}>Is MTC Received</th>
+                              <th rowSpan={2}>UOM</th>
+                              <th colSpan={9}>Quantity</th>
                               <th />
                             </tr>
+                            <tr>
+                              <th>Ordered</th>
+                              <th>Received Up to</th>
+                              <th>Received</th>
+                              <th>Breakage</th>
+                              <th>Defective</th>
+                              <th>Accepted</th>
+                              <th>Cumulative</th>
+                              <th>Tolerance Qty</th>
+                              <th>Inspection Date</th>
+                              <th>Warranty Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr key={item.id || item.mor_inventory?.id}>
+                              <td>{item.mor_inventory?.inventory?.material_description || "NULL"}</td>
+                              <td>{item.mor_inventory?.inventory?.is_qc ? "Yes" : "No" || "NULL"}</td> {/* Displaying boolean */}
+                              <td>{item.mor_inventory?.inventory?.mtc_required ? "Yes" : "No"  || "NULL"}</td>
+                              <td>{item.mor_inventory?.inventory?.uom_name || "NULL"}</td>
+                              <td>{item.mor_inventory?.ordered_quantity || "NULL"}</td>
+                              <td>{item?.received_till_date || "NULL"}</td>
+                              <td>{item.received || "NULL"}</td>
+                              <td>{item.breakage || "NULL"}</td>
+                              <td>{item.defective || "NULL"}</td>
+                              <td>{item.accepted || "NULL"}</td>
+                              <td>{item.cumulative || "NULL"}</td>
+                              <td>{item.tolerence_quantity || "NULL"}</td>
+                              <td>{item.mor_inventory?.inventory?.inspection_date || "NULL"}</td>
+                              <td>{item.mor_inventory?.inventory?.warranty_period || "NULL"}</td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
-                    </div>
-                    <div className="">
-                      <h5 className=" ">Material Batches</h5>
-                    </div>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th>Material Batch No.</th>
-                            <th>Qty</th>
-                            <th>Mfg. Date</th>
-                            <th>Expiry Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td />
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="row mt-3">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label className="po-fontBold">
-                            Defective Material Remark
-                          </label>
-                          <input
-                            className="form-control"
-                            placeholder="Material"
-                            type="text" disabled
-                          />
+                      
+                      {/* MOR Details Section */}
+                      <div className="card p-3">
+                        <div className="mt-2">
+                          <h5>MOR Details</h5>
+                        </div>
+                        <div className="tbl-container me-2 mt-3">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th>MOR No.</th>
+                                <th>MOR Ordered</th>
+                                <th>Received Upto GRN</th>
+                                <th>Received Upto Date</th>
+                                <th>MOR Accepted</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr key={item.mor_details?.mor_number}>
+                                <td>{item.mor_details?.mor_number || "NULL"}</td>
+                                <td>{item.mor_details?.ordered_qty || "NULL"}</td>
+                                <td>{item.received || "NULL"}</td>
+                                <td>-</td>
+                                <td>{item.mor_details?.accepted_qty || "NULL"}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        {/* Delivery Details Section */}
+                        <div className="mt-2">
+                          <h5>Delivery Details</h5>
+                        </div>
+                        <div className="tbl-container me-2 mt-3">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="fw-bold">Delivery Date</th>
+                                <th className="fw-bold">Delivery Qty</th>
+                                <th className="fw-bold">Batch No.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr key={index}>
+                                <td>{item.mor_delivery_details?.po_delivery_date || "NULL"}</td>
+                                <td>{item.mor_delivery_details?.po_delivery_qty || "NULL"}</td>
+                                <td>-</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Material Batches Section */}
+                      <div className="">
+                        <h5>Material Batches</h5>
+                      </div>
+                      <div className="tbl-container me-2 mt-3">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th>Material Batch No.</th>
+                              <th>Qty</th>
+                              <th>Mfg. Date</th>
+                              <th>Expiry Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>-</td>
+                              <td>-</td>
+                              <td>-</td>
+                              <td>-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Defective Material Remark Section */}
+                      <div className="row mt-3">
+                        <div className="col-md-4">
+                          <div className="form-group">
+                            <label className="po-fontBold">Defective Material Remark</label>
+                            <input
+                              className="form-control"
+                              placeholder={data?.remark || "NULL"}
+                              type="text"
+                              disabled
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   )}
-                </div> */}
+                </div>
+                ))}
+
+              
                 <div className=" d-flex justify-content-between align-items-center">
                   <h5 className=" mt-3">Document Attachment</h5>
                 </div>
@@ -738,11 +647,11 @@ export default function GoodReceiveNoteDetails() {
                       </thead>
                       <tbody>
                         <tr>
-                          <th></th>
-                          <td></td>
-                          <th></th>
-                          <td></td>
-                          <th></th>
+                          <th>-</th>
+                          <td>-</td>
+                          <th>-</th>
+                          <td>-</td>
+                          <th>-</th>
                           <td>
                             <i
                               className="fa-regular fa-eye"
@@ -765,59 +674,44 @@ export default function GoodReceiveNoteDetails() {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={comments}
+                        onChange={handleCommentsChange}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="row">
+                <div className="row mt-2">
                   <div className="col-md-12">
                     <div className="form-group">
-                      <label>Comments</label>
+                      <label>Remark</label>
                       <textarea
-                        type="text"
-                        placeholder={data?.comment || 'Null'}
-                        defaultValue={""} disabled
-                        
+                        className="form-control"
+                        rows={3}
+                        placeholder="Enter ..."
+                        defaultValue={""}
+                        value={remarks}
+                        onChange={handleRemarksChange}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                  <p className="">Status</p>
-                  <div className="dropdown">
-                    <button
-                      className="btn purple-btn2 btn-secondary dropdown-toggle"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                    GRN Draft
-                    </button>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Action
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Another action
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Something else here
-                        </a>
-                      </li>
-                    </ul>
+                <div className="row justify-content-end align-items-center  mt-2">
+                  <div className="col-md-3 ">
+                  <label className="">Status</label>
+                  <select className="form-select" id="status" value={selectedStatus} onChange={handleStatusChange}>
+                    {statuses.map((status, index) => (
+                      <option key={index} value={status}>{status}</option>
+                    ))}
+                  </select>
                   </div>
+                 
                 </div>
                 <div className="row mt-2 justify-content-end">
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn2 w-100">Submit</button>
+                    <button onClick={handleUpdateStatus} className="purple-btn2 w-100">Submit</button>
                   </div>
                   <div className="col-md-2">
                     <button className="purple-btn1 w-100">Cancel</button>
