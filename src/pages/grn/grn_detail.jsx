@@ -88,7 +88,7 @@ export default function GoodReceiveNoteDetails() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get('token');
 
-      const response = await fetch('https://marathon.lockated.com/good_receive_notes/15/update_status.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47', {
+      const response = await fetch(`https://marathon.lockated.com/good_receive_notes/${id}/update_status.json?token=${token}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -668,7 +668,7 @@ export default function GoodReceiveNoteDetails() {
                 <div className="row mt-2">
                   <div className="col-md-12">
                     <div className="form-group">
-                      <label>Remark</label>
+                      <label>Comments</label>
                       <textarea
                         className="form-control"
                         rows={3}
