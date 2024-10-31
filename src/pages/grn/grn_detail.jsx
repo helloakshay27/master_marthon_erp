@@ -106,9 +106,11 @@ export default function GoodReceiveNoteDetails() {
      
 
       const data = await response.json();
-      toast.success('Status updated successfully!');
-
-      alert("Status updated successfully!");
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Status updated successfully!',
+      });
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -632,7 +634,7 @@ export default function GoodReceiveNoteDetails() {
             <label className="po-fontBold">Defective Material Remark</label>
             <input
               className="form-control"
-              placeholder={data?.remark || "NULL"}
+              placeholder={ "NULL"}
               type="text"
               disabled
             />
