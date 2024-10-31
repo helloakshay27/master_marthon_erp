@@ -12,6 +12,11 @@
   --scrollbar-color: #9e2c2d /* Red color */
 
 }
+.Toastify__toast--success {
+
+  font-weight: bold;                     /* Bold text for emphasis */
+
+}
 .tbl-search {
 border: 1px solid var(--red) !important;
     border-radius: 10px;
