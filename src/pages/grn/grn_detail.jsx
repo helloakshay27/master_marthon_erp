@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is included
-import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
+
 
 export default function GoodReceiveNoteDetails() {
   const { id } = useParams(); // Extract 'id' from the URL
