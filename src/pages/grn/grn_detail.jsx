@@ -119,7 +119,7 @@ export default function GoodReceiveNoteDetails() {
 
 
     // Construct the API URL using the id and token
-    const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}.json?token=${token}`;
+    const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}/.json?token=${token}`;
 
     fetch(apiUrl)
       .then((response) => {
@@ -265,7 +265,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data?.company_name || "NULL"}
+                          {data?.company_name ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.project || "NULL"}
+                          {data?.project ?? "NULL"}
 
                         </label>
                       </div>
@@ -288,7 +288,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.sub_project || "NULL"}
+                          {data?.sub_project ?? "NULL"}
 
                         </label>
                       </div>
@@ -300,7 +300,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.wing || "NULL"}
+                          {data?.wing ?? "NULL"}
 
                         </label>
                       </div>
@@ -312,7 +312,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data?.id || "NULL"}
+                          {data?.id ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -323,7 +323,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_number || "NULL"}
+                          {data?.grn_number ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -334,7 +334,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_date || "NULL"}
+                          {data?.grn_date ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -345,7 +345,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.to_store || "NULL"}
+                          {data?.to_store ?? "NULL"}
 
                         </label>
                       </div>
@@ -357,7 +357,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.supplier || "NULL"}
+                          {data?.supplier ?? "NULL"}
 
                         </label>
                       </div>
@@ -369,7 +369,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_number || "NULL"}
+                          {data?.challan_number ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function GoodReceiveNoteDetails() {
                         <label className="text">
                           <span className="me-3">:</span>
 
-                          {data?.gate_entry_no || "NULL"}
+                          {data?.gate_entry_no ?? "NULL"}
 
                         </label>
                       </div>
@@ -393,7 +393,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_date || "NULL"}
+                          {data?.challan_date ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -404,7 +404,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.remark || "NULL"}
+                          {data?.remark ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -415,7 +415,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.vehicle_no || "NULL"}
+                          {data?.vehicle_no ?? "NULL"}
 
                         </label>
                       </div>
@@ -427,7 +427,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.description || "NULL"}
+                          {data?.description ?? "NULL"}
                         </label>
                       </div>
                     </div>
@@ -438,7 +438,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.po_number || "NULL"}
+                          {data?.po_number ?? "NULL"}
 
 
                         </label>
@@ -451,182 +451,192 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.gate_number || "NULL"}
+                          {data?.gate_number ?? "NULL"}
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
                 {data?.grn_materials?.map((item, index) => (
-                <div className="card mt-3" key={item.id || item.mor_inventory?.id}>
-                  <div className="card-header">
-                    <h3 className="card-title">Material Details ({index + 1}/{data.grn_materials.length})</h3>
-                    <div className="card-tools">
-                    <button
-                type="button"
-                className="btn btn-tool"
-              >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {   ( // Assuming `materialCollapse` is an array that tracks visibility for each material
-                    <div className="card-body mt-1 pt-1">
-                      <div className="mt-2">
-                        <h5>Materials</h5>
-                      </div>
-                      <div className="tbl-container me-2 mt-3">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th rowSpan={2}>Material Description</th>
-                              <th rowSpan={2}>Is QC Required</th>
-                              <th rowSpan={2}>Is MTC Received</th>
-                              <th rowSpan={2}>UOM</th>
-                              <th colSpan={9}>Quantity</th>
-                              <th />
-                            </tr>
-                            <tr>
-                              <th>Ordered</th>
-                              <th>Received Up to</th>
-                              <th>Received</th>
-                              <th>Breakage</th>
-                              <th>Defective</th>
-                              <th>Accepted</th>
-                              <th>Cumulative</th>
-                              <th>Tolerance Qty</th>
-                              <th>Inspection Date</th>
-                              <th>Warranty Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr key={item.id || item.mor_inventory?.id}>
-                              <td>{item.mor_inventory?.inventory?.material_description || "NULL"}</td>
-                              <td>{item.mor_inventory?.inventory?.is_qc ? "Yes" : "No" || "NULL"}</td> {/* Displaying boolean */}
-                              <td>{item.mor_inventory?.inventory?.mtc_required ? "Yes" : "No"  || "NULL"}</td>
-                              <td>{item.mor_inventory?.inventory?.uom_name || "NULL"}</td>
-                              <td>{item.mor_inventory?.ordered_quantity || "NULL"}</td>
-                              <td>{item?.received_till_date || "NULL"}</td>
-                              <td>{item.received || "NULL"}</td>
-                              <td>{item.breakage || "NULL"}</td>
-                              <td>{item.defective || "NULL"}</td>
-                              <td>{item.accepted || "NULL"}</td>
-                              <td>{item.cumulative || "NULL"}</td>
-                              <td>{item.tolerence_quantity || "NULL"}</td>
-                              <td>{item.mor_inventory?.inventory?.inspection_date || "NULL"}</td>
-                              <td>{item.mor_inventory?.inventory?.warranty_period || "NULL"}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      
-                      {/* MOR Details Section */}
-                      <div className="card p-3">
-                        <div className="mt-2">
-                          <h5>MOR Details</h5>
-                        </div>
-                        <div className="tbl-container me-2 mt-3">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th>MOR No.</th>
-                                <th>MOR Ordered</th>
-                                <th>Received Upto GRN</th>
-                                <th>Received Upto Date</th>
-                                <th>MOR Accepted</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr key={item.mor_details?.mor_number}>
-                                <td>{item.mor_details?.mor_number || "NULL"}</td>
-                                <td>{item.mor_details?.ordered_qty || "NULL"}</td>
-                                <td>{item.received || "NULL"}</td>
-                                <td>-</td>
-                                <td>{item.mor_details?.accepted_qty || "NULL"}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                        
-                        {/* Delivery Details Section */}
-                        <div className="mt-2">
-                          <h5>Delivery Details</h5>
-                        </div>
-                        <div className="tbl-container me-2 mt-3">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th className="fw-bold">Delivery Date</th>
-                                <th className="fw-bold">Delivery Qty</th>
-                                <th className="fw-bold">Batch No.</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr key={index}>
-                                <td>{item.mor_delivery_details?.po_delivery_date || "NULL"}</td>
-                                <td>{item.mor_delivery_details?.po_delivery_qty || "NULL"}</td>
-                                <td>-</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+  <div className="card mt-3" key={item.id || item.mor_inventory?.id}>
+    <div className="card-header">
+      <h3 className="card-title">Material Details ({index + 1}/{data.grn_materials.length})</h3>
+      <div className="card-tools">
+        <button type="button" className="btn btn-tool">
+          <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx={16} cy={16} r={16} fill="#8B0203" />
+            <path d="M16 24L9.0718 12L22.9282 12L16 24Z" fill="white" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div className="card-body mt-1 pt-1">
+      <div className="mt-2">
+        <h5>Materials</h5>
+      </div>
+      <div className="tbl-container me-2 mt-3">
+        <table className="w-100">
+          <thead>
+            <tr>
+              <th rowSpan={2}>Material Description</th>
+              <th rowSpan={2}>Is QC Required</th>
+              <th rowSpan={2}>Is MTC Received</th>
+              <th rowSpan={2}>UOM</th>
+              <th colSpan={9}>Quantity</th>
+              <th />
+            </tr>
+            <tr>
+              <th>Ordered</th>
+              <th>Received Up to</th>
+              <th>Received</th>
+              <th>Breakage</th>
+              <th>Defective</th>
+              <th>Accepted</th>
+              <th>Cumulative</th>
+              <th>Tolerance Qty</th>
+              <th>Inspection Date</th>
+              <th>Warranty Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr key={item.id || item.mor_inventory?.id}>
+              <td>{item.mor_inventory?.inventory?.material_description || "NULL"}</td>
+              <td>{item.mor_inventory?.inventory?.is_qc ? "Yes" : "No"}</td>
+              <td>{item.mor_inventory?.inventory?.mtc_required ? "Yes" : "No"}</td>
+              <td>{item.mor_inventory?.inventory?.uom_name || "NULL"}</td>
+              <td>{item.mor_inventory?.ordered_quantity || "NULL"}</td>
+              <td>{item.received_till_date || "NULL"}</td>
+              <td>{item.received || "NULL"}</td>
+              <td>{item.breakage || "NULL"}</td>
+              <td>{item.defective || "NULL"}</td>
+              <td>{item.accepted || "NULL"}</td>
+              <td>{item.cumulative || "NULL"}</td>
+              <td>{item.tolerence_quantity || "NULL"}</td>
+              <td>{item.mor_inventory?.inventory?.inspection_date || "NULL"}</td>
+              <td>{item.mor_inventory?.inventory?.warranty_period || "NULL"}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-                      {/* Material Batches Section */}
-                      <div className="">
-                        <h5>Material Batches</h5>
-                      </div>
-                      <div className="tbl-container me-2 mt-3">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th>Material Batch No.</th>
-                              <th>Qty</th>
-                              <th>Mfg. Date</th>
-                              <th>Expiry Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+      {/* MOR Details Section */}
+      <div className="card p-3 mt-3">
+        <div className="mt-2">
+          <h5>MOR Details</h5>
+        </div>
+        <div className="tbl-container me-2 mt-3">
+          <table className="w-100">
+            <thead>
+              <tr>
+                <th>MOR No.</th>
+                <th>MOR Ordered</th>
+                <th>Received Upto GRN</th>
+                <th>MOR Accepted</th>
+              </tr>
+            </thead>
+            <tbody>
+              {item.mor_details.length > 0 ? (
+                item.mor_details.map((detail, detailIndex) => (
+                  <tr key={detail.mor_number + detailIndex}>
+                    <td>{detail.mor_number ?? "NULL"}</td>
+                    <td>{detail.ordered_qty ?? "NULL"}</td>
+                    <td>-</td>
+                    <td>{detail.accepted_qty ?? "NULL"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr key={item.id}>
+                  <td colSpan={4}>No MOR Details Available</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-                      {/* Defective Material Remark Section */}
-                      <div className="row mt-3">
-                        <div className="col-md-4">
-                          <div className="form-group">
-                            <label className="po-fontBold">Defective Material Remark</label>
-                            <input
-                              className="form-control"
-                              placeholder={data?.remark || "NULL"}
-                              type="text"
-                              disabled
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                ))}
+        {/* Delivery Details Section */}
+        <div className="mt-2">
+          <h5>Delivery Details</h5>
+        </div>
+        <div className="tbl-container me-2 mt-3">
+          <table className="w-100">
+            <thead>
+              <tr>
+                <th className="fw-bold">Delivery Date</th>
+                <th className="fw-bold">Delivery Qty</th>
+                <th className="fw-bold">Batch No.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {item.mor_delivery_details.length > 0 ? (
+                item.mor_delivery_details.map((delivery, deliveryIndex) => (
+                  <tr key={deliveryIndex}>
+                    <td>{delivery.po_delivery_date || "NULL"}</td>
+                    <td>{delivery.po_delivery_qty || "NULL"}</td>
+                    <td>-</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3}>No Delivery Details Available</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Material Batches Section */}
+      <div className="mt-2">
+        <h5>Material Batches</h5>
+      </div>
+      <div className="tbl-container me-2 mt-3">
+        <table className="w-100">
+          <thead>
+            <tr>
+              <th>Material Batch No.</th>
+              <th>Qty</th>
+              <th>Mfg. Date</th>
+              <th>Expiry Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {item.material_batches.length > 0 ? (
+              item.material_batches.map((batch, batchIndex) => (
+                <tr key={batch.batch_no + batchIndex}>
+                  <td>{batch.batch_no || "NULL"}</td>
+                  <td>{batch.quantity || "NULL"}</td>
+                  <td>{batch.mfg_date || "NULL"}</td>
+                  <td>{batch.expiry_date || "NULL"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4}>No Material Batches Available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Defective Material Remark Section */}
+      <div className="row mt-3">
+        <div className="col-md-4">
+          <div className="form-group">
+            <label className="po-fontBold">Defective Material Remark</label>
+            <input
+              className="form-control"
+              placeholder={data?.remark || "NULL"}
+              type="text"
+              disabled
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+))}
+
+
 
               
                 <div className=" d-flex justify-content-between align-items-center">
