@@ -58,6 +58,13 @@ export default function GoodReceiveNoteDetails() {
     fetchData();
   }, []);
 
+
+  useEffect(() => {
+    if (data?.status) {
+      setSelectedStatus(data.status);
+    }
+  }, [data?.status]);
+
   const handleStatusChange = (event) => {
     setSelectedStatus(event.target.value);
   };
@@ -572,8 +579,8 @@ export default function GoodReceiveNoteDetails() {
                   <tr key={deliveryIndex}>
                     <td>{delivery.po_delivery_date || "NULL"}</td>
                     <td>{delivery.po_delivery_qty || "NULL"}</td>
-                    <td>-</td>
-                  </tr>
+                    <td>{item.batch_no || "NULL"}</td> {/* Using batch_no from the outer item object */}
+                    </tr>
                 ))
               ) : (
                 <tr>
@@ -682,7 +689,7 @@ export default function GoodReceiveNoteDetails() {
                       <textarea
                         className="form-control"
                         rows={3}
-                        placeholder="Enter ..."
+                        placeholder={data?.comment || "NULL"}
                         defaultValue={""}
                         value={comments}
                         onChange={handleCommentsChange}
@@ -697,7 +704,7 @@ export default function GoodReceiveNoteDetails() {
                       <textarea
                         className="form-control"
                         rows={3}
-                        placeholder="Enter ..."
+                        placeholder={data?.remark || "NULL"}
                         defaultValue={""}
                         value={remarks}
                         onChange={handleRemarksChange}
@@ -708,7 +715,11 @@ export default function GoodReceiveNoteDetails() {
                 <div className="row justify-content-end align-items-center  mt-2">
                   <div className="col-md-3 ">
                   <label className="">Status</label>
-                  <select className="form-select" id="status" value={selectedStatus} onChange={handleStatusChange}>
+                  <select className="form-select" id="status" value={selectedStatus} onChange={handleStatusChange} placeholder={data?.status}>
+                  <option value="" disabled> {/* Placeholder option */}
+                  {data?.status || "Select Status"}
+                </option>
+                   
                     {statuses.map((status, index) => (
                       <option key={index} value={status}>{status}</option>
                     ))}
