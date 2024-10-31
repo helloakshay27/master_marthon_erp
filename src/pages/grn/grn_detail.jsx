@@ -119,7 +119,7 @@ export default function GoodReceiveNoteDetails() {
 
 
     // Construct the API URL using the id and token
-    const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}/.json?token=${token}`;
+    const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}.json?token=${token}`;
 
     fetch(apiUrl)
       .then((response) => {
