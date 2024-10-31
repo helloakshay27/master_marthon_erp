@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is included
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2';
+
 
 
 export default function GoodReceiveNoteDetails() {
@@ -107,13 +108,10 @@ export default function GoodReceiveNoteDetails() {
      
 
       const data = await response.json();
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Status updated successfully!',
-      });
+      toast.success('Status updated successfully!');
+
     } catch (error) {
-      console.error('Error updating status:', error);
+      toast.error('Failed to update status. Please try again.');
     }
   };
 
@@ -747,7 +745,8 @@ export default function GoodReceiveNoteDetails() {
         
         </div>
       </div>
-    
+      <ToastContainer />
+
       </>  
       
     );
