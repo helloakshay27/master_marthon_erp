@@ -30,7 +30,13 @@ const ErpStockRegister13B = () => {
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
   const location = useLocation(); // Access the location object
+  const [token, setToken] = useState(null);
 
+  useEffect(() => {
+    // Extract token from the URL only once when component mounts
+    const urlParams = new URLSearchParams(location.search);
+    setToken(urlParams.get("token"));
+  }, [location]);
 
 
   useEffect(() => {
@@ -38,8 +44,8 @@ const ErpStockRegister13B = () => {
       
       try {
 
-        var urlParams = new URLSearchParams(location.search);
-           var token = urlParams.get('token');
+        if (!token) return; // Don't fetch data if token is missing
+
 
         const response = await fetch(
           `https://marathon.lockated.com/pms/inventories/stock_data.json?token=${token}`
