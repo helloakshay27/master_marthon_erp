@@ -38,8 +38,8 @@ const ErpStockRegister13B = () => {
       
       try {
 
-        let urlParams = new URLSearchParams(location.search);
-    let token = urlParams.get('token');
+        var urlParams = new URLSearchParams(location.search);
+           var token = urlParams.get('token');
 
         const response = await fetch(
           `https://marathon.lockated.com/pms/inventories/stock_data.json?token=${token}`
