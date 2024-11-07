@@ -25,21 +25,21 @@ export default function GoodReceiveNoteDetails() {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to submitted",
-              status: "submitted",
+              status: "Submitted",
             },
           },
           {
             status_log: {
               remarks: "Draft created",
               comments: "Draft status is now active",
-              status: "draft",
+              status: "Draft",
             },
           },
           {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to approved",
-              status: "approved",
+              status: "Approved",
             },
           },
         ],
