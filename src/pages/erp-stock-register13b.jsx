@@ -48,12 +48,13 @@ const ErpStockRegister13B = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+        
 
         const result = await response.json();
         const transformedData = result.map((item, index) => ({
           srNo: index + 1,
           material: item.name || "-",
-          materialUrl: `/stock_register_detail/${item.id}`, // Add material-specific URL here
+          materialUrl: `/stock_register_detail/${item.id}?token=${token}`, // Add material-specific URL here
         material_type: item.material_type || "-",
         materialSubType: item.inventory_sub_type_id || "-",
           materialDescription: item.material_description || "-",
