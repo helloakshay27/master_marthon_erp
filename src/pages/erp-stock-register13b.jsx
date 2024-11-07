@@ -30,13 +30,7 @@ const ErpStockRegister13B = () => {
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
   const location = useLocation(); // Access the location object
-  const [token, setToken] = useState(null);
 
-  useEffect(() => {
-    // Extract token from the URL only once when component mounts
-    const urlParams = new URLSearchParams(location.search);
-    setToken(urlParams.get("token"));
-  }, [location]);
 
 
   useEffect(() => {
@@ -44,8 +38,8 @@ const ErpStockRegister13B = () => {
       
       try {
 
-        if (!token) return; // Don't fetch data if token is missing
-
+        const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
 
         const response = await fetch(
           `https://marathon.lockated.com/pms/inventories/stock_data.json?token=${token}`
@@ -54,36 +48,40 @@ const ErpStockRegister13B = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        
 
         const result = await response.json();
-        const transformedData = result.map((item, index) => ({
-          srNo: index + 1,
-          material: item.name || "-",
-          materialUrl: `/stock_register_detail/${item.id}?token=${token}`, // Add material-specific URL here
-        material_type: item.material_type || "-",
-        materialSubType: item.inventory_sub_type_id || "-",
-          materialDescription: item.material_description || "-",
-          specification: item.specification || "-",
-          lastReceived: item.last_received_on || "-",
-          total_received: item.total_received || "-",
-          total_issued: item.total_issued || "-",
-          stockStatus: item.available_quantity || "-",
-          deadstockQty: item.deadstockQty || "-", // Assuming you will add this field later
-          theftMissing:
-            item.theftMissing !== undefined ? item.theftMissing : "-",
-          uom_name: item.uom_name || "-",
-          stock_details: item.stock_details.map((stock) => ({
-            stockId: stock.id,
-            createdAt: stock.created_at || "-",
-            mor: stock.mor || "-",
-            resourceNumber: stock.resource_number || "-",
-            status: stock.status || "-",
-            receivedQty: stock.received_qty || "-",
-            issuedQty: stock.issued_qty || "-",
-            returnedQty: stock.returned_qty || "-",
-          })),
-        }));
+        const transformedData = result.map((item, index) => {
+          const materialUrl = item.id && token
+            ? `/stock_register_detail/${item.id}/?token=${token}`
+            : "#"; // Fallback to "#" if id or token is missing
+  
+          return {
+            srNo: index + 1,
+            material: item.name || "-",
+            materialUrl: materialUrl, // Safeguard added here
+            material_type: item.material_type || "-",
+            materialSubType: item.inventory_sub_type_id || "-",
+            materialDescription: item.material_description || "-",
+            specification: item.specification || "-",
+            lastReceived: item.last_received_on || "-",
+            total_received: item.total_received || "-",
+            total_issued: item.total_issued || "-",
+            stockStatus: item.available_quantity || "-",
+            deadstockQty: item.deadstockQty || "-",
+            theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
+            uom_name: item.uom_name || "-",
+            stock_details: item.stock_details.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              status: stock.status || "-",
+              receivedQty: stock.received_qty || "-",
+              issuedQty: stock.issued_qty || "-",
+              returnedQty: stock.returned_qty || "-",
+            })),
+          };
+        });
 
         console.log(transformedData);
         setData(transformedData);

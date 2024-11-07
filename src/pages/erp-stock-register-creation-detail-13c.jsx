@@ -2,12 +2,10 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const ErpStockRegisterCreationDetail13C = () => {
   const { id } = useParams(); // Extract the 'id' from the route
-  const location = useLocation();
-
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
