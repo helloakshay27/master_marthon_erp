@@ -91,6 +91,8 @@ export default function GoodReceiveNoteDetails() {
       if (!response.ok) throw new Error("Failed to update status.");
       await response.json();
       toast.success("Status updated successfully!");
+      window.location.reload();
+
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
     }
