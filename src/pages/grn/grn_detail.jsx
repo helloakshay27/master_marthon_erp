@@ -25,21 +25,21 @@ export default function GoodReceiveNoteDetails() {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to submitted",
-              status: "Submitted",
+              status: "submitted",
             },
           },
           {
             status_log: {
               remarks: "Draft created",
               comments: "Draft status is now active",
-              status: "Draft",
+              status: "draft",
             },
           },
           {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to approved",
-              status: "Approved",
+              status: "approved",
             },
           },
         ],
@@ -239,7 +239,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data?.company_name ?? "NULL"}
+                          {data?.company_name ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -250,7 +250,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.project ?? "NULL"}
+                          {data?.project ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -261,7 +261,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.sub_project ?? "NULL"}
+                          {data?.sub_project ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -272,7 +272,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.wing ?? "NULL"}
+                          {data?.wing ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -283,7 +283,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">: </span>
-                          {data?.id ?? "NULL"}
+                          {data?.id ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -294,7 +294,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_number ?? "NULL"}
+                          {data?.grn_number ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -305,7 +305,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_date ?? "NULL"}
+                          {data?.grn_date ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.to_store ?? "NULL"}
+                          {data?.to_store ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -327,7 +327,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.supplier ?? "NULL"}
+                          {data?.supplier ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -338,7 +338,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_number ?? "NULL"}
+                          {data?.challan_number ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -350,7 +350,7 @@ export default function GoodReceiveNoteDetails() {
                         <label className="text">
                           <span className="me-3">:</span>
 
-                          {data?.gate_entry_no ?? "NULL"}
+                          {data?.gate_entry_no ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -361,7 +361,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_date ?? "NULL"}
+                          {data?.challan_date ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -372,7 +372,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.remark ?? "NULL"}
+                          {data?.remark ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -383,7 +383,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.vehicle_no ?? "NULL"}
+                          {data?.vehicle_no ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -394,7 +394,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.description ?? "NULL"}
+                          {data?.description ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -405,7 +405,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.po_number ?? "NULL"}
+                          {data?.po_number ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -416,7 +416,7 @@ export default function GoodReceiveNoteDetails() {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.gate_number ?? "NULL"}
+                          {data?.gate_number ?? "-"}
                         </label>
                       </div>
                     </div>
@@ -482,7 +482,7 @@ export default function GoodReceiveNoteDetails() {
                             <tr key={item.id || item.mor_inventory?.id}>
                               <td>
                                 {item.mor_inventory?.inventory
-                                  ?.material_description || "NULL"}
+                                  ?.material_description || "-"}
                               </td>
                               <td>
                                 {item.mor_inventory?.inventory?.is_qc
@@ -496,25 +496,25 @@ export default function GoodReceiveNoteDetails() {
                               </td>
                               <td>
                                 {item.mor_inventory?.inventory?.uom_name ||
-                                  "NULL"}
+                                  "-"}
                               </td>
                               <td>
-                                {item.mor_inventory?.ordered_quantity || "NULL"}
+                                {item.mor_inventory?.ordered_quantity || "0"}
                               </td>
-                              <td>{item.received_till_date || "NULL"}</td>
-                              <td>{item.received || "NULL"}</td>
-                              <td>{item.breakage || "NULL"}</td>
-                              <td>{item.defective || "NULL"}</td>
-                              <td>{item.accepted || "NULL"}</td>
-                              <td>{item.cumulative || "NULL"}</td>
-                              <td>{item.tolerence_quantity || "NULL"}</td>
-                              <td>
-                                {item.mor_inventory?.inventory
-                                  ?.inspection_date || "NULL"}
-                              </td>
+                              <td>{item.received_till_date || "0"}</td>
+                              <td>{item.received || "0"}</td>
+                              <td>{item.breakage || "0"}</td>
+                              <td>{item.defective || "0"}</td>
+                              <td>{item.accepted || "0"}</td>
+                              <td>{item.cumulative || "0"}</td>
+                              <td>{item.tolerence_quantity || "0"}</td>
                               <td>
                                 {item.mor_inventory?.inventory
-                                  ?.warranty_period || "NULL"}
+                                  ?.inspection_date || "-"}
+                              </td>
+                              <td>
+                                {item.mor_inventory?.inventory
+                                  ?.warranty_period || "-"}
                               </td>
                             </tr>
                           </tbody>
@@ -540,10 +540,10 @@ export default function GoodReceiveNoteDetails() {
                               {item.mor_details.length > 0 ? (
                                 item.mor_details.map((detail, detailIndex) => (
                                   <tr key={detail.mor_number + detailIndex}>
-                                    <td>{detail.mor_number ?? "NULL"}</td>
-                                    <td>{detail.ordered_qty ?? "NULL"}</td>
+                                    <td>{detail.mor_number ?? "-"}</td>
+                                    <td>{detail.ordered_qty ?? "-"}</td>
                                     <td>-</td>
-                                    <td>{detail.accepted_qty ?? "NULL"}</td>
+                                    <td>{detail.accepted_qty ?? "-"}</td>
                                   </tr>
                                 ))
                               ) : (
@@ -574,12 +574,12 @@ export default function GoodReceiveNoteDetails() {
                                   (delivery, deliveryIndex) => (
                                     <tr key={deliveryIndex}>
                                       <td>
-                                        {delivery.po_delivery_date || "NULL"}
+                                        {delivery.po_delivery_date || "-"}
                                       </td>
                                       <td>
-                                        {delivery.po_delivery_qty || "NULL"}
+                                        {delivery.po_delivery_qty || "-"}
                                       </td>
-                                      <td>{item.batch_no || "NULL"}</td>{" "}
+                                      <td>{item.batch_no || "-"}</td>{" "}
                                       {/* Using batch_no from the outer item object */}
                                     </tr>
                                   )
@@ -614,10 +614,10 @@ export default function GoodReceiveNoteDetails() {
                             {item.material_batches.length > 0 ? (
                               item.material_batches.map((batch, batchIndex) => (
                                 <tr key={batch.batch_no + batchIndex}>
-                                  <td>{batch.batch_no || "NULL"}</td>
-                                  <td>{batch.quantity || "NULL"}</td>
-                                  <td>{batch.mfg_date || "NULL"}</td>
-                                  <td>{batch.expiry_date || "NULL"}</td>
+                                  <td>{batch.batch_no || "-"}</td>
+                                  <td>{batch.quantity || "-"}</td>
+                                  <td>{batch.mfg_date || "-"}</td>
+                                  <td>{batch.expiry_date || "-"}</td>
                                 </tr>
                               ))
                             ) : (
@@ -640,7 +640,7 @@ export default function GoodReceiveNoteDetails() {
                             </label>
                             <input
                               className="form-control"
-                              placeholder={"NULL"}
+                              placeholder={"-"}
                               type="text"
                               disabled
                             />
@@ -694,7 +694,7 @@ export default function GoodReceiveNoteDetails() {
                       <textarea
                         className="form-control"
                         rows={3}
-                        placeholder={data?.comment || "NULL"}
+                        placeholder={data?.comment || "-"}
                         defaultValue={""}
                         value={comments}
                         onChange={handleCommentsChange}
@@ -709,7 +709,7 @@ export default function GoodReceiveNoteDetails() {
                       <textarea
                         className="form-control"
                         rows={3}
-                        placeholder={data?.remark || "NULL"}
+                        placeholder={data?.remark || "-"}
                         defaultValue={""}
                         value={remarks}
                         onChange={handleRemarksChange}
@@ -735,9 +735,10 @@ export default function GoodReceiveNoteDetails() {
 
                       {statuses.map((status, index) => (
                         <option key={index} value={status}>
-                          {status}
+                          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
                         </option>
                       ))}
+
                     </select>
                   </div>
                 </div>
