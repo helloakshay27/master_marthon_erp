@@ -5,7 +5,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is in
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function GoodReceiveNoteDetails() {
+const GoodReceiveNoteDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ export default function GoodReceiveNoteDetails() {
       toast.success("Status updated successfully!");
       window.location.reload();
     } catch (error) {
-      toast.error("Failed to update status. Please try again.");
+      toast.error("Failed to update status. Please try another status.");
     }
   };
 
@@ -721,11 +721,11 @@ export default function GoodReceiveNoteDetails() {
                     <select
                       className="form-select"
                       id="status"
-                      value={selectedStatus}
+                      value={selectedStatus || ""}
                       onChange={handleStatusChange}
                     >
                       {/* Placeholder option */}
-                      <option value="" disabled>
+                      <option value="" selected>
                         {data?.status
                           ? data.status.charAt(0).toUpperCase() +
                             data.status.slice(1).toLowerCase()
@@ -770,3 +770,4 @@ export default function GoodReceiveNoteDetails() {
     </>
   );
 }
+  export default GoodReceiveNoteDetails
