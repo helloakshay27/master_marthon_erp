@@ -92,7 +92,6 @@ export default function GoodReceiveNoteDetails() {
       await response.json();
       toast.success("Status updated successfully!");
       window.location.reload();
-
     } catch (error) {
       toast.error("Failed to update status. Please try again.");
     }
@@ -497,8 +496,7 @@ export default function GoodReceiveNoteDetails() {
                                   : "No"}
                               </td>
                               <td>
-                                {item.mor_inventory?.inventory?.uom_name ||
-                                  "-"}
+                                {item.mor_inventory?.inventory?.uom_name || "-"}
                               </td>
                               <td>
                                 {item.mor_inventory?.ordered_quantity || "0"}
@@ -578,9 +576,7 @@ export default function GoodReceiveNoteDetails() {
                                       <td>
                                         {delivery.po_delivery_date || "-"}
                                       </td>
-                                      <td>
-                                        {delivery.po_delivery_qty || "-"}
-                                      </td>
+                                      <td>{delivery.po_delivery_qty || "-"}</td>
                                       <td>{item.batch_no || "-"}</td>{" "}
                                       {/* Using batch_no from the outer item object */}
                                     </tr>
@@ -727,20 +723,26 @@ export default function GoodReceiveNoteDetails() {
                       id="status"
                       value={selectedStatus}
                       onChange={handleStatusChange}
-                      placeholder={data?.status}
                     >
+                      {/* Placeholder option */}
                       <option value="" disabled>
-                        {" "}
-                        {/* Placeholder option */}
-                        {data?.status || "Select Status"}
+                        {data?.status
+                          ? data.status.charAt(0).toUpperCase() +
+                            data.status.slice(1).toLowerCase()
+                          : "Select Status"}
                       </option>
 
-                      {statuses.map((status, index) => (
-                        <option key={index} value={status}>
-                          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
-                        </option>
-                      ))}
-
+                      {statuses
+                        .filter(
+                          (status) =>
+                            status.toLowerCase() !== data?.status?.toLowerCase()
+                        ) // Exclude current status
+                        .map((status, index) => (
+                          <option key={index} value={status}>
+                            {status.charAt(0).toUpperCase() +
+                              status.slice(1).toLowerCase()}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 </div>
