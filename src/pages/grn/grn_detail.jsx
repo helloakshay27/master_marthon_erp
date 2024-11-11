@@ -83,7 +83,7 @@ const GoodReceiveNoteDetails = () => {
       const token = urlParams.get("token");
   
       // Initial fetch to primary domain
-      let baseURL = primaryDomain;
+      let baseURL = liveDomain;
       let response = await fetch(
         `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
         {
@@ -95,7 +95,7 @@ const GoodReceiveNoteDetails = () => {
   
       // If 404 error, switch to fallback domain
       if (!response.ok && response.status === 404) {
-        baseURL = fallbackDomain;
+        baseURL = testDomain;
         response = await fetch(
           `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
           {
@@ -120,14 +120,14 @@ const GoodReceiveNoteDetails = () => {
     const token = urlParams.get("token");
   
     // Initial fetch to primary domain
-    let baseURL = primaryDomain;
+    let baseURL = liveDomain;
     const apiUrl = `${baseURL}/good_receive_notes/${id}.json?token=${token}`;
   
     fetch(apiUrl)
       .then((response) => {
         if (!response.ok && response.status === 404) {
           // If 404 error, switch to fallback domain
-          baseURL = fallbackDomain;
+          baseURL = testDomain;
           return fetch(`${baseURL}/good_receive_notes/${id}.json?token=${token}`);
         }
         if (!response.ok) throw new Error("Failed to fetch details.");
