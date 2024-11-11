@@ -4,6 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is included
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { liveDomain, testDomain } from "../../confi/apiDomain";
+
 
 const GoodReceiveNoteDetails = () => {
   const { id } = useParams();
@@ -73,21 +75,37 @@ const GoodReceiveNoteDetails = () => {
         status: selectedStatus,
       },
     };
-
+  
     console.log(JSON.stringify(payload));
-
+  
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
-      const response = await fetch(
-        `https://marathon.lockated.com/good_receive_notes/${id}/update_status.json?token=${token}`,
+  
+      // Initial fetch to primary domain
+      let baseURL = primaryDomain;
+      let response = await fetch(
+        `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
       );
-
+  
+      // If 404 error, switch to fallback domain
+      if (!response.ok && response.status === 404) {
+        baseURL = fallbackDomain;
+        response = await fetch(
+          `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+      }
+  
       if (!response.ok) throw new Error("Failed to update status.");
       await response.json();
       toast.success("Status updated successfully!");
@@ -96,14 +114,22 @@ const GoodReceiveNoteDetails = () => {
       toast.error("Failed to update status. Please try another status.");
     }
   };
-
+  
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
-    const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}.json?token=${token}`;
-
+  
+    // Initial fetch to primary domain
+    let baseURL = primaryDomain;
+    const apiUrl = `${baseURL}/good_receive_notes/${id}.json?token=${token}`;
+  
     fetch(apiUrl)
       .then((response) => {
+        if (!response.ok && response.status === 404) {
+          // If 404 error, switch to fallback domain
+          baseURL = fallbackDomain;
+          return fetch(`${baseURL}/good_receive_notes/${id}.json?token=${token}`);
+        }
         if (!response.ok) throw new Error("Failed to fetch details.");
         return response.json();
       })
@@ -116,7 +142,7 @@ const GoodReceiveNoteDetails = () => {
         setLoading(false);
       });
   }, [id, location.search]);
-
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
