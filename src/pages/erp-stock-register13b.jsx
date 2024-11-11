@@ -11,6 +11,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
+import baseURL from "../confi/apiDomain";
 
 DataTable.use(DT);
 
