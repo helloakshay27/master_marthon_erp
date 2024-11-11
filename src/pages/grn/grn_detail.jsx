@@ -125,9 +125,11 @@ const GoodReceiveNoteDetails = () => {
   
     fetch(apiUrl)
       .then((response) => {
-        if (!response.ok && response.status === 404) {
+        if (response.status === 404) {
           // If 404 error, switch to fallback domain
           baseURL = testDomain;
+          console.log(baseURL)
+
           return fetch(`${baseURL}/good_receive_notes/${id}.json?token=${token}`);
         }
         if (!response.ok) throw new Error("Failed to fetch details.");
