@@ -94,7 +94,7 @@ const GoodReceiveNoteDetails = () => {
       );
   
       // If 404 error, switch to fallback domain
-      if (!response.ok && response.status === 404) {
+      if (response.status === 404) {
         baseURL = testDomain;
         response = await fetch(
           `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
