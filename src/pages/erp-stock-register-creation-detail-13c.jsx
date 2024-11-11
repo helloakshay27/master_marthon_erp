@@ -19,7 +19,7 @@ const ErpStockRegisterCreationDetail13C = () => {
       const token = urlParams.get("token");
 
       const response = await fetch(
-        `https://marathon.lockated.com/pms/inventories/${id}.json?token=${token}`
+        `${baseURL}/pms/inventories/${id}.json?token=${token}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -63,7 +63,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                              
                             </label>
                           </div>
@@ -161,7 +161,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -171,7 +171,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -181,7 +181,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -307,7 +307,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                   <tbody>
                                     <tr>
                                       <td>1</td>
-                                      <td></td>
+                                      <td>-</td>
                                       <td />
                                       <td></td>
                                       <td />

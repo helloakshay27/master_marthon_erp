@@ -1,4 +1,4 @@
-// domains.js
+// apiConfig.js
+const baseURL = process.env.REACT_APP_BASE_URL; // Fetch baseURL from the .env file
 
-export const liveDomain = 'https://marathon.lockated.com';
-export const testDomain = 'https://newerp.marathonrealty.com';
+export default baseURL;
