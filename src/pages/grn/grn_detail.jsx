@@ -5,6 +5,10 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is in
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import baseURL from "../../confi/apiDomain";
+import Select from "react-select"; // Importing the react-select component
+import FormattedDate from "../../components/FormattedDate";
+
+
 
 const GoodReceiveNoteDetails = () => {
   const { id } = useParams();
@@ -15,8 +19,19 @@ const GoodReceiveNoteDetails = () => {
   const [error, setError] = useState(null);
   const [statuses, setStatuses] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [loadStatus, setloadStatus] = useState("");
+
   const [remarks, setRemarks] = useState("");
   const [comments, setComments] = useState("");
+  const [collapsed, setCollapsed] = useState({});
+
+  // Toggle collapse state for the card
+  const toggleCollapse = (index) => {
+    setCollapsed((prev) => ({
+      ...prev,
+      [index]: !prev[index], // Toggle the state of the clicked card
+    }));
+  };
 
   useEffect(() => {
     const fetchData = () => {
@@ -46,24 +61,40 @@ const GoodReceiveNoteDetails = () => {
         ],
       };
 
+      // Extracting statuses
       const extractedStatuses = statusData.status_logs.map(
         (log) => log.status_log.status
       );
-      setStatuses(extractedStatuses);
-      setSelectedStatus(extractedStatuses[0]);
+
+      // Creating options array for react-select
+      const options = extractedStatuses.map((status) => ({
+        value: status,
+        label: status.charAt(0).toUpperCase() + status.slice(1), // Capitalizing the first letter
+      }));
+
+      // Set statuses options
+      setStatuses(options);
+
+      // Only set selected status if data is available
+      if (data && data?.status) {
+        const selectedStatusOption = options.find(
+          (status) => status.value === data.status
+        );
+        if (selectedStatusOption) {
+          setSelectedStatus(selectedStatusOption);
+        }
+      }
     };
 
     fetchData();
-  }, []);
+  }, [data?.status]); // Re-run when data.status changes
 
+  const handleStatusChange = (selectedOption) => {
+    setSelectedStatus(selectedOption); // Set the value (not the full object)
+    console.log(selectedOption.value);
+    setloadStatus(selectedOption.value);
+  };
 
-  useEffect(() => {
-    if (data?.status) {
-      setSelectedStatus(data.status);
-    }
-  }, [data?.status]);
-
-  const handleStatusChange = (event) => setSelectedStatus(event.target.value);
   const handleRemarksChange = (event) => setRemarks(event.target.value);
   const handleCommentsChange = (event) => setComments(event.target.value);
 
@@ -72,7 +103,7 @@ const GoodReceiveNoteDetails = () => {
       status_log: {
         remarks: remarks,
         comments: comments,
-        status: selectedStatus,
+        status: loadStatus,
       },
     };
 
@@ -121,6 +152,7 @@ const GoodReceiveNoteDetails = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
+
 
   return (
     <>
@@ -308,7 +340,7 @@ const GoodReceiveNoteDetails = () => {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.grn_date ?? "-"}
+                          <FormattedDate date={data?.grn_date ?? "-"} />
                         </label>
                       </div>
                     </div>
@@ -364,7 +396,8 @@ const GoodReceiveNoteDetails = () => {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          {data?.challan_date ?? "-"}
+                          <FormattedDate date=  {data?.challan_date ?? "-"} />
+
                         </label>
                       </div>
                     </div>
@@ -436,7 +469,11 @@ const GoodReceiveNoteDetails = () => {
                         {data.grn_materials.length})
                       </h3>
                       <div className="card-tools">
-                        <button type="button" className="btn btn-tool">
+                        <button
+                          type="button"
+                          className="btn btn-tool"
+                          onClick={() => toggleCollapse(index)}
+                        >
                           <svg
                             width={32}
                             height={32}
@@ -453,7 +490,11 @@ const GoodReceiveNoteDetails = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="card-body mt-1 pt-1">
+                    <div
+                      className={`card-body mt-1 pt-1 ${
+                        collapsed[index] ? "d-none" : ""
+                      }`}
+                    >
                       <div className="mt-2">
                         <h5>Materials</h5>
                       </div>
@@ -576,6 +617,8 @@ const GoodReceiveNoteDetails = () => {
                                   (delivery, deliveryIndex) => (
                                     <tr key={deliveryIndex}>
                                       <td>
+                                      {/* <FormattedDate date= {batch.mfg_date || "-"} /> */}
+
                                         {delivery.po_delivery_date || "-"}
                                       </td>
                                       <td>{delivery.po_delivery_qty || "-"}</td>
@@ -616,8 +659,17 @@ const GoodReceiveNoteDetails = () => {
                                 <tr key={batch.batch_no + batchIndex}>
                                   <td>{batch.batch_no || "-"}</td>
                                   <td>{batch.quantity || "-"}</td>
-                                  <td>{batch.mfg_date || "-"}</td>
-                                  <td>{batch.expiry_date || "-"}</td>
+                                  <td>
+                                  <FormattedDate date= {batch.mfg_date || "-"} />
+
+
+
+                                  </td>
+                                  <td>
+                                  <FormattedDate date=  {batch.expiry_date || "-"} />
+
+                                    
+                                  </td>
                                 </tr>
                               ))
                             ) : (
@@ -717,35 +769,26 @@ const GoodReceiveNoteDetails = () => {
                     </div>
                   </div>
                 </div>
-                <div className="row justify-content-end align-items-center  mt-2">
-                  <div className="col-md-3 ">
+                <div className="row justify-content-end align-items-center  mt-2 pb-3">
+                  <div className=" " style={{width:300 }}>
+                    <div className="d-flex gap-3 align-items-end w-100">
                     <label className="">Status</label>
-                    <select
-                      className="form-select"
-                      id="status"
-                      value={selectedStatus || ""}
+                    <Select
+                    className="w-100"
+                      options={statuses}
+                      value={
+                        selectedStatus ||
+                        statuses.find((status) => status.value === data?.status)
+                      } // Ensures value is an object with { value, label }
                       onChange={handleStatusChange}
-                    >
-                      {/* Placeholder option */}
-                      <option value="" selected>
-                        {data?.status
-                          ? data.status.charAt(0).toUpperCase() +
-                            data.status.slice(1).toLowerCase()
-                          : "Select Status"}
-                      </option>
+                      isClearable // Allows clearing the selection
+                      placeholder="Select a status"
+                      classNamePrefix="react-select" // Apply custom classes using the prefix
 
-                      {statuses
-                        .filter(
-                          (status) =>
-                            status.toLowerCase() !== data?.status?.toLowerCase()
-                        ) // Exclude current status
-                        .map((status, index) => (
-                          <option key={index} value={status}>
-                            {status.charAt(0).toUpperCase() +
-                              status.slice(1).toLowerCase()}
-                          </option>
-                        ))}
-                    </select>
+                    />
+
+                    </div>
+                   
                   </div>
                 </div>
                 <div className="row mt-2 justify-content-end">
@@ -761,7 +804,12 @@ const GoodReceiveNoteDetails = () => {
                     </button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100">Cancel</button>
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={() => navigate(-1)}
+                    >
+                      Cancel
+                    </button>{" "}
                   </div>
                 </div>
               </div>
@@ -771,5 +819,5 @@ const GoodReceiveNoteDetails = () => {
       </div>
     </>
   );
-}
-  export default GoodReceiveNoteDetails
+};
+export default GoodReceiveNoteDetails;
