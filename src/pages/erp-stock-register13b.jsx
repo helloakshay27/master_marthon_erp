@@ -6,7 +6,8 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
@@ -146,7 +147,14 @@ const ErpStockRegister13B = () => {
     return <div>Loading...</div>; // Show loading message while data loads
   }
 
-
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "Stock_Data.xlsx"); // Save the file
+  };
 
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
@@ -349,6 +357,7 @@ const ErpStockRegister13B = () => {
                       </div>
                       <div className="col-md-3">
                         <button
+                        onClick={downloadExcel}
                           id="downloadButton"
                           type="submit"
                           className="btn btn-md"
