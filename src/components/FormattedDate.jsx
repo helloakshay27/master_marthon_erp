@@ -10,7 +10,7 @@ const FormattedDate = ({ date }) => {
     const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
     const year = parsedDate.getFullYear();
 
-    return `${day}/${month}/${year}`;
+    return `${day}-${month}-${year}`;
   };
 
   return <>{formatDate(date)}</>;
