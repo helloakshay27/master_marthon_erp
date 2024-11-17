@@ -311,7 +311,7 @@ const GoodReceiveNoteDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                       <div className="col-6 ">
                         <label>GRN ID </label>
                       </div>
@@ -321,7 +321,7 @@ const GoodReceiveNoteDetails = () => {
                           {data?.id ?? "-"}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                       <div className="col-6 ">
                         <label>GRN NO</label>
@@ -507,17 +507,22 @@ const GoodReceiveNoteDetails = () => {
                               <th rowSpan={2}>Is MTC Received</th>
                               <th rowSpan={2}>UOM</th>
                               <th colSpan={9}>Quantity</th>
-                              <th />
+                              <th />                             
+                               <th />
+
                             </tr>
                             <tr>
                               <th>Ordered</th>
-                              <th>Received Up to</th>
                               <th>Received</th>
                               <th>Breakage</th>
                               <th>Defective</th>
                               <th>Accepted</th>
+                              <th>Received Up to</th>
+
                               <th>Cumulative</th>
                               <th>Tolerance Qty</th>
+                              <th>Billing Quantity
+                              </th>
                               <th>Inspection Date</th>
                               <th>Warranty Date</th>
                             </tr>
@@ -544,13 +549,16 @@ const GoodReceiveNoteDetails = () => {
                               <td>
                                 {item.mor_inventory?.ordered_quantity || "0"}
                               </td>
-                              <td>{item.received_till_date || "0"}</td>
                               <td>{item.received || "0"}</td>
                               <td>{item.breakage || "0"}</td>
                               <td>{item.defective || "0"}</td>
                               <td>{item.accepted || "0"}</td>
+                              <td>{item.received_till_date || "0"}</td>
+
                               <td>{item.cumulative || "0"}</td>
                               <td>{item.tolerence_quantity || "0"}</td>
+                              <td>{item.billing_quantity || "0"}</td>
+
                               <td>
                                 {item.mor_inventory?.inventory
                                   ?.inspection_date || "-"}
