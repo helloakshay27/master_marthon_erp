@@ -789,7 +789,7 @@ const GoodReceiveNoteDetails = () => {
                         defaultValue={""}
                         value={comments}
                         onChange={handleCommentsChange}
-                        disabled
+                        
                       />
                     </div>
                   </div>
