@@ -850,7 +850,7 @@ const GoodReceiveNoteDetails = () => {
                               <th>{index+1}</th>
                               <td>{item.user || "-"}</td>
                               <td>
-                                <FormattedDate date={item.date || "-"} />
+                                {item.date || "-"} 
                               </td>
                               <td>{item.status || "-"}</td>
 
