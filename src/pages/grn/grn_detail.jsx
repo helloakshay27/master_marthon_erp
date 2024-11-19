@@ -8,8 +8,6 @@ import baseURL from "../../confi/apiDomain";
 import Select from "react-select"; // Importing the react-select component
 import FormattedDate from "../../components/FormattedDate";
 
-
-
 const GoodReceiveNoteDetails = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -51,7 +49,7 @@ const GoodReceiveNoteDetails = () => {
               status: "submitted",
             },
           },
-        {
+          {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to approved",
@@ -152,7 +150,6 @@ const GoodReceiveNoteDetails = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-
 
   return (
     <>
@@ -396,8 +393,7 @@ const GoodReceiveNoteDetails = () => {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:</span>
-                          <FormattedDate date=  {data?.challan_date ?? "-"} />
-
+                          <FormattedDate date={data?.challan_date ?? "-"} />
                         </label>
                       </div>
                     </div>
@@ -507,9 +503,8 @@ const GoodReceiveNoteDetails = () => {
                               <th rowSpan={2}>Is MTC Received</th>
                               <th rowSpan={2}>UOM</th>
                               <th colSpan={9}>Quantity</th>
-                              <th />                             
-                               <th />
-
+                              <th />
+                              <th />
                             </tr>
                             <tr>
                               <th>Ordered</th>
@@ -521,8 +516,7 @@ const GoodReceiveNoteDetails = () => {
 
                               <th>Cumulative</th>
                               <th>Tolerance Qty</th>
-                              <th>Billing Quantity
-                              </th>
+                              <th>Billing Quantity</th>
                               <th>Inspection Date</th>
                               <th>Warranty Date</th>
                             </tr>
@@ -625,7 +619,7 @@ const GoodReceiveNoteDetails = () => {
                                   (delivery, deliveryIndex) => (
                                     <tr key={deliveryIndex}>
                                       <td>
-                                      {/* <FormattedDate date= {batch.mfg_date || "-"} /> */}
+                                        {/* <FormattedDate date= {batch.mfg_date || "-"} /> */}
 
                                         {delivery.po_delivery_date || "-"}
                                       </td>
@@ -668,15 +662,14 @@ const GoodReceiveNoteDetails = () => {
                                   <td>{batch.batch_no || "-"}</td>
                                   <td>{batch.quantity || "-"}</td>
                                   <td>
-                                  <FormattedDate date= {batch.mfg_date || "-"} />
-
-
-
+                                    <FormattedDate
+                                      date={batch.mfg_date || "-"}
+                                    />
                                   </td>
                                   <td>
-                                  <FormattedDate date=  {batch.expiry_date || "-"} />
-
-                                    
+                                    <FormattedDate
+                                      date={batch.expiry_date || "-"}
+                                    />
                                   </td>
                                 </tr>
                               ))
@@ -724,25 +717,22 @@ const GoodReceiveNoteDetails = () => {
                           <th className="main2-th">File Name</th>
                           <th className="main2-th">File Type</th>
                           <th className="main2-th">Upload Date</th>
-                          <th className="main2-th">Action</th>
+                          <th className="main2-th">Attachment</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <th>-</th>
-                          <td>-</td>
-                          <th>-</th>
-                          <td>-</td>
-                          <th>-</th>
-                          <td>
-                            <i
-                              className="fa-regular fa-eye"
-                              data-bs-toggle="modal"
-                              data-bs-target="#document_attchment"
-                              style={{ fontSize: 18 }}
-                            />
-                          </td>
-                        </tr>
+                        {data?.attachments?.map((item, index) => (
+                          <tr>
+                            <td>{index+1}</td>
+                            <td>{item.document_file_name || "-"}</td>
+                            <td>{item.file_name || "-"}</td>
+                            <td>{item.document_content_type || "-"}</td>
+                            <td>
+                              <FormattedDate date={item.created_at || "-"} />
+                            </td>
+                            <td></td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -789,31 +779,29 @@ const GoodReceiveNoteDetails = () => {
                         defaultValue={""}
                         value={comments}
                         onChange={handleCommentsChange}
-                        
                       />
                     </div>
                   </div>
                 </div>
-                <div className="row justify-content-end align-items-center  mt-2 pb-3">
-                  <div className=" " style={{width:300 }}>
+                <div className="row justify-content-end align-items-center  mt-3 pb-3">
+                  <div className=" " style={{ width: 300 }}>
                     <div className="d-flex gap-3 align-items-end w-100">
-                    <label className="">Status</label>
-                    <Select
-                    className="w-100"
-                      options={statuses}
-                      value={
-                        selectedStatus ||
-                        statuses.find((status) => status.value === data?.status)
-                      } // Ensures value is an object with { value, label }
-                      onChange={handleStatusChange}
-                      isClearable // Allows clearing the selection
-                      placeholder="Select a status"
-                      classNamePrefix="react-select" // Apply custom classes using the prefix
-
-                    />
-
+                      <label className="">Status</label>
+                      <Select
+                        className="w-100"
+                        options={statuses}
+                        value={
+                          selectedStatus ||
+                          statuses.find(
+                            (status) => status.value === data?.status
+                          )
+                        } // Ensures value is an object with { value, label }
+                        onChange={handleStatusChange}
+                        isClearable // Allows clearing the selection
+                        placeholder="Select a status"
+                        classNamePrefix="react-select" // Apply custom classes using the prefix
+                      />
                     </div>
-                   
                   </div>
                 </div>
                 <div className="row mt-2 justify-content-end">
@@ -837,6 +825,44 @@ const GoodReceiveNoteDetails = () => {
                     </button>{" "}
                   </div>
                 </div>
+
+                <section className=" mb-3">
+                  <h5 className=" mt-3">Audit Log</h5>
+                  <div className="">
+                    <div className="tbl-container px-0">
+                      <table
+                        className="w-100"
+                        style={{ width: "100% !important" }}
+                      >
+                        <thead>
+                          <tr>
+                            <th style={{ width: "66px !important" }}>Sr.No.</th>
+                            <th>User</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Remark</th>
+                            <th>Comments</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data?.audit_logs?.map((item, index) => (
+                            <tr>
+                              <th>{index+1}</th>
+                              <td>{item.user || "-"}</td>
+                              <td>
+                                <FormattedDate date={item.date || "-"} />
+                              </td>
+                              <td>{item.status || "-"}</td>
+
+                              <td>{item.remark || "-"}</td>
+                              <td>{item.comment || "-"}</td>
+                            </tr>
+                          ))}
+                        </tbody>{" "}
+                      </table>
+                    </div>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
