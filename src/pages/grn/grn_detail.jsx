@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is included
-
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; 
 
 export default function GoodReceiveNoteDetails() {
-  const { id } = useParams(); // Extract 'id' from the URL
-  const location = useLocation(); // Access the location object
+  const { id } = useParams(); 
+  const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,16 +20,9 @@ export default function GoodReceiveNoteDetails() {
     setMaterialTwoCollapse(!materialTwoCollapse)
   }
 
-
   useEffect(() => {
-    // Get the token from the query parameters
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get('token');
-
-    // Check if the token is present
-
-
-    // Construct the API URL using the id and token
     const apiUrl = `https://marathon.lockated.com/good_receive_notes/${id}.json?token=${token}`;
 
     fetch(apiUrl)
@@ -52,14 +44,9 @@ export default function GoodReceiveNoteDetails() {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-
-
   console.log(data);
 
-
   return (
-  
-  
   <>      
     <div className="website-content overflow-auto details_page">
         <div className="module-data-section container-fluid details_page p-3">
@@ -475,13 +462,7 @@ export default function GoodReceiveNoteDetails() {
                               <th className="fw-bold">Batch No.</th>
                             </tr>
                           </thead>
-                          <tbody>
-
-
-
-
-
-                            
+                          <tbody>                           
                           {data.grn_materials.map((item, id) => {
                                 return (
                                    <tr>
@@ -828,9 +809,8 @@ export default function GoodReceiveNoteDetails() {
           </div>
         
         </div>
-      </div>
-    
+      </div>    
       </>  
-      
-    );
+      );
 }
+ 

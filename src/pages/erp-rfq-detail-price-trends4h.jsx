@@ -2,18 +2,18 @@ import React from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
-import { Dropdown, Collapse } from "react-bootstrap";
+import { Dropdown } from "react-bootstrap";
 import { useState } from "react";
-import RecreateOrderModal from "../components/RecreateOrderModal";
-import NotificationInfoModal from "../components/NotificationInfoModal";
-import IncreaseEventTimeModal from "../components/IncreaseEventTimeModal";
-import WithdrawOrderModal from "../components/WithdrawOrderModal";
-import ConvertToAuctionModal from "../components/ConvertToAuctionModal";
-import RejectedBidsModal from "../components/RejectedBidsModal";
-import ActivityModal from "../components/ActivityModal";
-import AddEvaluationTimeModal from "../components/AddEvaluationTime";
-import BulkCounterOfferModal from "../components/BulkCounterOfferModal";
-import ScatterChart from "../components/ScatterChart";
+import RecreateOrderModal from '../components/common/Modal/RecreateOrderModal'
+import NotificationInfoModal from "../components/common/Modal/NotificationInfoModal";
+import IncreaseEventTimeModal from "../components/common/Modal/IncreaseEventTimeModal";
+import WithdrawOrderModal from "../components/common/Modal/WithdrawOrderModal";
+import ConvertToAuctionModal from "../components/common/Modal/ConvertToAuctionModal";
+import RejectedBidsModal from "../components/common/Modal/RejectedBidsModal";
+import ActivityModal from "../components/common/Modal/ActivityModal";
+import AddEvaluationTimeModal from "../components/common/Modal/AddEvaluationTime";
+import BulkCounterOfferModal from "../components/common/Modal/BulkCounterOfferModal";
+import ScatterChart from "../components/common/Chart/ScatterChart";
 
 export default function ErpRfqDetailPriceTrends4h() {
   const [showModal, setShowModal] = useState(false);

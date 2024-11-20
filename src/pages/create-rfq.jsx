@@ -6,6 +6,12 @@ import { useState } from "react";
 import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
+import LayoutModal from "../components/common/Modal/LayoutModal";
+import VendorModal from "../components/common/Modal/VendorModal";
+import EventScheduleModal from "../components/common/Modal/EventScheduleModal";
+import DocumentModal from "../components/common/Modal/DocumentModal";
+import AttachmentModal from "../components/common/Modal/AttachModal";
 
 export default function CreateRfq() {
   const [orderDetails, setOrderDetails] = useState(true);
@@ -294,10 +300,10 @@ export default function CreateRfq() {
                           </div>
                           <div className="col-md-4 mt-2 ">
                             <button className="purple-btn1 m-0 color-#fff">
-                                <span className="material-symbols-outlined align-text-top">
-                                  add
-                                </span>
-                                Additional Vendor Fields
+                              <span className="material-symbols-outlined align-text-top">
+                                add
+                              </span>
+                              Additional Vendor Fields
                             </button>
                           </div>
                         </div>
@@ -1439,62 +1445,385 @@ export default function CreateRfq() {
         <Footer />
       </div>
 
-      <Modal
-        centered
+      <DynamicModalBox
         size="xl"
         show={eventTypeModal}
         onHide={handleEventTypeModalClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
+        title="Configuration for Event"
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleEventTypeModalClose,
+            props: {
+              className: "purple-btn1",
+            },
+          },
+          {
+            label: "Save Changes",
+            onClick: handleEventTypeModalClose,
+            props: {
+              className: "purple-btn2",
+            },
+          },
+        ]}
       >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h5 className="modal-title fs-5" id="exampleModalLabel">
-              Configuration for Event
-            </h5>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={handleEventTypeModalClose}
-              aria-label="Close"
-            ></button>
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="ant-drawer-body">
-            <div className="styles_auctionConfigContainer__huK3U">
-              <div className="ant-row ant-form-item">
-                <div className="ant-col ant-form-item-label">
-                  <label title="Event Type">Event Type</label>
+        <div className="ant-drawer-body">
+          <div className="styles_auctionConfigContainer__huK3U">
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label title="Event Type">Event Type</label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                    <div
+                      className="pro-radio-tabs"
+                      style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
+                    >
+                      <div
+                        className={`pro-radio-tabs__tab ${
+                          eventType === "Auction"
+                            ? "pro-radio-tabs__tab__selected"
+                            : ""
+                        }`}
+                        role="radio"
+                        aria-checked={eventType === "Auction"}
+                      >
+                        <div className="pro-radio-tabs__check-icon">
+                          <label
+                            className={`ant-radio-wrapper ${
+                              eventType === "Auction"
+                                ? "ant-radio-wrapper-checked"
+                                : ""
+                            }`}
+                          >
+                            <span
+                              className={`ant-radio ${
+                                eventType === "Auction"
+                                  ? "ant-radio-checked"
+                                  : ""
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                className="ant-radio-input"
+                                value="Auction"
+                                checked={eventType === "Auction"}
+                                onChange={handleEventTypeChange}
+                              />
+                              <span className="ant-radio-inner"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <p className="pro-text pro-body pro-text--normal">
+                          Auction
+                        </p>
+                      </div>
+                      <div
+                        className={`pro-radio-tabs__tab ${
+                          eventType === "RFQ"
+                            ? "pro-radio-tabs__tab__selected"
+                            : ""
+                        }`}
+                        role="radio"
+                        aria-checked={eventType === "RFQ"}
+                      >
+                        <div className="pro-radio-tabs__check-icon">
+                          <label
+                            className={`ant-radio-wrapper ${
+                              eventType === "RFQ"
+                                ? "ant-radio-wrapper-checked"
+                                : ""
+                            }`}
+                          >
+                            <span
+                              className={`ant-radio ${
+                                eventType === "RFQ" ? "ant-radio-checked" : ""
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                className="ant-radio-input"
+                                value="RFQ"
+                                checked={eventType === "RFQ"}
+                                onChange={handleEventTypeChange}
+                              />
+                              <span className="ant-radio-inner"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <p className="pro-text pro-body pro-text--normal">
+                          RFQ
+                        </p>
+                      </div>
+                    </div>
+                  </span>
                 </div>
-                <div className="ant-col ant-form-item-control-wrapper">
-                  <div className="ant-form-item-control">
-                    <span className="ant-form-item-children">
+              </div>
+            </div>
+
+            {eventType === "Auction" && (
+              <div
+                className="pro-radio-tabs pro-radio-tabs2 rfq-tab-hide"
+                style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr" }}
+              >
+                {/* Rank Based Radio Button */}
+                <div
+                  className={`pro-radio-tabs__tab ${
+                    selectedStrategy === "Rank Based"
+                      ? "pro-radio-tabs__tab__selected"
+                      : ""
+                  }`}
+                  tabIndex={0}
+                  role="radio"
+                  aria-checked={selectedStrategy === "Rank Based"}
+                  onClick={() => handleRadioChange("Rank Based")}
+                >
+                  <div className="pro-radio-tabs__check-icon">
+                    <label className="ant-radio-wrapper">
+                      <span
+                        className={`ant-radio ${
+                          selectedStrategy === "Rank Based"
+                            ? "ant-radio-checked"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          tabIndex={-1}
+                          className="ant-radio-input"
+                          checked={selectedStrategy === "Rank Based"}
+                          onChange={() => handleRadioChange("Rank Based")}
+                        />
+                        <span className="ant-radio-inner" />
+                      </span>
+                    </label>
+                  </div>
+                  <div className="styles_strategy__xc2r+">
+                    <div className="styles_strategyContent__c-1Di">
+                      <p className="pro-text pro-body pro-text--medium">
+                        Rank Based
+                      </p>
+                      <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
+                        Vendors will be ranked on bid price
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Based Radio Button */}
+                <div
+                  className={`pro-radio-tabs__tab ${
+                    selectedStrategy === "Price Based"
+                      ? "pro-radio-tabs__tab__selected"
+                      : ""
+                  }`}
+                  tabIndex={0}
+                  role="radio"
+                  aria-checked={selectedStrategy === "Price Based"}
+                  onClick={() => handleRadioChange("Price Based")}
+                >
+                  <div className="pro-radio-tabs__check-icon">
+                    <label className="ant-radio-wrapper">
+                      <span
+                        className={`ant-radio ${
+                          selectedStrategy === "Price Based"
+                            ? "ant-radio-checked"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          tabIndex={-1}
+                          className="ant-radio-input"
+                          checked={selectedStrategy === "Price Based"}
+                          onChange={() => handleRadioChange("Price Based")}
+                        />
+                        <span className="ant-radio-inner" />
+                      </span>
+                    </label>
+                  </div>
+                  <div className="styles_strategy__xc2r+">
+                    <div className="styles_strategyContent__c-1Di">
+                      <p className="pro-text pro-body pro-text--medium">
+                        Price Based
+                      </p>
+                      <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
+                        Minimum bid price visible to vendors
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Traffic Light Radio Button */}
+                <div
+                  className={`pro-radio-tabs__tab ${
+                    selectedStrategy === "Traffic Light"
+                      ? "pro-radio-tabs__tab__selected"
+                      : ""
+                  }`}
+                  tabIndex={0}
+                  role="radio"
+                  aria-checked={selectedStrategy === "Traffic Light"}
+                  onClick={() => handleRadioChange("Traffic Light")}
+                >
+                  <div className="pro-radio-tabs__check-icon">
+                    <label className="ant-radio-wrapper">
+                      <span
+                        className={`ant-radio ${
+                          selectedStrategy === "Traffic Light"
+                            ? "ant-radio-checked"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          tabIndex={-1}
+                          className="ant-radio-input"
+                          checked={selectedStrategy === "Traffic Light"}
+                          onChange={() => handleRadioChange("Traffic Light")}
+                        />
+                        <span className="ant-radio-inner" />
+                      </span>
+                    </label>
+                  </div>
+                  <div className="styles_strategy__xc2r+">
+                    <div className="styles_strategyContent__c-1Di">
+                      <p className="pro-text pro-body pro-text--medium">
+                        Traffic Light
+                      </p>
+                      <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
+                        Vendors will be divided based on a specified range
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Knockout Radio Button */}
+                <div
+                  className={`pro-radio-tabs__tab ${
+                    selectedStrategy === "Knockout"
+                      ? "pro-radio-tabs__tab__selected"
+                      : ""
+                  }`}
+                  tabIndex={0}
+                  role="radio"
+                  aria-checked={selectedStrategy === "Knockout"}
+                  onClick={() => handleRadioChange("Knockout")}
+                >
+                  <div className="pro-radio-tabs__check-icon">
+                    <label className="ant-radio-wrapper">
+                      <span
+                        className={`ant-radio ${
+                          selectedStrategy === "Knockout"
+                            ? "ant-radio-checked"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          tabIndex={-1}
+                          className="ant-radio-input"
+                          checked={selectedStrategy === "Knockout"}
+                          onChange={() => handleRadioChange("Knockout")}
+                        />
+                        <span className="ant-radio-inner" />
+                      </span>
+                    </label>
+                  </div>
+                  <div className="styles_strategy__xc2r+">
+                    <div className="styles_strategyContent__c-1Di">
+                      <p className="pro-text pro-body pro-text--medium">
+                        Knockout
+                      </p>
+                      <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
+                        Vendors will accept/reject your offer
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dutch Auction Radio Button */}
+                <div
+                  className={`pro-radio-tabs__tab ${
+                    selectedStrategy === "Dutch Auction"
+                      ? "pro-radio-tabs__tab__selected"
+                      : ""
+                  }`}
+                  tabIndex={0}
+                  role="radio"
+                  aria-checked={selectedStrategy === "Dutch Auction"}
+                  onClick={() => handleRadioChange("Dutch Auction")}
+                >
+                  <div className="pro-radio-tabs__check-icon">
+                    <label className="ant-radio-wrapper">
+                      <span
+                        className={`ant-radio ${
+                          selectedStrategy === "Dutch Auction"
+                            ? "ant-radio-checked"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          tabIndex={-1}
+                          className="ant-radio-input"
+                          checked={selectedStrategy === "Dutch Auction"}
+                          onChange={() => handleRadioChange("Dutch Auction")}
+                        />
+                        <span className="ant-radio-inner" />
+                      </span>
+                    </label>
+                  </div>
+                  <div className="styles_strategy__xc2r+">
+                    <div className="styles_strategyContent__c-1Di">
+                      <p className="pro-text pro-body pro-text--medium">
+                        Dutch Auction
+                      </p>
+                      <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
+                        First come first serve allocation.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Award Section */}
+            <div className="ant-row ant-form-item">
+              <div className="ant-col ant-form-item-label">
+                <label title="How will you award the event?">
+                  How will you award the event?
+                </label>
+              </div>
+              <div className="ant-col ant-form-item-control-wrapper">
+                <div className="ant-form-item-control">
+                  <span className="ant-form-item-children">
+                    <div style={{ maxWidth: 700 }}>
                       <div
                         className="pro-radio-tabs"
-                        style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
+                        style={{ gridTemplateColumns: "1fr 1fr" }}
                       >
                         <div
                           className={`pro-radio-tabs__tab ${
-                            eventType === "Auction"
+                            awardType === "SingleVendor"
                               ? "pro-radio-tabs__tab__selected"
                               : ""
                           }`}
                           role="radio"
-                          aria-checked={eventType === "Auction"}
+                          aria-checked={awardType === "SingleVendor"}
                         >
                           <div className="pro-radio-tabs__check-icon">
                             <label
                               className={`ant-radio-wrapper ${
-                                eventType === "Auction"
+                                awardType === "SingleVendor"
                                   ? "ant-radio-wrapper-checked"
                                   : ""
                               }`}
                             >
                               <span
                                 className={`ant-radio ${
-                                  eventType === "Auction"
+                                  awardType === "SingleVendor"
                                     ? "ant-radio-checked"
                                     : ""
                                 }`}
@@ -1502,998 +1831,139 @@ export default function CreateRfq() {
                                 <input
                                   type="radio"
                                   className="ant-radio-input"
-                                  value="Auction"
-                                  checked={eventType === "Auction"}
-                                  onChange={handleEventTypeChange}
+                                  value="SingleVendor"
+                                  checked={awardType === "SingleVendor"}
+                                  onChange={handleAwardTypeChange}
                                 />
                                 <span className="ant-radio-inner"></span>
                               </span>
                             </label>
                           </div>
                           <p className="pro-text pro-body pro-text--normal">
-                            Auction
+                            I'll award the entire lot to single vendor
                           </p>
                         </div>
                         <div
                           className={`pro-radio-tabs__tab ${
-                            eventType === "RFQ"
+                            awardType === "MultipleVendors"
                               ? "pro-radio-tabs__tab__selected"
                               : ""
                           }`}
                           role="radio"
-                          aria-checked={eventType === "RFQ"}
+                          aria-checked={awardType === "MultipleVendors"}
                         >
                           <div className="pro-radio-tabs__check-icon">
                             <label
                               className={`ant-radio-wrapper ${
-                                eventType === "RFQ"
+                                awardType === "MultipleVendors"
                                   ? "ant-radio-wrapper-checked"
                                   : ""
                               }`}
                             >
                               <span
                                 className={`ant-radio ${
-                                  eventType === "RFQ" ? "ant-radio-checked" : ""
+                                  awardType === "MultipleVendors"
+                                    ? "ant-radio-checked"
+                                    : ""
                                 }`}
                               >
                                 <input
                                   type="radio"
                                   className="ant-radio-input"
-                                  value="RFQ"
-                                  checked={eventType === "RFQ"}
-                                  onChange={handleEventTypeChange}
+                                  value="MultipleVendors"
+                                  checked={awardType === "MultipleVendors"}
+                                  onChange={handleAwardTypeChange}
                                 />
                                 <span className="ant-radio-inner"></span>
                               </span>
                             </label>
                           </div>
                           <p className="pro-text pro-body pro-text--normal">
-                            RFQ
+                            I may partially award the event to multiple vendors
                           </p>
                         </div>
                       </div>
-                    </span>
-                  </div>
+                    </div>
+                  </span>
                 </div>
               </div>
+            </div>
 
-              {eventType === "Auction" && (
-                <div
-                  className="pro-radio-tabs pro-radio-tabs2 rfq-tab-hide"
-                  style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr" }}
-                >
-                  {/* Rank Based Radio Button */}
-                  <div
-                    className={`pro-radio-tabs__tab ${
-                      selectedStrategy === "Rank Based"
-                        ? "pro-radio-tabs__tab__selected"
-                        : ""
-                    }`}
-                    tabIndex={0}
-                    role="radio"
-                    aria-checked={selectedStrategy === "Rank Based"}
-                    onClick={() => handleRadioChange("Rank Based")}
-                  >
-                    <div className="pro-radio-tabs__check-icon">
-                      <label className="ant-radio-wrapper">
-                        <span
-                          className={`ant-radio ${
-                            selectedStrategy === "Rank Based"
-                              ? "ant-radio-checked"
-                              : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            tabIndex={-1}
-                            className="ant-radio-input"
-                            checked={selectedStrategy === "Rank Based"}
-                            onChange={() => handleRadioChange("Rank Based")}
-                          />
-                          <span className="ant-radio-inner" />
-                        </span>
-                      </label>
-                    </div>
-                    <div className="styles_strategy__xc2r+">
-                      <div className="styles_strategyContent__c-1Di">
-                        <p className="pro-text pro-body pro-text--medium">
-                          Rank Based
-                        </p>
-                        <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                          Vendors will be ranked on bid price
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price Based Radio Button */}
-                  <div
-                    className={`pro-radio-tabs__tab ${
-                      selectedStrategy === "Price Based"
-                        ? "pro-radio-tabs__tab__selected"
-                        : ""
-                    }`}
-                    tabIndex={0}
-                    role="radio"
-                    aria-checked={selectedStrategy === "Price Based"}
-                    onClick={() => handleRadioChange("Price Based")}
-                  >
-                    <div className="pro-radio-tabs__check-icon">
-                      <label className="ant-radio-wrapper">
-                        <span
-                          className={`ant-radio ${
-                            selectedStrategy === "Price Based"
-                              ? "ant-radio-checked"
-                              : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            tabIndex={-1}
-                            className="ant-radio-input"
-                            checked={selectedStrategy === "Price Based"}
-                            onChange={() => handleRadioChange("Price Based")}
-                          />
-                          <span className="ant-radio-inner" />
-                        </span>
-                      </label>
-                    </div>
-                    <div className="styles_strategy__xc2r+">
-                      <div className="styles_strategyContent__c-1Di">
-                        <p className="pro-text pro-body pro-text--medium">
-                          Price Based
-                        </p>
-                        <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                          Minimum bid price visible to vendors
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Traffic Light Radio Button */}
-                  <div
-                    className={`pro-radio-tabs__tab ${
-                      selectedStrategy === "Traffic Light"
-                        ? "pro-radio-tabs__tab__selected"
-                        : ""
-                    }`}
-                    tabIndex={0}
-                    role="radio"
-                    aria-checked={selectedStrategy === "Traffic Light"}
-                    onClick={() => handleRadioChange("Traffic Light")}
-                  >
-                    <div className="pro-radio-tabs__check-icon">
-                      <label className="ant-radio-wrapper">
-                        <span
-                          className={`ant-radio ${
-                            selectedStrategy === "Traffic Light"
-                              ? "ant-radio-checked"
-                              : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            tabIndex={-1}
-                            className="ant-radio-input"
-                            checked={selectedStrategy === "Traffic Light"}
-                            onChange={() => handleRadioChange("Traffic Light")}
-                          />
-                          <span className="ant-radio-inner" />
-                        </span>
-                      </label>
-                    </div>
-                    <div className="styles_strategy__xc2r+">
-                      <div className="styles_strategyContent__c-1Di">
-                        <p className="pro-text pro-body pro-text--medium">
-                          Traffic Light
-                        </p>
-                        <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                          Vendors will be divided based on a specified range
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Knockout Radio Button */}
-                  <div
-                    className={`pro-radio-tabs__tab ${
-                      selectedStrategy === "Knockout"
-                        ? "pro-radio-tabs__tab__selected"
-                        : ""
-                    }`}
-                    tabIndex={0}
-                    role="radio"
-                    aria-checked={selectedStrategy === "Knockout"}
-                    onClick={() => handleRadioChange("Knockout")}
-                  >
-                    <div className="pro-radio-tabs__check-icon">
-                      <label className="ant-radio-wrapper">
-                        <span
-                          className={`ant-radio ${
-                            selectedStrategy === "Knockout"
-                              ? "ant-radio-checked"
-                              : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            tabIndex={-1}
-                            className="ant-radio-input"
-                            checked={selectedStrategy === "Knockout"}
-                            onChange={() => handleRadioChange("Knockout")}
-                          />
-                          <span className="ant-radio-inner" />
-                        </span>
-                      </label>
-                    </div>
-                    <div className="styles_strategy__xc2r+">
-                      <div className="styles_strategyContent__c-1Di">
-                        <p className="pro-text pro-body pro-text--medium">
-                          Knockout
-                        </p>
-                        <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                          Vendors will accept/reject your offer
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dutch Auction Radio Button */}
-                  <div
-                    className={`pro-radio-tabs__tab ${
-                      selectedStrategy === "Dutch Auction"
-                        ? "pro-radio-tabs__tab__selected"
-                        : ""
-                    }`}
-                    tabIndex={0}
-                    role="radio"
-                    aria-checked={selectedStrategy === "Dutch Auction"}
-                    onClick={() => handleRadioChange("Dutch Auction")}
-                  >
-                    <div className="pro-radio-tabs__check-icon">
-                      <label className="ant-radio-wrapper">
-                        <span
-                          className={`ant-radio ${
-                            selectedStrategy === "Dutch Auction"
-                              ? "ant-radio-checked"
-                              : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            tabIndex={-1}
-                            className="ant-radio-input"
-                            checked={selectedStrategy === "Dutch Auction"}
-                            onChange={() => handleRadioChange("Dutch Auction")}
-                          />
-                          <span className="ant-radio-inner" />
-                        </span>
-                      </label>
-                    </div>
-                    <div className="styles_strategy__xc2r+">
-                      <div className="styles_strategyContent__c-1Di">
-                        <p className="pro-text pro-body pro-text--medium">
-                          Dutch Auction
-                        </p>
-                        <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                          First come first serve allocation.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Award Section */}
-              <div className="ant-row ant-form-item">
-                <div className="ant-col ant-form-item-label">
-                  <label title="How will you award the event?">
-                    How will you award the event?
+            <form className="ant-form-item my-4">
+              <div>
+                <div className="d-flex align-items-center gap-3 my-3">
+                  <input
+                    type="checkbox"
+                    className="ant-radio-input"
+                    checked={dynamicExtension}
+                    onChange={handleDynamicExtensionChange}
+                  />
+                  <label htmlFor="Datepicker">
+                    Dynamic Event Extension (Extend closing time in last 1 min
+                    in case of rank / price changes in top selected bids.)
                   </label>
                 </div>
-                <div className="ant-col ant-form-item-control-wrapper">
-                  <div className="ant-form-item-control">
-                    <span className="ant-form-item-children">
-                      <div style={{ maxWidth: 700 }}>
-                        <div
-                          className="pro-radio-tabs"
-                          style={{ gridTemplateColumns: "1fr 1fr" }}
-                        >
-                          <div
-                            className={`pro-radio-tabs__tab ${
-                              awardType === "SingleVendor"
-                                ? "pro-radio-tabs__tab__selected"
-                                : ""
-                            }`}
-                            role="radio"
-                            aria-checked={awardType === "SingleVendor"}
-                          >
-                            <div className="pro-radio-tabs__check-icon">
-                              <label
-                                className={`ant-radio-wrapper ${
-                                  awardType === "SingleVendor"
-                                    ? "ant-radio-wrapper-checked"
-                                    : ""
-                                }`}
-                              >
-                                <span
-                                  className={`ant-radio ${
-                                    awardType === "SingleVendor"
-                                      ? "ant-radio-checked"
-                                      : ""
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    className="ant-radio-input"
-                                    value="SingleVendor"
-                                    checked={awardType === "SingleVendor"}
-                                    onChange={handleAwardTypeChange}
-                                  />
-                                  <span className="ant-radio-inner"></span>
-                                </span>
-                              </label>
-                            </div>
-                            <p className="pro-text pro-body pro-text--normal">
-                              I'll award the entire lot to single vendor
-                            </p>
-                          </div>
-                          <div
-                            className={`pro-radio-tabs__tab ${
-                              awardType === "MultipleVendors"
-                                ? "pro-radio-tabs__tab__selected"
-                                : ""
-                            }`}
-                            role="radio"
-                            aria-checked={awardType === "MultipleVendors"}
-                          >
-                            <div className="pro-radio-tabs__check-icon">
-                              <label
-                                className={`ant-radio-wrapper ${
-                                  awardType === "MultipleVendors"
-                                    ? "ant-radio-wrapper-checked"
-                                    : ""
-                                }`}
-                              >
-                                <span
-                                  className={`ant-radio ${
-                                    awardType === "MultipleVendors"
-                                      ? "ant-radio-checked"
-                                      : ""
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    className="ant-radio-input"
-                                    value="MultipleVendors"
-                                    checked={awardType === "MultipleVendors"}
-                                    onChange={handleAwardTypeChange}
-                                  />
-                                  <span className="ant-radio-inner"></span>
-                                </span>
-                              </label>
-                            </div>
-                            <p className="pro-text pro-body pro-text--normal">
-                              I may partially award the event to multiple
-                              vendors
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </span>
+
+                <div className="d-flex align-items-center gap-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ width: "200px", height: "60px" }}
+                  />
+                  <div className="d-flex align-items-center gap-3">
+                    <span>Price</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-3">
+                    <span>Rank</span>
                   </div>
                 </div>
-              </div>
-
-              <form className="ant-form-item my-4">
-                <div>
-                  <div className="d-flex align-items-center gap-3 my-3">
-                    <input
-                      type="checkbox"
-                      className="ant-radio-input"
-                      checked={dynamicExtension}
-                      onChange={handleDynamicExtensionChange}
-                    />
-                    <label htmlFor="Datepicker">
-                      Dynamic Event Extension (Extend closing time in last 1 min
-                      in case of rank / price changes in top selected bids.)
-                    </label>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-3">
+                <div className="dynamic-time d-flex w-100 align-items-center gap-5">
+                  <div className="trigger-time">
+                    <label>Trigger time extension on last</label>
                     <input
                       type="text"
-                      className="form-control"
-                      style={{ width: "200px", height: "60px" }}
+                      placeholder="Min(s)"
+                      style={{ marginLeft: "5px" }}
                     />
-                    <div className="d-flex align-items-center gap-3">
-                      <span>Price</span>
-                    </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <span>Rank</span>
-                    </div>
                   </div>
-                  <div className="dynamic-time d-flex w-100 align-items-center gap-5">
-                    <div className="trigger-time">
-                      <label>Trigger time extension on last</label>
-                      <input
-                        type="text"
-                        placeholder="Min(s)"
-                        style={{ marginLeft: "5px" }}
-                      />
-                    </div>
-                    <div className="extend-time">
-                      <label>Extend time by</label>
-                      <input
-                        type="text"
-                        placeholder="Min(s)"
-                        style={{ marginLeft: "5px" }}
-                      />
-                    </div>
-                    <div className="time-extention">
-                      <label>Time extension on change in:</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleEventTypeModalClose}
-            >
-              Close
-            </button>
-            <button type="button" className="purple-btn2">
-              Save changes
-            </button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal
-        centered
-        size="sm"
-        show={settingShow}
-        onHide={handleSettingClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h4
-              className="modal-title text-center w-100"
-              style={{ fontWeight: 500 }}
-            >
-              Layout
-            </h4>
-            <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={handleSettingClose}
-            />
-          </div>
-        </Modal.Header>
-
-        <Modal.Body>
-          {[...Array(6)].map((_, i) => (
-            <div
-              className="row justify-content-between align-items-center mt-2"
-              key={i}
-            >
-              <div className="col-md-6">
-                <button type="submit" className="btn btn-md">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="22"
-                    height="22"
-                    viewBox="0 0 48 48"
-                    fill="none"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                      fill="black"
-                    />
-                  </svg>
-                </button>
-                <label> Sr No.</label>
-              </div>
-              <div className="col-md-4">
-                <div className="form-check form-switch mt-1">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    role="switch"
-                    id="flexSwitchCheckDefault"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </Modal.Body>
-      </Modal>
-
-      <Modal
-        centered
-        size="lg"
-        show={vendorModal}
-        onHide={handleVendorClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h5 className="modal-title fs-5">Select Vendors</h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleVendorClose}
-            />
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label className="po-fontBold">Supplier Type</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="Steel"
-                  fdprocessedid="vn2c2n"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label className="po-fontBold">Vendor Name</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="All"
-                  fdprocessedid="vn2c2n"
-                />
-              </div>
-            </div>
-            <div>
-              <div className="d-flex justify-content-end my-2 mt-3">
-                <form>
-                  <div className="input-group">
+                  <div className="extend-time">
+                    <label>Extend time by</label>
                     <input
-                      type="search"
-                      id="searchInput"
-                      className="form-control tbl-search"
-                      placeholder="Type your keywords here"
+                      type="text"
+                      placeholder="Min(s)"
+                      style={{ marginLeft: "5px" }}
                     />
-                    <div className="input-group-append">
-                      <button type="button" className="btn btn-md btn-default">
-                        <svg
-                          width={16}
-                          height={16}
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                            fill="#8B0203"
-                          />
-                          <path
-                            d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                            fill="#8B0203"
-                          />
-                        </svg>
-                      </button>
-                    </div>
                   </div>
-                </form>
-              </div>
-              <div className="tbl-container px-0 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>
-                        <input type="checkbox" />
-                      </th>
-                      <th>Supplier Type</th>
-                      <th>Vendor Name</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input type="checkbox" />
-                      </td>
-                      <td>Cement, Waterproofing </td>
-                      <td>Sharda Chemical Pvt Ltd</td>
-                      <td>Delivery Pending</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input type="checkbox" name="" id="" />
-                      </td>
-                      <td>Tiles, Granites, Cement, Sand</td>
-                      <td>Ashirvad Ceramics</td>
-                      <td>Not submitted Bid / Quotation</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input type="checkbox" name="" id="" />
-                      </td>
-                      <td>Tiles, Granites, Cement, Sand</td>
-                      <td>Ashirvad Ceramics</td>
-                      <td>Not submitted Bid / Quotation</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input type="checkbox" name="" id="" />
-                      </td>
-                      <td>Tiles, Granites, Cement, Sand</td>
-                      <td>Ashirvad Ceramics</td>
-                      <td>Not submitted Bid / Quotation</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div className="modal-footer justify-content-center">
-            <button className="purple-btn2" onClick={handleVendorClose}>
-              {" "}
-              Save
-            </button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal
-        centered
-        size="md"
-        show={eventSchedule}
-        onHide={handleEventScheduleClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h5 className="modal-title fs-5" id="exampleModalLabel">
-              Event Schedule
-            </h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleEventScheduleClose}
-            />
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="pb-4">
-            <p>Start Time</p>
-            <div className="row ">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <select
-                    className="form-control form-select"
-                    style={{ width: "100%" }}
-                    fdprocessedid="nc9nxa"
-                  >
-                    <option selected="selected">Start Now</option>
-                    <option>Alaska</option>
-                    <option>California</option>
-                    <option>Delaware</option>
-                    <option>Tennessee</option>
-                    <option>Texas</option>
-                    <option>Washington</option>
-                  </select>
+                  <div className="time-extention">
+                    <label>Time extension on change in:</label>
+                    <select
+                      className="form-control form-select"
+                      style={{ width: "100%" }}
+                    >
+                      <option selected="selected">Alabama</option>
+                      <option>Alaska</option>
+                      <option>California</option>
+                      <option>Delaware</option>
+                      <option>Tennessee</option>
+                      <option>Texas</option>
+                      <option>Washington</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div className="col-md-4 ">
-                <input type="date" className="form-control " name="" id="" />
-              </div>
-              <div className="col-md-4">
-                <input type="time" className="form-control" name="" id="" />
-              </div>
-            </div>
-            <p className="mt-2">End Time</p>
-            <div className="row">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <select
-                    className="form-control form-select"
-                    style={{ width: "100%" }}
-                    fdprocessedid="nc9nxa"
-                  >
-                    <option selected="selected">Duration</option>
-                    <option>Alaska</option>
-                    <option>California</option>
-                    <option>Delaware</option>
-                    <option>Tennessee</option>
-                    <option>Texas</option>
-                    <option>Washington</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <input className="form-control" type="time" name="" id="" />
-              </div>
-            </div>
-            <p className="my-2 " style={{ color: "var(--light-grey)" }}>
-              Event will end at 05 Apr 2024 at 11:24 am
-            </p>
-            <p className="mt-2">Evaluation time</p>
-            <div className="row mt-2">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <select
-                    className="form-control form-select"
-                    style={{ width: "100%" }}
-                    fdprocessedid="nc9nxa"
-                  >
-                    <option selected="selected">Duration</option>
-                    <option>Alaska</option>
-                    <option>California</option>
-                    <option>Delaware</option>
-                    <option>Tennessee</option>
-                    <option>Texas</option>
-                    <option>Washington</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <input className="form-control" type="time" name="" id="" />
-              </div>
-            </div>
+            </form>
           </div>
-          <div className="modal-footer justify-content-center">
-            <button className="purple-btn2" onClick={handleEventScheduleClose}>
-              {" "}
-              Save
-            </button>
-          </div>
-        </Modal.Body>
-      </Modal>
+        </div>
+      </DynamicModalBox>
+      <LayoutModal show={settingShow} onHide={handleSettingClose} />
 
-      <Modal
-        centered
-        size="lg"
-        show={documentModal}
-        onHide={handleDocumentClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h5
-              className="modal-title text-center w-100"
-              id="exampleModalLabel"
-            >
-              Document Attchement
-            </h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleDocumentClose}
-            />
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row mt-2">
-            <div className="col-12 px-4">
-              <div className="d-flex justify-content-between">
-                <h5>Latest Documents</h5>
-                <button
-                  className="purple-btn2 m-0"
-                  data-bs-toggle="modal"
-                  data-bs-target="#file_attachement"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                  onClick={handleAttachmentModalShow}
-                >
-                  <svg
-                    width={16}
-                    height={17}
-                    viewBox="0 0 16 17"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span className="ms-2">Attachment File </span>
-                </button>
-              </div>
-              <div className="tbl-container px-0 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Document Name</th>
-                      <th>Attchement Name</th>
-                      <th>Upload Date</th>
-                      <th>Upload By</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>MTC</td>
-                      <td>Material test cert.pdf</td>
-                      <td>01-11-202</td>
-                      <td>vendor user</td>
-                      <td>
-                        <button className="p-2 bg-white border">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            class="bi bi-eye"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              {/* /.form-group */}
-            </div>
-            {/* /.col */}
-            {/* /.col */}
-          </div>
-          <div className="row mt-2">
-            <div className="col-12 px-4">
-              <h5> Documents Attchment History</h5>
-              <div className="tbl-container px-0 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Document Name</th>
-                      <th>Attchement Name</th>
-                      <th>Upload Date</th>
-                      <th>Upload By</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>MTC</td>
-                      <td>Material test cert.pdf</td>
-                      <td>01-11-202</td>
-                      <td>vendor user</td>
-                      <td>
-                        <button className="p-2 bg-white border">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            class="bi bi-eye"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div className="modal-footer justify-content-center">
-            <button
-              className="purple-btn2"
-              type="button"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleDocumentClose}
-            >
-              Close
-            </button>
-          </div>
-        </Modal.Body>
-      </Modal>
+      <VendorModal show={vendorModal} onHide={handleVendorClose} />
 
-      <Modal
-        centered
-        size="md"
-        show={attachmentModal}
-        onHide={handleAttachmentClose}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h5
-              className="modal-title text-center w-100"
-              id="exampleModalLabel"
-            >
-              Upload File
-            </h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              onClick={handleAttachmentClose}
-            />
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row mt-2">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>Name of the Document</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="Default input"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>File Upload </label>
-                <input
-                  className="form-control"
-                  type="file"
-                  placeholder="Default input"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="modal-footer justify-content-center">
-            <button className="purple-btn2" onClick={handleAttachmentClose}>
-              Sumbit
-            </button>
-          </div>
-        </Modal.Body>
-      </Modal>
+      <EventScheduleModal show={eventSchedule} onHide={handleEventScheduleClose} />
+      
+      <DocumentModal show={documentModal} onHide={handleDocumentClose} handleAttachmentModalShow={handleAttachmentModalShow} />
+
+      <AttachmentModal show={attachmentModal} onHide={handleAttachmentClose} />
     </>
   );
 }
