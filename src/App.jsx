@@ -16,14 +16,18 @@ import AddApprovals from './pages/add-approvals';
 import GoodReceiveNoteDetails from './pages/grn/grn_detail';
 import CreateBOQ from './pages/create-BOQ';
 import ViewBOQ from './pages/view-BOQ';
-import BOQApprovalList from './pages/boq-Approval-List';
+import BOQApprovalList from './pages/boq_approval_list';
 import BOQDetailsPageMaster from './pages/boq-details-page-master';
 import BOQApprovalDetails from './pages/boq-approval-details'
 
+
 function App() {
   return (
+  
     <BrowserRouter>
-      <div>
+
+    
+       <div>
         <Routes>
           <Route path='/' element={<Members />} />
           <Route path='/approvals-list' element={<ApprovalsList />} />
