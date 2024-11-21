@@ -3932,11 +3932,15 @@ ul#pills-tab{
   transform: rotate(-60deg);
   transition: transform 0.3s ease; /* Add a smooth transition effect */
 }
+.form-control:disabled, .form-control[readonly] {
+  background-color: rgb(233, 236, 239);
+  opacity: 1;
+}
 
 .card-header {
-  background-color: transparent;
+  background-color: transparent !important;
   border-bottom: unset;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.25rem !important;
   position: relative;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
@@ -4223,7 +4227,7 @@ label {
 }
 
 .details_page label span{
-  color: var(--black);
+  color: var(--red);
 }
 
 
@@ -5127,6 +5131,7 @@ iframe .site-content, iframe .website-content{
 .suggestion-item:hover {
   background-color: #f0f0f0;
 }
+
 /* collaps arrow css */
 .collapse-arrow-trans {
   cursor: pointer;
@@ -5138,3 +5143,33 @@ iframe .site-content, iframe .website-content{
   transform-origin: center;  
 }
 /* collaps arrow css */
+
+
+
+.css-tj5bde-Svg{
+  display: none ;
+}
+
+
+/* Set the width of the select dropdown */
+
+
+/* Style the text color of the selected value */
+.react-select__single-value {
+  color: var(--red); /* Change text color of the selected value */
+}
+
+/* Style the individual options in the dropdown */
+.react-select__option {
+  color: black; /* Default text color */
+  background-color: transparent; /* Default background color */
+}
+
+/* Change background color when an option is selected */
+.react-select__option--is-selected {
+  background-color: var(--red) !important; /* Change background color when selected */
+  color: white !important; /* Text color when selected */
+}
+
+/* Hover effect on options */
+/*  */

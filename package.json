@@ -15,6 +15,7 @@
     "datatables.net": "^2.1.8",
     "datatables.net-dt": "^2.1.8",
     "datatables.net-react": "^1.0.0",
+    "file-saver": "^2.0.5",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.1",
     "jquery": "^3.7.1",
@@ -23,9 +24,10 @@
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "react-select": "^5.8.1",
+    "react-select": "^5.8.3",
     "react-toastify": "^10.0.6",
-    "sweetalert2": "^11.14.4"
+    "sweetalert2": "^11.14.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
