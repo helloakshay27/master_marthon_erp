@@ -45,6 +45,25 @@ function Members() {
               </li>
 
             </ul>
+
+            <h1>BOQ</h1>
+            <ul>
+              <li>
+                <Link to="/create-BOQ">Create BOQ</Link>
+              </li>
+              <li>
+                <Link to="/view-BOQ">View BOQ</Link>
+              </li>
+              <li>
+                <Link to="/boq-approval-list">BOQ Approval List</Link>
+              </li>
+              <li>
+                <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
+              </li>
+              <li>
+                <Link to="/boq-approval-details">BOQ Approval Details</Link>
+              </li>
+            </ul>
           </div>
           <Footer />
         </div>

@@ -14,6 +14,11 @@ import EditApprovals from './pages/edit-approvals';
 // import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import AddApprovals from './pages/add-approvals';
 import GoodReceiveNoteDetails from './pages/grn/grn_detail';
+import CreateBOQ from './pages/create-BOQ';
+import ViewBOQ from './pages/view-BOQ';
+import BOQApprovalList from './pages/boq-Approval-List';
+import BOQDetailsPageMaster from './pages/boq-details-page-master';
+import BOQApprovalDetails from './pages/boq-approval-details'
 
 function App() {
   return (
@@ -33,6 +38,11 @@ function App() {
           <Route path='/erp-rfq-auction-events-4h' element={<ErpRfqAuctionEvents4h />} />
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />
           <Route path='/create-rfq' element={<CreateRfq />} />
+          <Route path='/create-BOQ' element={<CreateBOQ />} />
+          <Route path='/view-BOQ' element={<ViewBOQ />} />
+          <Route path='/boq-approval-list' element={<BOQApprovalList />} />
+          <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
+          <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
         </Routes>
       </div>
     </BrowserRouter>

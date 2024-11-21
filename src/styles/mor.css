@@ -5127,3 +5127,14 @@ iframe .site-content, iframe .website-content{
 .suggestion-item:hover {
   background-color: #f0f0f0;
 }
+/* collaps arrow css */
+.collapse-arrow-trans {
+  cursor: pointer;
+  transition: transform 1s ease;  
+}
+
+.collapse-arrow-trans.up path {
+  transform: rotate(180deg);  
+  transform-origin: center;  
+}
+/* collaps arrow css */
