@@ -624,7 +624,7 @@ const GoodReceiveNoteDetails = () => {
                                         {delivery.po_delivery_date || "-"}
                                       </td>
                                       <td>{delivery.po_delivery_qty || "-"}</td>
-                                      <td>{item.batch_no || "-"}</td>{" "}
+                                      <td>{delivery.batch_no || "-"}</td>{" "}
                                       {/* Using batch_no from the outer item object */}
                                     </tr>
                                   )
@@ -693,7 +693,7 @@ const GoodReceiveNoteDetails = () => {
                             </label>
                             <input
                               className="form-control"
-                              placeholder={"-"}
+                              placeholder={item.defective_reason || "-"}
                               type="text"
                               disabled
                             />
