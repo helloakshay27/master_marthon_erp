@@ -1,8 +1,8 @@
+import React from 'react';
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Members from './pages/members';
 import ErpStockRegister13B from './pages/erp-stock-register13b';
-import ErpStockRegisterCreation13C from './pages/erp-stock-register-creation13c';
 import ErpStockRegisterCreationDetail13C from './pages/erp-stock-register-creation-detail-13c';
 import CreateRfq from './pages/create-rfq';
 import ErpRfqAuctionEvents4f from './pages/erp-rfq-auction-events-4f';
@@ -10,8 +10,6 @@ import ErpRfqAuctionEvents4h from './pages/erp-rfq-auction-events-4h';
 import ErpRfqDetailPriceTrends4h from './pages/erp-rfq-detail-price-trends4h';
 import ApprovalsList from './pages/approvals-list';
 import EditApprovals from './pages/edit-approvals';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import AddApprovals from './pages/add-approvals';
 import GoodReceiveNoteDetails from './pages/grn/grn_detail';
 

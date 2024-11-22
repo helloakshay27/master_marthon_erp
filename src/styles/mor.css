@@ -4639,9 +4639,9 @@ left: 0 !important;
   overflow: unset !important;
 }
 
-.card.collapsed-card .card-body, .card.collapsed-card .card-footer {
+/* .card.collapsed-card .card-body, .card.collapsed-card .card-footer {
   display: none;
-}
+} */
 
 
 

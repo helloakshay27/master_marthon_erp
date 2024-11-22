@@ -36,7 +36,7 @@ export const evaluationOptions = [
     { label: "7 Days", value: "7 Days" },
     { label: "Custom", value: "Custom" },
     { label: "Fixed Time", value: "Fixed Time" },
-  ];
+];
 
 export const chartOptions = {
     chart: {
@@ -82,4 +82,4 @@ export const chartOptions = {
         ]
       }
     ]
-  };  
+};  
