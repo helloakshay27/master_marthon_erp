@@ -6,11 +6,13 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
+import baseURL from "../confi/apiDomain";
 
 DataTable.use(DT);
 
@@ -42,7 +44,7 @@ const ErpStockRegister13B = () => {
     const token = urlParams.get('token');
 
         const response = await fetch(
-          `https://marathon.lockated.com/pms/inventories/stock_data.json?token=${token}`
+          `${baseURL}/pms/inventories/stock_data.json?token=${token}`
         ); // Replace with your API endpoint
 
         if (!response.ok) {
@@ -50,33 +52,38 @@ const ErpStockRegister13B = () => {
         }
 
         const result = await response.json();
-        const transformedData = result.map((item, index) => ({
-          srNo: index + 1,
-          material: item.name || "-",
-          materialUrl: `/stock_register_detail/${item.id}`, // Add material-specific URL here
-        material_type: item.material_type || "-",
-        materialSubType: item.inventory_sub_type_id || "-",
-          materialDescription: item.material_description || "-",
-          specification: item.specification || "-",
-          lastReceived: item.last_received_on || "-",
-          total_received: item.total_received || "-",
-          total_issued: item.total_issued || "-",
-          stockStatus: item.available_quantity || "-",
-          deadstockQty: item.deadstockQty || "-", // Assuming you will add this field later
-          theftMissing:
-            item.theftMissing !== undefined ? item.theftMissing : "-",
-          uom_name: item.uom_name || "-",
-          stock_details: item.stock_details.map((stock) => ({
-            stockId: stock.id,
-            createdAt: stock.created_at || "-",
-            mor: stock.mor || "-",
-            resourceNumber: stock.resource_number || "-",
-            status: stock.status || "-",
-            receivedQty: stock.received_qty || "-",
-            issuedQty: stock.issued_qty || "-",
-            returnedQty: stock.returned_qty || "-",
-          })),
-        }));
+        const transformedData = result.map((item, index) => {
+          const materialUrl = item.id && token
+            ? `/stock_register_detail/${item.id}/?token=${token}`
+            : "#"; // Fallback to "#" if id or token is missing
+  
+          return {
+            srNo: index + 1,
+            material: item.name || "-",
+            materialUrl: materialUrl, // Safeguard added here
+            material_type: item.material_type || "-",
+            materialSubType: item.inventory_sub_type_id || "-",
+            materialDescription: item.material_description || "-",
+            specification: item.specification || "-",
+            lastReceived: item.last_received_on || "-",
+            total_received: item.total_received || "-",
+            total_issued: item.total_issued || "-",
+            stockStatus: item.available_quantity || "-",
+            deadstockQty: item.deadstockQty || "-",
+            theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
+            uom_name: item.uom_name || "-",
+            stock_details: item.stock_details.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              status: stock.status || "-",
+              receivedQty: stock.received_qty || "-",
+              issuedQty: stock.issued_qty || "-",
+              returnedQty: stock.returned_qty || "-",
+            })),
+          };
+        });
 
         console.log(transformedData);
         setData(transformedData);
@@ -140,7 +147,14 @@ const ErpStockRegister13B = () => {
     return <div>Loading...</div>; // Show loading message while data loads
   }
 
-
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "Stock_Data.xlsx"); // Save the file
+  };
 
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
@@ -343,6 +357,7 @@ const ErpStockRegister13B = () => {
                       </div>
                       <div className="col-md-3">
                         <button
+                        onClick={downloadExcel}
                           id="downloadButton"
                           type="submit"
                           className="btn btn-md"

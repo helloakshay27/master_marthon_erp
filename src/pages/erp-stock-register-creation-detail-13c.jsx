@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import baseURL from "../confi/apiDomain";
 
 const ErpStockRegisterCreationDetail13C = () => {
   const { id } = useParams(); // Extract the 'id' from the route
@@ -15,9 +16,11 @@ const ErpStockRegisterCreationDetail13C = () => {
     try {
       setError(null);
       setLoading(true);
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
 
       const response = await fetch(
-        `https://marathon.lockated.com/pms/inventories/${id}.json?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47`
+        `${baseURL}/pms/inventories/${id}.json?token=${token}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -61,7 +64,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                              
                             </label>
                           </div>
@@ -159,7 +162,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -169,7 +172,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -179,7 +182,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>Null
+                              <span className="me-3">:</span>-
                             </label>
                           </div>
                         </div>
@@ -305,9 +308,9 @@ const ErpStockRegisterCreationDetail13C = () => {
                                   <tbody>
                                     <tr>
                                       <td>1</td>
-                                      <td>Defective Material from Vendor</td>
+                                      <td>-</td>
                                       <td />
-                                      <td>MOR/MAR/MAX/101/02/2024</td>
+                                      <td></td>
                                       <td />
                                       <td>
                                         <select
@@ -316,17 +319,12 @@ const ErpStockRegisterCreationDetail13C = () => {
                                           fdprocessedid="622i99"
                                         >
                                           <option selected="selected">
-                                            NOS
+                                            
                                           </option>
-                                          <option>Alaska</option>
-                                          <option>California</option>
-                                          <option>Delaware</option>
-                                          <option>Tennessee</option>
-                                          <option>Texas</option>
-                                          <option>Washington</option>
+                                         
                                         </select>
                                       </td>
-                                      <td>+50</td>
+                                      <td></td>
                                       <td />
                                     </tr>
                                     <tr>
