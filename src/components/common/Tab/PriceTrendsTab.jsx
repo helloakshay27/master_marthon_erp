@@ -10,61 +10,24 @@ export default function PriceTrendsTab() {
       tabIndex={0}
     >
       <div className="priceTrends-list-main">
-        <div className="mt-2 ">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
-        <div className="">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
-        <div className="">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
-        <div className="">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
-        <div className="">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
-        <div className="">
-          <div>A</div>
-          <div className="mt-0 priceTrends-list-child go-shadow-k">
-            <p className="eventList-p2 mb-0 fw-bold">
-              AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE LIMITED
-            </p>
-            <p className="eventList-p1 mb-0">copper make</p>
-          </div>
-        </div>
+        {/* Container for all list items */}
+        {Array(6)
+          // @ts-ignore
+          .fill()
+          .map((_, index) => (
+            <div className="priceTrends-item mb-3" key={index}>
+              <div className="item-label">A</div>
+              <div className="priceTrends-list-child go-shadow-k p-3">
+                <p className="eventList-p2 mb-0 fw-bold">
+                  AXIS CONTROL from AXIS ELECTRICAL COMPONENTS INDIA PRIVATE
+                  LIMITED
+                </p>
+                <p className="eventList-p1 mb-0">copper make</p>
+              </div>
+            </div>
+          ))}
       </div>
+
       <footer className="d-flex justify-content-end pageChange">
         <nav aria-label="Page navigation example">
           <ul className="pagination">

@@ -1,7 +1,16 @@
 import React from "react";
 import { CheckedCircleIcon, EnvelopeIcon, ParticipantsIcon, ShowIcon } from "../..";
 
-export default function OverviewTab({handleParticipants,handleSavings, handleBiddings, handleProducts,participantsOpen, savingsOpen, biddingOpen, productOpen}) {
+export default function OverviewTab({
+  handleParticipants,
+  handleSavings,
+  handleBiddings,
+  handleProducts,
+  participantsOpen,
+  savingsOpen,
+  biddingOpen,
+  productOpen,
+}) {
   return (
     <div
       className="tab-pane fade"
@@ -11,40 +20,47 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
       tabIndex={0}
     >
       <section className="Erp-overview overflow-auto">
-        <div className="row my-2">
+        <div className="row my-2 mx-2">
           <div className="viewBy-main">
-            <div className="viewBy-main-child2">
-              <p className="viewBy-main-child2P">
-                <span>
-                  people
-                  <ParticipantsIcon />
-                </span>
-                Participation :
-              </p>
+            <div className="viewBy-main-child2 mb-3">
               <div className="d-flex align-items-center">
-                <div
-                  className="viewBy-main-child2-child1 d-flex align-items-center justify-content-center gap-2"
-                  id="viewBy-main-child2-child1"
-                >
-                  4
-                </div>
-                <div
-                  className="viewBy-main-child2-child2 d-flex align-items-center justify-content-center gap-2"
-                  id="viewBy-main-child2-child2"
-                >
-                  <EnvelopeIcon />4
-                </div>
-                <div
-                  className="viewBy-main-child2-child3 d-flex align-items-center justify-content-center gap-2"
-                  id="viewBy-main-child2-child3"
-                >
-                  <ShowIcon />4
-                </div>
-                <div
-                  className="viewBy-main-child2-child4 d-flex align-items-center justify-content-center gap-2"
-                  id="viewBy-main-child2-child4"
-                >
-                  <CheckedCircleIcon />4
+                <p className="viewBy-main-child2P mb-0">
+                  <ParticipantsIcon />
+                  <span className="me-2">Participation:</span>
+                </p>
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
+                    aria-label="Participants"
+                  >
+                    <i className="bi bi-check2 me-2"></i>4
+                  </div>
+                  <div
+                    className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
+                    aria-label="Emails"
+                  >
+                    <EnvelopeIcon
+                      // @ts-ignore
+                      className="me-2"
+                    />{" "}
+                    4
+                  </div>
+                  <div
+                    className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
+                    aria-label="Views"
+                  >
+                    <ShowIcon
+                      // @ts-ignore
+                      className="me-2"
+                    />{" "}
+                    4
+                  </div>
+                  <div
+                    className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
+                    aria-label="Completed"
+                  >
+                    <i className="bi bi-check-circle me-2"></i> 4
+                  </div>
                 </div>
               </div>
             </div>
@@ -75,7 +91,7 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
               <div className="card card-body p-2">
                 <div className="participate-sec">
                   <div
-                    className="totals-activity d-flex align-items-center"
+                    className="totals-activity d-flex align-items-center justify-content-between mx-3"
                     style={{ gap: "0" }}
                   >
                     <div className="total-activity">
@@ -139,20 +155,18 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
           {savingsOpen && (
             <div id="savings-summary">
               <div className="card card-body p-2">
-                <div
-                  className="viewBy-main"
-                  style={{
-                    justifyContent: "end",
-                    margin: "0!important",
-                  }}
-                >
+                {/* View By Section */}
+                <div className="viewBy-main">
                   <div className="viewBy-main-child2">
                     <div className="view">View</div>
                   </div>
                 </div>
+
+                {/* Savings Reference Section */}
                 <div className="saving-ref">
-                  <div className="deafut-sec d-flex align-items-center">
-                    <div className="default d-flex gap-2">
+                  {/* Default Section */}
+                  <div className="default-sec d-flex align-items-center justify-content-between">
+                    <div className="default d-flex gap-2 align-items-center">
                       <svg
                         width={13}
                         height={14}
@@ -169,16 +183,20 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
                     </div>
                     <span>-</span>
                   </div>
-                  <div className="saving-sec d-flex">
+
+                  {/* Savings Section */}
+                  <div className="saving-sec d-flex justify-content-between align-items-center mt-2">
                     <div className="saving-text">SAVINGS REFERENCE</div>
                     <div className="default d-flex align-items-center gap-3">
                       <span>-</span>
-                      <span className="saving-amount"> ₹58,05,671.79</span>
+                      <span className="saving-amount">₹58,05,671.79</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Table Section */}
                 <div className="tbl-container mt-3">
-                  <table className="w-100">
+                  <table className="w-100 table">
                     <thead>
                       <tr>
                         <th>Product</th>
@@ -188,54 +206,19 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
-                      <tr>
-                        <td>Wooden Frd Door</td>
-                        <td>
-                          WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                        </td>
-                        <td>₹ 12850 /Nos</td>
-                        <td>₹ 0/Nos </td>
-                      </tr>
+                      {Array(6)
+                        // @ts-ignore
+                        .fill()
+                        .map((_, index) => (
+                          <tr key={index}>
+                            <td>Wooden Frd Door</td>
+                            <td>
+                              WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
+                            </td>
+                            <td>₹ 12850 /Nos</td>
+                            <td>₹ 0/Nos</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -266,7 +249,7 @@ export default function OverviewTab({handleParticipants,handleSavings, handleBid
           {biddingOpen && (
             <div id="bidding-summary">
               <div className="card card-body p-2">
-                <div className="container table-responsive pb-5">
+                <div className="table-responsive pb-5">
                   <h5>Quotation / Bid Revision Details</h5>
                   <div className="tbl-container">
                     <table className="">

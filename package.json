@@ -17,6 +17,7 @@
     "datatables.net-dt": "^2.1.8",
     "datatables.net-react": "^1.0.0",
     "file-saver": "^2.0.5",
+    "formik": "^2.4.6",
     "highcharts": "^11.4.8",
     "highcharts-react-official": "^3.2.1",
     "jquery": "^3.7.1",
@@ -28,7 +29,8 @@
     "react-select": "^5.8.3",
     "react-toastify": "^10.0.6",
     "sweetalert2": "^11.14.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

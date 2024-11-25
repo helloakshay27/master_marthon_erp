@@ -1,10 +1,6 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-import { Dropdown } from "react-bootstrap";
 import { useState } from "react";
-import RecreateOrderModal from '../components/common/Modal/RecreateOrderModal'
+import RecreateOrderModal from "../components/common/Modal/RecreateOrderModal";
 import NotificationInfoModal from "../components/common/Modal/NotificationInfoModal";
 import IncreaseEventTimeModal from "../components/common/Modal/IncreaseEventTimeModal";
 import WithdrawOrderModal from "../components/common/Modal/WithdrawOrderModal";
@@ -13,8 +9,15 @@ import RejectedBidsModal from "../components/common/Modal/RejectedBidsModal";
 import ActivityModal from "../components/common/Modal/ActivityModal";
 import AddEvaluationTimeModal from "../components/common/Modal/AddEvaluationTime";
 import BulkCounterOfferModal from "../components/common/Modal/BulkCounterOfferModal";
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import { AnalyticsTab, ClockIcon, ComparisonTab, OverviewTab, ParticipantsTab, SettingIcon } from "../components";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import {
+  AnalyticsTab,
+  ClockIcon,
+  ComparisonTab,
+  OverviewTab,
+  ParticipantsTab,
+  TabsList,
+} from "../components";
 import PriceTrendsTab from "../components/common/Tab/PriceTrendsTab";
 import ResponseTab from "../components/common/Tab/ResponseTab";
 
@@ -132,9 +135,6 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   return (
     <>
-      <Header />
-      <div className="main-content">
-        <Sidebar />
         <div className="website-content overflow-auto">
           <div className="module-data-section p-3">
             <div className="event-order-page">
@@ -143,10 +143,66 @@ export default function ErpRfqDetailPriceTrends4h() {
                   <h4 className="event-head px-2 ">Events</h4>
                 </div>
                 <div className="eventList-main">
-                  <div className="d-flex flex-row-reverse ">
+                <div className="d-flex flex-row-reverse ">
                     <div className="eventList-child1 event-participant-time">
                       <div className="eventList-time d-flex align-item-center gap-2 ">
-                        <ClockIcon />
+                        <svg
+                          width={24}
+                          height={24}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g clipPath="url(#clip0_96_912)">
+                            <g clipPath="url(#clip1_96_912)">
+                              <path
+                                d="M12 0.959961C14.928 0.959961 17.736 2.1231 19.8064 4.1935C21.8768 6.2639 23.04 9.07197 23.04 12C23.04 14.928 21.8768 17.736 19.8064 19.8064C17.736 21.8768 14.928 23.04 12 23.04C9.07197 23.04 6.2639 21.8768 4.1935 19.8064C2.1231 17.736 0.959961 14.928 0.959961 12C0.959961 9.07197 2.1231 6.2639 4.1935 4.1935C6.2639 2.1231 9.07197 0.959961 12 0.959961Z"
+                                stroke="#F3F3F3"
+                                strokeWidth="1.92"
+                                strokeLinecap="round"
+                                strokeDasharray="69.37 69.37"
+                              />
+                              <path
+                                d="M12 0.959961C14.928 0.959961 17.736 2.1231 19.8064 4.1935C21.8768 6.2639 23.04 9.07197 23.04 12C23.04 14.928 21.8768 17.736 19.8064 19.8064C17.736 21.8768 14.928 23.04 12 23.04C9.07197 23.04 6.2639 21.8768 4.1935 19.8064C2.1231 17.736 0.959961 14.928 0.959961 12C0.959961 9.07197 2.1231 6.2639 4.1935 4.1935C6.2639 2.1231 9.07197 0.959961 12 0.959961Z"
+                                stroke="white"
+                                strokeWidth="1.92"
+                                strokeLinecap="round"
+                                strokeDasharray="69.37 69.37"
+                              />
+                            </g>
+                            <g opacity="0.75" clipPath="url(#clip2_96_912)">
+                              <path
+                                d="M12 3C7.02991 3 3 7.02991 3 12C3 16.9701 7.02991 21 12 21C16.9701 21 21 16.9701 21 12C21 7.02991 16.9701 3 12 3ZM12 19.4732C7.87366 19.4732 4.52679 16.1263 4.52679 12C4.52679 7.87366 7.87366 4.52679 12 4.52679C16.1263 4.52679 19.4732 7.87366 19.4732 12C19.4732 16.1263 16.1263 19.4732 12 19.4732Z"
+                                fill="white"
+                              />
+                              <path
+                                d="M15.5096 14.5429L12.6449 12.4717V7.49958C12.6449 7.41119 12.5726 7.33887 12.4842 7.33887H11.5179C11.4295 7.33887 11.3572 7.41119 11.3572 7.49958V13.0322C11.3572 13.0844 11.3813 13.1326 11.4235 13.1628L14.7462 15.5855C14.8186 15.6378 14.919 15.6217 14.9712 15.5514L15.5458 14.7679C15.598 14.6936 15.582 14.5931 15.5096 14.5429Z"
+                                fill="white"
+                              />
+                            </g>
+                          </g>
+                          <defs>
+                            <clipPath id="clip0_96_912">
+                              <rect
+                                width={24}
+                                height={24}
+                                rx={12}
+                                fill="white"
+                              />
+                            </clipPath>
+                            <clipPath id="clip1_96_912">
+                              <rect width={24} height={24} fill="white" />
+                            </clipPath>
+                            <clipPath id="clip2_96_912">
+                              <rect
+                                width={18}
+                                height={18}
+                                fill="white"
+                                transform="translate(3 3)"
+                              />
+                            </clipPath>
+                          </defs>
+                        </svg>
                         <p>24H:05M:10s</p>
                         <span>Upcoming </span>
                       </div>
@@ -182,183 +238,26 @@ export default function ErpRfqDetailPriceTrends4h() {
                       </button>
                     </div>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center mt-3">
-                    <ul
-                      className="nav nav-tabs border-0"
-                      id="eventTabs"
-                      role="tablist"
-                    >
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link active setting-link"
-                          id="responses-tab"
-                          data-bs-toggle="tab"
-                          data-bs-target="#responses"
-                          type="button"
-                          role="tab"
-                          aria-controls="responses"
-                          aria-selected="true"
-                        >
-                          Responses
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="responses-tab"
-                          data-bs-toggle="tab"
-                          data-bs-target="#Comaprison"
-                          type="button"
-                          role="tab"
-                          aria-controls="responses"
-                          aria-selected="true"
-                        >
-                          Comaprison
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="overview-tab "
-                          data-bs-toggle="tab"
-                          data-bs-target="#overview"
-                          type="button"
-                          role="tab"
-                          aria-controls="overview"
-                          aria-selected="false"
-                        >
-                          Overview
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="participants-tab "
-                          data-bs-toggle="tab"
-                          data-bs-target="#participants"
-                          type="button"
-                          role="tab"
-                          aria-controls="participants"
-                          aria-selected="false"
-                        >
-                          Participants
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="analytics-tab "
-                          data-bs-toggle="tab"
-                          data-bs-target="#analytics"
-                          type="button"
-                          role="tab"
-                          aria-controls="analytics"
-                          aria-selected="false"
-                        >
-                          Analytics
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="priceTrends-tab "
-                          data-bs-toggle="tab"
-                          data-bs-target="#priceTrends"
-                          type="button"
-                          role="tab"
-                          aria-controls="priceTrends"
-                          aria-selected="false"
-                        >
-                          Price Trends
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link setting-link"
-                          id="participantRemarks-tab "
-                          data-bs-toggle="tab"
-                          data-bs-target="#participantRemarks"
-                          type="button"
-                          role="tab"
-                          aria-controls="participantRemarks"
-                          aria-selected="false"
-                          style={{
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                            textOverflow: "ellipsis",
-                            padding: "0 10px",
-                          }}
-                        >
-                          Participant Remarks
-                        </button>
-                      </li>
-                    </ul>
-                    <div className="dropdown pe-4">
-                      <Dropdown>
-                        <Dropdown.Toggle
-                          variant="outline-dark"
-                          className="btn dropdown-toggle no-hover"
-                          id="dropdownMenuButton"
-                        >
-                          <SettingIcon color={undefined} />{" "}
-                          Setting
-                        </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Recreate")}
-                          >
-                            Recreate Order
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Shared")}
-                          >
-                            Shared With
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Extend")}
-                          >
-                            Extend Submission Time
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Withdraw")}
-                          >
-                            Withdraw
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Convert")}
-                          >
-                            Convert to Auction
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Rejected")}
-                          >
-                            Rejected Bids
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Order")}
-                          >
-                            Order Activity
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Evaluation")}
-                          >
-                            Add Evaluation Time
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => handleShowModal("Counter")}
-                          >
-                            Send Bulk Counter Offer
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                      {renderModal()}
-                    </div>
-                  </div>
+                  <TabsList handleShowModal={handleShowModal} renderModal={renderModal} />
                   <div className="tab-content mt-3 main-scroll-div">
-                    <ResponseTab isOpen={isOpen} isOthersOpen={isOthersOpen} toggleAccordion={toggleAccordion} toggleOthersAccordion={toggleOthersAccordion} />
+                    <ResponseTab
+                      isOpen={isOpen}
+                      isOthersOpen={isOthersOpen}
+                      toggleAccordion={toggleAccordion}
+                      toggleOthersAccordion={toggleOthersAccordion}
+                    />
                     <ComparisonTab />
-                    <OverviewTab participantsOpen={participantsOpen} savingsOpen={savingsOpen} biddingOpen={biddingOpen} productOpen={productOpen} handleParticipants={participantsAccordion} handleSavings={savingsAccordion} handleBiddings={biddingsAccordion} handleProducts={productAccordion} />
+                    <OverviewTab
+                      participantsOpen={participantsOpen}
+                      savingsOpen={savingsOpen}
+                      biddingOpen={biddingOpen}
+                      productOpen={productOpen}
+                      handleParticipants={participantsAccordion}
+                      handleSavings={savingsAccordion}
+                      handleBiddings={biddingsAccordion}
+                      handleProducts={productAccordion}
+                    />
                     <ParticipantsTab />
                     <AnalyticsTab />
                     <PriceTrendsTab />
@@ -386,8 +285,6 @@ export default function ErpRfqDetailPriceTrends4h() {
             </div>
           </div>
         </div>
-        <Footer />
-      </div>
     </>
   );
 }

@@ -5,6 +5,7 @@ const ConvertToAuctionModal = ({ show, handleClose }) => {
   const [useRFQQuotes, setUseRFQQuotes] = useState(false);
   const [allInvited, setAllInvited] = useState(false);
 
+  // @ts-ignore
   const handleSave = () => {
     console.log({
       useRFQQuotes,
@@ -19,11 +20,13 @@ const ConvertToAuctionModal = ({ show, handleClose }) => {
       onHide={handleClose}
       title="Convert to Auction"
       footerButtons={[
+        // @ts-ignore
         {
           label: "Cancel",
           onClick: handleClose,
           props: { className: "purple-btn1" },
         },
+        // @ts-ignore
         {
           label: "Save",
           onClick: handleClose,

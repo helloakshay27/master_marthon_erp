@@ -4,7 +4,7 @@ export default function ComparisonTab() {
   return (
     <div
       className="tab-pane fade show "
-      id="Comaprison"
+      id="comparison"
       role="tabpanel"
       aria-labelledby="responses-tab"
       tabIndex={0}

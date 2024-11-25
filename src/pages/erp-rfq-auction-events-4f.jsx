@@ -1,13 +1,10 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import FilterModal from "../components/common/Modal/FilterModal";
 import LayoutModal from "../components/common/Modal/LayoutModal";
-import { DownloadIcon, DropdownCollapseIcon, FilterIcon, SearchIcon, SettingIcon, StarIcon } from "../components";
+import { BulkAction, DownloadIcon, EventProjectTable, FilterIcon, QuickFilter, SearchIcon, SettingIcon, StarIcon } from "../components";
 
 export default function ErpRfqAuctionEvents4f() {
   const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
@@ -67,9 +64,6 @@ export default function ErpRfqAuctionEvents4f() {
 
         `}
       </style>
-      <Header />
-      <div className="main-content">
-        <Sidebar />
         <div className="website-content overflow-auto">
           <div className="module-data-section p-3">
             <a href="">
@@ -113,173 +107,8 @@ export default function ErpRfqAuctionEvents4f() {
               </div>
             </div>
             <div className="card mt-3 pb-3">
-              <div className="card mx-3 mt-3">
-                <div className="card-header3">
-                  <h3 className="card-title">Quick Filter</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      onClick={toggleCardBody}
-                    >
-                      <DropdownCollapseIcon isCollapsed={isCollapsed} />
-                    </button>
-                  </div>
-                </div>
-
-                {!isCollapsed && (
-                  <div className="card-body pt-0 mt-0">
-                    <div className="row my-2 align-items-end">
-                      <div className="col-md-2">
-                        <div className="form-group">
-                          <label>Company</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option 
-// @ts-ignore
-                            selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-md-2">
-                        <div className="form-group">
-                          <label>Project</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option 
-// @ts-ignore
-                            selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-md-2">
-                        <div className="form-group">
-                          <label>Sub-Project</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option 
-// @ts-ignore
-                            selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-md-2">
-                        <div className="form-group">
-                          <label>Last Created</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option 
-// @ts-ignore
-                            selected="selected">Material</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-md-2">
-                        <button className="purple-btn2 m-0">Go</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="card mx-3">
-                <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      onClick={bulkToggleCardBody}
-                    >
-                      <DropdownCollapseIcon isCollapsed={bulkIsCollapsed} />
-                    </button>
-                  </div>
-                </div>
-
-                {bulkIsCollapsed === true && (
-                  <div className="card-body mt-0 pt-0">
-                    <div className="row align-items-center">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>From Status</label>
-                          <select
-                            name="from_status"
-                            id="from_status"
-                            className="form-control form-select from"
-                          >
-                            <option value="">Select Status</option>
-                            <option value="draft">Draft</option>
-                            <option value="send_for_approval">
-                              Sent For Approval
-                            </option>
-                          </select>
-                        </div>
-                        <div className="form-group mt-3">
-                          <label>To Status</label>
-                          <select
-                            name="to_status"
-                            id="to_status"
-                            className="form-control form-select to"
-                          >
-                            <option value="">Select Status</option>
-                            <option value="draft">Draft</option>
-                            <option value="send_for_approval">
-                              Sent For Approval
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>Remark</label>
-                          <textarea
-                            className="form-control remark"
-                            rows={4}
-                            placeholder="Enter ..."
-                            defaultValue={""}
-                          />
-                        </div>
-                      </div>
-                      <div className="offset-md-1 col-md-2">
-                        <button className="purple-btn2 m-0 status">
-                          <a style={{ color: "white !important" }}> Submit </a>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <QuickFilter />
+              <BulkAction />
               <div className="d-flex mt-3 align-items-end px-3">
                 <div className="col-md-6">
                   <form>
@@ -351,88 +180,7 @@ export default function ErpRfqAuctionEvents4f() {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mx-3 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>
-                        <input type="checkbox" />
-                      </th>
-                      <th>Sr.No.</th>
-                      <th>Company</th>
-                      <th>Project</th>
-                      <th>Sub-Project</th>
-                      <th>MOR No.</th>
-                      <th>Approved Date</th>
-                      <th>Priority</th>
-                      <th>Sub-Type</th>
-                      <th>Assigned to</th>
-                      <th>Lead Time</th>
-                      <th>Ageing</th>
-                      <th>Material</th>
-                      <th>UOM</th>
-                      <th>Pending Qty</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input type="checkbox" />
-                      </td>
-                      <td>1</td>
-                      <td>Marathon</td>
-                      <td>Neo Vally</td>
-                      <td>Neo Valley Building</td>
-                      <td>MOR947</td>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="date"
-                          name=""
-                          id=""
-                        />
-                      </td>
-                      <td>Very Urgent</td>
-                      <td>Flooring Tiles</td>
-                      <td>Sumeet</td>
-                      <td />
-                      <td />
-                      <td>Plain IVORY Tiles 300 x 300 mm</td>
-                      <td>Box</td>
-                      <td>1000</td>
-                      <td>MOR Assigned</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <input type="checkbox" />
-                      </td>
-                      <td>1</td>
-                      <td>Marathon</td>
-                      <td>Neo Vally</td>
-                      <td>Neo Valley Building</td>
-                      <td>MOR947</td>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="date"
-                          name=""
-                          id=""
-                        />
-                      </td>
-                      <td>Very Urgent</td>
-                      <td>Flooring Tiles</td>
-                      <td>Sumeet</td>
-                      <td />
-                      <td />
-                      <td>Plain IVORY Tiles 300 x 300 mm</td>
-                      <td>Box</td>
-                      <td>1000</td>
-                      <td>MOR Assigned</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <EventProjectTable />
               <div className="row mt-3  px-3">
                 <div className="col-md-3">
                   <div className="form-group">
@@ -456,8 +204,6 @@ export default function ErpRfqAuctionEvents4f() {
             </div>
           </div>
         </div>
-        <Footer />
-      </div>
 
       <FilterModal show={show} handleClose={handleClose} />
 
