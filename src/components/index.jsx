@@ -3,7 +3,7 @@ export { default as DynamicModalBox } from '../components/base/Modal/DynamicModa
 export { default as Table } from '../components/base/Table/Table'
 export { default as CollapsibleCards } from '../components/base/Card/CollapsibleCards'
 
-// Common 
+// Modals
 export { default as ActivityModal } from '../components/common/Modal/ActivityModal'
 export { default as AddEvaluationTimeModal } from '../components/common/Modal/AddEvaluationTime'
 export { default as AttachmentModal } from '../components/common/Modal/AttachModal'
@@ -21,19 +21,20 @@ export { default as RejectedBidsModal } from '../components/common/Modal/Rejecte
 export { default as VendorModal } from '../components/common/Modal/VendorModal'
 export { default as WithdrawOrderModal } from '../components/common/Modal/WithdrawOrderModal'
 
+//Cards
 export { default as QuickFilter } from '../components/common/Card/QuickFilter'
 export { default as BulkAction } from '../components/common/Card/BulkAction'
 export { default as OrderDetails } from '../components/common/Card/OrderDetails'
 export { default as ParticipantsCard } from '../components/common/Card/ParticipantsCard'
 
-export { default as OrderSummaryTable } from '../components/common/Table/OrderSummaryTable'
+//Tables
 export { default as DocumentAttachmentTable } from '../components/common/Table/DocumentAttachmentTable'
 export { default as DeliveryScheduleTable } from '../components/common/Table/DeliveryScheduleTable'
 export { default as AuditLogTable } from '../components/common/Table/AuditLogTable'
 export { default as EventProjectTable } from '../components/common/Table/EventProjectTable'
 
+//Forms
 export { default as CreateRFQForm } from '../components/common/Form/CreateRFQForm'
-
 
 // Icons
 export { default as ClockIcon } from '../components/common/Icon/ClockIcon'
@@ -57,17 +58,18 @@ export { default as FilterIcon } from '../components/common/Icon/FilterIcon'
 export { default as StarIcon } from '../components/common/Icon/StarIcon'   
 export { default as DownloadIcon } from '../components/common/Icon/DownloadIcon'    
 
-// Chart
+// Charts
 export { default as ScatterChart } from '../components/common/Chart/ScatterChart'    
 
-// Tab
+// Tabs
 export { default as AnalyticsTab } from '../components/common/Tab/AnalyticsTab'    
 export { default as PriceTrendsTab } from '../components/common/Tab/PriceTrendsTab'    
 export { default as ParticipantsTab } from '../components/common/Tab/ParticipantsTab'    
 export { default as OverviewTab } from '../components/common/Tab/OverviewTab'    
 export { default as ComparisonTab } from '../components/common/Tab/ComparisonTab'    
+export { default as ResponseTab } from '../components/common/Tab/ResponseTab'    
 
-
+//Common
 export { default as TabsList } from '../components/common/TabsList'    
 export { default as RfqTabList } from '../components/common/RfqTabList'    
 

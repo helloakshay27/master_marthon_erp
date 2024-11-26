@@ -5197,8 +5197,8 @@ iframe .site-content, iframe .website-content{
   position: absolute;
   top: 50%; /* Center the dot vertically */
   left: 50%; /* Center the dot horizontally */
-  width: 9px; /* Inner dot size */
-  height: 9px; /* Inner dot size */
+  width: 10px; /* Inner dot size */
+  height: 10px; /* Inner dot size */
   border-radius: 50%; /* Inner dot is also a perfect circle */
   border: 2px solid white;
   background-color: #8b0203; /* Inner dot color */
@@ -12386,16 +12386,16 @@ background-color: white !important;
 
 .ant-radio-inner::after {
   position: absolute;
-  top: 3px !important;
-  left: 3px !important;
+  top: 50% !important;
+  left: 50% !important;
   display: table;
-  width: 7.2px !important;
-  height: 7.2px !important;
+  width: 10px !important;
+  height: 10px !important;
   background-color: var(--red);
   border-top: 0;
   border-left: 0;
   border-radius: 8px;
-  transform: scale(0);
+  transform: translate(-50%,-50%);
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
   content: " ";

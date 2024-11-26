@@ -1,6 +1,7 @@
-import React from "react";
+import { orderSummaryColumns, orderSummaryData } from "../../../constant/data";
+import Table from "../../base/Table/Table";
 import SettingIcon from "../Icon/SettingIcon";
-import OrderSummaryTable from "../Table/OrderSummaryTable";
+import React from "react";
 
 export default function CreateRFQForm({
   handleEventTypeModalShow,
@@ -86,7 +87,13 @@ export default function CreateRFQForm({
             </button>
           </div>
         </div>
-        <OrderSummaryTable />
+        <div className="mx-3">
+        <Table
+          columns={orderSummaryColumns}
+          data={orderSummaryData}
+          showCheckbox={true}
+        />
+        </div>
       </div>
     </div>
   );

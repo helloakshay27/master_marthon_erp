@@ -12,8 +12,10 @@ import {
   EventTypeModal,
   RfqTabList,
   OrderDetails,
-  AuditLogTable
+  AuditLogTable,
+  Table,
 } from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 
 export default function CreateRfq() {
   const [orderDetails, setOrderDetails] = useState(true);
@@ -122,9 +124,11 @@ export default function CreateRfq() {
                     materialTwo={materialTwo}
                     handleVendorModalShow={handleVendorModalShow}
                   />
-                  <div className="row mt-1 me-3">
+                  <div className="row mt-5 me-3">
                     <h5>Audit Log</h5>
-                    <AuditLogTable />
+                    <div className="mx-0">
+                      <Table columns={auditLogColumns} data={auditLogData} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -133,7 +137,22 @@ export default function CreateRfq() {
         </div>
       </div>
 
-      <EventTypeModal show={eventTypeModal} onHide={handleEventTypeModalClose} title={"Configuration for Event"} eventType={eventType} handleEventTypeChange={handleEventTypeChange} eventTypeModal={eventTypeModal} handleEventTypeModalClose={handleEventTypeModalClose} selectedStrategy={selectedStrategy} handleRadioChange={handleRadioChange} awardType={awardType} handleAwardTypeChange={handleAwardTypeChange} dynamicExtension={dynamicExtension} handleDynamicExtensionChange={handleDynamicExtensionChange} size={"xl"} footerButtons={[
+      <EventTypeModal
+        show={eventTypeModal}
+        onHide={handleEventTypeModalClose}
+        title={"Configuration for Event"}
+        eventType={eventType}
+        handleEventTypeChange={handleEventTypeChange}
+        eventTypeModal={eventTypeModal}
+        handleEventTypeModalClose={handleEventTypeModalClose}
+        selectedStrategy={selectedStrategy}
+        handleRadioChange={handleRadioChange}
+        awardType={awardType}
+        handleAwardTypeChange={handleAwardTypeChange}
+        dynamicExtension={dynamicExtension}
+        handleDynamicExtensionChange={handleDynamicExtensionChange}
+        size={"xl"}
+        footerButtons={[
           {
             label: "Close",
             onClick: handleEventTypeModalClose,
@@ -148,23 +167,19 @@ export default function CreateRfq() {
               className: "purple-btn2",
             },
           },
-        ]} />
-
+        ]}
+      />
       <LayoutModal show={settingShow} onHide={handleSettingClose} />
-
       <VendorModal show={vendorModal} onHide={handleVendorClose} />
-
       <EventScheduleModal
         show={eventSchedule}
         onHide={handleEventScheduleClose}
       />
-
       <DocumentModal
         show={documentModal}
         onHide={handleDocumentClose}
         handleAttachmentModalShow={handleAttachmentModalShow}
       />
-
       <AttachmentModal show={attachmentModal} onHide={handleAttachmentClose} />
     </>
   );

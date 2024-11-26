@@ -2,13 +2,9 @@ import React from "react";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import FilterModal from "../components/common/Modal/FilterModal";
-import LayoutModal from "../components/common/Modal/LayoutModal";
-import { BulkAction, DownloadIcon, EventProjectTable, FilterIcon, QuickFilter, SearchIcon, SettingIcon, StarIcon } from "../components";
+import { LayoutModal, FilterModal, BulkAction, DownloadIcon, EventProjectTable, FilterIcon, QuickFilter, SearchIcon, SettingIcon, StarIcon } from "../components";
 
 export default function ErpRfqAuctionEvents4f() {
-  const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
-  const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
   const handleSettingClose = () => setSettingShow(false);
@@ -17,53 +13,8 @@ export default function ErpRfqAuctionEvents4f() {
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
 
-  const bulkToggleCardBody = () => {
-    setBulkIsCollapsed(!bulkIsCollapsed);
-  };
-
-  const toggleCardBody = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
   return (
     <>
-      <style type="text/css">
-        {`
-          .setting-modal .modal-dialog {
-  position: fixed;
-  right: 0;
-  top: 0;
-  margin: 0;
-  height: 100%;
-  width: 40%;
-}
-
-.setting-modal .modal-sm {
-  width: 300px;
-  height: auto;
-  margin: auto;
-}
-
-.setting-modal .modal-content {
-  height: 100%;
-  border: 0;
-  border-radius: 0;
-}
-
-.modal-centered-custom {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-}
-
-.modal-centered-custom .modal-content {
-  margin: auto;
-}
-
-        `}
-      </style>
         <div className="website-content overflow-auto">
           <div className="module-data-section p-3">
             <a href="">
@@ -206,7 +157,6 @@ export default function ErpRfqAuctionEvents4f() {
         </div>
 
       <FilterModal show={show} handleClose={handleClose} />
-
       <LayoutModal show={settingShow} onHide={handleSettingClose} />
     </>
   );

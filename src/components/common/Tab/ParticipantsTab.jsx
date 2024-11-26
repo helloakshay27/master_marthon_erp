@@ -1,9 +1,12 @@
 import React from "react";
 import Table from "../../base/Table/Table";
-import { participantsTabColumns, participantsTabData } from "../../../constant/data";
+import {
+  participantsTabColumns,
+  participantsTabData,
+} from "../../../constant/data";
+import SearchIcon from "../Icon/SearchIcon";
 
 export default function ParticipantsTab() {
-  
   return (
     <div
       className="tab-pane fade"
@@ -14,11 +17,25 @@ export default function ParticipantsTab() {
     >
       <div>
         <div className="d-flex justify-content-between mt-4 align-items-center">
-          <input
+          {/* <input
             type="search"
             placeholder="Search vendors"
             className="event-participant-search-in"
-          />
+          /> */}
+          <div className="input-group">
+            <input
+              type="search"
+              id="searchInput"
+              className="w-50 tbl-search"
+              placeholder="Type your vendors here"
+              style={{width:'100px !important', marginLeft:'20px',paddingLeft:'10px'}}
+            />
+            <div className="input-group-append">
+              <button type="button" className="btn btn-md btn-default">
+                <SearchIcon />
+              </button>
+            </div>
+          </div>
           <div className="d-flex align-items-center">
             <div className="d-flex align-items-center">
               <p className="eventList-p1 mb-0 pe-1">
@@ -54,7 +71,11 @@ export default function ParticipantsTab() {
             </select>
           </div>
         </div>
-        <Table columns={participantsTabColumns} data={participantsTabData} showCheckbox={true} />
+        <Table
+          columns={participantsTabColumns}
+          data={participantsTabData}
+          showCheckbox={true}
+        />
       </div>
     </div>
   );

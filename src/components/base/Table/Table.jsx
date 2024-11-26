@@ -6,11 +6,11 @@ export default function Table({
   onActionClick = null,
   showCheckbox = false,
   actionIcon = null,
+  ...rest
 }) {
-  const [selectAll, setSelectAll] = useState(false); // State to manage the select all checkbox
-  const [selectedRows, setSelectedRows] = useState([]); // State to manage selected rows
+  const [selectAll, setSelectAll] = useState(false); 
+  const [selectedRows, setSelectedRows] = useState([]); 
 
-  // Handle checkbox change for individual rows
   const handleCheckboxChange = (rowIndex) => {
     const updatedSelectedRows = [...selectedRows];
     if (updatedSelectedRows.includes(rowIndex)) {
@@ -22,36 +22,34 @@ export default function Table({
     setSelectedRows(updatedSelectedRows);
   };
 
-  // Handle select/deselect all checkboxes
   const handleSelectAllChange = () => {
     if (selectAll) {
-      setSelectedRows([]); // Deselect all
+      setSelectedRows([]); 
     } else {
-      setSelectedRows(data.map((_, index) => index)); // Select all
+      setSelectedRows(data.map((_, index) => index)); 
     }
     setSelectAll(!selectAll);
   };
 
-  // Update the "select all" checkbox based on the selected rows
   useEffect(() => {
     if (selectedRows.length === data.length) {
-      setSelectAll(true); // All rows are selected
+      setSelectAll(true); 
     } else {
-      setSelectAll(false); // Not all rows are selected
+      setSelectAll(false); 
     }
   }, [selectedRows, data.length]);
 
   return (
-    <div className="tbl-container px-0 mt-3 mx-3">
+    <div className="tbl-container px-0 mt-3" {...rest}>
       <table className="w-100">
         <thead>
           <tr>
             {showCheckbox && (
-              <th style={{ width: "50px" }}>
+              <th style={{ width: "50px", paddingLeft:'15px',paddingTop:'15px' }}>
                 <input
                   type="checkbox"
                   checked={selectAll}
-                  onChange={handleSelectAllChange} // Toggle all checkboxes
+                  onChange={handleSelectAllChange}
                 />
               </th>
             )}
@@ -72,8 +70,8 @@ export default function Table({
                   <input
                     type="checkbox"
                     // @ts-ignore
-                    checked={selectedRows.includes(rowIndex)} // Check if this row is selected
-                    onChange={() => handleCheckboxChange(rowIndex)} // Handle row checkbox change
+                    checked={selectedRows.includes(rowIndex)} 
+                    onChange={() => handleCheckboxChange(rowIndex)} 
                   />
                 </td>
               )}
@@ -81,9 +79,7 @@ export default function Table({
                 const cell = row[col.key];
                 let cellContent = cell;
 
-                // Check if the field contains an array (like companyProject)
                 if (Array.isArray(cell)) {
-                  // Render it as a table of items
                   cellContent = (
                     <table>
                       <tbody>
@@ -100,7 +96,6 @@ export default function Table({
                   col.key === "liveOn" ||
                   col.key === "createdOn"
                 ) {
-                  // For date fields, use an input field for editing
                   cellContent = (
                     <input
                       className="form-control"
@@ -109,7 +104,6 @@ export default function Table({
                     />
                   );
                 } else if (col.key === "checkbox") {
-                  // For checkbox fields, use a checkbox input
                   cellContent = (
                     <input type="checkbox" checked={cell} className="w-full" />
                   );

@@ -429,12 +429,9 @@ const ErpStockRegister13B = () => {
                   info: true
                 }}
               />
-            </div>
-
-          
+            </div>          
           </div>
         </div>
-
       </div>
 
       <Modal

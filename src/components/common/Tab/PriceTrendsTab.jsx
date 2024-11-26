@@ -10,12 +10,11 @@ export default function PriceTrendsTab() {
       tabIndex={0}
     >
       <div className="priceTrends-list-main">
-        {/* Container for all list items */}
         {Array(6)
           // @ts-ignore
           .fill()
           .map((_, index) => (
-            <div className="priceTrends-item mb-3" key={index}>
+            <div className="priceTrends-item my-3" key={index}>
               <div className="item-label">A</div>
               <div className="priceTrends-list-child go-shadow-k p-3">
                 <p className="eventList-p2 mb-0 fw-bold">

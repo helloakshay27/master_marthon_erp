@@ -1,6 +1,34 @@
 import React from "react";
+import Table from "../../base/Table/Table";
 
 export default function ComparisonTab() {
+  const columns = [
+    { label: 'Material', key: 'material' },
+    { label: 'Vendor Name', key: 'vendorname' },
+    { label: 'Awarded Qty', key: 'awardedqty' },
+    { label: 'Remark', key: 'remark' }
+  ];
+
+  const data = [
+    {
+      material:"Material 1",
+      vendorname: '',
+      awardedqty: '',
+      remark: ''
+    },
+    {
+      material:"Material 2",
+      vendorname: '',
+      awardedqty: '',
+      remark: ''
+    },
+    {
+      material:"Total",
+      vendorname: '',
+      awardedqty: '',
+      remark: ''
+    }
+  ]
   return (
     <div
       className="tab-pane fade show "
@@ -519,7 +547,8 @@ export default function ComparisonTab() {
         </table>
       </div>
       <h5>Awarded Material summary</h5>
-      <div className="tbl-container">
+      <Table columns={columns} data={data} style={{margin:'0 !important'}} />
+      {/* <div className="tbl-container">
         <table className="table w-100">
           <thead>
             <tr>
@@ -550,7 +579,7 @@ export default function ComparisonTab() {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> */}
     </div>
   );
 }
