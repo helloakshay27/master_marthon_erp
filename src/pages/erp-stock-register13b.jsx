@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
@@ -428,12 +429,9 @@ const ErpStockRegister13B = () => {
                   info: true
                 }}
               />
-            </div>
-
-          
+            </div>          
           </div>
         </div>
-
       </div>
 
       <Modal
