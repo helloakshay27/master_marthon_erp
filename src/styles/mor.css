@@ -5173,3 +5173,224 @@ iframe .site-content, iframe .website-content{
 
 /* Hover effect on options */
 /*  */
+
+/* estimation detail wing css start */
+
+         /* Add row css */
+         .row-2 {
+          display: none;
+      }
+       
+      .collapse-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .collapse-icon.fa-minus {
+    transform: rotate(180deg);
+  }
+  
+      /* Add row css */
+      .row-2 {
+        display: none;
+      }
+  
+      .legend-container .reference-label {
+    padding: 5px;
+    border-radius: 5px;
+    color: black;
+    margin-right: 10px;
+  }
+  .reference-label {
+    padding: 5px;
+    border-radius: 5px;
+    color: black;
+    margin-right: 10px;
+    font-size: 11px;
+  }
+/* Define colors for each category */
+.main-category {
+  background-color: #ADD8E6; /* Light blue */
+  font-weight: bold;
+}
+
+.category-lvl2 {
+  background-color: #FFE4B5; /* Moccasin */
+  font-weight: bold;
+}
+
+.sub-category-lvl3 {
+  background-color: #FFD700; /* Gold */
+  font-weight: bold;
+}
+
+.sub-category-lvl4 {
+  background-color: #FFB6C1; /* Light Pink */
+  font-weight: bold;
+}
+
+.sub-category-lvl5 {
+  background-color: #FFFFE0; /* Light Yellow */
+  font-weight: bold;
+}
+
+.labour {
+  background-color: #FFFF99; /* Pale Yellow */
+  font-weight: bold;
+}
+.Over-Budget{
+    background-color: red; /* Pale Yellow */
+    font-weight: bold;
+ 
+}
+td i{
+  color: var(--black);
+  border: 1px solid var(--black);
+  
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.3) !important; /* Makes the backdrop semi-transparent */
+}
+/* estimation detail wing css end*/
+
+
+/* estimation comparision start */
+ /* Add row css */
+ .row-2 {
+  display: none;
+}
+
+.legend-container .reference-label {
+  padding: 5px;
+  border-radius: 5px;
+  color: black;
+  margin-right: 10px;
+}
+
+.reference-label {
+  padding: 5px;
+  border-radius: 5px;
+  color: black;
+  margin-right: 10px;
+}
+
+/* Define colors for each category */
+.main-category {
+  background-color: #ADD8E6;
+  font-weight: bold;
+  /* Light blue */
+}
+
+.category-lvl2 {
+  background-color: #FFE4B5;
+  font-weight: bold;
+  /* Moccasin */
+}
+
+.sub-category-lvl3 {
+  background-color: #FFD700;
+  font-weight: bold;
+  /* Gold */
+}
+
+.sub-category-lvl4 {
+  background-color: #FFB6C1;
+  font-weight: bold;
+  /* Light Pink */
+}
+
+.sub-category-lvl5 {
+  background-color: #FFFFE0;
+  font-weight: bold;
+  /* Light Yellow */
+}
+
+.labour {
+  background-color: #FFFF99;
+  font-weight: bold;
+  /* Pale Yellow */
+}
+
+.Over-Budget {
+  background-color: red;
+  font-weight: bold;
+  /* Pale Yellow */
+
+
+}
+
+.New {
+  background-color: green;
+  padding: 5px 15px!important;
+  font-weight: bold;
+}
+
+.Modify {
+  background-color: purple;
+  padding: 5px 8px!important;
+  font-weight: bold;
+}
+
+.Remove {
+  background-color: red;
+  font-weight: bold;
+}
+
+
+/* estimation creation */
+
+.collapse-icon {
+  transition: transform 0.3s ease;
+}
+
+.collapse-icon.fa-minus {
+  transform: rotate(180deg);
+}
+
+    /* Add row css */
+    .row-2 {
+      display: none;
+    }
+
+    .legend-container .reference-label {
+  padding: 5px;
+  border-radius: 5px;
+  color: black;
+  margin-right: 10px;
+}
+.reference-label {
+  padding: 5px;
+  border-radius: 5px;
+  color: black;
+  margin-right: 10px;
+}
+
+/* Define colors for each category */
+.main-category {
+  background-color: #ADD8E6; /* Light blue */
+}
+
+.category-lvl2 {
+  background-color: #FFE4B5; /* Moccasin */
+}
+
+.sub-category-lvl3 {
+  background-color: #FFD700; /* Gold */
+}
+
+.sub-category-lvl4 {
+  background-color: #FFB6C1; /* Light Pink */
+}
+
+.sub-category-lvl5 {
+  background-color: #FFFFE0; /* Light Yellow */
+}
+
+.labour {
+  background-color: #FFFF99; /* Pale Yellow */
+}
+td i{
+  color: var(--black);
+  border: 1px solid var(--black);
+  
+}

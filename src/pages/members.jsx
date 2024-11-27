@@ -63,6 +63,27 @@ function Members() {
               <li>
                 <Link to="/boq-approval-details">BOQ Approval Details</Link>
               </li>
+              <li>
+                <Link to="/estimation-list">Estimation List Page</Link>
+              </li>
+              <li>
+                <Link to="/estimation-details-wings">Estimation details wings</Link>
+              </li>
+              <li>
+                <Link to="/estimation-details-sub-project">Estimation details sub project</Link>
+              </li>
+              <li>
+                <Link to="/estimation-comparision">Estimation comparision</Link>
+              </li>
+              <li>
+                <Link to="/estimation-approval-details">Estimation approval details</Link>
+              </li>
+              <li>
+                <Link to="/estimation-creation">Estimation creation</Link>
+              </li>
+              <li>
+                <Link to="/estimation-details-project">Estimation details project</Link>
+              </li>
             </ul>
           </div>
           <Footer />

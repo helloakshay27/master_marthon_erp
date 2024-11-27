@@ -19,6 +19,13 @@ import ViewBOQ from './pages/view-BOQ';
 import BOQApprovalList from './pages/boq_approval_list';
 import BOQDetailsPageMaster from './pages/boq-details-page-master';
 import BOQApprovalDetails from './pages/boq-approval-details'
+import EstimationList from './pages/estimation-list';
+import EstimationDetailsWings from './pages/estimation-details-wings';
+import EstimationDetailsSubProject from './pages/estimation-details-sub-project';
+import EstimationComparision from './pages/estimation-comparision';
+import EstimationApprovalDetails from './pages/estimation-approval-details';
+import EstimationCreation from './pages/estimation-creation';
+import EstimationDetailsProject from './pages/estimation-details-project';
 
 
 function App() {
@@ -47,6 +54,13 @@ function App() {
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
+          <Route path='/estimation-list' element={<EstimationList/>} />
+          <Route path='/estimation-details-wings' element={<EstimationDetailsWings/>} />
+          <Route path='/estimation-details-sub-project' element={<EstimationDetailsSubProject/>} />
+          <Route path='/estimation-comparision' element={<EstimationComparision/>} />
+          <Route path='/estimation-approval-details' element={<EstimationApprovalDetails/>} />
+          <Route path='/estimation-creation' element={<EstimationCreation/>} />
+          <Route path='/estimation-details-project' element={<EstimationDetailsProject/>} />
         </Routes>
       </div>
     </BrowserRouter>
