@@ -772,7 +772,6 @@ const GoodReceiveNoteDetails = () => {
                         rows={3}
                         placeholder={data?.comment || "-"}
                         defaultValue={""}
-                        value={comments}
                         disabled
                       />
                     </div>
