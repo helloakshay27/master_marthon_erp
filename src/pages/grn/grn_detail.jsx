@@ -100,7 +100,7 @@ const GoodReceiveNoteDetails = () => {
     const payload = {
       status_log: {
         remarks: remarks,
-        comments: comments,
+        comment: comments,
         status: loadStatus,
       },
     };
@@ -111,7 +111,7 @@ const GoodReceiveNoteDetails = () => {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}//good_receive_notes/${id}/update_status.json?token=${token}`,
+        `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ const GoodReceiveNoteDetails = () => {
       if (!response.ok) throw new Error("Failed to update status.");
       await response.json();
       toast.success("Status updated successfully!");
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       toast.error("Failed to update status. Please try another status.");
     }
@@ -773,7 +773,6 @@ const GoodReceiveNoteDetails = () => {
                         placeholder={data?.comment || "-"}
                         defaultValue={""}
                         value={comments}
-                        onChange={handleCommentsChange}
                         disabled
                       />
                     </div>
@@ -831,9 +830,9 @@ const GoodReceiveNoteDetails = () => {
                   </div>
                 </div>
                 <div className="row mt-2 justify-content-end">
-                  <div className="col-md-2">
+                  {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
-                  </div>
+                  </div> */}
                   <div className="col-md-2">
                     <button
                       onClick={handleUpdateStatus}
