@@ -28,6 +28,7 @@ import BillBookingDetails from './pages/bill-booking-details';
 import BillEntryDetails from './pages/bill-entry-details';
 import BillBookingList from './pages/bill-booking-list';
 import BillEntryList from './pages/bill-entry-list';
+import BillEntryListSubPage from './pages/bill-entry-list-sub-page'
 
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />
           <Route path='/bill-entry-list' element={<BillEntryList/>} />
+          <Route path='/bill-entry-list-sub-page' element={<BillEntryListSubPage/>} />
         </Routes>
       </div>
     </BrowserRouter>

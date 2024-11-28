@@ -101,6 +101,9 @@ function Members() {
                 <Link to="/bill-entry-list" >Bill Entry List</Link>
               </li>
               <li>
+                <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
+              </li>
+              <li>
                 <Link to="" ></Link>
               </li>
             </ul>
