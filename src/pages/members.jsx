@@ -85,6 +85,25 @@ function Members() {
                 <Link to="/estimation-details-project">Estimation details project</Link>
               </li>
             </ul>
+
+            <h1>Billing & Accounts</h1>
+            <ul>
+              <li>
+                <Link to="/bill-booking-details">Bill Booking Details </Link>
+              </li>
+              <li>
+                <Link to="/bill-entry-details" >Bill Entry Details</Link>
+              </li>
+              <li>
+                <Link to="/bill-booking-list" >Bill Booking List</Link>
+              </li>
+              <li>
+                <Link to="/bill-entry-list" >Bill Entry List</Link>
+              </li>
+              <li>
+                <Link to="" ></Link>
+              </li>
+            </ul>
           </div>
           <Footer />
         </div>

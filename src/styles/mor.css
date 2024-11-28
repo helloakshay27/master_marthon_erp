@@ -3923,6 +3923,7 @@ ul#pills-tab{
   padding: 0;
   box-shadow: 0 3px 8px #0000004d;
   margin-bottom: 1rem;
+  border-radius: 19px 16px 16px 16px!important;
 }
 
 .collapsed svg {

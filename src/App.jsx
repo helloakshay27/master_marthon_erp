@@ -24,6 +24,10 @@ import EstimationComparision from './pages/estimation-comparision';
 import EstimationApprovalDetails from './pages/estimation-approval-details';
 import EstimationCreation from './pages/estimation-creation';
 import EstimationDetailsProject from './pages/estimation-details-project';
+import BillBookingDetails from './pages/bill-booking-details';
+import BillEntryDetails from './pages/bill-entry-details';
+import BillBookingList from './pages/bill-booking-list';
+import BillEntryList from './pages/bill-entry-list';
 
 
 function App() {
@@ -59,6 +63,10 @@ function App() {
           <Route path='/estimation-approval-details' element={<EstimationApprovalDetails/>} />
           <Route path='/estimation-creation' element={<EstimationCreation/>} />
           <Route path='/estimation-details-project' element={<EstimationDetailsProject/>} />
+          <Route path='/bill-booking-details' element={<BillBookingDetails/>} />
+          <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
+          <Route path='/bill-booking-list' element={<BillBookingList/>} />
+          <Route path='/bill-entry-list' element={<BillEntryList/>} />
         </Routes>
       </div>
     </BrowserRouter>
