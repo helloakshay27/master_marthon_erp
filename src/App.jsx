@@ -28,21 +28,17 @@ import BillBookingDetails from './pages/bill-booking-details';
 import BillEntryDetails from './pages/bill-entry-details';
 import BillBookingList from './pages/bill-booking-list';
 import BillEntryList from './pages/bill-entry-list';
-<<<<<<< Updated upstream
 import BillEntryListSubPage from './pages/bill-entry-list-sub-page'
 import BillBookingCreate from './pages/bill-booking-create';
-=======
 import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
->>>>>>> Stashed changes
+import RootLayout from './pages/Layout/RootLayout';
 
 
 function App() {
   return (
   
     <BrowserRouter>
-
-    
        <div>
         <Routes>
           <Route path='/' element={<Members />} />
@@ -50,7 +46,12 @@ function App() {
           <Route path='/edit-approvals' element={<EditApprovals />} />
           <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
-
+          <Route
+            path="/"
+            element={
+                <RootLayout />
+            }
+          >
           {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}
           <Route path='/stock_register_detail/:id' element={<ErpStockRegisterCreationDetail13C />} />
           <Route path='/stock_register_list' element={<ErpStockRegister13B />} />
@@ -74,13 +75,11 @@ function App() {
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />
           <Route path='/bill-entry-list' element={<BillEntryList/>} />
-<<<<<<< Updated upstream
           <Route path='/bill-entry-list-sub-page' element={<BillEntryListSubPage/>} />
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
-=======
           <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
           <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
->>>>>>> Stashed changes
+          </Route>
         </Routes>
       </div>
     </BrowserRouter>

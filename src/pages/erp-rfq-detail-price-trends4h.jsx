@@ -136,13 +136,13 @@ export default function ErpRfqDetailPriceTrends4h() {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section p-3">
+        <div className="module-data-section p-4">
           <div className="event-order-page">
               <div className=" event-tabs">
                 <div>
                   <h4 className="event-head px-2 ">Events</h4>
                 </div>
-                <div className="d-flex flex-row-reverse ">
+                <div className="d-flex flex-row-reverse">
                   <div className="eventList-child1 event-participant-time py-3">
                     <div className="eventList-time d-flex align-items-center gap-2">
                       <ClockIcon />

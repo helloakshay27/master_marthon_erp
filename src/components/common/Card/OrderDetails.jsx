@@ -3,6 +3,8 @@ import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
 import AttachmentIcon from "../Icon/AttachmentIcon";
 import DocumentAttachmentTable from "../Table/DocumentAttachmentTable";
 import DeliveryScheduleTable from "../Table/DeliveryScheduleTable";
+import Select from "../../base/Select/Select";
+import { companyOptions } from "../../../constant/data";
 
 export default function OrderDetails({
   orderDropdown,
@@ -15,6 +17,7 @@ export default function OrderDetails({
   materialTwo,
   handleVendorModalShow,
 }) {
+
   return (
     <div className="card pb-3 rounded-4 mt-4">
       <div className="card-header bg-white border-0 rounded-0 ">
@@ -85,21 +88,15 @@ export default function OrderDetails({
               <div className="card-body">
                 <div className="row">
                   <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Company</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected>MNRL</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
+                    <label>Company</label>
+                      <Select
+                        label=""
+                        options={companyOptions}
+                        defaultValue="MNRL"
+                        onChange={(e) =>
+                          console.log("Selected company:", e.target.value)
+                        }
+                      />
                   </div>
                   <div className="col-md-4">
                     <div className="form-group">
