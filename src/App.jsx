@@ -28,8 +28,13 @@ import BillBookingDetails from './pages/bill-booking-details';
 import BillEntryDetails from './pages/bill-entry-details';
 import BillBookingList from './pages/bill-booking-list';
 import BillEntryList from './pages/bill-entry-list';
+<<<<<<< Updated upstream
 import BillEntryListSubPage from './pages/bill-entry-list-sub-page'
 import BillBookingCreate from './pages/bill-booking-create';
+=======
+import PoAdvanceNotePayment from './pages/po-advance-note-payment';
+import PoAdvanceNoteList from './pages/po-advance-note-list';
+>>>>>>> Stashed changes
 
 
 function App() {
@@ -69,8 +74,13 @@ function App() {
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />
           <Route path='/bill-entry-list' element={<BillEntryList/>} />
+<<<<<<< Updated upstream
           <Route path='/bill-entry-list-sub-page' element={<BillEntryListSubPage/>} />
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
+=======
+          <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
+          <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
+>>>>>>> Stashed changes
         </Routes>
       </div>
     </BrowserRouter>

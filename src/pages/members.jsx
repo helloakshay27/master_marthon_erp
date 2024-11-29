@@ -100,6 +100,15 @@ function Members() {
               <li>
                 <Link to="/bill-entry-list" >Bill Entry List</Link>
               </li>
+
+              <li>
+                <Link to="/po-advance-note-payment" >Po Advance Note Payment</Link>
+              </li>
+
+              
+              <li>
+                <Link to="/po-advance-note-list" >Po Advance Note List</Link>
+              </li>
               <li>
                 <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
               </li>
