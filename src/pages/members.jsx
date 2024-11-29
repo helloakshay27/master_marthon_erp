@@ -104,6 +104,9 @@ function Members() {
                 <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
               </li>
               <li>
+                <Link to="/bill-booking-create" >Bill Booking Create</Link>
+              </li>
+              <li>
                 <Link to="" ></Link>
               </li>
             </ul>
