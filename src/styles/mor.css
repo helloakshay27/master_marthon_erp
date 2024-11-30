@@ -642,6 +642,7 @@ section .locked img {
 .site-content,
 .website-content {
   overflow: auto;
+  height: 90vh;
   flex: 1;
 }
 
