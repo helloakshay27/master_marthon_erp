@@ -6,13 +6,19 @@ import Footer from "../../components/Footer";
 
 export default function () {
   return (
-    <>
-      <Header />
+    <main className="h-100 w-100">
+      <Header  /> {/* Pass noTier based on the current path */}
+
       <div className="main-content">
-        <Sidebar />
-        <Outlet />
+        <div>
+          <Sidebar />
+        </div>
+
+        <div className="website-content ">
+          <Outlet /> {/* Dynamic content rendering */}
+        
+        </div>
       </div>
-      <Footer />
-    </>
+    </main>
   );
 }
