@@ -5,49 +5,35 @@ import Footer from "../components/Footer";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import {
+    LayoutModal,
+    FilterModal,
+    BulkAction,
+    DownloadIcon,
+    FilterIcon,
+    QuickFilter,
+    SearchIcon,
+    SettingIcon,
+    StarIcon,
+    Table,
+} from "../components"
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+
 
 
 const EstimationApprovalDetails = () => {
 
-    const [viewQuickFilter, setViewQuickFilter] = useState(true);
-
-    const viewQuickFilterDropdown = () => {
-        setViewQuickFilter(!viewQuickFilter);
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchText(e.target.value);
-    };
-
-    const handleRowsPerPageChange = (e) => {
-        setRowsPerPage(e.target.value);
-    };
-
     return (
         <>
-            <Header />
-            <div className="main-content">
-                <Sidebar />
-                <div className="website-content overflow-auto">
-                    <div className="module-data-section p-3">
+            <div className="website-content overflow-auto">
+                <div className="module-data-section p-4">
+                    <a href="">
                         <a href="">Home &gt; Engineering &gt; Estimation &gt;  Budget &gt; Comparison</a>
-
-                        <div className="card p-3 mt-3">
-
-                            <div className="card mt-3">
-                                <div className="card-header3">
-                                    <h3 className="card-title">Project Details</h3>
-                                    <div className="card-tools">
-                                        <button type="button" className="btn btn-tool" data-card-widget="collapse" onClick={viewQuickFilterDropdown}>
-                                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="16" cy="16" r="16" fill="#8B0203" />
-                                                <path d="M16 24L9.0718 12L22.9282 12L16 24Z" fill="white" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                {viewQuickFilter && (
-                                    <div className="card-body mt-0 pt-0">
+                    </a>
+                    <div className="card mt-3 pb-3">
+                        {/* <QuickFilter /> */}
+                        <CollapsibleCard title="Project Details">
+                        <div className="card-body mt-0 pt-0">
                                         <div className="row align-items-center">
                                             <div className="col-md-6">
                                                 <div className="form-group">
@@ -87,13 +73,10 @@ const EstimationApprovalDetails = () => {
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                        </CollapsibleCard>
 
-                            </div>
-
-
-
-                            <div className="tbl-container mx-3 mt-3">
+                        <div className="mx-3">
+                        <div className="tbl-container mx-3 mt-3">
                                 <table className="w-100">
                                     <thead>
                                         <tr>
@@ -242,17 +225,17 @@ const EstimationApprovalDetails = () => {
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div className="row mt-4">
-                                <div className="col-md-12">
-                                    <div className="form-group">
-                                        <label>Remark</label>
-                                        <textarea className="form-control" rows="3" placeholder="" />
-                                    </div>
+                        </div>
+                        <div className="row mt-4 px-2">
+                            <div className="col-md-12">
+                                <div className="form-group mx-3">
+                                    <label>Remark</label>
+                                    <textarea className="form-control" rows="3" placeholder=""></textarea>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="row mt-4 justify-content-end align-items-center">
+                        <div className="row mt-4 justify-content-end align-items-center mx-3">
                                 <div className="col-md-3">
                                     <div className="form-group d-flex gap-3 align-items-center">
                                         <label style={{ fontSize: '1.1rem' }}>Status</label>
@@ -268,14 +251,11 @@ const EstimationApprovalDetails = () => {
                                     </div>
                                 </div>
                             </div>
-
-
                             <div className="d-flex justify-content-center">
                                 <button className="purple-btn2">Submit</button>
                                 <button className="purple-btn1">Cancel</button>
                             </div>
-
-                            <div>
+                            <div className="mx-4">
                                 <h5 className="mt-3">Audit Log</h5>
 
                                 <div className="tbl-container px-0">
@@ -325,15 +305,11 @@ const EstimationApprovalDetails = () => {
                                     </table>
                                 </div>
                             </div>
-
-
-                        </div>
-
-
+                       
                     </div>
-                    <Footer/>
                 </div>
             </div>
+
         </>
     );
 };

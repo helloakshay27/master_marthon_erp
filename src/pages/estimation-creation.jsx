@@ -6,6 +6,27 @@ import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 
+import ExpandableTable from "../components/ExpandableTable";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+
+import {
+    LayoutModal,
+    FilterModal,
+    BulkAction,
+    DownloadIcon,
+    FilterIcon,
+    QuickFilter,
+    SearchIcon,
+    SettingIcon,
+    StarIcon,
+    Table,
+} from "../components"
+import { estimationListColumns, estimationListData } from "../constant/data";
+// import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { auditLogColumns, auditLogData } from "../constant/data";
+
+
+
 
 const EstimationCreation = () => {
     const [viewQuickFilter, setViewQuickFilter] = useState(true);
@@ -24,16 +45,15 @@ const EstimationCreation = () => {
 
     return (
         <>
-            <Header />
-            <div className="main-content">
-                <Sidebar />
-                <div className="website-content overflow-auto">
-                    <div className="module-data-section p-3">
-                        <a href="">Home &gt; Engineering &gt; Estimation &gt;Budget</a>
-
-                        <div className="card p-3 mt-3">
-
-                            <div className="card mt-1">
+          
+          
+            <div className="website-content overflow-auto">
+                <div className="module-data-section p-4">
+                    <a href="">
+                        <a href="">Home &gt; Engineering &gt; Estimation &gt; Budget</a>
+                    </a>
+                    <div className="card mt-3 pb-3">
+                    <div className="card mt-1 mx-3 mt-4">
                                 <div className="card-header3">
                                     <h3 className="card-title">Budget</h3>
                                 </div>
@@ -107,28 +127,9 @@ const EstimationCreation = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="content1" className="contentpo" style={{ display: "block" }}>
-                                <div className="card mt-2">
-                                    <div className="card-header3">
-                                        <h3 className="card-title">Company Details</h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse" onClick={viewQuickFilterDropdown}>
-                                                <svg
-                                                    width="32"
-                                                    height="32"
-                                                    viewBox="0 0 32 32"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <circle cx="16" cy="16" r="16" fill="#8B0203" />
-                                                    <path d="M16 24L9.0718 12L22.9282 12L16 24Z" fill="white" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {viewQuickFilter && (
-                                        <div className="card-body mt-0 pt-0">
+                       
+                        <CollapsibleCard title="Company Details">
+                          <div className="card-body mt-0 pt-0">
                                             <div className="row align-items-center">
                                                 {/* RERA Area */}
                                                 <div className="col-md-4">
@@ -198,13 +199,8 @@ const EstimationCreation = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
-
-                                </div>
-                            </div>
-
-
-                            <div className="d-flex justify-content-between">
+                        </CollapsibleCard>
+                        <div className="d-flex justify-content-between mx-3">
                                 {/* Legend Section */}
                                 <div className="legend-container d-flex justify-content-start align-items-center px-4 my-3">
                                     <span className="reference-label me-4" style={{ fontWeight: "bold" }}>Legend</span>
@@ -238,8 +234,7 @@ const EstimationCreation = () => {
                                 </div>
                             </div>
 
-
-
+                              <div className="mx-3">
                             <div className="tbl-container mx-3 mt-3" style={{ maxHeight: "max-content" }}>
                                 <table className="" style={{ maxHeight: "max-content" }}>
                                     <thead>
@@ -268,7 +263,7 @@ const EstimationCreation = () => {
 
                                     </thead>
                                     <tbody>
-                                        <tr className="reference-label main-category">
+                                        <tr className="main-category">
                                             <td>
 
                                                 <svg
@@ -351,29 +346,25 @@ const EstimationCreation = () => {
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div className="d-flex justify-content-end">
-                                <button className="purple-btn2">Bulk Upload</button>
-                                <button className="purple-btn2">Download Template</button>
-                                <button className="purple-btn2">Save</button>
-                                <button className="purple-btn2">Import</button>
-                                <button className="purple-btn2">Export</button>
                             </div>
+                        <div className="d-flex justify-content-end mx-3">
+                            <button className="purple-btn2">Bulk Upload</button>
+                            <button className="purple-btn2">Download Template</button>
+                            <button className="purple-btn2">Save</button>
+                             <button className="purple-btn2">Import</button>
+                            <button className="purple-btn2">Export</button>
+                        </div>
 
-                            <div className="row mt-2 justify-content-center">
+                        <div className="row mt-2 justify-content-center">
                                 <div className="col-md-2">
                                     <button className="purple-btn2 w-100">Create</button>
                                 </div>
                             </div>
 
-
-                        </div>
-
-
                     </div>
-                    <Footer/>
                 </div>
             </div>
+
         </>
     );
 };
