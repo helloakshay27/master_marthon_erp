@@ -84,7 +84,7 @@ const EstimationDetailsWings = () => {
                                         { label: "Construction Area", placeholder: "Sq. Ft." },
                                         { label: "Saleable Area Sq.ft.", placeholder: "" },
                                         { label: "Material Total", placeholder: "10,000,00" },
-                                        { label: "Sub-Project Budget", placeholder: "INR" },
+                                        { label: "Project Budget", placeholder: "INR" },
                                         { label: "M+L Budget Sq.ft", placeholder: "INR", className: "mt-2" },
                                         { label: "Budget Type", placeholder: "", className: "mt-2" },
                                         { label: "Labour Total", placeholder: "10,000,00" },

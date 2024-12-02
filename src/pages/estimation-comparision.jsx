@@ -22,19 +22,6 @@ import {
 
 
 const EstimationComparision = () => {
-    const [viewQuickFilter, setViewQuickFilter] = useState(true);
-
-    const viewQuickFilterDropdown = () => {
-        setViewQuickFilter(!viewQuickFilter);
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchText(e.target.value);
-    };
-
-    const handleRowsPerPageChange = (e) => {
-        setRowsPerPage(e.target.value);
-    };
 
     // State to manage collapsed rows
     const [collapsedRows, setCollapsedRows] = useState({});
@@ -57,7 +44,7 @@ const EstimationComparision = () => {
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
-                        <a href="">Home &gt; Engineering &gt; Estimation &gt;  Budget &gt; Comparison</a>
+                        <a href="">Home &gt; Engineering &gt; Estimation &gt; Comparison</a>
                     </a>
                     <div className="card mt-3 pb-3">
                         {/* <QuickFilter /> */}

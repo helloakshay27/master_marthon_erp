@@ -128,7 +128,7 @@ const EstimationCreation = () => {
                                 </div>
                             </div>
                        
-                        <CollapsibleCard title="Company Details">
+                        <CollapsibleCard title="Sub-Project Details">
                           <div className="card-body mt-0 pt-0">
                                             <div className="row align-items-center">
                                                 {/* RERA Area */}
@@ -249,7 +249,7 @@ const EstimationCreation = () => {
                                             <th className="text-start">Items</th>
                                             <th className="text-start">Factor</th>
                                             <th className="text-start">UOM</th>
-                                            <th className="text-start">Area</th>
+                                            {/* <th className="text-start">Area</th> */}
                                             <th className="text-start">QTY Excl Wastage</th>
                                             <th className="text-start">Wastage</th>
                                             <th className="text-start">QTY incl Waste</th>
@@ -294,7 +294,7 @@ const EstimationCreation = () => {
                                             <td></td>
                                             <td></td>
                                             <td>Total Here</td>
-                                            <td></td>
+                                            {/* <td></td> */}
                                             <td></td>
                                             <td></td>
                                             <td></td>

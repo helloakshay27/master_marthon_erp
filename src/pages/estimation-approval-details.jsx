@@ -28,7 +28,7 @@ const EstimationApprovalDetails = () => {
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
-                        <a href="">Home &gt; Engineering &gt; Estimation &gt;  Budget &gt; Comparison</a>
+                        <a href="">Home &gt; Engineering &gt; Estimation &gt;  Approval Details</a>
                     </a>
                     <div className="card mt-3 pb-3">
                         {/* <QuickFilter /> */}
