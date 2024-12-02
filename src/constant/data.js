@@ -422,3 +422,30 @@ export const options = [
   { value: "Zs Demo", label: "Zs Demo" },
   { value: "Suyash Jagdale", label: "Suyash Jagdale" },
 ];
+
+
+
+// Column Definitions for estimaton list 
+export const estimationListColumns = [
+  { label: "Sr.No.", key: "srNo" },
+  { label: "Certifying Company", key: "certifyingCompany" },
+  { label: "Project", key: "project" },
+  { label: "Sub-Project", key: "subProject" },
+  { label: "Wing", key: "wing" },
+  { label: "Location", key: "location" },
+  
+];
+
+// Data Rows
+export const  estimationListData = [
+  {
+    srNo: 1,
+    certifyingCompany:"Marathon Next-Gen Realty Limited",
+    project: "King Project (Approved)",
+    subProject:"Marathon Emrace (Pending)",
+    wing:'Embrace A (Draft)',
+    location:"Mulund",
+   
+  },
+  // More data rows can be added here
+];
