@@ -1,9 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-// import { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 
@@ -23,26 +18,27 @@ import {
     Table,
 } from "../components"
 import { auditLogColumns, auditLogData } from "../constant/data";
-
+import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 
 
 const EstimationDetailsSubProject = () => {
     const [settingShow, setSettingShow] = useState(false);
     const handleSettingClose = () => setSettingShow(false);
-   
-
     const handleSettingModalShow = () => setSettingShow(true);
-    const handleModalShow = () => setShow(true);
+
+    const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
+    const handleShow = () => setShow(true);
+    const handleClose = () => setShow(false);
     return (
         <>
-           
-           <div className="website-content overflow-auto">
+
+            <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
                         <a href="">Home &gt; Engineering &gt; Estimation &gt; Budget</a>
                     </a>
                     <div className="card mt-3 pb-3">
-                      
+
                         <CollapsibleCard title="Sub-Project Details">
                             <div className="card-body mt-0 pt-0">
                                 <div className="row align-items-center">
@@ -174,7 +170,7 @@ const EstimationDetailsSubProject = () => {
                                         />
                                     </button>
 
-                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal">
+                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal" onClick={handleShow}>
 
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -233,9 +229,9 @@ const EstimationDetailsSubProject = () => {
                 </div>
             </div>
 
-           
-            <LayoutModal show={settingShow} onHide={handleSettingClose} />
 
+            <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <CopyBudgetModal show={show} handleClose={handleClose} />
         </>
     )
 }

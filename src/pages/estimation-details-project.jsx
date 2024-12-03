@@ -1,8 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
@@ -21,15 +17,17 @@ import {
     Table,
 } from "../components"
 import { auditLogColumns, auditLogData } from "../constant/data";
+import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 
 
 const EstimationDetailsProject = () => {
     const [settingShow, setSettingShow] = useState(false);
     const handleSettingClose = () => setSettingShow(false);
-
-
     const handleSettingModalShow = () => setSettingShow(true);
-    const handleModalShow = () => setShow(true);
+
+    const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
+    const handleShow = () => setShow(true);
+    const handleClose = () => setShow(false);
     return (
         <>
 
@@ -172,7 +170,7 @@ const EstimationDetailsProject = () => {
                                         />
                                     </button>
 
-                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal">
+                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal" onClick={handleShow}>
 
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -230,6 +228,7 @@ const EstimationDetailsProject = () => {
                 </div>
             </div>
             <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <CopyBudgetModal show={show} handleClose={handleClose} />
         </>
     )
 }

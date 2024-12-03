@@ -1,9 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-// import { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import ExpandableTable from "../components/ExpandableTable";
@@ -21,27 +16,20 @@ import {
     StarIcon,
     Table,
 } from "../components"
-import { estimationListColumns, estimationListData } from "../constant/data";
-// import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 
 
 
 
 const EstimationDetailsWings = () => {
-    const [viewWingDetails, setViewWingDetails] = useState(true);
-
-    const viewWingDetailsDropdown = () => {
-        setViewWingDetails(!viewWingDetails);
-    };
-
     const [settingShow, setSettingShow] = useState(false);
     const handleSettingClose = () => setSettingShow(false);
-    const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-
     const handleSettingModalShow = () => setSettingShow(true);
-    const handleModalShow = () => setShow(true);
+   
+    const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
+    const handleShow = () => setShow(true);
+    const handleClose = () => setShow(false);
     return (
         <>
 
@@ -284,7 +272,7 @@ const EstimationDetailsWings = () => {
                                         />
                                     </button>
 
-                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal">
+                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal" onClick={handleShow}>
 
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -293,7 +281,6 @@ const EstimationDetailsWings = () => {
                                             viewBox="0 0 400 500"
                                             className="me-2"
                                         >
-                                            {/* <!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com --> */}
                                             <path
                                                 fill="#f7f7f7"
                                                 d="M200 0L332.1 0c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9L448 336c0 26.5-21.5 48-48 48l-192 0c-26.5 0-48-21.5-48-48l0-288c0-26.5 21.5-48 48-48zM48 128l80 0 0 64-64 0 0 256 192 0 0-32 64 0 0 48c0 26.5-21.5 48-48 48L48 512c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48z"
@@ -346,8 +333,8 @@ const EstimationDetailsWings = () => {
                 </div>
             </div>
 
-            <FilterModal show={show} handleClose={handleClose} />
             <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <CopyBudgetModal show={show} handleClose={handleClose} />
         </>
     )
 }

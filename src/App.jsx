@@ -33,6 +33,7 @@ import BillBookingCreate from './pages/bill-booking-create';
 import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
 import RootLayout from './pages/Layout/RootLayout';
+import EstimationApprovolList from './pages/estimation-approval-list';
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
           <Route path='/estimation-approval-details' element={<EstimationApprovalDetails/>} />
           <Route path='/estimation-creation' element={<EstimationCreation/>} />
           <Route path='/estimation-details-project' element={<EstimationDetailsProject/>} />
+          <Route path='/estimation-approvol-list'  element={<EstimationApprovolList/>} />
           <Route path='/bill-booking-details' element={<BillBookingDetails/>} />
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />

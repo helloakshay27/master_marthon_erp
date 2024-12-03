@@ -338,7 +338,7 @@ const FilterModal = ({ show, handleClose }) => {
             </div>
           </div>
         </div>
-        <div className="modal-footer justify-content-center">
+        <div className="modal-footer justify-content-center" style={{borderTop:'1px solid  #dee2e6'}}>
           <button
             className="btn"
             style={{ backgroundColor: "#8b0203", color: "#fff" }}
