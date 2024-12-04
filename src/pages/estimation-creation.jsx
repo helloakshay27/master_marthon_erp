@@ -249,7 +249,7 @@ const EstimationCreation = () => {
                                             <th className="text-start">Items</th>
                                             <th className="text-start">Factor</th>
                                             <th className="text-start">UOM</th>
-                                            {/* <th className="text-start">Area</th> */}
+                                            <th className="text-start">Area</th>
                                             <th className="text-start">QTY Excl Wastage</th>
                                             <th className="text-start">Wastage</th>
                                             <th className="text-start">QTY incl Waste</th>
@@ -258,6 +258,28 @@ const EstimationCreation = () => {
                                             <th className="text-start">Cost Per Unit</th>
                                             <th className="text-start" style={{ width: "12px" }}>
                                                 Action
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start">A</th>
+                                            <th className="text-start">B</th>
+                                            <th className="text-start">C</th>
+                                            <th className="text-start">D=C*A</th>
+                                            <th className="text-start">E</th>
+                                            <th className="text-start">F=D+D*E</th>
+                                            <th className="text-start">I</th>
+                                            <th className="text-start">J=F*I</th>
+                                            <th className="text-start">K=J/C</th>
+                                            <th className="text-start">
+                                                
                                             </th>
                                         </tr>
 
@@ -294,7 +316,7 @@ const EstimationCreation = () => {
                                             <td></td>
                                             <td></td>
                                             <td>Total Here</td>
-                                            {/* <td></td> */}
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
