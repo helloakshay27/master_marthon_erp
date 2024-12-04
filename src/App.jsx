@@ -34,6 +34,7 @@ import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
 import RootLayout from './pages/Layout/RootLayout';
 import EstimationApprovolList from './pages/estimation-approval-list';
+import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows';
 
 
 function App() {
@@ -47,6 +48,8 @@ function App() {
           <Route path='/edit-approvals' element={<EditApprovals />} />
           <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
+          <Route path="/TreeDataWithStaticRows" element={<TreeDataWithStaticRows />} />
+
           <Route
             path="/"
             element={

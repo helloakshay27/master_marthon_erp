@@ -20,6 +20,9 @@ function Members() {
                 <Link to="good_receive_notes/:id">grn_detail</Link>
               </li>
               <li>
+                <Link to="/TreeDataWithStaticRows">TreeDataWithStaticRows</Link>
+              </li>
+              <li>
                 <Link to="/create-rfq">create_rfq</Link>
               </li>
               <li>
