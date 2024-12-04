@@ -32,11 +32,8 @@ import BillEntryListSubPage from './pages/bill-entry-list-sub-page'
 import BillBookingCreate from './pages/bill-booking-create';
 import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
-<<<<<<< HEAD
-=======
 import RootLayout from './pages/Layout/RootLayout';
 import EstimationApprovolList from './pages/estimation-approval-list';
->>>>>>> 3d7fa9206277059ba1e52328cd76c78b14fea68c
 
 
 function App() {
@@ -84,10 +81,7 @@ function App() {
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
           <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
           <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
-<<<<<<< HEAD
-=======
           </Route>
->>>>>>> 3d7fa9206277059ba1e52328cd76c78b14fea68c
         </Routes>
       </div>
     </BrowserRouter>
