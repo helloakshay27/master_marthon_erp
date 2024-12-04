@@ -32,14 +32,17 @@ import BillEntryListSubPage from './pages/bill-entry-list-sub-page'
 import BillBookingCreate from './pages/bill-booking-create';
 import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
+<<<<<<< HEAD
+=======
+import RootLayout from './pages/Layout/RootLayout';
+import EstimationApprovolList from './pages/estimation-approval-list';
+>>>>>>> 3d7fa9206277059ba1e52328cd76c78b14fea68c
 
 
 function App() {
   return (
   
     <BrowserRouter>
-
-    
        <div>
         <Routes>
           <Route path='/' element={<Members />} />
@@ -47,7 +50,12 @@ function App() {
           <Route path='/edit-approvals' element={<EditApprovals />} />
           <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
-
+          <Route
+            path="/"
+            element={
+                <RootLayout />
+            }
+          >
           {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}
           <Route path='/stock_register_detail/:id' element={<ErpStockRegisterCreationDetail13C />} />
           <Route path='/stock_register_list' element={<ErpStockRegister13B />} />
@@ -67,6 +75,7 @@ function App() {
           <Route path='/estimation-approval-details' element={<EstimationApprovalDetails/>} />
           <Route path='/estimation-creation' element={<EstimationCreation/>} />
           <Route path='/estimation-details-project' element={<EstimationDetailsProject/>} />
+          <Route path='/estimation-approvol-list'  element={<EstimationApprovolList/>} />
           <Route path='/bill-booking-details' element={<BillBookingDetails/>} />
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />
@@ -75,6 +84,10 @@ function App() {
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
           <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
           <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
+<<<<<<< HEAD
+=======
+          </Route>
+>>>>>>> 3d7fa9206277059ba1e52328cd76c78b14fea68c
         </Routes>
       </div>
     </BrowserRouter>

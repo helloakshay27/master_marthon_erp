@@ -12,7 +12,7 @@ const validationSchema = Yup.object({
 
 export default function BulkAction() {
   return (
-    <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
+    <CollapsibleCard title="Bulk Action">
       <Formik
         initialValues={{
           fromStatus: "",

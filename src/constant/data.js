@@ -399,3 +399,53 @@ export const deliveryData = [
     supplierDeliveryQty: '40',
   },
 ];
+
+export const companyOptions = [
+  { value: "MNRL", label: "MNRL" },
+  { value: "Alaska", label: "Alaska" },
+  { value: "California", label: "California" },
+  { value: "Delaware", label: "Delaware" },
+  { value: "Tennessee", label: "Tennessee" },
+  { value: "Texas", label: "Texas" },
+  { value: "Washington", label: "Washington" },
+];
+
+export const options = [
+  { value: "Rajnish Patil", label: "Rajnish Patil" },
+  { value: "Lockated Demo", label: "Lockated Demo" },
+  { value: "Abdul G", label: "Abdul G" },
+  { value: "Kiran Sharma", label: "Kiran Sharma" },
+  { value: "Dinesh Shinde", label: "Dinesh Shinde" },
+  { value: "PSIPL 1", label: "PSIPL 1" },
+  { value: "Jayesh P", label: "Jayesh P" },
+  { value: "Rabi Narayan", label: "Rabi Narayan" },
+  { value: "Zs Demo", label: "Zs Demo" },
+  { value: "Suyash Jagdale", label: "Suyash Jagdale" },
+];
+
+
+
+// Column Definitions for estimaton list 
+export const estimationListColumns = [
+  { label: "Sr.No.", key: "srNo" },
+  { label: "Certifying Company", key: "certifyingCompany" },
+  { label: "Project", key: "project" },
+  { label: "Sub-Project", key: "subProject" },
+  { label: "Wing", key: "wing" },
+  { label: "Location", key: "location" },
+  
+];
+
+// Data Rows
+export const  estimationListData = [
+  {
+    srNo: 1,
+    certifyingCompany:"Marathon Next-Gen Realty Limited",
+    project: "King Project (Approved)",
+    subProject:"Marathon Emrace (Pending)",
+    wing:'Embrace A (Draft)',
+    location:"Mulund",
+   
+  },
+  // More data rows can be added here
+];

@@ -5,8 +5,8 @@ const Sidebar = () => {
   
   return (
      <>
-     <aside>
-        <div className="sidebar sidebar_inner d-flex">
+     <aside className='h-100'>
+        <div className="sidebar sidebar_inner d-flex h-100">
           <div className="left-1" style={{ width: "fit-content" }}>
             <ul
               className="menu-list px-2 d-flex pt-2"

@@ -4,10 +4,7 @@ import DropArrowIcon from "../Icon/DropArrowIcon";
 import EnvelopeIcon from "../Icon/EnvelopeIcon";
 import FullClipIcon from "../Icon/FullClipIcon";
 import FullScreenIcon from "../Icon/FullScreenIcon";
-import MenuCommentIcon from "../Icon/MenuCommentIcon";
-import MenuIcon from "../Icon/MenuIcon";
 import ShowIcon from "../Icon/ShowIcon";
-import TrophyIcon from "../Icon/TrophyIcon";
 import ZoomInIcon from "../Icon/ZoomInIcon";
 import ZoomOutIcon from "../Icon/ZoomOutIcon";
 import ParticipantsIcon from "../Icon/ParticipantsIcon";
@@ -115,8 +112,7 @@ export default function ResponseTab({
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Views"
-              >
-                <ShowIcon
+              >                <ShowIcon
                   // @ts-ignore
                   className="me-2"
                 />{" "}
@@ -125,130 +121,14 @@ export default function ResponseTab({
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Completed"
-              >
-                <i className="bi bi-check-circle me-2"></i> 4
+              ><i className="bi bi-check-circle me-2"></i> 4
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* <div className="row mb-3">
-        <div className="col-4">
-          <div className="viewBy-tHead p-1 pb-2">
-            <div className="viewBy-tHead-heading">
-              <div className="viewBy-tHead-heading-child">
-                <span className="viewBy-tHead-heading-child-span">
-                  <TrophyIcon />1
-                </span>
-              </div>
-              <div className="d-flex align-items-start">
-                <div className="me-3">
-                  <p
-                    className="viewBy-tHead-heading-p1"
-                    title="Manly ELECTRIC Product"
-                  >
-                    Vendor 1
-                  </p>
-                  <p className="viewBy-tHead-heading-p2">
-                    11:40 am, 24 Jan 2024
-                  </p>
-                </div>
-                <button className="btn d-flex align-items-center">
-                  <MenuIcon />
-                </button>
-              </div>
-            </div>
-            <div className="viewBy-tHead-btn-container">
-              <button className="viewBy-tHead-btn">Counter Offer</button>
-            </div>
-          </div>
-        </div>
-        <div className="col-4">
-          <div className="viewBy-tHead p-1 pb-2">
-            <div className="viewBy-tHead-heading">
-              <div className="viewBy-tHead-heading-child">
-                <span className="viewBy-tHead-heading-child-span">
-                  <TrophyIcon />1
-                </span>
-              </div>
-              <div className="d-flex align-items-start">
-                <div className="me-3">
-                  <p
-                    className="viewBy-tHead-heading-p1"
-                    title="Manly ELECTRIC Product"
-                  >
-                    Vendor 2
-                  </p>
-                  <p className="viewBy-tHead-heading-p2">
-                    11:40 am, 24 Jan 2024
-                  </p>
-                </div>
-                <button className="btn d-flex align-items-center">
-                  <MenuIcon />
-                </button>
-              </div>
-            </div>
-            <div className="viewBy-bid-container">
-              <div className="viewBy-bid-main">
-                <button className="btn viewBy-bid-main-left">
-                  <i className="bi bi-chevron-left"></i>
-                </button>
-                <p className="m-0 viewBy-bid-main-p">Current Bid 4</p>
-                <button className="btn viewBy-bid-main-right">
-                  <i className="bi bi-chevron-right"></i>
-                </button>
-                <MenuCommentIcon />
-              </div>
-              <button className="viewBy-tHead-btn viewBy-tHead-btn2">
-                Counter Offer
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="col-4">
-          <div className="viewBy-tHead p-1 pb-2">
-            <div className="viewBy-tHead-heading">
-              <div className="viewBy-tHead-heading-child">
-                <span className="viewBy-tHead-heading-child-span">
-                  <TrophyIcon />1
-                </span>
-              </div>
-              <div className="d-flex align-items-start">
-                <div className="me-3">
-                  <p
-                    className="viewBy-tHead-heading-p1"
-                    title="Manly ELECTRIC Product"
-                  >
-                    Vendor 3
-                  </p>
-                  <p className="viewBy-tHead-heading-p2">
-                    11:40 am, 24 Jan 2024
-                  </p>
-                </div>
-                <button className="btn d-flex align-items-center">
-                  <MenuIcon />
-                </button>
-              </div>
-            </div>
-            <div className="viewBy-bid-container">
-              <div className="viewBy-bid-main">
-                <button className="btn viewBy-bid-main-left">
-                  <i className="bi bi-chevron-left"></i>
-                </button>
-                <p className="m-0 viewBy-bid-main-p">Current Bid 4</p>
-                <button className="btn viewBy-bid-main-right">
-                  <i className="bi bi-chevron-right"></i>
-                </button>
-                <MenuCommentIcon />
-              </div>
-              <button className="viewBy-tHead-btn viewBy-tHead-btn2">
-                Counter Offer
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> */}
+
       <table>
         <tbody>
           <tr>

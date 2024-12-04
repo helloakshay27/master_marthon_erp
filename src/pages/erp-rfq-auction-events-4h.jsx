@@ -28,7 +28,7 @@ export default function ErpRfqAuctionEvents4h() {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section p-3">
+        <div className="module-data-section p-4">
           <a href="">
             Home &gt; Purchase &gt; Procurement &gt; RFQ &amp; Auction Events
           </a>
@@ -134,7 +134,9 @@ export default function ErpRfqAuctionEvents4h() {
                 </div>
               </div>
             </div>
-            <Table columns={rfqEventColumns} data={rfqEventData} />
+            <div className="mx-3">
+              <Table columns={rfqEventColumns} data={rfqEventData} />
+            </div>
             <div className="row mt-3  px-3">
               <div className="col-md-3">
                 <div className="form-group">

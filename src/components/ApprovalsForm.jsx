@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Select from "react-select";
 import { Form, FormCheck } from "react-bootstrap";
+import MultiSelector from "./base/Select/MultiSelector";
+import { options } from "../constant/data";
 
 export default function ApprovalsForm({ mode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -8,18 +9,7 @@ export default function ApprovalsForm({ mode }) {
     { id: 1, isActive: false, sendEmails: false, selectedUsers: [] },
   ]);
 
-  const options = [
-    { value: "Rajnish Patil", label: "Rajnish Patil" },
-    { value: "Lockated Demo", label: "Lockated Demo" },
-    { value: "Abdul G", label: "Abdul G" },
-    { value: "Kiran Sharma", label: "Kiran Sharma" },
-    { value: "Dinesh Shinde", label: "Dinesh Shinde" },
-    { value: "PSIPL 1", label: "PSIPL 1" },
-    { value: "Jayesh P", label: "Jayesh P" },
-    { value: "Rabi Narayan", label: "Rabi Narayan" },
-    { value: "Zs Demo", label: "Zs Demo" },
-    { value: "Suyash Jagdale", label: "Suyash Jagdale" },
-  ];
+  
 
   const toggleCardBody = () => {
     setIsCollapsed(!isCollapsed);
@@ -73,7 +63,9 @@ export default function ApprovalsForm({ mode }) {
       <div className="form-group">
         <label>Function</label>
         <select className="form-control form-select" style={{ width: "100%" }}>
-          <option selected="selected">GDN</option>
+          <option 
+// @ts-ignore
+          selected="selected">GDN</option>
           <option>Purchase Offer</option>
           <option>GRN</option>
           <option>Work Order</option>
@@ -121,8 +113,8 @@ export default function ApprovalsForm({ mode }) {
         {!isCollapsed && (
           <div className="card-body pt-0 mt-0">
             {formRows.map((row, index) => (
-              <div className="row my-2 align-items-center" key={row.id}>
-                <div className="col-md-2">
+              <div className="row my-2 align-items-end" key={row.id}>
+                <div className="col-md-3">
                   <div className="form-group">
                     <p>Order</p>
                     <input
@@ -132,7 +124,7 @@ export default function ApprovalsForm({ mode }) {
                     />
                   </div>
                 </div>
-                <div className="col-md-2">
+                <div className="col-md-3">
                   <div className="form-group">
                     <p>Name Of Levels</p>
                     <input
@@ -142,24 +134,20 @@ export default function ApprovalsForm({ mode }) {
                     />
                   </div>
                 </div>
-                <div className="col-md-2">
+                <div className="col-md-3">
                   <div className="form-group">
                     <label>Users</label>
-                    <Select
-                      isMulti
-                      name="users"
+                    <MultiSelector
                       options={options}
                       value={row.selectedUsers}
                       onChange={(selectedOptions) =>
                         handleChange(row.id, selectedOptions)
                       }
                       placeholder="Type in to search..."
-                      className="basic-multi-select"
-                      classNamePrefix="select"
                     />
                   </div>
                 </div>
-                <div className="col-md-2">
+                <div className="col-md-3">
                   <div className="form-group">
                     <Form.Group
                       controlId="formCheckboxes"

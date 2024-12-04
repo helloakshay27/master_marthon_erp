@@ -2,6 +2,8 @@
 export { default as DynamicModalBox } from '../components/base/Modal/DynamicModalBox'
 export { default as Table } from '../components/base/Table/Table'
 export { default as CollapsibleCards } from '../components/base/Card/CollapsibleCards'
+export { default as MultiSelector } from '../components/base/Select/MultiSelector'
+export { default as Select } from '../components/base/Select/Select'
 
 // Modals
 export { default as ActivityModal } from '../components/common/Modal/ActivityModal'
@@ -72,4 +74,6 @@ export { default as ResponseTab } from '../components/common/Tab/ResponseTab'
 //Common
 export { default as TabsList } from '../components/common/TabsList'    
 export { default as RfqTabList } from '../components/common/RfqTabList'    
+
+
 
