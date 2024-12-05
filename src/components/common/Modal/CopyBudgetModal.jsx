@@ -75,14 +75,20 @@ backdrop={true}
             <div className="col-md-6">
               <div className="form-group">
                 <label>From</label>
-                <select className="form-control form-select" style={{ width: '100%' }}>
+                <select className="form-control form-select" style={{ width: '100%' ,appearance: 'none',
+                  WebkitAppearance: 'none',  // For Safari and older browsers
+                  MozAppearance: 'none',     // For Firefox
+                  background: 'transparent', // Makes background transparent (optional)
+                  border: '1px solid #ccc',  // Optional: Add border for custom styling
+                  paddingRight: '20px'       // Optional: Ensures enough space on the right
+                }}>
                   <option selected>Alabama</option>
-                  <option>Alaska</option>
+                  {/* <option>Alaska</option>
                   <option>California</option>
                   <option>Delaware</option>
                   <option>Tennessee</option>
                   <option>Texas</option>
-                  <option>Washington</option>
+                  <option>Washington</option> */}
                 </select>
               </div>
             </div>
