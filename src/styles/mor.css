@@ -12834,7 +12834,6 @@ input.rank {
   justify-content: space-between;
 }
 
-<<<<<<< Updated upstream
 /* events.css end */
 .MuiDataGrid-columnHeader {
   background-color: var(--red);
@@ -12902,7 +12901,6 @@ input.rank {
 .css-15lx25q-MuiDataGrid-footerContainer,.css-1hr2sou-MuiTablePagination-root:last-child{
   display: none !important;
 }
-=======
  /* events.css end */
 
  /* CSS FOR construction area background color */
@@ -12910,4 +12908,3 @@ input.rank {
   /* background-color: yellow !important; */
   background-color: rgb(255, 165, 0) !important; /* Orange */
  }
->>>>>>> Stashed changes
