@@ -116,7 +116,7 @@ console.log(count);
     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
     setcount(count.filter((row) => row.id !== id))
     setcounter(counter-1);
-  };
+    };
 
   // Function to delete a row from Table 2
   const deleteRowFromTable2 = (id) => {
@@ -126,9 +126,7 @@ console.log(count);
 
   return (
     <>
-      <Header />
       <div className="main-content">
-        <Sidebar />
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">Setup &gt; Engineering Setup &gt; Create BOQ</a>
@@ -639,7 +637,7 @@ console.log(count);
                     <div className="card-body mt-0 pt-0">
                       <div className="tbl-container mx-3 mt-1">
                         <table className="w-100">
-                          <thead>
+                          <thead >
                             <tr>
                               <th rowSpan={2}>
                                 <div className="d-flex justify-content-center">
@@ -737,7 +735,7 @@ console.log(count);
                       <div className="mt-3">
                         <div className="tbl-container mx-3 mt-1">
                           <table className="table table-bordered">
-                            <thead>
+                            <thead  style={{ zIndex: "1" }}>
                               <tr>
                                 <th rowSpan={2}>
                                   <input type="checkbox" />
@@ -982,8 +980,7 @@ console.log(count);
               </div>
             </div>
           </div>
-        </div>
-        <Footer />
+        </div>   
       </div>
 
       {/* Modal start */}
@@ -1055,7 +1052,7 @@ console.log(count);
           </div>
           <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
-              <thead>
+              <thead >
                 <tr>
                   <th>
                     <input type="checkbox" />
