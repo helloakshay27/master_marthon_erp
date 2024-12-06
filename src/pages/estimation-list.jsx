@@ -1,9 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-// import { useState } from "react";
-// import { Modal, Button, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import {
@@ -48,7 +43,7 @@ const EstimationList = () => {
     const handleSettingModalShow = () => setSettingShow(true);
     const handleModalShow = () => setShow(true);
 
-
+    const myArray = ['Sr.No.','Certifying Company','Project','Sub-Project','Wing','Location'];
     return (
         <>
 
@@ -115,26 +110,26 @@ const EstimationList = () => {
                                     <div className="col-md-5">
                                         <div className="row justify-content-end px-3">
                                             <div className="col-md-3">
-                                                <button
+                                                {/* <button
                                                     className="btn btn-md"
                                                     onClick={handleModalShow}
                                                 >
                                                     <FilterIcon />
-                                                </button>
+                                                </button> */}
                                             </div>
                                             <div className="col-md-3">
-                                                <button type="submit" className="btn btn-md">
+                                                {/* <button type="submit" className="btn btn-md">
                                                     <StarIcon />
-                                                </button>
+                                                </button> */}
                                             </div>
                                             <div className="col-md-3">
-                                                <button
+                                                {/* <button
                                                     id="downloadButton"
                                                     type="submit"
                                                     className="btn btn-md"
                                                 >
                                                     <DownloadIcon />
-                                                </button>
+                                                </button> */}
                                             </div>
                                             <div className="col-md-3">
                                                 <button
@@ -162,7 +157,6 @@ const EstimationList = () => {
                             </div>
                         </div>
                         <div className="mx-3">
-                            {/* <Table columns={rfqEventColumns} data={rfqEventData} /> */}
                             <Table columns={estimationListColumns} data={estimationListData} />
                         </div>
                         <div className="row mt-3  px-3">
@@ -188,7 +182,7 @@ const EstimationList = () => {
             </div>
 
             <FilterModal show={show} handleClose={handleClose} />
-            <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <LayoutModal show={settingShow} onHide={handleSettingClose} items={myArray} />
 
         </>
     );

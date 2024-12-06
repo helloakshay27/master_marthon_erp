@@ -28,6 +28,7 @@ const EstimationDetailsProject = () => {
     const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
+    const myArray = ["Sr.no	","Category level","WBS Code","Type","Category",'Budget','Order Draft Value (WO/PO)','Order Submit Value (WO/PO)','Order Approved Value (WO/PO)','Miscellaneous Expenses Certified','Miscellaneous Expenses Paid', "Balance Budget","% Balance","Debit Note WO/PO","Abstract & GRN Total Value","Abstract & GRN Certified","Material Issued","Material Consumed","Stock at Site (Inventory)","Abstract & GRN - Pending","% Completion","Total Bills Value (WO/PO)" ,"Total Bills Paid Value (WO/PO)","Bill Balance Value","Total Advance Paid (WO/PO)","Total Advance Adjusted (WO/PO)","Total Outstanding Advance (WO/PO)","Balance yet to be Paid"];
     return (
         <>
 
@@ -43,19 +44,19 @@ const EstimationDetailsProject = () => {
                             <div className="card-body mt-0 pt-0">
                                 <div className="row align-items-center">
                                     {[
-                                        { label: "RERA Area", placeholder: "Sq. Ft." },
-                                        { label: "Construction Area", placeholder: "Sq. Ft." },
+                                        { label: "RERA Area", placeholder: "Sq. Ft.", value:"Sq. Ft."},
+                                        { label: "Construction Area", placeholder: "Sq. Ft." ,className: "",value:"500,000.00 Sq. Ft." },
                                         { label: "Saleable Area Sq.ft.", placeholder: "" },
-                                        { label: "Material Total", placeholder: "10,000,00" },
-                                        { label: "Project Budget", placeholder: "INR" },
-                                        { label: "M+L Budget Sq.ft", placeholder: "INR", className: "mt-2" },
-                                        { label: "Budget Type", placeholder: "", className: "mt-2" },
-                                        { label: "Labour Total", placeholder: "10,000,00" },
+                                        { label: "Material Total", placeholder: "10,000,00", value:"10,000,00" },
+                                        { label: "Project Budget", placeholder: "INR" ,value:"INR 40,00,00,000.00"},
+                                        { label: "M+L Budget Sq.ft", placeholder: "INR", className: "mt-2" ,value:"INR 800.00" },
+                                        { label: "Budget Type", placeholder: "", className: "mt-2", value:"TOP DOWN"  },
+                                        { label: "Labour Total", placeholder: "10,000,00",value:"10,000,00"  },
                                     ].map((field, index) => (
                                         <div className={`col-md-3 ${field.className || ""}`} key={index}>
                                             <div className="form-group">
                                                 <label>{field.label}</label>
-                                                <input className="form-control" type="number" placeholder={field.placeholder} />
+                                                <input  disabled className={field.label === "Construction Area" ? "construction-css form-control" : "form-control"} type="text" placeholder={field.placeholder} value={field.value} />
                                             </div>
                                         </div>
                                     ))}
@@ -87,7 +88,7 @@ const EstimationDetailsProject = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project M+L Budget</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 25,00,00,000.00" fdprocessedid="pi363i" value='INR 250000000.00' />
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -97,7 +98,7 @@ const EstimationDetailsProject = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project M+L Budget</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 26,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
 
@@ -105,7 +106,7 @@ const EstimationDetailsProject = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project Budget Balance</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 15,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -115,7 +116,7 @@ const EstimationDetailsProject = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project Budget Balance</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 14,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +136,7 @@ const EstimationDetailsProject = () => {
 
                                 <span className="reference-label sub-category-lvl5">Sub-category lvl 5</span>
 
-                                <span className="reference-label labour">Labour</span>
+                                <span className="reference-label labour">Material/Labour Sub</span>
                                 <span className="reference-label Over-Budget">Over Budget</span>
 
                             </div>
@@ -227,7 +228,7 @@ const EstimationDetailsProject = () => {
                     </div>
                 </div>
             </div>
-            <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <LayoutModal show={settingShow} onHide={handleSettingClose} items={myArray} />
             <CopyBudgetModal show={show} handleClose={handleClose} />
         </>
     )

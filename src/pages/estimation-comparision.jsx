@@ -5,15 +5,6 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 import {
     LayoutModal,
-    FilterModal,
-    BulkAction,
-    DownloadIcon,
-    FilterIcon,
-    QuickFilter,
-    SearchIcon,
-    SettingIcon,
-    StarIcon,
-    Table,
 } from "../components"
 import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 
@@ -52,8 +43,8 @@ const EstimationComparision = () => {
                                         <div className="form-group">
                                             <label>Rera Area</label>
                                             <div className="d-flex gap-3">
-                                                <input className="form-control" type="text" placeholder="Sq ft" />
-                                                <input className="form-control" type="text" placeholder="Sq.mt" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq ft" value="    Sq.ft" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq.mt" value="    Sq.mt" />
                                             </div>
                                         </div>
                                     </div>
@@ -61,8 +52,8 @@ const EstimationComparision = () => {
                                         <div className="form-group">
                                             <label>Labour+Material Budget</label>
                                             <div className="d-flex gap-3">
-                                                <input className="form-control" type="text" placeholder="Sq ft" />
-                                                <input className="form-control" type="text" placeholder="Sq.mt" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq ft" value="800   Sq.ft" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq.mt" value="8,611.20    Sq.mt" />
                                             </div>
                                         </div>
                                     </div>
@@ -70,30 +61,30 @@ const EstimationComparision = () => {
                                         <div className="form-group">
                                             <label>Construction Area</label>
                                             <div className="d-flex gap-3">
-                                                <input className="form-control" type="text" placeholder="Sq ft" />
-                                                <input className="form-control" type="text" placeholder="Sq.mt" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq ft" value="499,999.9999 Sq.ft" />
+                                                <input disabled className="form-control" type="text" placeholder="Sq.mt" value="46451.1334    Sq.mt" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-md-6 mt-2">
                                         <div className="form-group">
                                             <label>Sub-Project Budget</label>
-                                            <input className="form-control" type="text" placeholder="" />
+                                            <input disabled className="form-control" type="text" placeholder="" value="INR 40,00,00,000.00" />
                                         </div>
                                     </div>
                                     <div className="col-md-6 mt-2">
                                         <div className="form-group">
                                             <label>Saleable Area</label>
                                             <div className="d-flex gap-3">
-                                                <input className="form-control" type="text" placeholder="" />
-                                                <input className="form-control" type="text" placeholder="" />
+                                                <input disabled className="form-control" type="text" placeholder="" value="500,000 Sq.ft" />
+                                                <input disabled className="form-control" type="text" placeholder="" value="46451.1334    Sq.mt" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-md-6 mt-2">
                                         <div className="form-group">
                                             <label>Sub-Project Budget Balance</label>
-                                            <input className="form-control" type="text" placeholder="INR" />
+                                            <input disabled className="form-control" type="text" placeholder="INR" value="INR 27,00,00,000.00" />
                                         </div>
                                     </div>
 
@@ -147,7 +138,7 @@ const EstimationComparision = () => {
 
 
                             <div>
-                                <button className="btn">
+                                {/* <button className="btn">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="22"
@@ -163,9 +154,9 @@ const EstimationComparision = () => {
                                         <path d="M1 20v-6h6" />
                                         <path d="M3.51 9a9 9 0 0 1 14.34-3.36L23 10M1 14l5.15 4.85A9 9 0 0 0 20.49 15" />
                                     </svg>
-                                </button>
+                                </button> */}
 
-                                <button
+                                {/* <button
                                     type="submit"
                                     className="btn btn-md"
                                     onClick={handleSettingModalShow}
@@ -174,8 +165,8 @@ const EstimationComparision = () => {
                                         color={"#8B0203"}
                                         style={{ width: "25px", height: "25px" }}
                                     />
-                                </button>
-                                <button
+                                </button> */}
+                                {/* <button
                                     className="purple-btn2"
                                     data-bs-toggle="modal"
                                     data-bs-target="#copyModal"
@@ -189,13 +180,13 @@ const EstimationComparision = () => {
                                         className="me-2"
                                     >
                                         {/* <!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com --> */}
-                                        <path
+                                {/* <path
                                             fill="#f7f7f7"
                                             d="M200 0L332.1 0c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9L448 336c0 26.5-21.5 48-48 48l-192 0c-26.5 0-48-21.5-48-48l0-288c0-26.5 21.5-48 48-48zM48 128l80 0 0 64-64 0 0 256 192 0 0-32 64 0 0 48c0 26.5-21.5 48-48 48L48 512c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48z"
                                         />
                                     </svg>
                                     Copy Budget
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 
@@ -685,12 +676,13 @@ const EstimationComparision = () => {
 
 
                         <div className="d-flex mt-2 justify-content-center">
-                            <button className="purple-btn1">
-                                Print
-                            </button>
                             <button className="purple-btn2">
                                 Download
                             </button>
+                            <button className="purple-btn1">
+                                Print
+                            </button>
+
                         </div>
 
                     </div>
