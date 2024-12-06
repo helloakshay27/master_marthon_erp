@@ -14,6 +14,8 @@ import { Checkbox, FormControlLabel, Box } from "@mui/material";
 import { Modal, Button } from "react-bootstrap";
 
 import baseURL from "../confi/apiDomain";
+import $ from "jquery";
+
 
 const ErpStockRegister13B = () => {
   const [filteredData, setFilteredData] = useState([]);
@@ -34,10 +36,17 @@ const ErpStockRegister13B = () => {
   const [page, setPage] = useState(1); // 1-based index
   const [pageSize, setPageSize] = useState(10);
 
+  // showOnlyPinned rows state
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  // State for Rows
+  //particular row pin
+  const [pinnedRows, setPinnedRows] = useState([]);
+
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, filteredData.length);
 
+  // coloumn visiblty state
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
     material: true,
@@ -52,9 +61,53 @@ const ErpStockRegister13B = () => {
     deadstockQty: true,
     theftMissing: true,
     uom_name: true,
+    Star: true, // Ensure pin column is visible
   });
+
+  // All Columns
   const allColumns = [
     { field: "srNo", headerName: "Sr. No.", width: 90 },
+    {
+      field: "Star",
+      headerName: "Star",
+      width: 90,
+      renderCell: (params) => (
+        <button
+          className="btn btn-sm "
+          onClick={() => handlePinRow(params.row.id)}
+        >
+          {pinnedRows.includes(params.row.id) ? (
+            // SVG for 'Unpin'
+            <svg
+              class="star-icon pinned-star"
+              data-id="171"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#8B0203"
+              stroke="#8B0203"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+          ) : (
+            <svg
+              class="star-icon"
+              data-id="170"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#cccccc"
+              stroke="#cccccc"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+            // SVG for 'Pin'
+          )}
+        </button>
+      ),
+    },
     {
       field: "material",
       headerName: "Material / Asset",
@@ -84,8 +137,135 @@ const ErpStockRegister13B = () => {
     { field: "deadstockQty", headerName: "Deadstock Qty", width: 150 },
     { field: "theftMissing", headerName: "Theft / Missing", width: 150 },
     { field: "uom_name", headerName: "UOM", width: 100 },
+    {
+      field: "pin",
+      headerName: "Pin",
+      width: 100,
+      renderCell: (params) => (
+        <button
+          className="btn btn-sm btn-outline-primary"
+          onClick={() => handlePinRow(params.row.id)}
+        >
+          {pinnedRows.includes(params.row.id) ? "Unpin" : "Pin"}
+        </button>
+      ),
+    },
   ];
+
+  // Filter Columns Based on Visibility
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  // Dummy Data
+  const [dummyData, setdummyData] = useState([
+    {
+      id: 1,
+      srNo: 1,
+      material: "Material A",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 1",
+      specification: "Spec 1",
+      lastReceived: "2024-01-01",
+      total_received: 100,
+      total_issued: 50,
+      stockStatus: "Available",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "PCSs",
+    },
+    {
+      id: 2,
+      srNo: 1,
+      material: "Material A",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 1",
+      specification: "Spec 1",
+      lastReceived: "2024-01-01",
+      total_received: 100,
+      total_issued: 50,
+      stockStatus: "Available",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "PCSs",
+    },
+    {
+      id: 3,
+      srNo: 2,
+      material: "Material B",
+      materialUrl: "#",
+      material_type: "Type 2",
+      materialSubType: "SubType 2",
+      materialDescription: "Description 2",
+      specification: "Spec 2",
+      lastReceived: "2024-01-10",
+      total_received: 200,
+      total_issued: 80,
+      stockStatus: "Low Stock",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "KG",
+    },
+    {
+      id: 5,
+      srNo: 3,
+      material: "Material C",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 3",
+      specification: "Spec 3",
+      lastReceived: "2024-01-15",
+      total_received: 50,
+      total_issued: 20,
+      stockStatus: "Out of Stock",
+      deadstockQty: 5,
+      theftMissing: 1,
+      uom_name: "L",
+    },
+  ]);
+  const [rows, setRows] = useState(dummyData);
+
+  //particular row pin functionality
+  const handlePinRow = (rowId) => {
+    setPinnedRows((prev) => {
+      if (prev.includes(rowId)) {
+        // Unpin if already pinned
+        return prev.filter((id) => id !== rowId);
+      } else {
+        // Pin the row if not already pinned
+        return [...prev, rowId];
+      }
+    });
+  };
+
+  // Toggle to show only pinned rows
+  const toggleShowOnlyPinned = () => {
+    setShowOnlyPinned((prev) => !prev);
+  };
+  // Adjust Row Order Based on Pinned Rows
+
+  const getTransformedRows = () => {
+    // Start with the filtered rows based on stock status
+    let rowsToShow = selectedStockStatus
+      ? rows.filter((row) => row.stockStatus === selectedStockStatus)
+      : rows;
+  
+    // Further filter the rows to show only pinned rows if the toggle is active
+    if (showOnlyPinned) {
+      rowsToShow = rowsToShow.filter((row) => pinnedRows.includes(row.id));
+    }
+  
+    // Return the rows with updated serial numbers
+    return rowsToShow.map((row, index) => ({
+      ...row,
+      srNo: index + 1, // Serial number based on the current order
+    }));
+  };
+  
+
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
   };
@@ -93,6 +273,7 @@ const ErpStockRegister13B = () => {
   const toggleCardBody = () => {
     setIsCollapsed(!isCollapsed);
   };
+  // Download table in excel format
 
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
@@ -105,12 +286,16 @@ const ErpStockRegister13B = () => {
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(blob, "Stock_Data.xlsx"); // Save the file
   };
+
+  //hide/show coloumn functionality
   const handleToggleColumn = (field) => {
     setColumnVisibility((prevState) => ({
       ...prevState,
       [field]: !prevState[field],
     }));
   };
+
+  //showall coloumn functionality
 
   const handleShowAll = () => {
     const updatedVisibility = allColumns.reduce((acc, column) => {
@@ -119,6 +304,7 @@ const ErpStockRegister13B = () => {
     }, {});
     setColumnVisibility(updatedVisibility);
   };
+  //hide all coloumn functionality
 
   const handleHideAll = () => {
     const updatedVisibility = allColumns.reduce((acc, column) => {
@@ -127,6 +313,7 @@ const ErpStockRegister13B = () => {
     }, {});
     setColumnVisibility(updatedVisibility);
   };
+  //reset hide/show coloumn functionality
 
   const handleReset = () => {
     const defaultVisibility = allColumns.reduce((acc, column) => {
@@ -135,7 +322,6 @@ const ErpStockRegister13B = () => {
     }, {});
     setColumnVisibility(defaultVisibility);
   };
-
 
   // Fetch data
   useEffect(() => {
@@ -179,7 +365,7 @@ const ErpStockRegister13B = () => {
         setFilteredData(transformedData);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -198,7 +384,75 @@ const ErpStockRegister13B = () => {
     setFilteredData(filtered);
   }, [searchTerm, data]);
 
-  // Define columns for DataGrid
+  // bulk action functionality
+  const [checkboxEnabled, setCheckboxEnabled] = useState(false);
+  const [selectedStockStatus, setSelectedStockStatus] = useState("");
+  const [newStatus, setNewStatus] = useState(""); // Track new status from the second dropdown
+  const [selectedRows, setSelectedRows] = useState([]); // Track selected rows
+
+
+
+ const handleStockStatusChange = (event) => {
+    const status = event.target.value;
+    setSelectedStockStatus(status);
+    setCheckboxEnabled(status); // Enable checkboxSelection for the specific status
+
+  };
+
+  const handleNewStatusChange = (e) => {
+    setNewStatus(e.target.value);
+  };
+// Function to get selected row IDs
+
+
+
+  
+  const updateStatusForSelectedRows = () => {
+    try {
+
+        // await axios.post("/api/updateStatus", {
+      //   ids: selectedRows,
+      //   newStatus,
+      // });
+      // Log the selected rows and the new status to the console
+      console.log("Selected Rows IDs:", selectedRows);
+      console.log("New Status:", newStatus);
+  
+      // Update the local state with the new status
+      setRows(rows.map((row) => 
+        selectedRows.includes(row.id) 
+          ? { ...row, stockStatus: newStatus } 
+          : row
+      ));
+  
+      // Reset selected rows and new status
+      setSelectedRows([]); 
+      setNewStatus(""); 
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+  
+
+
+  const getSelectedRowIds = () => {
+    const selectedRows = $(".MuiDataGrid-row.Mui-selected"); // Find selected rows
+    const selectedRowIds = selectedRows.map(function () {
+      return $(this).data("id");  // Get row ID from data-id attribute
+    }).get();  // Convert to array
+    console.log("Selected Row IDs:", selectedRowIds);  // Log selected row IDs
+    setSelectedRows(selectedRowIds);  // Update state with selected row IDs
+  };
+
+  // UseEffect to trigger selection update when rows are selected
+  useEffect(() => {
+    // Attach event listener to track row selection using jQuery
+    $(document).on("click", ".MuiCheckbox-root", function () {
+      getSelectedRowIds(); // Call the function to get selected row IDs
+    });
+  }, []); // Empty dependency array to run once on mount
+
+  
 
   return (
     <>
@@ -376,7 +630,11 @@ const ErpStockRegister13B = () => {
                         </button>
                       </div>
                       <div className="col-md-3">
-                        <button type="submit" className="btn btn-md">
+                        <button
+                          type="submit"
+                          className="btn btn-md"
+                          onClick={toggleShowOnlyPinned}
+                        >
                           <svg
                             width={22}
                             height={22}
@@ -447,15 +705,58 @@ const ErpStockRegister13B = () => {
               </div>
             </div>
 
+            <div style={{ marginBottom: "16px" }}>
+       
+
+        <label htmlFor="stock-status-dropdown1">Stock Status: </label>
+        <select
+          id="stock-status-dropdown1"
+          onChange={handleStockStatusChange}
+          defaultValue=""
+        >
+          <option value="">Select Stock Status</option>
+          {dummyData.map((status) => (
+            <option key={status.id} value={status.stockStatus}>
+              {status.stockStatus}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* New Status Dropdown */}
+      <div style={{ marginBottom: "16px" }}>
+        <label htmlFor="new-status-dropdown">Change Status To: </label>
+        <select
+          id="new-status-dropdown"
+          onChange={handleNewStatusChange}
+          value={newStatus}
+        >
+          <option value="">Select New Status</option>
+          <option value="Available">Available</option>
+          <option value="Low Stock">Low Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <button
+          onClick={updateStatusForSelectedRows}
+          disabled={!newStatus || selectedRows.length === 0}
+        >
+          Update Status
+        </button>
+      </div>
+
             <div className="tbl-container m-3 px-1 mt-3">
               <DataGrid
-                rows={filteredData.slice(startEntry - 1, endEntry)}
+                rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
                 disablePagination // Disable DataGrid's built-in pagination
                 autoHeight
-              />
+                checkboxSelection={checkboxEnabled}
+              
+
+                />
             </div>
+
             <Stack
               direction="row"
               alignItems="center"
@@ -826,7 +1127,6 @@ const ErpStockRegister13B = () => {
         backdrop="true" // Modal closes on backdrop click
         keyboard={true} // Modal closes on 'ESC' key press
         className="modal-centered-custom" // Custom class to handle centering
-       
       >
         <Modal.Header>
           <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
@@ -845,7 +1145,7 @@ const ErpStockRegister13B = () => {
           </div>
         </Modal.Header>
 
-        <Modal.Body  style={{height:"400px", overflowY:"auto"}}>
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
           {allColumns.map((column, index) => (
             <div
               className="row justify-content-between align-items-center mt-2"
@@ -886,19 +1186,19 @@ const ErpStockRegister13B = () => {
           ))}
         </Modal.Body>
         <Modal.Footer>
-        <Button variant="secondary" onClick={() => setSettingShow(false)}>
-          Close
-        </Button>
-        <Button variant="primary" onClick={handleShowAll}>
-          Show All
-        </Button>
-        <Button variant="warning" onClick={handleReset}>
-          Reset
-        </Button>
-        <Button variant="danger" onClick={handleHideAll}>
-          Hide All
-        </Button>
-      </Modal.Footer>
+          <Button variant="secondary" onClick={() => setSettingShow(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleShowAll}>
+            Show All
+          </Button>
+          <Button variant="warning" onClick={handleReset}>
+            Reset
+          </Button>
+          <Button variant="danger" onClick={handleHideAll}>
+            Hide All
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );
@@ -944,3 +1244,7 @@ margin: auto;
 </style>;
 
 export default ErpStockRegister13B;
+
+
+
+
