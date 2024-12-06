@@ -1,7 +1,4 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 import BOQSubItemTable from "../components/BOQSubItemTable ";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";

@@ -35,6 +35,7 @@ import PoAdvanceNoteList from './pages/po-advance-note-list';
 import RootLayout from './pages/Layout/RootLayout';
 import EstimationApprovolList from './pages/estimation-approval-list';
 import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows';
+import BOQList from './pages/boq-list';
 
 
 function App() {
@@ -64,6 +65,7 @@ function App() {
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />
           <Route path='/create-rfq' element={<CreateRfq />} />
           <Route path='/create-BOQ' element={<CreateBOQ />} />
+          <Route path='/boq-list' element={<BOQList />} />
           <Route path='/view-BOQ' element={<ViewBOQ />} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />

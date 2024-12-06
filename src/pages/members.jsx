@@ -55,6 +55,9 @@ function Members() {
                 <Link to="/create-BOQ">Create BOQ</Link>
               </li>
               <li>
+                <Link to="/boq-list">BOQ-List</Link>
+              </li>
+              <li>
                 <Link to="/view-BOQ">View BOQ</Link>
               </li>
               <li>

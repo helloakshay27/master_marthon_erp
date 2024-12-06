@@ -45,9 +45,9 @@ const BOQApprovalList = () => {
 
   return (
     <>
-      <Header />
+    
       <div className="main-content">
-        <Sidebar />
+        
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">
@@ -645,7 +645,7 @@ const BOQApprovalList = () => {
             </div>
           </div>
         </div>
-        <Footer />
+       
       </div>
     </>
   );
