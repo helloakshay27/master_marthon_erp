@@ -304,7 +304,7 @@ const ErpStockRegister13B = () => {
     }, {});
     setColumnVisibility(updatedVisibility);
   };
-  //hide all coloumn functionality
+  //hide all coloumn functionalitys
 
   const handleHideAll = () => {
     const updatedVisibility = allColumns.reduce((acc, column) => {
