@@ -1,7 +1,4 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -40,9 +37,9 @@ const BOQDetailsPageMaster = () => {
   const closeAssocoatedModal = () => setShowAssocoatedModal(false);
   return (
     <>
-      <Header />
+     
       <div className="main-content">
-        <Sidebar />
+        
         <div className="website-content overflow-auto">
           <div className="website-content overflow-auto">
             <div className="module-data-section p-4">
@@ -670,7 +667,7 @@ const BOQDetailsPageMaster = () => {
             </footer>
           </div>
         </div>
-        <Footer />
+       
       </div>
       {/* Modal start */}
       <Modal size="lg" show={showModal} onHide={closeModal} centered>

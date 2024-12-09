@@ -1,7 +1,4 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -18,9 +15,7 @@ const ViewBOQ = () => {
   const closeCopyModal = () => setcopyModal(false);
   return (
     <>
-      <Header />
-      <div className="main-content">
-        <Sidebar />
+      <div className="main-content">  
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
@@ -450,7 +445,6 @@ const ViewBOQ = () => {
             </div>
           </div>
         </div>
-        <Footer />
       </div>
       {/* copy modal */}
       <Modal
