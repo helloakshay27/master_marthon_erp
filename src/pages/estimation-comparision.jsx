@@ -191,7 +191,7 @@ const EstimationComparision = () => {
                         </div>
 
                         <div className="mx-3">
-                            <div className="tbl-container mx-3 mt-2">
+                            <div className="tbl-container mx-3 mt-2" style={{height: '400px', overflowY: 'auto', display: 'block'}}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
