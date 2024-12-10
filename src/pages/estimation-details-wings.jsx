@@ -1,9 +1,4 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-// import { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import ExpandableTable from "../components/ExpandableTable";
@@ -21,27 +16,22 @@ import {
     StarIcon,
     Table,
 } from "../components"
-import { estimationListColumns, estimationListData } from "../constant/data";
-// import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 
 
 
 
 const EstimationDetailsWings = () => {
-    const [viewWingDetails, setViewWingDetails] = useState(true);
-
-    const viewWingDetailsDropdown = () => {
-        setViewWingDetails(!viewWingDetails);
-    };
-
     const [settingShow, setSettingShow] = useState(false);
     const handleSettingClose = () => setSettingShow(false);
-    const [show, setShow] = useState(false);
+    const handleSettingModalShow = () => setSettingShow(true);
+
+    const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
+    const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
 
-    const handleSettingModalShow = () => setSettingShow(true);
-    const handleModalShow = () => setShow(true);
+    const myArray = ["Sr.no	", "Category level", "WBS Code", "Type", "Category", 'Budget', 'Order Draft Value (WO/PO)', 'Order Submit Value (WO/PO)', 'Order Approved Value (WO/PO)', 'Miscellaneous Expenses Certified', 'Miscellaneous Expenses Paid', "Balance Budget", "% Balance", "Debit Note WO/PO", "Abstract & GRN Total Value", "Abstract & GRN Certified", "Material Issued", "Material Consumed", "Stock at Site (Inventory)", "Abstract & GRN - Pending", "% Completion", "Total Bills Value (WO/PO)", "Total Bills Paid Value (WO/PO)", "Bill Balance Value", "Total Advance Paid (WO/PO)", "Total Advance Adjusted (WO/PO)", "Total Outstanding Advance (WO/PO)", "Balance yet to be Paid"];
     return (
         <>
 
@@ -54,45 +44,23 @@ const EstimationDetailsWings = () => {
                     <div className="card mt-3 pb-3">
                         {/* <QuickFilter /> */}
                         <CollapsibleCard title="Wings Details">
-                            {/* <div className="card-body pt-0 mt-0">
-                                <div className="row my-2 align-items-end">
-                                    {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                                        <div className="col-md-2" key={idx}>
-                                            <div className="form-group">
-                                                <label>{label}</label>
-                                                <select className="form-control form-select" style={{ width: "100%" }}>
-                                                    <option selected="selected">Alabama</option>
-                                                    <option>Alaska</option>
-                                                    <option>California</option>
-                                                    <option>Delaware</option>
-                                                    <option>Tennessee</option>
-                                                    <option>Texas</option>
-                                                    <option>Washington</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div className="col-md-2">
-                                        <button className="purple-btn2 m-0">Go</button>
-                                    </div>
-                                </div>
-                            </div> */}
+
                             <div className="card-body mt-0 pt-0">
                                 <div className="row align-items-center">
                                     {[
-                                        { label: "RERA Area", placeholder: "Sq. Ft." },
-                                        { label: "Construction Area", placeholder: "Sq. Ft." },
+                                        { label: "RERA Area", placeholder: "Sq. Ft.", value: "Sq. Ft." },
+                                        { label: "Construction Area", placeholder: "Sq. Ft.", className: "", value: "500,000.00 Sq. Ft." },
                                         { label: "Saleable Area Sq.ft.", placeholder: "" },
-                                        { label: "Material Total", placeholder: "10,000,00" },
-                                        { label: "Project Budget", placeholder: "INR" },
-                                        { label: "M+L Budget Sq.ft", placeholder: "INR", className: "mt-2" },
-                                        { label: "Budget Type", placeholder: "", className: "mt-2" },
-                                        { label: "Labour Total", placeholder: "10,000,00" },
+                                        { label: "Material Total", placeholder: "10,000,00", value: "10,000,00" },
+                                        { label: "Project Budget", placeholder: "INR", value: "INR 40,00,00,000.00" },
+                                        { label: "M+L Budget Sq.ft", placeholder: "INR", className: "mt-2", value: "INR 800.00" },
+                                        { label: "Budget Type", placeholder: "", className: "mt-2", value: "TOP DOWN" },
+                                        { label: "Labour Total", placeholder: "10,000,00", value: "10,000,00" },
                                     ].map((field, index) => (
                                         <div className={`col-md-3 ${field.className || ""}`} key={index}>
                                             <div className="form-group">
                                                 <label>{field.label}</label>
-                                                <input className="form-control" type="number" placeholder={field.placeholder} />
+                                                <input disabled className={field.label === "Construction Area" ? "construction-css form-control" : "form-control"} type="text" placeholder={field.placeholder} value={field.value} />
                                             </div>
                                         </div>
                                     ))}
@@ -124,7 +92,7 @@ const EstimationDetailsWings = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project M+L Budget</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 25,00,00,000.00" fdprocessedid="pi363i" value='INR 250000000.00' />
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -134,7 +102,7 @@ const EstimationDetailsWings = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project M+L Budget</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 26,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
 
@@ -142,7 +110,7 @@ const EstimationDetailsWings = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project Budget Balance</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 15,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -152,7 +120,7 @@ const EstimationDetailsWings = () => {
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Sub-Project Budget Balance</label>
-                                            <input class="form-control" type="number" placeholder="" fdprocessedid="pi363i" />
+                                            <input disabled class="form-control" type="number" placeholder="INR 14,00,00,000.00" fdprocessedid="pi363i" />
                                         </div>
                                     </div>
                                 </div>
@@ -249,7 +217,7 @@ const EstimationDetailsWings = () => {
 
                                 <span className="reference-label sub-category-lvl5">Sub-category lvl 5</span>
 
-                                <span className="reference-label labour">Labour</span>
+                                <span className="reference-label labour">Material/Labour Sub</span>
                                 <span className="reference-label Over-Budget">Over Budget</span>
 
                             </div>
@@ -284,7 +252,7 @@ const EstimationDetailsWings = () => {
                                         />
                                     </button>
 
-                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal">
+                                    <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#copyModal" onClick={handleShow}>
 
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -293,7 +261,6 @@ const EstimationDetailsWings = () => {
                                             viewBox="0 0 400 500"
                                             className="me-2"
                                         >
-                                            {/* <!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com --> */}
                                             <path
                                                 fill="#f7f7f7"
                                                 d="M200 0L332.1 0c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9L448 336c0 26.5-21.5 48-48 48l-192 0c-26.5 0-48-21.5-48-48l0-288c0-26.5 21.5-48 48-48zM48 128l80 0 0 64-64 0 0 256 192 0 0-32 64 0 0 48c0 26.5-21.5 48-48 48L48 512c-26.5 0-48-21.5-48-48L0 176c0-26.5 21.5-48 48-48z"
@@ -346,8 +313,8 @@ const EstimationDetailsWings = () => {
                 </div>
             </div>
 
-            <FilterModal show={show} handleClose={handleClose} />
-            <LayoutModal show={settingShow} onHide={handleSettingClose} />
+            <LayoutModal show={settingShow} onHide={handleSettingClose} items={myArray} />
+            <CopyBudgetModal show={show} handleClose={handleClose} />
         </>
     )
 }

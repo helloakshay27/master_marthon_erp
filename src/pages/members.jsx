@@ -7,7 +7,7 @@ function Members() {
 
   return (
 
-    
+
     <>
       <Header />
       <div className="main-content">
@@ -16,8 +16,11 @@ function Members() {
           <div className="module-data-section container-fluid">
             <h1>ERP_Store</h1>
             <ul>
-            <li>
+              <li>
                 <Link to="good_receive_notes/:id">grn_detail</Link>
+              </li>
+              <li>
+                <Link to="/TreeDataWithStaticRows">TreeDataWithStaticRows</Link>
               </li>
               <li>
                 <Link to="/create-rfq">create_rfq</Link>
@@ -52,6 +55,9 @@ function Members() {
                 <Link to="/create-BOQ">Create BOQ</Link>
               </li>
               <li>
+                <Link to="/boq-list">BOQ-List</Link>
+              </li>
+              <li>
                 <Link to="/view-BOQ">View BOQ</Link>
               </li>
               <li>
@@ -63,27 +69,42 @@ function Members() {
               <li>
                 <Link to="/boq-approval-details">BOQ Approval Details</Link>
               </li>
+
+              <li>
+                <Link to="/create-rate">Create Rate</Link>
+              </li>
+              <li>
+                <Link to="/view-rate">View Rate</Link>
+              </li>
+
+              <li>
+                <Link to="/estimation-creation">Estimation creation</Link>
+              </li>
               <li>
                 <Link to="/estimation-list">Estimation List Page</Link>
               </li>
               <li>
-                <Link to="/estimation-details-wings">Estimation details wings</Link>
+                <Link to="/estimation-details-project">Estimation details project</Link>
               </li>
               <li>
                 <Link to="/estimation-details-sub-project">Estimation details sub project</Link>
               </li>
               <li>
+                <Link to="/estimation-details-wings">Estimation details wings</Link>
+              </li>
+
+              <li>
                 <Link to="/estimation-comparision">Estimation comparision</Link>
+              </li>
+              <li>
+                <Link to="/estimation-approvol-list">Estimation approval list</Link>
               </li>
               <li>
                 <Link to="/estimation-approval-details">Estimation approval details</Link>
               </li>
-              <li>
-                <Link to="/estimation-creation">Estimation creation</Link>
-              </li>
-              <li>
-                <Link to="/estimation-details-project">Estimation details project</Link>
-              </li>
+
+
+
             </ul>
 
             <h1>Billing & Accounts</h1>
@@ -105,7 +126,7 @@ function Members() {
                 <Link to="/po-advance-note-payment" >Po Advance Note Payment</Link>
               </li>
 
-              
+
               <li>
                 <Link to="/po-advance-note-list" >Po Advance Note List</Link>
               </li>

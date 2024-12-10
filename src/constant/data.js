@@ -447,5 +447,69 @@ export const  estimationListData = [
     location:"Mulund",
    
   },
+  
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "",
+    subProject:"Maxima",
+    wing:'wing A1(Draft)',
+    location:"Mulund",
+   
+  },
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "",
+    subProject:"",
+    wing:'wing A2(Draft)',
+    location:"Mulund",
+   
+  },
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "King Project2 (Approved)",
+    subProject:"Marathon Emrace2 (Pending)",
+    wing:'Embrace A1(Draft)2',
+    location:"Mulund2",
+   
+  },
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "",
+    subProject:"",
+    wing:'Embrace A2(Draft)2',
+    location:"Mulund2",
+   
+  },
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "",
+    subProject:"Emblem (Pending)",
+    wing:'wing A (Draft)1',
+    location:"Mulund2",
+   
+  },
+  {
+    srNo: "",
+    certifyingCompany:"",
+    project: "",
+    subProject:"",
+    wing:'wing B (Draft)2',
+    location:"Mulund2",
+   
+  },
+  {
+    srNo: "2",
+    certifyingCompany:"MNRL",
+    project: "panvel phase2 (Approved)",
+    subProject:"Marathon Emrace2 (Pending)",
+    wing:'Embrace A (Draft)2',
+    location:"Mulund2",
+   
+  },
   // More data rows can be added here
 ];

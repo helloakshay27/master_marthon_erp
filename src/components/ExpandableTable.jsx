@@ -188,34 +188,7 @@ const ExpandableTable = () => {
                         </th>
                         <th className="text-center">Balance</th>
                     </tr>
-                    <tr>
-                        <th className="text-center" colSpan={6}>
-                            References
-                        </th>
-                        <th className="text-center">A</th>
-                        <th className="text-center">B</th>
-                        <th className="text-center">C</th>
-                        <th className="text-center">D</th>
-                        <th className="text-center">E</th>
-                        <th className="text-center">F</th>
-                        <th className="text-center">G = A-B-E</th>
-                        <th className="text-center">H</th>
-                        <th className="text-center">I</th>
-                        <th className="text-center">J</th>
-                        <th className="text-center">K</th>
-                        <th className="text-center">L</th>
-                        <th className="text-center">M</th>
-                        <th className="text-center">N = J-M</th>
-                        <th className="text-center">O = J-K</th>
-                        <th className="text-center">P = (J-N)/A</th>
-                        <th className="text-center">Q</th>
-                        <th className="text-center">R</th>
-                        <th className="text-center">S = Q-R</th>
-                        <th className="text-center">T</th>
-                        <th className="text-center">U</th>
-                        <th className="text-center">V = T - U</th>
-                        <th className="text-center">W = A-Q-T-F</th>
-                    </tr>
+
                     <tr>
                         <th className="text-start">Expand</th>
                         <th className="text-start">Sr.no</th>
@@ -247,6 +220,35 @@ const ExpandableTable = () => {
                         <th className="text-start">Total Outstanding Advance (WO/PO)</th>
                         <th className="text-start">Balance yet to be Paid</th>
                     </tr>
+                    <tr>
+                        <th className="text-center" colSpan={6}>
+                            References
+                        </th>
+                        <th className="text-center">A</th>
+                        <th className="text-center">B</th>
+                        <th className="text-center">C</th>
+                        <th className="text-center">D</th>
+                        <th className="text-center">E</th>
+                        <th className="text-center">F</th>
+                        <th className="text-center">G = A-B-E</th>
+                        <th className="text-center">H</th>
+                        <th className="text-center">I</th>
+                        <th className="text-center">J</th>
+                        <th className="text-center">K</th>
+                        <th className="text-center">L</th>
+                        <th className="text-center">M</th>
+                        <th className="text-center">N = J-M</th>
+                        <th className="text-center">O = J-K</th>
+                        <th className="text-center">P = (J-N)/A</th>
+                        <th className="text-center">Q</th>
+                        <th className="text-center">R</th>
+                        <th className="text-center">S = Q-R</th>
+                        <th className="text-center">T</th>
+                        <th className="text-center">U</th>
+                        <th className="text-center">V = T - U</th>
+                        <th className="text-center">W = A-Q-T-F</th>
+                    </tr>
+                    
                 </thead>
                 <tbody style={{ zIndex: "11" }}>
                     <tr className="main-category">

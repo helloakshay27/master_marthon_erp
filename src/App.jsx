@@ -33,6 +33,11 @@ import BillBookingCreate from './pages/bill-booking-create';
 import PoAdvanceNotePayment from './pages/po-advance-note-payment';
 import PoAdvanceNoteList from './pages/po-advance-note-list';
 import RootLayout from './pages/Layout/RootLayout';
+import EstimationApprovolList from './pages/estimation-approval-list';
+import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows';
+import BOQList from './pages/boq-list';
+import CreateRate from './pages/create-rate';
+import ViewRate from './pages/view-rate';
 
 
 function App() {
@@ -48,6 +53,8 @@ function App() {
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
           <Route path='/stock_register_detail/:id' element={<ErpStockRegisterCreationDetail13C />} />
           <Route path='/stock_register_list' element={<ErpStockRegister13B />} />
+          <Route path="/TreeDataWithStaticRows" element={<TreeDataWithStaticRows />} />
+
           <Route
             path="/"
             element={
@@ -61,10 +68,13 @@ function App() {
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />
           <Route path='/create-rfq' element={<CreateRfq />} />
           <Route path='/create-BOQ' element={<CreateBOQ />} />
+          <Route path='/boq-list' element={<BOQList />} />
           <Route path='/view-BOQ' element={<ViewBOQ />} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
+          <Route path='/create-rate'  element={<CreateRate/>} />
+          <Route path='/view-rate'  element={<ViewRate/>} />
           <Route path='/estimation-list' element={<EstimationList/>} />
           <Route path='/estimation-details-wings' element={<EstimationDetailsWings/>} />
           <Route path='/estimation-details-sub-project' element={<EstimationDetailsSubProject/>} />
@@ -72,6 +82,7 @@ function App() {
           <Route path='/estimation-approval-details' element={<EstimationApprovalDetails/>} />
           <Route path='/estimation-creation' element={<EstimationCreation/>} />
           <Route path='/estimation-details-project' element={<EstimationDetailsProject/>} />
+          <Route path='/estimation-approvol-list'  element={<EstimationApprovolList/>} />
           <Route path='/bill-booking-details' element={<BillBookingDetails/>} />
           <Route path='/bill-entry-details' element={<BillEntryDetails/>} />
           <Route path='/bill-booking-list' element={<BillBookingList/>} />

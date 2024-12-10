@@ -18,6 +18,7 @@ import {
     Table,
 } from "../components"
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { auditLogColumns, auditLogData } from "../constant/data";
 
 
 
@@ -38,37 +39,37 @@ const EstimationApprovalDetails = () => {
                                             <div className="col-md-6">
                                                 <div className="form-group">
                                                     <label>Project Name</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <input disabled className="form-control" type="text" placeholder="" />
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
                                                 <div className="form-group">
-                                                    <label>Sub-Project Name</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <label>Sub-Project Budget</label>
+                                                    <input disabled className="form-control" type="text" placeholder="INR" value="INR 40,00,000" />
                                                 </div>
                                             </div>
                                             <div className="col-md-6 mt-2">
                                                 <div className="form-group">
-                                                    <label>Sub-Project Budget</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <label>Sub-Project Name</label>
+                                                    <input disabled className="form-control" type="text" placeholder="" />
                                                 </div>
                                             </div>
                                             <div className="col-md-6 mt-2">
                                                 <div className="form-group">
                                                     <label>Sub Project Balance Budget</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <input disabled className="form-control" type="text" placeholder="" value="INR 15,00,000"  />
                                                 </div>
                                             </div>
                                             <div className="col-md-6 mt-2">
                                                 <div className="form-group">
                                                     <label>M+L Budget</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <input disabled className="form-control" type="text" placeholder="" value="INR 35,00,000"  />
                                                 </div>
                                             </div>
                                             <div className="col-md-6 mt-2">
                                                 <div className="form-group">
                                                     <label>Sub Project Construction Area</label>
-                                                    <input className="form-control" type="number" placeholder="" />
+                                                    <input disabled className="form-control" type="text" placeholder="" value="52,668 Sq.ft"  />
                                                 </div>
                                             </div>
                                         </div>
@@ -256,55 +257,11 @@ const EstimationApprovalDetails = () => {
                                 <button className="purple-btn1">Cancel</button>
                             </div>
                             <div className="mx-4">
-                                <h5 className="mt-3">Audit Log</h5>
-
-                                <div className="tbl-container px-0">
-                                    <table className="w-100">
-                                        <thead>
-                                            <tr>
-                                                <th>Sr.No.</th>
-                                                <th>User</th>
-                                                <th>Date</th>
-                                                <th>Status</th>
-                                                <th>Remark</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <th>1</th>
-                                                <td>Pratham Shastri</td>
-                                                <td>15-02-2024</td>
-                                                <td>Verified</td>
-                                                <td>
-
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 25 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        opacity={0.5}
-                                                    >
-                                                        {/* <!-- Square Background --> */}
-                                                        <rect x="0" y="0" width="25" height="24" fill="none" stroke="currentColor" stroke-width="1" />
-
-                                                        {/* <!-- Eye Icon --> */}
-                                                        <path d="M1 12s3.5-8 11-8 11 8 11 8-3.5 8-11 8-11-8-11-8z" />
-                                                        <circle cx="12" cy="12" r="3" />
-                                                    </svg>
-
-
-
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <h5>Audit Log</h5>
+                            <div className="">
+                                <Table columns={auditLogColumns} data={auditLogData} />
                             </div>
+                        </div>
                        
                     </div>
                 </div>

@@ -22,7 +22,6 @@ import {
     Table,
 } from "../components"
 import { estimationListColumns, estimationListData } from "../constant/data";
-// import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { auditLogColumns, auditLogData } from "../constant/data";
 
 
@@ -137,8 +136,10 @@ const EstimationCreation = () => {
                                                         <label>RERA Area</label>
                                                         <input
                                                             className="form-control"
-                                                            type="number"
+                                                            disabled
+                                                            type="text"
                                                             placeholder="Sq. Ft."
+                                                            value='60,000 Sq. Ft.'
                                                         />
                                                     </div>
                                                 </div>
@@ -147,9 +148,12 @@ const EstimationCreation = () => {
                                                     <div className="form-group">
                                                         <label>Construction Area</label>
                                                         <input
-                                                            className="form-control"
-                                                            type="number"
+                                                        disabled
+                                                            className="form-control construction-css"
+                                                            type="text"
                                                             placeholder="Sq. Ft."
+                                                            value='500,000.00 Sq. Ft.'
+                                                            
                                                         />
                                                     </div>
                                                 </div>
@@ -158,8 +162,9 @@ const EstimationCreation = () => {
                                                     <div className="form-group">
                                                         <label>Saleable Area Sq.ft.</label>
                                                         <input
+                                                        disabled
                                                             className="form-control"
-                                                            type="number"
+                                                            type="text"
                                                             placeholder=""
                                                         />
                                                     </div>
@@ -169,9 +174,11 @@ const EstimationCreation = () => {
                                                     <div className="form-group">
                                                         <label>Version</label>
                                                         <input
+                                                        disabled
                                                             className="form-control"
                                                             type="text"
                                                             placeholder=""
+                                                            value="V1"
                                                         />
                                                     </div>
                                                 </div>
@@ -180,9 +187,11 @@ const EstimationCreation = () => {
                                                     <div className="form-group">
                                                         <label>No. of Flat</label>
                                                         <input
+                                                        disabled
                                                             className="form-control"
-                                                            type="number"
+                                                            type="text"
                                                             placeholder="Nos"
+                                                            value="150 Nos"
                                                         />
                                                     </div>
                                                 </div>
@@ -191,9 +200,11 @@ const EstimationCreation = () => {
                                                     <div className="form-group">
                                                         <label>No of Floors</label>
                                                         <input
+                                                        disabled
                                                             className="form-control"
-                                                            type="number"
+                                                            type="text"
                                                             placeholder="Floors"
+                                                            value="22 Floors"
                                                         />
                                                     </div>
                                                 </div>
@@ -249,7 +260,7 @@ const EstimationCreation = () => {
                                             <th className="text-start">Items</th>
                                             <th className="text-start">Factor</th>
                                             <th className="text-start">UOM</th>
-                                            {/* <th className="text-start">Area</th> */}
+                                            <th className="text-start">Area</th>
                                             <th className="text-start">QTY Excl Wastage</th>
                                             <th className="text-start">Wastage</th>
                                             <th className="text-start">QTY incl Waste</th>
@@ -258,6 +269,28 @@ const EstimationCreation = () => {
                                             <th className="text-start">Cost Per Unit</th>
                                             <th className="text-start" style={{ width: "12px" }}>
                                                 Action
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start"></th>
+                                            <th className="text-start">A</th>
+                                            <th className="text-start">B</th>
+                                            <th className="text-start">C</th>
+                                            <th className="text-start">D=C*A</th>
+                                            <th className="text-start">E</th>
+                                            <th className="text-start">F=D+D*E</th>
+                                            <th className="text-start">I</th>
+                                            <th className="text-start">J=F*I</th>
+                                            <th className="text-start">K=J/C</th>
+                                            <th className="text-start">
+                                                
                                             </th>
                                         </tr>
 
@@ -294,7 +327,7 @@ const EstimationCreation = () => {
                                             <td></td>
                                             <td></td>
                                             <td>Total Here</td>
-                                            {/* <td></td> */}
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <td></td>

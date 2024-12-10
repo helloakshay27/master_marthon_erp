@@ -1,7 +1,4 @@
 import React from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,6 +9,7 @@ const BOQApprovalDetails = () => {
    const [detailsDetails, setdetailsDetails] = useState(true);
    const [subBoqDetails, setsubBoqDetails] = useState(true);
    const [subItemDetails, setsubItemDetails] = useState(false);
+   const [openTRDetails, setopenTRDetails] = useState(false);
    const [materialDetails, setmaterialDetails] = useState(false);
    const [labourDetails, setlabourDetails] = useState(false);
    const [assestDetails, setassestDetails] = useState(false);
@@ -28,6 +26,9 @@ const BOQApprovalDetails = () => {
     const subItemDropdown = () => {
       setsubItemDetails(!subItemDetails);
     };
+    const openTRDropdown = () => {
+      setopenTRDetails(!openTRDetails);
+    };
     const materialDropdown = () => {
       setmaterialDetails(!materialDetails);
     };
@@ -39,9 +40,9 @@ const BOQApprovalDetails = () => {
     };
   return (
     <>
-      <Header />
+     
       <div className="main-content">
-        <Sidebar />
+        
         <div className="website-content overflow-auto">
           <div className="website-content overflow-auto">
             <div className="module-data-section p-4">
@@ -388,7 +389,7 @@ const BOQApprovalDetails = () => {
                                 role="button"
                                 aria-expanded="false"
                                 aria-controls="collapseExample"
-                                onClick={subItemDropdown}
+                                onClick={openTRDropdown}
                               >
                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
@@ -422,6 +423,56 @@ const BOQApprovalDetails = () => {
                               </svg>
                             </td>
                           </tr>
+                          {openTRDetails && (
+                          <tr>
+                            <td>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={16}
+                                height={16}
+                                fill="currentColor"
+                                className="bi bi-plus-circle"
+                                viewBox="0 0 16 16"
+                                data-bs-toggle="collapse"
+                                href="#collapsetableExample"
+                                role="button"
+                                aria-expanded="false"
+                                aria-controls="collapseExample"
+                                onClick={subItemDropdown}
+                              >
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                              </svg>
+                            </td>
+                            <td>MS Fabrication</td>
+                            <td>
+                              <input className="form-control" type="text" />
+                            </td>
+                            <td>
+                              <input className="form-control" type="text" />
+                            </td>
+                            <td>
+                              <input className="form-control" type="text" />
+                            </td>
+                            <td>FEET </td>
+                            <td>410.00000</td>
+                            <td>335.000</td>
+                            <td>1.37,350</td>
+                            <td>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={18}
+                                height={18}
+                                fill="currentColor"
+                                className="bi bi-file-earmark-medical"
+                                viewBox="0 0 16 16"
+                              >
+                                <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z" />
+                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z" />
+                              </svg>
+                            </td>
+                          </tr>
+)}
                         </tbody>
                       </table>
                     </div>
@@ -627,6 +678,7 @@ const BOQApprovalDetails = () => {
                     </div>
 )}
                   </div>
+                  
 )}
                 </div>
                 <div className="row mt-2 justify-content-center">
@@ -670,7 +722,7 @@ const BOQApprovalDetails = () => {
             </div>
           </div>
         </div>
-        <Footer />
+       
       </div>
     </>
   );
