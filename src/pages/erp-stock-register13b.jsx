@@ -1,161 +1,270 @@
-// @ts-nocheck
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
+import React, { useState, useEffect } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import Pagination from "@mui/material/Pagination";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
 
-import React, { useEffect, useState } from "react";
-import { Modal } from "react-bootstrap";
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
-import DataTable from "datatables.net-react";
-import DT from "datatables.net-dt";
-import baseURL from "../confi/apiDomain";
+import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
-DataTable.use(DT);
+import { Modal, Button } from "react-bootstrap";
+
+import baseURL from "../confi/apiDomain";
+import $ from "jquery";
+
 
 const ErpStockRegister13B = () => {
-
-  const [data, setData] = useState([]); // State to hold the fetched data
   const [filteredData, setFilteredData] = useState([]);
+  const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // Track loading state
-  const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
+
+  const location = useLocation();
+
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
-
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
-  const location = useLocation(); // Access the location object
+  const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [page, setPage] = useState(1); // 1-based index
+  const [pageSize, setPageSize] = useState(10);
 
+  // showOnlyPinned rows state
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  // State for Rows
+  //particular row pin
+  const [pinnedRows, setPinnedRows] = useState([]);
 
+  // Calculate displayed rows for the current page
+  const startEntry = (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, filteredData.length);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      
-      try {
+  // coloumn visiblty state
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    material: true,
+    material_type: true,
+    materialSubType: true,
+    materialDescription: true,
+    specification: true,
+    lastReceived: true,
+    total_received: true,
+    total_issued: true,
+    stockStatus: true,
+    deadstockQty: true,
+    theftMissing: true,
+    uom_name: true,
+    Star: true, // Ensure pin column is visible
+  });
 
-        const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get('token');
-
-        const response = await fetch(
-          `${baseURL}/pms/inventories/stock_data.json?token=${token}`
-        ); // Replace with your API endpoint
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const result = await response.json();
-        const transformedData = result.map((item, index) => {
-          const materialUrl = item.id && token
-            ? `/stock_register_detail/${item.id}/?token=${token}`
-            : "#"; // Fallback to "#" if id or token is missing
-  
-          return {
-            srNo: index + 1,
-            material: item.name || "-",
-            materialUrl: materialUrl, // Safeguard added here
-            material_type: item.material_type || "-",
-            materialSubType: item.inventory_sub_type_id || "-",
-            materialDescription: item.material_description || "-",
-            specification: item.specification || "-",
-            lastReceived: item.last_received_on || "-",
-            total_received: item.total_received || "-",
-            total_issued: item.total_issued || "-",
-            stockStatus: item.available_quantity || "-",
-            deadstockQty: item.deadstockQty || "-",
-            theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
-            uom_name: item.uom_name || "-",
-            stock_details: item.stock_details.map((stock) => ({
-              stockId: stock.id,
-              createdAt: stock.created_at || "-",
-              mor: stock.mor || "-",
-              resourceNumber: stock.resource_number || "-",
-              status: stock.status || "-",
-              receivedQty: stock.received_qty || "-",
-              issuedQty: stock.issued_qty || "-",
-              returnedQty: stock.returned_qty || "-",
-            })),
-          };
-        });
-
-        console.log(transformedData);
-        setData(transformedData);
-        setFilteredData(transformedData); // Initialize with full data
-        setLoading(false); // Stop loading once data is ready
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false); // Stop loading even if there's an error
-
-      }
-    };
-
-    fetchData(); // Call the fetch function
-
-
-  }, []); // Empty dependency array to run once on mount
-
-
-
-
-  useEffect(() => {
-    const normalizedSearchTerm = searchTerm
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
-
-    const filtered = data.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(normalizedSearchTerm),
-      ),
-    );
-
-    setFilteredData(filtered);
-  }, [searchTerm, data]);
-
-
-  
-  const columns = [
-    { data: "srNo", title: "Sr. No." },
+  // All Columns
+  const allColumns = [
+    { field: "srNo", headerName: "Sr. No.", width: 90 },
     {
-      data: "material",
-      title: "Material / Asset",
-      render: (data, type, row) =>
-        `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
-    },    
-    { data: "material_type", title: "Material Type" },
-    { data: "materialSubType", title: "Material Sub-type" },
-    { data: "materialDescription", title: "Material Description" },
-    { data: "specification", title: "Specification" },
-    { data: "lastReceived", title: "Last Received On" },
-    { data: "total_received", title: "Total Received" },
-    { data: "total_issued", title: "Total Issued" },
-    { data: "stockStatus", title: "Stock Status" },
-    { data: "deadstockQty", title: "Deadstock Qty" },
-    { data: "theftMissing", title: "Theft / Missing" },
-    { data: "uom_name", title: "UOM" },
+      field: "Star",
+      headerName: "Star",
+      width: 90,
+      renderCell: (params) => (
+        <button
+          className="btn btn-sm "
+          onClick={() => handlePinRow(params.row.id)}
+        >
+          {pinnedRows.includes(params.row.id) ? (
+            // SVG for 'Unpin'
+            <svg
+              class="star-icon pinned-star"
+              data-id="171"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#8B0203"
+              stroke="#8B0203"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+          ) : (
+            <svg
+              class="star-icon"
+              data-id="170"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#cccccc"
+              stroke="#cccccc"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+            // SVG for 'Pin'
+          )}
+        </button>
+      ),
+    },
+    {
+      field: "material",
+      headerName: "Material / Asset",
+      width: 200,
+      renderCell: (params) => (
+        <a
+          href={params.row.materialUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {params.value}
+        </a>
+      ),
+    },
+    { field: "material_type", headerName: "Material Type", width: 150 },
+    { field: "materialSubType", headerName: "Material Sub-type", width: 150 },
+    {
+      field: "materialDescription",
+      headerName: "Material Description",
+      width: 200,
+    },
+    { field: "specification", headerName: "Specification", width: 150 },
+    { field: "lastReceived", headerName: "Last Received On", width: 150 },
+    { field: "total_received", headerName: "Total Received", width: 150 },
+    { field: "total_issued", headerName: "Total Issued", width: 150 },
+    { field: "stockStatus", headerName: "Stock Status", width: 150 },
+    { field: "deadstockQty", headerName: "Deadstock Qty", width: 150 },
+    { field: "theftMissing", headerName: "Theft / Missing", width: 150 },
+    { field: "uom_name", headerName: "UOM", width: 100 },
+    {
+      field: "pin",
+      headerName: "Pin",
+      width: 100,
+      renderCell: (params) => (
+        <button
+          className="btn btn-sm btn-outline-primary"
+          onClick={() => handlePinRow(params.row.id)}
+        >
+          {pinnedRows.includes(params.row.id) ? "Unpin" : "Pin"}
+        </button>
+      ),
+    },
   ];
 
-  if (loading) {
-    return <div>Loading...</div>; // Show loading message while data loads
-  }
+  // Filter Columns Based on Visibility
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
-  const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(blob, "Stock_Data.xlsx"); // Save the file
+  // Dummy Data
+  const [dummyData, setdummyData] = useState([
+    {
+      id: 1,
+      srNo: 1,
+      material: "Material A",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 1",
+      specification: "Spec 1",
+      lastReceived: "2024-01-01",
+      total_received: 100,
+      total_issued: 50,
+      stockStatus: "Available",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "PCSs",
+    },
+    {
+      id: 2,
+      srNo: 1,
+      material: "Material A",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 1",
+      specification: "Spec 1",
+      lastReceived: "2024-01-01",
+      total_received: 100,
+      total_issued: 50,
+      stockStatus: "Available",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "PCSs",
+    },
+    {
+      id: 3,
+      srNo: 2,
+      material: "Material B",
+      materialUrl: "#",
+      material_type: "Type 2",
+      materialSubType: "SubType 2",
+      materialDescription: "Description 2",
+      specification: "Spec 2",
+      lastReceived: "2024-01-10",
+      total_received: 200,
+      total_issued: 80,
+      stockStatus: "Low Stock",
+      deadstockQty: 0,
+      theftMissing: 0,
+      uom_name: "KG",
+    },
+    {
+      id: 5,
+      srNo: 3,
+      material: "Material C",
+      materialUrl: "#",
+      material_type: "Type 1",
+      materialSubType: "SubType 1",
+      materialDescription: "Description 3",
+      specification: "Spec 3",
+      lastReceived: "2024-01-15",
+      total_received: 50,
+      total_issued: 20,
+      stockStatus: "Out of Stock",
+      deadstockQty: 5,
+      theftMissing: 1,
+      uom_name: "L",
+    },
+  ]);
+  const [rows, setRows] = useState(dummyData);
+
+  //particular row pin functionality
+  const handlePinRow = (rowId) => {
+    setPinnedRows((prev) => {
+      if (prev.includes(rowId)) {
+        // Unpin if already pinned
+        return prev.filter((id) => id !== rowId);
+      } else {
+        // Pin the row if not already pinned
+        return [...prev, rowId];
+      }
+    });
   };
+
+  // Toggle to show only pinned rows
+  const toggleShowOnlyPinned = () => {
+    setShowOnlyPinned((prev) => !prev);
+  };
+  // Adjust Row Order Based on Pinned Rows
+
+  const getTransformedRows = () => {
+    // Start with the filtered rows based on stock status
+    let rowsToShow = selectedStockStatus
+      ? rows.filter((row) => row.stockStatus === selectedStockStatus)
+      : rows;
+  
+    // Further filter the rows to show only pinned rows if the toggle is active
+    if (showOnlyPinned) {
+      rowsToShow = rowsToShow.filter((row) => pinnedRows.includes(row.id));
+    }
+  
+    // Return the rows with updated serial numbers
+    return rowsToShow.map((row, index) => ({
+      ...row,
+      srNo: index + 1, // Serial number based on the current order
+    }));
+  };
+  
 
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
@@ -164,6 +273,186 @@ const ErpStockRegister13B = () => {
   const toggleCardBody = () => {
     setIsCollapsed(!isCollapsed);
   };
+  // Download table in excel format
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "Stock_Data.xlsx"); // Save the file
+  };
+
+  //hide/show coloumn functionality
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prevState) => ({
+      ...prevState,
+      [field]: !prevState[field],
+    }));
+  };
+
+  //showall coloumn functionality
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true; // Show all columns
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  //hide all coloumn functionalitys
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false; // Hide all columns
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  //reset hide/show coloumn functionality
+
+  const handleReset = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = column.defaultVisible || true; // Use the default visibility
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+
+        const response = await fetch(
+          `${baseURL}/pms/inventories/stock_data.json?token=${token}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const result = await response.json();
+        const transformedData = result.map((item, index) => ({
+          id: index + 1, // Required for MUI DataGrid
+          srNo: index + 1,
+          material: item.name || "-",
+          materialUrl:
+            item.id && token
+              ? `/stock_register_detail/${item.id}/?token=${token}`
+              : "#",
+          material_type: item.material_type || "-",
+          materialSubType: item.inventory_sub_type_id || "-",
+          materialDescription: item.material_description || "-",
+          specification: item.specification || "-",
+          lastReceived: item.last_received_on || "-",
+          total_received: item.total_received || "-",
+          total_issued: item.total_issued || "-",
+          stockStatus: item.available_quantity || "-",
+          deadstockQty: item.deadstockQty || "-",
+          theftMissing:
+            item.theftMissing !== undefined ? item.theftMissing : "-",
+          uom_name: item.uom_name || "-",
+        }));
+
+        setData(transformedData);
+        setFilteredData(transformedData);
+        setLoading(false);
+      } catch (error) {
+        // console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [location.search]);
+
+  // Search functionality
+  useEffect(() => {
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+    const filtered = data.filter((item) =>
+      Object.values(item).some((value) =>
+        String(value).toLowerCase().includes(normalizedSearchTerm)
+      )
+    );
+    setFilteredData(filtered);
+  }, [searchTerm, data]);
+
+  // bulk action functionality
+  const [checkboxEnabled, setCheckboxEnabled] = useState(false);
+  const [selectedStockStatus, setSelectedStockStatus] = useState("");
+  const [newStatus, setNewStatus] = useState(""); // Track new status from the second dropdown
+  const [selectedRows, setSelectedRows] = useState([]); // Track selected rows
+
+
+
+ const handleStockStatusChange = (event) => {
+    const status = event.target.value;
+    setSelectedStockStatus(status);
+    setCheckboxEnabled(status); // Enable checkboxSelection for the specific status
+
+  };
+
+  const handleNewStatusChange = (e) => {
+    setNewStatus(e.target.value);
+  };
+// Function to get selected row IDs
+
+
+
+  
+  const updateStatusForSelectedRows = () => {
+    try {
+
+        // await axios.post("/api/updateStatus", {
+      //   ids: selectedRows,
+      //   newStatus,
+      // });
+      // Log the selected rows and the new status to the console
+      console.log("Selected Rows IDs:", selectedRows);
+      console.log("New Status:", newStatus);
+  
+      // Update the local state with the new status
+      setRows(rows.map((row) => 
+        selectedRows.includes(row.id) 
+          ? { ...row, stockStatus: newStatus } 
+          : row
+      ));
+  
+      // Reset selected rows and new status
+      setSelectedRows([]); 
+      setNewStatus(""); 
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+  
+
+
+  const getSelectedRowIds = () => {
+    const selectedRows = $(".MuiDataGrid-row.Mui-selected"); // Find selected rows
+    const selectedRowIds = selectedRows.map(function () {
+      return $(this).data("id");  // Get row ID from data-id attribute
+    }).get();  // Convert to array
+    console.log("Selected Row IDs:", selectedRowIds);  // Log selected row IDs
+    setSelectedRows(selectedRowIds);  // Update state with selected row IDs
+  };
+
+  // UseEffect to trigger selection update when rows are selected
+  useEffect(() => {
+    // Attach event listener to track row selection using jQuery
+    $(document).on("click", ".MuiCheckbox-root", function () {
+      getSelectedRowIds(); // Call the function to get selected row IDs
+    });
+  }, []); // Empty dependency array to run once on mount
+
+  
 
   return (
     <>
@@ -341,7 +630,11 @@ const ErpStockRegister13B = () => {
                         </button>
                       </div>
                       <div className="col-md-3">
-                        <button type="submit" className="btn btn-md">
+                        <button
+                          type="submit"
+                          className="btn btn-md"
+                          onClick={toggleShowOnlyPinned}
+                        >
                           <svg
                             width={22}
                             height={22}
@@ -358,7 +651,7 @@ const ErpStockRegister13B = () => {
                       </div>
                       <div className="col-md-3">
                         <button
-                        onClick={downloadExcel}
+                          onClick={downloadExcel}
                           id="downloadButton"
                           type="submit"
                           className="btn btn-md"
@@ -412,24 +705,82 @@ const ErpStockRegister13B = () => {
               </div>
             </div>
 
-            <div
-              className="tbl-container m-3 px-1 mt-3"
-              style={{ width: "", maxHeight: "max-content",boxShadow:"unset" }}
-              >
-              <DataTable
-                data={filteredData} // Use fetched and transformed data
+            <div style={{ marginBottom: "16px" }}>
+       
+
+        <label htmlFor="stock-status-dropdown1">Stock Status: </label>
+        <select
+          id="stock-status-dropdown1"
+          onChange={handleStockStatusChange}
+          defaultValue=""
+        >
+          <option value="">Select Stock Status</option>
+          {dummyData.map((status) => (
+            <option key={status.id} value={status.stockStatus}>
+              {status.stockStatus}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* New Status Dropdown */}
+      <div style={{ marginBottom: "16px" }}>
+        <label htmlFor="new-status-dropdown">Change Status To: </label>
+        <select
+          id="new-status-dropdown"
+          onChange={handleNewStatusChange}
+          value={newStatus}
+        >
+          <option value="">Select New Status</option>
+          <option value="Available">Available</option>
+          <option value="Low Stock">Low Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <button
+          onClick={updateStatusForSelectedRows}
+          disabled={!newStatus || selectedRows.length === 0}
+        >
+          Update Status
+        </button>
+      </div>
+
+            <div className="tbl-container m-3 px-1 mt-3">
+              <DataGrid
+                rows={getTransformedRows()}
                 columns={columns}
-                className="display"
-                options={{
-                  paging: true,           // Enable pagination
-                  pageLength: 10,          // Items per page
-                  lengthChange: false,      // Allow user to change the page length
-                  searching: false,        // Disable search bar
-                  ordering: true,         // Disable column sorting
-                  info: true
-                }}
+                pageSize={pageSize}
+                disablePagination // Disable DataGrid's built-in pagination
+                autoHeight
+                checkboxSelection={checkboxEnabled}
+              
+
+                />
+            </div>
+
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              padding={2}
+            >
+              <Pagination
+                count={Math.ceil(filteredData.length / pageSize)} // Total pages
+                page={page}
+                onChange={(event, value) => setPage(value)} // Handle page changes
+                siblingCount={1} // Number of sibling page buttons
+                boundaryCount={1} // Number of boundary page buttons
+                color="red"
+                showFirstButton
+                showLastButton
               />
-            </div>          
+              {/* Dynamic Entries Info */}
+              <Typography variant="body2">
+                Showing {startEntry} to {endEntry} of {filteredData.length}{" "}
+                entries
+              </Typography>
+
+              {/* Pagination Buttons */}
+            </Stack>
           </div>
         </div>
       </div>
@@ -794,15 +1145,16 @@ const ErpStockRegister13B = () => {
           </div>
         </Modal.Header>
 
-        <Modal.Body>
-        {columns.map((column,index) =>  (
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns.map((column, index) => (
             <div
               className="row justify-content-between align-items-center mt-2"
-              key={index}
+              key={column.field}
             >
               <div className="col-md-6">
                 <button type="submit" className="btn btn-md">
-                  <svg  key={index}
+                  <svg
+                    key={index}
                     xmlns="http://www.w3.org/2000/svg"
                     width="22"
                     height="22"
@@ -817,26 +1169,40 @@ const ErpStockRegister13B = () => {
                     />
                   </svg>
                 </button>
-                <label>   {column.title}</label>
+                <label> {column.headerName}</label>
               </div>
               <div className="col-md-4">
                 <div className="form-check form-switch mt-1">
-                  <input  key={index}
+                  <input
+                    key={index}
                     className="form-check-input"
                     type="checkbox"
-                    role="switch"
-                    id="flexSwitchCheckDefault"
+                    checked={columnVisibility[column.field]}
+                    onChange={() => handleToggleColumn(column.field)}
                   />
                 </div>
               </div>
             </div>
           ))}
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setSettingShow(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleShowAll}>
+            Show All
+          </Button>
+          <Button variant="warning" onClick={handleReset}>
+            Reset
+          </Button>
+          <Button variant="danger" onClick={handleHideAll}>
+            Hide All
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );
 };
-
 <style type="text/css">
   {`
   .setting-modal .modal-dialog {
@@ -872,7 +1238,13 @@ width: 100%;
 margin: auto;
 }
 
+
+
 `}
 </style>;
 
 export default ErpStockRegister13B;
+
+
+
+
