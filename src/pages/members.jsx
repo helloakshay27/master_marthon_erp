@@ -71,6 +71,13 @@ function Members() {
               </li>
 
               <li>
+                <Link to="/create-rate">Create Rate</Link>
+              </li>
+              <li>
+                <Link to="/view-rate">View Rate</Link>
+              </li>
+
+              <li>
                 <Link to="/estimation-creation">Estimation creation</Link>
               </li>
               <li>

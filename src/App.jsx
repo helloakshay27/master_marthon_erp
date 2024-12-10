@@ -36,6 +36,8 @@ import RootLayout from './pages/Layout/RootLayout';
 import EstimationApprovolList from './pages/estimation-approval-list';
 import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows';
 import BOQList from './pages/boq-list';
+import CreateRate from './pages/create-rate';
+import ViewRate from './pages/view-rate';
 
 
 function App() {
@@ -70,6 +72,8 @@ function App() {
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
+          <Route path='/create-rate'  element={<CreateRate/>} />
+          <Route path='/view-rate'  element={<ViewRate/>} />
           <Route path='/estimation-list' element={<EstimationList/>} />
           <Route path='/estimation-details-wings' element={<EstimationDetailsWings/>} />
           <Route path='/estimation-details-sub-project' element={<EstimationDetailsSubProject/>} />
