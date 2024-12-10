@@ -678,6 +678,7 @@ const BOQApprovalDetails = () => {
                     </div>
 )}
                   </div>
+                  
 )}
                 </div>
                 <div className="row mt-2 justify-content-center">
