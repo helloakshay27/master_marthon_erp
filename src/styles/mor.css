@@ -12908,3 +12908,15 @@ input.rank {
   /* background-color: yellow !important; */
   background-color: rgb(255, 165, 0) !important; /* Orange */
  }
+
+ .css-thn3im-MuiTable-root {
+  display: table;
+  width: 100% !important;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-collapse: separate;
+  position: relative;
+}
+.css-1768eoe-MuiTableBody-root{
+  z-index: 111 !important;
+}
