@@ -12920,3 +12920,9 @@ input.rank {
 .css-1768eoe-MuiTableBody-root{
   z-index: 111 !important;
 }
+
+
+.css-11yrv3u-MuiTableRow-root td{
+   padding: 0px 1rem;
+}
+
