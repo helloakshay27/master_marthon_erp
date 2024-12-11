@@ -54,11 +54,11 @@ function Members() {
               <li>
                 <Link to="/create-BOQ">Create BOQ</Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/boq-list">BOQ-List</Link>
-              </li>
+              </li> */}
               <li>
-                <Link to="/view-BOQ">View BOQ</Link>
+                <Link to="/view-BOQ">BOQ List</Link>
               </li>
               <li>
                 <Link to="/boq-approval-list">BOQ Approval List</Link>

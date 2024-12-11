@@ -80,8 +80,8 @@ function App() {
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />
           <Route path='/create-rfq' element={<CreateRfq />} />
           <Route path='/create-BOQ' element={<CreateBOQ />} />
-          <Route path='/boq-list' element={<BOQList />} />
-          <Route path='/view-BOQ' element={<ViewBOQ />} />
+          {/* <Route path='/boq-list' element={<BOQList />} /> */}
+          <Route path='/view-BOQ' element={<BOQList/>} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 const BOQDetailsPageMaster = () => {
   const [boqDetails, setboqDetails] = useState(true);
@@ -13,6 +14,7 @@ const BOQDetailsPageMaster = () => {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [showAssocoatedModal, setShowAssocoatedModal] = useState(false);
+
 
   const boqDetailsDropdown = () => {
     setboqDetails(!boqDetails);
@@ -37,9 +39,9 @@ const BOQDetailsPageMaster = () => {
   const closeAssocoatedModal = () => setShowAssocoatedModal(false);
   return (
     <>
-     
+      
       <div className="main-content">
-        
+    
         <div className="website-content overflow-auto">
           <div className="website-content overflow-auto">
             <div className="module-data-section p-4">
@@ -48,33 +50,11 @@ const BOQDetailsPageMaster = () => {
               </a>
               <div className="tab-content1 active" id="total-content">
                 {/* Total Content Here */}
-                <div className="card  mt-3 collapsed-card">
-                  <div className="card-header3">
-                    <h3 className="card-title">BOQ Details</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={boqDetailsDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {boqDetails && (
+               
+
+                <CollapsibleCard  title="BOQ Details">
+                
+                
                     <div
                       className="card-body mt-0 pt-0"
                       style={{ display: "block" }}
@@ -380,35 +360,12 @@ const BOQDetailsPageMaster = () => {
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-                <div className="card mt-3 collapsed-card">
-                  <div className="card-header3">
-                    <h3 className="card-title">BOQ Item</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={boqItemDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {boqItemDetails && (
+                </CollapsibleCard>
+               
+                <CollapsibleCard  title="BOQ Item">
+                <div className="card mx-3 mt-2">
+                
+                
                     <div
                       className="card-body mt-0 pt-0"
                       style={{ display: "block" }}
@@ -611,8 +568,9 @@ const BOQDetailsPageMaster = () => {
                         )}
                       </div>
                     </div>
-                  )}
+                 
                 </div>
+                </CollapsibleCard>
                 <div className="row mt-2 justify-content-center">
                   <div className="col-md-2">
                     <button

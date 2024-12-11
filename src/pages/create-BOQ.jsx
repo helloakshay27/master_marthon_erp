@@ -4,6 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+
 
 const CreateBOQ = () => {
   // bootstrap collaps
@@ -131,34 +133,10 @@ console.log(count);
             <div className="tab-content1 active" id="total-content">
               {/* Total Content Here */}
               <div className="card mt-5 pb-4">
-                <div className="card mx-3 mt-3">
-                  <div className="card-header3">
-                    <h3 className="card-title">Create BOQ</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={createboqDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {createboqDetails && (
-                    <div className="card-body mt-0 pt-0">
+              <CollapsibleCard  title="Create Boq">
+              
+
+                <div className="card-body mt-0 pt-0">
                       <div className="row">
                         <div className="col-md-4">
                           <div className="form-group">
@@ -382,35 +360,9 @@ console.log(count);
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                 </CollapsibleCard>
+                 <CollapsibleCard  title="Material">
                 <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">Material</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={materialDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {materialDetails && (
                     <div className="card-body mt-0 pt-0">
                       <div className="tbl-container mx-3 mt-1">
                         <table className="w-100">
@@ -505,35 +457,11 @@ console.log(count);
                         </p>
                       </div>
                     </div>
-                  )}
                 </div>
+                </CollapsibleCard>
+
+                <CollapsibleCard  title="Labour">
                 <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">Labour</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={labourDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {labourDetails && (
                     <div className="card-body mt-0 pt-0">
                       <div className="tbl-container mx-3 mt-1">
                         <table className="w-100">
@@ -602,35 +530,12 @@ console.log(count);
                         </p>
                       </div>
                     </div>
-                  )}
                 </div>
+                </CollapsibleCard>
+
+                <CollapsibleCard  title="Assests">
                 <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">Assests</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={assestsDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {assestsDetails && (
+                
                     <div className="card-body mt-0 pt-0">
                       <div className="tbl-container mx-3 mt-1">
                         <table className="w-100">
@@ -699,35 +604,14 @@ console.log(count);
                         </p>
                       </div>
                     </div>
-                  )}
+               
                 </div>
+                </CollapsibleCard>
+
+                <CollapsibleCard  title="BOQ Sub-Item">
                 <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">BOQ Sub-Item</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={boqsubitemDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {boqsubitemDetails && (
+                 
+                  
                     <div className="card-body mt-0 pt-0">
                       <div className="mt-3">
                         <div className="tbl-container mx-3 mt-1">
@@ -847,95 +731,7 @@ console.log(count);
                                 </>
                               )
                               )}
-                             
-                              {/* <tr>
-                                <td>
-                                  <input type="checkbox" />
-                                </td>
-
-                                <td className="text-center">
-                                  <button
-                                    className="btn btn-link p-0"
-                                    onClick={() => toggleRow(1)}
-                                    aria-label="Toggle row visibility"
-                                  >
-                                    {expandedRows.includes(1) ? (
-                                      // Show minus SVG if row is expanded
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
-                                      </svg>
-                                    ) : (
-                                      // Show plus SVG if row is collapsed
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-plus-circle"
-                                        viewBox="0 0 16 16"
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                </td>
-
-                                <td>Steel Welding</td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    defaultValue="Steel Welding_20020"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    defaultValue="Steel Welding_20020"
-                                  />
-                                </td>
-                                <td>
-                                  <input type="text" defaultValue="Important" />
-                                </td>
-                                <td>KG</td>
-                                <td>
-                                  <input type="number" defaultValue={300.0} />
-                                </td>
-                                <td>
-                                  <input type="number" defaultValue={150.0} />
-                                </td>
-                                <td>
-                                  <input type="number" defaultValue={45000.0} />
-                                </td>
-                                <td>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width={16}
-                                    height={16}
-                                    fill="currentColor"
-                                    className="bi bi-file-earmark-text"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                                  </svg>
-                                </td>
-                              </tr>
-                              {expandedRows.includes(1) && (
-                                <tr>
-                                  <td colSpan={11}>
-                                    <BOQSubItemTable />
-                                  </td>
-                                </tr>
-                              )} */}  
+                      
                             </tbody>
                           </table>
                         </div>
@@ -960,8 +756,10 @@ console.log(count);
                         </div>
                       </div>
                     </div>
-                  )}
+                 
                 </div>
+                </CollapsibleCard>
+                
               </div>
               <div className="row mt-2 justify-content-center">
                 <div className="col-md-2">

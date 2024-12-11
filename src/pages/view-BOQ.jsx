@@ -3,8 +3,11 @@ import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
-const ViewBOQ = () => {
+
+
+const BOQList = () => {
   const [viewboqDetails, setviewboqDetails] = useState(true);
   const [copyModal, setcopyModal] = useState(false);
 
@@ -13,9 +16,59 @@ const ViewBOQ = () => {
   };
   const openCopyModal = () => setcopyModal(true);
   const closeCopyModal = () => setcopyModal(false);
+
+
+
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const toggleRow = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+
+  const tableData = [
+    {
+      id: 1,
+      project: "Sanvo",
+      boqId: "",
+      unit: "",
+      costQty: "",
+      costRate: "",
+      costValue: "",
+      status: "",
+      subRows: [
+        {
+          id: 11,
+          description: "Admin expense",
+          boqId: "",
+          unit: "",
+          costQty: "",
+          costRate: "",
+          costValue: "",
+          status: "",
+        },
+        {
+          id: 12,
+          description: "Purchase of Item",
+          boqId: "187062",
+          unit: "",
+          costQty: "",
+          costRate: "",
+          costValue: "",
+          status: "Approved",
+        },
+      ],
+    },
+  ];
+
+
+
   return (
     <>
-      <div className="main-content">  
+      {/* <Header /> */}
+      <div className="main-content">
+        {/* <Sidebar /> */}
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
@@ -35,34 +88,12 @@ const ViewBOQ = () => {
             </div>
             <div className="tab-content1 active" id="total-content">
               {/* Total Content Here */}
+
+
               <div className="card mt-2 pb-4">
+              <CollapsibleCard  title="View BOQ">
                 <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">View BOQ</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={viewboqDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  {viewboqDetails && (
+                
                     <div className="card-body mt-0 pt-0">
                       <div className="row">
                         <div className="col-md-4">
@@ -314,8 +345,9 @@ const ViewBOQ = () => {
                         </div>
                       </div>
                     </div>
-                  )}
+               
                 </div>
+                </CollapsibleCard>
                 <div className="d-flex justify-content-start ms-3">
                   <button className="purple-btn2">Collapse All</button>
                 </div>
@@ -514,4 +546,4 @@ const ViewBOQ = () => {
   );
 };
 
-export default ViewBOQ;
+export default BOQList;

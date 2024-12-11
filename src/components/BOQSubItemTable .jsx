@@ -3,6 +3,7 @@ import '../styles/mor.css'
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
+import CollapsibleCard from './base/Card/CollapsibleCards';
 
 
 const BOQSubItemTable  = () => {
@@ -37,33 +38,10 @@ const BOQSubItemTable  = () => {
      <>
      <div className="collapse show">
        <div className="" style={{width: "77vw", maxWidth: "100%" }}>
+       <CollapsibleCard  title="Material">
               <div className="card   mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Material</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={submaterialDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {submaterialDetails && (
+               
+             
                 <div className="card-body mt-0 pt-0" >
                   <div className="tbl-container mx-3 mt-1">
                     <table className="w-100" id="table1">
@@ -132,35 +110,14 @@ const BOQSubItemTable  = () => {
                     </p>
                   </div>
                 </div>
-                )}
+              
               </div>
+              </CollapsibleCard>
+
+              <CollapsibleCard  title="Labour">
               <div className="card mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Labour</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={sublabourDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {sublabourDetails && (
+               
+               
                 <div className="card-body mt-0 pt-0">
                   <div className="tbl-container mx-3 mt-1">
                     <table className="w-100" id="table2">
@@ -215,36 +172,18 @@ const BOQSubItemTable  = () => {
                       </button>
                     </p>
                   </div>
+           
                 </div>
-                )}
+              
+              
               </div>
+              </CollapsibleCard>
+
+              
+              <CollapsibleCard  title="Assests">
               <div className="card  mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Assests</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={subassestsDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {subassestsDetails && (
+              
+               
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
               <div className="tbl-container mx-3 mt-1">
                 <table className="w-100" id="table3">
@@ -301,8 +240,9 @@ const BOQSubItemTable  = () => {
               </div>
             </div>
             
-                )}
+               
               </div>
+              </CollapsibleCard>
             </div>
             </div>
 

@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import { BulkAction } from "../components";
+
 
 const BOQApprovalList = () => {
   const [viewApprovalDetails, setviewApprovalDetails] = useState(true);
@@ -273,7 +275,7 @@ const BOQApprovalList = () => {
                       </div>
                     </div>
                   )}
-                  <div className="card mx-3 mt-3 collapsed-card">
+                  {/* <div className="card mx-3 mt-3 collapsed-card">
                     <div className="card-header3">
                       <h3 className="card-title">Bulk Action</h3>
                       <div className="card-tools">
@@ -365,7 +367,8 @@ const BOQApprovalList = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </div> */}
+                  <BulkAction></BulkAction>
                 </div>
                 <div className="tbl-container mx-3 mt-1">
                   <table className="w-100">
@@ -424,10 +427,9 @@ const BOQApprovalList = () => {
                         <td className="text-start">0.00</td>
                         <td className="text-start">Submitted</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-                {mainTypeDetails && (
+                      <tr >
+                                  <td colSpan={10}>
+                                     {mainTypeDetails && (
                   <div>
                     <div className="card mx-3 mt-2">
                       <div className="card-header3">
@@ -511,6 +513,8 @@ const BOQApprovalList = () => {
                                   <td>4%</td>
                                   <td>2.08</td>
                                 </tr>
+
+                               
                               </tbody>
                             </table>
                           </div>
@@ -640,7 +644,14 @@ const BOQApprovalList = () => {
                       )}
                     </div>
                   </div>
-                )}
+                )} 
+
+                                  </td>
+                                </tr>
+                    </tbody>
+                  </table>
+                </div>
+              
               </div>
             </div>
           </div>
