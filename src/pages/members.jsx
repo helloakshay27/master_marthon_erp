@@ -121,6 +121,51 @@ function Members() {
               <li>
                 <Link to="/bill-entry-list" >Bill Entry List</Link>
               </li>
+              <li>
+                <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
+              </li>
+              <li>
+                <Link to="/bill-booking-create" >Bill Booking Create</Link>
+              </li>
+              <li>
+                <Link to="/bill-payment-create" >Bill Payment Create</Link>
+              </li>
+              <li>
+                <Link to="/bill-payment-details" >Bill Payment Details</Link>
+              </li>
+              <li>
+                <Link to="/bill-payment-list" >Bill payment List</Link>
+              </li>
+              <li>
+                <Link to="/bill-verification-create" >Bill Verification Create</Link>
+              </li>
+              <li>
+                <Link to="/bill-verification-details" >Bill Verification details</Link>
+              </li>
+              <li>
+                <Link to="bill-verification-list" >Bill Verification List</Link>
+              </li>
+              <li>
+                <Link to="/credit-note-create" >Credit Note Create</Link>
+              </li>
+              <li>
+                <Link to="/credit-note-details" >Credit Note Details</Link>
+              </li>
+              <li>
+                <Link to="/credit-note-list" >Credit Note List</Link>
+              </li>
+              <li>
+                <Link to="/debit-note-create" >Debit Note Create</Link>
+              </li>
+              <li>
+                <Link to="/debit-note-details" >Debit Note Details</Link>
+              </li>
+              <li>
+                <Link to="/debit-note-list" >Debit Note List</Link>
+              </li>
+              <li>
+                <Link to="/po-advance-note-details" >PO Advance Note Details</Link>
+              </li>
 
               <li>
                 <Link to="/po-advance-note-payment" >Po Advance Note Payment</Link>
@@ -130,12 +175,8 @@ function Members() {
               <li>
                 <Link to="/po-advance-note-list" >Po Advance Note List</Link>
               </li>
-              <li>
-                <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
-              </li>
-              <li>
-                <Link to="/bill-booking-create" >Bill Booking Create</Link>
-              </li>
+             
+             
               <li>
                 <Link to="" ></Link>
               </li>

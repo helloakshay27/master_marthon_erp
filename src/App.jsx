@@ -38,6 +38,19 @@ import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows
 import BOQList from './pages/boq-list';
 import CreateRate from './pages/create-rate';
 import ViewRate from './pages/view-rate';
+import BillPaymentCreate from './pages/bill-payment-create';
+import BillPaymentDetails from './pages/bill-payment-details';
+import BillPaymentList from './pages/bill-payment-list';
+import BillVerificationCreate from './pages/bill-verification-create';
+import BillVerificationDetails from './pages/bill-verification-details';
+import BillVerificationList from './pages/bill-verification-list';
+import CreditNoteCreate from './pages/credit-note-create';
+import CreditNoteDetails from './pages/credit-note-details';
+import CreditNoteList from './pages/credit-note-list';
+import DebitNoteCreate from './pages/debit-note-create';
+import DebitNoteDetails from './pages/debit-note-details';
+import DebitNoteList from './pages/debit-note-list';
+import POAdvanceNoteDetails from './pages/po-advance-note-details';
 
 
 function App() {
@@ -88,6 +101,19 @@ function App() {
           <Route path='/bill-entry-list' element={<BillEntryList/>} />
           <Route path='/bill-entry-list-sub-page' element={<BillEntryListSubPage/>} />
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
+          <Route path='/bill-payment-create' element={<BillPaymentCreate/>} />
+          <Route path='/bill-payment-details' element={<BillPaymentDetails/>} />
+          <Route path='/bill-payment-list' element={<BillPaymentList/>} />
+          <Route path='/bill-verification-create' element={<BillVerificationCreate/>} />
+          <Route path='/bill-verification-details' element={<BillVerificationDetails/>} />
+          <Route path='/bill-verification-list' element={<BillVerificationList/>} />
+          <Route path='/credit-note-create' element={<CreditNoteCreate/>} />
+          <Route path='/credit-note-details' element={<CreditNoteDetails/>} />
+          <Route path='/credit-note-list' element={<CreditNoteList/>} />
+          <Route path='/debit-note-create' element={<DebitNoteCreate/>} />
+          <Route path='/debit-note-details' element={<DebitNoteDetails/>} />
+          <Route path='/debit-note-list' element={<DebitNoteList/>} />
+          <Route path='/po-advance-note-details' element={<POAdvanceNoteDetails/>} />
           <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
           <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
           </Route>
