@@ -994,6 +994,7 @@ console.log(count);
         <Modal.Header closeButton>
           <h5>Add Material</h5>
         </Modal.Header>
+        
         <Modal.Body>
           <div className="d-flex justify-content-between px-4 pt-2">
             <div>
@@ -1094,6 +1095,7 @@ console.log(count);
             </div>
           </div>
         </Modal.Body>
+
       </Modal>
       {/* material modal */}
 
