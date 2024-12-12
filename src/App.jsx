@@ -13,7 +13,7 @@ import EditApprovals from './pages/edit-approvals';
 import AddApprovals from './pages/add-approvals';
 import GoodReceiveNoteDetails from './pages/grn/grn_detail';
 import CreateBOQ from './pages/create-BOQ';
-// import ViewBOQ from './pages/view-boq';
+import BOQList from './pages/view-BOQ';
 import BOQApprovalList from './pages/boq_approval_list';
 import BOQDetailsPageMaster from './pages/boq-details-page-master';
 import BOQApprovalDetails from './pages/boq-approval-details'
@@ -81,7 +81,7 @@ function App() {
           <Route path='/create-rfq' element={<CreateRfq />} />
           <Route path='/create-BOQ' element={<CreateBOQ />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
-          {/* <Route path='/view-BOQ' element={<BOQList/>} /> */}
+          <Route path='/view-BOQ' element={<BOQList/>} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />

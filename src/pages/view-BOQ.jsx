@@ -66,9 +66,6 @@ const BOQList = () => {
 
   return (
     <>
-      {/* <Header /> */}
-      <div className="main-content">
-        {/* <Sidebar /> */}
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
@@ -86,13 +83,13 @@ const BOQList = () => {
                 Copy
               </button>
             </div>
-            <div className="tab-content1 active" id="total-content">
+            {/* <div className="tab-content1 active" id="total-content"> */}
               {/* Total Content Here */}
 
 
               <div className="card mt-2 pb-4">
               <CollapsibleCard  title="View BOQ">
-                <div className="card mx-3 mt-2">
+               
                 
                     <div className="card-body mt-0 pt-0">
                       <div className="row">
@@ -346,7 +343,7 @@ const BOQList = () => {
                       </div>
                     </div>
                
-                </div>
+                
                 </CollapsibleCard>
                 <div className="d-flex justify-content-start ms-3">
                   <button className="purple-btn2">Collapse All</button>
@@ -474,10 +471,10 @@ const BOQList = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            {/* </div> */}
           </div>
         </div>
-      </div>
+      
       {/* copy modal */}
       <Modal
         size="m"

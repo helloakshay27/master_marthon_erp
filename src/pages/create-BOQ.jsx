@@ -9,15 +9,6 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 const CreateBOQ = () => {
   // bootstrap collaps
-  const [createboqDetails, setcreateboqDetails] = useState(true);
-  const [materialDetails, setmaterialDetails] = useState(false);
-  const [labourDetails, setlabourDetails] = useState(false);
-  const [assestsDetails, setassestsDetails] = useState(false);
-  const [boqsubitemDetails, setboqsubitemDetails] = useState(false);
-  const [expandDetails, setexpandDetails] = useState(false);
-  const [submaterialDetails, setsubmaterialDetails] = useState(false);
-  const [sublabourDetails, setsublabourDetails] = useState(false);
-  const [subassestsDetails, setsubassestsDetails] = useState(false);
   const [expandedRows, setExpandedRows] = useState([]);
   const [table1Rows, setTable1Rows] = useState([{ id: 1, value: '' }]);
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: '' }]);
@@ -27,33 +18,7 @@ const CreateBOQ = () => {
 console.log(count);
   },[count])
 
-  const createboqDropdown = () => {
-    setcreateboqDetails(!createboqDetails);
-  };
-  const materialDropdown = () => {
-    setmaterialDetails(!materialDetails);
-  };
-  const labourDropdown = () => {
-    setlabourDetails(!labourDetails);
-  };
-  const assestsDropdown = () => {
-    setassestsDetails(!assestsDetails);
-  };
-  const boqsubitemDropdown = () => {
-    setboqsubitemDetails(!boqsubitemDetails);
-  };
-  const expandDropdown = () => {
-    setexpandDetails(!expandDetails);
-  };
-  const submaterialDropdown = () => {
-    setsubmaterialDetails(!submaterialDetails);
-  };
-  const sublabourDropdown = () => {
-    setsublabourDetails(!sublabourDetails);
-  };
-  const subassestsDropdown = () => {
-    setsubassestsDetails(!subassestsDetails);
-  };
+
   // bootstrap collaps
   // bootstrap modal
   const [materialshowModal, setmaterialShowModal] = useState(false);
@@ -125,7 +90,7 @@ console.log(count);
 
   return (
     <>
-      <div className="main-content">
+     
         <div className="website-content overflow-auto">
           <div className="module-data-section p-4">
             <a href="">Setup &gt; Engineering Setup &gt; Create BOQ</a>
@@ -193,7 +158,7 @@ console.log(count);
                       <div className="row">
                         <div className="col-md-4 mt-2">
                           <div className="form-group">
-                            <label>Level 1</label>
+                            <label>Main Category</label>
                             <select
                               className="form-control form-select"
                               style={{ width: "100%" }}
@@ -210,7 +175,7 @@ console.log(count);
                         </div>
                         <div className="col-md-4 mt-2">
                           <div className="form-group">
-                            <label>Level 2</label>
+                            <label> Sub-category level 2</label>
                             <select
                               className="form-control form-select"
                               style={{ width: "100%" }}
@@ -227,7 +192,7 @@ console.log(count);
                         </div>
                         <div className="col-md-4 mt-2">
                           <div className="form-group">
-                            <label>Level 3</label>
+                            <label>Sub-category level 3</label>
                             <select
                               className="form-control form-select"
                               style={{ width: "100%" }}
@@ -244,7 +209,7 @@ console.log(count);
                         </div>
                         <div className="col-md-4 mt-2">
                           <div className="form-group">
-                            <label>Level 4</label>
+                            <label> Sub-category level 4</label>
                             <select
                               className="form-control form-select"
                               style={{ width: "100%" }}
@@ -261,7 +226,7 @@ console.log(count);
                         </div>
                         <div className="col-md-4 mt-2">
                           <div className="form-group">
-                            <label>Level 5</label>
+                            <label> Sub-category level 5</label>
                             <select
                               className="form-control form-select"
                               style={{ width: "100%" }}
@@ -776,7 +741,7 @@ console.log(count);
             </div>
           </div>
         </div>   
-      </div>
+   
 
       {/* Modal start */}
       {/* material modal */}

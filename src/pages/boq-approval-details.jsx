@@ -4,51 +4,34 @@ import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { auditLogColumns, auditLogData } from "../constant/data";
+import {
+  LayoutModal,
+  Table,
+} from "../components"
 
 const BOQApprovalDetails = () => {
-  const [boqDetails, setboqDetails] = useState(true);
   const [detailsDetails, setdetailsDetails] = useState(true);
-  const [subBoqDetails, setsubBoqDetails] = useState(true);
   const [subItemDetails, setsubItemDetails] = useState(false);
   const [openTRDetails, setopenTRDetails] = useState(false);
-  const [materialDetails, setmaterialDetails] = useState(false);
-  const [labourDetails, setlabourDetails] = useState(false);
-  const [assestDetails, setassestDetails] = useState(false);
-
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Toggle the row's expanded state
-  const toggleExpand = () => {
-    setIsExpanded((prevState) => !prevState);
-  };
 
-  const boqDetailsDropdown = () => {
-    setboqDetails(!boqDetails);
-  };
   const detailsDropdown = () => {
     setdetailsDetails(!detailsDetails);
   };
-  const subBoqDetailsDropdown = () => {
-    setsubBoqDetails(!subBoqDetails);
-  };
+  
   const subItemDropdown = () => {
     setsubItemDetails(!subItemDetails);
   };
   const openTRDropdown = () => {
     setopenTRDetails(!openTRDetails);
   };
-  const materialDropdown = () => {
-    setmaterialDetails(!materialDetails);
-  };
-  const labourDropdown = () => {
-    setlabourDetails(!labourDetails);
-  };
-  const assestDropdown = () => {
-    setassestDetails(!assestDetails);
-  };
+
   return (
     <>
-      <div className="main-content">
+      
         <div className="website-content overflow-auto">
           <div className="website-content overflow-auto">
             <div className="module-data-section p-4">
@@ -593,38 +576,17 @@ const BOQApprovalDetails = () => {
                     </button>
                   </div>
                 </div>
-                <div className="row mt-2">
-                  <div className="col-12 px-2">
-                    <h5>Audit Log</h5>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th>Sr.No.</th>
-                            <th>User</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Remark</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>Pratham Shastri</td>
-                            <td>15-02-2024</td>
-                            <td>Verified</td>
-                            <td>Verified &amp; Processed</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="row mx-2">
+                <h5>Audit Log</h5>
+                <div className="">
+                  <Table columns={auditLogColumns} data={auditLogData} />
+                </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      
     </>
   );
 };
