@@ -11,7 +11,7 @@ import {
 } from "../components"
 
 const BOQApprovalDetails = () => {
-  const [detailsDetails, setdetailsDetails] = useState(true);
+  const [detailsDetails, setdetailsDetails] = useState(false);
   const [subItemDetails, setsubItemDetails] = useState(false);
   const [subItemDetails2, setsubItemDetails2] = useState(false);
   const [openTRDetails, setopenTRDetails] = useState(false);
@@ -59,7 +59,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder={56914}
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -71,7 +71,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="Nexzone Phase II"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -83,7 +83,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="Cedar"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -95,7 +95,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="Wing A"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -107,7 +107,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder=""
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -119,7 +119,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="BOQ Item Name"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -142,7 +142,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="MTR"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -154,7 +154,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder={0.0}
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -166,7 +166,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder={0.0}
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -178,7 +178,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="INR 0.00"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                       </div>
                     </div>
@@ -212,7 +212,7 @@ const BOQApprovalDetails = () => {
                           type="text"
                           placeholder="Sumitted"
                           fdprocessedid="qv9ju9"
-                          disabled=""
+                          disabled
                         />
                         <p
                           className="text-decoration-underline mt-1"
@@ -272,7 +272,7 @@ const BOQApprovalDetails = () => {
                               className="purple-btn2 w-100"
                               fdprocessedid="u33pye"
                             >
-                              Create
+                              Update Status
                             </button>
                           </div>
                           <div className="col-md-2">

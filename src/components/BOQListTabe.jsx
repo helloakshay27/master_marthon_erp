@@ -83,8 +83,18 @@ const BOQListTable = () => {
             ],
         },
     ];
-
-
+ const handleClick =()=>{
+    setOpenSubProject(false)
+    setOpenSubProject2(false)
+    setOpenSubProject2_1(false)
+    setOpenSubProject2_11(false)
+    setOpenSubProject2_12(false)
+    setOpenSubProject2_13(false)
+    setOpenSubProjectDetails(false)
+    setOpenSubProject3(false)
+   
+ }
+ console.log(openSubProject)
 
     return (
         <>
@@ -93,7 +103,7 @@ const BOQListTable = () => {
 
 
                     <div className="d-flex justify-content-start ms-3">
-                        <button className="purple-btn2">Collapse All</button>
+                        <button className="purple-btn2" onClick={handleClick}>Collapse All</button>
                     </div>
                     <div className="tbl-container mx-3 mt-1">
                         <table className="w-100">

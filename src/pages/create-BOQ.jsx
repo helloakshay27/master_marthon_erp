@@ -12,6 +12,23 @@ import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust
 
 
 const CreateBOQ = () => {
+  const [showMaterialLabour, setShowMaterialLabour] = useState(false);
+  const [showBOQSubItem, setShowBOQSubItem] = useState(false);
+
+  const handleCheckboxChange = (e) => {
+    const { id, checked } = e.target;
+    if (id === "checkbox1") {
+      setShowMaterialLabour(checked);
+      setShowBOQSubItem(false)
+      // Uncheck the other checkbox (checkbox2)
+    document.getElementById("checkbox2").checked = false;
+    } else if (id === "checkbox2") {
+      setShowBOQSubItem(checked);
+      setShowMaterialLabour(false)
+        // Uncheck the other checkbox (checkbox1)
+    document.getElementById("checkbox1").checked = false;
+    }
+  };
   // bootstrap collaps
   const [expandedRows, setExpandedRows] = useState([]);
   const [table1Rows, setTable1Rows] = useState([{ id: 1, value: '' }]);
@@ -92,7 +109,7 @@ const CreateBOQ = () => {
     ]);
   };
 
-  console.log("materials",materials)
+  console.log("materials", materials)
 
   const handleDeleteRow = (materialToDelete) => {
     setMaterials((prev) =>
@@ -226,9 +243,9 @@ const CreateBOQ = () => {
                         </select> */}
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Project`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Project`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -237,9 +254,9 @@ const CreateBOQ = () => {
                         <label>Sub-project</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Sub-project`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -248,9 +265,9 @@ const CreateBOQ = () => {
                         <label>Wing</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Wing`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Wing`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -261,9 +278,9 @@ const CreateBOQ = () => {
                         <label>Main Category</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Main Category`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Main Category`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -272,9 +289,9 @@ const CreateBOQ = () => {
                         <label> Sub-category lvl 2</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -283,9 +300,9 @@ const CreateBOQ = () => {
                         <label>Sub-category lvl 3</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -294,9 +311,9 @@ const CreateBOQ = () => {
                         <label> Sub-category lvl 4</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -305,9 +322,9 @@ const CreateBOQ = () => {
                         <label> Sub-category lvl 5</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -340,9 +357,9 @@ const CreateBOQ = () => {
                         <label>UOM</label>
                         <SingleSelector
                           options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select UOM`} // Dynamic placeholder
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select UOM`} // Dynamic placeholder
                         />
                       </div>
                     </div>
@@ -379,7 +396,7 @@ const CreateBOQ = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-6 mt-2">
+                    {/* <div className="col-md-6 mt-2">
                       <div className="form-group">
                         <label>Note</label>
                         <textarea
@@ -389,521 +406,571 @@ const CreateBOQ = () => {
                           defaultValue={""}
                         />
                       </div>
+                      <div className="col-md-6 mt-2">
+                        <input type="checkbox" name="" id="" />
+                        </div>
+                    </div> */}
+                    <div className="row mt-2">
+                      {/* Textarea for Note */}
+                      <div className="col-md-6">
+                        <div className="form-group">
+                          <label>Note</label>
+                          <textarea
+                            className="form-control"
+                            rows={2}
+                            placeholder="Enter ..."
+                            defaultValue={""}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Checkboxes */}
+                      <div className="col-md-6 d-flex align-items-center">
+                        <div className="form-check me-3">
+                          <input type="checkbox" className="form-check-input" id="checkbox1" onChange={handleCheckboxChange} />
+                          <label className="form-check-label" htmlFor="checkbox1">
+                            Add Material/Labour/Assests
+                          </label>
+                        </div>
+                        <div className="form-check">
+                          <input type="checkbox" className="form-check-input" id="checkbox2" onChange={handleCheckboxChange} />
+                          <label className="form-check-label" htmlFor="checkbox2">
+                            Add BOQ Sub-Item
+                          </label>
+                        </div>
+                      </div>
                     </div>
+
                   </div>
                 </div>
               </CollapsibleCard>
 
-              <CollapsibleCard title="Material">
-                <div className="card mx-3 mt-2">
-                  <div className="card-body mt-0 pt-0">
-                    <div className="tbl-container mx-3 mt-1">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th rowSpan={2}>
-                              <div className="d-flex justify-content-center">
-                                <input
-                                  type="checkbox"
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedMaterials(materials.map((m) => m.name)); // Select all
-                                    } else {
-                                      setSelectedMaterials([]); // Deselect all
-                                    }
-                                  }}
-                                  checked={selectedMaterials.length === materials.length}
-                                />
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={14}
-                                  height={14}
-                                  fill="currentColor"
-                                  className="bi bi-trash3-fill ms-2"
-                                  viewBox="0 0 16 16"
-                                  onClick={handleDeleteAll} // Delete selected rows on click
-                                >
-                                  <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                </svg>
-                              </div>
-                            </th>
-                            <th rowSpan={2}>Material Type</th>
-                            <th rowSpan={2}>Material Sub-Type</th>
-                            <th rowSpan={2}>Material </th>
-                            <th rowSpan={2}>Generic Specification</th>
-                            <th rowSpan={2}>Colour</th>
-                            <th rowSpan={2}>Brand</th>
-                            <th rowSpan={2}>UOM</th>
-                            <th colSpan={2}>Cost</th>
-                            <th rowSpan={2}>Wastage</th>
-                            <th rowSpan={2}>
-                              Total Estimated Quantity Wastage
-                            </th>
-
-
-                          </tr>
-
-                          <tr>
-                            <th rowSpan={1}>Co-efficient Factor</th>
-                            <th rowSpan={1}>Estimated Qty</th>
-                          </tr>
-
-                          <tr>
-                            <th />
-                            <th>A</th>
-                            <th>B</th>
-                            <th>C</th>
-                            <th>D</th>
-                            <th>E</th>
-                            <th>F</th>
-                            <th>G</th>
-                            <th>H</th>
-                            <th>I</th>
-                            <th>J</th>
-                            <th>K</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {materials.length > 0 ? (
-                            materials.map((material, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <input
-                                    className="ms-5"
-                                    type="checkbox"
-                                    checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                                    onChange={() => handleSelectRow(material.name)} // Toggle selection
-                                  />
-                                </td>
-                                <td>{material.type}</td>
-                                <td>{material.subType}</td>
-                                <td>{material.name}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>{material.uom}</td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                                <td></td>
-                                <td></td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="12" className="text-center">
-                                No materials added yet.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div>
-                      <p
-                        className="pe-auto"
-                        style={{ cursor: "pointer" }}
-                        onClick={handleOpenModal}
-                      >
-                        Add Material
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleCard>
-              <MaterialModal
-                show={showModal}
-                handleClose={handleCloseModal}
-                handleAdd={handleAddMaterials}
-              />
-
-              {/* labour */}
-
-              <CollapsibleCard title="Labour">
-                <div className="card mx-3 mt-2">
-                  <div className="card-body mt-0 pt-0">
-                    <div className="tbl-container mx-3 mt-1">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th rowSpan={2}>
-                              <div className="d-flex justify-content-center">
-                                <input className="" type="checkbox"
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedLabours(labours.map((m) => m.labourType)); // Select all
-                                    } else {
-                                      setSelectedLabours([]); // Deselect all
-                                    }
-                                  }}
-                                  checked={selectedlabours.length === labours.length}
-                                />
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={14}
-                                  height={14}
-                                  fill="currentColor"
-                                  className="bi bi-trash3-fill ms-2"
-                                  viewBox="0 0 16 16"
-                                  onClick={handleDeleteAllLabour}
-                                >
-                                  <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                </svg>
-                              </div>
-                            </th>
-                            <th rowSpan={2}>Labour Category</th>
-                            <th rowSpan={2}>Labour Sub-Type</th>
-                            <th rowSpan={2}>Labour  </th>
-                            <th rowSpan={2}>UOM</th>
-                            <th colSpan={2}>Cost</th>
-                          </tr>
-                          <tr>
-                            <th>Co-efficient Factor</th>
-                            <th rowSpan={2}>Estimated Qty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-
-                          {labours.length > 0 ? (
-                            labours.map((labours, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <input
-                                    className="ms-5"
-                                    type="checkbox"
-                                    checked={selectedlabours.includes(labours.labourType)} // Check if material is selected
-                                    onChange={() => handleSelectRowLabour(labours.labourType)} // Toggle selection
-                                  />
-                                </td>
-
-                                <td>{labours.labourCategory}</td>
-                                <td>{labours.materialSubCategory}</td>
-                                <td>{labours.labourType}</td>
-                                <td></td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="8" className="text-center">
-                                No labour added yet.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div>
-                      <p
-                        className="pe-auto"
-                        style={{ cursor: "pointer" }}
-                        onClick={handleOpenModalLabour}
-                      >
-                        Add Labour
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleCard>
-
-              <LabourModal
-                showLabours={showModalLabour}
-                handleCloseLabours={handleCloseModalLabour}
-                handleAdd={handleAddLabours}
-              />
-
-              {/* //assets */}
-              <CollapsibleCard title="Assests">
-                <div className="card mx-3 mt-2">
-
-                  <div className="card-body mt-0 pt-0">
-                    <div className="tbl-container mx-3 mt-1">
-                      <table className="w-100">
-                        <thead >
-                          <tr>
-                            <th rowSpan={2}>
-                              <div className="d-flex justify-content-center">
-                                <input className="" type="checkbox"
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedAssets(Assets.map((a) => a.assetType)); // Select all
-                                    } else {
-                                      setSelectedAssets([]); // Deselect all
-                                    }
-                                  }}
-                                  checked={selectedAssets.length === Assets.length}
-                                />
-
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={14}
-                                  height={14}
-                                  fill="currentColor"
-                                  className="bi bi-trash3-fill ms-2"
-                                  viewBox="0 0 16 16"
-                                  onClick={handleDeleteAllAssets}
-                                >
-                                  <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                </svg>
-                              </div>
-                            </th>
-                            <th rowSpan={2}>Assest Type</th>
-                            <th rowSpan={2}>Assest Sub-Type</th>
-                            <th rowSpan={2}>Assest</th>
-                            <th rowSpan={2}>UOM</th>
-                            <th colSpan={2}>Cost</th>
-                          </tr>
-                          <tr>
-                            <th>Co-efficient Factor</th>
-                            <th rowSpan={2}>Estimated Qty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-
-
-                          {Assets.length > 0 ? (
-                            Assets.map((assets, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <input
-                                    className="ms-5"
-                                    type="checkbox"
-                                    checked={selectedAssets.includes(assets.assetType)} // Check if material is selected
-                                    onChange={() => handleSelectRowAssets(assets.assetType)} // Toggle selection
-                                  />
-                                </td>
-
-                                <td>{assets.assetType}</td>
-                                <td>{assets.assetSubType}</td>
-                                <td>{assets.asset}</td>
-                                <td>{assets.uom}</td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    placeholder=""
-                                    fdprocessedid="qv9ju9"
-                                  />
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="8" className="text-center">
-                                No asset added yet.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div>
-                      <p
-                        className="pe-auto"
-                        style={{ cursor: "pointer" }}
-                        onClick={handleOpenModalAsset}
-                      >
-                        Add Asset
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-              </CollapsibleCard>
-
-              <AssetModal
-                showAssets={showModalAsset}
-                handleCloseAssets={handleCloseModalAsset}
-                handleAdd={handleAddAssets}
-              />
-
-              <CollapsibleCard title="BOQ Sub-Item">
-                <div className="card mx-3 mt-2">
-
-
-                  <div className="card-body mt-0 pt-0">
-                    <div className="mt-3">
-                      <div className="tbl-container mx-3 mt-1">
-                        <table className="table table-bordered">
-                          <thead style={{ zIndex: "1" }}>
-                            <tr>
-                              <th rowSpan={2}>
-                                <input type="checkbox" />
-                              </th>
-                              <th rowSpan={2}>Expand</th>
-                              <th rowSpan={2}>Sub Item Name</th>
-                              <th rowSpan={2}>Description</th>
-                              <th rowSpan={2}>Notes</th>
-                              <th rowSpan={2}>Remarks</th>
-                              <th rowSpan={2}>UOM</th>
-                              <th colSpan={3}>Cost</th>
-                              <th rowSpan={2}>Document</th>
-                            </tr>
-                            <tr>
-                              <th>Quantity</th>
-                              <th>Rate</th>
-                              <th>Amount</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {count.map((el) =>
-                            (
-                              <>
-                                <tr>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-
-                                  <td className="text-center">
-                                    <button
-                                      className="btn btn-link p-0"
-                                      onClick={() => toggleRow(el.id)}
-                                      aria-label="Toggle row visibility"
-                                    >
-                                      {expandedRows.includes(el.id) ? (
-                                        // Show minus SVG if row is expanded
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="16"
-                                          height="16"
-                                          fill="black"
-                                          className="bi bi-dash-circle"
-                                          viewBox="0 0 16 16"
-                                        >
-                                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
-                                        </svg>
-                                      ) : (
-                                        // Show plus SVG if row is collapsed
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="16"
-                                          height="16"
-                                          fill="black"
-                                          className="bi bi-plus-circle"
-                                          viewBox="0 0 16 16"
-                                        >
-                                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                        </svg>
-                                      )}
-                                    </button>
-                                  </td>
-
-                                  <td>MS Fabrication</td>
-                                  <td>
+              {showMaterialLabour && (
+                <>
+                  <CollapsibleCard title="Material">
+                    <div className="card mx-3 mt-2">
+                      <div className="card-body mt-0 pt-0">
+                        <div className="tbl-container mx-3 mt-1">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th rowSpan={2}>
+                                  <div className="d-flex justify-content-center">
                                     <input
-                                      type="text"
-                                      defaultValue="MS Fabrication_20010"
+                                      type="checkbox"
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedMaterials(materials.map((m) => m.name)); // Select all
+                                        } else {
+                                          setSelectedMaterials([]); // Deselect all
+                                        }
+                                      }}
+                                      checked={selectedMaterials.length === materials.length}
                                     />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      defaultValue="MS Fabrication_20010"
-                                    />
-                                  </td>
-                                  <td>
-                                    <input type="text" defaultValue="" />
-                                  </td>
-                                  <td>KG</td>
-                                  <td>
-                                    <input type="number" defaultValue={621.0} />
-                                  </td>
-                                  <td>
-                                    <input type="number" defaultValue={130.0} />
-                                  </td>
-                                  <td>
-                                    <input type="number" defaultValue={80730.0} />
-                                  </td>
-                                  <td>
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
-                                      width={16}
-                                      height={16}
+                                      width={14}
+                                      height={14}
                                       fill="currentColor"
-                                      className="bi bi-file-earmark-text"
+                                      className="bi bi-trash3-fill ms-2"
                                       viewBox="0 0 16 16"
+                                      onClick={handleDeleteAll} // Delete selected rows on click
                                     >
-                                      <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                                      <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
                                     </svg>
+                                  </div>
+                                </th>
+                                <th rowSpan={2}>Material Type</th>
+                                <th rowSpan={2}>Material Sub-Type</th>
+                                <th rowSpan={2}>Material </th>
+                                <th rowSpan={2}>Generic Specification</th>
+                                <th rowSpan={2}>Colour</th>
+                                <th rowSpan={2}>Brand</th>
+                                <th rowSpan={2}>UOM</th>
+                                <th colSpan={2}>Cost</th>
+                                <th rowSpan={2}>Wastage</th>
+                                <th rowSpan={2}>
+                                  Total Estimated Quantity Wastage
+                                </th>
+
+
+                              </tr>
+
+                              <tr>
+                                <th rowSpan={1}>Co-efficient Factor</th>
+                                <th rowSpan={1}>Estimated Qty</th>
+                              </tr>
+
+                              <tr>
+                                <th />
+                                <th>A</th>
+                                <th>B</th>
+                                <th>C</th>
+                                <th>D</th>
+                                <th>E</th>
+                                <th>F</th>
+                                <th>G</th>
+                                <th>H</th>
+                                <th>I</th>
+                                <th>J</th>
+                                <th>K</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {materials.length > 0 ? (
+                                materials.map((material, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <input
+                                        className="ms-5"
+                                        type="checkbox"
+                                        checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                                        onChange={() => handleSelectRow(material.name)} // Toggle selection
+                                      />
+                                    </td>
+                                    <td>{material.type}</td>
+                                    <td>{material.subType}</td>
+                                    <td>{material.name}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{material.uom}</td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="12" className="text-center">
+                                    No materials added yet.
                                   </td>
                                 </tr>
-                                {expandedRows.includes(el.id) && (
-                                  <tr>
-                                    <td colSpan={11}>
-                                      <BOQSubItemTable />
-                                    </td>
-                                  </tr>
-                                )}
-                              </>
-                            )
-                            )}
-
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="row mt-3 mx-3">
-                        <p>
-                          <button
-                            style={{ color: "var(--red)" }}
-                            className="fw-bold text-decoration-underline border-0 bg-white"
-                            onClick={addRowToTable1}
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div>
+                          <p
+                            className="pe-auto"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleOpenModal}
                           >
-                            Add Row
-                          </button>{" "}
-                          |
-                          <button
-                            style={{ color: "var(--red)" }}
-                            className="fw-bold text-decoration-underline border-0 bg-white"
-                            onClick={() => deleteRowFromTable1(counter)}
-                          >
-                            Delete Row
-                          </button>
-                        </p>
+                            Add Material
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </CollapsibleCard>
+                  <MaterialModal
+                    show={showModal}
+                    handleClose={handleCloseModal}
+                    handleAdd={handleAddMaterials}
+                  />
 
-                </div>
-              </CollapsibleCard>
+                  {/* labour */}
+
+                  <CollapsibleCard title="Labour">
+                    <div className="card mx-3 mt-2">
+                      <div className="card-body mt-0 pt-0">
+                        <div className="tbl-container mx-3 mt-1">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th rowSpan={2}>
+                                  <div className="d-flex justify-content-center">
+                                    <input className="" type="checkbox"
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedLabours(labours.map((m) => m.labourType)); // Select all
+                                        } else {
+                                          setSelectedLabours([]); // Deselect all
+                                        }
+                                      }}
+                                      checked={selectedlabours.length === labours.length}
+                                    />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width={14}
+                                      height={14}
+                                      fill="currentColor"
+                                      className="bi bi-trash3-fill ms-2"
+                                      viewBox="0 0 16 16"
+                                      onClick={handleDeleteAllLabour}
+                                    >
+                                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                    </svg>
+                                  </div>
+                                </th>
+                                <th rowSpan={2}>Labour Category</th>
+                                <th rowSpan={2}>Labour Sub-Type</th>
+                                <th rowSpan={2}>Labour  </th>
+                                <th rowSpan={2}>UOM</th>
+                                <th colSpan={2}>Cost</th>
+                              </tr>
+                              <tr>
+                                <th>Co-efficient Factor</th>
+                                <th rowSpan={2}>Estimated Qty</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+
+                              {labours.length > 0 ? (
+                                labours.map((labours, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <input
+                                        className="ms-5"
+                                        type="checkbox"
+                                        checked={selectedlabours.includes(labours.labourType)} // Check if material is selected
+                                        onChange={() => handleSelectRowLabour(labours.labourType)} // Toggle selection
+                                      />
+                                    </td>
+
+                                    <td>{labours.labourCategory}</td>
+                                    <td>{labours.materialSubCategory}</td>
+                                    <td>{labours.labourType}</td>
+                                    <td></td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="8" className="text-center">
+                                    No labour added yet.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div>
+                          <p
+                            className="pe-auto"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleOpenModalLabour}
+                          >
+                            Add Labour
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleCard>
+
+                  <LabourModal
+                    showLabours={showModalLabour}
+                    handleCloseLabours={handleCloseModalLabour}
+                    handleAdd={handleAddLabours}
+                  />
+
+
+                  {/* //assets */}
+                  <CollapsibleCard title="Assests">
+                    <div className="card mx-3 mt-2">
+
+                      <div className="card-body mt-0 pt-0">
+                        <div className="tbl-container mx-3 mt-1">
+                          <table className="w-100">
+                            <thead >
+                              <tr>
+                                <th rowSpan={2}>
+                                  <div className="d-flex justify-content-center">
+                                    <input className="" type="checkbox"
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedAssets(Assets.map((a) => a.assetType)); // Select all
+                                        } else {
+                                          setSelectedAssets([]); // Deselect all
+                                        }
+                                      }}
+                                      checked={selectedAssets.length === Assets.length}
+                                    />
+
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width={14}
+                                      height={14}
+                                      fill="currentColor"
+                                      className="bi bi-trash3-fill ms-2"
+                                      viewBox="0 0 16 16"
+                                      onClick={handleDeleteAllAssets}
+                                    >
+                                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                    </svg>
+                                  </div>
+                                </th>
+                                <th rowSpan={2}>Assest Type</th>
+                                <th rowSpan={2}>Assest Sub-Type</th>
+                                <th rowSpan={2}>Assest</th>
+                                <th rowSpan={2}>UOM</th>
+                                <th colSpan={2}>Cost</th>
+                              </tr>
+                              <tr>
+                                <th>Co-efficient Factor</th>
+                                <th rowSpan={2}>Estimated Qty</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+
+
+                              {Assets.length > 0 ? (
+                                Assets.map((assets, index) => (
+                                  <tr key={index}>
+                                    <td>
+                                      <input
+                                        className="ms-5"
+                                        type="checkbox"
+                                        checked={selectedAssets.includes(assets.assetType)} // Check if material is selected
+                                        onChange={() => handleSelectRowAssets(assets.assetType)} // Toggle selection
+                                      />
+                                    </td>
+
+                                    <td>{assets.assetType}</td>
+                                    <td>{assets.assetSubType}</td>
+                                    <td>{assets.asset}</td>
+                                    <td>{assets.uom}</td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        className="form-control"
+                                        type="email"
+                                        placeholder=""
+                                        fdprocessedid="qv9ju9"
+                                      />
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="8" className="text-center">
+                                    No asset added yet.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div>
+                          <p
+                            className="pe-auto"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleOpenModalAsset}
+                          >
+                            Add Asset
+                          </p>
+                        </div>
+                      </div>
+
+                    </div>
+                  </CollapsibleCard>
+
+                  <AssetModal
+                    showAssets={showModalAsset}
+                    handleCloseAssets={handleCloseModalAsset}
+                    handleAdd={handleAddAssets}
+                  />
+
+                </>
+
+              )}
+
+
+
+
+              {showBOQSubItem && (
+                <>
+                  <CollapsibleCard title="BOQ Sub-Item">
+                    <div className="card mx-3 mt-2">
+
+
+                      <div className="card-body mt-0 pt-0">
+                        <div className="mt-3">
+                          <div className="tbl-container mx-3 mt-1">
+                            <table className="table table-bordered">
+                              <thead style={{ zIndex: "1" }}>
+                                <tr>
+                                  <th rowSpan={2}>
+                                    <input type="checkbox" />
+                                  </th>
+                                  <th rowSpan={2}>Expand</th>
+                                  <th rowSpan={2}>Sub Item Name</th>
+                                  <th rowSpan={2}>Description</th>
+                                  <th rowSpan={2}>Notes</th>
+                                  <th rowSpan={2}>Remarks</th>
+                                  <th rowSpan={2}>UOM</th>
+                                  <th colSpan={3}>Cost</th>
+                                  <th rowSpan={2}>Document</th>
+                                </tr>
+                                <tr>
+                                  <th>Quantity</th>
+                                  <th>Rate</th>
+                                  <th>Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {count.map((el) =>
+                                (
+                                  <>
+                                    <tr>
+                                      <td>
+                                        <input type="checkbox" />
+                                      </td>
+
+                                      <td className="text-center">
+                                        <button
+                                          className="btn btn-link p-0"
+                                          onClick={() => toggleRow(el.id)}
+                                          aria-label="Toggle row visibility"
+                                        >
+                                          {expandedRows.includes(el.id) ? (
+                                            // Show minus SVG if row is expanded
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="16"
+                                              height="16"
+                                              fill="black"
+                                              className="bi bi-dash-circle"
+                                              viewBox="0 0 16 16"
+                                            >
+                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                            </svg>
+                                          ) : (
+                                            // Show plus SVG if row is collapsed
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="16"
+                                              height="16"
+                                              fill="black"
+                                              className="bi bi-plus-circle"
+                                              viewBox="0 0 16 16"
+                                            >
+                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                            </svg>
+                                          )}
+                                        </button>
+                                      </td>
+
+                                      <td>MS Fabrication</td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          defaultValue="MS Fabrication_20010"
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          defaultValue="MS Fabrication_20010"
+                                        />
+                                      </td>
+                                      <td>
+                                        <input type="text" defaultValue="" />
+                                      </td>
+                                      <td>KG</td>
+                                      <td>
+                                        <input type="number" defaultValue={621.0} />
+                                      </td>
+                                      <td>
+                                        <input type="number" defaultValue={130.0} />
+                                      </td>
+                                      <td>
+                                        <input type="number" defaultValue={80730.0} />
+                                      </td>
+                                      <td>
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width={16}
+                                          height={16}
+                                          fill="currentColor"
+                                          className="bi bi-file-earmark-text"
+                                          viewBox="0 0 16 16"
+                                        >
+                                          <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                          <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                                        </svg>
+                                      </td>
+                                    </tr>
+                                    {expandedRows.includes(el.id) && (
+                                      <tr>
+                                        <td colSpan={11}>
+                                          <BOQSubItemTable />
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </>
+                                )
+                                )}
+
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="row mt-3 mx-3">
+                            <p>
+                              <button
+                                style={{ color: "var(--red)" }}
+                                className="fw-bold text-decoration-underline border-0 bg-white"
+                                onClick={addRowToTable1}
+                              >
+                                Add Row
+                              </button>{" "}
+                              |
+                              <button
+                                style={{ color: "var(--red)" }}
+                                className="fw-bold text-decoration-underline border-0 bg-white"
+                                onClick={() => deleteRowFromTable1(counter)}
+                              >
+                                Delete Row
+                              </button>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </CollapsibleCard>
+                </>
+              )}
+
+
 
             </div>
             <div className="row mt-2 justify-content-center">
@@ -1056,8 +1123,8 @@ const CreateBOQ = () => {
           <h5>Add Asset</h5>
         </Modal.Header>
         <Modal.Body> */}
-          {/* Pagination and Display options */}
-          {/* <div className="d-flex justify-content-between px-4 pt-2">
+      {/* Pagination and Display options */}
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -1106,8 +1173,8 @@ const CreateBOQ = () => {
             </div>
           </div> */}
 
-          {/* Table for Assets */}
-          {/* <div className="tbl-container mx-3 mt-1">
+      {/* Table for Assets */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -1143,8 +1210,8 @@ const CreateBOQ = () => {
             </table>
           </div> */}
 
-          {/* Add Button */}
-          {/* <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeAssestModal}
@@ -1174,7 +1241,7 @@ const CreateBOQ = () => {
         </Modal.Header>
         <Modal.Body>
           {/* Pagination and Display options */}
-          {/* <div className="d-flex justify-content-between px-4 pt-2">
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -1223,8 +1290,8 @@ const CreateBOQ = () => {
             </div>
           </div> */}
 
-          {/* Table for Labour */}
-          {/* <div className="tbl-container mx-3 mt-1">
+      {/* Table for Labour */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -1257,8 +1324,8 @@ const CreateBOQ = () => {
             </table>
           </div> */}
 
-          {/* Add Button */}
-          {/* <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeLabourModal}
@@ -1270,7 +1337,7 @@ const CreateBOQ = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal> */} 
+      </Modal> */}
       {/* Labour modal */}
 
       {/* Modal end */}

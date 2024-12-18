@@ -346,7 +346,7 @@ const BOQDetailsPageMaster = () => {
               </CollapsibleCard>
 
               <CollapsibleCard title="BOQ Items">
-                <div className="card mx-3 mt-2">
+                {/* <div className="card mx-3 mt-2"> */}
 
 
                   <div
@@ -485,7 +485,7 @@ const BOQDetailsPageMaster = () => {
 
                   </div>
 
-                </div>
+                {/* </div> */}
               </CollapsibleCard>
               <div className="row mt-2 justify-content-center">
                 <div className="col-md-2">
