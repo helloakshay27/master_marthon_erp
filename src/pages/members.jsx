@@ -14,7 +14,6 @@ function Members() {
         <Sidebar />
         <div className="website-content overflow-auto">
           <div className="module-data-section container-fluid">
-            <h1>ERP_Store</h1>
             <ul>
               {/* <li>
                 <Link to="good_receive_notes/:id">grn_detail</Link>
@@ -49,7 +48,7 @@ function Members() {
 
             </ul>
 
-            <h1>BOQ</h1>
+            <h5>BOQ</h5>
             <ul>
               <li>
                 <Link to="/create-BOQ">Create BOQ</Link>
