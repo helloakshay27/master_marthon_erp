@@ -9,6 +9,7 @@ import MaterialModal from "../components/MaterialModal";
 import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
+import axios from "axios"
 
 
 const CreateBOQ = () => {
@@ -21,16 +22,16 @@ const CreateBOQ = () => {
       setShowMaterialLabour(checked);
       setShowBOQSubItem(false)
       // Uncheck the other checkbox (checkbox2)
-    document.getElementById("checkbox2").checked = false;
+      document.getElementById("checkbox2").checked = false;
     } else if (id === "checkbox2") {
       setShowBOQSubItem(checked);
       setShowMaterialLabour(false)
-        // Uncheck the other checkbox (checkbox1)
-    document.getElementById("checkbox1").checked = false;
+      // Uncheck the other checkbox (checkbox1)
+      document.getElementById("checkbox1").checked = false;
     }
   };
   // bootstrap collaps
-  const [expandedRows, setExpandedRows] = useState([]);
+  // const [expandedRows, setExpandedRows] = useState([]);
   const [table1Rows, setTable1Rows] = useState([{ id: 1, value: '' }]);
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: '' }]);
   const [count, setcount] = useState([]);
@@ -91,6 +92,7 @@ const CreateBOQ = () => {
   const deleteRowFromTable2 = (id) => {
     setTable2Rows(table2Rows.filter((row) => row.id !== id));
   };
+
 
   //Material modal and table data handle add or delete
 
@@ -211,6 +213,148 @@ const CreateBOQ = () => {
     { value: "washington", label: "Washington" },
   ];
 
+
+  //payoad creation here 
+  const [formData, setFormData] = useState({
+    project: '',
+    subProject: '',
+    wing: '',
+    mainCategory: '',
+    subCategoryLvl2: '',
+    subCategoryLvl3: '',
+    subCategoryLvl4: '',
+    subCategoryLvl5: '',
+    itemName: '',
+    description: '',
+    uom: '',
+    boqQuantity: '',
+    boqRate: '',
+    boqAmount: '',
+    note: '',
+  });
+
+  console.log("formdata", formData)
+
+  // Handle change for SingleSelector
+  const handleSelectorChange = (field, selectedOption) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [field]: selectedOption ? selectedOption.value : ''
+    }));
+  };
+  // Handle change for input fields
+  const handleInputChange = (field, value) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [field]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Prepare the payload
+    const payload = {
+      project: formData.project,
+      sub_project: formData.subProject,
+      wing: formData.wing,
+      main_category: formData.mainCategory,
+      sub_category_lvl_2: formData.subCategoryLvl2,
+      sub_category_lvl_3: formData.subCategoryLvl3,
+      sub_category_lvl_4: formData.subCategoryLvl4,
+      sub_category_lvl_5: formData.subCategoryLvl5,
+      item_name: formData.itemName,
+      description: formData.description,
+      uom: formData.uom,
+      boq_quantity: formData.boqQuantity,
+      boq_rate: formData.boqRate,
+      boq_amount: formData.boqAmount,
+      note: formData.note,
+      add_material_labour_assets: formData.addMaterialLabourAssets,
+      add_boq_sub_item: formData.addBoqSubItem,
+      // materials: materials, // Add the materials array here
+      // labours: labours,
+      // assets: Assets,
+      boqSubItem: {
+        boqData: payloadData,
+        materials: materials, // Add the materials array here
+        labours: labours,
+        assets: Assets,
+      }
+    };
+
+    console.log('Payload:', payload);
+
+    // Make the API call to submit the data
+    // You can use axios or fetch to send the payload
+    try {
+      const response = await axios.post('/your/api/endpoint', payload);
+      console.log('API Response:', response.data);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+  };
+
+
+  //boq sub item
+
+  const [expandedRows, setExpandedRows] = useState([
+    {
+      id: 1,
+      name: "MS Fabrication",
+      description: "MS Fabrication_20010",
+      notes: "MS Fabrication_20010",
+      remarks: "",
+      uom: "KG",
+      qty: 621.0,
+      rate: 130.0,
+      amount: 80730.0,
+    },
+  ]);
+
+  // Update value for a specific field in a specific row
+  const handleInputChange2 = (index, field, value) => {
+    // const updatedRows = [...expandedRows];
+    // updatedRows[index][field] = value;
+    // setExpandedRows(updatedRows);
+    if (updatedRows[index] && typeof updatedRows[index] === "object") {
+      updatedRows[index][field] = value;
+      setExpandedRows(updatedRows);
+    }
+  };
+
+  // Add a new row
+  const addRow = () => {
+    setExpandedRows((prevRows) => [
+      ...prevRows,
+      {
+        id: prevRows.length + 1, // Ensure a unique id for each row
+        name: "",
+        description: "",
+        notes: "",
+        remarks: "",
+        uom: "KG",
+        qty: 0,
+        rate: 0,
+        amount: 0,
+      },
+    ]);
+  };
+
+
+  const payloadData = expandedRows.map((row) => ({
+    name: row.name,
+    description: row.description,
+    notes: row.notes,
+    remarks: row.remarks,
+    uom: row.uom,
+    qty: row.qty,
+    rate: row.rate,
+    amount: row.amount,
+  }));
+
+  console.log("boq data", payloadData)
   return (
     <>
 
@@ -246,6 +390,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Project`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                         />
                       </div>
                     </div>
@@ -257,6 +402,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Sub-project`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('subProject', selectedOption)}
                         />
                       </div>
                     </div>
@@ -268,6 +414,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Wing`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                         />
                       </div>
                     </div>
@@ -281,6 +428,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Main Category`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('mainCategory', selectedOption)}
                         />
                       </div>
                     </div>
@@ -292,6 +440,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('subCategoryLvl2', selectedOption)}
                         />
                       </div>
                     </div>
@@ -303,6 +452,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('subCategoryLvl3', selectedOption)}
                         />
                       </div>
                     </div>
@@ -314,6 +464,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                         />
                       </div>
                     </div>
@@ -325,6 +476,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('subCategoryLvl5', selectedOption)}
                         />
                       </div>
                     </div>
@@ -338,6 +490,8 @@ const CreateBOQ = () => {
                           type="text"
                           placeholder=""
                           fdprocessedid="qv9ju9"
+                          onChange={(e) => handleInputChange('itemName', e.target.value)}
+
                         />
                       </div>
                     </div>
@@ -349,6 +503,7 @@ const CreateBOQ = () => {
                           rows={2}
                           placeholder="Enter ..."
                           defaultValue={""}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
                         />
                       </div>
                     </div>
@@ -360,6 +515,7 @@ const CreateBOQ = () => {
                           // value={values[label]} // Pass current value
                           // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                           placeholder={`Select UOM`} // Dynamic placeholder
+                          onChange={(selectedOption) => handleSelectorChange('UOM', selectedOption)}
                         />
                       </div>
                     </div>
@@ -371,6 +527,7 @@ const CreateBOQ = () => {
                           type="number"
                           placeholder=""
                           fdprocessedid="qv9ju9"
+                          onChange={(e) => handleInputChange('boqQuantity', e.target.value)}
                         />
                       </div>
                     </div>
@@ -382,6 +539,7 @@ const CreateBOQ = () => {
                           type="number"
                           placeholder=""
                           fdprocessedid="qv9ju9"
+                          onChange={(e) => handleInputChange('boqRate', e.target.value)}
                         />
                       </div>
                     </div>
@@ -393,6 +551,7 @@ const CreateBOQ = () => {
                           type="number"
                           placeholder=""
                           fdprocessedid="qv9ju9"
+                          onChange={(e) => handleInputChange('boqAmount', e.target.value)}
                         />
                       </div>
                     </div>
@@ -420,6 +579,7 @@ const CreateBOQ = () => {
                             rows={2}
                             placeholder="Enter ..."
                             defaultValue={""}
+                            onChange={(e) => handleInputChange('note', e.target.value)}
                           />
                         </div>
                       </div>
@@ -535,19 +695,19 @@ const CreateBOQ = () => {
                                     <td></td>
                                     <td></td>
                                     <td>{material.uom}</td>
-                                    <td>
+                                    <td style={{width:'200px'}}>
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Co-efficient Factor"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
-                                    <td>
+                                    <td style={{width:'200px'}}>
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Estimated Qty"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
@@ -565,14 +725,16 @@ const CreateBOQ = () => {
                             </tbody>
                           </table>
                         </div>
+                        
                         <div>
-                          <p
-                            className="pe-auto"
-                            style={{ cursor: "pointer" }}
+                          <button
+                            style={{ color: "var(--red)" }}
+                            className="fw-bold text-decoration-underline border-0 bg-white ms-3"
+                            // onclick="myCreateFunction('table1')"
                             onClick={handleOpenModal}
                           >
                             Add Material
-                          </p>
+                          </button>{" "}
                         </div>
                       </div>
                     </div>
@@ -650,7 +812,7 @@ const CreateBOQ = () => {
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Co-efficient Factor"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
@@ -658,7 +820,7 @@ const CreateBOQ = () => {
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Estimated Qty"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
@@ -675,13 +837,15 @@ const CreateBOQ = () => {
                           </table>
                         </div>
                         <div>
-                          <p
-                            className="pe-auto"
-                            style={{ cursor: "pointer" }}
+                          <button
+                            style={{ color: "var(--red)" }}
+                            className="fw-bold text-decoration-underline border-0 bg-white ms-3"
+                            // onclick="myCreateFunction('table1')"
+                           
                             onClick={handleOpenModalLabour}
                           >
-                            Add Labour
-                          </p>
+                             Add Labour
+                          </button>{" "}
                         </div>
                       </div>
                     </div>
@@ -763,7 +927,7 @@ const CreateBOQ = () => {
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Co-efficient Factor"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
@@ -771,7 +935,7 @@ const CreateBOQ = () => {
                                       <input
                                         className="form-control"
                                         type="email"
-                                        placeholder=""
+                                        placeholder="Estimated Qty"
                                         fdprocessedid="qv9ju9"
                                       />
                                     </td>
@@ -788,13 +952,13 @@ const CreateBOQ = () => {
                           </table>
                         </div>
                         <div>
-                          <p
-                            className="pe-auto"
-                            style={{ cursor: "pointer" }}
+                           <button
+                            style={{ color: "var(--red)" }}
+                            className="fw-bold text-decoration-underline border-0 bg-white ms-3"
                             onClick={handleOpenModalAsset}
                           >
-                            Add Asset
-                          </p>
+                              Add Asset
+                          </button>{" "}
                         </div>
                       </div>
 
@@ -845,7 +1009,7 @@ const CreateBOQ = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {count.map((el) =>
+                                {count.map((el, index) =>
                                 (
                                   <>
                                     <tr>
@@ -859,61 +1023,99 @@ const CreateBOQ = () => {
                                           onClick={() => toggleRow(el.id)}
                                           aria-label="Toggle row visibility"
                                         >
-                                          {expandedRows.includes(el.id) ? (
-                                            // Show minus SVG if row is expanded
+                                          {expandedRows.includes(el.id) ? 
+                                         
+                                          (
                                             <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="16"
-                                              height="16"
-                                              fill="black"
-                                              className="bi bi-dash-circle"
-                                              viewBox="0 0 16 16"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
                                             >
-                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                                {/* Square */}
+                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                {/* Minus Icon */}
+                                                <line x1="8" y1="12" x2="16" y2="12" />
                                             </svg>
-                                          ) : (
-                                            // Show plus SVG if row is collapsed
+                                        ) : (
                                             <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="16"
-                                              height="16"
-                                              fill="black"
-                                              className="bi bi-plus-circle"
-                                              viewBox="0 0 16 16"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
                                             >
-                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                                {/* Square */}
+                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                {/* Plus Icon */}
+                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                <line x1="8" y1="12" x2="16" y2="12" />
                                             </svg>
-                                          )}
+                                        )
+                                          }
                                         </button>
                                       </td>
 
-                                      <td>MS Fabrication</td>
+                                      <td>
+                                        {/* <input
+                                          type="text"
+                                          defaultValue="MS Fabrication"
+                                          value={expandedRows.name}
+                                          onChange={(e) => handleInputChange(index, "name", e.target.value)}
+
+                                        /> */}
+                                        MS Fabrication
+                                      </td>
                                       <td>
                                         <input
                                           type="text"
                                           defaultValue="MS Fabrication_20010"
+                                          value={expandedRows.description}
+                                          onChange={(e) => handleInputChange2(index, "description", e.target.value)}
+
                                         />
                                       </td>
                                       <td>
                                         <input
                                           type="text"
                                           defaultValue="MS Fabrication_20010"
+                                          value={expandedRows.notes}
+                                          onChange={(e) => handleInputChange2(index, "notes", e.target.value)}
                                         />
                                       </td>
                                       <td>
-                                        <input type="text" defaultValue="" />
+                                        <input type="text" defaultValue=""
+                                          value={expandedRows.remarks}
+                                          onChange={(e) => handleInputChange2(index, "remarks", e.target.value)}
+                                        />
                                       </td>
                                       <td>KG</td>
                                       <td>
-                                        <input type="number" defaultValue={621.0} />
+                                        <input type="number" defaultValue={621.0}
+                                          value={expandedRows.qty}
+                                          onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
+                                        />
                                       </td>
                                       <td>
-                                        <input type="number" defaultValue={130.0} />
+                                        <input type="number" defaultValue={130.0}
+                                          value={expandedRows.rate}
+                                          onChange={(e) => handleInputChange2(index, "rate", parseFloat(e.target.value))}
+                                        />
                                       </td>
                                       <td>
-                                        <input type="number" defaultValue={80730.0} />
+                                        <input type="number" defaultValue={80730.0}
+                                          value={expandedRows.amount}
+                                          onChange={(e) => handleInputChange2(index, "amount", parseFloat(e.target.value))}
+                                        />
                                       </td>
                                       <td>
                                         <svg
@@ -932,7 +1134,41 @@ const CreateBOQ = () => {
                                     {expandedRows.includes(el.id) && (
                                       <tr>
                                         <td colSpan={11}>
-                                          <BOQSubItemTable />
+                                          {/* <BOQSubItemTable /> */}
+                                          <BOQSubItemTable
+                                            materials={materials}
+                                            setMaterials={setMaterials}
+                                            labours={labours}
+                                            Assets={Assets}
+                                            handleAddMaterials={handleAddMaterials}
+                                            handleDeleteAll={handleDeleteAll}
+                                            handleSelectRow={handleSelectRow}
+                                            handleAddLabours={handleAddLabours}
+                                            handleDeleteAllLabour={handleDeleteAllLabour}
+                                            handleSelectRowLabour={handleSelectRowLabour}
+                                            handleAddAssets={handleAddAssets}
+                                            handleDeleteAllAssets={handleDeleteAllAssets}
+                                            handleSelectRowAsset={handleSelectRowAssets}
+
+                                          />
+
+                                          <MaterialModal
+                                            show={showModal}
+                                            handleClose={handleCloseModal}
+                                            handleAdd={handleAddMaterials}
+                                          />
+
+                                          <LabourModal
+                                            showLabours={showModalLabour}
+                                            handleCloseLabours={handleCloseModalLabour}
+                                            handleAdd={handleAddLabours}
+                                          />
+
+                                          <AssetModal
+                                            showAssets={showModalAsset}
+                                            handleCloseAssets={handleCloseModalAsset}
+                                            handleAdd={handleAddAssets}
+                                          />
                                         </td>
                                       </tr>
                                     )}
@@ -975,7 +1211,7 @@ const CreateBOQ = () => {
             </div>
             <div className="row mt-2 justify-content-center">
               <div className="col-md-2">
-                <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                <button className="purple-btn2 w-100" fdprocessedid="u33pye" onClick={handleSubmit}>
                   Create
                 </button>
               </div>

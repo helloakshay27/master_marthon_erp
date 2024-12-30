@@ -7,6 +7,8 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 import BOQListTable from "../components/BOQListTabe";
+import { Link } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -14,6 +16,13 @@ const BOQList = () => {
   const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
+  const navigate = useNavigate(); // hook to get navigate function
+
+  const handleClick = () => {
+    // Navigate to '/about' when the button is clicked
+    navigate('/create-BOQ');
+  };
+
 
   const [copyModal, setcopyModal] = useState(false);
 
@@ -123,7 +132,7 @@ const BOQList = () => {
           <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
           <h5 className="mt-4">View BOQ</h5>
           <div className="d-flex justify-content-end">
-            <button className="purple-btn2">Create</button>
+            <button className="purple-btn2" onClick={handleClick}>Create</button>
             <button className="purple-btn2">Export/Import</button>
             <button className="purple-btn2">Delete</button>
             <button

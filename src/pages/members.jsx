@@ -60,11 +60,13 @@ function Members() {
                 <Link to="/view-BOQ">BOQ List</Link>
               </li>
               <li>
-                <Link to="/boq-approval-list">BOQ Approval List</Link>
-              </li>
-              <li>
                 <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
               </li>
+
+              <li>
+                <Link to="/boq-approval-list">BOQ Approval List</Link>
+              </li>
+              
               <li>
                 <Link to="/boq-approval-details">BOQ Approval Details</Link>
               </li>

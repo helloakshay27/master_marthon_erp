@@ -323,33 +323,44 @@ const BOQApprovalDetails = () => {
                               onClick={openTRDropdown}
                               aria-label="Toggle row visibility"
                             >
-                              {openTRDetails ? (
-                                // Show minus SVG if row is expanded
+                              {openTRDetails ? 
+                              (
                                 <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  fill="black"
-                                  className="bi bi-dash-circle"
-                                  viewBox="0 0 16 16"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="black"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 >
-                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                    {/* Square */}
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                    {/* Minus Icon */}
+                                    <line x1="8" y1="12" x2="16" y2="12" />
                                 </svg>
-                              ) : (
-                                // Show plus SVG if row is collapsed
+                            ) : (
                                 <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  fill="black"
-                                  className="bi bi-plus-circle"
-                                  viewBox="0 0 16 16"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="black"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                 >
-                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                    {/* Square */}
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                    {/* Plus Icon */}
+                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
                                 </svg>
-                              )}
+                            )
+                              }
                             </button>
                           </td>
                           <td>1"GI Pipe</td>
@@ -389,33 +400,44 @@ const BOQApprovalDetails = () => {
                                   onClick={subItemDropdown}
                                   aria-label="Toggle row visibility"
                                 >
-                                  {subItemDetails ? (
-                                    // Show minus SVG if row is expanded
+                                  {subItemDetails ?
+                                  (
                                     <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="black"
-                                      className="bi bi-dash-circle"
-                                      viewBox="0 0 16 16"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="black"
+                                        strokeWidth="1"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                        {/* Square */}
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        {/* Minus Icon */}
+                                        <line x1="8" y1="12" x2="16" y2="12" />
                                     </svg>
-                                  ) : (
-                                    // Show plus SVG if row is collapsed
+                                ) : (
                                     <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="black"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="black"
+                                        strokeWidth="1"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                        {/* Square */}
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        {/* Plus Icon */}
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
                                     </svg>
-                                  )}
+                                )
+                                  }
                                 </button>
                               </td>
                               <td>MS Fabrication</td>
@@ -606,33 +628,44 @@ const BOQApprovalDetails = () => {
                                   onClick={subItemDropdown2}
                                   aria-label="Toggle row visibility"
                                 >
-                                  {subItemDetails2 ? (
-                                    // Show minus SVG if row is expanded
+                                  {subItemDetails2 ? 
+                                  (
                                     <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="black"
-                                      className="bi bi-dash-circle"
-                                      viewBox="0 0 16 16"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="black"
+                                        strokeWidth="1"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                        {/* Square */}
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        {/* Minus Icon */}
+                                        <line x1="8" y1="12" x2="16" y2="12" />
                                     </svg>
-                                  ) : (
-                                    // Show plus SVG if row is collapsed
+                                ) : (
                                     <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="black"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="black"
+                                        strokeWidth="1"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
                                     >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                        {/* Square */}
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        {/* Plus Icon */}
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
                                     </svg>
-                                  )}
+                                )
+                                  }
                                 </button>
                               </td>
                               <td>MS Fabrication</td>

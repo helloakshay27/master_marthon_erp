@@ -2,6 +2,18 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
+
+const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+];
+
 
 const CreateRate = () => {
 
@@ -23,29 +35,25 @@ const CreateRate = () => {
                                     <div className="col-md-4">
                                         <div className="form-group">
                                             <label>Country</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Country`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4">
                                         <div className="form-group">
                                             <label>State</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select State`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -53,43 +61,38 @@ const CreateRate = () => {
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Project</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Project`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Sub-Project</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                          
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Sub-Project`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Wing</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Wing`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -97,57 +100,49 @@ const CreateRate = () => {
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Item Type</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Item Type`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Material Type</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material Type`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Material Sub-Type</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material Sub-Type`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Material</label>
-                                            <select className="form-control form-select" style={{ width: '100%' }}>
-                                                <option selected="selected">Alabama</option>
-                                                <option>Alaska</option>
-                                                <option>California</option>
-                                                <option>Delaware</option>
-                                                <option>Tennessee</option>
-                                                <option>Texas</option>
-                                                <option>Washington</option>
-                                            </select>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-2 mt-2 pt-3">

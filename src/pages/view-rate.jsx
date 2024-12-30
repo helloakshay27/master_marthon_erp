@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector";
+
+const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
 
 const ViewRate = () => {
 
@@ -17,7 +28,7 @@ const ViewRate = () => {
                     <h5 class="mt-4">Rate Card</h5>
                     <div className="card mt-3 pb-3">
 
-                        <CollapsibleCard title="Rate Card">
+                        {/* <CollapsibleCard title="Rate Card">
                             <div className="card-body mt-0 pt-0">
                                 <div className="row">
                                     <div className="col-md-4">
@@ -147,6 +158,129 @@ const ViewRate = () => {
                                                 <option>Texas</option>
                                                 <option>Washington</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-2 mt-2 pt-3">
+                                        <button className="purple-btn2">Go</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </CollapsibleCard> */}
+
+                        <CollapsibleCard title="Rate Card">
+                            <div className="card-body mt-0 pt-0">
+                                <div className="row">
+                                    <div className="col-md-4">
+                                        <div className="form-group">
+                                            <label>Country</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Country`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <div className="form-group">
+                                            <label>State</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select State`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Project</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Project`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Sub-Project</label>
+                                          
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Sub-Project`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Wing</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Wing`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Category</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Category`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Material Type</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material Type`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Material Sub-Type</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material Sub-Type`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        <div className="form-group">
+                                            <label>Material</label>
+                                            <SingleSelector
+                                                options={options}
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Material`} // Dynamic placeholder
+                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="col-md-2 mt-2 pt-3">

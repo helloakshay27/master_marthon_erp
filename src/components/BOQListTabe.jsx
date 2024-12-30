@@ -83,18 +83,18 @@ const BOQListTable = () => {
             ],
         },
     ];
- const handleClick =()=>{
-    setOpenSubProject(false)
-    setOpenSubProject2(false)
-    setOpenSubProject2_1(false)
-    setOpenSubProject2_11(false)
-    setOpenSubProject2_12(false)
-    setOpenSubProject2_13(false)
-    setOpenSubProjectDetails(false)
-    setOpenSubProject3(false)
-   
- }
- console.log(openSubProject)
+    const handleClick = () => {
+        setOpenSubProject(false)
+        setOpenSubProject2(false)
+        setOpenSubProject2_1(false)
+        setOpenSubProject2_11(false)
+        setOpenSubProject2_12(false)
+        setOpenSubProject2_13(false)
+        setOpenSubProjectDetails(false)
+        setOpenSubProject3(false)
+
+    }
+    console.log(openSubProject)
 
     return (
         <>
@@ -145,33 +145,44 @@ const BOQListTable = () => {
                                             onClick={handleSubProject}
                                             aria-label="Toggle row visibility"
                                         >
-                                            {openSubProject ? (
-                                                // Show minus SVG if row is expanded
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="black"
-                                                    className="bi bi-dash-circle"
-                                                    viewBox="0 0 16 16"
-                                                >
-                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
-                                                </svg>
-                                            ) : (
-                                                // Show plus SVG if row is collapsed
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="black"
-                                                    className="bi bi-plus-circle"
-                                                    viewBox="0 0 16 16"
-                                                >
-                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                                </svg>
-                                            )}
+                                            {openSubProject ?
+                                                (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="black"
+                                                        strokeWidth="1"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    >
+                                                        {/* Square */}
+                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                        {/* Minus Icon */}
+                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="black"
+                                                        strokeWidth="1"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    >
+                                                        {/* Square */}
+                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                        {/* Plus Icon */}
+                                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                    </svg>
+                                                )
+                                            }
                                         </button>
                                     </td>
                                     <td className="text-start">Nex-zone Phase2</td>
@@ -208,33 +219,44 @@ const BOQListTable = () => {
                                                     onClick={handleSubProject2}
                                                     aria-label="Toggle row visibility"
                                                 >
-                                                    {openSubProject2 ? (
-                                                        // Show minus SVG if row is expanded
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            fill="black"
-                                                            className="bi bi-dash-circle"
-                                                            viewBox="0 0 16 16"
-                                                        >
-                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
-                                                        </svg>
-                                                    ) : (
-                                                        // Show plus SVG if row is collapsed
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            fill="black"
-                                                            className="bi bi-plus-circle"
-                                                            viewBox="0 0 16 16"
-                                                        >
-                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                                        </svg>
-                                                    )}
+                                                    {openSubProject2 ?
+                                                        (
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="24"
+                                                                height="24"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="black"
+                                                                strokeWidth="1"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            >
+                                                                {/* Square */}
+                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                {/* Minus Icon */}
+                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                            </svg>
+                                                        ) : (
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="24"
+                                                                height="24"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="black"
+                                                                strokeWidth="1"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            >
+                                                                {/* Square */}
+                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                {/* Plus Icon */}
+                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                            </svg>
+                                                        )
+                                                    }
                                                 </button>
                                             </td>
                                             <td className="text-start">Aster</td>
@@ -271,33 +293,44 @@ const BOQListTable = () => {
                                                             onClick={handleSubProject2_1}
                                                             aria-label="Toggle row visibility"
                                                         >
-                                                            {openSubProject2_1 ? (
-                                                                // Show minus SVG if row is expanded
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    width="16"
-                                                                    height="16"
-                                                                    fill="black"
-                                                                    className="bi bi-dash-circle"
-                                                                    viewBox="0 0 16 16"
-                                                                >
-                                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                                    <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
-                                                                </svg>
-                                                            ) : (
-                                                                // Show plus SVG if row is collapsed
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    width="16"
-                                                                    height="16"
-                                                                    fill="black"
-                                                                    className="bi bi-plus-circle"
-                                                                    viewBox="0 0 16 16"
-                                                                >
-                                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                                                </svg>
-                                                            )}
+                                                            {openSubProject2_1 ?
+                                                                (
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="24"
+                                                                        height="24"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="black"
+                                                                        strokeWidth="1"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                    >
+                                                                        {/* Square */}
+                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                        {/* Minus Icon */}
+                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                    </svg>
+                                                                ) : (
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="24"
+                                                                        height="24"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="black"
+                                                                        strokeWidth="1"
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                    >
+                                                                        {/* Square */}
+                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                        {/* Plus Icon */}
+                                                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                    </svg>
+                                                                )
+                                                            }
                                                         </button>
                                                     </td>
                                                     <td className="text-start">Cedar</td>
@@ -331,19 +364,17 @@ const BOQListTable = () => {
                                                             <td>
                                                             </td>
                                                             <td className="text-start">
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    width="16"
-                                                                    height="16"
-                                                                    fill="black"
-                                                                    className="bi bi-arrow-down"
-                                                                    viewBox="0 0 16 16"
-                                                                >
-                                                                    <path
-                                                                        fillRule="evenodd"
-                                                                        d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                                                                    />
-                                                                </svg>
+                                                            <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="black"
+                                                                            className="bi bi-caret-up"
+                                                                            viewBox="0 0 16 16"
+                                                                        >
+                                                                           <path d="M3.204 6h9.592L8 10.52 3.204 6z" /> 
+                                                                            
+                                                                        </svg>
 
                                                                 Facade</td>
                                                             <td className="text-start"></td>
@@ -373,7 +404,7 @@ const BOQListTable = () => {
                                                             <td>
                                                             </td>
                                                             <td className="text-start">
-                                                                <svg
+                                                                {/* <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     width="16"
                                                                     height="16"
@@ -385,7 +416,18 @@ const BOQListTable = () => {
                                                                         fillRule="evenodd"
                                                                         d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
                                                                     />
-                                                                </svg>
+                                                                </svg> */}
+                                                                <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="black"
+                                                                            className="bi bi-caret-up"
+                                                                            viewBox="0 0 16 16"
+                                                                        >
+                                                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" /> 
+                                                                            
+                                                                        </svg>
 
                                                                 RCC</td>
                                                             <td className="text-start"></td>
@@ -415,44 +457,40 @@ const BOQListTable = () => {
                                                             <td>
                                                             </td>
                                                             <td className="text-start">
-                                                                <button
+                                                                <span
                                                                     onClick={handleSubProject2_11}
 
                                                                 >
-                                                                    {openSubProject2_11 ? (
+                                                                    {openSubProject2_11 ? 
+                                                                   
+                                                                    (
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
                                                                             height="16"
-                                                                            fill="black"
-                                                                            className="bi bi-arrow-down"
+                                                                            fill="#8B0203"
+                                                                            className="bi bi-caret-up"
                                                                             viewBox="0 0 16 16"
                                                                         >
-                                                                            <path
-                                                                                fillRule="evenodd"
-                                                                                d="M8 15a.5.5 0 0 1-.5-.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L8.5 2.707V14.5a.5.5 0 0 1-.5.5z"
-                                                                            />
+                                                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                            
                                                                         </svg>
                                                                     ) : (
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
                                                                             height="16"
-                                                                            fill="black"
-                                                                            className="bi bi-arrow-up"
+                                                                            fill="#8B0203"
+                                                                            className="bi bi-caret-down"
                                                                             viewBox="0 0 16 16"
                                                                         >
-
-
-                                                                            <path
-                                                                                fillRule="evenodd"
-                                                                                d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                                                                            />
+                                                                           <path d="M3.204 6h9.592L8 10.52 3.204 6z" /> 
+                                                                            
                                                                         </svg>
+                                                                    )
+                                                                    }
 
-                                                                    )}
-
-                                                                </button>
+                                                                </span>
 
                                                                 Flat Finishing</td>
                                                             <td className="text-start"></td>
@@ -483,10 +521,19 @@ const BOQListTable = () => {
                                                                 <tr>
                                                                     <td>
                                                                     </td>
-                                                                    <td className="text-start">
-
-
-
+                                                                    <td className="text-start " style={{paddingLeft:'40px'}}>
+                                                                   
+                                                                    <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="16"
+                                                                                    height="16"
+                                                                                    fill="black"
+                                                                                    className="bi bi-caret-up"
+                                                                                    viewBox="0 0 16 16"
+                                                                                >
+                                                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                                </svg>         
+                                                                  
                                                                         Plastor FF</td>
                                                                     <td className="text-start"></td>
                                                                     <td className="text-start"></td>
@@ -515,42 +562,39 @@ const BOQListTable = () => {
                                                                 <tr>
                                                                     <td>
                                                                     </td>
-                                                                    <td className="text-start">
-                                                                        <button
+                                                                    <td className="text-start" style={{paddingLeft:'40px'}}>
+                                                                        <span
                                                                             onClick={handleSubProject2_12}
                                                                         >
-                                                                            {openSubProject2_12 ? (
+                                                                            {openSubProject2_12 ? 
+                                                                            (
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="black"
-                                                                                    className="bi bi-arrow-down"
+                                                                                    fill="#8B0203"
+                                                                                    className="bi bi-caret-up"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
-                                                                                    <path
-                                                                                        fillRule="evenodd"
-                                                                                        d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                                                                                    />
+                                                                                   <path d="M3.204 9h9.592L8 4.48 3.204 9z" /> 
                                                                                 </svg>
                                                                             ) : (
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="black"
-                                                                                    className="bi bi-arrow-up"
+                                                                                    fill="#8B0203"
+                                                                                    className="bi bi-caret-down"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
-                                                                                    <path
-                                                                                        fillRule="evenodd"
-                                                                                        d="M8 15a.5.5 0 0 1-.5-.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L8.5 2.707V14.5a.5.5 0 0 1-.5.5z"
-                                                                                    />
+                                                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                                    
                                                                                 </svg>
+                                                                            )
+                                                                               
+                                                                            }
 
-                                                                            )}
-
-                                                                        </button>
+                                                                        </span>
 
                                                                         Painting FF</td>
                                                                     <td className="text-start"></td>
@@ -586,42 +630,39 @@ const BOQListTable = () => {
                                                                     <td>
                                                                         <input type="checkbox" name="" id="" />
                                                                     </td>
-                                                                    <td className="text-start">
-                                                                        <button
+                                                                    <td className="text-start " style={{paddingLeft:'70px'}}>
+                                                                        <span
                                                                             onClick={handleSubProject2_13}
                                                                         >
-                                                                            {openSubProject2_13 ? (
+                                                                            {openSubProject2_13 ? 
+                                                                             (
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="black"
-                                                                                    className="bi bi-arrow-down"
+                                                                                    fill="#8B0203"
+                                                                                    className="bi bi-caret-up"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
-                                                                                    <path
-                                                                                        fillRule="evenodd"
-                                                                                        d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"
-                                                                                    />
+                                                                                    <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                                    
                                                                                 </svg>
                                                                             ) : (
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="black"
-                                                                                    className="bi bi-arrow-up"
+                                                                                    fill="#8B0203"
+                                                                                    className="bi bi-caret-down"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
-                                                                                    <path
-                                                                                        fillRule="evenodd"
-                                                                                        d="M8 15a.5.5 0 0 1-.5-.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L8.5 2.707V14.5a.5.5 0 0 1-.5.5z"
-                                                                                    />
+                                                                                   <path d="M3.204 6h9.592L8 10.52 3.204 6z" /> 
+                                                                                    
                                                                                 </svg>
+                                                                            )
+                                                                            }
 
-                                                                            )}
-
-                                                                        </button>
+                                                                        </span>
 
                                                                         Flat 2&4</td>
                                                                     <td className="text-start"></td>
@@ -653,35 +694,38 @@ const BOQListTable = () => {
                                                                             <td>
                                                                                 <input type="checkbox" name="" id="" />
                                                                             </td>
-                                                                            <td className="text-start">
-                                                                                <button
+                                                                            <td className="text-start" style={{paddingLeft:'100px'}}>
+                                                                                <span
                                                                                 // onClick={handleSubProject2_13}
                                                                                 >
-                                                                                    {openSubProject2_13 ? (
-                                                                                     <svg
-                                                                                     xmlns="http://www.w3.org/2000/svg"
-                                                                                     width="16"
-                                                                                     height="16"
-                                                                                     fill="black"
-                                                                                     className="bi bi-caret-up"
-                                                                                     viewBox="0 0 16 16"
-                                                                                   >
-                                                                                     <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                                   </svg>
+                                                                                    {openSubProject2_13 ? 
+                                                                                    (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="16"
+                                                                                            height="16"
+                                                                                            fill="black"
+                                                                                            className="bi bi-caret-up"
+                                                                                            viewBox="0 0 16 16"
+                                                                                        >
+                                                                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                                        </svg>
                                                                                     ) : (
                                                                                         <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="16"
-                                                                                        height="16"
-                                                                                        fill="black"
-                                                                                        className="bi bi-caret-down"
-                                                                                        viewBox="0 0 16 16"
-                                                                                      >
-                                                                                        <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                                      </svg>
-                                                                                    )}
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="16"
+                                                                                            height="16"
+                                                                                            fill="black"
+                                                                                            className="bi bi-caret-down"
+                                                                                            viewBox="0 0 16 16"
+                                                                                        >
+                                                                                            
+                                                                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                                        </svg>
+                                                                                    )
+                                                                                    }
 
-                                                                                </button>
+                                                                                </span>
 
                                                                                 Internal Painting Work</td>
                                                                             <td className="text-start"></td>
@@ -712,8 +756,8 @@ const BOQListTable = () => {
                                                                             <td>
                                                                                 {/* <input type="checkbox" name="" id="" /> */}
                                                                             </td>
-                                                                            <td className="text-start">
-                                                                                <button
+                                                                            <td className="text-start" style={{paddingLeft:'100px'}}>
+                                                                                <span
                                                                                     onClick={handleSubProjectDetails}
                                                                                 >
                                                                                     {openSubProjectDetails ? (
@@ -721,7 +765,7 @@ const BOQListTable = () => {
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             width="16"
                                                                                             height="16"
-                                                                                            fill="black"
+                                                                                            fill="#8B0203"
                                                                                             className="bi bi-caret-up"
                                                                                             viewBox="0 0 16 16"
                                                                                         >
@@ -732,7 +776,7 @@ const BOQListTable = () => {
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             width="16"
                                                                                             height="16"
-                                                                                            fill="black"
+                                                                                            fill="#8B0203"
                                                                                             className="bi bi-caret-down"
                                                                                             viewBox="0 0 16 16"
                                                                                         >
@@ -741,7 +785,7 @@ const BOQListTable = () => {
 
                                                                                     )}
 
-                                                                                </button>
+                                                                                </span>
 
                                                                                 Flat Internal Wall Ceiling</td>
                                                                             <td className="text-start"></td>
@@ -924,33 +968,44 @@ const BOQListTable = () => {
                                                     onClick={handleSubProject3}
                                                     aria-label="Toggle row visibility"
                                                 >
-                                                    {openSubProject3 ? (
-                                                        // Show minus SVG if row is expanded
+                                                    {openSubProject3 ? 
+                                                    (
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            fill="black"
-                                                            className="bi bi-dash-circle"
-                                                            viewBox="0 0 16 16"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="black"
+                                                            strokeWidth="1"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
                                                         >
-                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z" />
+                                                            {/* Square */}
+                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                            {/* Minus Icon */}
+                                                            <line x1="8" y1="12" x2="16" y2="12" />
                                                         </svg>
                                                     ) : (
-                                                        // Show plus SVG if row is collapsed
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            fill="black"
-                                                            className="bi bi-plus-circle"
-                                                            viewBox="0 0 16 16"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="black"
+                                                            strokeWidth="1"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
                                                         >
-                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                                            {/* Square */}
+                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                            {/* Plus Icon */}
+                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                            <line x1="8" y1="12" x2="16" y2="12" />
                                                         </svg>
-                                                    )}
+                                                    )
+                                                    }
                                                 </button>
                                             </td>
                                             <td className="text-start">Bodhi</td>
