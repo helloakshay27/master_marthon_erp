@@ -48,7 +48,7 @@ function Members() {
 
             </ul>
 
-            <h5>BOQ</h5>
+            <h3>BOQ Pages</h3>
             <ul>
               <li>
                 <Link to="/create-BOQ">Create BOQ</Link>
