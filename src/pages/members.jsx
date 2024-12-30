@@ -78,7 +78,7 @@ function Members() {
               </li>
 
               {/* <li>
-                <Link to="/estimation-creation">Estimation creations</Link>
+                <Link to="/estimation-creation">Estimation creation</Link>
               </li>
               <li>
                 <Link to="/estimation-list">Estimation List Page</Link>
