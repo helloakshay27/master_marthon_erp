@@ -3,7 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
-
+import {
+  Table
+} from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 const creditnotecreate = () => {
   const [showRows, setShowRows] = useState(false);
   const [attachOneModal, setattachOneModal] = useState(false);
@@ -551,7 +554,7 @@ const creditnotecreate = () => {
               </div>
             </section>
           </div>
-          <div className="row">
+          <div className="row w-100">
             <div className="col-md-12">
               <div className="form-group">
                 <label>Remark</label>
@@ -564,7 +567,7 @@ const creditnotecreate = () => {
               </div>
             </div>
           </div>
-          <div className="row">
+          <div className="row w-100">
             <div className="col-md-12">
               <div className="form-group">
                 <label>Comments</label>
@@ -577,7 +580,7 @@ const creditnotecreate = () => {
               </div>
             </div>
           </div>
-          <div className="row mt-4 justify-content-end align-items-center">
+          <div className="row mt-4 justify-content-end align-items-center w-100">
             <div className="col-md-3">
               <div className="form-group d-flex gap-3 align-items-center">
                 <label style={{ fontSize: "1.1rem" }}>status</label>
@@ -596,7 +599,7 @@ const creditnotecreate = () => {
               </div>
             </div>
           </div>
-          <div className="row mt-2 justify-content-end">
+          <div className="row mt-2 justify-content-end w-100">
             <div className="col-md-2">
               <button className="purple-btn2 w-100">Print</button>
             </div>
@@ -607,31 +610,12 @@ const creditnotecreate = () => {
               <button className="purple-btn1 w-100">Cancel</button>
             </div>
           </div>
-          <div className="row mt-2">
+          <div className="row mt-2 w-100">
             <div className="col-12 px-4">
               <h5>Audit Log</h5>
-              <div className="tbl-container me-2 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>User</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>Pratham Shastri</td>
-                      <td>15-02-2024</td>
-                      <td>Verified</td>
-                      <td>Verified &amp; Processed</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <div className="mx-0">
+                                                       <Table columns={auditLogColumns} data={auditLogData} />
+                                                     </div>
             </div>
           </div>
         </div>

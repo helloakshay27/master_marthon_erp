@@ -3,6 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
+import {
+  Table
+} from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 
 const BillPaymentCreate = () => {
   const [makeCashModal, setmakeCashModal] = useState(false);
@@ -1157,52 +1161,9 @@ const BillPaymentCreate = () => {
           </div>
         </div>
         <h5 className=" mt-3">Audit Log</h5>
-        <div className="px-3">
-          <div className="tbl-container px-0">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>Sr.No.</th>
-                  <th>From Status</th>
-                  <th>To Status</th>
-                  <th>From Date</th>
-                  <th>To Date</th>
-                  <th>Days</th>
-                  <th>User</th>
-                  <th>Remark</th>
-                  <th>Comments</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th>1</th>
-                  <td>Draft</td>
-                  <td>Received</td>
-                  <td>01-01-24</td>
-                  <td>01-02-24</td>
-                  <td />
-                  <td>User 1</td>
-                  <td>
-                    <i
-                      className="fa-regular fa-eye"
-                      data-bs-toggle="modal"
-                      data-bs-target="#remark-modal"
-                      style={{ fontSize: 18 }}
-                    />
-                  </td>
-                  <td>
-                    <i
-                      className="fa-regular fa-eye"
-                      data-bs-toggle="modal"
-                      data-bs-target="#comments-modal"
-                      style={{ fontSize: 18 }}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+       <div className="mx-0">
+                                               <Table columns={auditLogColumns} data={auditLogData} />
+                                             </div>
       </div>
     </div>
   </div>

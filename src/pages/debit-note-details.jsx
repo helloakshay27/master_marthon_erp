@@ -3,7 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
-
+import {
+  Table
+} from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 const DebitNoteDetails = () => {
   const [showRows, setShowRows] = useState(false);
 
@@ -59,8 +62,8 @@ const DebitNoteDetails = () => {
   <>
   <div className="website-content overflow-auto">
         <div className="module-data-section container-fluid">
-          <a href="">Home &gt; Billing &amp; Accounts &gt; Credit Note </a>
-          <h5 className="mt-3">Credit Note </h5>
+          <a href="">Home &gt; Billing &amp; Accounts &gt; Debit Note </a>
+          <h5 className="mt-3">Debit Note </h5>
           <div className="row my-4 align-items-center">
             <div className="col-md-12 px-2">
               <div
@@ -545,28 +548,9 @@ const DebitNoteDetails = () => {
                 <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th>Sr.No.</th>
-                            <th>User</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Remark</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>Pratham Shastri</td>
-                            <td>15-02-2024</td>
-                            <td>Verified</td>
-                            <td>Verified &amp; Processed</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    <div className="mx-0">
+                                                             <Table columns={auditLogColumns} data={auditLogData} />
+                                                           </div>
                   </div>
                 </div>
               </div>

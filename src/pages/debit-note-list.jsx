@@ -2,7 +2,7 @@ import React from 'react'
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
-import { Modal, Button, ModalBody, ModalFooter } from "react-bootstrap";
+import { Modal, ModalBody } from "react-bootstrap";
 
 const DebitNoteList = () => {
   const [bulkActionDetails, setbulkActionDetails] = useState(true);

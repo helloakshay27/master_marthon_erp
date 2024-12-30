@@ -3,6 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
+import {
+  Table
+} from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 
 const POAdvanceNoteDetails = () => {
   const [showRows, setShowRows] = useState(false);
@@ -793,28 +797,9 @@ const POAdvanceNoteDetails = () => {
                 <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
-                    <div className="tbl-container me-2 mt-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            <th>Sr.No.</th>
-                            <th>User</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Remark</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>Pratham Shastri</td>
-                            <td>15-02-2024</td>
-                            <td>Verified</td>
-                            <td>Verified &amp; Processed</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    <div className="mx-0">
+                                                              <Table columns={auditLogColumns} data={auditLogData} />
+                                                            </div>
                   </div>
                 </div>
               </div>

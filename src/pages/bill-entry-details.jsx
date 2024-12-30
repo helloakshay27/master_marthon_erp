@@ -1,4 +1,8 @@
 import React from "react";
+import {
+  Table
+} from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
 
 const BillEntryDetails = () => {
   return (
@@ -161,46 +165,9 @@ const BillEntryDetails = () => {
                 </div>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-              <div className="px-3">
-                <div className="tbl-container px-0">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th>Sr.No.</th>
-                        <th>User</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Remark</th>
-                        <th>Comments</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th>1</th>
-                        <td>Pratham Shastri</td>
-                        <td>15-02-2024</td>
-                        <td>Verified</td>
-                        <td>
-                          <i
-                            className="fa-regular fa-eye"
-                            data-bs-toggle="modal"
-                            data-bs-target="#remark-modal"
-                            style={{ fontSize: 18 }}
-                          />
-                        </td>
-                        <td>
-                          <i
-                            className="fa-regular fa-eye"
-                            data-bs-toggle="modal"
-                            data-bs-target="#comments-modal"
-                            style={{ fontSize: 18 }}
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                <div className="mx-0">
+                                                        <Table columns={auditLogColumns} data={auditLogData} />
+                                                      </div>
             </div>
           </div>
         </div>
