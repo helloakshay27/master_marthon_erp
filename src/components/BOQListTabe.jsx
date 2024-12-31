@@ -468,7 +468,7 @@ const BOQListTable = () => {
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
                                                                             height="16"
-                                                                            fill="#8B0203"
+                                                                            fill="black"
                                                                             className="bi bi-caret-up"
                                                                             viewBox="0 0 16 16"
                                                                         >
@@ -480,7 +480,7 @@ const BOQListTable = () => {
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
                                                                             height="16"
-                                                                            fill="#8B0203"
+                                                                            fill="#black"
                                                                             className="bi bi-caret-down"
                                                                             viewBox="0 0 16 16"
                                                                         >
@@ -572,7 +572,7 @@ const BOQListTable = () => {
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="#8B0203"
+                                                                                    fill="black"
                                                                                     className="bi bi-caret-up"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
@@ -583,7 +583,7 @@ const BOQListTable = () => {
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="#8B0203"
+                                                                                    fill="black"
                                                                                     className="bi bi-caret-down"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
@@ -640,7 +640,7 @@ const BOQListTable = () => {
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="#8B0203"
+                                                                                    fill="black"
                                                                                     className="bi bi-caret-up"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
@@ -652,7 +652,7 @@ const BOQListTable = () => {
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     width="16"
                                                                                     height="16"
-                                                                                    fill="#8B0203"
+                                                                                    fill="black"
                                                                                     className="bi bi-caret-down"
                                                                                     viewBox="0 0 16 16"
                                                                                 >
@@ -765,7 +765,7 @@ const BOQListTable = () => {
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             width="16"
                                                                                             height="16"
-                                                                                            fill="#8B0203"
+                                                                                            fill="black"
                                                                                             className="bi bi-caret-up"
                                                                                             viewBox="0 0 16 16"
                                                                                         >
@@ -776,7 +776,7 @@ const BOQListTable = () => {
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             width="16"
                                                                                             height="16"
-                                                                                            fill="#8B0203"
+                                                                                            fill="black"
                                                                                             className="bi bi-caret-down"
                                                                                             viewBox="0 0 16 16"
                                                                                         >
