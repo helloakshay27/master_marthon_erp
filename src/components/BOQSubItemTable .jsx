@@ -9,7 +9,7 @@ import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
 
 
-const BOQSubItemTable = ({ 
+const BOQSubItemTable = ({
   materials,
   setMaterials,
   labours,
@@ -22,7 +22,7 @@ const BOQSubItemTable = ({
   handleSelectRowLabour,
   handleAddAssets,
   handleDeleteAllAssets,
-  handleSelectRowAssets,}) => {
+  handleSelectRowAssets, }) => {
   const [materialshowModal, setmaterialShowModal] = useState(false);
   const [assetShowModal, setAssetShowModal] = useState(false);
   const [labourShowModal, setLabourShowModal] = useState(false);
@@ -37,7 +37,7 @@ const BOQSubItemTable = ({
   const closeLabourModal = () => setLabourShowModal(false);
 
 
- 
+
   //Material modal and table data handle add or delete
 
   const [showModal, setShowModal] = useState(false);
@@ -168,9 +168,9 @@ const BOQSubItemTable = ({
                             checked={selectedMaterials.length === materials.length}
                           />
                         </th>
-                        <th rowSpan={2}>Material Type</th>
-                        <th rowSpan={2}>Material Sub-Type</th>
                         <th rowSpan={2}>Material</th>
+                        {/* <th rowSpan={2}>Material Sub-Type</th>
+                        <th rowSpan={2}>Material</th> */}
                         <th rowSpan={2}>Generic Specification</th>
                         <th rowSpan={2}>Colour </th>
                         <th rowSpan={2}>Brand </th>
@@ -197,32 +197,78 @@ const BOQSubItemTable = ({
                                 onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
                               />
                             </td>
-                            <td>{material.type}</td>
-                            <td>{material.subType}</td>
-                            <td>{material.name}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>{material.uom}</td>
-                            <td></td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={material.type}
+                              />
+                            </td>
+                            {/* <td>{material.subType}</td>
+                            <td>{material.name}</td> */}
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={material.uom}
+                              />
+                             </td>
+                            <td>  <input
+                              type="text"
+                              className="form-control"
+
+                            /></td>
                             <td>
                               <input
                                 className="form-control"
-                                type="email"
+                                type="text"
                                 placeholder=""
-                                fdprocessedid="qv9ju9"
+
                               />
                             </td>
                             <td>
                               <input
                                 className="form-control"
-                                type="email"
+                                type="text"
                                 placeholder=""
-                                fdprocessedid="qv9ju9"
+
                               />
                             </td>
-                            <td></td>
-                            <td></td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+
+                              />
+                            </td>
                           </tr>
                         ))
                       ) : (
@@ -263,114 +309,6 @@ const BOQSubItemTable = ({
             show={showModal}
             handleClose={handleCloseModal}
             handleAdd={handleAddMaterials}
-          />
-
-          <CollapsibleCard title="Labour">
-            <div className="card mx-3 mt-2">
-
-
-              <div className="card-body mt-0 pt-0">
-                <div className="tbl-container mx-3 mt-1">
-                  <table className="w-100" id="table2">
-                    <thead style={{ zIndex: "0" }}>
-                      <tr>
-                        <th rowSpan={2}>
-                          <input type="checkbox"
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedLabours(labours.map((m) => m.labourType)); // Select all
-                              } else {
-                                setSelectedLabours([]); // Deselect all
-                              }
-                            }}
-                            checked={selectedlabours.length === labours.length}
-                          />
-                        </th>
-                        <th rowSpan={2}>Labour Type</th>
-                        <th rowSpan={2}>Labour Sub-Type</th>
-                        <th rowSpan={2}>Labour</th>
-                        <th rowSpan={2}>UOM</th>
-                        <th colSpan={2}>Cost</th>
-                      </tr>
-                      <tr>
-                        <th>Co-Efficient Factor</th>
-                        <th rowSpan={2}>Estimated Qty</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {labours.length > 0 ? (
-                        labours.map((labours, index) => (
-                          <tr key={index}>
-                            <td>
-                              <input
-                                className="ms-5"
-                                type="checkbox"
-                                checked={selectedlabours.includes(labours.labourType)} // Check if material is selected
-                                onChange={() => handleSelectRowLabour(labours.labourType)} // Toggle selection
-                              />
-                            </td>
-
-                            <td>{labours.labourCategory}</td>
-                            <td>{labours.materialSubCategory}</td>
-                            <td>{labours.labourType}</td>
-                            <td></td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="email"
-                                placeholder=""
-                                fdprocessedid="qv9ju9"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="email"
-                                placeholder=""
-                                fdprocessedid="qv9ju9"
-                              />
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="8" className="text-center">
-                            No labour added yet.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="row mt-3 mx-3">
-                  <p>
-                    <button
-                      style={{ color: "var(--red)" }}
-                      className="fw-bold text-decoration-underline border-0 bg-white"
-                      // onclick="myCreateFunction('table2')"
-                      onClick={handleOpenModalLabour}
-                    >
-                      Add Labour
-                    </button>{" "}
-                    |
-                    <button
-                      style={{ color: "var(--red)" }}
-                      className="fw-bold text-decoration-underline border-0 bg-white"
-                      onclick="myDeleteFunction('table2')"
-                      onClick={handleDeleteAllLabour}
-                    >
-                      Delete Labour
-                    </button>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CollapsibleCard>
-
-          <LabourModal
-            showLabours={showModalLabour}
-            handleCloseLabours={handleCloseModalLabour}
-            handleAdd={handleAddLabours}
           />
 
           <CollapsibleCard title="Assests">
@@ -416,24 +354,50 @@ const BOQSubItemTable = ({
                               />
                             </td>
 
-                            <td>{assets.assetType}</td>
-                            <td>{assets.assetSubType}</td>
-                            <td>{assets.asset}</td>
-                            <td>{assets.uom}</td>
                             <td>
-                              <input
+                            <input
                                 className="form-control"
-                                type="email"
+                                type="text"
                                 placeholder=""
-                                fdprocessedid="qv9ju9"
+                               value={assets.assetType}
+                              />
+                            </td>
+                            <td>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                               value={assets.assetSubType}
+                              />
+                            </td>
+                            <td>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                               value={assets.asset}
+                              />
+                            </td>
+                            <td>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                               value={assets.uom}
                               />
                             </td>
                             <td>
                               <input
                                 className="form-control"
-                                type="email"
+                                type="text"
+                                placeholder="" 
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
                                 placeholder=""
-                                fdprocessedid="qv9ju9"
                               />
                             </td>
                           </tr>
@@ -613,7 +577,7 @@ const BOQSubItemTable = ({
         </Modal.Header>
         <Modal.Body>
           {/* Pagination and Display options */}
-          {/* <div className="d-flex justify-content-between px-4 pt-2">
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -662,8 +626,8 @@ const BOQSubItemTable = ({
             </div>
           </div> */}
 
-          {/* Table for Labour */}
-          {/* <div className="tbl-container mx-3 mt-1">
+      {/* Table for Labour */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -696,8 +660,8 @@ const BOQSubItemTable = ({
             </table>
           </div> */}
 
-          {/* Add Button */}
-          {/* <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeLabourModal}
@@ -726,8 +690,8 @@ const BOQSubItemTable = ({
           <h5>Add Asset</h5>
         </Modal.Header>
         <Modal.Body> */}
-          {/* Pagination and Display options */}
-          {/* <div className="d-flex justify-content-between px-4 pt-2">
+      {/* Pagination and Display options */}
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -776,8 +740,8 @@ const BOQSubItemTable = ({
             </div>
           </div> */}
 
-          {/* Table for Assets */}
-          {/* <div className="tbl-container mx-3 mt-1">
+      {/* Table for Assets */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -813,8 +777,8 @@ const BOQSubItemTable = ({
             </table>
           </div> */}
 
-          {/* Add Button */}
-          {/* <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeAssestModal}

@@ -199,7 +199,7 @@ const BOQDetailsPageMaster = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3 mt-2">
+                    {/* <div className="col-md-3 mt-2">
                       <div className="form-group">
                         <label>BOQ Rate (Cost)</label>
                         <input
@@ -222,7 +222,7 @@ const BOQDetailsPageMaster = () => {
                           disabled
                         />
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-md-6 mt-2">
                       <div className="form-group">
                         <label>Notes</label>
@@ -405,47 +405,7 @@ const BOQDetailsPageMaster = () => {
 
 
                     </CollapsibleCard>
-
-
-
-                    <CollapsibleCard title="Labour">
-
-
-                      <div
-                        className="card-body mt-0 pt-0"
-                        style={{ display: "block" }}
-                      >
-                        <div className="tbl-container mx-3 mt-1">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th rowSpan={2}>Labour Type</th>
-                                <th rowSpan={2}>Labour Sub-Type</th>
-                                <th rowSpan={2}>Labour</th>
-                                <th rowSpan={2}>UOM</th>
-                                <th colSpan={2}>Cost</th>
-                              </tr>
-                              <tr>
-                                <th>Co-Efficient Factor</th>
-                                <th colSpan={2}>Estimated Qty</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                    </CollapsibleCard>
-
+                    
                     <CollapsibleCard title="Assests">
 
                       <div
@@ -488,14 +448,14 @@ const BOQDetailsPageMaster = () => {
                 {/* </div> */}
               </CollapsibleCard>
               <div className="row mt-2 justify-content-center">
-                <div className="col-md-2">
+                {/* <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100"
                     fdprocessedid="u33pye"
                   >
                     Amend
                   </button>
-                </div>
+                </div> */}
                 <div className="col-md-2">
                   <button
                     className="purple-btn1 w-100"

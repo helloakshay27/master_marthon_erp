@@ -9,6 +9,7 @@ import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 import BOQListTable from "../components/BOQListTabe";
 import { Link } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
+import { BulkAction } from "../components";
 
 
 
@@ -133,7 +134,8 @@ const BOQList = () => {
           <h5 className="mt-4">View BOQ</h5>
           <div className="d-flex justify-content-end">
             <button className="purple-btn2" onClick={handleClick}>Create</button>
-            <button className="purple-btn2">Export/Import</button>
+            <button className="purple-btn2">Import</button>
+            <button className="purple-btn2">Export</button>
             <button className="purple-btn2">Delete</button>
             <button
               className="purple-btn2"
@@ -352,6 +354,7 @@ const BOQList = () => {
                 </div>
               </div>
 
+   <BulkAction/>
 
             </CollapsibleCard>
             <BOQListTable/>

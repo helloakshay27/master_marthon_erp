@@ -387,46 +387,6 @@ const BOQApprovalList = () => {
 
                               </CollapsibleCard>
 
-
-
-                              <CollapsibleCard title="Labour Type">
-
-
-                                <div
-                                  className="card-body mt-0 pt-0"
-                                //   style={{ display: "none" }}
-                                >
-                                  <div className="tbl-container mx-3 mt-1">
-                                    <table className="w-100">
-                                      <thead>
-                                        <tr>
-                                          <th rowSpan={2}>Labour Type</th>
-                                          <th rowSpan={2}>Labour Sub-Type</th>
-                                          <th rowSpan={2}>Labour</th>
-                                          <th rowSpan={2}>UOM</th>
-                                          <th colSpan={2}>Cost</th>
-                                        </tr>
-                                        <tr>
-                                          <th>Co-Efficient Factor</th>
-                                          <th colSpan={2}>Estimated Qty</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <td />
-                                          <td />
-                                          <td />
-                                          <td />
-                                          <td />
-                                          <td />
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-
-                              </CollapsibleCard>
-
                               <CollapsibleCard title="Assest Type">
 
                                 <div
