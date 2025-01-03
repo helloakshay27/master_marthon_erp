@@ -186,22 +186,22 @@ const BOQSubItemTable = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {materials.length > 0 ? (
-                        materials.map((material, index) => (
-                          <tr key={index}>
+                      {/* {materials.length > 0 ? (
+                        materials.map((material, index) => ( */}
+                          <tr>
                             <td>
                               <input
                                 className="ms-5"
                                 type="checkbox"
-                                checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                                onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
+                                // checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                                // onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
                               />
                             </td>
                             <td>
                               <input
                                 type="text"
                                 className="form-control"
-                                value={material.type}
+                                // value={material.type}
                               />
                             </td>
                             {/* <td>{material.subType}</td>
@@ -231,7 +231,7 @@ const BOQSubItemTable = ({
                               <input
                                 type="text"
                                 className="form-control"
-                                value={material.uom}
+                                // value={material.uom}
                               />
                              </td>
                             <td>  <input
@@ -270,14 +270,14 @@ const BOQSubItemTable = ({
                               />
                             </td>
                           </tr>
-                        ))
+                        {/* ))
                       ) : (
                         <tr>
                           <td colSpan="12" className="text-center">
                             No materials added yet.
                           </td>
                         </tr>
-                      )}
+                      )} */}
                     </tbody>
                   </table>
                 </div>

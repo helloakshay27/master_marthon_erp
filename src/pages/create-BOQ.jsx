@@ -691,22 +691,22 @@ const CreateBOQ = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {materials.length > 0 ? (
-                                materials.map((material, index) => (
-                                  <tr key={index}>
+                              {/* {materials.length > 0 ? (
+                                materials.map((material, index) => ( */}
+                                  <tr>
                                     <td>
                                       <input
                                         className="ms-5"
                                         type="checkbox"
-                                        checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                                        onChange={() => handleSelectRow(material.name)} // Toggle selection
+                                        // checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                                        // onChange={() => handleSelectRow(material.name)} // Toggle selection
                                       />
                                     </td>
                                     <td>
                                       <input
                                         className="form-control"
                                         type="text"
-                                        value={material.type}
+                                        // value={material.type}
                                         placeholder=""
                                       />
                                     </td>
@@ -739,7 +739,7 @@ const CreateBOQ = () => {
                                     <input
                                         className="form-control"
                                         type="text"
-                                        value={material.uom}
+                                        // value={material.uom}
                                         placeholder="Brand"
                                       />
                                     </td>
@@ -773,14 +773,14 @@ const CreateBOQ = () => {
                                       />
                                     </td>
                                   </tr>
-                                ))
-                              ) : (
-                                <tr>
+                                {/* ))
+                              ) : ( */}
+                                {/* <tr>
                                   <td colSpan="12" className="text-center">
                                     No materials added yet.
                                   </td>
                                 </tr>
-                              )}
+                              )} */}
                             </tbody>
                           </table>
                         </div>
@@ -1071,7 +1071,7 @@ const CreateBOQ = () => {
                                           onChange={(e) => handleInputChange2(index, "remarks", e.target.value)}
                                         />
                                       </td>
-                                      <td>
+                                      <td style={{width:'200px'}}>
                                         <SingleSelector
                                           options={options}
                                           // value={values[label]} // Pass current value
@@ -1189,8 +1189,6 @@ const CreateBOQ = () => {
                   </CollapsibleCard>
                 </>
               )}
-
-
 
             </div>
             <div className="row mt-2 justify-content-center">

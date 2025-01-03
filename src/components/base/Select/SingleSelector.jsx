@@ -1,7 +1,7 @@
 import React from 'react'
 import Select from 'react-select';
 
-export default function SingleSelector({ options, value, onChange, placeholder }) {
+export default function SingleSelector({ options, value, onChange, placeholder,isDisabled }) {
     const customStyles = {
       control: (base) => ({
         ...base,
@@ -19,6 +19,7 @@ export default function SingleSelector({ options, value, onChange, placeholder }
         className="basic-single-select" // Custom class
         classNamePrefix="select"
         styles={customStyles}
+        isDisabled={isDisabled}
       />
     );
   }

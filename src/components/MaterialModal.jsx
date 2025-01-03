@@ -101,10 +101,10 @@
 //     const [showModal, setShowModal] = useState(false);
 //     const [materials, setMaterials] = useState([]);
 //     const [selectedMaterials, setSelectedMaterials] = useState([]); // To track selected rows
-  
+
 //     const handleOpenModal = () => setShowModal(true);
 //     const handleCloseModal = () => setShowModal(false);
-  
+
 //     const handleAddMaterials = (newMaterials) => {
 //       setMaterials((prev) => [
 //         ...prev,
@@ -113,20 +113,20 @@
 //         ),
 //       ]);
 //     };
-  
+
 //     const handleDeleteRow = (materialToDelete) => {
 //       setMaterials((prev) =>
 //         prev.filter((material) => material.name !== materialToDelete.name)
 //       );
 //     };
-  
+
 //     const handleDeleteAll = () => {
 //       setMaterials((prev) =>
 //         prev.filter((material) => !selectedMaterials.includes(material.name))
 //       );
 //       setSelectedMaterials([]); // Reset selected materials
 //     };
-  
+
 //     const handleSelectRow = (materialName) => {
 //       setSelectedMaterials((prev) =>
 //         prev.includes(materialName)
@@ -134,7 +134,7 @@
 //           : [...prev, materialName] // Select the material
 //       );
 //     };
-  
+
 //     return (
 //       <>
 //         <CollapsibleCard title="Material">
@@ -224,7 +224,7 @@
 //       </>
 //     );
 //   };
-  
+
 // export default MaterialTable;
 
 
@@ -232,6 +232,7 @@
 import React, { useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import CustomPagination from "./CustomPagination";
+import SingleSelector from "./base/Select/SingleSelector";
 
 const MaterialModal = ({ show, handleClose, handleAdd }) => {
   const [selectedMaterials, setSelectedMaterials] = useState([]);
@@ -239,21 +240,96 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   const [page, setPage] = useState(1); // 1-based index
   const [pageSize, setPageSize] = useState(10);
 
+
+  const [selectedProject, setSelectedProject] = useState([]);
+  const [selectedSubProject, setSelectedSubProject] = useState([]);
+  const [selectedMorNo, setSelectedMorNo] = useState([]);
+  const [selectedMaterialType, setSelectedMaterialType] = useState([]);
+  const [selectedMaterialSubType, setSelectedMaterialSubType] = useState([]);
+  const [morStartDate, setMorStartDate] = useState('');
+  const [morEndDate, setMorEndDate] = useState('');
+  const [selectedMaterial, setSelectedMaterial] = useState([]);
+
+  const projects = [
+    { value: '29', label: 'NEXZONE' },
+    { value: '30', label: 'asdf' },
+    { value: '31', label: 'Marathon Nexzone' },
+  ];
+
+  const materialTypes = [
+    { value: '57', label: 'Test' },
+    { value: '63', label: 'DOOR WORK' },
+    { value: '64', label: 'CEMENT' },
+    { value: '65', label: 'AGGREGATE' },
+    { value: '66', label: 'SAND' },
+    { value: '67', label: 'ADHESIVE' },
+    { value: '68', label: 'FINES' },
+    { value: '69', label: 'CONCRETE' },
+    { value: '70', label: 'STEEL-TMT' },
+    { value: '71', label: 'BINDING WIRE' },
+    { value: '72', label: 'COVER BLOCK' },
+    { value: '73', label: 'BLOCK' },
+    { value: '74', label: 'READYMADE PLASTER' },
+    { value: '75', label: 'TILES' },
+  ];
+
+  const materialSubTypes = [
+    { value: '41', label: 'WOODEN DOOR FRAME & SHUTTER' },
+    { value: '42', label: 'WOODEN DOOR FRAME' },
+    { value: '43', label: 'WOODEN DOOR SHUTTER' },
+    { value: '44', label: 'GI FRAME AND SHUTTER' },
+    { value: '45', label: 'WPC DOOR FRAME' },
+  ];
+
+  const materials = [
+    { value: '44', label: 'BED ROOM' },
+    { value: '45', label: '1 HRS FRD MAIN DOOR' },
+    { value: '46', label: '2 HRS FRD MAIN DOOR' },
+    { value: '47', label: 'TOILET DOOR' },
+    { value: '48', label: '2 HRS FRD STAIRCASE DOOR' },
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission logic here
+    console.log({
+      selectedProject,
+      selectedSubProject,
+      selectedMorNo,
+      selectedMaterialType,
+      selectedMaterialSubType,
+      morStartDate,
+      morEndDate,
+      selectedMaterial,
+    });
+  };
+
+  const handleReset = () => {
+    setSelectedProject([]);
+    setSelectedSubProject([]);
+    setSelectedMorNo([]);
+    setSelectedMaterialType([]);
+    setSelectedMaterialSubType([]);
+    setMorStartDate('');
+    setMorEndDate('');
+    setSelectedMaterial([]);
+  };
+
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, filteredData.length);
-  
-//another way here
-//    const startIndex = (page - 1) * pageSize;
-//   const paginatedMaterials = materials.slice(startIndex, startIndex + pageSize);
+
+  //another way here
+  //    const startIndex = (page - 1) * pageSize;
+  //   const paginatedMaterials = materials.slice(startIndex, startIndex + pageSize);
 
   // Sample material data
-  const materials = [
-    { type: "ADMIXTURE", subType: "ADMIXTURE", name: "ADMIXTURE", uom: "KGS" },
-    { type: "AGGREGATE1", subType: "KAPCHI1", name: "KAPCHI1", uom: "CFT" },
-    { type: "AGGREGATE2", subType: "KAPCHI2", name: "KAPCHI2", uom: "CFT" },
-    { type: "AGGREGATE3", subType: "KAPCHI3", name: "KAPCHI3", uom: "CFT" },
-  ];
+  // const materials = [
+  //   { type: "ADMIXTURE", subType: "ADMIXTURE", name: "ADMIXTURE", uom: "KGS" },
+  //   { type: "AGGREGATE1", subType: "KAPCHI1", name: "KAPCHI1", uom: "CFT" },
+  //   { type: "AGGREGATE2", subType: "KAPCHI2", name: "KAPCHI2", uom: "CFT" },
+  //   { type: "AGGREGATE3", subType: "KAPCHI3", name: "KAPCHI3", uom: "CFT" },
+  // ];
 
   const handleCheckboxChange = (material) => {
     setSelectedMaterials((prev) =>
@@ -273,13 +349,216 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     handleClose(); // Close the modal
   };
 
+  const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
+
   return (
     <Modal centered size="lg" show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <h5>Add Material</h5>
       </Modal.Header>
       <Modal.Body>
-        <div className="tbl-container mx-3 mt-1">
+
+        <form onSubmit={handleSubmit} acceptCharset="UTF-8">
+          <div className="row">
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">Project</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Project`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label className="po-fontBold">Sub Project</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Sub Project`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">Mor No.</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Mor No.`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">Material Type</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Material Type`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">Material Sub Type</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">MOR Start Date</label>
+                <input
+                  type="date"
+                  name="morStartDate"
+                  value={morStartDate}
+                  onChange={(e) => setMorStartDate(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">MOR End Date</label>
+                <input
+                  type="date"
+                  name="morEndDate"
+                  value={morEndDate}
+                  onChange={(e) => setMorEndDate(e.target.value)}
+                  className="form-control"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-0">
+              <div className="form-group">
+                <label className="po-fontBold">Material</label>
+                <SingleSelector
+                  options={options}
+                  // value={values[label]} // Pass current value
+                  placeholder={`Select Material`} // Dynamic placeholder
+                // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="row mt-2 justify-content-center">
+              <div className="col-md-1">
+                <button type="submit" className="purple-btn2 update_mor">
+                  Go
+                </button>
+              </div>
+              <div className="col-md-1">
+                <button type="button" className="purple-btn1" onClick={handleReset}>
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div className="tbl-container me-2 mt-3">
+          <table>
+            <thead>
+              <tr>
+                <th rowSpan={2}></th>
+                <th rowSpan={2}>Project</th>
+                <th rowSpan={2}>Sub Project</th>
+                <th rowSpan={2}>Mor No.</th>
+                <th rowSpan={2}>Mor Date</th>
+                <th rowSpan={2}>
+                  <input type="checkbox" className="all-materials" />
+                </th>
+                <th colSpan="9">Material Details</th>
+              </tr>
+              <tr>
+                <th>Material</th>
+                <th>UOM</th>
+                <th>MOR Qty</th>
+                <th>Prev. Order Qty</th>
+                <th>Current Order Quantity</th>
+                <th>Generic Specification</th>
+                <th>Brand</th>
+                <th>Color</th>
+                <th>Current Status</th>
+              </tr>
+            </thead>
+            <tbody className="material_details">
+              <tr>
+                <td><input type="checkbox" className="all-materials" /></td>
+                <td>maxima</td>
+                <td>monte</td>
+                <td>MOR/728/02/2024	</td>
+                <td>01/10/2024</td>
+                <td>
+                  <input type="checkbox" className="all-materials" />
+                </td>
+                <td>DOOR WORK-GI FRAME AND SHUTTER-1 HRS FRD MAIN DOOR GENERIC NAME-30MM BRAND-OMFURN COLOR/CODE-RAL 9001</td>
+                <td>
+                  <SingleSelector
+                    //  options={options}
+                    placeholder={`Select UOM`}
+                  />
+
+                </td>
+                <td>100.0	</td>
+                <td>0.0</td>
+                <td>
+                  <input
+                    className="form-control"
+                    type="text"
+
+                  />
+                </td>
+                <td>
+                  <SingleSelector
+                    options={options}
+                    placeholder={`Select Generic Specification`}
+                  />
+
+                </td>
+                <td>
+                  <SingleSelector
+                    options={options}
+                    placeholder={`Select Brand`}
+                  />
+
+                </td>
+                <td>
+                  <SingleSelector
+                    options={options}
+                    placeholder={`Select Color`}
+                  />
+
+                </td>
+                <td>Purchase Accepted</td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="modal-footer justify-content-center">
+          <button type="button" className="purple-btn2 submit_mor">
+            Accept Selected
+          </button>
+        </div>
+        {/* <div className="tbl-container mx-3 mt-1">
           <table className="w-100">
             <thead>
               <tr>
@@ -314,24 +593,25 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
               ))}
             </tbody>
           </table>
-        </div>
-        
-        <CustomPagination
+        </div> */}
+
+        {/* <CustomPagination
           totalEntries={materials.length}
           page={page}
           pageSize={pageSize}
           onPageChange={(value) => setPage(value)}
-        />
-        <div className="row mt-2 justify-content-center">
+        /> */}
+        {/* <div className="row mt-2 justify-content-center">
           <div className="col-md-2">
             <button onClick={handleAddMaterials} className="purple-btn2 w-100">
               Add
             </button>
           </div>
-        </div>
+        </div> */}
       </Modal.Body>
     </Modal>
   );
+
 };
 
 export default MaterialModal;
