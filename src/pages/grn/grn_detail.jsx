@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is included
@@ -31,64 +31,32 @@ const GoodReceiveNoteDetails = () => {
     }));
   };
 
+
   useEffect(() => {
     const fetchData = () => {
       const statusData = {
         status_logs: [
-          {
-            status_log: {
-              remarks: "Draft created",
-              comments: "Draft status is now active",
-              status: "draft",
-            },
-          },
-          {
-            status_log: {
-              remarks: "Status updated",
-              comments: "Changed status to submitted",
-              status: "submit",
-            },
-          },
-          {
-            status_log: {
-              remarks: "Status updated",
-              comments: "Draft status has been cancelled",
-              status: "cancel",
-            },
-          },
-          {
-            status_log: {
-              remarks: "Status updated",
-              comments: "Changed status to approved",
-              status: "approved",
-            },
-          },
-          {
-            status_log: {
-              remarks: "Status updated",
-              comments: "Submission rejected",
-              status: "reject",
-            },
-          },
+          { status_log: { remarks: "Draft created", comments: "Draft status is now active", status: "draft" } },
+          { status_log: { remarks: "Status updated", comments: "Changed status to submitted", status: "submit" } },
+          { status_log: { remarks: "Status updated", comments: "Draft status has been cancelled", status: "cancel" } },
+          { status_log: { remarks: "Status updated", comments: "Changed status to approved", status: "approved" } },
+          { status_log: { remarks: "Status updated", comments: "Submission rejected", status: "reject" } },
         ],
       };
 
-      // Extracting statuses
-      const extractedStatuses = statusData.status_logs.map(
-        (log) => log.status_log.status
-      );
+      // Extract and normalize statuses
+      const extractedStatuses = statusData?.status_logs?.map(
+        (log) => log?.status_log?.status.toLowerCase()
+      ) || [];
 
-      // Creating options array for react-select
       const options = extractedStatuses.map((status) => ({
         value: status,
-        label: status.charAt(0).toUpperCase() + status.slice(1), // Capitalizing the first letter
+        label: status.charAt(0).toUpperCase() + status.slice(1),
       }));
 
-      // Set statuses options
       setStatuses(options);
 
-      // Only set selected status if data is available
-      if (data && data?.status) {
+      if (data?.status) {
         const selectedStatusOption = options.find(
           (status) => status.value === data.status
         );
@@ -99,27 +67,40 @@ const GoodReceiveNoteDetails = () => {
     };
 
     fetchData();
-  }, [data?.status]); // Re-run when data.status changes
+  }, [data?.status]);
 
-
-
-  const roleStatuses = (() => {
-    switch (data?.role_name) {
+  const roleStatuses = useMemo(() => {
+    console.log("Evaluating roleStatuses with role_name:", data?.role_name);
+    switch (data?.role_name?.trim().toLowerCase()) {
       case "store_officer":
+        console.log("Role: store_officer matched");
         return ["draft", "submit", "cancel"];
       case "store_manager":
         return ["approved", "reject"];
       default:
+        console.log("Role does not match predefined roles");
         return [];
     }
-  })();
-  
-  // Filter statuses based on role and current status
-  const filteredStatuses =
-    roleStatuses.includes(data?.status)
-      ? statuses.filter((status) => roleStatuses.includes(status.value))
-      : [];
-  
+  }, [data?.role_name]);
+
+  const filteredStatuses = useMemo(() => {
+    console.log("Filtering statuses with roleStatuses:", roleStatuses);
+    console.log("Statuses before filtering:", statuses);
+
+    const filtered = statuses.filter((status) =>
+      roleStatuses.includes(status.value)
+    );
+
+    // Ensure current status is included
+    const currentStatus = statuses.find((status) => status.value === data?.status);
+    if (currentStatus && !filtered.some((status) => status.value === currentStatus.value)) {
+      filtered.push(currentStatus);
+    }
+
+    console.log("Filtered Statuses:", filtered);
+    return filtered;
+  }, [roleStatuses, statuses, data?.status]);
+
   const handleStatusChange = (selectedOption) => {
     setSelectedStatus(selectedOption); // Set the value (not the full object)
     console.log(selectedOption.value);
