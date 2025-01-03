@@ -104,14 +104,14 @@ const GoodReceiveNoteDetails = () => {
 
 
   const roleStatuses = (() => {
-    if (data?.role_name === "store_officer") {
+    if (data?.role_name?.toLowerCase() === "store_officer") {
       return ["draft", "submit", "cancel"];
-    }
-    if (data?.role_name === "store_manager") {
+    } else if (data?.role_name?.toLowerCase() === "store_manager") {
       return ["approved", "reject"];
     }
-    return []; // If role is not Store Officer or Store Manager, show no options
+    return []; // Default: No options if the role doesn't match
   })();
+  
 
   // Only show statuses if the current status is in the allowed statuses
   const filteredStatuses =
