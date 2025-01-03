@@ -104,9 +104,9 @@ const GoodReceiveNoteDetails = () => {
 
 
   const roleStatuses = (() => {
-    if (data?.role_name?.toLowerCase() === "store_officer") {
+    if (data?.role_name === "store_officer") {
       return ["draft", "submit", "cancel"];
-    } else if (data?.role_name?.toLowerCase() === "store_manager") {
+    } else if (data?.role_name === "store_manager") {
       return ["approved", "reject"];
     }
     return []; // Default: No options if the role doesn't match
