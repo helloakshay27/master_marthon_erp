@@ -17,7 +17,7 @@ function Members() {
             <h1>ERP_Store</h1>
             <ul>
               <li>
-                <Link to="good_receive_notes/:id">grn_detail</Link>
+                <Link to="good_receive_notes/43?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">grn_detail</Link>
               </li>
               <li>
                 <Link to="/TreeDataWithStaticRows">TreeDataWithStaticRows</Link>

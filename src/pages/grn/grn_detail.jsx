@@ -46,7 +46,14 @@ const GoodReceiveNoteDetails = () => {
             status_log: {
               remarks: "Status updated",
               comments: "Changed status to submitted",
-              status: "submitted",
+              status: "submit",
+            },
+          },
+          {
+            status_log: {
+              remarks: "Status updated",
+              comments: "Draft status has been cancelled",
+              status: "cancel",
             },
           },
           {
@@ -54,6 +61,13 @@ const GoodReceiveNoteDetails = () => {
               remarks: "Status updated",
               comments: "Changed status to approved",
               status: "approved",
+            },
+          },
+          {
+            status_log: {
+              remarks: "Status updated",
+              comments: "Submission rejected",
+              status: "reject",
             },
           },
         ],
@@ -86,6 +100,24 @@ const GoodReceiveNoteDetails = () => {
 
     fetchData();
   }, [data?.status]); // Re-run when data.status changes
+
+
+
+  const roleStatuses = (() => {
+    if (data?.role_name === "store_officer") {
+      return ["draft", "submit", "cancel"];
+    }
+    if (data?.role_name === "store_manager") {
+      return ["approved", "reject"];
+    }
+    return []; // If role is not Store Officer or Store Manager, show no options
+  })();
+
+  // Only show statuses if the current status is in the allowed statuses
+  const filteredStatuses =
+    roleStatuses.includes(data?.status) && data?.status
+      ? statuses.filter((status) => roleStatuses.includes(status.value))
+      : [];
 
   const handleStatusChange = (selectedOption) => {
     setSelectedStatus(selectedOption); // Set the value (not the full object)
@@ -487,9 +519,8 @@ const GoodReceiveNoteDetails = () => {
                       </div>
                     </div>
                     <div
-                      className={`card-body mt-1 pt-1 ${
-                        collapsed[index] ? "d-none" : ""
-                      }`}
+                      className={`card-body mt-1 pt-1 ${collapsed[index] ? "d-none" : ""
+                        }`}
                     >
                       <div className="mt-2">
                         <h5>Materials</h5>
@@ -807,24 +838,26 @@ const GoodReceiveNoteDetails = () => {
                     </div>
                   </div>
                 </div>
-                <div className="row justify-content-end align-items-center  mt-3 pb-3">
-                  <div className=" " style={{ width: 300 }}>
+                <div className="row justify-content-end align-items-center mt-3 pb-3">
+                  <div className="" style={{ width: 300 }}>
                     <div className="d-flex gap-3 align-items-end w-100">
                       <label className="">Status</label>
-                      <Select
-                        className="w-100"
-                        options={statuses}
-                        value={
-                          selectedStatus ||
-                          statuses.find(
-                            (status) => status.value === data?.status
-                          )
-                        } // Ensures value is an object with { value, label }
-                        onChange={handleStatusChange}
-                        isClearable // Allows clearing the selection
-                        placeholder="Select a status"
-                        classNamePrefix="react-select" // Apply custom classes using the prefix
-                      />
+                      {filteredStatuses.length > 0 ? (
+                        <Select
+                          className="w-100"
+                          options={filteredStatuses}
+                          value={
+                            selectedStatus ||
+                            statuses.find((status) => status.value === data?.status)
+                          }
+                          onChange={handleStatusChange}
+                          isClearable // Allows clearing the selection
+                          placeholder="Select a status"
+                          classNamePrefix="react-select" // Apply custom classes using the prefix
+                        />
+                      ) : (
+                        <p className="text-muted">No options available</p>
+                      )}
                     </div>
                   </div>
                 </div>
