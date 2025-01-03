@@ -168,7 +168,7 @@ const CreateRate = () => {
                                     <tr>
                                         <th className="text-start">Material</th>
                                         <th className="text-start">Material Sub-Type</th>
-                                        <th className="text-start">Material</th>
+                                        
                                         <th className="text-start">Effective Date</th>
                                         <th className="text-start">Rate (INR)</th>
                                         <th className="text-start">AVG Rate
@@ -188,7 +188,7 @@ const CreateRate = () => {
                                     <tr>
                                         <td className="text-start">Aggregate</td>
                                         <td className="text-start">Metal 1</td>
-                                        <td className="text-start"></td>
+                                      
                                         <td><input type="date" /></td>
                                         <td><input type="number" /></td>
                                         <td className="text-start">

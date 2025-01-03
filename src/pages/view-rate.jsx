@@ -350,7 +350,7 @@ const ViewRate = () => {
                                     <tr>
                                         <th className="text-start">Material</th>
                                         <th className="text-start">Material Sub-Type</th>
-                                        <th className="text-start">Material</th>
+                                        
                                         <th className="text-start">Effective Date</th>
                                         <th className="text-start">Rate (INR)</th>
                                         <th className="text-start">UOM</th>
@@ -362,7 +362,7 @@ const ViewRate = () => {
                                     <tr>
                                         <td className="text-start">Aggregate</td>
                                         <td className="text-start">Metal 1</td>
-                                        <td className="text-start"></td>
+                                        
                                         <td className="text-start">June 11 2024</td>
                                         <td className="text-start">0.00</td>
                                         <td className="text-start"></td>
