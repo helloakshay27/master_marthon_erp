@@ -104,21 +104,22 @@ const GoodReceiveNoteDetails = () => {
 
 
   const roleStatuses = (() => {
-    if (data?.role_name === "store_officer") {
-      return ["draft", "submit", "cancel"];
-    } else if (data?.role_name === "store_manager") {
-      return ["approved", "reject"];
+    switch (data?.role_name) {
+      case "store_officer":
+        return ["draft", "submit", "cancel"];
+      case "store_manager":
+        return ["approved", "reject"];
+      default:
+        return [];
     }
-    return []; // Default: No options if the role doesn't match
   })();
   
-
-  // Only show statuses if the current status is in the allowed statuses
+  // Filter statuses based on role and current status
   const filteredStatuses =
-    roleStatuses.includes(data?.status) && data?.status
+    roleStatuses.includes(data?.status)
       ? statuses.filter((status) => roleStatuses.includes(status.value))
       : [];
-
+  
   const handleStatusChange = (selectedOption) => {
     setSelectedStatus(selectedOption); // Set the value (not the full object)
     console.log(selectedOption.value);
