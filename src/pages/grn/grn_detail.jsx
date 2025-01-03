@@ -37,10 +37,10 @@ const GoodReceiveNoteDetails = () => {
       const statusData = {
         status_logs: [
           { status_log: { remarks: "Draft created", comments: "Draft status is now active", status: "draft" } },
-          { status_log: { remarks: "Status updated", comments: "Changed status to submitted", status: "submit" } },
+          { status_log: { remarks: "Status updated", comments: "Changed status to submitted", status: "submitted" } },
           { status_log: { remarks: "Status updated", comments: "Draft status has been cancelled", status: "cancel" } },
           { status_log: { remarks: "Status updated", comments: "Changed status to approved", status: "approved" } },
-          { status_log: { remarks: "Status updated", comments: "Submission rejected", status: "reject" } },
+          { status_log: { remarks: "Status updated", comments: "Submission rejected", status: "rejected" } },
         ],
       };
 
@@ -74,9 +74,9 @@ const GoodReceiveNoteDetails = () => {
     switch (data?.role_name?.trim().toLowerCase()) {
       case "store_officer":
         console.log("Role: store_officer matched");
-        return ["draft", "submit", "cancel"];
+        return ["draft", "submitted", "cancel"];
       case "store_manager":
-        return ["approved", "reject"];
+        return ["approved", "rejected"];
       default:
         console.log("Role does not match predefined roles");
         return [];
