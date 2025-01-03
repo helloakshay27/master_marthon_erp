@@ -531,7 +531,7 @@ const CreateBOQ = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-4 mt-2">
+                    {/* <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label>BOQ Rate</label>
                         <input
@@ -542,8 +542,8 @@ const CreateBOQ = () => {
                           onChange={(e) => handleInputChange('boqRate', e.target.value)}
                         />
                       </div>
-                    </div>
-                    <div className="col-md-4 mt-2">
+                    </div> */}
+                    {/* <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label>BOQ Amount</label>
                         <input
@@ -554,7 +554,19 @@ const CreateBOQ = () => {
                           onChange={(e) => handleInputChange('boqAmount', e.target.value)}
                         />
                       </div>
-                    </div>
+                    </div> */}
+                      <div className="col-md-8">
+                        <div className="form-group">
+                          <label>Note</label>
+                          <textarea
+                            className="form-control"
+                            rows={2}
+                            placeholder="Enter ..."
+                            defaultValue={""}
+                            onChange={(e) => handleInputChange('note', e.target.value)}
+                          />
+                        </div>
+                      </div>
                     {/* <div className="col-md-6 mt-2">
                       <div className="form-group">
                         <label>Note</label>
@@ -571,7 +583,7 @@ const CreateBOQ = () => {
                     </div> */}
                     <div className="row mt-2">
                       {/* Textarea for Note */}
-                      <div className="col-md-6">
+                      {/* <div className="col-md-6">
                         <div className="form-group">
                           <label>Note</label>
                           <textarea
@@ -582,7 +594,7 @@ const CreateBOQ = () => {
                             onChange={(e) => handleInputChange('note', e.target.value)}
                           />
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Checkboxes */}
                       <div className="col-md-6 d-flex align-items-center">
