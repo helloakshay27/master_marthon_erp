@@ -368,7 +368,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
         <form onSubmit={handleSubmit} acceptCharset="UTF-8">
           <div className="row">
-            <div className="col-md-4 mt-0">
+            <h5 className="">Search Material</h5>
+            <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Project</label>
                 <SingleSelector
@@ -379,7 +380,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Sub Project</label>
                 <SingleSelector
@@ -390,18 +391,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="col-md-4 mt-0">
-              <div className="form-group">
-                <label className="po-fontBold">Mor No.</label>
-                <SingleSelector
-                  options={options}
-                  // value={values[label]} // Pass current value
-                  placeholder={`Select Mor No.`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-0">
+        
+            <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Type</label>
                 <SingleSelector
@@ -412,7 +403,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="col-md-4 mt-0">
+            <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Sub Type</label>
                 <SingleSelector
@@ -423,31 +414,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="col-md-4 mt-0">
-              <div className="form-group">
-                <label className="po-fontBold">MOR Start Date</label>
-                <input
-                  type="date"
-                  name="morStartDate"
-                  value={morStartDate}
-                  onChange={(e) => setMorStartDate(e.target.value)}
-                  className="form-control"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-0">
-              <div className="form-group">
-                <label className="po-fontBold">MOR End Date</label>
-                <input
-                  type="date"
-                  name="morEndDate"
-                  value={morEndDate}
-                  onChange={(e) => setMorEndDate(e.target.value)}
-                  className="form-control"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-0">
+            <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material</label>
                 <SingleSelector
@@ -458,7 +425,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="row mt-2 justify-content-center">
+            <div className="row mt-2 justify-content-center mt-3">
               <div className="col-md-1">
                 <button type="submit" className="purple-btn2 update_mor">
                   Go
@@ -472,7 +439,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
             </div>
           </div>
         </form>
-
+      
+      <h5 className="mt-3">Material List</h5>
         <div className="tbl-container me-2 mt-3">
           <table>
             <thead>
@@ -480,8 +448,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 <th rowSpan={2}></th>
                 <th rowSpan={2}>Project</th>
                 <th rowSpan={2}>Sub Project</th>
-                <th rowSpan={2}>Mor No.</th>
-                <th rowSpan={2}>Mor Date</th>
+                {/* <th rowSpan={2}>Mor No.</th> */}
+                {/* <th rowSpan={2}>Mor Date</th> */}
                 <th rowSpan={2}>
                   <input type="checkbox" className="all-materials" />
                 </th>
@@ -504,8 +472,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 <td><input type="checkbox" className="all-materials" /></td>
                 <td>maxima</td>
                 <td>monte</td>
-                <td>MOR/728/02/2024	</td>
-                <td>01/10/2024</td>
+                {/* <td>MOR/728/02/2024	</td> */}
+                {/* <td>01/10/2024</td> */}
                 <td>
                   <input type="checkbox" className="all-materials" />
                 </td>

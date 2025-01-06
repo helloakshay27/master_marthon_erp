@@ -248,7 +248,7 @@ const BOQDetailsPageMaster = () => {
                       </div>
                     </div>
                     <div className="col-md-3 mt-2">
-                      <div className="form-group">
+                      <div className="form-group mt-2">
                         <label>Status</label>
                         <input
                           className="form-control"
@@ -259,7 +259,7 @@ const BOQDetailsPageMaster = () => {
                         />
                         <p
                           onClick={openAssocoatedModal}
-                          className="text-decoration-underline mt-1"
+                          className="text-decoration-underline"
                         // data-bs-toggle="modal"
                         // data-bs-target="#assocoatedModal"
                         >
@@ -268,7 +268,7 @@ const BOQDetailsPageMaster = () => {
                       </div>
                     </div>
                     <div className="col-md-3 mt-4">
-                      <div className="form-group">
+                      {/* <div className="form-group">
                         <label className="me-4">Is Active</label>
                         <input
                           className=""
@@ -276,7 +276,22 @@ const BOQDetailsPageMaster = () => {
                           placeholder="Sumitted"
                           fdprocessedid="qv9ju9"
                         />
-                      </div>
+                      </div> */}
+
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        className="bi bi-pencil-square"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                        />
+                      </svg>
                     </div>
                     <div className="col-md-3 mt-4">
                       <div className="form-group">
@@ -349,104 +364,136 @@ const BOQDetailsPageMaster = () => {
                 {/* <div className="card mx-3 mt-2"> */}
 
 
-                  <div
-                    className="card-body mt-0 pt-0"
-                    style={{ display: "block" }}
-                  >
+                <div
+                  className="card-body mt-0 pt-0"
+                  style={{ display: "block" }}
+                >
 
-                    <CollapsibleCard title="Materials">
+                  <CollapsibleCard title="Materials">
 
-                      <div
-                        className="card-body mt-0 pt-0"
-                        style={{ display: "block" }}
-                      >
-                        <div className="tbl-container mx-3 mt-1">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th rowSpan={2}>Material Type</th>
-                                <th rowSpan={2}>Material Sub-Type</th>
-                                <th rowSpan={2}>Material</th>
-                                <th rowSpan={2}>Generic Specification</th>
-                                <th rowSpan={2}>Colour </th>
-                                <th rowSpan={2}>Brand </th>
-                                <th rowSpan={2}>UOM</th>
-                                <th rowSpan={2}>Cost QTY</th>
-                                <th colSpan={3}>Cost</th>
-                                <th rowSpan={2}>Wastage</th>
-                                <th rowSpan={2}>
-                                  Total Estimated Qty Wastage
-                                </th>
-                              </tr>
-                              <tr>
-                                <th>Co-Efficient Factor</th>
-                                <th colSpan={2}>Estimated Qty</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>SAND</td>
-                                <td>SAND</td>
-                                <td>SAND River (BAG)</td>
-                                <td>SAND River (BAG)</td>
-                                <td>GOLD</td>
-                                <td />
-                                <td>Bags</td>
-                                <td />
-                                <td>2</td>
-                                <td>2</td>
-                                <td>4%</td>
-                                <td>2.08</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                    <div
+                      className="card-body mt-0 pt-0"
+                      style={{ display: "block" }}
+                    >
+                      <div className="tbl-container mx-3 mt-1">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              {/* <th rowSpan={2}>Material Type</th>
+                                <th rowSpan={2}>Material Sub-Type</th> */}
+                              <th rowSpan={2}>Material</th>
+                              <th rowSpan={2}>Generic Specification</th>
+                              <th rowSpan={2}>Colour </th>
+                              <th rowSpan={2}>Brand </th>
+                              <th rowSpan={2}>UOM</th>
+                              <th rowSpan={2}>Cost QTY</th>
+                              <th colSpan={3}>Cost</th>
+                              <th rowSpan={2}>Wastage</th>
+                              <th rowSpan={2}>
+                                Total Estimated Qty Wastage
+                              </th>
+                            </tr>
+                            <tr>
+                              <th>Co-Efficient Factor</th>
+                              <th colSpan={2}>Estimated Qty</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              {/* <td>SAND</td>
+                                <td>SAND</td> */}
+                              <td>SAND</td>
+                              <td>SAND River (BAG)</td>
+                              <td>GOLD</td>
+                              <td />
+                              <td>Bags</td>
+                              <td />
+                              <td>2</td>
+                              <td colSpan={2}>2</td>
+                              <td>4%</td>
+                              <td>2.08</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
+                    </div>
 
 
-                    </CollapsibleCard>
-                    
-                    <CollapsibleCard title="Assests">
+                  </CollapsibleCard>
 
-                      <div
-                        className="card-body mt-0 pt-0"
-                        style={{ display: "block" }}
-                      >
-                        <div className="tbl-container mx-3 mt-1">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th rowSpan={2}>Assest Type</th>
-                                <th rowSpan={2}>Assest Sub-Type</th>
-                                <th rowSpan={2}>Assest</th>
-                                <th rowSpan={2}>UOM</th>
-                                <th colSpan={2}>Cost</th>
-                              </tr>
-                              <tr>
-                                <th>Co-Efficient Factor</th>
-                                <th colSpan={2}>Estimated Qty</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                                <td />
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                  <CollapsibleCard title="Assests">
+
+                    <div
+                      className="card-body mt-0 pt-0"
+                      style={{ display: "block" }}
+                    >
+                      <div className="tbl-container mx-3 mt-1">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th rowSpan={2}>Assest Type</th>
+                              <th rowSpan={2}>Assest Sub-Type</th>
+                              <th rowSpan={2}>Assest</th>
+                              <th rowSpan={2}>UOM</th>
+                              <th colSpan={2}>Cost</th>
+                            </tr>
+                            <tr>
+                              <th>Co-Efficient Factor</th>
+                              <th colSpan={2}>Estimated Qty</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td />
+                              <td />
+                              <td />
+                              <td />
+                              <td />
+                              <td />
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
+                    </div>
 
-                    </CollapsibleCard>
+                  </CollapsibleCard>
 
-                  </div>
+                </div>
 
                 {/* </div> */}
+
+                <div className="row mt-4 px-2 mx-3">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Remark</label>
+                      <textarea className="form-control" rows="3" placeholder=""></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row mt-4 justify-content-end align-items-center mx-2">
+                  <div className="col-md-3">
+                    <div className="form-group d-flex gap-3 align-items-center mx-3">
+                      <label style={{ fontSize: '1.1rem' }}>Status</label>
+                      <select className="form-control form-select" style={{ width: '100%' }}>
+                        <option selected="selected">Alabama</option>
+                        <option>Alaska</option>
+                        <option>California</option>
+                        <option>Delaware</option>
+                        <option>Tennessee</option>
+                        <option>Texas</option>
+                        <option>Washington</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="d-flex justify-content-center">
+                  <button className="purple-btn2">Submit</button>
+                  <button className="purple-btn1">Cancel</button>
+                </div>
               </CollapsibleCard>
+
+
               <div className="row mt-2 justify-content-center">
                 {/* <div className="col-md-2">
                   <button
@@ -456,14 +503,14 @@ const BOQDetailsPageMaster = () => {
                     Amend
                   </button>
                 </div> */}
-                <div className="col-md-2">
+                {/* <div className="col-md-2">
                   <button
                     className="purple-btn1 w-100"
                     fdprocessedid="u33pye"
                   >
                     Back
                   </button>
-                </div>
+                </div> */}
               </div>
               <div className="row mx-2">
                 <h5>Audit Log</h5>
@@ -473,7 +520,7 @@ const BOQDetailsPageMaster = () => {
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
 

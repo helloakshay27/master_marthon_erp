@@ -625,7 +625,7 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="tbl-container mx-3 mt-1">
-                          <table className="w-100">
+                          <table className="">
                             <thead>
                               <tr>
                                 <th rowSpan={2}>

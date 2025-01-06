@@ -41,8 +41,8 @@ function Members() {
               </li> */}
               {/* <li>
                 <Link to="/stock_register_list?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47"> stock register list</Link>
-              </li>
-              <li>
+              </li> */}
+              {/* <li>
                 <Link to="/approvals-list">approvals_list</Link>
               </li> */}
 
@@ -60,16 +60,19 @@ function Members() {
                 <Link to="/view-BOQ">BOQ List</Link>
               </li>
               <li>
-                <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
-              </li>
-
-              <li>
                 <Link to="/boq-approval-list">BOQ Approval List</Link>
               </li>
-              
               <li>
-                <Link to="/boq-approval-details">BOQ Approval Details</Link>
+                <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
               </li>
+              {/* <li>
+                <Link to="/boq-approval-details">BOQ Approval Details</Link>
+              </li> */}
+
+              <li>
+                <Link to="/boq-edit">BOQ Edit</Link>
+              </li>
+
 
               <li>
                 <Link to="/create-rate">Create Rate</Link>

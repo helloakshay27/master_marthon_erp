@@ -51,6 +51,7 @@ import DebitNoteCreate from './pages/debit-note-create';
 import DebitNoteDetails from './pages/debit-note-details';
 import DebitNoteList from './pages/debit-note-list';
 import POAdvanceNoteDetails from './pages/po-advance-note-details';
+import BOQEdit from './pages/boq-edit';
 
 
 function App() {
@@ -84,6 +85,7 @@ function App() {
           <Route path='/view-BOQ' element={<BOQList/>} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
+          <Route path='/boq-edit' element={<BOQEdit />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
           <Route path='/create-rate'  element={<CreateRate/>} />
           <Route path='/view-rate'  element={<ViewRate/>} />

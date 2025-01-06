@@ -825,8 +825,8 @@ const BOQListTable = () => {
                                                                                                     <table className="w-100">
                                                                                                         <thead>
                                                                                                             <tr>
-                                                                                                                <th rowSpan={2}>Material Type</th>
-                                                                                                                <th rowSpan={2}>Material Sub-Type</th>
+                                                                                                                {/* <th rowSpan={2}>Material Type</th>
+                                                                                                                <th rowSpan={2}>Material Sub-Type</th> */}
                                                                                                                 <th rowSpan={2}>Material</th>
                                                                                                                 <th rowSpan={2}>Generic Specification</th>
                                                                                                                 <th rowSpan={2}>Colour </th>
@@ -846,16 +846,16 @@ const BOQListTable = () => {
                                                                                                         </thead>
                                                                                                         <tbody>
                                                                                                             <tr>
+                                                                                                                {/* <td>SAND</td>
+                                                                                                                <td>SAND</td> */}
                                                                                                                 <td>SAND</td>
-                                                                                                                <td>SAND</td>
-                                                                                                                <td>SAND River (BAG)</td>
                                                                                                                 <td>SAND River (BAG)</td>
                                                                                                                 <td>GOLD</td>
                                                                                                                 <td />
                                                                                                                 <td>Bags</td>
                                                                                                                 <td />
                                                                                                                 <td>2</td>
-                                                                                                                <td>2</td>
+                                                                                                                <td colSpan={2}>2</td>
                                                                                                                 <td>4%</td>
                                                                                                                 <td>2.08</td>
                                                                                                             </tr>
