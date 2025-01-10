@@ -235,7 +235,7 @@ const CreateRate = () => {
 
                         {/* <div className="mx-3"> */}
                         <div className="tbl-container mx-3 mt-1">
-                            <table className="">
+                            <table className="w-100">
                                 <thead>
                                     <tr>
                                         <th className="text-start">Material Type</th>
@@ -273,46 +273,46 @@ const CreateRate = () => {
                                         </td>
                                         <td className="text-start"></td>
                                         <td className="text-start">
-                                            <SingleSelector
+                                            {/* <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Sub-Type`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                                                 isDisabled={!isEditing}
-                                            />
+                                            /> */}
                                         </td>
 
                                         <td className="text-start">
 
-                                            <SingleSelector
+                                            {/* <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Specification`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                                                 isDisabled={!isEditing}
-                                            />
+                                            /> */}
                                         </td>
                                         <td className="text-start">
-                                            <SingleSelector
+                                            {/* <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Colour`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                                                 isDisabled={!isEditing}
-                                            />
+                                            /> */}
                                         </td>
                                         <td className="text-start">
-                                            <SingleSelector
+                                            {/* <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Brand`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                                                 isDisabled={!isEditing}
-                                            />
+                                            /> */}
                                         </td>
 
                                         <td className="text-start"> </td>
@@ -343,14 +343,14 @@ const CreateRate = () => {
                                             </span>
                                         </td>
                                         <td className="text-start">
-                                            <SingleSelector
+                                            {/* <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select UOM`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
                                                 isDisabled={!isEditing}
-                                            />
+                                            /> */}
                                         </td>
                                         <td className="text-start">
 
