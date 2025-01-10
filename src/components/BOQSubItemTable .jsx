@@ -7,6 +7,7 @@ import CollapsibleCard from './base/Card/CollapsibleCards';
 import MaterialModal from "../components/MaterialModal";
 import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
+import SingleSelector from './base/Select/SingleSelector';
 
 
 const BOQSubItemTable = ({
@@ -143,6 +144,15 @@ const BOQSubItemTable = ({
   // };
 
 
+  const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
 
 
   return (
@@ -153,7 +163,7 @@ const BOQSubItemTable = ({
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="w-100" id="table1">
+                  <table className="" id="table1">
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>
@@ -168,9 +178,9 @@ const BOQSubItemTable = ({
                             checked={selectedMaterials.length === materials.length}
                           />
                         </th>
+                        <th rowSpan={2}>Material Type</th>
                         <th rowSpan={2}>Material</th>
-                        {/* <th rowSpan={2}>Material Sub-Type</th>
-                        <th rowSpan={2}>Material</th> */}
+                        <th rowSpan={2}>Material Sub-Type</th>
                         <th rowSpan={2}>Generic Specification</th>
                         <th rowSpan={2}>Colour </th>
                         <th rowSpan={2}>Brand </th>
@@ -188,89 +198,112 @@ const BOQSubItemTable = ({
                     <tbody>
                       {/* {materials.length > 0 ? (
                         materials.map((material, index) => ( */}
-                          <tr>
-                            <td>
-                              <input
-                                className="ms-5"
-                                type="checkbox"
-                                // checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                                // onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
-                              />
-                            </td>
-                            <td>
-                              <input
+                      <tr>
+                        <td>
+                          <input
+                            className="ms-5"
+                            type="checkbox"
+                          // checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                          // onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
+                          />
+                        </td>
+                        <td>
+                          {/* <input
                                 type="text"
                                 className="form-control"
                                 // value={material.type}
-                              />
-                            </td>
-                            {/* <td>{material.subType}</td>
-                            <td>{material.name}</td> */}
-                            <td>
-                              <input
+                              /> */}
+                        </td>
+                        <td>
+                          {/* <input
                                 type="text"
                                 className="form-control"
+                                // value={material.type}
+                              /> */}
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Sub-Type`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Specification`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Colour`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
 
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Brand`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select UOM`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>  <input
+                          type="text"
+                          className="form-control"
 
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
+                        /></td>
+                        <td>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder=""
 
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                // value={material.uom}
-                              />
-                             </td>
-                            <td>  <input
-                              type="text"
-                              className="form-control"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder=""
 
-                            /></td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
 
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
 
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-
-                              />
-                            </td>
-                          </tr>
-                        {/* ))
+                          />
+                        </td>
+                      </tr>
+                      {/* ))
                       ) : (
                         <tr>
                           <td colSpan="12" className="text-center">
@@ -355,42 +388,42 @@ const BOQSubItemTable = ({
                             </td>
 
                             <td>
-                            <input
+                              <input
                                 className="form-control"
                                 type="text"
                                 placeholder=""
-                               value={assets.assetType}
-                              />
-                            </td>
-                            <td>
-                            <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                               value={assets.assetSubType}
-                              />
-                            </td>
-                            <td>
-                            <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                               value={assets.asset}
-                              />
-                            </td>
-                            <td>
-                            <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                               value={assets.uom}
+                                value={assets.assetType}
                               />
                             </td>
                             <td>
                               <input
                                 className="form-control"
                                 type="text"
-                                placeholder="" 
+                                placeholder=""
+                                value={assets.assetSubType}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.asset}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.uom}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
                               />
                             </td>
                             <td>

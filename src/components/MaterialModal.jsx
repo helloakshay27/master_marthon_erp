@@ -233,6 +233,7 @@ import React, { useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import CustomPagination from "./CustomPagination";
 import SingleSelector from "./base/Select/SingleSelector";
+import MultiSelector from "./base/Select/MultiSelector";
 
 const MaterialModal = ({ show, handleClose, handleAdd }) => {
   const [selectedMaterials, setSelectedMaterials] = useState([]);
@@ -369,44 +370,22 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
         <form onSubmit={handleSubmit} acceptCharset="UTF-8">
           <div className="row">
             <h5 className="">Search Material</h5>
-            <div className="col-md-4 mt-3">
-              <div className="form-group">
-                <label className="po-fontBold">Project</label>
-                <SingleSelector
-                  options={options}
-                  // value={values[label]} // Pass current value
-                  placeholder={`Select Project`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-3">
-              <div className="form-group">
-                <label className="po-fontBold">Sub Project</label>
-                <SingleSelector
-                  options={options}
-                  // value={values[label]} // Pass current value
-                  placeholder={`Select Sub Project`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
-                />
-              </div>
-            </div>
-        
+         
             <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Type</label>
-                <SingleSelector
+                <MultiSelector
                   options={options}
                   // value={values[label]} // Pass current value
                   placeholder={`Select Material Type`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                  // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                 />
               </div>
             </div>
             <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Sub Type</label>
-                <SingleSelector
+                <MultiSelector
                   options={options}
                   // value={values[label]} // Pass current value
                   placeholder={`Select Material Sub Type`} // Dynamic placeholder
@@ -417,7 +396,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
             <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material</label>
-                <SingleSelector
+                <MultiSelector
                   options={options}
                   // value={values[label]} // Pass current value
                   placeholder={`Select Material`} // Dynamic placeholder
@@ -442,80 +421,83 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
       
       <h5 className="mt-3">Material List</h5>
         <div className="tbl-container me-2 mt-3">
-          <table>
+          <table className="w-100">
             <thead>
               <tr>
-                <th rowSpan={2}></th>
+                {/* <th rowSpan={2}></th>
                 <th rowSpan={2}>Project</th>
-                <th rowSpan={2}>Sub Project</th>
+                <th rowSpan={2}>Sub Project</th> */}
                 {/* <th rowSpan={2}>Mor No.</th> */}
                 {/* <th rowSpan={2}>Mor Date</th> */}
                 <th rowSpan={2}>
                   <input type="checkbox" className="all-materials" />
                 </th>
-                <th colSpan="9">Material Details</th>
+                <th colSpan="4">Material Details</th>
               </tr>
               <tr>
-                <th>Material</th>
-                <th>UOM</th>
-                <th>MOR Qty</th>
+                <th  rowSpan={2}>Material-Type</th>
+                <th  rowSpan={2}>Material</th>
+                <th  rowSpan={2}>UOM</th>
+                {/* <th>MOR Qty</th>
                 <th>Prev. Order Qty</th>
                 <th>Current Order Quantity</th>
                 <th>Generic Specification</th>
                 <th>Brand</th>
                 <th>Color</th>
-                <th>Current Status</th>
+                <th>Current Status</th> */}
               </tr>
             </thead>
             <tbody className="material_details">
               <tr>
-                <td><input type="checkbox" className="all-materials" /></td>
+                {/* <td><input type="checkbox" className="all-materials" /></td>
                 <td>maxima</td>
-                <td>monte</td>
+                <td>monte</td> */}
                 {/* <td>MOR/728/02/2024	</td> */}
                 {/* <td>01/10/2024</td> */}
                 <td>
                   <input type="checkbox" className="all-materials" />
                 </td>
-                <td>DOOR WORK-GI FRAME AND SHUTTER-1 HRS FRD MAIN DOOR GENERIC NAME-30MM BRAND-OMFURN COLOR/CODE-RAL 9001</td>
+                <td>DOOR WORK-GI FRAME AND SHUTTER-1 </td>
+                
+                <td></td>
                 <td>
-                  <SingleSelector
+                  {/* <SingleSelector
                     //  options={options}
                     placeholder={`Select UOM`}
-                  />
+                  /> */}
 
                 </td>
-                <td>100.0	</td>
-                <td>0.0</td>
-                <td>
+                {/* <td>100.0	</td>
+                <td>0.0</td> */}
+                {/* <td>
                   <input
                     className="form-control"
                     type="text"
 
-                  />
-                </td>
-                <td>
+                  /> */}
+                {/* </td> */}
+                {/* <td>
                   <SingleSelector
                     options={options}
                     placeholder={`Select Generic Specification`}
-                  />
+                  /> */}
 
-                </td>
-                <td>
+                {/* </td> */}
+                {/* <td>
                   <SingleSelector
                     options={options}
                     placeholder={`Select Brand`}
                   />
 
-                </td>
-                <td>
+                </td> */}
+                {/* <td>
                   <SingleSelector
                     options={options}
                     placeholder={`Select Color`}
                   />
 
-                </td>
-                <td>Purchase Accepted</td>
+                </td> */}
+                {/* <td>Purchase Accepted</td> */}
 
               </tr>
             </tbody>

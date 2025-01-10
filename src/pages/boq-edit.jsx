@@ -257,31 +257,7 @@ const BOQEdit = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="col-md-3 mt-2">
-                                            <div className="form-group">
-                                                <label>Status</label>
-                                                {/* <input
-                                                    className="form-control"
-                                                    type="text"
-                                                    placeholder="Approved"
-                                                /> */}
-                                                <SingleSelector
-                                                    options={options}
-                                                    // value={values[label]} // Pass current value
-                                                    // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                    placeholder={`Select Status`} // Dynamic placeholder
-                                                    onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                                />
-                                                <p
-                                                    onClick={openAssocoatedModal}
-                                                    className="text-decoration-underline mt-1"
-                                                // data-bs-toggle="modal"
-                                                // data-bs-target="#assocoatedModal"
-                                                >
-                                                    View Associated Work Orders
-                                                </p>
-                                            </div>
-                                        </div>
+                                       
                                         <div className="col-md-3 mt-4">
                                             {/* <div className="form-group">
                                                 <label className="me-4">Is Active</label>
@@ -293,7 +269,7 @@ const BOQEdit = () => {
                                                 />
                                             </div> */}
                                         </div>
-                                        <div className="col-md-3 mt-4">
+                                        {/* <div className="col-md-3 mt-4">
                                             <div className="form-group">
                                                 <label className="me-5">BOQ Amount (Cost)</label>
                                                 <svg
@@ -309,7 +285,7 @@ const BOQEdit = () => {
                                                     <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z" />
                                                 </svg>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <div className="collapse" id="collapseExample">
                                             <div className="row">
                                                 <div className="col-md-3 mt-5">
@@ -379,7 +355,9 @@ const BOQEdit = () => {
                                                 <table className="">
                                                     <thead>
                                                         <tr>
+                                                            <th rowSpan={2}>Material Type</th>
                                                             <th rowSpan={2}>Material</th>
+                                                            <th rowSpan={2}>Material Sub-Type</th>
                                                             <th rowSpan={2}>Generic Specification</th>
                                                             <th rowSpan={2}>Colour </th>
                                                             <th rowSpan={2}>Brand </th>
@@ -400,11 +378,21 @@ const BOQEdit = () => {
                                                         <tr>
 
                                                             <td>
-                                                                <input
+                                                                {/* <input
                                                                     className="form-control"
                                                                     type="text"
                                                                     placeholder="SAND"
                                                                     disabled
+                                                                /> */}
+                                                            </td>
+                                                            <td></td>
+                                                            <td>
+                                                            <SingleSelector
+                                                                    options={options}
+                                                                    // value={values[label]} // Pass current value
+                                                                    // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                                    placeholder={`Select Sub-Type`} // Dynamic placeholder
+                                                                    // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                                                 />
                                                             </td>
                                                             <td>
@@ -413,7 +401,7 @@ const BOQEdit = () => {
                                                                     // value={values[label]} // Pass current value
                                                                     // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                                     placeholder={`Select Specification`} // Dynamic placeholder
-                                                                    onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                                    // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                                                 />
                                                             </td>
                                                             <td>
@@ -422,7 +410,7 @@ const BOQEdit = () => {
                                                                     // value={values[label]} // Pass current value
                                                                     // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                                     placeholder={`Select Colour`} // Dynamic placeholder
-                                                                    onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                                    // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                                                 />
                                                             </td>
                                                             <td>
@@ -431,7 +419,7 @@ const BOQEdit = () => {
                                                                     // value={values[label]} // Pass current value
                                                                     // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                                     placeholder={`Select Brand`} // Dynamic placeholder
-                                                                    onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                                    // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                                                 />
                                                             </td>
                                                             <td>
@@ -440,7 +428,7 @@ const BOQEdit = () => {
                                                                     // value={values[label]} // Pass current value
                                                                     // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                                     placeholder={`Select UOM`} // Dynamic placeholder
-                                                                    onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                                    // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                                                 />
                                                             </td>
                                                             <td>
@@ -582,12 +570,12 @@ const BOQEdit = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="row mx-2">
+                            {/* <div className="row mx-2">
                                 <h5>Audit Log</h5>
                                 <div className="">
                                     <Table columns={auditLogColumns} data={auditLogData} />
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
