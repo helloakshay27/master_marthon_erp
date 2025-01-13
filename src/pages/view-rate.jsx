@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { Modal, Button, Form } from 'react-bootstrap';
 
 const options = [
     { value: "alabama", label: "Alabama" },
@@ -12,9 +13,13 @@ const options = [
     { value: "tennessee", label: "Tennessee" },
     { value: "texas", label: "Texas" },
     { value: "washington", label: "Washington" },
-  ];
+];
 
 const ViewRate = () => {
+    const [showModal, setShowModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+
 
     return (
         <>
@@ -211,7 +216,7 @@ const ViewRate = () => {
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Sub-Project</label>
-                                          
+
                                             <SingleSelector
                                                 options={options}
                                                 // value={values[label]} // Pass current value
@@ -338,7 +343,7 @@ const ViewRate = () => {
                             </form>
 
                             {/* Create Button */}
-                            <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#addnewModal">
+                            <button className="purple-btn2" data-bs-toggle="modal" data-bs-target="#addnewModal" onClick={() => setShowModal(true)}>
                                 Create
                             </button>
                         </div>
@@ -350,7 +355,7 @@ const ViewRate = () => {
                                     <tr>
                                         <th className="text-start">Material</th>
                                         {/* <th className="text-start">Material Sub-Type</th> */}
-                                        
+
                                         <th className="text-start">Effective Date</th>
                                         <th className="text-start">Rate (INR)</th>
                                         <th className="text-start">UOM</th>
@@ -362,30 +367,34 @@ const ViewRate = () => {
                                     <tr>
                                         <td className="text-start">Aggregate</td>
                                         {/* <td className="text-start">Metal 1</td> */}
-                                        
+
                                         <td className="text-start">June 11 2024</td>
                                         <td className="text-start">0.00</td>
                                         <td className="text-start"></td>
-                                        <td className="text-start" data-bs-toggle="modal" data-bs-target="#avgpoModal">
-                                            History
+                                        <td className="text-start" style={{color:"#8b0203"}} 
+                                        // onClick={() => setShowHistoryModal(true)}
+                                        >
+                                            {/* History */}
                                         </td>
                                         <td>
                                             <div className="d-flex justify-content-center">
                                                 <input className="pe-2" type="checkbox" />
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="currentColor"
-                                                    className="bi bi-pencil-square"
-                                                    viewBox="0 0 16 16"
-                                                >
-                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                                                    />
-                                                </svg>
+                                                {/* <button className="btn" onClick={() => setShowEditModal(true)}>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        className="bi bi-pencil-square"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                                        />
+                                                    </svg>
+                                                </button> */}
                                                 {/* dustbin add here */}
                                             </div>
                                         </td>
@@ -400,7 +409,7 @@ const ViewRate = () => {
             </div>
 
             {/* Add new modal */}
-            <div className="modal fade" id="addnewModal" tabIndex="-1" aria-labelledby="addnewModalLabel" aria-hidden="true">
+            {/* <div className="modal fade" id="addnewModal" tabIndex="-1" aria-labelledby="addnewModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -503,7 +512,264 @@ const ViewRate = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
+
+            <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton>
+                    <h5>Add Material</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <form acceptCharset="UTF-8">
+                        <div className="row">
+
+
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material Type</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material Type`} // Dynamic placeholder
+                                        onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material Sub Type</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Generic Specification</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Specification`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Colour</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Colour`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Brand</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Brand`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label>Effective Date</label>
+                                    <input className="form-control" type="date" />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+
+                                    <label>Rate</label>
+                                    <input className="form-control" type="number" />
+
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">UOM</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select UOM`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="row mt-2 justify-content-center mt-5">
+                                <div className="col-md-3">
+                                    <button className="purple-btn2 w-100">Create</button>
+                                </div>
+                                <div className="col-md-3">
+                                    <button className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+
+                </Modal.Body>
+            </Modal>
+
+
+            {/* edit modal  */}
+            <Modal centered size="lg" show={showEditModal} onHide={() => setShowEditModal(false)}>
+                <Modal.Header closeButton>
+                    <h5>Edit Material</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <div className="tbl-container mx-3 mt-1">
+                        <table className="">
+                            <thead>
+                                <tr>
+                                    <th className="text-start">Material Type</th>
+                                    <th className="text-start">Material</th>
+                                    <th className="text-start">Material Sub-Type</th>
+
+                                    <th className="text-start">Effective Date</th>
+                                    <th className="text-start">Rate (INR)</th>
+                                    <th className="text-start">AVG Rate
+                                            {/* <span className="ms-2 pt-2">
+                                                <input type="checkbox" />
+                                            </span> */}
+                                        </th>
+                                        <th className="text-start">PO Rate
+                                            {/* <span className="ms-2 pt-2">
+                                                <input type="checkbox" />
+                                            </span> */}
+                                        </th>
+                                    <th className="text-start">UOM</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="text-start">Aggregate</td>
+                                    <td className="text-start">Aggregate</td>
+                                    <td className="text-start">
+                                        <SingleSelector
+                                            options={options}
+                                            // value={values[label]} // Pass current value
+                                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                            placeholder={`Select Sub-Type`} // Dynamic placeholder
+                                        // onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+
+                                        />
+                                    </td>
+
+                                    <td className="text-start">
+                                        <input className="form-control" type="date" />
+                                        </td>
+                                    <td className="text-start">
+                                    <input className="form-control" type="number" />
+                                    </td>
+                                    
+                                  
+                                        <td className="text-start">
+                                            <span data-bs-toggle="modal" data-bs-target="#avgpoModal">5</span>
+                                            <span className="ms-2 pt-2">
+                                                <input type="checkbox"
+                                                    // checked={checkbox1}
+                                                    // onChange={() => handleCheckboxChange(1)}
+                                                    // disabled={rate || checkbox2}
+                                                />
+                                            </span>
+                                        </td>
+                                        <td className="text-start">
+                                            <span data-bs-toggle="modal" data-bs-target="#avgpoModal">10</span>
+                                            <span className="ms-2 pt-2">
+                                                <input type="checkbox"
+                                                    // checked={checkbox2}
+                                                    // onChange={() => handleCheckboxChange(2)}
+                                                    // disabled={rate || checkbox1}
+                                                />
+                                            </span>
+                                        </td>
+                                        <td className="text-start">
+                                    <SingleSelector
+                                            options={options}
+                                            // value={values[label]} // Pass current value
+                                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                            placeholder={`Select Sub-Type`} // Dynamic placeholder
+                                        // onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+
+                                        />
+                                    </td>
+                                   
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="row mt-2 justify-content-center mt-5">
+                                <div className="col-md-3">
+                                    <button className="purple-btn2 w-100">Update</button>
+                                </div>
+                               
+                            </div>
+
+                </Modal.Body>
+            </Modal>
+
+
+            {/* history modal  */}
+            <Modal centered size="lg" show={showHistoryModal} onHide={() => setShowHistoryModal(false)}>
+                <Modal.Header closeButton>
+                    <h5>History</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <div className="tbl-container mx-3 mt-1">
+                        <table className="w-100">
+                            <thead>
+                                <tr>
+                                    <th className="text-start">Sr.No.</th>
+                                    <th className="text-start">User Name</th>
+                                    <th className="text-start">Modified Date</th>
+
+                                   
+                                    <th className="text-start">Rate (INR)</th>
+                                    <th className="text-start">Unit</th>
+                                    <th className="text-start">Effective Date</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="text-start">1</td>
+                                    <td className="text-start"></td>
+                                    <td className="text-start"></td>
+
+                                    <td className="text-start"></td>
+                                    <td className="text-start"></td>
+                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </Modal.Body>
+            </Modal>
         </>
     )
 }

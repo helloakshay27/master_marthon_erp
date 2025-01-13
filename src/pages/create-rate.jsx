@@ -235,7 +235,7 @@ const CreateRate = () => {
 
                         {/* <div className="mx-3"> */}
                         <div className="tbl-container mx-3 mt-1">
-                            <table className="w-100">
+                            <table className="">
                                 <thead>
                                     <tr>
                                         <th className="text-start">Material Type</th>

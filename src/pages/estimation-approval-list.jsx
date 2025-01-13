@@ -185,7 +185,7 @@ const EstimationApprovolList = () => {
               </div>
             </div>
             <div className="row mt-3  px-3">
-              <div className="col-md-3">
+              {/* <div className="col-md-3">
                 <div className="form-group">
                   <label htmlFor="">Rows Per Page</label>
                   <select
@@ -200,7 +200,7 @@ const EstimationApprovolList = () => {
                     <option value={100}>100 Rows</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

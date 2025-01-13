@@ -48,7 +48,7 @@ function Members() {
 
             </ul>
 
-            <h3>BOQ Pages</h3>
+            <h3>BOQ Pages & Estimation Pages </h3>
             <ul>
               <li>
                 <Link to="/create-BOQ">Create BOQ</Link>
@@ -81,7 +81,7 @@ function Members() {
                 <Link to="/view-rate">View Rate</Link>
               </li>
 
-              {/* <li>
+              <li>
                 <Link to="/estimation-creation">Estimation creation</Link>
               </li>
               <li>
@@ -105,7 +105,7 @@ function Members() {
               </li>
               <li>
                 <Link to="/estimation-approval-details">Estimation approval details</Link>
-              </li> */}
+              </li>
 
 
 
