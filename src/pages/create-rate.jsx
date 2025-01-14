@@ -4,6 +4,7 @@ import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import { Modal, Button, Form } from 'react-bootstrap';
+import { Link } from "react-router-dom";
 // import Modal from "react-bootstrap/Modal";
 
 const options = [
@@ -19,14 +20,15 @@ const options = [
 
 const CreateRate = () => {
     const [showModal, setShowModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [rate, setRate] = useState('');
     const [checkbox1, setCheckbox1] = useState(false);
     const [checkbox2, setCheckbox2] = useState(false);
     const [isEditing, setIsEditing] = useState(false);  // State to manage edit mode
-    // Handle edit button click
-    const handleEditClick = () => {
-        setIsEditing(!isEditing);  // Toggle edit mode
-    };
+    // // Handle edit button click
+    // const handleEditClick = () => {
+    //     setIsEditing(!isEditing);  // Toggle edit mode
+    // };
 
     // Handle rate input change
     const handleRateChange = (e) => {
@@ -354,7 +356,7 @@ const CreateRate = () => {
                                         </td>
                                         <td className="text-start">
 
-                                            <button
+                                            {/* <button
                                                 className="btn mt-0 pt-0 ">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -368,9 +370,23 @@ const CreateRate = () => {
                                                     <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
                                                 </svg>{" "}
 
-                                            </button>
+                                            </button> */}
+
+                                            <Link to="/view-rate" className="btn mt-0 pt-0">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      fill="#8b0203"
+      className="bi bi-eye"
+      viewBox="0 0 16 16"
+    >
+      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+    </svg>
+  </Link>
                                             <span> <input type="checkbox" /></span>
-                                            <button className="btn mt-0 pt-0 " onClick={handleEditClick}>
+                                            <button className="btn mt-0 pt-0 " onClick={() => setShowEditModal(true)}>
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="16"
@@ -500,6 +516,7 @@ const CreateRate = () => {
                 </div>
             </div> */}
 
+{/* create modal  */}
             <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <h5>Add Material</h5>
@@ -616,6 +633,122 @@ const CreateRate = () => {
                 </Modal.Body>
             </Modal>
 
+            {/* edit modal  */}
+            <Modal centered size="lg" show={showEditModal} onHide={() => setShowEditModal(false)}>
+                <Modal.Header closeButton>
+                    <h5>Edit Material</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <form acceptCharset="UTF-8">
+                        <div className="row">
+
+
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material Type</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material Type`} // Dynamic placeholder
+                                        onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material Sub Type</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Material</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Material`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Generic Specification</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Specification`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Colour</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Colour`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">Brand</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select Brand`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label>Effective Date</label>
+                                    <input className="form-control" type="date" />
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+
+                                    <label>Rate</label>
+                                    <input className="form-control" type="number" />
+
+                                </div>
+                            </div>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label className="po-fontBold">UOM</label>
+                                    <SingleSelector
+                                        options={options}
+                                        // value={values[label]} // Pass current value
+                                        placeholder={`Select UOM`} // Dynamic placeholder
+                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="row mt-2 justify-content-center mt-5">
+                                <div className="col-md-3">
+                                    <button className="purple-btn2 w-100">Create</button>
+                                </div>
+                                <div className="col-md-3">
+                                    <button className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+
+                </Modal.Body>
+            </Modal>
             {/* Modal */}
 
 

@@ -48,7 +48,7 @@ const BOQEdit = () => {
                             {/* Total Content Here */}
 
 
-                            <CollapsibleCard title="BOQ Details">
+                            <CollapsibleCard title="BOQ Edit">
                                 <div
                                     className="card-body mt-0 pt-0"
                                     style={{ display: "block" }}
