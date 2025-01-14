@@ -383,9 +383,9 @@ const ViewRate = () => {
                                         <td className="text-start">0.00</td>
                                         <td className="text-start"></td>
                                         <td className="text-start" style={{ color: "#8b0203" }}
-                                        onClick={() => setShowHistoryModal(true)}
+                                        // onClick={() => setShowHistoryModal(true)}
                                         >
-                                            History
+                                            {/* History */}
                                         </td>
                                         <td className="text-start">
                                             <div className="d-flex justify-content-center">
