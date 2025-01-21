@@ -13,7 +13,7 @@ import EditApprovals from './pages/edit-approvals';
 import AddApprovals from './pages/add-approvals';
 import GoodReceiveNoteDetails from './pages/grn/grn_detail';
 import CreateBOQ from './pages/create-BOQ';
-import ViewBOQ from './pages/view-BOQ';
+import BOQList from './pages/view-BOQ';
 import BOQApprovalList from './pages/boq_approval_list';
 import BOQDetailsPageMaster from './pages/boq-details-page-master';
 import BOQApprovalDetails from './pages/boq-approval-details'
@@ -35,10 +35,33 @@ import PoAdvanceNoteList from './pages/po-advance-note-list';
 import RootLayout from './pages/Layout/RootLayout';
 import EstimationApprovolList from './pages/estimation-approval-list';
 import TreeDataWithStaticRows from './components/dataGrid/TreeDataWithStaticRows';
-import BOQList from './pages/boq-list';
+// import BOQList from './pages/boq-list';
 import CreateRate from './pages/create-rate';
 import ViewRate from './pages/view-rate';
-
+import BillPaymentCreate from './pages/bill-payment-create';
+import BillPaymentDetails from './pages/bill-payment-details';
+import BillPaymentList from './pages/bill-payment-list';
+import BillVerificationCreate from './pages/bill-verification-create';
+import BillVerificationDetails from './pages/bill-verification-details';
+import BillVerificationList from './pages/bill-verification-list';
+import CreditNoteCreate from './pages/credit-note-create';
+import CreditNoteDetails from './pages/credit-note-details';
+import CreditNoteList from './pages/credit-note-list';
+import DebitNoteCreate from './pages/debit-note-create';
+import DebitNoteDetails from './pages/debit-note-details';
+import DebitNoteList from './pages/debit-note-list';
+import POAdvanceNoteDetails from './pages/po-advance-note-details';
+import BOQEdit from './pages/boq-edit';
+import ContractInvitation from './pages/contract-invitation';
+import SectionTab from './pages/section-tab';
+import EventListPage from "./pages/admin_list";
+import VendorDetails from './pages/vendor-details';
+import VendorListPage from './pages/vendor-list';
+import UserOverview from './pages/user-overview';
+import CreateEvent from './pages/create-event';
+import CreateBid from './pages/create-bid';
+import Dashboard from './pages/dashboard';
+import AuthData from './confi/authData';
 
 function App() {
   return (
@@ -55,6 +78,43 @@ function App() {
           <Route path='/stock_register_list' element={<ErpStockRegister13B />} />
           <Route path="/TreeDataWithStaticRows" element={<TreeDataWithStaticRows />} />
 
+
+          <Route path="/authData" element={<AuthData />} />
+
+          {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}
+
+          {/* <Route
+            path="/erp-rfq-auction-events-4f"
+            element={<ErpRfqAuctionEvents4f />}
+          /> */}
+          <Route
+            path="/erp-rfq-auction-events-4h"
+            element={<ErpRfqAuctionEvents4h />}
+          />
+          <Route
+            path="/erp-rfq-detail-price-trends4h/:id"
+            element={<ErpRfqDetailPriceTrends4h />}
+          />
+          <Route path="/create-rfq" element={<CreateRfq />} />
+          {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
+          <Route path="/event-list" element={<EventListPage />} />
+          <Route path="/contract-invitation" element={<ContractInvitation />} />
+          <Route path="/section-tab" element={<SectionTab />} />
+
+          {/* <Route path="/event-list" element={<EventList />} /> */}
+
+          <Route path="/user-list/:eventId" element={<VendorDetails />} />
+          <Route path="/vendor-list" element={<VendorListPage />} />
+
+          
+          <Route path="/user-overview/:eventId" element={<UserOverview />} />
+
+          <Route path="/create-event" element={<CreateEvent />} />
+
+          {/* <Route path='/create-bid' element={<CreateBid />} /> */}
+          <Route path="/create-bid/:eventId" element={<CreateBid />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
           <Route
             path="/"
             element={
@@ -68,10 +128,11 @@ function App() {
           <Route path='/erp-rfq-detail-price-trends4h' element={<ErpRfqDetailPriceTrends4h />} />
           <Route path='/create-rfq' element={<CreateRfq />} />
           <Route path='/create-BOQ' element={<CreateBOQ />} />
-          <Route path='/boq-list' element={<BOQList />} />
-          <Route path='/view-BOQ' element={<ViewBOQ />} />
+          {/* <Route path='/boq-list' element={<BOQList />} /> */}
+          <Route path='/view-BOQ' element={<BOQList/>} />
           <Route path='/boq-approval-list' element={<BOQApprovalList />} />
           <Route path='/boq-details-page-master' element={<BOQDetailsPageMaster />} />
+          <Route path='/boq-edit' element={<BOQEdit />} />
           <Route path='/boq-approval-details' element={<BOQApprovalDetails />} />
           <Route path='/create-rate'  element={<CreateRate/>} />
           <Route path='/view-rate'  element={<ViewRate/>} />
@@ -89,6 +150,19 @@ function App() {
           <Route path='/bill-entry-list' element={<BillEntryList/>} />
           <Route path='/bill-entry-list-sub-page' element={<BillEntryListSubPage/>} />
           <Route path='/bill-booking-create' element={<BillBookingCreate/>} />
+          <Route path='/bill-payment-create' element={<BillPaymentCreate/>} />
+          <Route path='/bill-payment-details' element={<BillPaymentDetails/>} />
+          <Route path='/bill-payment-list' element={<BillPaymentList/>} />
+          <Route path='/bill-verification-create' element={<BillVerificationCreate/>} />
+          <Route path='/bill-verification-details' element={<BillVerificationDetails/>} />
+          <Route path='/bill-verification-list' element={<BillVerificationList/>} />
+          <Route path='/credit-note-create' element={<CreditNoteCreate/>} />
+          <Route path='/credit-note-details' element={<CreditNoteDetails/>} />
+          <Route path='/credit-note-list' element={<CreditNoteList/>} />
+          <Route path='/debit-note-create' element={<DebitNoteCreate/>} />
+          <Route path='/debit-note-details' element={<DebitNoteDetails/>} />
+          <Route path='/debit-note-list' element={<DebitNoteList/>} />
+          <Route path='/po-advance-note-details' element={<POAdvanceNoteDetails/>} />
           <Route path='/po-advance-note-payment' element={<PoAdvanceNotePayment/>} />
           <Route path='/po-advance-note-list'  element={<PoAdvanceNoteList/>} />
           </Route>

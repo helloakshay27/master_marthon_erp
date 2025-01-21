@@ -3,451 +3,369 @@ import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
+import BOQListTable from "../components/BOQListTabe";
+import { Link } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
+import { BulkAction } from "../components";
 
-const ViewBOQ = () => {
-  const [viewboqDetails, setviewboqDetails] = useState(true);
+
+
+const BOQList = () => {
+  const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
+  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false);
+  const navigate = useNavigate(); // hook to get navigate function
+
+  const handleClick = () => {
+    // Navigate to '/about' when the button is clicked
+    navigate('/create-BOQ');
+  };
+
+
   const [copyModal, setcopyModal] = useState(false);
 
-  const viewboqDropdown = () => {
-    setviewboqDetails(!viewboqDetails);
-  };
   const openCopyModal = () => setcopyModal(true);
   const closeCopyModal = () => setcopyModal(false);
+
+
+
+  const [expandedRows, setExpandedRows] = useState([]);
+
+
+  const toggleRow = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
+  const [openSubProject2, setOpenSubProject2] = useState(false)
+  const handleSubProject2 = () => {
+    setOpenSubProject2(!openSubProject2)
+  }
+  const [openSubProject2_1, setOpenSubProject2_1] = useState(false)
+  const handleSubProject2_1 = () => {
+    setOpenSubProject2_1(!openSubProject2_1)
+  }
+
+  const [openSubProject2_11, setOpenSubProject2_11] = useState(false)
+  const handleSubProject2_11 = () => {
+    setOpenSubProject2_11(!openSubProject2_11)
+  }
+
+  const [openSubProject2_12, setOpenSubProject2_12] = useState(false)
+  const handleSubProject2_12 = () => {
+    setOpenSubProject2_12(!openSubProject2_12)
+  }
+
+  const [openSubProject2_13, setOpenSubProject2_13] = useState(false)
+  const handleSubProject2_13 = () => {
+    setOpenSubProject2_13(!openSubProject2_13)
+  }
+
+  const [openSubProjectDetails, setOpenSubProjectDetails] = useState(false)
+  const handleSubProjectDetails = () => {
+    setOpenSubProjectDetails(!openSubProjectDetails)
+  }
+
+
+  const [openSubProject3, setOpenSubProject3] = useState(false)
+  const handleSubProject3 = () => {
+    setOpenSubProject3(!openSubProject3)
+  }
+
+  const [openSubProject, setOpenSubProject] = useState(false)
+  const handleSubProject = () => {
+    setOpenSubProject(!openSubProject)
+  }
+
+  const tableData = [
+    {
+      id: 1,
+      project: "Sanvo",
+      boqId: "",
+      unit: "",
+      costQty: "",
+      costRate: "",
+      costValue: "",
+      status: "",
+      subRows: [
+        {
+          id: 11,
+          description: "Admin expense",
+          boqId: "",
+          unit: "",
+          costQty: "",
+          costRate: "",
+          costValue: "",
+          status: "",
+        },
+        {
+          id: 12,
+          description: "Purchase of Item",
+          boqId: "187062",
+          unit: "",
+          costQty: "",
+          costRate: "",
+          costValue: "",
+          status: "Approved",
+        },
+      ],
+    },
+  ];
+
+  const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
+
+
   return (
     <>
-      <div className="main-content">  
-        <div className="website-content overflow-auto">
-          <div className="module-data-section p-4">
-            <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
-            <h5 className="mt-4">View BOQ</h5>
-            <div className="d-flex justify-content-end">
-              <button className="purple-btn2">Create</button>
-              <button className="purple-btn2">Export/Import</button>
-              <button className="purple-btn2">Delete</button>
-              <button
-                className="purple-btn2"
-                // data-bs-toggle="modal"
-                // data-bs-target="#copyModal"
-                onClick={openCopyModal}
-              >
-                Copy
-              </button>
-            </div>
-            <div className="tab-content1 active" id="total-content">
-              {/* Total Content Here */}
-              <div className="card mt-2 pb-4">
-                <div className="card mx-3 mt-2">
-                  <div className="card-header3">
-                    <h3 className="card-title">View BOQ</h3>
-                    <div className="card-tools">
-                      <button
-                        type="button"
-                        className="btn btn-tool"
-                        data-card-widget="collapse"
-                        onClick={viewboqDropdown}
-                      >
-                        <svg
-                          width={32}
-                          height={32}
-                          viewBox="0 0 32 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                          <path
-                            d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
+      <div className="website-content overflow-auto">
+        <div className="module-data-section p-4">
+          <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
+          <h5 className="mt-4">View BOQ</h5>
+          <div className="d-flex justify-content-end">
+            <button className="purple-btn2" onClick={handleClick}>Create</button>
+            <button className="purple-btn2">Import</button>
+            <button className="purple-btn2">Export</button>
+            <button className="purple-btn2">Delete</button>
+            <button
+              className="purple-btn2"
+              // data-bs-toggle="modal"
+              // data-bs-target="#copyModal"
+              // onClick={openCopyModal}
+              onClick={handleShow}
+            >
+              Copy
+            </button>
+          </div>
+          {/* <div className="tab-content1 active" id="total-content"> */}
+          {/* Total Content Here */}
+
+
+          <div className="card mt-2 pb-4">
+            <CollapsibleCard title="View BOQ">
+
+
+              <div className="card-body mt-0 pt-0">
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Project</label>
+                      {/* <select
+                              className="form-control form-select"
+                              style={{ width: "100%" }}
+                            >
+                              <option selected="selected">Select</option>
+                              <option>Alaska</option>
+                              <option>California</option>
+                              <option>Delaware</option>
+                              <option>Tennessee</option>
+                              <option>Texas</option>
+                              <option>Washington</option>
+                            </select> */}
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Project`} // Dynamic placeholder
+                      />
                     </div>
                   </div>
-                  {viewboqDetails && (
-                    <div className="card-body mt-0 pt-0">
-                      <div className="row">
-                        <div className="col-md-4">
-                          <div className="form-group">
-                            <label>Project</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4">
-                          <div className="form-group">
-                            <label>Sub-project</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4">
-                          <div className="form-group">
-                            <label>Wing</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Sub-project</label>
+
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Wing</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Wing`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Main Category</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Main Category`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Sub-Category lvl 2</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Sub-Category lvl 2`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Sub-Category lvl 3</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Sub-Category lvl 3`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Sub-Category lvl 4</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Sub-Category lvl 4`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Sub-Category lvl 5</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Sub-Category lvl 5`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>BOQ Name</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select BOQ Name`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>BOQ ID</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        placeholder=""
+                        fdprocessedid="qv9ju9"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>BOQ Description</label>
+                      <textarea
+                        className="form-control"
+                        rows={1}
+                        placeholder="Enter ..."
+                        defaultValue={""}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Status</label>
+                      <SingleSelector
+                        options={options}
+                        // value={values[label]} // Pass current value
+                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        placeholder={`Select Status`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>From Date</label>
+                      <input
+                        className="form-control"
+                        type="date"
+                        placeholder=""
+                        fdprocessedid="qv9ju9"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>To Date</label>
+                      <input
+                        className="form-control"
+                        type="date"
+                        placeholder=""
+                        fdprocessedid="qv9ju9"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-12 mt-2">
+                    <div className="d-flex">
+                      <div className="form-group d-flex mt-1">
+                        <label className="form-check-label me-3">
+                          View BOQ Version List
+                        </label>
+                        <div className="form-check pe-2">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                          />
                         </div>
                       </div>
-                      <div className="row">
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>Main Category</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>Sub-Category lvl 2</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>Sub-Category lvl 3</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>Sub-Category lvl 4</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>Sub-Category lvl 5</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>BOQ Name</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>BOQ ID</label>
-                            <input
-                              className="form-control"
-                              type="text"
-                              placeholder=""
-                              fdprocessedid="qv9ju9"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>BOQ Description</label>
-                            <textarea
-                              className="form-control"
-                              rows={1}
-                              placeholder="Enter ..."
-                              defaultValue={""}
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-4">
-                          <div className="form-group">
-                            <label>Status</label>
-                            <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>From Date</label>
-                            <input
-                              className="form-control"
-                              type="date"
-                              placeholder=""
-                              fdprocessedid="qv9ju9"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <div className="form-group">
-                            <label>To Date</label>
-                            <input
-                              className="form-control"
-                              type="date"
-                              placeholder=""
-                              fdprocessedid="qv9ju9"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-12 mt-2">
-                          <div className="d-flex">
-                            <div className="form-group d-flex mt-1">
-                              <label className="form-check-label me-3">
-                                View BOQ Version List
-                              </label>
-                              <div className="form-check pe-2">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                />
-                              </div>
-                            </div>
-                            <div className="form-group">
-                              <select
-                                className="form-control form-select"
-                                style={{ width: "100%" }}
-                              >
-                                <option selected="selected">Select One</option>
-                                <option>Alaska</option>
-                                <option>California</option>
-                                <option>Delaware</option>
-                                <option>Tennessee</option>
-                                <option>Texas</option>
-                                <option>Washington</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="form-group">
+                        <SingleSelector
+                          options={options}
+                          // value={values[label]} // Pass current value
+                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                          placeholder={`Select BOQ Version`} // Dynamic placeholder
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
-                <div className="d-flex justify-content-start ms-3">
-                  <button className="purple-btn2">Collapse All</button>
-                </div>
-                <div className="tbl-container mx-3 mt-1">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th className="text-start">Expand</th>
-                        <th className="text-start">Project/Sub-Project</th>
-                        <th className="text-start">BOQ ID</th>
-                        <th className="text-start">Unit</th>
-                        <th className="text-start">Cost Qty</th>
-                        <th className="text-start">Cost Rate</th>
-                        <th className="text-start">Cost Value</th>
-                        <th>
-                          <div className="d-flex justify-content-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width={14}
-                              height={14}
-                              fill="currentColor"
-                              style={{ marginTop: 3 }}
-                              className="bi bi-trash3-fill"
-                              viewBox="0 0 16 16"
-                            >
-                              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                            </svg>
-                            <input className="ms-1 me-1 mb-1" type="checkbox" />
-                            <p>Status</p>
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width={16}
-                            height={16}
-                            fill="currentColor"
-                            className="bi bi-plus-circle row-1"
-                            data-group={1}
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                          </svg>
-                        </td>
-                        <td className="text-start">Sanvo</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start">
-                          <div className="d-flex justify-content-center">
-                            <input className="pe-2" type="checkbox" />
-                            <img
-                              data-bs-toggle="modal"
-                              data-bs-target="#addnewModal"
-                              className="pe-1"
-                              src="../Data_Mapping/img/Edit.svg"
-                              alt=""
-                            />
-                            <img
-                              className="pe-1"
-                              src="../Data_Mapping/img/Delete_red.svg"
-                              alt=""
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                      <tr className="row-2" data-group={1}>
-                        <td>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width={16}
-                            height={16}
-                            fill="currentColor"
-                            className="bi bi-dash-circle"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-                          </svg>
-                        </td>
-                        <td className="text-start">Admin expense</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
-                      <tr className="row-2" data-group={1}>
-                        <td className="text-start" />
-                        <td className="text-start">Purchase of Item</td>
-                        <td className="text-start">187062</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start">Approved</td>
-                      </tr>
-                      <tr className="row-2" data-group={1}>
-                        <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start" />
-                        <td className="text-start">NOS</td>
-                        <td className="text-start">6.00000</td>
-                        <td className="text-start">483.000000</td>
-                        <td className="text-start">2,898.00</td>
-                        <td className="text-start" />
-                      </tr>
-                    </tbody>
-                  </table>
+                  </div>
                 </div>
               </div>
-              <div className="row mt-2 justify-content-center">
-                <div className="col-md-2">
-                  <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-                    Create
-                  </button>
-                </div>
-              </div>
-            </div>
+
+   <BulkAction/>
+
+            </CollapsibleCard>
+            <BOQListTable/>
           </div>
+
+          <CopyBudgetModal show={show} handleClose={handleClose} />
         </div>
       </div>
+
       {/* copy modal */}
-      <Modal
+      {/* <Modal
         size="m"
         show={copyModal}
         onHide={closeCopyModal}
@@ -507,11 +425,11 @@ const ViewBOQ = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
 
       {/* copy modal end */}
     </>
   );
 };
 
-export default ViewBOQ;
+export default BOQList;

@@ -14,17 +14,12 @@ import {
     Table,
 } from "../components"
 import { estimationListColumns, estimationListData } from "../constant/data";
-import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import EstimationQuickFilter from "../components/EstimationQuickFilter";
 
 
 const EstimationList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchText, setSearchText] = useState("");
-    const [viewQuickFilter, setViewQuickFilter] = useState(false);
-
-    const viewQuickFilterDropdown = () => {
-        setViewQuickFilter(!viewQuickFilter);
-    };
 
     const handleSearchChange = (e) => {
         setSearchText(e.target.value);
@@ -54,31 +49,7 @@ const EstimationList = () => {
                     </a>
                     <div className="card mt-3 pb-3">
                         {/* <QuickFilter /> */}
-                        <CollapsibleCard title="Quick Filter">
-                            <div className="card-body pt-0 mt-0">
-                                <div className="row my-2 align-items-end">
-                                    {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                                        <div className="col-md-2" key={idx}>
-                                            <div className="form-group">
-                                                <label>{label}</label>
-                                                <select className="form-control form-select" style={{ width: "100%" }}>
-                                                    <option selected="selected">Alabama</option>
-                                                    <option>Alaska</option>
-                                                    <option>California</option>
-                                                    <option>Delaware</option>
-                                                    <option>Tennessee</option>
-                                                    <option>Texas</option>
-                                                    <option>Washington</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div className="col-md-2">
-                                        <button className="purple-btn2 m-0">Go</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </CollapsibleCard>
+                        <EstimationQuickFilter/>
 
                         <div className="d-flex mt-3 align-items-end px-3">
                             <div className="col-md-6">
@@ -160,7 +131,7 @@ const EstimationList = () => {
                             <Table columns={estimationListColumns} data={estimationListData} />
                         </div>
                         <div className="row mt-3  px-3">
-                            <div className="col-md-3">
+                            {/* <div className="col-md-3">
                                 <div className="form-group">
                                     <label htmlFor="">Rows Per Page</label>
                                     <select
@@ -175,7 +146,7 @@ const EstimationList = () => {
                                         <option value={100}>100 Rows</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import CollapsibleCard from "../../base/Card/CollapsibleCards";
+import SingleSelector from "../../base/Select/SingleSelector";
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -11,6 +12,12 @@ const validationSchema = Yup.object({
 });
 
 export default function BulkAction() {
+
+  const options = [
+    { value: '', label: 'Select Status' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'send_for_approval', label: 'Sent For Approval' },
+  ];
   return (
     <CollapsibleCard title="Bulk Action">
       <Formik
@@ -35,6 +42,13 @@ export default function BulkAction() {
                     <option value="draft">Draft</option>
                     <option value="send_for_approval">Sent For Approval</option>
                   </Field>
+                  {/* <SingleSelector
+                    options={options}
+                  // value={options.find((option) => option.value === field.value)} // Set the value to match Formik's field value
+                  // onChange={handleSelectorChange("fromStatus", setFieldValue)} // Update Formik state on change
+                  // placeholder="Select Status"
+                  // isDisabled={false} // Disable condition if needed (based on some other logic)
+                  /> */}
                   <ErrorMessage
                     name="fromStatus"
                     component="div"
@@ -48,6 +62,13 @@ export default function BulkAction() {
                     <option value="draft">Draft</option>
                     <option value="send_for_approval">Sent For Approval</option>
                   </Field>
+                   {/* <SingleSelector
+                    options={options}
+                  // value={options.find((option) => option.value === field.value)} // Set the value to match Formik's field value
+                  // onChange={handleSelectorChange("fromStatus", setFieldValue)} // Update Formik state on change
+                  // placeholder="Select Status"
+                  // isDisabled={false} // Disable condition if needed (based on some other logic)
+                  /> */}
                   <ErrorMessage
                     name="toStatus"
                     component="div"

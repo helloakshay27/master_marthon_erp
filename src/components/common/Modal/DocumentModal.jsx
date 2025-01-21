@@ -11,6 +11,7 @@ const DocumentModal = ({ show, onHide, handleAttachmentModalShow }) => {
       className="modal-centered-custom"
       title="Document Attachment"
       footerButtons={[
+        // @ts-ignore
         {
           label: "Close",
           onClick: onHide,

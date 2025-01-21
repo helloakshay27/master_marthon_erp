@@ -1,92 +1,98 @@
+import React from 'react';
+import { MaterialReactTable } from 'material-react-table';
+import { Box, Typography } from '@mui/material';
 
-
-import React, { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-
-const initialData = [
-  { id: 1, name: "Parent 1", level: 0, expanded: false },
-  { id: 2, name: "Child 1.1", level: 1, parentId: 1 },
-  { id: 3, name: "Child 1.2", level: 1, parentId: 1 },
-  { id: 4, name: "Parent 2", level: 0, expanded: false },
-  { id: 5, name: "Child 2.1", level: 1, parentId: 4 },
+// Data with nested rows (subRows)
+const data = [
+  {
+    firstName: 'Dylan',
+    lastName: 'Murray',
+    address: '261 Erdman Ford',
+    city: 'East Daphne',
+    state: 'Kentucky',
+    subRows: [
+      {
+        firstName: 'Ervin',
+        lastName: 'Reinger',
+        address: '566 Brakus Inlet',
+        city: 'South Linda',
+        state: 'West Virginia',
+        subRows: [
+          {
+            firstName: 'Jordane',
+            lastName: 'Homenick',
+            address: '1234 Brakus Inlet',
+            city: 'South Linda',
+            state: 'West Virginia',
+          },
+        ],
+      },
+      {
+        firstName: 'Brittany',
+        lastName: 'McCullough',
+        address: '722 Emie Stream',
+        city: 'Lincoln',
+        state: 'Nebraska',
+      },
+    ],
+  },
+  {
+    firstName: 'Raquel',
+    lastName: 'Kohler',
+    address: '769 Dominic Grove',
+    city: 'Columbus',
+    state: 'Ohio',
+    subRows: [
+      {
+        firstName: 'Branson',
+        lastName: 'Frami',
+        address: '32188 Larkin Turnpike',
+        city: 'Charleston',
+        state: 'South Carolina',
+      },
+    ],
+  },
 ];
 
-const TreeDataWithStaticRows = () => {
-  const [rows, setRows] = useState(initialData);
+// Table columns configuration
+const columns = [
+  { accessorKey: 'firstName', header: 'First Name' },
+  { accessorKey: 'lastName', header: 'Last Name' },
+  { accessorKey: 'address', header: 'Address' },
+  { accessorKey: 'city', header: 'City' },
+  { accessorKey: 'state', header: 'State' },
+];
 
-  const handleToggle = (id) => {
-    setRows((prevRows) =>
-      prevRows.map((row) =>
-        row.id === id ? { ...row, expanded: !row.expanded } : row
-      )
-    );
-  };
+// Detail Panel component for the last level rows
+const DetailPanel = ({ row }) => (
+  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%' }}>
+    <Typography>Address: {row.original.address}</Typography>
+    <Typography>City: {row.original.city}</Typography>
+    <Typography>State: {row.original.state}</Typography>
+  </Box>
+);
 
-  const getVisibleRows = () => {
-    const visibleRows = [];
-    const parents = {};
-
-    rows.forEach((row) => {
-      // Always add top-level rows
-      if (!row.parentId || parents[row.parentId]?.expanded) {
-        visibleRows.push(row);
-        // Keep track of parents for child visibility
-        if (!row.parentId) {
-          parents[row.id] = row;
-        }
-      }
-    });
-
-    return visibleRows;
-  };
-
-  const columns = [
-    {
-      field: "name",
-      headerName: "Name",
-      width: 300,
-      renderCell: (params) => {
-        const row = params.row;
-        const isExpandable = rows.some((r) => r.parentId === row.id);
-
-        return (
-          <div
-            style={{
-              paddingLeft: `${row.level * 20}px`,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {isExpandable && (
-              <button
-                onClick={() => handleToggle(row.id)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  marginRight: "8px",
-                }}
-              >
-                {row.expanded ? "-" : "+"}
-              </button>
-            )}
-            {params.value}
-          </div>
-        );
-      },
-    },
-  ];
-
+const TreeDataTable = () => {
   return (
-    <div style={{ height: 400, width: "100%" }}>
-      <DataGrid
-        rows={getVisibleRows()}
+    <div className="tbl-container px-0 mt-3">
+      <style>
+        {`
+          .tbl-container td {
+            padding: 0px 1rem !important;
+          }
+        `}
+      </style>
+      <MaterialReactTable
         columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
+        data={data}
+        enableExpanding={true}
+        getSubRows={(row) => row.subRows} // Handle child rows
+        renderDetailPanel={({ row }) =>
+          row.original.subRows ? null : <DetailPanel row={row} /> // Show detail only for last level rows
+        }
       />
     </div>
   );
 };
 
-export default TreeDataWithStaticRows;
+export default TreeDataTable;

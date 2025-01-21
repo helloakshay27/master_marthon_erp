@@ -3,311 +3,484 @@ import '../styles/mor.css'
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
+import CollapsibleCard from './base/Card/CollapsibleCards';
+import MaterialModal from "../components/MaterialModal";
+import LabourModal from "../components/LabourModal";
+import AssetModal from "../components/AssestModal";
+import SingleSelector from './base/Select/SingleSelector';
 
 
-const BOQSubItemTable  = () => {
-    
-    const [submaterialDetails, setsubmaterialDetails] = useState(false);
-    const [sublabourDetails, setsublabourDetails] = useState(false);
-    const [subassestsDetails, setsubassestsDetails] = useState(false);
-    const [materialshowModal, setmaterialShowModal] = useState(false);
-    const [assetShowModal, setAssetShowModal] = useState(false);
-    const [labourShowModal, setLabourShowModal] = useState(false);
-  
-    const openModal = () => setmaterialShowModal(true);
-    const closeModal = () => setmaterialShowModal(false);
+const BOQSubItemTable = ({
+  materials,
+  setMaterials,
+  labours,
+  Assets,
+  handleAddMaterials,
+  handleDeleteAll,
+  handleSelectRow,
+  handleAddLabours,
+  handleDeleteAllLabour,
+  handleSelectRowLabour,
+  handleAddAssets,
+  handleDeleteAllAssets,
+  handleSelectRowAssets, }) => {
+  const [materialshowModal, setmaterialShowModal] = useState(false);
+  const [assetShowModal, setAssetShowModal] = useState(false);
+  const [labourShowModal, setLabourShowModal] = useState(false);
 
-    const openAssestModal = () => setAssetShowModal(true);
-    const closeAssestModal = () => setAssetShowModal(false);
-  
-    const openLabourModal = () => setLabourShowModal(true);
-    const closeLabourModal = () => setLabourShowModal(false);
+  const openModal = () => setmaterialShowModal(true);
+  const closeModal = () => setmaterialShowModal(false);
 
-   
-      const  submaterialDropdown = () => {
-        setsubmaterialDetails(!submaterialDetails);
-      };
-      const  sublabourDropdown = () => {
-        setsublabourDetails(!sublabourDetails);
-      };
-      const  subassestsDropdown = () => {
-        setsubassestsDetails(!subassestsDetails);
-      };
+  const openAssestModal = () => setAssetShowModal(true);
+  const closeAssestModal = () => setAssetShowModal(false);
+
+  const openLabourModal = () => setLabourShowModal(true);
+  const closeLabourModal = () => setLabourShowModal(false);
+
+
+
+  //Material modal and table data handle add or delete
+
+  const [showModal, setShowModal] = useState(false);
+  // const [materials, setMaterials] = useState([]);
+  const [selectedMaterials, setSelectedMaterials] = useState([]); // To track selected rows
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+  // const handleAddMaterials = (newMaterials) => {
+  //   setMaterials((prev) => [
+  //     ...prev,
+  //     ...newMaterials.filter(
+  //       (material) => !prev.some((m) => m.name === material.name)
+  //     ),
+  //   ]);
+  // };
+
+  // console.log("materials", materials)
+
+  const handleDeleteRow = (materialToDelete) => {
+    setMaterials((prev) =>
+      prev.filter((material) => material.name !== materialToDelete.name)
+    );
+  };
+
+  const handleDeleteAllMaterial = () => {
+    setMaterials((prev) =>
+      prev.filter((material) => !selectedMaterials.includes(material.name))
+    );
+    setSelectedMaterials([]); // Reset selected materials
+  };
+
+  const handleSelectRowMaterial = (materialName) => {
+    setSelectedMaterials((prev) =>
+      prev.includes(materialName)
+        ? prev.filter((name) => name !== materialName) // Unselect the material
+        : [...prev, materialName] // Select the material
+    );
+  };
+
+  //labour modal and table data handle add or delete
+  const [showModalLabour, setShowModalLabour] = useState(false);
+  // const [labours, setLabours] = useState([]);
+  const [selectedlabours, setSelectedLabours] = useState([])
+  const handleOpenModalLabour = () => setShowModalLabour(true);
+  const handleCloseModalLabour = () => setShowModalLabour(false);
+
+
+  // const handleAddLabours = (newlabours) => {
+  //   setLabours((prev) => [
+  //     ...prev,
+  //     ...newlabours.filter(
+  //       (labours) => !prev.some((m) => m.labourType === labours.labourType)
+  //     ),
+  //   ]);
+  // };
+
+  // const handleDeleteAllLabour = () => {
+  //   setLabours((prev) =>
+  //     prev.filter((labours) => !selectedlabours.includes(labours.labourType))
+  //   );
+  //   setSelectedLabours([]); // Reset selected materials
+  // };
+
+  // const handleSelectRowLabour = (labourType) => {
+  //   setSelectedLabours((prev) =>
+  //     prev.includes(labourType)
+  //       ? prev.filter((type) => type !== labourType) // Unselect the material
+  //       : [...prev, labourType] // Select the material
+  //   );
+  // };
+
+  //asset modal and table data handle add or delete
+  const [showModalAsset, setShowModalAsset] = useState(false);
+  // const [Assets, setAssets] = useState([]);
+  const [selectedAssets, setSelectedAssets] = useState([])
+  const handleOpenModalAsset = () => setShowModalAsset(true);
+  const handleCloseModalAsset = () => setShowModalAsset(false);
+
+
+  // const handleAddAssets = (newAsset) => {
+  //   setAssets((prev) => [
+  //     ...prev,
+  //     ...newAsset.filter(
+  //       (asset) => !prev.some((a) => a.assetType === asset.assetType)
+  //     ),
+  //   ]);
+  // };
+
+  // const handleDeleteAllAssets = () => {
+  //   setAssets((prev) =>
+  //     prev.filter((asset) => !selectedAssets.includes(asset.assetType))
+  //   );
+  //   setSelectedAssets([]); // Reset selected materials
+  // };
+
+  // const handleSelectRowAssets = (assetType) => {
+  //   setSelectedAssets((prev) =>
+  //     prev.includes(assetType)
+  //       ? prev.filter((type) => type !== assetType) // Unselect the material
+  //       : [...prev, assetType] // Select the material
+  //   );
+  // };
+
+
+  const options = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
+
+
   return (
-     <>
-     <div className="collapse show">
-       <div className="" style={{width: "77vw", maxWidth: "100%" }}>
-              <div className="card   mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Material</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={submaterialDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {submaterialDetails && (
-                <div className="card-body mt-0 pt-0" >
-                  <div className="tbl-container mx-3 mt-1">
-                    <table className="w-100" id="table1">
-                      <thead style={{ zIndex: "0" }}>
-                        <tr>
-                          <th rowSpan={2}>
-                            <input type="checkbox" />
-                          </th>
-                          <th rowSpan={2}>Material Type</th>
-                          <th rowSpan={2}>Material Sub-Type</th>
-                          <th rowSpan={2}>Material</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour </th>
-                          <th rowSpan={2}>Brand </th>
-                          <th rowSpan={2}>UOM</th>
-                          <th rowSpan={2}>Cost QTY</th>
-                          <th colSpan={2}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th rowSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <input type="checkbox" />
-                          </td>
-                          <td>SAND</td>
-                          <td>SAND</td>
-                          <td>SAND River (Bag)</td>
-                          <td>River Sand GOLD</td>
-                          <td>Gold</td>
-                          <td />
-                          <td>Bags</td>
-                          <td />
-                          <td>1</td>
-                          <td>2</td>
-                          <td>4%</td>
-                          <td>2.08</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="row mt-3 mx-3">
-                    <p>
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myCreateFunction('table1')"
-                        onClick={openModal}
-                      >
-                        Add Material
-                      </button>{" "}
-                      |
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myDeleteFunction('table1')"
-                        
-                      >
-                        Delete Material
-                      </button>
-                    </p>
-                  </div>
-                </div>
-                )}
-              </div>
-              <div className="card mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Labour</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={sublabourDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {sublabourDetails && (
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1">
-                    <table className="w-100" id="table2">
-                      <thead style={{ zIndex: "0" }}>
-                        <tr>
-                          <th rowSpan={2}>
-                            <input type="checkbox" />
-                          </th>
-                          <th rowSpan={2}>Labour Type</th>
-                          <th rowSpan={2}>Labour Sub-Type</th>
-                          <th rowSpan={2}>Labour</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={2}>Cost</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th rowSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <input type="checkbox" />
-                          </td>
-                          <td />
-                          <td />
-                          <td />
-                          <td />
-                          <td />
-                          <td />
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="row mt-3 mx-3">
-                    <p>
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myCreateFunction('table2')"
-                        onClick={openLabourModal}
-                      >
-                        Add Labour
-                      </button>{" "}
-                      |
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        onclick="myDeleteFunction('table2')"
-                      >
-                        Delete Labour
-                      </button>
-                    </p>
-                  </div>
-                </div>
-                )}
-              </div>
-              <div className="card  mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Assests</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={subassestsDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {subassestsDetails && (
-              <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
-              <div className="tbl-container mx-3 mt-1">
-                <table className="w-100" id="table3">
-                  <thead style={{ zIndex: "0" }}>
-                    <tr>
-                      <th rowSpan={2}>
-                        <input type="checkbox" />
-                      </th>
-                      <th rowSpan={2}>Assest Type</th>
-                      <th rowSpan={2}>Assest Sub-Type</th>
-                      <th rowSpan={2}>Assest</th>
-                      <th rowSpan={2}>UOM</th>
-                      <th colSpan={2}>Cost</th>
-                    </tr>
-                    <tr>
-                      <th>Co-Efficient Factor</th>
-                      <th rowSpan={2}>Estimated Qty</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input type="checkbox" />
-                      </td>
-                      <td />
-                      <td />
-                      <td />
-                      <td />
-                      <td />
-                      <td />
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="row mt-3 mx-3">
-                <p>
-                  <button
-                    style={{ color: "var(--red)" }}
-                    className="fw-bold text-decoration-underline border-0 bg-white"
-                    // onclick="myCreateFunction('table3')"
-                    onClick={openAssestModal}
-                  >
-                    Add Assests
-                  </button>{" "}
-                  |
-                  <button
-                    style={{ color: "var(--red)" }}
-                    className="fw-bold text-decoration-underline border-0 bg-white"
-                    onclick="myDeleteFunction('table3')"
-                  >
-                    Delete Assests
-                  </button>
-                </p>
-              </div>
-            </div>
-            
-                )}
-              </div>
-            </div>
-            </div>
+    <>
+      <div className="collapse show">
+        <div className="" style={{ width: "77vw", maxWidth: "100%" }}>
+          <CollapsibleCard title="Material">
+            <div className="card   mx-3 mt-2">
+              <div className="card-body mt-0 pt-0" >
+                <div className="tbl-container mx-3 mt-1">
+                  <table className="" id="table1">
+                    <thead style={{ zIndex: "0" }}>
+                      <tr>
+                        <th rowSpan={2}>
+                          <input type="checkbox"
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedMaterials(materials.map((m) => m.name)); // Select all
+                              } else {
+                                setSelectedMaterials([]); // Deselect all
+                              }
+                            }}
+                            checked={selectedMaterials.length === materials.length}
+                          />
+                        </th>
+                        <th rowSpan={2}>Material Type</th>
+                        <th rowSpan={2}>Material</th>
+                        <th rowSpan={2}>Material Sub-Type</th>
+                        <th rowSpan={2}>Generic Specification</th>
+                        <th rowSpan={2}>Colour </th>
+                        <th rowSpan={2}>Brand </th>
+                        <th rowSpan={2}>UOM</th>
+                        <th rowSpan={2}>Cost QTY</th>
+                        <th colSpan={2}>Cost</th>
+                        <th rowSpan={2}>Wastage</th>
+                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                      </tr>
+                      <tr>
+                        <th>Co-Efficient Factor</th>
+                        <th rowSpan={2}>Estimated Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* {materials.length > 0 ? (
+                        materials.map((material, index) => ( */}
+                      <tr>
+                        <td>
+                          <input
+                            className="ms-5"
+                            type="checkbox"
+                          // checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                          // onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
+                          />
+                        </td>
+                        <td>
+                          {/* <input
+                                type="text"
+                                className="form-control"
+                                // value={material.type}
+                              /> */}
+                        </td>
+                        <td>
+                          {/* <input
+                                type="text"
+                                className="form-control"
+                                // value={material.type}
+                              /> */}
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Sub-Type`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Specification`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Colour`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
 
-             {/* material modal */}
-      <Modal
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select Brand`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>
+                          <SingleSelector
+                            options={options}
+                            // value={values[label]} // Pass current value
+                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                            placeholder={`Select UOM`} // Dynamic placeholder
+                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
+                          />
+                        </td>
+                        <td>  <input
+                          type="text"
+                          className="form-control"
+
+                        /></td>
+                        <td>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder=""
+
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder=""
+
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+
+                          />
+                        </td>
+                      </tr>
+                      {/* ))
+                      ) : (
+                        <tr>
+                          <td colSpan="12" className="text-center">
+                            No materials added yet.
+                          </td>
+                        </tr>
+                      )} */}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="row mt-3 mx-3">
+                  <p>
+                    <button
+                      style={{ color: "var(--red)" }}
+                      className="fw-bold text-decoration-underline border-0 bg-white"
+                      // onclick="myCreateFunction('table1')"
+                      onClick={handleOpenModal}
+                    >
+                      Add Material
+                    </button>{" "}
+                    |
+                    <button
+                      style={{ color: "var(--red)" }}
+                      className="fw-bold text-decoration-underline border-0 bg-white"
+                      // onclick="myDeleteFunction('table1')"
+                      onClick={handleDeleteAllMaterial}
+                    >
+                      Delete Material
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleCard>
+          <MaterialModal
+            show={showModal}
+            handleClose={handleCloseModal}
+            handleAdd={handleAddMaterials}
+          />
+
+          <CollapsibleCard title="Assests">
+            <div className="card  mx-3 mt-2">
+              <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
+                <div className="tbl-container mx-3 mt-1">
+                  <table className="w-100" id="table3">
+                    <thead style={{ zIndex: "0" }}>
+                      <tr>
+                        <th rowSpan={2}>
+                          <input type="checkbox"
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAssets(Assets.map((a) => a.assetType)); // Select all
+                              } else {
+                                setSelectedAssets([]); // Deselect all
+                              }
+                            }}
+                            checked={selectedAssets.length === Assets.length}
+                          />
+                        </th>
+                        <th rowSpan={2}>Assest Type</th>
+                        <th rowSpan={2}>Assest Sub-Type</th>
+                        <th rowSpan={2}>Assest</th>
+                        <th rowSpan={2}>UOM</th>
+                        <th colSpan={2}>Cost</th>
+                      </tr>
+                      <tr>
+                        <th>Co-Efficient Factor</th>
+                        <th rowSpan={2}>Estimated Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Assets.length > 0 ? (
+                        Assets.map((assets, index) => (
+                          <tr key={index}>
+                            <td>
+                              <input
+                                className="ms-5"
+                                type="checkbox"
+                                checked={selectedAssets.includes(assets.assetType)} // Check if material is selected
+                                onChange={() => handleSelectRowAssets(assets.assetType)} // Toggle selection
+                              />
+                            </td>
+
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.assetType}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.assetSubType}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.asset}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                                value={assets.uom}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="text"
+                                placeholder=""
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="8" className="text-center">
+                            No asset added yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="row mt-3 mx-3">
+                  <p>
+                    <button
+                      style={{ color: "var(--red)" }}
+                      className="fw-bold text-decoration-underline border-0 bg-white"
+                      // onclick="myCreateFunction('table3')"
+                      // onClick={openAssestModal}
+                      onClick={handleOpenModalAsset}
+                    >
+                      Add Assests
+                    </button>{" "}
+                    |
+                    <button
+                      style={{ color: "var(--red)" }}
+                      className="fw-bold text-decoration-underline border-0 bg-white"
+                      onclick="myDeleteFunction('table3')"
+                      onClick={handleDeleteAllAssets}
+                    >
+                      Delete Assests
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleCard>
+        </div>
+      </div>
+      <AssetModal
+        showAssets={showModalAsset}
+        handleCloseAssets={handleCloseModalAsset}
+        handleAdd={handleAddAssets}
+      />
+
+
+      {/* material modal */}
+      {/* <Modal
         centered
         size="lg"
         show={materialshowModal}
@@ -419,11 +592,11 @@ const BOQSubItemTable  = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
       {/* material modal */}
 
       {/* Labour modal */}
-      <Modal
+      {/* <Modal
         centered
         size="lg"
         show={labourShowModal}
@@ -437,7 +610,7 @@ const BOQSubItemTable  = () => {
         </Modal.Header>
         <Modal.Body>
           {/* Pagination and Display options */}
-          <div className="d-flex justify-content-between px-4 pt-2">
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -484,10 +657,10 @@ const BOQSubItemTable  = () => {
               </div>
               <p className="fw-bold ms-2 mt-1">Items per Page</p>
             </div>
-          </div>
+          </div> */}
 
-          {/* Table for Labour */}
-          <div className="tbl-container mx-3 mt-1">
+      {/* Table for Labour */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -518,10 +691,10 @@ const BOQSubItemTable  = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </div> */}
 
-          {/* Add Button */}
-          <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeLabourModal}
@@ -533,11 +706,11 @@ const BOQSubItemTable  = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
       {/* Labour modal */}
 
-        {/* Assest modal */}
-        <Modal
+      {/* Assest modal */}
+      {/* <Modal
         centered
         size="lg"
         show={assetShowModal}
@@ -549,9 +722,9 @@ const BOQSubItemTable  = () => {
         <Modal.Header closeButton>
           <h5>Add Asset</h5>
         </Modal.Header>
-        <Modal.Body>
-          {/* Pagination and Display options */}
-          <div className="d-flex justify-content-between px-4 pt-2">
+        <Modal.Body> */}
+      {/* Pagination and Display options */}
+      {/* <div className="d-flex justify-content-between px-4 pt-2">
             <div>
               <nav aria-label="Page navigation example">
                 <ul className="pagination">
@@ -598,10 +771,10 @@ const BOQSubItemTable  = () => {
               </div>
               <p className="fw-bold ms-2 mt-1">Items per Page</p>
             </div>
-          </div>
+          </div> */}
 
-          {/* Table for Assets */}
-          <div className="tbl-container mx-3 mt-1">
+      {/* Table for Assets */}
+      {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -635,10 +808,10 @@ const BOQSubItemTable  = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </div> */}
 
-          {/* Add Button */}
-          <div className="row mt-2 justify-content-center">
+      {/* Add Button */}
+      {/* <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
               <button
                 onClick={closeAssestModal}
@@ -650,9 +823,9 @@ const BOQSubItemTable  = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
       {/* Assest modal */}
-     </>
+    </>
   )
 }
 
