@@ -13,7 +13,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
-import baseURL from "../confi/apiDomain"; // Use a single import for baseURL
+import { baseURL } from "../confi/apiDomain"; // Import baseURL using named import
 import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
 import $ from "jquery";
