@@ -104,7 +104,7 @@ export default function ErpRfqAuctionEvents4h() {
                       <div className="row justify-content-end px-3">
                         <div className="col-md-3">
                           <button
-                            style={{ color: "#de7008" }}
+                            style={{ color: "#8b0203" }}
                             className="btn btn-md"
                             onClick={handleModalShow}
                           >
@@ -113,7 +113,7 @@ export default function ErpRfqAuctionEvents4h() {
                         </div>
                         <div className="col-md-3">
                           <button
-                            style={{ color: "#de7008" }}
+                            style={{ color: "#8b0203" }}
                             type="submit"
                             className="btn btn-md"
                           >
@@ -122,7 +122,7 @@ export default function ErpRfqAuctionEvents4h() {
                         </div>
                         <div className="col-md-3">
                           <button
-                            style={{ color: "#de7008" }}
+                            style={{ color: "#8b0203" }}
                             id="downloadButton"
                             type="submit"
                             className="btn btn-md"
@@ -132,13 +132,13 @@ export default function ErpRfqAuctionEvents4h() {
                         </div>
                         <div className="col-md-3">
                           <button
-                            style={{ color: "#de7008" }}
+                            style={{ color: "#8b0203" }}
                             type="submit"
                             className="btn btn-md"
                             onClick={handleSettingModalShow}
                           >
                             <SettingIcon
-                              color={"#de7008"}
+                              color={"#8b0203"}
                               style={{ width: "23px", height: "23px" }}
                             />
                           </button>

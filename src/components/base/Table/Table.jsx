@@ -350,7 +350,7 @@ export default function Table({
                   <button
                     className="p-2 bg-white border"
                     style={{
-                      color: "#de7008",
+                      color: "#8b0203",
                       backgroundColor: "transparent", // Remove background
                       border: "none", // Remove border
                       padding: "0", // Optional: Adjust padding

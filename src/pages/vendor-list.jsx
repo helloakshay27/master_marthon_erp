@@ -525,7 +525,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "all" ? "#de7008" : "#fff",
+                          activeTab === "all" ? "#8b0203" : "#fff",
                         color: activeTab === "all" ? "white" : "black", // Adjust text color for better contrast
                       }}
                     >
@@ -547,7 +547,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "live" ? "#de7008" : "#fff",
+                          activeTab === "live" ? "#8b0203" : "#fff",
                         color: activeTab === "live" ? "white" : "black", // Adjust text color for better contrast
                       }}
                     >
@@ -569,7 +569,7 @@ export default function VendorListPage() {
                             ? "2px solid #007bff"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "history" ? "#de7008" : "#fff",
+                          activeTab === "history" ? "#8b0203" : "#fff",
                         color: "black",
                       }}
                     >
@@ -752,7 +752,7 @@ export default function VendorListPage() {
                           <div className="row justify-content-end px-3">
                             <div className="col-md-3">
                               <button
-                                style={{ color: "#de7008" }}
+                                style={{ color: "#8b0203" }}
                                 className="btn btn-md"
                                 onClick={handleModalShow}
                               >
@@ -761,7 +761,7 @@ export default function VendorListPage() {
                             </div>
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#de7008" }}
+                                  style={{ color: "#8b0203" }}
                                   type="submit"
                                   className="btn btn-md"
                                 >
@@ -770,7 +770,7 @@ export default function VendorListPage() {
                               </div> */}
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#de7008" }}
+                                  style={{ color: "#8b0203" }}
                                   id="downloadButton"
                                   type="submit"
                                   className="btn btn-md"
@@ -780,13 +780,13 @@ export default function VendorListPage() {
                               </div> */}
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#de7008" }}
+                                  style={{ color: "#8b0203" }}
                                   type="submit"
                                   className="btn btn-md"
                                   onClick={handleSettingModalShow}
                                 >
                                   <SettingIcon
-                                    color={"#de7008"}
+                                    color={"#8b0203"}
                                     style={{ width: "23px", height: "23px" }}
                                   />
                                 </button>
@@ -1026,7 +1026,7 @@ export default function VendorListPage() {
                           >
                             <path
                               d="M9 1L1 9L9 17"
-                              stroke="#de7008"
+                              stroke="#8b0203"
                               strokeWidth="1.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"

@@ -69,7 +69,7 @@ const ActivityModal = ({ show, handleClose }) => {
                     justifyContent: "center",
                     alignItems: "center",
                     textAlign: "center",
-                    backgroundColor: "#de7008",
+                    backgroundColor: "#8b0203",
                     color:'#fff'
                   }}
                 >

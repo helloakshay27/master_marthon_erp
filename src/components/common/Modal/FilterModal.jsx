@@ -55,7 +55,7 @@ const FilterModal = ({ show, handleClose }) => {
                   >
                     <path
                       d="M9 1L1 9L9 17"
-                      stroke="#de7008"
+                      stroke="#8b0203"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"

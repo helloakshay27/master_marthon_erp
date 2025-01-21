@@ -181,7 +181,7 @@ const Events = () => {
                 <div className="row justify-content-end px-3">
                   <div className="col-md-4">
                     <button
-                      style={{ color: "#de7008" }}
+                      style={{ color: "#8b0203" }}
                       className="btn btn-md"
                       onClick={handleFilterModal}
                     >
@@ -190,7 +190,7 @@ const Events = () => {
                   </div>
                   <div className="col-md-6">
                     <button
-                      style={{ color: "#de7008" }}
+                      style={{ color: "#8b0203" }}
                       id="downloadButton"
                       type="submit"
                       className="btn btn-md"
