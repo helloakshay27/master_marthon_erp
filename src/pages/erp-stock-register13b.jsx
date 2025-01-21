@@ -13,8 +13,8 @@ import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
 import { Modal, Button } from "react-bootstrap";
 
-import baseURL from "../confi/apiDomain";
 import $ from "jquery";
+import { baseURL } from "../confi/apiDomain";
 
 
 const ErpStockRegister13B = () => {

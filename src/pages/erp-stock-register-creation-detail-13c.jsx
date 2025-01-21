@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import baseURL from "../confi/apiDomain";
+import { baseURL } from "../confi/apiDomain";
 
 const ErpStockRegisterCreationDetail13C = () => {
   const { id } = useParams(); // Extract the 'id' from the route

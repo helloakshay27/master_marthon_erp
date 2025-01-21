@@ -52,7 +52,16 @@ import DebitNoteDetails from './pages/debit-note-details';
 import DebitNoteList from './pages/debit-note-list';
 import POAdvanceNoteDetails from './pages/po-advance-note-details';
 import BOQEdit from './pages/boq-edit';
-
+import ContractInvitation from './pages/contract-invitation';
+import SectionTab from './pages/section-tab';
+import EventListPage from "./pages/admin_list";
+import VendorDetails from './pages/vendor-details';
+import VendorListPage from './pages/vendor-list';
+import UserOverview from './pages/user-overview';
+import CreateEvent from './pages/create-event';
+import CreateBid from './pages/create-bid';
+import Dashboard from './pages/dashboard';
+import AuthData from './confi/authData';
 
 function App() {
   return (
@@ -66,6 +75,43 @@ function App() {
           <Route path='/add-approvals' element={<AddApprovals />} />
           <Route path="/good_receive_notes/:id" element={<GoodReceiveNoteDetails />} />
           <Route path="/TreeDataWithStaticRows" element={<TreeDataWithStaticRows />} />
+
+
+          <Route path="/authData" element={<AuthData />} />
+
+          {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}
+
+          {/* <Route
+            path="/erp-rfq-auction-events-4f"
+            element={<ErpRfqAuctionEvents4f />}
+          /> */}
+          <Route
+            path="/erp-rfq-auction-events-4h"
+            element={<ErpRfqAuctionEvents4h />}
+          />
+          <Route
+            path="/erp-rfq-detail-price-trends4h/:id"
+            element={<ErpRfqDetailPriceTrends4h />}
+          />
+          <Route path="/create-rfq" element={<CreateRfq />} />
+          {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
+          <Route path="/event-list" element={<EventListPage />} />
+          <Route path="/contract-invitation" element={<ContractInvitation />} />
+          <Route path="/section-tab" element={<SectionTab />} />
+
+          {/* <Route path="/event-list" element={<EventList />} /> */}
+
+          <Route path="/user-list/:eventId" element={<VendorDetails />} />
+          <Route path="/vendor-list" element={<VendorListPage />} />
+
+          
+          <Route path="/user-overview/:eventId" element={<UserOverview />} />
+
+          <Route path="/create-event" element={<CreateEvent />} />
+
+          {/* <Route path='/create-bid' element={<CreateBid />} /> */}
+          <Route path="/create-bid/:eventId" element={<CreateBid />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
           <Route
             path="/"

@@ -1,6 +1,7 @@
-// VendorModal.js
 import React from "react";
-import DynamicModalBox from "../../base/Modal/DynamicModalBox";// Assuming this is a separate modal component you're using
+import DynamicModalBox from "../../base/Modal/DynamicModalBox";
+import Table from "../../base/Table/Table";
+import { vendorsColumns, vendorsData } from "../../../constant/data";
 
 const VendorModal = ({ show, onHide }) => {
   return (
@@ -10,6 +11,7 @@ const VendorModal = ({ show, onHide }) => {
       size="lg"
       title="Select Vendors"
       footerButtons={[
+        // @ts-ignore
         {
           label: "Save",
           onClick: onHide,
@@ -66,38 +68,11 @@ const VendorModal = ({ show, onHide }) => {
               </div>
             </form>
           </div>
-          <div className="tbl-container px-0 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Supplier Type</th>
-                  <th>Vendor Name</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Cement, Waterproofing</td>
-                  <td>Sharda Chemical Pvt Ltd</td>
-                  <td>Delivery Pending</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Tiles, Granites, Cement, Sand</td>
-                  <td>Ashirvad Ceramics</td>
-                  <td>Not submitted Bid / Quotation</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={vendorsColumns}
+            data={vendorsData}
+            showCheckbox={true}
+          />
         </div>
       </div>
     </DynamicModalBox>

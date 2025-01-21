@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckedCircleIcon, EnvelopeIcon, ParticipantsIcon, ShowIcon } from "../..";
+import { EnvelopeIcon, ParticipantsIcon, ShowIcon, Table } from "../..";
 
 export default function OverviewTab({
   handleParticipants,
@@ -7,10 +7,145 @@ export default function OverviewTab({
   handleBiddings,
   handleProducts,
   participantsOpen,
+  participantsData,
   savingsOpen,
   biddingOpen,
+  biddingData,
+  overviewData,
   productOpen,
+  termsOpen,
+  orderConfOpen,
+  orderDetails,
+  handleTerms,
+  handleOrderConf,
+  handleOrderDetails,
+  materialData,
 }) {
+  const participants = [
+    {
+      label: "Total Participants",
+      id: "total-participants",
+      value: participantsData.total_participant,
+    },
+    {
+      label: "Active participants",
+      id: "active-participants",
+      value: participantsData.active_participant,
+    },
+    {
+      label: "Total Bids",
+      id: "total-bids",
+      value: participantsData.total_bids,
+    },
+    {
+      label: "Revised bids",
+      id: "revised-bids",
+      value:
+        participantsData.revised_bids == null
+          ? 0
+          : participantsData.revised_bids, // Assuming 1 if revised_bids exists
+    },
+    {
+      label: "Counter offers",
+      id: "counter-offers",
+      value: participantsData.counter_office, // Assuming 1 if counter_office exists
+    },
+    {
+      label: "Accepted Counter Offers",
+      id: "accepted-counter-offers",
+      value:
+        participantsData.active_counter_offers == null
+          ? 0
+          : participantsData.revised_bids, // Assuming 1 if active_counter_offers exists
+    },
+    {
+      label: "Dynamic time extended",
+      id: "dynamic-time-extended",
+      value:
+        participantsData.dynamic_time_extension == null
+          ? "0 mins"
+          : participantsData.revised_bids,
+    },
+  ];
+
+  const calculateOrderDuration = (start, end) => {
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    const duration = new Date(endTime - startTime);
+    const hours = duration.getUTCHours();
+    const minutes = duration.getUTCMinutes();
+    const seconds = duration.getUTCSeconds();
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  const startTime = overviewData?.event_schedule?.start_time;
+
+  const endTime = overviewData?.event_schedule?.end_time_duration;
+
+  // const OrderEndTime = new Date(endTime);
+
+  const orderConfig = [
+    {
+      label: "Order Type",
+      value: overviewData?.event_type_detail?.event_type || "_",
+    },
+    {
+      label: "Order Mode",
+      value: overviewData?.event_type_detail?.award_scheme || "_",
+    },
+    {
+      label: "Started at",
+      value:
+        new Date(overviewData?.event_schedule?.start_time).toLocaleString() ||
+        "_",
+    },
+    {
+      label: "Ended at",
+      value:
+        new Date(overviewData?.event_schedule?.end_time).toLocaleString() ||
+        "_",
+    },
+    {
+      label: "Order Duration",
+      value: calculateOrderDuration(startTime, endTime),
+    },
+    ,
+    {
+      label: "Evaluation Time",
+      value: overviewData?.event_schedule?.evaluation_time || "_",
+    },
+    {
+      label: "Delivery by",
+      value: new Date(overviewData?.delivery_date).toLocaleString() || "_",
+    },
+  ];
+
+  console.log("overviewData:-----", overviewData);
+
+  const overviewDatas = materialData?.event_materials?.map((item) => ({
+    inventoryName: item.inventory_name || "_",
+    quantity: item.quantity || "_",
+    uom: item.uom || "_",
+    materialType: item.material_type || "_",
+    location: item.location || "_",
+    rate: item.rate || "_",
+    amount: item.rate * item.quantity || "_",
+    sectionName: item.section_name || "_",
+    subSectionName: item.sub_section_name || "_",
+  }));
+
+  const formatValue = (value) => {
+    if (typeof value === "string") {
+      return value
+        .split("_")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join(" ");
+    }
+    return value;
+  };
+
   return (
     <div
       className="tab-pane fade"
@@ -87,145 +222,29 @@ export default function OverviewTab({
             Participation Summary
           </a>
           {participantsOpen && (
-            <div id="participation-summary">
+            <div id="participation-summary" className="mx-5">
               <div className="card card-body p-2">
                 <div className="participate-sec">
                   <div
-                    className="totals-activity d-flex align-items-center justify-content-between mx-3"
+                    className="totals-activity row mx-3"
                     style={{ gap: "0" }}
                   >
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="total-participants">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="active-participants">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="total-bids">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="revised-bids">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="rejected-bids">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="counter-offers">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="accepted-counter-offers">3</p>
-                    </div>
-                    <div className="total-activity">
-                      <p>Total Participants</p>
-                      <p id="dynamic-time-extended">3</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="col-12 my-3">
-          <a
-            className="btn"
-            data-bs-toggle="collapse"
-            href="#savings-summary"
-            role="button"
-            aria-expanded={savingsOpen}
-            aria-controls="savings-summary"
-            onClick={handleSavings}
-            style={{ fontSize: "16px", fontWeight: "normal" }}
-          >
-            <span id="savings-summary-icon" className="icon-1">
-              {savingsOpen ? (
-                <i className="bi bi-dash-lg"></i>
-              ) : (
-                <i className="bi bi-plus-lg"></i>
-              )}
-            </span>
-            Savings Summary
-          </a>
-          {savingsOpen && (
-            <div id="savings-summary">
-              <div className="card card-body p-2">
-                {/* View By Section */}
-                <div className="viewBy-main">
-                  <div className="viewBy-main-child2">
-                    <div className="view">View</div>
-                  </div>
-                </div>
-
-                {/* Savings Reference Section */}
-                <div className="saving-ref">
-                  {/* Default Section */}
-                  <div className="default-sec d-flex align-items-center justify-content-between">
-                    <div className="default d-flex gap-2 align-items-center">
-                      <svg
-                        width={13}
-                        height={14}
-                        viewBox="0 0 10 11"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                    {participants.map((item) => (
+                      <div
+                        className="total-activity col-md-3 my-3"
+                        key={item.id}
                       >
-                        <path
-                          d="M4.35725 0.572266H0.285819C0.167962 0.572266 0.0715332 0.668694 0.0715332 0.786551V4.85798C0.0715332 4.97584 0.167962 5.07227 0.285819 5.07227H4.35725C4.4751 5.07227 4.57153 4.97584 4.57153 4.85798V0.786551C4.57153 0.668694 4.4751 0.572266 4.35725 0.572266ZM3.66082 4.16155H0.982248V1.48298H3.66082V4.16155ZM9.71439 0.572266H5.64296C5.52511 0.572266 5.42868 0.668694 5.42868 0.786551V4.85798C5.42868 4.97584 5.52511 5.07227 5.64296 5.07227H9.71439C9.83225 5.07227 9.92868 4.97584 9.92868 4.85798V0.786551C9.92868 0.668694 9.83225 0.572266 9.71439 0.572266ZM9.01796 4.16155H6.33939V1.48298H9.01796V4.16155ZM4.35725 5.92941H0.285819C0.167962 5.92941 0.0715332 6.02584 0.0715332 6.14369V10.2151C0.0715332 10.333 0.167962 10.4294 0.285819 10.4294H4.35725C4.4751 10.4294 4.57153 10.333 4.57153 10.2151V6.14369C4.57153 6.02584 4.4751 5.92941 4.35725 5.92941ZM3.66082 9.51869H0.982248V6.84012H3.66082V9.51869ZM9.71439 5.92941H5.64296C5.52511 5.92941 5.42868 6.02584 5.42868 6.14369V10.2151C5.42868 10.333 5.52511 10.4294 5.64296 10.4294H9.71439C9.83225 10.4294 9.92868 10.333 9.92868 10.2151V6.14369C9.92868 6.02584 9.83225 5.92941 9.71439 5.92941ZM9.01796 9.51869H6.33939V6.84012H9.01796V9.51869Z"
-                          fill="#262626"
-                        />
-                      </svg>
-                      <span>Default</span>
-                    </div>
-                    <span>-</span>
+                        <p>{item.label}</p>
+                        <p id={item.id}>{item.value}</p>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Savings Section */}
-                  <div className="saving-sec d-flex justify-content-between align-items-center mt-2">
-                    <div className="saving-text">SAVINGS REFERENCE</div>
-                    <div className="default d-flex align-items-center gap-3">
-                      <span>-</span>
-                      <span className="saving-amount">₹58,05,671.79</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table Section */}
-                <div className="tbl-container mt-3">
-                  <table className="w-100 table">
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th>Variant</th>
-                        <th>Default Reference</th>
-                        <th>Default Savings</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array(6)
-                        // @ts-ignore
-                        .fill()
-                        .map((_, index) => (
-                          <tr key={index}>
-                            <td>Wooden Frd Door</td>
-                            <td>
-                              WOODEN DOOR SHUTTER 2 HRS FIRE RATED (MAIN DOOR)
-                            </td>
-                            <td>₹ 12850 /Nos</td>
-                            <td>₹ 0/Nos</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>
           )}
         </div>
+
         <div className="col-12 my-3">
           <a
             className="btn"
@@ -247,148 +266,38 @@ export default function OverviewTab({
             Bidding Summary
           </a>
           {biddingOpen && (
-            <div id="bidding-summary">
-              <div className="card card-body p-2">
-                <div className="table-responsive pb-5">
-                  <h5>Quotation / Bid Revision Details</h5>
-                  <div className="tbl-container">
-                    <table className="">
-                      <thead className="thead-dark">
-                        <tr>
-                          <th scope="col">Vendor Name</th>
-                          <th scope="col">Initial Rate </th>
-                          <th scope="col">Initial Amount </th>
-                          <th scope="col">Revised Rate</th>
-                          <th scope="col">Revised Amount</th>
-                          <th>Difference in Amount</th>
-                          <th>Difference in %</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Mark</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>2</td>
-                          <td>2</td>
-                          <td>2</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Mark</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>2</td>
-                          <td>2</td>
-                          <td>2</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Mark</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>₹ 61,50,643.6</td>
-                          <td>2</td>
-                          <td>2</td>
-                          <td>2</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+            <div id="bidding-summary" className="mx-5">
+              <div className="card card-body p-4 rounded-3">
+                <div style={{ boxShadow: "none" }}>
                   <h5>Line Item Wise</h5>
-                  <div className="tbl-container">
+                  {/* <div className="tbl-container">
                     <table>
                       <thead>
                         <tr>
-                          <th scope="row" />
-                          <th>Best Market Price</th>
-                          <th>Rank 2 Market Price</th>
+                          <th>Vendor</th>
+                          <th>Material</th>
+                          <th>Price</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <th colSpan={4} style={{ textAlign: "left" }}>
-                            SITC of Electrical w...(As per Tec...&nbsp;-&nbsp;1
-                            Lumpsum)
-                          </th>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vendor Name</th>
-                          <td>ELECTRIC PRIVATE LIM...</td>
-                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Price Quoted</th>
-                          <td>₹ 52,12,409.83/Lumpsum</td>
-                          <td>Ampere Electrical Services</td>
-                        </tr>
-                        <tr>
-                          <th colSpan={4} style={{ textAlign: "left" }}>
-                            SITC of Electrical w...(As per Tec...&nbsp;-&nbsp;1
-                            Lumpsum)
-                          </th>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vendor Name</th>
-                          <td>ELECTRIC PRIVATE LIM...</td>
-                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Price Quoted</th>
-                          <td>₹ 52,12,409.83/Lumpsum</td>
-                          <td>Ampere Electrical Services</td>
-                        </tr>
-                        <tr>
-                          <th colSpan={4} style={{ textAlign: "left" }}>
-                            SITC of Electrical w...(As per Tec...&nbsp;-&nbsp;1
-                            Lumpsum)
-                          </th>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vendor Name</th>
-                          <td>ELECTRIC PRIVATE LIM...</td>
-                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Price Quoted</th>
-                          <td>₹ 52,12,409.83/Lumpsum</td>
-                          <td>Ampere Electrical Services</td>
-                        </tr>
-                        <tr>
-                          <th colSpan={4} style={{ textAlign: "left" }}>
-                            SITC of Electrical w...(As per Tec...&nbsp;-&nbsp;1
-                            Lumpsum)
-                          </th>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vendor Name</th>
-                          <td>ELECTRIC PRIVATE LIM...</td>
-                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Price Quoted</th>
-                          <td>₹ 52,12,409.83/Lumpsum</td>
-                          <td>Ampere Electrical Services</td>
-                        </tr>
-                        <tr>
-                          <th colSpan={4} style={{ textAlign: "left" }}>
-                            SITC of Electrical w...(As per Tec...&nbsp;-&nbsp;1
-                            Lumpsum)
-                          </th>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vendor Name</th>
-                          <td>ELECTRIC PRIVATE LIM...</td>
-                          <td>AXIS ELECTRICAL COMPONENT...</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Price Quoted</th>
-                          <td>₹ 52,12,409.83/Lumpsum</td>
-                          <td>Ampere Electrical Services</td>
-                        </tr>
+                        {biddingData.map((item, index) => (
+                          <tr key={index}>
+                            <td>{item.vendor_name}</td>
+                            <td>{item.material_name}</td>
+                            <td>{item.price}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
-                  </div>
+                  </div> */}
+                  <Table
+                    columns={[
+                      { label: "Vendor", key: "vendor_name" },
+                      { label: "Material", key: "material_name" },
+                      { label: "Price", key: "price" },
+                    ]}
+                    data={biddingData}
+                  />
                 </div>
               </div>
             </div>
@@ -415,177 +324,132 @@ export default function OverviewTab({
             Product Sheet
           </a>
           {productOpen && (
-            <div id="product-sheet">
-              <div className="card card-body p-2">
-                <div className="tbl-container">
-                  <table className="">
-                    <thead className="thead-dark">
-                      <tr>
-                        <th scope="col">Product*</th>
-                        <th scope="col">Best Total Amount</th>
-                        <th scope="col">Product Variant*</th>
-                        <th scope="col">Quantity Requested*</th>
-                        <th scope="col">Delivery location*</th>
-                        <th scope="col">Creator Attachment</th>
-                        <th scope="col">AIDDITIONAL INFO</th>
-                        <th scope="col">Quantity Available</th>
-                        <th scope="col">Price*</th>
-                        <th scope="col">Discount</th>
-                        <th scope="col">Realised Discount*</th>
-                        <th scope="col">GST*</th>
-                        <th scope="col">Realised GST</th>
-                        <th scope="col">Landed Amount*</th>
-                        <th scope="col">Participant Attachment</th>
-                        <th scope="col">DOOR FRAME MATERIAL</th>
-                        <th>DENSITY OF WOOD</th>
-                        <th>MOISTURE OF WOOD</th>
-                        <th>Total Amount*</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th scope="row">
-                          Wooden Frd Door{" "}
-                          <span
-                            style={{
-                              color: "var(--red)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {" "}
-                            Details
-                          </span>
-                        </th>
-                        <td />
-                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                        <td>257 Nos</td>
-                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                        <td />
-                        <td>Main door Outer size of ...</td>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                      <tr>
-                        <th scope="row">
-                          Wooden Frd Door{" "}
-                          <span
-                            style={{
-                              color: "var(--red)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {" "}
-                            Details
-                          </span>
-                        </th>
-                        <td />
-                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                        <td>257 Nos</td>
-                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                        <td />
-                        <td>Main door Outer size of ...</td>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                      <tr>
-                        <th scope="row">
-                          Wooden Frd Door{" "}
-                          <span
-                            style={{
-                              color: "var(--red)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {" "}
-                            Details
-                          </span>
-                        </th>
-                        <td />
-                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                        <td>257 Nos</td>
-                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                        <td />
-                        <td>Main door Outer size of ...</td>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                      <tr>
-                        <th scope="row">
-                          Wooden Frd Door{" "}
-                          <span
-                            style={{
-                              color: "var(--red)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {" "}
-                            Details
-                          </span>
-                        </th>
-                        <td />
-                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                        <td>257 Nos</td>
-                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                        <td />
-                        <td>Main door Outer size of ...</td>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                      <tr>
-                        <th scope="row">
-                          Wooden Frd Door{" "}
-                          <span
-                            style={{
-                              color: "var(--red)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {" "}
-                            Details
-                          </span>
-                        </th>
-                        <td />
-                        <td>WOODEN DOOR SHUTTER 2 HRS...</td>
-                        <td>257 Nos</td>
-                        <td>Sanvo Resorts Pvt. Ltd. </td>
-                        <td />
-                        <td>Main door Outer size of ...</td>
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                      </tr>
-                    </tbody>
-                  </table>
+            <div id="product-sheet" className="mx-5">
+              <div className="card card-body p-4 rounded-3">
+                <Table
+                  columns={[
+                    { label: "Inventory Name", key: "inventoryName" },
+                    { label: "Quantity", key: "quantity" },
+                    { label: "UOM", key: "uom" },
+                    { label: "Material Type", key: "materialType" },
+                    { label: "Location", key: "location" },
+                    { label: "Rate", key: "rate" },
+                    { label: "Amount", key: "amount" },
+                    { label: "Section Name", key: "sectionName" },
+                    { label: "Sub Section Name", key: "subSectionName" },
+                  ]}
+                  data={overviewDatas}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        {/* New Section: Terms and Conditions */}
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#terms-conditions"
+            role="button"
+            aria-expanded={termsOpen}
+            aria-controls="terms-conditions"
+            onClick={handleTerms}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="terms-conditions-icon" className="icon-1">
+              {termsOpen ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Terms and Conditions
+          </a>
+          {termsOpen && (
+            <div id="terms-conditions" className="mx-5">
+              <div className="card card-body p-4">
+                {overviewData?.resource_term_conditions.map((item, index) => {
+                  return (
+                    <>
+                      <p key={index}>{`${index + 1}. ${item.term_condition.condition}`}</p>
+                      <p>{item.condition}</p>
+                    </>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* New Section: Order Configuration */}
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#order-configuration"
+            role="button"
+            aria-expanded={orderConfOpen}
+            aria-controls="order-configuration"
+            onClick={handleOrderConf}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="order-configuration-icon" className="icon-1">
+              {orderConfOpen ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Order Configuration
+          </a>
+          {orderConfOpen && (
+            <div id="order-configuration" className="mx-5">
+              <div className="card card-body p-4">
+                <div className="participate-sec">
+                  <div className="totals-activity row" style={{ gap: "0" }}>
+                    {orderConfig.map((item) => (
+                      <div
+                        className="total-activity col-md-3 my-3"
+                        key={item.id}
+                      >
+                        <p>{item.label}</p>
+                        <p id={item.id}>{formatValue(item.value)}</p>{" "}
+                        {/* Format the value */}
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* New Section: Order Details */}
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#order-details"
+            role="button"
+            aria-expanded={orderDetails}
+            aria-controls="order-details"
+            onClick={handleOrderDetails}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="order-details-icon" className="icon-1">
+              {orderDetails ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Order Details
+          </a>
+          {orderDetails && (
+            <div id="order-details" className="mx-5">
+              <div className="card card-body p-4">
+                <p>Event Title</p>
+                <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
               </div>
             </div>
           )}
