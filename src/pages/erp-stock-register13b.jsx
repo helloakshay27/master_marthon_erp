@@ -4,8 +4,8 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 
 import React, { useEffect, useState } from "react";
-import { Modal } from "react-bootstrap";
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Modal, Button } from "react-bootstrap"; // Combined Modal and Button imports
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -13,15 +13,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
-import baseURL from "../confi/apiDomain";
+import baseURL from "../confi/apiDomain"; // Use a single import for baseURL
 import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
-import { Modal, Button } from "react-bootstrap";
-
 import $ from "jquery";
-import { baseURL } from "../confi/apiDomain";
 
 DataTable.use(DT);
+
 
 const ErpStockRegister13B = () => {
 
