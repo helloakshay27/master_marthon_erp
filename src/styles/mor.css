@@ -18520,6 +18520,18 @@ ul.pagination.justify-content-center {
   color: #333;
 }
 
+.button {
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.button-enabled {
+  background-color: #8b0203;
+  color: #fff;
+  border: 1px solid #8b0203;
+  cursor: pointer;
+}
+
 .disabled-btn {
   background-color: #cccccc;
   border: 0;

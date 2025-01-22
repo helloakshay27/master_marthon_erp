@@ -36,7 +36,7 @@ export default function ErpRfqDetailPriceTrends4h() {
   const [termAndCond, setTermAndCond] = useState(false);
   const [orderConf, setOrderConf] = useState(false);
   const [orderDetails, setOrderDetails] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(86400); // Initial time in seconds (24 hours, 5 minutes, 10 seconds)
+  const [remainingTime, setRemainingTime] = useState(0); // Initial time in seconds
   const [response, setResponse] = useState([]);
   const [remarks, setRemarks] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -55,6 +55,15 @@ export default function ErpRfqDetailPriceTrends4h() {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (overviewData?.event_schedule?.end_time) {
+      const endTime = new Date(overviewData.event_schedule.end_time).getTime();
+      const currentTime = new Date().getTime();
+      const timeDiff = Math.floor((endTime - currentTime) / 1000);
+      setRemainingTime(timeDiff > 0 ? timeDiff : 0);
+    }
+  }, [overviewData]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -203,12 +212,13 @@ export default function ErpRfqDetailPriceTrends4h() {
 
         const data = await response.json();
         setOverviewData(data);
-        if (data.state == "live") {
+        if (data.state == "expired") {
           setIsCounter(true);
         } else {
           setIsCounter(false);
         }
-        // console.log("Data      overviewData", data);
+        console.log("Data      overviewData", data);
+        console.log("end_tiem", data.event_schedule.end_time);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -231,6 +241,8 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
+        console.log("Data      bidding", data);
+
         setBidding(data);
       } catch (err) {
         setError(err.message);
@@ -294,9 +306,6 @@ export default function ErpRfqDetailPriceTrends4h() {
         const response = await fetch(
           `https://marathon.lockated.com/rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
-
-        console.log(response);
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -358,7 +367,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                   <div className="eventList-time d-flex align-items-center gap-2">
                     <ClockIcon />
                     <span>{formatTime(remainingTime)}</span>
-                    <span>Upcoming </span>
+                    <span>{remainingTime > 0 ? "Upcoming" : "Expired"}</span>
                   </div>
                 </div>
                 <div className="d-flex align-items-center align-bottom">
@@ -375,29 +384,48 @@ export default function ErpRfqDetailPriceTrends4h() {
                   </p>
                 </div>
                 <div className="d-flex align-items-center flex-column justify-content-center text-center">
-                  <button
-                    className="event-participant-cardBtn d-flex align-items-center justify-content-between"
-                    style={{
-                      width: "80px",
-                      backgroundColor: "#8b020366",
-                      padding: "5px 15px",
-                      color: "#000",
-                      border: "1px solid #8b0203"
-                    }}
-                  >
-                    <samp>
-                      <svg
-                        width={12}
-                        height={12}
-                        viewBox="0 0 12 12"
-                        fill="#fff"
-                        xmlns="http://www.w3.org/2000/svg"
+                  {isCounter ? (
+                    <>
+                      <button
+                        className="event-participant-cardBtn d-flex align-items-center justify-content-between"
+                        style={{
+                          width: "80px",
+                          backgroundColor: "#8b020366",
+                          padding: "5px 15px",
+                          color: "#000",
+                          border: "1px solid #8b0203",
+                        }}
                       >
-                        <circle cx={6} cy={6} r={6} fill="#8b0203" />
-                      </svg>
-                    </samp>{" "}
-                    Live
-                  </button>
+                       Expired
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="event-participant-cardBtn d-flex align-items-center justify-content-between"
+                        style={{
+                          width: "80px",
+                          backgroundColor: "#8b020366",
+                          padding: "5px 15px",
+                          color: "#000",
+                          border: "1px solid #8b0203",
+                        }}
+                      >
+                        <samp>
+                          <svg
+                            width={12}
+                            height={12}
+                            viewBox="0 0 12 12"
+                            fill="#fff"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle cx={6} cy={6} r={6} fill="#8b0203" />
+                          </svg>
+                        </samp>{" "}
+                        Live
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               <TabsList

@@ -60,19 +60,19 @@ export default function ResponseTab({ isCounterOffer }) {
     try {
       let data;
       if (isCurrent) {
-        console.log("Fetching current bid data...");
+        // console.log.log("Fetching current bid data...");
         const response = await fetch(
           `https://marathon.lockated.com/rfq/events/${id}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Error response data:", errorData);
+          // console.log.error("Error response data:", errorData);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const responseData = await response.json();
-        console.log("Fetched responseData:", responseData);
+        // console.log.log("Fetched responseData:", responseData);
 
         let data = Array.isArray(responseData.vendors)
           ? responseData.vendors.find((vendor) => vendor.id === vendorId)
@@ -87,7 +87,7 @@ export default function ResponseTab({ isCounterOffer }) {
             vendor.id === vendorId ? { ...vendor, ...data } : vendor
           )
         );
-        console.log("Updated vendor data:", data);
+        // console.log.log("Updated vendor data:", data);
       } else {
         // Use revision data
         const response = await axios.get(
@@ -166,7 +166,7 @@ export default function ResponseTab({ isCounterOffer }) {
         const data = await response.json();
         setResponse(data);
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
-        console.log("data:--------", data);
+        // console.log.log("data:--------", data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -351,7 +351,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         ></td>
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
-                          console.log("isCounterOffer :---",isCounterOffer);
+                          // console.log.log("isCounterOffer :---",isCounterOffer);
                           
                           return (
                             <td
@@ -465,7 +465,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         { label: "Total Amount", key: "totalAmount" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
-                        // console.log("material:", material);
+                        // // console.log.log("material:", material);
 
                         return {
                           bestTotalAmount: material.total_amount || "_",

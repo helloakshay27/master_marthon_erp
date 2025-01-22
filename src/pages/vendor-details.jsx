@@ -24,6 +24,7 @@ export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bids, setBids] = useState([]); // State to store the bids
+  const [isBid, setIsBid] = useState(false); // Track bid creation status
 
   // Array of bid values
   // const bids = [1555, 2, 3, 4787, 5, 66666, 7, 8, 9,10,11,12];
@@ -99,7 +100,7 @@ export default function VendorDetails() {
     return sessionStorage.getItem("vendorId") || "";
   });
 
-  console.log(" vednor idddddddddddddddddd", vendorId);
+  // console.log(" vednor idddddddddddddddddd", vendorId);
 
   const [remark, setRemark] = useState("");
 
@@ -193,7 +194,7 @@ export default function VendorDetails() {
     return realisedFreight || freightCharge;
   };
 
-  console.log("hjedhde", calculateFreightTotal());
+  // console.log("hjedhde", calculateFreightTotal());
 
   const calculateDataSumTotal = () => {
     if (!Array.isArray(data)) {
@@ -250,7 +251,7 @@ export default function VendorDetails() {
   const [bidIds, setBidIds] = useState([]);
   const [grossTotal, setGrossTotal] = useState(0);
 
-  console.log("grossssssssss total", grossTotal);
+  // console.log("grossssssssss total", grossTotal);
 
   const validateMandatoryFields = () => {
     const mandatoryFields = [
@@ -345,8 +346,8 @@ export default function VendorDetails() {
 
       setRevisedBid(revisedBid);
 
-      console.log("initial data ", initialData);
-      console.log("revised data ", revisedBid);
+      // console.log("initial data ", initialData);
+      // console.log("revised data ", revisedBid);
 
       if (!revisedBid) {
         // If revisedBid is false, format the event materials data
@@ -356,7 +357,7 @@ export default function VendorDetails() {
               ? item.bid_materials[0].material_type
               : null;
 
-          console.log("material type", materialType);
+          // console.log("material type", materialType);
 
           return {
             eventMaterialId: item.id,
@@ -395,7 +396,7 @@ export default function VendorDetails() {
 
         setGrossTotal(bidResponse.data.bids[currentIndex].gross_total);
 
-        console.log("bids", bids);
+        // console.log("bids", bids);
 
         // Process only the first element of the bids array
         if (bids.length > 0) {
@@ -454,7 +455,7 @@ export default function VendorDetails() {
           // Example usage
           const firstBid = bids[currentIndex];
           const freightData = processFreightData(firstBid);
-          console.log("Processed Freight Data: ", freightData);
+          // console.log("Processed Freight Data: ", freightData);
           setFreightData(freightData);
 
           const previousData = firstBid.bid_materials.map((material) => ({
@@ -511,13 +512,13 @@ export default function VendorDetails() {
 
           // Store the bidIds in a state
           setBidIds(bidIds); // Use your state setter for the bidIds
-          console.log("previous data", previousData);
-          console.log("updated data", updatedData);
+          // console.log("previous data", previousData);
+          // console.log("updated data", updatedData);
 
-          // console.log("Mapped first bid data: ", mappedData);
+          // // console.log("Mapped first bid data: ", mappedData);
           // setData(mappedData); // Assuming you want to set this data to state
         } else {
-          console.log("No bids available");
+          // console.log("No bids available");
         }
       }
     } catch (error) {
@@ -535,13 +536,13 @@ export default function VendorDetails() {
   );
 
   // Ensure freightChargeRaw is a string before replacing ₹ and commas
-  console.log("Type of freightChargeRaw:", typeof freightChargeRaw);
+  // console.log("Type of freightChargeRaw:", typeof freightChargeRaw);
 
   // Remove ₹ and commas, then parse it to a float (if not a valid number, default to 0)
   const freightCharge21 = parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0;
 
   // Log the parsed value
-  console.log("Parsed freight charge:", freightCharge21);
+  // console.log("Parsed freight charge:", freightCharge21);
 
   // const preparePayload = () => {
   //   const totalAmount = parseFloat(calculateDataSumTotal());
@@ -560,7 +561,7 @@ export default function VendorDetails() {
   //     total_amount: totalAmount,
   //   }));
 
-  //   console.log("------bid material :", bidMaterialsAttributes);
+  //   // console.log("------bid material :", bidMaterialsAttributes);
 
   //   // Utility function to safely fetch and process values from freightData
   //   const getFreightDataValue = (label, key) => {
@@ -614,7 +615,7 @@ export default function VendorDetails() {
   //     },
   //   };
 
-  //   console.log("Prepared Payload:", payload);
+  //   // console.log("Prepared Payload:", payload);
   //   return payload;
   // };
 
@@ -647,7 +648,7 @@ export default function VendorDetails() {
       };
     });
 
-    console.log("------bid material :", bidMaterialsAttributes);
+    // console.log("------bid material :", bidMaterialsAttributes);
 
     // Utility function to safely fetch and process values from freightData
     const getFreightDataValue = (label, key) => {
@@ -701,7 +702,7 @@ export default function VendorDetails() {
       },
     };
 
-    console.log("Prepared Payload:", payload);
+    // console.log("Prepared Payload:", payload);
     return payload;
   };
 
@@ -719,9 +720,9 @@ export default function VendorDetails() {
 
       const payload = preparePayload();
 
-      console.log("payloadssss", payload);
+      // console.log("payloadssss", payload);
 
-      console.log("vendor ID", vendorId);
+      // console.log("vendor ID", vendorId);
 
       const response = await axios.post(
         `https://vendors.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -734,10 +735,10 @@ export default function VendorDetails() {
         }
       );
 
-      console.log("API Response:", response.data);
+      // console.log("API Response:", response.data);
       alert("Bid submitted successfully!");
       await fetchEventData();
-      console.log("vendor ID2", vendorId);
+      // console.log("vendor ID2", vendorId);
 
       // setData(response.data.bid_materials_attributes || []);
     } catch (error) {
@@ -767,7 +768,7 @@ export default function VendorDetails() {
   //     total_amount: totalAmount,
   //   }));
 
-  //   console.log("------bid material :", bidMaterialsAttributes);
+  //   // console.log("------bid material :", bidMaterialsAttributes);
 
   //   // Utility function to safely fetch and process values from freightData
   //   const getFreightDataValue = (label, key) => {
@@ -825,7 +826,7 @@ export default function VendorDetails() {
   //     },
   //   };
 
-  //   console.log("Prepared Payload: revised,", payload);
+  //   // console.log("Prepared Payload: revised,", payload);
   //   return payload;
   // };
 
@@ -876,7 +877,7 @@ export default function VendorDetails() {
       };
     });
 
-    console.log("------bid material :", bidMaterialsAttributes);
+    // console.log("------bid material :", bidMaterialsAttributes);
 
     // Utility function to safely fetch and process values from freightData
     const getFreightDataValue = (label, key) => {
@@ -934,13 +935,13 @@ export default function VendorDetails() {
       },
     };
 
-    console.log("Prepared Payload: revised,", payload);
+    // console.log("Prepared Payload: revised,", payload);
     return payload;
   };
 
   const handleReviseBid = async () => {
     // Logic for revising an existing bid
-    console.log("Revising the existing bid...");
+    // console.log("Revising the existing bid...");
 
     // Example: API call to revise the bid
 
@@ -949,7 +950,7 @@ export default function VendorDetails() {
     );
 
     if (!userConfirmed) {
-      console.log("Bid revision canceled by user.");
+      // console.log("Bid revision canceled by user.");
       return; // Exit if the user selects "No"
     }
 
@@ -963,7 +964,7 @@ export default function VendorDetails() {
       }
 
       const payload2 = preparePayload2();
-      console.log("payloadssss2 revised", payload2);
+      // console.log("payloadssss2 revised", payload2);
 
       const response = await axios.post(
         `https://vendors.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -976,7 +977,7 @@ export default function VendorDetails() {
         }
       );
 
-      console.log("API Response revised....:", response.data);
+      // console.log("API Response revised....:", response.data);
 
       alert("Bid revised successfully!");
 
@@ -998,7 +999,17 @@ export default function VendorDetails() {
         const response = await axios.get(
           `https://vendors.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        console.log("API Response terms and condition:", response.data); //
+        const data = response.data
+        console.log("my data",data.state)
+
+        if (data.state == "expired") {
+          setIsBid(true);
+          console.log("isBid",isBid);
+          
+        } else {
+          setIsBid(false);
+        }
+        
         // setTerms(response.data.terms_and_conditions || []);
 
         const extractedTerms = response.data.resource_term_conditions.map(
@@ -1032,11 +1043,11 @@ export default function VendorDetails() {
   const [documentAttachment, setDocumentAttachment] = useState(true);
   const [deliveryDate, setDelivaryDate] = useState(null);
 
-  console.log("Event ID:", eventId);
+  // console.log("Event ID:", eventId);
   useEffect(() => {
     const fetchEventMaterials = async () => {
       // const eventId = 8
-      // console.log("Event ID:", eventId);
+      // // console.log("Event ID:", eventId);
       try {
         // Fetch data directly without headers
         const response = await axios.get(
@@ -1046,7 +1057,7 @@ export default function VendorDetails() {
         // Transform the API response into the required table data format
 
         setData1(response.data);
-        // console.log("response:", response.data);
+        // // console.log("response:", response.data);
         const isoDate = response.data.event_schedule.start_time;
         setDate(response.data.event_schedule.start_time);
         setEndDate(response.data.event_schedule.end_time_duration);
@@ -1109,7 +1120,7 @@ export default function VendorDetails() {
 
   // Call the function and log the result
   const formattedDate = formatDate(isoDate);
-  // console.log("Formatted Date:", formattedDate);
+  // // console.log("Formatted Date:", formattedDate);
 
   //end date
   const calculateEndDate = (date) => {
@@ -1166,11 +1177,11 @@ export default function VendorDetails() {
   // console.log(formattedEndDate);
   // console.log("end d", endDate);
 
-  // console.log("data1:", data1);
+  // // console.log("data1:", data1);
 
   // Function to handle button click and navigate
   const handleNavigate = () => {
-    // console.log("vendor list ");
+    // // console.log("vendor list ");
     navigate(
       "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
     ); // Redirect to /vendor-list page
@@ -1191,7 +1202,7 @@ export default function VendorDetails() {
       );
 
       if (response.ok) {
-        console.log("Counter offer declined");
+        // console.log("Counter offer declined");
 
         // Retrieve the first bid data again (to restore it)
         const bidResponse = await axios.get(
@@ -1201,7 +1212,7 @@ export default function VendorDetails() {
 
         if (bids.length > 0) {
           const firstBid = bids[currentIndex];
-          console.log("First bid data:", firstBid);
+          // console.log("First bid data:", firstBid);
 
           // Process Freight Data (Optional)
           const processFreightData = (bid) => [
@@ -1253,13 +1264,13 @@ export default function VendorDetails() {
             landedAmount: material.landed_amount,
           }));
 
-          console.log("Previous data:", previousData);
+          // console.log("Previous data:", previousData);
           setPreviousData(previousData);
 
           // Assuming updatedData comes from the response or API
           const responseData = await response.json();
           const updatedData = responseData.updatedData || [];
-          console.log("Updated data:", updatedData);
+          // console.log("Updated data:", updatedData);
 
           // Set data based on the presence of updatedData
           setData(updatedData.length > 0 ? updatedData : previousData);
@@ -1279,7 +1290,7 @@ export default function VendorDetails() {
   const handleAccept = async () => {
     const payload = { status: "accepted" };
 
-    console.log("Payload being sent:", payload);
+    // console.log("Payload being sent:", payload);
 
     try {
       // API call to update status
@@ -1292,10 +1303,10 @@ export default function VendorDetails() {
         }
       );
 
-      console.log("Response from API:", response);
+      // console.log("Response from API:", response);
 
       if (response.ok) {
-        console.log("Counter offer accepted");
+        // console.log("Counter offer accepted");
 
         // Fetch bids
         const bidResponse = await axios.get(
@@ -1303,11 +1314,11 @@ export default function VendorDetails() {
         );
 
         const bids = bidResponse.data.bids;
-        console.log("Bids array:", bids);
+        // console.log("Bids array:", bids);
 
         if (bids.length > 0) {
           const firstBid = bids[currentIndex];
-          console.log("First bid data:", firstBid);
+          // console.log("First bid data:", firstBid);
 
           // Process Freight Data (Optional)
           const processFreightData = (bid) => [
@@ -1359,13 +1370,13 @@ export default function VendorDetails() {
             landedAmount: material.landed_amount,
           }));
 
-          console.log("Previous data:", previousData);
+          // console.log("Previous data:", previousData);
           setPreviousData(previousData);
 
           // Assuming updatedData comes from the response or API
           const responseData = await response.json();
           const updatedData = responseData.updatedData || [];
-          console.log("Updated data:", updatedData);
+          // console.log("Updated data:", updatedData);
 
           // Set data based on the presence of updatedData
           setData(updatedData.length > 0 ? updatedData : previousData);
@@ -2191,7 +2202,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled
+                                disabled={isBid}
                               />
                             ),
 
@@ -2202,7 +2213,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled
+                                disabled={isBid}
                               />
                             ),
 
@@ -2237,6 +2248,7 @@ export default function VendorDetails() {
                                   handleUnitChange(selected, rowIndex)
                                 }
                                 style={otherColumnsStyle} // Other columns are scrollable
+                                disabled={isBid}
                               />
                             ),
 
@@ -2247,7 +2259,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled
+                                disabled={isBid}
                               />
                             ),
                             quantity: (cell, rowIndex) => (
@@ -2264,7 +2276,7 @@ export default function VendorDetails() {
                                   )
                                 }
                                 placeholder="Enter Quantity"
-                                disabled
+                                disabled={isBid}
                                 style={otherColumnsStyle}
                               />
                             ),
@@ -2346,6 +2358,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2364,6 +2377,7 @@ export default function VendorDetails() {
                                 }
                                 placeholder="Enter Discount"
                                 style={otherColumnsStyle}
+                                disabled={isBid}
                               />
                             ),
 
@@ -2444,6 +2458,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2523,6 +2538,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2604,6 +2620,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2652,6 +2669,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2732,6 +2750,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2810,6 +2829,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2887,6 +2907,7 @@ export default function VendorDetails() {
                                     )
                                   }
                                   style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
                             },
@@ -2904,6 +2925,7 @@ export default function VendorDetails() {
                                 }
                                 placeholder="Enter Vendor Remark"
                                 style={otherColumnsStyle}
+                                disabled={isBid}
                               />
                             ),
 
@@ -2936,6 +2958,7 @@ export default function VendorDetails() {
                                   }
                                 }}
                                 style={otherColumnsStyle}
+                                disabled={isBid}
                               />
                             ),
                             amount: (_, rowIndex) => {
@@ -3182,23 +3205,8 @@ export default function VendorDetails() {
 
                       onClick={revisedBid ? handleReviseBid : handleSubmit} // Conditional onClick
                       // disabled={loading}
-                      disabled={loading || counterData > 0} // Disable if loading or counterData exists
-                      style={{
-                        backgroundColor:
-                          loading || counterData > 0 ? "#ccc" : "#9e2c2d", // Gray for disabled, purple for enabled
-                        color: loading || counterData > 0 ? "#666" : "#fff", // Muted text for disabled, white for enabled
-                        border:
-                          loading || counterData > 0
-                            ? "1px solid #aaa"
-                            : "1px solid #9e2c2d", // Adjust border color
-                        cursor:
-                          loading || counterData > 0
-                            ? "not-allowed"
-                            : "pointer", // Not-allowed cursor for disabled
-                        padding: "10px 20px", // Add padding for consistent button appearance
-                        borderRadius: "5px", // Add rounded corners
-                      }}
-                      className="m-0"
+                      disabled={isBid || loading || counterData > 0} // Disable if loading or counterData exists
+                      className={`button ${isBid || loading || counterData > 0 ? 'disabled-btn' : 'button-enabled'}`}
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button>
