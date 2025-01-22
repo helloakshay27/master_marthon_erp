@@ -35,7 +35,7 @@ const UserOverview = () => {
       try {
         // Fetch data directly without headers
         const response = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}/vendor_show?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}/vendor_show?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         // Transform the API response into the required table data format
