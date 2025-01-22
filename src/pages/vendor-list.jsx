@@ -47,6 +47,8 @@ export default function VendorListPage() {
     pagination: {},
   });
 
+  const [eoiEvents, setEoiEvents] = useState({ events: [], pagination: {} });
+
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     created_by_id_in: "",
@@ -73,14 +75,14 @@ export default function VendorListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [vendorId, setVendorId] = useState(() => {
     // Retrieve the vendorId from sessionStorage or default to an empty string
-    return sessionStorage.getItem('vendorId') || "";
+    return sessionStorage.getItem("vendorId") || "";
   });
 
   useEffect(() => {
     // Save vendorId in session storage
     console.log("vendorId", vendorId);
 
-    sessionStorage.setItem('vendorId', vendorId);
+    sessionStorage.setItem("vendorId", vendorId);
   }, [vendorId]);
   const [vendorList, setVendorList] = useState([]);
 
@@ -136,7 +138,7 @@ export default function VendorListPage() {
       const token = urlParams.get("token");
 
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/events/advance_filter_options",
+        "https://vendors.lockated.com/rfq/events/advance_filter_options",
         {
           params: {
             token: token,
@@ -160,22 +162,17 @@ export default function VendorListPage() {
       });
     } catch (err) {
       console.error("Error fetching filter options:", err);
-      setError(
-        err.response?.data?.message || "Failed to fetch filter options"
-      );
+      setError(err.response?.data?.message || "Failed to fetch filter options");
     } finally {
       setLoading(false);
     }
   };
 
-
   useEffect(() => {
-
     fetchFilterOptions();
   }, []);
 
   const token = new URLSearchParams(window.location.search).get("token");
-
 
   const fetchEvents = async (page = 1) => {
     setLoading(true);
@@ -183,49 +180,105 @@ export default function VendorListPage() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const queryFilters = {
-        ...(filters.created_by_id_in && { "q[created_by_id_in]": filters.created_by_id_in }),
-        ...(filters.event_type_detail_award_scheme_in && { "q[event_type_detail_award_scheme_in]": filters.event_type_detail_award_scheme_in }),
+        ...(filters.created_by_id_in && {
+          "q[created_by_id_in]": filters.created_by_id_in,
+        }),
+        ...(filters.event_type_detail_award_scheme_in && {
+          "q[event_type_detail_award_scheme_in]":
+            filters.event_type_detail_award_scheme_in,
+        }),
         ...(filters.status_in && { "q[status_in]": filters.status_in }),
         ...(filters.title_in && { "q[title_in]": filters.title_in }),
-        ...(filters.event_materials_inventory_id_in && { "q[event_materials_inventory_id_in]": filters.event_materials_inventory_id_in }),
-        ...(filters.event_materials_pms_inventory_inventory_type_id_in && { "q[event_materials_pms_inventory_inventory_type_id_in]": filters.event_materials_pms_inventory_inventory_type_id_in }),
-        ...(filters.event_materials_id_in && { "q[event_materials_id_in]": filters.event_materials_id_in }),
-        ...(filters.event_no_cont && { "q[event_no_cont]": filters.event_no_cont }),
-
+        ...(filters.event_materials_inventory_id_in && {
+          "q[event_materials_inventory_id_in]":
+            filters.event_materials_inventory_id_in,
+        }),
+        ...(filters.event_materials_pms_inventory_inventory_type_id_in && {
+          "q[event_materials_pms_inventory_inventory_type_id_in]":
+            filters.event_materials_pms_inventory_inventory_type_id_in,
+        }),
+        ...(filters.event_materials_id_in && {
+          "q[event_materials_id_in]": filters.event_materials_id_in,
+        }),
+        ...(filters.event_no_cont && {
+          "q[event_no_cont]": filters.event_no_cont,
+        }),
       };
 
-      const liveEventsUrl = "https://marathon.lockated.com/rfq/events/live_events";
-      const pastEventsUrl = "https://marathon.lockated.com/rfq/events/past_events";
-      const allEventsUrl = "https://marathon.lockated.com/rfq/events";
+      const liveEventsUrl =
+        "https://vendors.lockated.com/rfq/events/live_events";
+      const pastEventsUrl =
+        "https://vendors.lockated.com/rfq/events/past_events";
+      const allEventsUrl = "https://vendors.lockated.com/rfq/events";
 
-      const [liveResponse, historyResponse, allResponse] = await Promise.all([
-        axios.get(liveEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            event_vendor_id: vendorId,
-            ...queryFilters,
-          },
-        }),
-        axios.get(pastEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            event_vendor_id: vendorId,
-            ...queryFilters,
-          },
-        }),
-        axios.get(allEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            event_vendor_id: vendorId,
-            ...queryFilters,
-          },
-        }),
-      ]);
+      const eoiUrl = "https://vendors.lockated.com/rfq/events/eois";
+
+      const [liveResponse, historyResponse, allResponse, eoiResponse] =
+        await Promise.all([
+          axios.get(liveEventsUrl, {
+            params: {
+              token: token,
+              page: page,
+              event_vendor_id: vendorId,
+              ...queryFilters,
+            },
+          }),
+          axios.get(pastEventsUrl, {
+            params: {
+              token: token,
+              page: page,
+              event_vendor_id: vendorId,
+              ...queryFilters,
+            },
+          }),
+          axios.get(allEventsUrl, {
+            params: {
+              token: token,
+              page: page,
+              event_vendor_id: vendorId,
+              ...queryFilters,
+            },
+          }),
+          axios.get(eoiUrl, {
+            params: {
+              token: token,
+              page: page,
+              vendor_id_in: vendorId,
+              ...queryFilters,
+            },
+          }),
+        ]);
+
+      // console.log("EOI API Response:", eoiResponse.data);
+      // console.log("EOI API Request Params:", {
+      //   token,
+      //   page,
+      //   vendor_id_in: vendorId,
+      //   ...queryFilters,
+      // });
 
       // Set state for live events with pagination
+
+      // Map EOI response to desired format
+      const mappedEoiEvents = eoiResponse.data.expression_of_interests.map(
+        (eoi) => ({
+          id: eoi.id,
+          event_id: eoi.event.id,
+          status: eoi.status,
+          event_title: eoi.event.event_title,
+          event_no: eoi.event.event_no,
+          start_time: eoi.event.start_time,
+          end_time: eoi.event.end_time,
+          created_at: eoi.event.created_at,
+          created_by: eoi.event.created_by,
+          event_type: eoi.event.event_type_detail?.event_type || "N/A",
+          event_configuration:
+            eoi.event.event_type_detail?.event_configuration || "N/A",
+          vendor_name: eoi.vendor?.full_name || "N/A",
+          vendor_status: eoi.vendor?.status || "N/A",
+        })
+      );
+
       setLiveEvents({
         events: liveResponse.data.events || [],
         pagination: liveResponse.data.pagination || {},
@@ -242,6 +295,13 @@ export default function VendorListPage() {
         events: allResponse.data.events || [],
         pagination: allResponse.data.pagination || {},
       });
+      console.log("EOI API Response:", eoiResponse.data);
+
+      setEoiEvents({
+        // events: eoiResponse.data.events || [],
+        events: mappedEoiEvents || [],
+        pagination: eoiResponse.data.pagination || {},
+      });
     } catch (error) {
       console.error("Error fetching event data:", error);
       setError(error.response?.data?.message || "Failed to fetch events");
@@ -252,10 +312,7 @@ export default function VendorListPage() {
 
   useEffect(() => {
     fetchEvents();
-
   }, [activeTab, vendorId]);
-
-
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
@@ -278,6 +335,13 @@ export default function VendorListPage() {
         return {
           events: allEventsData.events,
           pagination: allEventsData.pagination,
+        };
+
+      case "eoi": // Add this case for EOI data
+        console.log("EOI events:", eoiEvents); // Debug o
+        return {
+          events: eoiEvents.events, // Ensure you have a state for EOI events
+          pagination: eoiEvents.pagination,
         };
       default:
         return { events: [], pagination: {} };
@@ -309,8 +373,6 @@ export default function VendorListPage() {
 
   const pageNumbers = getPageRange(); // Get the current page range for display
 
-
-
   const handleFilterChange = (key, value) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -322,14 +384,12 @@ export default function VendorListPage() {
     setActiveTab(tab);
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchEvents();
     handleClose();
     // handleReset();
   };
-
 
   const fetchSuggestions = async (query) => {
     if (!query) {
@@ -342,7 +402,7 @@ export default function VendorListPage() {
     setError("");
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/rfq/events?token=${token}&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchQuery}`
+        `https://vendors.lockated.com/rfq/events?token=${token}&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchQuery}`
       );
 
       // const { live_events, history_events, all_events } = response.data;
@@ -364,6 +424,11 @@ export default function VendorListPage() {
 
       // Set state for all events with pagination
       setAllEventsData({
+        events: response.data?.events || [],
+        pagination: response.data?.pagination || {},
+      });
+
+      setEoiEvents({
         events: response.data?.events || [],
         pagination: response.data?.pagination || {},
       });
@@ -425,7 +490,7 @@ export default function VendorListPage() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/events/event_vendors_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411&page=1"
+        "https://vendors.lockated.com/rfq/events/event_vendors_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411&page=1"
       );
 
       const vendorData = response.data.list;
@@ -446,8 +511,6 @@ export default function VendorListPage() {
   useEffect(() => {
     vendorDetails();
   }, []);
-
-
 
   const eventProjectColumns = [
     { label: "Sr.No.", key: "srNo" },
@@ -505,15 +568,12 @@ export default function VendorListPage() {
                     </option>
                   ))}
                 </select>
-
-
-
               </div>
             </div>
 
             <div className="material-boxes mt-3">
               <div className="container-fluid">
-                <div className="row separteinto5 justify-content-left">
+                {/* <div className="row separteinto5 justify-content-left">
                   <div className="col-md-2 text-center">
                     <div
                       className="content-box"
@@ -525,7 +585,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "all" ? "#8b0203" : "#fff",
+                          activeTab === "all" ? "#de7008" : "#fff",
                         color: activeTab === "all" ? "white" : "black", // Adjust text color for better contrast
                       }}
                     >
@@ -547,7 +607,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "live" ? "#8b0203" : "#fff",
+                          activeTab === "live" ? "#de7008" : "#fff",
                         color: activeTab === "live" ? "white" : "black", // Adjust text color for better contrast
                       }}
                     >
@@ -569,7 +629,7 @@ export default function VendorListPage() {
                             ? "2px solid #007bff"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "history" ? "#8b0203" : "#fff",
+                          activeTab === "history" ? "#de7008" : "#fff",
                         color: "black",
                       }}
                     >
@@ -579,7 +639,98 @@ export default function VendorListPage() {
                       </p>
                     </div>
                   </div>
+                </div> */}
+
+                <div className="row separteinto5 justify-content-left">
+                  <div className="col-md-2 text-center">
+                    <div
+                      className="content-box"
+                      onClick={() => handleTabChange("all")}
+                      style={{
+                        cursor: "pointer",
+                        border:
+                          activeTab === "all"
+                            ? "2px solid orange"
+                            : "1px solid #ccc",
+                        backgroundColor:
+                          activeTab === "all" ? "#9e2c2d" : "#fff",
+                        color: activeTab === "all" ? "white" : "black",
+                      }}
+                    >
+                      <h4 className="content-box-title">All Events</h4>
+                      <p className="content-box-sub">
+                        {allEventsData.pagination?.total_count || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="col-md-2 text-center">
+                    <div
+                      className="content-box"
+                      onClick={() => handleTabChange("live")}
+                      style={{
+                        cursor: "pointer",
+                        border:
+                          activeTab === "live"
+                            ? "2px solid orange"
+                            : "1px solid #ccc",
+                        backgroundColor:
+                          activeTab === "live" ? "#9e2c2d" : "#fff",
+                        color: activeTab === "live" ? "white" : "black",
+                      }}
+                    >
+                      <h4 className="content-box-title">Live Events</h4>
+                      <p className="content-box-sub">
+                        {liveEvents.pagination?.total_count}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="col-md-2 text-center">
+                    <div
+                      className="content-box"
+                      onClick={() => handleTabChange("history")}
+                      style={{
+                        cursor: "pointer",
+                        border:
+                          activeTab === "history"
+                            ? "2px solid orange"
+                            : "1px solid #ccc",
+                        backgroundColor:
+                          activeTab === "history" ? "#9e2c2d" : "#fff",
+                        color: "black",
+                      }}
+                    >
+                      <h4 className="content-box-title">History Events</h4>
+                      <p className="content-box-sub">
+                        {historyEvents.pagination?.total_count || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="col-md-2 text-center">
+                    <div
+                      className="content-box"
+                      onClick={() => handleTabChange("eoi")}
+                      style={{
+                        cursor: "pointer",
+                        border:
+                          activeTab === "eoi"
+                            ? "2px solid orange"
+                            : "1px solid #ccc",
+                        backgroundColor:
+                          activeTab === "eoi" ? "#9e2c2d" : "#fff",
+                        color: activeTab === "eoi" ? "white" : "black",
+                      }}
+                    >
+                      <h4 className="content-box-title">EOI Events</h4>
+                      <p className="content-box-sub">
+                        {eoiEvents.pagination?.total_count || 0}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
                 <div className="card mt-4 pb-4">
                   <CollapsibleCard title="Quick Filter">
                     <form onSubmit={handleSubmit}>
@@ -611,8 +762,8 @@ export default function VendorListPage() {
                             value={
                               filters.title_in
                                 ? filterOptions.event_titles.find(
-                                  (opt) => opt.value === filters.title_in
-                                )
+                                    (opt) => opt.value === filters.title_in
+                                  )
                                 : null
                             }
                             placeholder="Select Event Title"
@@ -635,8 +786,8 @@ export default function VendorListPage() {
                             value={
                               filters.event_no_cont
                                 ? filterOptions.event_numbers.find(
-                                  (opt) => opt.value === filters.event_no_cont
-                                )
+                                    (opt) => opt.value === filters.event_no_cont
+                                  )
                                 : null
                             }
                             placeholder="Select Event Number"
@@ -659,8 +810,8 @@ export default function VendorListPage() {
                             value={
                               filters.status_in
                                 ? filterOptions.statuses.find(
-                                  (opt) => opt.value === filters.status_in
-                                )
+                                    (opt) => opt.value === filters.status_in
+                                  )
                                 : null
                             }
                             placeholder="Select Status"
@@ -683,9 +834,9 @@ export default function VendorListPage() {
                             value={
                               filters.created_by_id_in
                                 ? filterOptions.creaters.find(
-                                  (opt) =>
-                                    opt.value === filters.created_by_id_in
-                                )
+                                    (opt) =>
+                                      opt.value === filters.created_by_id_in
+                                  )
                                 : null
                             }
                             placeholder="Select Creator"
@@ -711,23 +862,23 @@ export default function VendorListPage() {
                             value={searchQuery}
                             onChange={handleInputChange}
                             onFocus={() => setIsSuggestionsVisible(true)}
-                            onBlur={() => setTimeout(() => setIsSuggestionsVisible(false), 200)}
+                            onBlur={() =>
+                              setTimeout(
+                                () => setIsSuggestionsVisible(false),
+                                200
+                              )
+                            }
                           />
 
                           <div className="input-group-append">
-                            <button type="sumbit"
-
+                            <button
+                              type="sumbit"
                               className="btn btn-md btn-default"
                             >
                               <SearchIcon />
                             </button>
-
                           </div>
-
-
                         </div>
-
-
                       </form>
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul className="suggestions-list">
@@ -737,7 +888,8 @@ export default function VendorListPage() {
                               className="suggestion-item"
                               onClick={() => handleSuggestionClick(suggestion)}
                             >
-                              {suggestion.event_title} {/* Display event title */}
+                              {suggestion.event_title}{" "}
+                              {/* Display event title */}
                             </li>
                           ))}
                         </ul>
@@ -752,7 +904,7 @@ export default function VendorListPage() {
                           <div className="row justify-content-end px-3">
                             <div className="col-md-3">
                               <button
-                                style={{ color: "#8b0203" }}
+                                style={{ color: "#9e2c2d" }}
                                 className="btn btn-md"
                                 onClick={handleModalShow}
                               >
@@ -761,7 +913,7 @@ export default function VendorListPage() {
                             </div>
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#8b0203" }}
+                                  style={{ color: "#de7008" }}
                                   type="submit"
                                   className="btn btn-md"
                                 >
@@ -770,7 +922,7 @@ export default function VendorListPage() {
                               </div> */}
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#8b0203" }}
+                                  style={{ color: "#de7008" }}
                                   id="downloadButton"
                                   type="submit"
                                   className="btn btn-md"
@@ -780,13 +932,13 @@ export default function VendorListPage() {
                               </div> */}
                             {/* <div className="col-md-3">
                                 <button
-                                  style={{ color: "#8b0203" }}
+                                  style={{ color: "#de7008" }}
                                   type="submit"
                                   className="btn btn-md"
                                   onClick={handleSettingModalShow}
                                 >
                                   <SettingIcon
-                                    color={"#8b0203"}
+                                    color={"#de7008"}
                                     style={{ width: "23px", height: "23px" }}
                                   />
                                 </button>
@@ -832,7 +984,9 @@ export default function VendorListPage() {
                               <td>{event.event_no || "N/A"}</td>
                               <td>
                                 {event.event_schedule?.start_time ? (
-                                  <FormatDate timestamp={event.event_schedule?.start_time} />
+                                  <FormatDate
+                                    timestamp={event.event_schedule?.start_time}
+                                  />
                                 ) : (
                                   "N/A"
                                 )}
@@ -840,7 +994,9 @@ export default function VendorListPage() {
 
                               <td>
                                 {event.event_schedule?.end_time ? (
-                                  <FormatDate timestamp={event.event_schedule?.end_time} />
+                                  <FormatDate
+                                    timestamp={event.event_schedule?.end_time}
+                                  />
                                 ) : (
                                   "N/A"
                                 )}
@@ -851,7 +1007,6 @@ export default function VendorListPage() {
                                 ) : (
                                   "N/A"
                                 )}
-
                               </td>
                               <td>{event.created_by || "N/A"}</td>
                               <td>
@@ -863,7 +1018,7 @@ export default function VendorListPage() {
                               </td>
                               <td>{event.status || "N/A"}</td>
                               <td>
-                                <button
+                                {/* <button
                                   className="btn "
                                   onClick={() =>
                                     navigate(`/user-list/${event.id}`)
@@ -875,6 +1030,42 @@ export default function VendorListPage() {
                                     height="16"
                                     fill="currentColor"
                                     class="bi bi-eye"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                  </svg>{" "}
+                                </button> */}
+
+                                <button
+                                  className="btn "
+                                  onClick={() => {
+                                    // Check if the event is an EOI (when event_type_detail is null or if the status is indicative of EOI)
+                                    if (
+                                      event.event_type_detail?.event_type ===
+                                        "eoi" ||
+                                      !event.event_type_detail?.event_type
+                                    ) {
+                                      // If event_type is 'eoi' or missing, navigate to the EOI details page
+                                      navigate(
+                                        `/eoi-details/${event.event_id}?eoi_id=${event.id}`
+                                      );
+                                      // If event_type_detail is null or it explicitly mentions 'eoi', navigate to the EOI details page
+                                      navigate(
+                                        `/eoi-details/${event.event_id}?eoi_id=${event.id}`
+                                      );
+                                    } else {
+                                      // For Live, All, History, navigate to the user list page
+                                      navigate(`/user-list/${event.id}`);
+                                    }
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-eye"
                                     viewBox="0 0 16 16"
                                   >
                                     <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
@@ -892,8 +1083,9 @@ export default function VendorListPage() {
                     <ul className="pagination justify-content-center d-flex">
                       {/* First Button */}
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -905,8 +1097,9 @@ export default function VendorListPage() {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -923,10 +1116,11 @@ export default function VendorListPage() {
                       {pageNumbers.map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${pagination.current_page === pageNumber
-                            ? "active"
-                            : ""
-                            }`}
+                          className={`page-item ${
+                            pagination.current_page === pageNumber
+                              ? "active"
+                              : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -939,10 +1133,11 @@ export default function VendorListPage() {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -959,10 +1154,11 @@ export default function VendorListPage() {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1026,7 +1222,7 @@ export default function VendorListPage() {
                           >
                             <path
                               d="M9 1L1 9L9 17"
-                              stroke="#8b0203"
+                              stroke="#9e2c2d"
                               strokeWidth="1.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -1081,7 +1277,8 @@ export default function VendorListPage() {
                           isClearable
                           value={filterOptions.material_name.find(
                             (opt) =>
-                              opt.value === filters.event_materials_inventory_id_in
+                              opt.value ===
+                              filters.event_materials_inventory_id_in
                           )}
                           onChange={(option) =>
                             handleFilterChange(

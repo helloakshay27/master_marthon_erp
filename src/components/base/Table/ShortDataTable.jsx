@@ -155,10 +155,12 @@ export default function ShortDataTable({
   // };
 
   const handleInputChange = (index, newValue) => {
+    console.log("Input value:", newValue); // Debugging input
     const updatedData = [...data];
 
     // Block empty inputs
-    if (!newValue.trim()) {
+
+    if (!newValue) {
       updatedData[index].value.firstBid = "";
       updatedData[index].value.counterBid = "";
       onValueChange(updatedData);
@@ -167,19 +169,33 @@ export default function ShortDataTable({
 
     const currentLabel = updatedData[index].label;
 
-    // Validation based on label
+    // if (
+    //   ["Warranty Clause", "Payment Terms", "Loading / Unloading"].includes(
+    //     currentLabel
+    //   )
+    // ) {
+    //   // Allow only letters and spaces
+    //   if (/[^a-zA-Z\s]/.test(newValue)) {
+    //     alert("Please enter a valid string value (letters and spaces only).");
+    //     return;
+    //   }
+    // }
+
     if (["Freight Charge", "GST on Freight"].includes(currentLabel)) {
-      // Allow only numbers
+      // Validate numeric values
       if (!/^\d+(\.\d+)?$/.test(newValue)) {
         alert("Please enter a valid numeric value.");
-        return; // Stop updating if invalid
+        return;
       }
-    } else if (["Warranty Clause", "Payment Terms"].includes(currentLabel)) {
-      // Allow only strings (no numbers or special characters)
+    } else if (
+      ["Warranty Clause", "Payment Terms", "Loading / Unloading"].includes(
+        currentLabel
+      )
+    ) {
+      // Validate string values with spaces
       if (/[^a-zA-Z\s]/.test(newValue)) {
-        // Check for anything outside letters/spaces
         alert("Please enter a valid string value (letters and spaces only).");
-        return; // Stop updating if invalid
+        return;
       }
     }
 
@@ -198,14 +214,36 @@ export default function ShortDataTable({
       (row) => row.label === "Realised Freight"
     );
 
+    // if (freightChargeRow && gstRow && realisedFreightIndex !== -1) {
+    //   const freightCharge =
+    //     parseFloat(
+    //       (
+    //         freightChargeRow.value.counterBid ||
+    //         freightChargeRow.value.firstBid ||
+    //         "0"
+    //       ).replace(/₹|,/g, "")
+    //     ) || 0;
+
+    //   const gstOnFreight = gstRow.value.firstBid
+    //     ? parseFloat(String(gstRow.value.firstBid).replace(/%/g, "") || "0")
+    //     : 0;
+
+    //   const realisedFreight = (freightCharge * gstOnFreight) / 100;
+
+    //   updatedData[realisedFreightIndex].value.firstBid = `₹${(
+    //     freightCharge + realisedFreight
+    //   ).toFixed(2)}`;
+    //   updatedData[realisedFreightIndex].value.counterBid = "";
+    // }
+
     if (freightChargeRow && gstRow && realisedFreightIndex !== -1) {
       const freightCharge =
         parseFloat(
-          (
+          String(
             freightChargeRow.value.counterBid ||
-            freightChargeRow.value.firstBid ||
-            "0"
-          ).replace(/₹|,/g, "")
+              freightChargeRow.value.firstBid ||
+              "0"
+          ).replace(/₹|,/g, "") // Ensure it's a string before replacing
         ) || 0;
 
       const gstOnFreight = gstRow.value.firstBid
@@ -214,11 +252,16 @@ export default function ShortDataTable({
 
       const realisedFreight = (freightCharge * gstOnFreight) / 100;
 
-      updatedData[realisedFreightIndex].value.firstBid = `₹${(
-        freightCharge + realisedFreight
-      ).toFixed(2)}`;
+      // Only set a value if freightCharge and realisedFreight are valid
+      updatedData[realisedFreightIndex].value.firstBid =
+        freightCharge === 0 && realisedFreight === 0
+          ? "₹0.00" // Explicitly set to zero
+          : `₹${(freightCharge + realisedFreight).toFixed(2)}`;
+
       updatedData[realisedFreightIndex].value.counterBid = "";
     }
+
+    updatedData[index].value.firstBid = newValue; // Update state
 
     onValueChange(updatedData);
   };
@@ -243,7 +286,7 @@ export default function ShortDataTable({
                 style={{
                   padding: "12px",
                   fontWeight: "bold",
-                  background: "#8b0203",
+                  background: "#9e2c2d",
                 }}
               >
                 {row.label}
@@ -420,7 +463,8 @@ export default function ShortDataTable({
                   <input
                     type="text"
                     className="form-control"
-                    value={firstBid}
+                    // value={firstBid}
+                    value={row.value.firstBid}
                     onChange={(e) => handleInputChange(index, e.target.value)}
                     style={{ backgroundColor: "#fff", color: "#000" }}
                   />
