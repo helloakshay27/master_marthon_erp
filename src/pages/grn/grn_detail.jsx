@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is included
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { baseURL } from "../../confi/apiDomain";
+import { baseURL1 } from "../../confi/apiDomain";
 import Select from "react-select"; // Importing the react-select component
 import FormattedDate from "../../components/FormattedDate";
 
@@ -125,7 +125,7 @@ const GoodReceiveNoteDetails = () => {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
+        `${baseURL1}/good_receive_notes/${id}/update_status.json?token=${token}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -145,7 +145,7 @@ const GoodReceiveNoteDetails = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
-    const apiUrl = `${baseURL}/good_receive_notes/${id}.json?token=${token}`;
+    const apiUrl = `${baseURL1}/good_receive_notes/${id}.json?token=${token}`;
 
     fetch(apiUrl)
       .then((response) => {

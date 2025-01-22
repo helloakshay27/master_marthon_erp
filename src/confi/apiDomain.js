@@ -12,6 +12,7 @@ let role = ""; // Default to an empty string
 if (typeof window !== "undefined" && sessionStorage.getItem("role")) {
   role = sessionStorage.getItem("role");
 }
+const baseURL1 = "https://marathon.lockated.com/";
 
 // Export the baseURL, token, and role
-export { baseURL, token, role };
+export { baseURL,baseURL1, token, role };
