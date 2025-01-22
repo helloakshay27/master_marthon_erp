@@ -108,11 +108,11 @@ export default function CreateRfq() {
                 aria-labelledby="pills-home-tab"
               >
                 <div className="container-fluid">
-                  <CreateRFQForm
+                  {/* <CreateRFQForm
                     handleEventTypeModalShow={handleEventTypeModalShow}
                     handleEventScheduleModalShow={handleEventScheduleModalShow}
                     handleSettingModalShow={handleSettingModalShow}
-                  />
+                  /> */}
                   <OrderDetails
                     orderDropdown={orderDropdown}
                     orderDetails={orderDetails}
@@ -127,7 +127,7 @@ export default function CreateRfq() {
                   <div className="row mt-5 me-3">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
-                      <Table columns={auditLogColumns} data={auditLogData} />
+                      <Table columns={auditLogColumns} data={auditLogData} onRowSelect={undefined} resetSelectedRows={undefined} onResetComplete={undefined} />
                     </div>
                   </div>
                 </div>
@@ -167,14 +167,12 @@ export default function CreateRfq() {
               className: "purple-btn2",
             },
           },
-        ]}
-      />
-      <LayoutModal show={settingShow} onHide={handleSettingClose} />
+        ]} handleEventConfigurationSubmit={undefined} dynamicExtensionConfigurations={undefined} trafficType={undefined} handleTrafficChange={undefined} handleDynamicExtensionBid={undefined}      />
+      <LayoutModal show={settingShow} onHide={handleSettingClose} items={undefined} />
       <VendorModal show={vendorModal} onHide={handleVendorClose} />
       <EventScheduleModal
         show={eventSchedule}
-        onHide={handleEventScheduleClose}
-      />
+        onHide={handleEventScheduleClose} handleSaveSchedule={undefined}      />
       <DocumentModal
         show={documentModal}
         onHide={handleDocumentClose}

@@ -307,18 +307,7 @@ function Members() {
                 {/* <li>
                 <Link to="good_receive_notes/:id">grn_detaisl</Link>
               </li> */}
-                {/* <li>
-                <Link to="/create-rfq">create_rfq</Link>
-              </li>
-              <li>
-                <Link to="/erp-rfq-auction-events-4f">erp_rfq_auction_events_4f</Link>
-              </li>
-              <li>
-                <Link to="/erp-rfq-auction-events-4h">erp_rfq_auction_events_4h</Link>
-              </li>
-              <li>
-                <Link to="/erp-rfq-detail-price-trends4h">erp_rfq_detail_price_trends4h</Link>
-              </li> */}
+
                 {/* <li>
                 <Link to="/stock_register_detail/47">stock_register detail</Link>
               </li> */}
@@ -331,6 +320,24 @@ function Members() {
               <li>
                 <Link to="/approvals-list">approvals_list</Link>
               </li> */}
+              </ul>
+            </div>
+
+            <div className="m-3">
+              <h1>RFQ OLD</h1>
+              <ul>
+              <li>
+                <Link to="/create-rfq">create_rfq</Link>
+              </li>
+              <li>
+                <Link to="/erp-rfq-auction-events-4f">erp_rfq_auction_events_4f</Link>
+              </li>
+              <li>
+                <Link to="/erp-rfq-auction-events-4h">erp_rfq_auction_events_4h</Link>
+              </li>
+              <li>
+                <Link to="/erp-rfq-detail-price-trends4h">erp_rfq_detail_price_trends4h</Link>
+              </li>
               </ul>
             </div>
 
