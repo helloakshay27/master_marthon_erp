@@ -434,7 +434,7 @@ export default function CreateEvent() {
           descriptionOfItem: material.descriptionOfItem,
           inventory_id: material.inventory_id,
           quantity: material.quantity,
-          unit: material.unit,
+          uom: material.unit,
           location: material.location,
           rate: material.rate,
           amount: material.amount,
