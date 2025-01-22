@@ -14,7 +14,7 @@ const RejectedBidsModal = ({ show, handleClose }) => {
   const fetchRejectedBids = async () => {
     try {
       const response = await fetch(
-        "https://vendors.lockated.com/rfq/events/8/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397"
+        "https://marathon.lockated.com/rfq/events/8/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397"
       );
       const data = await response.json();
 

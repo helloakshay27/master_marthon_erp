@@ -69,7 +69,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchCounterOfferData = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=7398`
+          `https://marathon.lockated.com/rfq/events/${id}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=7398`
         );
         const data = await response.json();
         if (data) {
@@ -194,7 +194,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (!response.ok) {
@@ -223,7 +223,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/bidding_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `https://marathon.lockated.com/rfq/events/${id}/bidding_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
         );
 
         if (!response.ok) {
@@ -246,7 +246,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `https://marathon.lockated.com/rfq/events/${id}/event_overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
         );
 
         if (!response.ok) {
@@ -269,7 +269,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_vendors/event_vendor_remarks?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${id}/event_vendors/event_vendor_remarks?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -292,7 +292,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchParticipants = async () => {
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         console.log(response);

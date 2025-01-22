@@ -334,7 +334,7 @@ export default function VendorDetails() {
     try {
       // Step 1: Fetch the initial API to get `revised_bid`
       const initialResponse = await axios.get(
-        `https://vendors.lockated.com/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
+        `https://marathon.lockated.com/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
       );
 
       const initialData = initialResponse.data;
@@ -377,7 +377,7 @@ export default function VendorDetails() {
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
 
         setCounterData(
@@ -722,7 +722,7 @@ export default function VendorDetails() {
       console.log("vendor ID", vendorId);
 
       const response = await axios.post(
-        `https://vendors.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload,
         {
           headers: {
@@ -964,7 +964,7 @@ export default function VendorDetails() {
       console.log("payloadssss2 revised", payload2);
 
       const response = await axios.post(
-        `https://vendors.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload2,
         {
           headers: {
@@ -994,7 +994,7 @@ export default function VendorDetails() {
     const fetchTerms = async () => {
       try {
         const response = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         console.log("API Response terms and condition:", response.data); //
         // setTerms(response.data.terms_and_conditions || []);
@@ -1036,7 +1036,7 @@ export default function VendorDetails() {
       try {
         // Fetch data directly without headers
         const response = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}/vendor_show?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}/vendor_show?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         // Transform the API response into the required table data format
@@ -1141,7 +1141,7 @@ export default function VendorDetails() {
     const payload = { status: "rejected" };
     try {
       const response = await fetch(
-        `https://vendors.lockated.com/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {
@@ -1156,7 +1156,7 @@ export default function VendorDetails() {
 
         // Retrieve the first bid data again (to restore it)
         const bidResponse = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
         const bids = bidResponse.data.bids;
 
@@ -1245,7 +1245,7 @@ export default function VendorDetails() {
     try {
       // API call to update status
       const response = await fetch(
-        `https://vendors.lockated.com/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1260,7 +1260,7 @@ export default function VendorDetails() {
 
         // Fetch bids
         const bidResponse = await axios.get(
-          `https://vendors.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
 
         const bids = bidResponse.data.bids;

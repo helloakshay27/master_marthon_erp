@@ -12,7 +12,7 @@ const WithdrawOrderModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        "https://vendors.lockated.com/rfq/events/8/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397",
+        "https://marathon.lockated.com/rfq/events/8/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397",
         {
           method: "PUT",
           headers: {

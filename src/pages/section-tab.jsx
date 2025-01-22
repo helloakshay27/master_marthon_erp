@@ -139,7 +139,7 @@ export default function SectionTab() {
   };
 
   return (
-    <div style={{ overflow: "auto" }}>
+    <div style={{ overflow: "auto", height:'100vh' }}>
       {seg.section_n_subSection.map((item) => (
         <SectionAccordion
           key={`${item.section_id}-${item.sub_section_id}`}
