@@ -48,7 +48,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
         const result = await response.json();
         console.log("API Response Structure", result); // Inspect the API response structure
@@ -133,7 +133,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        "https://vendors.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
         {
           method: "POST",
           headers: {
