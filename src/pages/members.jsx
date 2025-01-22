@@ -296,30 +296,30 @@ function Members() {
                 <li>
                   <Link to="/Wo">Wo list</Link>
                 </li>
-                {/* <li>
+                <li>
                 <Link to="/user-lists">user_list</Link>
               </li>
 
               <li>
                 <Link to="/user-overview">user_overview</Link>
-              </li> */}
+              </li>
 
-                {/* <li>
+                <li>
                 <Link to="good_receive_notes/:id">grn_detaisl</Link>
-              </li> */}
+              </li>
 
-                {/* <li>
+                <li>
                 <Link to="/stock_register_detail/47">stock_register detail</Link>
-              </li> */}
-                {/* <li>
+              </li>
+                <li>
                 <Link to="/erp-stock-register-creation13c">erp_stock_register_creation13c</Link>
-              </li> */}
-                {/* <li>
+              </li>
+                <li>
                 <Link to="/stock_register_list?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47"> stock register list</Link>
               </li>
               <li>
                 <Link to="/approvals-list">approvals_list</Link>
-              </li> */}
+              </li>
               </ul>
             </div>
 
