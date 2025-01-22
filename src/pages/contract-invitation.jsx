@@ -22,7 +22,7 @@ export default function ContractInvitation() {
   const fetchEventsData = async () => {
     try {
       const response = await fetch(
-        "https://vendors.lockated.com/rfq/events/eois?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        "https://marathon.lockated.com/rfq/events/eois?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
       );
       const data = await response.json();
       setEventsData(data.expression_of_interests);
@@ -39,7 +39,7 @@ export default function ContractInvitation() {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://vendors.lockated.com/rfq/events/advance_filter_options",
+        "https://marathon.lockated.com/rfq/events/advance_filter_options",
         {
           params: {
             token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
@@ -88,7 +88,7 @@ export default function ContractInvitation() {
     setError("");
     try {
       const response = await axios.get(
-        `https://vendors.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchTerm}`
+        `https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchTerm}`
       );
       setEventsData(response.data.events);
       setSuggestions(response.data.events);
@@ -123,7 +123,7 @@ export default function ContractInvitation() {
     setError("");
     try {
       const response = await axios.get(
-        `https://vendors.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${query}`
+        `https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${query}`
       );
       setSuggestions(response.data.events);
       setIsSuggestionsVisible(true);

@@ -20,7 +20,7 @@ function AuthData() {
 
       // Fetch from the API
       const response = await fetch(
-        "https://vendors.lockated.com/rfq/users/user_role?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411"
+        "https://marathon.lockated.com/rfq/users/user_role?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411"
       );
 
       if (!response.ok) {

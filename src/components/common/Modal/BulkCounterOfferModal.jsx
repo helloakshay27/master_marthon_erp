@@ -58,7 +58,7 @@ export default function BulkCounterOfferModal({
     };
 
     const response = await fetch(
-      `https://vendors.lockated.com/rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       {
         method: "POST",
         headers: {

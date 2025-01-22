@@ -23,7 +23,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
     const fetchMaterials = async () => {
       try {
         const response = await axios.get(
-          "https://vendors.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          "https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
         if (response.data && Array.isArray(response.data.materials)) {
           setMaterials(response.data.materials);
@@ -38,7 +38,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
     const fetchSections = async () => {
       try {
         const response = await axios.get(
-          "https://vendors.lockated.com/pms/sections/section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          "https://marathon.lockated.com//pms/sections/section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
 
         if (response.data && Array.isArray(response.data.section_list)) {
@@ -59,7 +59,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
     const fetchSubSections = async () => {
       try {
         const response = await axios.get(
-          "https://vendors.lockated.com/pms/sections/sub_section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          "https://marathon.lockated.com//pms/sections/sub_section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
         if (response.data && Array.isArray(response.data.section_list)) {
           setSubSectionOptions(

@@ -25,7 +25,7 @@ export default function AnalyticsTab({ id }) {
 
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_analytics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `https://marathon.lockated.com/rfq/events/${id}/event_analytics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
 
         if (!response.ok) {
@@ -53,7 +53,7 @@ export default function AnalyticsTab({ id }) {
 
       try {
         const response = await fetch(
-          `https://vendors.lockated.com/rfq/events/${id}/event_materials_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `https://marathon.lockated.com/rfq/events/${id}/event_materials_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
