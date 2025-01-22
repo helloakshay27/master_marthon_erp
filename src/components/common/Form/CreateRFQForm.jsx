@@ -17,6 +17,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
   ]);
   const [sectionOptions, setSectionOptions] = useState([]);
   const [subSectionOptions, setSubSectionOptions] = useState([]);
+  const [isMorSelected, setIsMorSelected] = useState(false);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -116,7 +117,8 @@ export default function CreateRFQForm({ data, setData, isService }) {
       rate: 0,
       amount: 0,
       inventory_id: "",
-      sub_section_id: sections[sectionIndex].sectionData[0]?.sub_section_id || "",
+      sub_section_id:
+        sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
     };
     const updatedSections = [...sections];
@@ -193,7 +195,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
 
   const handleSectionChange = (selected, sectionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].sectionData.forEach(row => {
+    updatedSections[sectionIndex].sectionData.forEach((row) => {
       row.section_id = selected;
     });
     setSections(updatedSections);
@@ -201,12 +203,11 @@ export default function CreateRFQForm({ data, setData, isService }) {
 
   const handleSubSectionChange = (selected, sectionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].sectionData.forEach(row => {
+    updatedSections[sectionIndex].sectionData.forEach((row) => {
       row.sub_section_id = selected;
     });
     setSections(updatedSections);
   };
-  
 
   const materialOptions = materials.map((material) => ({
     value: material.name,
@@ -215,31 +216,45 @@ export default function CreateRFQForm({ data, setData, isService }) {
 
   return (
     <div className="row px-3">
+      <div className="col-md-12 d-flex align-items-baseline mb-4 gap-2">
+        <input
+          type="checkbox"
+          className="form-check-input"
+          onChange={(e) => setIsMorSelected(e.target.checked)}
+        />
+        <h5>Select From MOR</h5>
+      </div>
       <div className="card p-0">
         <div className="card-header3">
-          <h3 className="card-title">{`Select ${isService ? 'Services' : 'Materials'}`} </h3>
+          <h3 className="card-title">
+            {isMorSelected ? "Select Material Order Request" : `Select ${isService ? "Services" : "Materials"}`}{" "}
+          </h3>
         </div>
         <div className="px-3 py-3">
           {sections.map((section, sectionIndex) => (
             <div key={section.sectionId} className="card p-4 mb-4">
-              <div className="row">
-                <div className="col-md-8 col-sm-12 d-flex gap-3">
+              <div className="row justify-content-between">
+                <div className={isMorSelected? 'col-md-4 col-sm-6' : `col-md-8 col-sm-12 d-flex gap-3`}>
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Section"}
+                      label={isMorSelected ? "Select MOR" : "Select Section"}
                       options={sectionOptions}
-                      defaultValue={"Select Section"}
-                      onChange={(selected) => handleSectionChange(selected, sectionIndex)}
+                      defaultValue={isMorSelected ? "Select MOR" : "Select Section"}
+                      onChange={(selected) =>
+                        handleSectionChange(selected, sectionIndex)
+                      }
                     />
                   </div>
-                  <div className="flex-grow-1">
+                  {!isMorSelected && <div className="flex-grow-1">
                     <SelectBox
                       label={"Select Sub Section"}
                       options={subSectionOptions}
                       defaultValue={"Select Sub Section"}
-                      onChange={(selected) => handleSubSectionChange(selected, sectionIndex)}
+                      onChange={(selected) =>
+                        handleSubSectionChange(selected, sectionIndex)
+                      }
                     />
-                  </div>
+                  </div>}
                 </div>
                 <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
                   <button
