@@ -321,7 +321,6 @@ export default function CreateEvent() {
   };
 
   const handleConditionChange = (id, selectedOption) => {
-
     const selectedCondition = termsOptions.find(
       (option) => String(option.value) === String(selectedOption)
     );
@@ -332,7 +331,7 @@ export default function CreateEvent() {
       setTextareas(
         textareas.map((textarea) =>
           textarea.id === id
-            ? { ...textarea, value: selectedCondition.condition }
+            ? { id: selectedCondition.value, value: selectedCondition.condition }
             : textarea
         )
       );
@@ -454,7 +453,7 @@ export default function CreateEvent() {
           },
         ],
         resource_term_conditions_attributes: textareas.map((textarea) => ({
-          term_condition_id: 1,
+          term_condition_id: textarea.id,
           condition_type: "general",
           condition: textarea.value,
         })),
@@ -462,7 +461,7 @@ export default function CreateEvent() {
       },
     };
 
-    console.log("Payload:", eventData);
+    console.log("Payload:", eventData, textareas);
 
     try {
       const response = await fetch(

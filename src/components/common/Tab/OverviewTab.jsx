@@ -20,6 +20,9 @@ export default function OverviewTab({
   handleOrderConf,
   handleOrderDetails,
   materialData,
+  documentsOpen,
+  documentsData,
+  handleDocuments,
 }) {
   const participants = [
     {
@@ -91,6 +94,10 @@ export default function OverviewTab({
   const endTime = overviewData?.event_schedule?.end_time_duration;
 
   // const OrderEndTime = new Date(endTime);
+  const formatDocDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   const orderConfig = [
     {
@@ -257,6 +264,86 @@ export default function OverviewTab({
             </div>
           )}
         </div>
+
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#document-attachment"
+            role="button"
+            aria-expanded={documentsOpen}
+            aria-controls="document-attachment"
+            onClick={handleDocuments}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="document-attachment-icon" className="icon-1">
+              {documentsOpen ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Document Attachment
+          </a>
+        </div>
+
+        {documentsOpen && (
+          <div id="document-attachment" className="mx-4">
+              {documentsData?.length > 0 ? (
+                <div className="mt-2" style={{ paddingLeft: "24px" }}>
+                  <div className="card card-body rounded-3 p-4">
+                    {/* Document Details Table */}
+                    <div className="tbl-container mt-3">
+                      <table className="w-100 table">
+                        <thead>
+                          <tr>
+                            <th className="text-start">Sr No</th>
+                            <th className="text-start">File Name</th>
+                            <th className="text-start">Uploaded At</th>
+                            <th className="text-start">Download</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {documentsData.map((attachment, index) => (
+                            <tr key={attachment.id}>
+                              <td className="text-start">{index + 1}</td>
+                              <td className="text-start">
+                                {attachment.filename}
+                              </td>
+                              <td className="text-start">
+                                {formatDocDate(attachment.blob_created_at)}
+                              </td>
+                              <td className="text-start">
+                                <a
+                                  href={`path-to-your-files/${attachment.filename}`}
+                                  download
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    style={{ fill: "black" }}
+                                  >
+                                    <g fill="currentColor">
+                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                    </g>
+                                  </svg>
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center mt-4">No attachments available.</p>
+              )}
+          </div>
+        )}
 
         <div className="col-12 my-3">
           <a

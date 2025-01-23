@@ -30,6 +30,7 @@ export default function ErpRfqDetailPriceTrends4h() {
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(null);
   const [participantsOpen, setParticipantsOpen] = useState(true);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
   const [savingsOpen, setSavingsOpen] = useState(false);
   const [biddingOpen, setBiddingOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
@@ -43,6 +44,7 @@ export default function ErpRfqDetailPriceTrends4h() {
   const [bidding, setBidding] = useState([]);
   const [participantsTabData, setParticipantsTabData] = useState([]);
   const [overviewData, setOverviewData] = useState([]);
+  const [documentData , setDocumentData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCounter, setIsCounter] = useState(false);
@@ -96,6 +98,9 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   const participantsAccordion = () => {
     setParticipantsOpen(!participantsOpen);
+  };
+  const documentAccordion = () => {
+    setDocumentsOpen(!documentsOpen);
   };
   const savingsAccordion = () => {
     setSavingsOpen(!savingsOpen);
@@ -211,7 +216,10 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
+        console.log("Data      attachment", data.attachments);
+        
         setOverviewData(data);
+        setDocumentData(data.attachments);
         if (data.state == "expired") {
           setIsCounter(true);
         } else {
@@ -439,10 +447,13 @@ export default function ErpRfqDetailPriceTrends4h() {
                   overviewData={overviewData}
                   participantsOpen={participantsOpen}
                   participantsData={participantsTabData}
+                  documentsOpen={documentsOpen}
+                  documentsData={documentData}
                   savingsOpen={savingsOpen}
                   biddingOpen={biddingOpen}
                   biddingData={bidding}
                   productOpen={productOpen}
+                  handleDocuments={documentAccordion}
                   handleParticipants={participantsAccordion}
                   handleSavings={savingsAccordion}
                   handleBiddings={biddingsAccordion}
