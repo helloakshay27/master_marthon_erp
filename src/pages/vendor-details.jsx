@@ -702,6 +702,7 @@ export default function VendorDetails() {
         warranty_clause: warrantyClause,
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
+        remark: remark,
         bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -935,11 +936,12 @@ export default function VendorDetails() {
         warranty_clause: warrantyClause,
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
+        remark: remark,
         revised_bid_materials_attributes: bidMaterialsAttributes,
       },
     };
 
-    // console.log("Prepared Payload: revised,", payload);
+    console.log("Prepared Payload: revised,", payload);
     return payload;
   };
 
@@ -3202,7 +3204,11 @@ ${seconds}s`);
                     />
                     {/* Terms and Conditions */}
 
-                    <div style={{ marginTop: "30px" }}>
+                    <div
+                      style={{ marginTop: "30px" }}
+                      id="terms-conditions"
+                      className=""
+                    >
                       <h5 className="fw-bold head-material">
                         Terms and Conditions
                       </h5>
@@ -3262,8 +3268,7 @@ ${seconds}s`);
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button> */}
-
-                    <button
+                    {/* <button
                       onClick={revisedBid ? handleReviseBid : handleSubmit}
                       disabled={isBid || loading || counterData > 0}
                       className={`button ${
@@ -3284,6 +3289,57 @@ ${seconds}s`);
                             : "1px solid #8b0203",
                         cursor:
                           isBid || loading || counterData > 0
+                            ? "not-allowed"
+                            : "pointer",
+                        padding: "10px 20px",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      {revisedBid ? "Revise Bid" : "Create Bid"}
+                    </button> */}
+                    <button
+                      onClick={revisedBid ? handleReviseBid : handleSubmit}
+                      disabled={
+                        isBid ||
+                        loading ||
+                        counterData > 0 ||
+                        currentIndex !== 0 // Disable if it's not the Current Bid
+                      }
+                      className={`button ${
+                        isBid ||
+                        loading ||
+                        counterData > 0 ||
+                        currentIndex !== 0
+                          ? "disabled-btn"
+                          : "button-enabled"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0
+                            ? "#ccc"
+                            : "#8b0203",
+                        color:
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0
+                            ? "#666"
+                            : "#fff",
+                        border:
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0
+                            ? "1px solid #aaa"
+                            : "1px solid #8b0203",
+                        cursor:
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0
                             ? "not-allowed"
                             : "pointer",
                         padding: "10px 20px",
