@@ -999,17 +999,16 @@ export default function VendorDetails() {
         const response = await axios.get(
           `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        const data = response.data
-        console.log("my data",data.state)
+        const data = response.data;
+        console.log("my data", data.state);
 
         if (data.state == "expired") {
           setIsBid(true);
-          console.log("isBid",isBid);
-          
+          console.log("isBid", isBid);
         } else {
           setIsBid(false);
         }
-        
+
         // setTerms(response.data.terms_and_conditions || []);
 
         const extractedTerms = response.data.resource_term_conditions.map(
@@ -1452,7 +1451,7 @@ export default function VendorDetails() {
               role="tab"
               aria-controls="home"
               aria-selected="true"
-              style={{ color: "#9e2c2d", fontSize: "16px" }}
+              style={{ color: "#8b0203", fontSize: "16px" }}
             >
               Event Overview
             </a>
@@ -1466,7 +1465,7 @@ export default function VendorDetails() {
               role="tab"
               aria-controls="profile"
               aria-selected="false"
-              style={{ color: "#9e2c2d", fontSize: "16px" }}
+              style={{ color: "#8b0203", fontSize: "16px" }}
             >
               [{data1?.event_no}] {data1?.event_title}
             </a>
@@ -2119,7 +2118,7 @@ export default function VendorDetails() {
                         <span
                           style={{
                             backgroundColor: "#fff2e8",
-                            color: "#9e2c2d",
+                            color: "#8b0203",
                             padding: "5px 10px",
                             borderRadius: "5px",
                             marginLeft: "25px",
@@ -3038,7 +3037,7 @@ export default function VendorDetails() {
                             >
                               <path
                                 d="M18 4l-12 8l12 8"
-                                fill="rgb(222, 112, 8)"
+                                fill="rgb(139, 2, 3)"
                               />
                             </svg>
                           </button>
@@ -3083,17 +3082,17 @@ export default function VendorDetails() {
                                       color:
                                         index === currentIndex
                                           ? "white"
-                                          : "#9e2c2d",
+                                          : "#8b0203",
                                       textAlign: "center",
                                       padding: "10px",
                                       textDecoration: "none",
                                       backgroundColor:
                                         index === currentIndex
-                                          ? "#9e2c2d"
+                                          ? "#8b0203"
                                           : "white", // Active button color
                                       borderRadius: "4px",
                                       marginRight: "10px",
-                                      border: `1px solid #D#9e2c2d`,
+                                      border: `1px solid #8b0203`,
                                       transition: "background-color 0.3s ease",
                                     }}
                                     className={
@@ -3122,10 +3121,7 @@ export default function VendorDetails() {
                               width="24"
                               height="24"
                             >
-                              <path
-                                d="M6 4l12 8l-12 8"
-                                fill="rgb(222, 112, 8)"
-                              />
+                              <path d="M6 4l12 8l-12 8" fill="rgb(139, 2, 3)" />
                             </svg>
                           </button>
                         </div>
@@ -3206,7 +3202,28 @@ export default function VendorDetails() {
                       onClick={revisedBid ? handleReviseBid : handleSubmit} // Conditional onClick
                       // disabled={loading}
                       disabled={isBid || loading || counterData > 0} // Disable if loading or counterData exists
-                      className={`button ${isBid || loading || counterData > 0 ? 'disabled-btn' : 'button-enabled'}`}
+                      className={`button ${
+                        isBid || loading || counterData > 0
+                          ? "disabled-btn"
+                          : "button-enabled"
+                      }`}
+                      // disabled={loading || counterData > 0} // Disable if loading or counterData exists
+                      style={{
+                        backgroundColor:
+                          loading || counterData > 0 ? "#ccc" : "#8b0203", // Gray for disabled, purple for enabled
+                        color: loading || counterData > 0 ? "#666" : "#fff", // Muted text for disabled, white for enabled
+                        border:
+                          loading || counterData > 0
+                            ? "1px solid #aaa"
+                            : "1px solid #8b0203", // Adjust border color
+                        cursor:
+                          loading || counterData > 0
+                            ? "not-allowed"
+                            : "pointer", // Not-allowed cursor for disabled
+                        padding: "10px 20px", // Add padding for consistent button appearance
+                        borderRadius: "5px", // Add rounded corners
+                      }}
+                      // className="m-0"
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button>

@@ -653,7 +653,8 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "all" ? "#9e2c2d" : "#fff",
+                          activeTab === "all" ? " #8b0203" : "#fff",
+                        color: "black",
                         color: activeTab === "all" ? "white" : "black",
                       }}
                     >
@@ -675,7 +676,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "live" ? "#9e2c2d" : "#fff",
+                          activeTab === "live" ? " #8b0203" : "#fff",
                         color: activeTab === "live" ? "white" : "black",
                       }}
                     >
@@ -697,8 +698,8 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "history" ? "#9e2c2d" : "#fff",
-                        color: "black",
+                          activeTab === "history" ? " #8b0203" : "#fff",
+                        color: activeTab === "history" ? "white" : "black",
                       }}
                     >
                       <h4 className="content-box-title">History Events</h4>
@@ -719,7 +720,7 @@ export default function VendorListPage() {
                             ? "2px solid orange"
                             : "1px solid #ccc",
                         backgroundColor:
-                          activeTab === "eoi" ? "#9e2c2d" : "#fff",
+                          activeTab === "eoi" ? " #8b0203" : "#fff",
                         color: activeTab === "eoi" ? "white" : "black",
                       }}
                     >
@@ -904,7 +905,7 @@ export default function VendorListPage() {
                           <div className="row justify-content-end px-3">
                             <div className="col-md-3">
                               <button
-                                style={{ color: "#9e2c2d" }}
+                                style={{ color: " #8b0203" }}
                                 className="btn btn-md"
                                 onClick={handleModalShow}
                               >
@@ -1222,7 +1223,7 @@ export default function VendorListPage() {
                           >
                             <path
                               d="M9 1L1 9L9 17"
-                              stroke="#9e2c2d"
+                              stroke=" #8b0203"
                               strokeWidth="1.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"

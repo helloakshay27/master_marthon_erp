@@ -286,7 +286,7 @@ export default function ShortDataTable({
                 style={{
                   padding: "12px",
                   fontWeight: "bold",
-                  background: "#9e2c2d",
+                  background: "#8b0203",
                 }}
               >
                 {row.label}
