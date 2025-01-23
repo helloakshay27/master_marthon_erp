@@ -100,7 +100,7 @@ export default function VendorDetails() {
     return sessionStorage.getItem("vendorId") || "";
   });
 
-  // console.log(" vednor idddddddddddddddddd", vendorId);
+  console.log(" vednor idddddddddddddddddd", vendorId);
 
   const [remark, setRemark] = useState("");
 
@@ -467,6 +467,8 @@ export default function VendorDetails() {
             quantityAvail: material.quantity_available,
             price: material.price,
             discount: material.discount,
+            section: material.event_material.section_name,
+            subSection: material.event_material.sub_section_name,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
             realisedGst: material.realised_gst,
@@ -491,6 +493,8 @@ export default function VendorDetails() {
                     quantity: material.event_material.quantity,
                     quantityAvail: counterMaterial.quantity_available,
                     price: counterMaterial.price,
+                    section: material.event_material.section_name,
+                    subSection: material.event_material.sub_section_name,
                     discount: counterMaterial.discount,
                     realisedDiscount: counterMaterial.realised_discount,
                     gst: counterMaterial.gst,
@@ -990,7 +994,9 @@ export default function VendorDetails() {
     }
   };
 
-  const [terms, setTerms] = useState([]); // To store terms and conditions
+  const [terms, setTerms] = useState([]); // To store terms and
+  // conditions
+  const [timeRemaining, setTimeRemaining] = useState("");
 
   // Fetch data from the API
   useEffect(() => {
@@ -1009,6 +1015,25 @@ export default function VendorDetails() {
           setIsBid(false);
         }
 
+        const endTime = new Date(data.event_schedule.end_time); // Event end time
+        const currentTime = new Date(); // Current time
+        const remainingTime = endTime - currentTime; // Time difference in milliseconds
+
+        if (remainingTime > 0) {
+          const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+          const seconds = Math.floor((remainingTime / 1000) % 60);
+
+          setTimeRemaining(`${days}d:
+${hours}h:
+${minutes}m:
+${seconds}s`);
+        } else {
+          setTimeRemaining("Expired");
+          setIsBid(true); // Disable bidding if expired
+        }
+
         // setTerms(response.data.terms_and_conditions || []);
 
         const extractedTerms = response.data.resource_term_conditions.map(
@@ -1025,7 +1050,13 @@ export default function VendorDetails() {
     };
 
     fetchTerms();
-  }, []);
+
+    const interval = setInterval(() => {
+      fetchTerms();
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup the interval
+  }, [eventId]);
 
   //user overview
 
@@ -1253,6 +1284,8 @@ export default function VendorDetails() {
             quantity: material.event_material.quantity,
             quantityAvail: material.quantity_available,
             price: material.price,
+            section: material.section_name,
+            subSection: material.sub_section_name,
             discount: material.discount,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
@@ -1359,6 +1392,8 @@ export default function VendorDetails() {
             quantity: material.event_material.quantity,
             quantityAvail: material.quantity_available,
             price: material.price,
+            section: material.section_name,
+            subSection: material.sub_section_name,
             discount: material.discount,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
@@ -2033,8 +2068,8 @@ export default function VendorDetails() {
                                             </td> */}
                                             <td className="text-start">
                                               <a
-                                                href={`path-to-your-files/${attachment.filename}`}
-                                                download
+                                                href={`https://marathon.lockated.com/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                download={attachment.filename}
                                               >
                                                 <svg
                                                   xmlns="http://www.w3.org/2000/svg"
@@ -2094,24 +2129,24 @@ export default function VendorDetails() {
                   //   // height: "100vh"
                 }}
               >
-                <div className="card mx-3 p-4 mt-3 pb-5 mb-5 ">
+                <div className="card mx-3 p-4 mt-3 pb-4 mb-2 ">
                   <div className="d-flex flex-row-reverse">
-                    <div className="eventList-child1 d-flex align-items-center gap-2 py-3">
+                    <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1 ">
                       {/* {event.endsIn ? ( */}
-                      <div className="d-flex align-items-center gap-2">
+
+                      <div className="d-flex align-items-center gap-1 ">
                         <ClockIcon />
                         <p className="mb-0 eventList-p1">Ends In</p>
                       </div>
-                      {/* ) : ( */}
+                      <span>{timeRemaining}</span>
                       <div className="d-flex align-items-center gap-2">
                         <i className="bi bi-hourglass-split"></i>
-                        <p className="mb-0 eventList-p1">Bid Approves In</p>
+                        {/* <p className="mb-0 eventList-p1">Bid Approves In</p> */}
                       </div>
                       {/* )} */}
-                      {/* <span>{event.timeRemaining}</span> */}
                     </div>
                   </div>
-                  <div className="card p-2 m-2">
+                  <div className="card p-2 m-1">
                     <div className="card-header4">
                       <h4 className="">
                         Submission Sheet
@@ -3196,7 +3231,7 @@ export default function VendorDetails() {
                     >
                       Create Bid
                     </button> */}
-                    <button
+                    {/* <button
                       // onClick={handleSubmit}
 
                       onClick={revisedBid ? handleReviseBid : handleSubmit} // Conditional onClick
@@ -3224,6 +3259,36 @@ export default function VendorDetails() {
                         borderRadius: "5px", // Add rounded corners
                       }}
                       // className="m-0"
+                    >
+                      {revisedBid ? "Revise Bid" : "Create Bid"}
+                    </button> */}
+
+                    <button
+                      onClick={revisedBid ? handleReviseBid : handleSubmit}
+                      disabled={isBid || loading || counterData > 0}
+                      className={`button ${
+                        isBid || loading || counterData > 0
+                          ? "disabled-btn"
+                          : "button-enabled"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          isBid || loading || counterData > 0
+                            ? "#ccc"
+                            : "#8b0203",
+                        color:
+                          isBid || loading || counterData > 0 ? "#666" : "#fff",
+                        border:
+                          isBid || loading || counterData > 0
+                            ? "1px solid #aaa"
+                            : "1px solid #8b0203",
+                        cursor:
+                          isBid || loading || counterData > 0
+                            ? "not-allowed"
+                            : "pointer",
+                        padding: "10px 20px",
+                        borderRadius: "5px",
+                      }}
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button>
