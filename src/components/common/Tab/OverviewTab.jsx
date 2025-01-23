@@ -68,6 +68,14 @@ export default function OverviewTab({
     },
   ];
 
+  const transformedData = biddingData.flatMap((vendor) =>
+    vendor.materials.map((material) => ({
+      vendor_name: vendor.vendor,
+      material_name: material.name,
+      price: material.price,
+    }))
+  );
+
   const calculateOrderDuration = (start, end) => {
     const startTime = new Date(start);
     const endTime = new Date(end);
@@ -117,6 +125,11 @@ export default function OverviewTab({
     {
       label: "Delivery by",
       value: new Date(overviewData?.delivery_date).toLocaleString() || "_",
+    },
+    {
+      label: "Order Description",
+      value:
+        "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quia corrupti odio quo illum veritatis odit consequuntur ex consequatur, dignissimos modi obcaecati fugiat voluptatem perferendis. Nostrum itaque, tempore minus, perspiciatis quibusdam cumque eaque minima accusantium asperiores eligendi aspernatur soluta cum fugiat nobis sequi explicabo suscipit, placeat ex quis dolor saepe! Consectetur eligendi ab nostrum a, reprehenderit magnam. Saepe neque reprehenderit ducimus id, cum consequatur sint consequuntur vitae quasi asperiores culpa inventore assumenda eos beatae aspernatur ipsa doloremque accusantium enim perferendis, reiciendis illum autem voluptate. Amet vero magni fugiat nesciunt explicabo reiciendis incidunt sunt, excepturi, ea atque nihil cumque ipsa deserunt placeat!",
     },
   ];
 
@@ -270,34 +283,32 @@ export default function OverviewTab({
               <div className="card card-body p-4 rounded-3">
                 <div style={{ boxShadow: "none" }}>
                   <h5>Line Item Wise</h5>
-                  {/* <div className="tbl-container">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Vendor</th>
-                          <th>Material</th>
-                          <th>Price</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {biddingData.map((item, index) => (
-                          <tr key={index}>
-                            <td>{item.vendor_name}</td>
-                            <td>{item.material_name}</td>
-                            <td>{item.price}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div> */}
-                  <Table
-                    columns={[
-                      { label: "Vendor", key: "vendor_name" },
-                      { label: "Material", key: "material_name" },
-                      { label: "Price", key: "price" },
-                    ]}
-                    data={biddingData}
-                  />
+                  <table className="tbl-container w-100">
+                    <thead>
+                      <tr>
+                        <th>Vendor</th>
+                        <th>Material</th>
+                        <th>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {biddingData.map((vendor, vendorIndex) => (
+                        <React.Fragment key={vendorIndex}>
+                          {vendor.materials.map((material, materialIndex) => (
+                            <tr key={materialIndex}>
+                              {materialIndex === 0 && (
+                                <td rowSpan={vendor.materials.length}>
+                                  {vendor.vendor}
+                                </td>
+                              )}
+                              <td>{material.name}</td>
+                              <td>{material.price}</td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -371,7 +382,9 @@ export default function OverviewTab({
                 {overviewData?.resource_term_conditions.map((item, index) => {
                   return (
                     <>
-                      <p key={index}>{`${index + 1}. ${item.term_condition.condition}`}</p>
+                      <p key={index}>{`${index + 1}. ${
+                        item.term_condition.condition
+                      }`}</p>
                       <p>{item.condition}</p>
                     </>
                   );
@@ -413,7 +426,19 @@ export default function OverviewTab({
                         key={item.id}
                       >
                         <p>{item.label}</p>
-                        <p id={item.id}>{formatValue(item.value)}</p>{" "}
+                        <p
+                          id={item.id}
+                          style={{
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 2,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "normal",
+                          }}
+                        >
+                          {formatValue(item.value)}
+                        </p>{" "}
                         {/* Format the value */}
                       </div>
                     ))}
