@@ -248,8 +248,8 @@ function Members() {
       <Header />
       <div className="main-content">
         <Sidebar />
-        <div className="website-content overflow-auto">
-          <div className="module-data-section container-fluid">
+        <div className="website-content">
+          <div className="module-data-section overflow-auto" style={{height: "85vh"}}>
             <div className="m-3">
               <h1>BOQ</h1>
               <ul>
@@ -351,7 +351,6 @@ function Members() {
                 </li>
               </ul>
             </div>
-
             <div className="m-3">
               <h1>RFQ OLD</h1>
               <ul>
