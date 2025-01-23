@@ -1,4 +1,4 @@
-// import Header from "../components/Header";
+  // import Header from "../components/Header";
 // import Sidebar from "../components/Sidebar";
 // import Footer from "../components/Footer";
 // import { Link } from "react-router-dom";
@@ -248,8 +248,8 @@ function Members() {
       <Header />
       <div className="main-content">
         <Sidebar />
-        <div className="website-content">
-          <div className="module-data-section overflow-auto" style={{height: "85vh"}}>
+        <div className="website-content overflow-auto">
+          <div className="module-data-section container-fluid" style={{marginBottom:'200px'}}>
             <div className="m-3">
               <h1>BOQ</h1>
               <ul>
@@ -271,6 +271,153 @@ function Members() {
                   <Link to="/boq-approval-details">BOQ Approval Details</Link>
                 </li>
               </ul>
+            </div>
+            <div className="m-3">
+              <h1>Billing & Accounts</h1>
+              <ul>
+                <li>
+                  <Link to="/bill-booking-details">Bill Booking Details </Link>
+                </li>
+                <li>
+                  <Link to="/bill-entry-details">Bill Entry Details</Link>
+                </li>
+                <li>
+                  <Link to="/bill-booking-list">Bill Booking List</Link>
+                </li>
+                <li>
+                  <Link to="/bill-entry-list">Bill Entry List</Link>
+                </li>
+                <li>
+                  <Link to="/bill-entry-list-sub-page">
+                    Bill Entry List Sub Page
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/bill-booking-create">Bill Booking Create</Link>
+                </li>
+                <li>
+                  <Link to="/bill-payment-create">Bill Payment Create</Link>
+                </li>
+                <li>
+                  <Link to="/bill-payment-details">Bill Payment Details</Link>
+                </li>
+                <li>
+                  <Link to="/bill-payment-list">Bill payment List</Link>
+                </li>
+                <li>
+                  <Link to="/bill-verification-create">
+                    Bill Verification Create
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/bill-verification-details">
+                    Bill Verification details
+                  </Link>
+                </li>
+                <li>
+                  <Link to="bill-verification-list">
+                    Bill Verification List
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/credit-note-create">Credit Note Create</Link>
+                </li>
+                <li>
+                  <Link to="/credit-note-details">Credit Note Details</Link>
+                </li>
+                <li>
+                  <Link to="/credit-note-list">Credit Note List</Link>
+                </li>
+                <li>
+                  <Link to="/debit-note-create">Debit Note Create</Link>
+                </li>
+                <li>
+                  <Link to="/debit-note-details">Debit Note Details</Link>
+                </li>
+                <li>
+                  <Link to="/debit-note-list">Debit Note List</Link>
+                </li>
+                <li>
+                  <Link to="/po-advance-note-details">
+                    PO Advance Note Details
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/po-advance-note-payment">
+                    Po Advance Note Payment
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/po-advance-note-list">Po Advance Note List</Link>
+                </li>
+
+                <li>
+                  <Link to=""></Link>
+                </li>
+              </ul>
+            </div>
+            <div className="m-3">
+            <h3>BOQ Pages & Estimation Pages </h3>
+             <ul>
+               <li>
+                 <Link to="/create-BOQ">Create BOQ</Link>
+               </li>
+               {/* <li>
+                 <Link to="/boq-list">BOQ-List</Link>
+               </li> */}
+               <li>
+                 <Link to="/view-BOQ">BOQ List</Link>
+               </li>
+               <li>
+                 <Link to="/boq-approval-list">BOQ Approval List</Link>
+               </li>
+               <li>
+                 <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
+               </li>
+               {/* <li>
+                 <Link to="/boq-approval-details">BOQ Approval Details</Link>
+               </li> */}
+
+               <li>
+                 <Link to="/boq-edit">BOQ Edit</Link>
+               </li>
+
+               <li>
+                 <Link to="/create-rate">Create Rate</Link>
+               </li>
+               <li>
+                 <Link to="/view-rate">View Rate</Link>
+               </li>
+
+               <li>
+                 <Link to="/estimation-creation">Estimation creation</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-list">Estimation List Page</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-details-project">Estimation details project</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-details-sub-project">Estimation details sub project</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-details-wings">Estimation details wings</Link>
+               </li>
+
+               <li>
+                 <Link to="/estimation-comparision">Estimation comparision</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-approvol-list">Estimation approval list</Link>
+               </li>
+               <li>
+                 <Link to="/estimation-approval-details">Estimation approval details</Link>
+               </li>
+
+             </ul>
             </div>
             <div className="m-3">
               <h1>RFQ Module</h1>
@@ -350,7 +497,10 @@ function Members() {
                   <Link to="/approvals-list">approvals_list</Link>
                 </li>
               </ul>
-            </div>
+            </div> 
+
+            
+
             <div className="m-3">
               <h1>RFQ OLD</h1>
               <ul>
@@ -375,8 +525,8 @@ function Members() {
               </ul>
             </div>
           </div>
-          <Footer />
         </div>
+          <Footer />
       </div>
     </>
   );
