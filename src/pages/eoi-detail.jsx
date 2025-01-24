@@ -716,7 +716,7 @@ export default function EoiDeatailPage() {
                                       <tr>
                                         <th className="text-start">Sr.No.</th>
                                         <th className="text-start">
-                                          Inventory Name
+                                          Material Name
                                         </th>
                                         <th className="text-start">Quantity</th>
                                         <th className="text-start">UOM</th>
@@ -727,10 +727,10 @@ export default function EoiDeatailPage() {
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
                                         <th className="text-start">
-                                          Section Name
+                                          Material Type Section
                                         </th>
                                         <th className="text-start">
-                                          Sub Section Name
+                                          Material Sub Section
                                         </th>
                                       </tr>
                                     </thead>

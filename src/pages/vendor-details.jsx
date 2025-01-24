@@ -161,8 +161,13 @@ export default function VendorDetails() {
     updatedData[rowIndex].total = finalTotal.toFixed(2); // After GST
 
     setData(updatedData);
+    const frt_vlu = document.querySelector(".frt_vlu").value;
+    const frt_vlu_parsed = parseFloat(frt_vlu) || 0;
 
-    const updatedGrossTotal = calculateSumTotal();
+    const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
+    debugger;
+    console.log("calculateFreightTotal()", frt_vlu);
+    console.log("updatedGrossTotal", updatedGrossTotal);
     setGrossTotal(updatedGrossTotal);
     // setData(updatedData, () => {
     //   const updatedGrossTotal = calculateSumTotal();
@@ -173,7 +178,7 @@ export default function VendorDetails() {
   const calculateFreightTotal = () => {
     const getFreightValue = (label) => {
       const row = freightData.find((row) => row.label === label);
-
+      console.log("row.value", row.value);
       if (row && row.value) {
         const { firstBid, counterBid } = row.value;
 
@@ -211,11 +216,11 @@ export default function VendorDetails() {
   const calculateSumTotal = () => {
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
     const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-
+    console.log(dataSum, "dataSum");
+    console.log(freightTotal, "freightTotal");
     // Combine and return the sum
     return Math.round((dataSum + freightTotal) * 100) / 100;
   };
-
   const handleFreightDataChange = (updatedFreightData) => {
     setFreightData(updatedFreightData);
 
@@ -1893,21 +1898,21 @@ ${seconds}s`);
                                       <tr>
                                         <th className="text-start">Sr.No.</th>
                                         <th className="text-start">
-                                          Inventory Name
+                                          Material Name
                                         </th>
                                         <th className="text-start">Quantity</th>
                                         <th className="text-start">UOM</th>
-                                        <th className="text-start">
+                                        {/* <th className="text-start">
                                           Material Type
-                                        </th>
+                                        </th> */}
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
                                         <th className="text-start">
-                                          Section Name
+                                          Material Type Section
                                         </th>
                                         <th className="text-start">
-                                          Sub Section Name
+                                          Material Sub Section
                                         </th>
                                       </tr>
                                     </thead>
@@ -1939,12 +1944,12 @@ ${seconds}s`);
                                             >
                                               {data.uom}
                                             </td>
-                                            <td
+                                            {/* <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
                                             >
                                               {data.material_type}
-                                            </td>
+                                            </td> */}
                                             <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
@@ -2203,9 +2208,12 @@ ${seconds}s`);
                             { label: "Material", key: "descriptionOfItem" },
                             { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
-                            { label: "Section", key: "section" },
+                            { label: " Material Type Section", key: "section" },
 
-                            { label: "Sub Section", key: "subSection" },
+                            {
+                              label: "Material Sub Section",
+                              key: "subSection",
+                            },
 
                             { label: "Delivery Location", key: "location" },
                             { label: "Creator Attachment", key: "attachment" },
@@ -2361,12 +2369,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2463,12 +2472,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2545,12 +2555,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2627,12 +2638,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2757,12 +2769,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2836,12 +2849,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2914,12 +2928,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
 
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -3204,11 +3219,7 @@ ${seconds}s`);
                     />
                     {/* Terms and Conditions */}
 
-                    <div
-                      style={{ marginTop: "30px" }}
-                      id="terms-conditions"
-                      className=""
-                    >
+                    <div style={{ marginTop: "30px" }}>
                       <h5 className="fw-bold head-material">
                         Terms and Conditions
                       </h5>

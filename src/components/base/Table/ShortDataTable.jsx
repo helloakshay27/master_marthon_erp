@@ -375,10 +375,10 @@ export default function ShortDataTable({
                             </span>
                             <span
                               style={{
-                                backgroundColor: "#fcc17e", // Yellow background
+                                backgroundColor: "#b45253", // Yellow background
                                 padding: "4px 10px",
                                 borderRadius: "5px",
-                                color: "#7c2d12",
+                                color: "white",
                               }}
                             >
                               ₹ {counterBid}
@@ -388,7 +388,7 @@ export default function ShortDataTable({
                           <input
                             type="text"
                             value={`${counterBid}`}
-                            className="form-control"
+                            className="form-control frt_vlu "
                             readOnly
                             style={{
                               // border: "none",
@@ -403,7 +403,7 @@ export default function ShortDataTable({
                       <input
                         type="text"
                         value={`${firstBid}`}
-                        className="form-control"
+                        className="form-control frt_vlu"
                         readOnly
                         style={{
                           // border: "none",
@@ -445,10 +445,10 @@ export default function ShortDataTable({
                         </span>
                         <span
                           style={{
-                            backgroundColor: "#fcc17e", // Yellow background
+                            backgroundColor: "#b45253", // Yellow background
                             padding: "4px 10px",
                             borderRadius: "5px",
-                            color: "#7c2d12",
+                            color: "white",
                           }}
                         >
                           {counterBid}
