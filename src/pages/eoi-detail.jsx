@@ -4,6 +4,7 @@ import "../styles/mor.css";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function EoiDeatailPage() {
   //user overview
@@ -19,7 +20,7 @@ export default function EoiDeatailPage() {
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [deliveryDate, setDelivaryDate] = useState(null);
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(false);
   const [documentAttachment, setDocumentAttachment] = useState(true);
 
   const { eventId } = useParams();
@@ -40,7 +41,9 @@ export default function EoiDeatailPage() {
   });
 
   const handleYesClick = async () => {
+    setLoading(true); // Show loade
     try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Your token
 
       // Construct the URL for the PUT API request
@@ -57,20 +60,30 @@ export default function EoiDeatailPage() {
 
       // Check the response and display a success message
       if (response.status === 200) {
-        alert("Yes selected and request updated successfully!");
+        toast.success("Yes selected and request updated successfully!", {
+          autoClose: 1000, // Duration for the toast to disappear (in ms)
+        });
         console.log("Response:", response.data);
       } else {
-        alert("Failed to update the EOI status.");
+        toast.error("Failed to update the EOI status.", {
+          autoClose: 1000,
+        });
       }
     } catch (error) {
       console.error("Error occurred while updating EOI:", error);
-      alert("An error occurred while processing your request.");
+      toast.error("An error occurred while processing your request.", {
+        autoClose: 1000,
+      });
+    } finally {
+      setLoading(false); // Hide loader when the request finishes
     }
   };
 
   // Define a function to handle the No button click event
   const handleNoClick = async () => {
+    setLoading(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Your token
 
       // Construct the URL for the PUT API request
@@ -87,14 +100,23 @@ export default function EoiDeatailPage() {
 
       // Check the response and display a success message
       if (response.status === 200) {
-        alert("No selected and request updated successfully!");
+        toast.success("No selected and request updated successfully!", {
+          autoClose: 1000, // Duration for the toast to disappear (in ms)
+          // Customize the position
+        });
         console.log("Response:", response.data);
       } else {
-        alert("Failed to update the EOI status.");
+        toast.error("Failed to update the EOI status.", {
+          autoClose: 1000,
+        });
       }
     } catch (error) {
       console.error("Error occurred while updating EOI:", error);
-      alert("An error occurred while processing your request.");
+      toast.error("An error occurred while processing your request.", {
+        autoClose: 1000,
+      });
+    } finally {
+      setLoading(false); // Hide loader when the request finishes
     }
   };
 
@@ -937,19 +959,45 @@ export default function EoiDeatailPage() {
                             Are you interested?
                           </p>
                           <div className="d-flex justify-content-end mt-2">
+                            {loading && (
+                              <div className="loader-container">
+                                <div className="lds-ring">
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                </div>
+                                <p>Submitting your bid...</p>
+                              </div>
+                            )}
                             <button
-                              className="col-md-0 purple-btn2"
+                              className={
+                                loading
+                                  ? "col-md-0 purple-btn2 disabled-btn"
+                                  : "col-md-0 purple-btn2"
+                              }
                               onClick={handleYesClick}
                               style={{ fontSize: "16px" }}
+                              disabled={loading}
                             >
-                              Yes
+                              {loading ? "Processing..." : "Yes"}
                             </button>
+
                             <button
-                              className="col-md-0 purple-btn2"
+                              className={
+                                loading
+                                  ? "col-md-0 purple-btn2 disabled-btn"
+                                  : "col-md-0 purple-btn2"
+                              }
                               onClick={handleNoClick}
                               style={{ fontSize: "16px" }}
+                              disabled={loading}
                             >
-                              No{" "}
+                              {loading ? "Processing..." : "No"}
                             </button>
                           </div>
                         </div>
@@ -964,6 +1012,7 @@ export default function EoiDeatailPage() {
           </div>
         </div>
       </div>
+      <ToastContainer></ToastContainer>
     </div>
   );
 }
