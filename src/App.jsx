@@ -63,6 +63,7 @@ import CreateBid from "./pages/create-bid";
 import Dashboard from "./pages/dashboard";
 import AuthData from "./confi/authData";
 import EoiDeatailPage from "./pages/eoi-detail";
+import EditEvent from "./pages/edit-event";
 
 function App() {
   return (
@@ -116,6 +117,7 @@ function App() {
           <Route path="/create-event" element={<CreateEvent />} />
           {/* <Route path='/create-bid' element={<CreateBid />} /> */}
           <Route path="/create-bid/:eventId" element={<CreateBid />} />
+          <Route path="/edit-event/:id" element={<EditEvent />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<RootLayout />}>
             {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}

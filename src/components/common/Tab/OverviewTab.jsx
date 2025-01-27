@@ -99,8 +99,7 @@ export default function OverviewTab({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  console.log("description",overviewData, overviewData?.event_description);
-  
+  console.log("description", overviewData, overviewData?.event_description);
 
   const orderConfig = [
     {
@@ -135,7 +134,7 @@ export default function OverviewTab({
     {
       label: "Delivery by",
       value: new Date(overviewData?.delivery_date).toLocaleString() || "_",
-    }
+    },
   ];
 
   // console.log("overviewData:-----", overviewData);
@@ -287,59 +286,59 @@ export default function OverviewTab({
 
         {documentsOpen && (
           <div id="document-attachment" className="mx-4">
-              {documentsData?.length > 0 ? (
-                <div className="mt-2" style={{ paddingLeft: "24px" }}>
-                  <div className="card card-body rounded-3 p-4">
-                    {/* Document Details Table */}
-                    <div className="tbl-container mt-3">
-                      <table className="w-100 table">
-                        <thead>
-                          <tr>
-                            <th className="text-start">Sr No</th>
-                            <th className="text-start">File Name</th>
-                            <th className="text-start">Uploaded At</th>
-                            <th className="text-start">Download</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {documentsData.map((attachment, index) => (
-                            <tr key={attachment.id}>
-                              <td className="text-start">{index + 1}</td>
-                              <td className="text-start">
-                                {attachment.filename}
-                              </td>
-                              <td className="text-start">
-                                {formatDocDate(attachment.blob_created_at)}
-                              </td>
-                              <td className="text-start">
-                                <a
-                                  href={`path-to-your-files/${attachment.filename}`}
-                                  download
+            {documentsData?.length > 0 ? (
+              <div className="mt-2" style={{ paddingLeft: "24px" }}>
+                <div className="card card-body rounded-3 p-4">
+                  {/* Document Details Table */}
+                  <div className="tbl-container mt-3">
+                    <table className="w-100 table">
+                      <thead>
+                        <tr>
+                          <th className="text-start">Sr No</th>
+                          <th className="text-start">File Name</th>
+                          <th className="text-start">Uploaded At</th>
+                          <th className="text-start">Download</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {documentsData.map((attachment, index) => (
+                          <tr key={attachment.id}>
+                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">
+                              {attachment.filename}
+                            </td>
+                            <td className="text-start">
+                              {formatDocDate(attachment.blob_created_at)}
+                            </td>
+                            <td className="text-start">
+                              <a
+                                href={`path-to-your-files/${attachment.filename}`}
+                                download
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 16 16"
+                                  style={{ fill: "black" }}
                                 >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 16 16"
-                                    style={{ fill: "black" }}
-                                  >
-                                    <g fill="currentColor">
-                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                                    </g>
-                                  </svg>
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                                  <g fill="currentColor">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                  </g>
+                                </svg>
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ) : (
-                <p className="text-center mt-4">No attachments available.</p>
-              )}
+              </div>
+            ) : (
+              <p className="text-center mt-4">No attachments available.</p>
+            )}
           </div>
         )}
 
@@ -377,21 +376,29 @@ export default function OverviewTab({
                       </tr>
                     </thead>
                     <tbody>
-                      {biddingData.map((vendor, vendorIndex) => (
-                        <React.Fragment key={vendorIndex}>
-                          {vendor.materials.map((material, materialIndex) => (
-                            <tr key={materialIndex}>
-                              {materialIndex === 0 && (
-                                <td rowSpan={vendor.materials.length}>
-                                  {vendor.vendor}
-                                </td>
-                              )}
-                              <td>{material.name}</td>
-                              <td>{material.price}</td>
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
+                      {biddingData && biddingData.length > 0 ? (
+                        biddingData.map((vendor, vendorIndex) => (
+                          <React.Fragment key={vendorIndex}>
+                            {vendor.materials.map((material, materialIndex) => (
+                              <tr key={materialIndex}>
+                                {materialIndex === 0 && (
+                                  <td rowSpan={vendor.materials.length}>
+                                    {vendor.vendor}
+                                  </td>
+                                )}
+                                <td>{material.name}</td>
+                                <td>{material.price}</td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3">
+                            <p style={{ textAlign: "center" }}>No data available</p>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -431,8 +438,8 @@ export default function OverviewTab({
                     { label: "Location", key: "location" },
                     { label: "Rate", key: "rate" },
                     { label: "Amount", key: "amount" },
-                    { label: "Type Name", key: "sectionName" },
-                    { label: "Sub Type Name", key: "subSectionName" },
+                    { label: "Material Type Name", key: "sectionName" },
+                    { label: "Sub Material Type Name", key: "subSectionName" },
                   ]}
                   data={overviewDatas}
                 />
@@ -464,16 +471,22 @@ export default function OverviewTab({
           {termsOpen && (
             <div id="terms-conditions" className="mx-5">
               <div className="card card-body p-4">
-                {overviewData?.resource_term_conditions.map((item, index) => {
-                  return (
-                    <>
-                      <p key={index}>{`${index + 1}. ${
-                        item.term_condition.condition
+                {overviewData?.resource_term_conditions &&
+                overviewData.resource_term_conditions.length > 0 ? (
+                  overviewData.resource_term_conditions.map((item, index) => (
+                    <div key={index}>
+                      <p>{`${index + 1}. ${
+                        item.term_condition?.condition ||
+                        "No condition available"
                       }`}</p>
-                      <p>{item.condition}</p>
-                    </>
-                  );
-                })}
+                      <p>
+                        {item.condition || "No additional details available"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ textAlign: "center" }}>No terms and conditions available</p>
+                )}
               </div>
             </div>
           )}
@@ -562,8 +575,6 @@ export default function OverviewTab({
                 <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
                 <p>Event Description</p>
                 <p>{overviewData.event_description}</p>
-
-
               </div>
             </div>
           )}

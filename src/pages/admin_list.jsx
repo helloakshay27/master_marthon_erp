@@ -35,8 +35,8 @@ export default function adminList() {
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
   const location = useLocation();
-    const [suggestions, setSuggestions] = useState([]);
-    const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
 
   const [activeTab, setActiveTab] = useState("all");
   const [liveEvents, setLiveEvents] = useState({ events: [], pagination: {} });
@@ -58,8 +58,7 @@ export default function adminList() {
     event_materials_inventory_id_in: "",
     event_materials_pms_inventory_inventory_type_id_in: "",
     event_materials_id_in: "",
-    event_no_cont: ""
-
+    event_no_cont: "",
   });
   const [filterOptions, setFilterOptions] = useState({
     event_titles: [],
@@ -94,7 +93,7 @@ export default function adminList() {
       event_materials_inventory_id_in: "",
       event_materials_pms_inventory_inventory_type_id_in: "",
       event_materials_id_in: "",
-      event_no_cont: ""
+      event_no_cont: "",
     });
     setFilterOptions({
       event_titles: [],
@@ -122,7 +121,6 @@ export default function adminList() {
     return Array.from(uniqueMap.values());
   };
   const token = new URLSearchParams(window.location.search).get("token");
-
 
   const fetchFilterOptions = async () => {
     setLoading(true);
@@ -155,17 +153,13 @@ export default function adminList() {
       });
     } catch (err) {
       console.error("Error fetching filter options:", err);
-      setError(
-        err.response?.data?.message || "Failed to fetch filter options"
-      );
+      setError(err.response?.data?.message || "Failed to fetch filter options");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-
-
     fetchFilterOptions();
   }, []);
 
@@ -186,19 +180,35 @@ export default function adminList() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const queryFilters = {
-        ...(filters.created_by_id_in && { "q[created_by_id_in]": filters.created_by_id_in }),
-        ...(filters.event_type_detail_award_scheme_in && { "q[event_type_detail_award_scheme_in]": filters.event_type_detail_award_scheme_in }),
+        ...(filters.created_by_id_in && {
+          "q[created_by_id_in]": filters.created_by_id_in,
+        }),
+        ...(filters.event_type_detail_award_scheme_in && {
+          "q[event_type_detail_award_scheme_in]":
+            filters.event_type_detail_award_scheme_in,
+        }),
         ...(filters.status_in && { "q[status_in]": filters.status_in }),
         ...(filters.title_in && { "q[title_in]": filters.title_in }),
-        ...(filters.event_materials_inventory_id_in && { "q[event_materials_inventory_id_in]": filters.event_materials_inventory_id_in }),
-        ...(filters.event_materials_pms_inventory_inventory_type_id_in && { "q[event_materials_pms_inventory_inventory_type_id_in]": filters.event_materials_pms_inventory_inventory_type_id_in }),
-        ...(filters.event_materials_id_in && { "q[event_materials_id_in]": filters.event_materials_id_in }),
-        ...(filters.event_no_cont && { "q[event_no_cont]": filters.event_no_cont }),
+        ...(filters.event_materials_inventory_id_in && {
+          "q[event_materials_inventory_id_in]":
+            filters.event_materials_inventory_id_in,
+        }),
+        ...(filters.event_materials_pms_inventory_inventory_type_id_in && {
+          "q[event_materials_pms_inventory_inventory_type_id_in]":
+            filters.event_materials_pms_inventory_inventory_type_id_in,
+        }),
+        ...(filters.event_materials_id_in && {
+          "q[event_materials_id_in]": filters.event_materials_id_in,
+        }),
+        ...(filters.event_no_cont && {
+          "q[event_no_cont]": filters.event_no_cont,
+        }),
       };
 
-
-      const liveEventsUrl = "https://marathon.lockated.com/rfq/events/live_events";
-      const pastEventsUrl = "https://marathon.lockated.com/rfq/events/past_events";
+      const liveEventsUrl =
+        "https://marathon.lockated.com/rfq/events/live_events";
+      const pastEventsUrl =
+        "https://marathon.lockated.com/rfq/events/past_events";
       const allEventsUrl = "https://marathon.lockated.com/rfq/events";
 
       const [liveResponse, historyResponse, allResponse] = await Promise.all([
@@ -304,8 +314,6 @@ export default function adminList() {
 
   const pageNumbers = getPageRange(); // Get the current page range for display
 
-
-
   const handleFilterChange = (key, name) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -316,7 +324,6 @@ export default function adminList() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -414,7 +421,6 @@ export default function adminList() {
     }
   }, [searchQuery]);
 
-
   const vendorDetails = async () => {
     try {
       const urlParams = new URLSearchParams(location.search);
@@ -453,15 +459,14 @@ export default function adminList() {
     { label: "Event Title", key: "event_title" },
     { label: "Event No", key: "event_no" },
     { label: "Start Time", key: "start_time" },
-
     { label: "End Time", key: "end_time" },
-
     { label: "Created At", key: "created_at" },
     { label: "Created By", key: "created_by" },
     { label: "Event Type", key: "event_type" },
     { label: "Event Configuration", key: "event_configuration" },
     { label: "Status", key: "status" },
-    { label: "Action" },
+    { label: "Action", key: "action" },
+    { label: "Edit", key: "edit" },
   ];
 
   return (
@@ -483,9 +488,7 @@ export default function adminList() {
                 </ol>
               </nav>
               <h5 className="mt-3 ms-3">RFQ &amp; Auction Events</h5>
-              <div style={{ width: "15%" }}>
-
-              </div>
+              <div style={{ width: "15%" }}></div>
             </div>
 
             <div className="material-boxes mt-3">
@@ -587,8 +590,8 @@ export default function adminList() {
                             value={
                               filters.title_in
                                 ? filterOptions.event_titles.find(
-                                  (opt) => opt.value === filters.title_in
-                                )
+                                    (opt) => opt.value === filters.title_in
+                                  )
                                 : null
                             }
                             placeholder="Select Event Title"
@@ -610,8 +613,8 @@ export default function adminList() {
                             value={
                               filters.event_no_cont
                                 ? filterOptions.event_numbers.find(
-                                  (opt) => opt.value === filters.event_no_cont
-                                )
+                                    (opt) => opt.value === filters.event_no_cont
+                                  )
                                 : null
                             }
                             placeholder="Select Event Number"
@@ -633,8 +636,8 @@ export default function adminList() {
                             value={
                               filters.status_in
                                 ? filterOptions.statuses.find(
-                                  (opt) => opt.value === filters.status_in
-                                )
+                                    (opt) => opt.value === filters.status_in
+                                  )
                                 : null
                             }
                             placeholder="Select Status"
@@ -657,9 +660,9 @@ export default function adminList() {
                             value={
                               filters.created_by_id_in
                                 ? filterOptions.creaters.find(
-                                  (opt) =>
-                                    opt.value === filters.created_by_id_in
-                                )
+                                    (opt) =>
+                                      opt.value === filters.created_by_id_in
+                                  )
                                 : null
                             }
                             placeholder="Select Creator"
@@ -685,23 +688,23 @@ export default function adminList() {
                             value={searchQuery}
                             onChange={handleInputChange}
                             onFocus={() => setIsSuggestionsVisible(true)}
-                            onBlur={() => setTimeout(() => setIsSuggestionsVisible(false), 200)}
+                            onBlur={() =>
+                              setTimeout(
+                                () => setIsSuggestionsVisible(false),
+                                200
+                              )
+                            }
                           />
 
                           <div className="input-group-append">
-                            <button type="sumbit"
-
+                            <button
+                              type="sumbit"
                               className="btn btn-md btn-default"
                             >
                               <SearchIcon />
                             </button>
-
                           </div>
-
-
                         </div>
-
-
                       </form>
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul className="suggestions-list">
@@ -711,7 +714,8 @@ export default function adminList() {
                               className="suggestion-item"
                               onClick={() => handleSuggestionClick(suggestion)}
                             >
-                              {suggestion.event_title} {/* Display event title */}
+                              {suggestion.event_title}{" "}
+                              {/* Display event title */}
                             </li>
                           ))}
                         </ul>
@@ -806,7 +810,9 @@ export default function adminList() {
                               <td>{event.event_no || "N/A"}</td>
                               <td>
                                 {event.event_schedule?.start_time ? (
-                                  <FormatDate timestamp={event.event_schedule?.start_time} />
+                                  <FormatDate
+                                    timestamp={event.event_schedule?.start_time}
+                                  />
                                 ) : (
                                   "N/A"
                                 )}
@@ -814,7 +820,9 @@ export default function adminList() {
 
                               <td>
                                 {event.event_schedule?.end_time ? (
-                                  <FormatDate timestamp={event.event_schedule?.end_time} />
+                                  <FormatDate
+                                    timestamp={event.event_schedule?.end_time}
+                                  />
                                 ) : (
                                   "N/A"
                                 )}
@@ -825,7 +833,6 @@ export default function adminList() {
                                 ) : (
                                   "N/A"
                                 )}
-
                               </td>
                               <td>{event.created_by || "N/A"}</td>
                               <td>
@@ -838,9 +845,11 @@ export default function adminList() {
                               <td>{event.status || "N/A"}</td>
                               <td>
                                 <button
-                                  className="btn "
+                                  className="btn"
                                   onClick={() =>
-                                    navigate(`/erp-rfq-detail-price-trends4h/${event.id}`)
+                                    navigate(
+                                      `/erp-rfq-detail-price-trends4h/${event.id}`
+                                    )
                                   }
                                 >
                                   <svg
@@ -856,6 +865,31 @@ export default function adminList() {
                                   </svg>{" "}
                                 </button>
                               </td>
+                              <td>
+                                <button
+                                  className="btn"
+                                  onClick={() =>
+                                    navigate(
+                                      `/edit-event/${event.id}`
+                                    )
+                                  }
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor" 
+                                    className="bi bi-pencil-square" 
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                    />
+                                  </svg>
+                                </button>
+                              </td>
                             </tr>
                           ))
                         )}
@@ -866,8 +900,9 @@ export default function adminList() {
                     <ul className="pagination justify-content-center d-flex">
                       {/* First Button */}
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -879,8 +914,9 @@ export default function adminList() {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -897,10 +933,11 @@ export default function adminList() {
                       {pageNumbers.map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${pagination.current_page === pageNumber
-                            ? "active"
-                            : ""
-                            }`}
+                          className={`page-item ${
+                            pagination.current_page === pageNumber
+                              ? "active"
+                              : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -913,10 +950,11 @@ export default function adminList() {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -933,10 +971,11 @@ export default function adminList() {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1056,7 +1095,8 @@ export default function adminList() {
                           isClearable
                           value={filterOptions.material_name.find(
                             (opt) =>
-                              opt.value === filters.event_materials_inventory_id_in
+                              opt.value ===
+                              filters.event_materials_inventory_id_in
                           )}
                           onChange={(option) =>
                             handleFilterChange(

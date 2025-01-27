@@ -1,15 +1,6 @@
-// @ts-ignore
-import { mumbaiLocations, product, unitMeasure } from "../../../constant/data";
-// @ts-ignore
-import MultiSelector from "../../base/Select/MultiSelector";
+import React, { useState, useEffect } from "react";
 import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
-import React, { useState } from "react";
-import { useEffect } from "react";
-// @ts-ignore
-import axios from "axios";
-// @ts-ignore
-import { type } from "jquery";
 
 export default function CreateRFQForm({ data, setData, isService }) {
   const [materials, setMaterials] = useState([]);
@@ -23,6 +14,7 @@ export default function CreateRFQForm({ data, setData, isService }) {
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [isMorSelected, setIsMorSelected] = useState(false);
   const [morInventories, setMorInventories] = useState([]);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -44,12 +36,12 @@ export default function CreateRFQForm({ data, setData, isService }) {
     const fetchSections = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com//pms/sections/section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          "https://marathon.lockated.com/rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
         const data = await response.json();
-        if (data && Array.isArray(data.section_list)) {
+        if (data && Array.isArray(data.inventory_types)) {
           setSectionOptions(
-            data.section_list.map((section) => ({
+            data.inventory_types.map((section) => ({
               label: section.name,
               value: section.value,
             }))
@@ -65,12 +57,12 @@ export default function CreateRFQForm({ data, setData, isService }) {
     const fetchSubSections = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com//pms/sections/sub_section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          "https://marathon.lockated.com/rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
         const data = await response.json();
-        if (data && Array.isArray(data.section_list)) {
+        if (data && Array.isArray(data.inventory_sub_types)) {
           setSubSectionOptions(
-            data.section_list.map((subSection) => ({
+            data.inventory_sub_types.map((subSection) => ({
               label: subSection.name,
               value: subSection.value,
             }))
@@ -82,7 +74,6 @@ export default function CreateRFQForm({ data, setData, isService }) {
         console.error("Error fetching sub-sections:", error);
       }
     };
-
     const fetchMorInventories = async () => {
       try {
         console.log("Fetching MOR inventories...");
@@ -90,9 +81,9 @@ export default function CreateRFQForm({ data, setData, isService }) {
           `https://marathon.lockated.com/rfq/events/mor_inventories?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_inventories="128,129"`,
           {
             headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            }
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
           }
         );
         const data = await response.json();
@@ -107,7 +98,8 @@ export default function CreateRFQForm({ data, setData, isService }) {
             type: inventory.inventory.type,
             location: "",
             rate: inventory.material_rate || 0,
-            amount: (inventory.material_rate || 0) * inventory.required_quantity,
+            amount:
+              (inventory.material_rate || 0) * inventory.required_quantity,
             mor_number: inventory.mor_number,
             expected_date_of_delivery: inventory.expected_date_of_delivery,
             inventory_id: inventory.inventory_id,
@@ -129,24 +121,39 @@ export default function CreateRFQForm({ data, setData, isService }) {
       }
     };
 
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch(
+          "https://marathon.lockated.com/rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[6,7]"
+        );
+        const data = await response.json();
+        if (data && Array.isArray(data.locations_list)) {
+          setLocations(data.locations_list);
+        } else {
+          console.error("Unexpected response structure:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
     fetchMaterials();
     fetchSections();
     fetchSubSections();
     fetchMorInventories();
+    fetchLocations();
   }, []);
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections, setData]);
 
-  // @ts-ignore
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
     setSections(updatedSections);
   };
 
-  // @ts-ignore
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].location = selected;
@@ -236,8 +243,9 @@ export default function CreateRFQForm({ data, setData, isService }) {
         selectedMor.inventory.type;
       updatedSections[sectionIndex].sectionData[rowIndex].quantity =
         selectedMor.required_quantity;
-      updatedSections[sectionIndex].sectionData[rowIndex].expected_date_of_delivery =
-        selectedMor.expected_date_of_delivery;
+      updatedSections[sectionIndex].sectionData[
+        rowIndex
+      ].expected_date_of_delivery = selectedMor.expected_date_of_delivery;
       updatedSections[sectionIndex].sectionData[rowIndex].rate =
         selectedMor.material_rate || 0;
       updatedSections[sectionIndex].sectionData[rowIndex].amount =
@@ -328,47 +336,44 @@ export default function CreateRFQForm({ data, setData, isService }) {
     label: inventory.mor_number,
   }));
 
+  const locationOptions = locations.map((location) => ({
+    value: location.value,
+    label: location.name,
+  }));
+
   return (
     <div className="row px-3">
-      <div className="col-md-12 d-flex align-items-baseline mb-4 gap-2">
-        <input
-          type="checkbox"
-          className="form-check-input"
-          onChange={(e) => setIsMorSelected(e.target.checked)}
-        />
-        <h5>Select From MOR</h5>
-      </div>
       <div className="card p-0">
         <div className="card-header3">
           <h3 className="card-title">
-            {isMorSelected ? "Select Material Order Request" : `Select ${isService ? "Services" : "Materials"}`}{" "}
+            {`Select ${isService ? "Services" : "Materials"}`}{" "}
           </h3>
         </div>
         <div className="px-3 py-3">
           {sections.map((section, sectionIndex) => (
             <div key={section.sectionId} className="card p-4 mb-4">
               <div className="row justify-content-between">
-                <div className={isMorSelected? 'col-md-4 col-sm-6' : `col-md-8 col-sm-12 d-flex gap-3`}>
+                <div className={`col-md-8 col-sm-12 d-flex gap-3`}>
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={isMorSelected ? "Select MOR" : "Select Type"}
-                      options={isMorSelected ? morInventoryOptions : sectionOptions}
-                      defaultValue={isMorSelected ? "Select MOR" : "Select Type"}
+                      label={"Select Material Type"}
+                      options={sectionOptions}
+                      defaultValue={"Select Material Type"}
                       onChange={(selected) =>
                         handleSectionChange(selected, sectionIndex)
                       }
                     />
                   </div>
-                  {!isMorSelected && <div className="flex-grow-1">
+                  <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Sub Type"}
+                      label={"Select Sub Material Type"}
                       options={subSectionOptions}
-                      defaultValue={"Select Sub Type"}
+                      defaultValue={"Select Sub Material Type"}
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
                       }
                     />
-                  </div>}
+                  </div>
                 </div>
                 <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
                   <button
@@ -401,7 +406,10 @@ export default function CreateRFQForm({ data, setData, isService }) {
                   { label: "Rate", key: "rate" },
                   { label: "Amount", key: "amount" },
                   { label: "MOR Number", key: "mor_number" },
-                  { label: "Expected Delivery Date", key: "expected_date_of_delivery" },
+                  {
+                    label: "Expected Delivery Date",
+                    key: "expected_date_of_delivery",
+                  },
                   { label: "Actions", key: "actions" },
                 ]}
                 data={section.sectionData}
@@ -431,17 +439,12 @@ export default function CreateRFQForm({ data, setData, isService }) {
                   ),
                   type: (cell, rowIndex) => <p>{cell}</p>,
                   location: (cell, rowIndex) => (
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={cell}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "location",
-                          sectionIndex
-                        )
+                    <SelectBox
+                      label={""}
+                      options={locationOptions}
+                      defaultValue={cell}
+                      onChange={(selected) =>
+                        handleLocationChange(selected, rowIndex, sectionIndex)
                       }
                     />
                   ),
@@ -491,17 +494,11 @@ export default function CreateRFQForm({ data, setData, isService }) {
                       options={morInventoryOptions}
                       defaultValue={cell}
                       onChange={(selected) =>
-                        handleMorChange(
-                          selected,
-                          rowIndex,
-                          sectionIndex
-                        )
+                        handleMorChange(selected, rowIndex, sectionIndex)
                       }
                     />
                   ),
-                  expected_date_of_delivery: (cell, rowIndex) => (
-                    <p>{cell}</p>
-                  ),
+                  expected_date_of_delivery: (cell, rowIndex) => <p>{cell}</p>,
                   actions: (_, rowIndex) => (
                     <button
                       className="btn btn-danger"

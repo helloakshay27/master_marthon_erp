@@ -274,6 +274,8 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
+        console.log("Data      participants", data);
+        
         setParticipantsTabData(data);
       } catch (err) {
         setError(err.message);
