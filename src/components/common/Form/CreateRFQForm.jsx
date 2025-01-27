@@ -1,10 +1,14 @@
+// @ts-ignore
 import { mumbaiLocations, product, unitMeasure } from "../../../constant/data";
+// @ts-ignore
 import MultiSelector from "../../base/Select/MultiSelector";
 import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
 import React, { useState } from "react";
 import { useEffect } from "react";
+// @ts-ignore
 import axios from "axios";
+// @ts-ignore
 import { type } from "jquery";
 
 export default function CreateRFQForm({ data, setData, isService }) {
@@ -18,17 +22,19 @@ export default function CreateRFQForm({ data, setData, isService }) {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [isMorSelected, setIsMorSelected] = useState(false);
+  const [morInventories, setMorInventories] = useState([]);
 
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get(
+        const response = await fetch(
           "https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-        if (response.data && Array.isArray(response.data.materials)) {
-          setMaterials(response.data.materials);
+        const data = await response.json();
+        if (data && Array.isArray(data.materials)) {
+          setMaterials(data.materials);
         } else {
-          console.error("Unexpected response structure:", response.data);
+          console.error("Unexpected response structure:", data);
         }
       } catch (error) {
         console.error("Error fetching materials:", error);
@@ -37,19 +43,19 @@ export default function CreateRFQForm({ data, setData, isService }) {
 
     const fetchSections = async () => {
       try {
-        const response = await axios.get(
+        const response = await fetch(
           "https://marathon.lockated.com//pms/sections/section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-
-        if (response.data && Array.isArray(response.data.section_list)) {
+        const data = await response.json();
+        if (data && Array.isArray(data.section_list)) {
           setSectionOptions(
-            response.data.section_list.map((section) => ({
+            data.section_list.map((section) => ({
               label: section.name,
               value: section.value,
             }))
           );
         } else {
-          console.error("Unexpected response structure:", response.data);
+          console.error("Unexpected response structure:", data);
         }
       } catch (error) {
         console.error("Error fetching sections:", error);
@@ -58,39 +64,89 @@ export default function CreateRFQForm({ data, setData, isService }) {
 
     const fetchSubSections = async () => {
       try {
-        const response = await axios.get(
+        const response = await fetch(
           "https://marathon.lockated.com//pms/sections/sub_section_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-        if (response.data && Array.isArray(response.data.section_list)) {
+        const data = await response.json();
+        if (data && Array.isArray(data.section_list)) {
           setSubSectionOptions(
-            response.data.section_list.map((subSection) => ({
+            data.section_list.map((subSection) => ({
               label: subSection.name,
               value: subSection.value,
             }))
           );
         } else {
-          console.error("Unexpected response structure:", response.data);
+          console.error("Unexpected response structure:", data);
         }
       } catch (error) {
         console.error("Error fetching sub-sections:", error);
       }
     };
 
+    const fetchMorInventories = async () => {
+      try {
+        console.log("Fetching MOR inventories...");
+        const response = await fetch(
+          `https://marathon.lockated.com/rfq/events/mor_inventories?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_inventories="128,129"`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            }
+          }
+        );
+        const data = await response.json();
+        console.log("Response received:", data.materials);
+        if (data && Array.isArray(data.materials)) {
+          setMorInventories(data.materials);
+
+          const initialSectionData = data.materials.map((inventory) => ({
+            descriptionOfItem: inventory.inventory.name,
+            quantity: inventory.required_quantity,
+            unit: inventory.inventory.uom_name,
+            type: inventory.inventory.type,
+            location: "",
+            rate: inventory.material_rate || 0,
+            amount: (inventory.material_rate || 0) * inventory.required_quantity,
+            mor_number: inventory.mor_number,
+            expected_date_of_delivery: inventory.expected_date_of_delivery,
+            inventory_id: inventory.inventory_id,
+            sub_section_id: "",
+            section_id: "",
+          }));
+
+          setSections([
+            {
+              sectionData: initialSectionData,
+              sectionId: Date.now(),
+            },
+          ]);
+        } else {
+          console.error("Unexpected response structure:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching MOR inventories:", error);
+      }
+    };
+
     fetchMaterials();
     fetchSections();
     fetchSubSections();
+    fetchMorInventories();
   }, []);
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections, setData]);
 
+  // @ts-ignore
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
     setSections(updatedSections);
   };
 
+  // @ts-ignore
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].location = selected;
@@ -163,6 +219,59 @@ export default function CreateRFQForm({ data, setData, isService }) {
     setSections(updatedSections);
   };
 
+  const handleMorChange = (selected, rowIndex, sectionIndex) => {
+    const updatedSections = [...sections];
+    const selectedMor = morInventories.find(
+      (inventory) => inventory.mor_number === selected
+    );
+
+    updatedSections[sectionIndex].sectionData[rowIndex].mor_number = selected;
+
+    if (selectedMor) {
+      updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
+        selectedMor.inventory.name;
+      updatedSections[sectionIndex].sectionData[rowIndex].unit =
+        selectedMor.inventory.uom_name;
+      updatedSections[sectionIndex].sectionData[rowIndex].type =
+        selectedMor.inventory.type;
+      updatedSections[sectionIndex].sectionData[rowIndex].quantity =
+        selectedMor.required_quantity;
+      updatedSections[sectionIndex].sectionData[rowIndex].expected_date_of_delivery =
+        selectedMor.expected_date_of_delivery;
+      updatedSections[sectionIndex].sectionData[rowIndex].rate =
+        selectedMor.material_rate || 0;
+      updatedSections[sectionIndex].sectionData[rowIndex].amount =
+        (selectedMor.material_rate || 0) * selectedMor.required_quantity;
+    }
+    setSections(updatedSections);
+  };
+
+  useEffect(() => {
+    if (isMorSelected && morInventories.length > 0) {
+      const initialSectionData = morInventories.map((inventory) => ({
+        descriptionOfItem: inventory.inventory.name,
+        quantity: inventory.required_quantity,
+        unit: inventory.inventory.uom_name,
+        type: inventory.inventory.type,
+        location: "",
+        rate: inventory.material_rate || 0,
+        amount: (inventory.material_rate || 0) * inventory.required_quantity,
+        mor_number: inventory.mor_number,
+        expected_date_of_delivery: inventory.expected_date_of_delivery,
+        inventory_id: inventory.inventory_id,
+        sub_section_id: "",
+        section_id: "",
+      }));
+
+      setSections([
+        {
+          sectionData: initialSectionData,
+          sectionId: Date.now(),
+        },
+      ]);
+    }
+  }, [isMorSelected, morInventories]);
+
   const handleAddSection = () => {
     const newSection = {
       sectionData: [
@@ -214,6 +323,11 @@ export default function CreateRFQForm({ data, setData, isService }) {
     label: material.name,
   }));
 
+  const morInventoryOptions = morInventories.map((inventory) => ({
+    value: inventory.mor_number,
+    label: inventory.mor_number,
+  }));
+
   return (
     <div className="row px-3">
       <div className="col-md-12 d-flex align-items-baseline mb-4 gap-2">
@@ -237,9 +351,9 @@ export default function CreateRFQForm({ data, setData, isService }) {
                 <div className={isMorSelected? 'col-md-4 col-sm-6' : `col-md-8 col-sm-12 d-flex gap-3`}>
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={isMorSelected ? "Select MOR" : "Select Section"}
-                      options={sectionOptions}
-                      defaultValue={isMorSelected ? "Select MOR" : "Select Section"}
+                      label={isMorSelected ? "Select MOR" : "Select Type"}
+                      options={isMorSelected ? morInventoryOptions : sectionOptions}
+                      defaultValue={isMorSelected ? "Select MOR" : "Select Type"}
                       onChange={(selected) =>
                         handleSectionChange(selected, sectionIndex)
                       }
@@ -247,9 +361,9 @@ export default function CreateRFQForm({ data, setData, isService }) {
                   </div>
                   {!isMorSelected && <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Sub Section"}
+                      label={"Select Sub Type"}
                       options={subSectionOptions}
-                      defaultValue={"Select Sub Section"}
+                      defaultValue={"Select Sub Type"}
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
                       }
@@ -286,6 +400,8 @@ export default function CreateRFQForm({ data, setData, isService }) {
                   { label: "Location", key: "location" },
                   { label: "Rate", key: "rate" },
                   { label: "Amount", key: "amount" },
+                  { label: "MOR Number", key: "mor_number" },
+                  { label: "Expected Delivery Date", key: "expected_date_of_delivery" },
                   { label: "Actions", key: "actions" },
                 ]}
                 data={section.sectionData}
@@ -365,18 +481,26 @@ export default function CreateRFQForm({ data, setData, isService }) {
                     <input
                       className="form-control"
                       type="number"
-                      value={""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
+                      value={cell}
+                      readOnly
+                    />
+                  ),
+                  mor_number: (cell, rowIndex) => (
+                    <SelectBox
+                      label={""}
+                      options={morInventoryOptions}
+                      defaultValue={cell}
+                      onChange={(selected) =>
+                        handleMorChange(
+                          selected,
                           rowIndex,
-                          "amount",
                           sectionIndex
                         )
                       }
-                      placeholder="Enter Amount"
-                      disabled
                     />
+                  ),
+                  expected_date_of_delivery: (cell, rowIndex) => (
+                    <p>{cell}</p>
                   ),
                   actions: (_, rowIndex) => (
                     <button

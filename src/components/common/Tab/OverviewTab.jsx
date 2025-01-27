@@ -99,6 +99,9 @@ export default function OverviewTab({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  console.log("description",overviewData, overviewData?.event_description);
+  
+
   const orderConfig = [
     {
       label: "Order Type",
@@ -132,12 +135,7 @@ export default function OverviewTab({
     {
       label: "Delivery by",
       value: new Date(overviewData?.delivery_date).toLocaleString() || "_",
-    },
-    {
-      label: "Order Description",
-      value:
-        "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quia corrupti odio quo illum veritatis odit consequuntur ex consequatur, dignissimos modi obcaecati fugiat voluptatem perferendis. Nostrum itaque, tempore minus, perspiciatis quibusdam cumque eaque minima accusantium asperiores eligendi aspernatur soluta cum fugiat nobis sequi explicabo suscipit, placeat ex quis dolor saepe! Consectetur eligendi ab nostrum a, reprehenderit magnam. Saepe neque reprehenderit ducimus id, cum consequatur sint consequuntur vitae quasi asperiores culpa inventore assumenda eos beatae aspernatur ipsa doloremque accusantium enim perferendis, reiciendis illum autem voluptate. Amet vero magni fugiat nesciunt explicabo reiciendis incidunt sunt, excepturi, ea atque nihil cumque ipsa deserunt placeat!",
-    },
+    }
   ];
 
   // console.log("overviewData:-----", overviewData);
@@ -146,7 +144,7 @@ export default function OverviewTab({
     inventoryName: item.inventory_name || "_",
     quantity: item.quantity || "_",
     uom: item.uom || "_",
-    materialType: item.material_type || "_",
+    // materialType: item.material_type || "_",
     location: item.location || "_",
     rate: item.rate || "_",
     amount: item.rate * item.quantity || "_",
@@ -426,15 +424,15 @@ export default function OverviewTab({
               <div className="card card-body p-4 rounded-3">
                 <Table
                   columns={[
-                    { label: "Inventory Name", key: "inventoryName" },
+                    { label: "Material Name", key: "inventoryName" },
                     { label: "Quantity", key: "quantity" },
                     { label: "UOM", key: "uom" },
-                    { label: "Material Type", key: "materialType" },
+                    // { label: "Material Type", key: "materialType" },
                     { label: "Location", key: "location" },
                     { label: "Rate", key: "rate" },
                     { label: "Amount", key: "amount" },
-                    { label: "Section Name", key: "sectionName" },
-                    { label: "Sub Section Name", key: "subSectionName" },
+                    { label: "Type Name", key: "sectionName" },
+                    { label: "Sub Type Name", key: "subSectionName" },
                   ]}
                   data={overviewDatas}
                 />
@@ -562,6 +560,10 @@ export default function OverviewTab({
               <div className="card card-body p-4">
                 <p>Event Title</p>
                 <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
+                <p>Event Description</p>
+                <p>{overviewData.event_description}</p>
+
+
               </div>
             </div>
           )}

@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
+import { fi } from "date-fns/locale";
+import { set } from "date-fns";
 
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
@@ -29,6 +31,7 @@ export default function CreateEvent() {
   const [awardType, setAwardType] = useState(false);
   const [dynamicExtension, setDynamicExtension] = useState(false);
   const [resetSelectedRows, setResetSelectedRows] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
@@ -234,7 +237,7 @@ export default function CreateEvent() {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      console.log("Formatted data:", formattedData.length, formattedData); 
+      // console.log("Formatted data:", formattedData.length, formattedData); 
       
 
       setTableData(formattedData);
@@ -397,6 +400,7 @@ export default function CreateEvent() {
       return;
     }
 
+    setSubmitted(true);  
     const eventData = {
       event: {
         event_title: eventName,
@@ -461,19 +465,19 @@ export default function CreateEvent() {
       },
     };
 
-    console.log("Payload:", eventData, textareas);
+    console.log("Payload:", eventData);
 
     try {
-      const response = await fetch(
-        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        }
-      );
+      // const response = await fetch(
+      //   "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(eventData),
+      //   }
+      // );
       if (response.ok) {
         alert("Event created successfully!");
         navigate(
@@ -487,6 +491,9 @@ export default function CreateEvent() {
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to create event.");
+    }
+    finally {
+      setSubmitted(false);
     }
   };
 
@@ -900,7 +907,7 @@ export default function CreateEvent() {
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
-                <button className="purple-btn2 w-100" onClick={handleSubmit}>
+                <button className="purple-btn2 w-100" onClick={handleSubmit} disabled={submitted}>
                   Submit
                 </button>
               </div>
