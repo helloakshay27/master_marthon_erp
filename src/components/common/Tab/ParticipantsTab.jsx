@@ -6,9 +6,11 @@ import SearchIcon from "../Icon/SearchIcon";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import PopupBox from "../../base/Popup/Popup";
 import SelectBox from "../../base/Select/SelectBox";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
-export default function ParticipantsTab({ data }) {
+export default function ParticipantsTab({ data, id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,6 +38,9 @@ export default function ParticipantsTab({ data }) {
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
   };
+
+  console.log("Data:", data);
+  
 
   useEffect(() => {
     setFilteredData(
@@ -135,18 +140,44 @@ export default function ParticipantsTab({ data }) {
     }
   };
 
-  const handleSaveButtonClick = () => {
-    const updatedTableData = tableData.filter(
-      (vendor) =>
-        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
-    );
-
-    setTableData(updatedTableData);
-    setSelectedVendors((prev) => [...prev, ...selectedRows]);
-    setVendorModal(false);
-    setSelectedRows([]);
-    setResetSelectedRows(true);
-  };
+  const handleSaveButtonClick = async () => {
+      const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
+  
+      const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+        ","
+      )}]`;
+  
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+        });
+  
+        if (response.ok) {
+          const updatedTableData = tableData.filter(
+            (vendor) =>
+              !selectedRows.some(
+                (selectedVendor) => selectedVendor.id === vendor.id
+              )
+          );
+          console.log("Updated table data:", updatedTableData);
+          setTableData(updatedTableData);
+          setSelectedVendors((prev) => [...prev, ...selectedRows]);
+          setVendorModal(false);
+          setSelectedRows([]);
+          setResetSelectedRows(true);
+          toast.success("Vendors added successfully!", {
+            autoClose: 1000,
+          });
+        } else {
+          throw new Error("Failed to add vendors.");
+        }
+      } catch (error) {
+        console.error("Error adding vendors:", error);
+        toast.error("Failed to add vendors.", {
+          autoClose: 1000,
+        });
+      }
+    };
 
   const isVendorSelected = (vendorId) => {
     return (
@@ -861,6 +892,7 @@ export default function ParticipantsTab({ data }) {
           </>
         }
       />
+      <ToastContainer />
     </div>
   );
 }

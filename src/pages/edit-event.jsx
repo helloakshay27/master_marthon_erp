@@ -10,16 +10,16 @@ import {
   SelectBox,
   Table,
 } from "../components";
-
+import { useParams, useNavigation, useNavigate } from "react-router-dom";
 import { citiesList, participantsTabColumns } from "../constant/data";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
-import { fi } from "date-fns/locale";
-import { set } from "date-fns";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EditEvent() {
+  const { id } = useParams(); // Get the id from the URL 
   const fileInputRef = useRef(null);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
@@ -237,8 +237,7 @@ export default function EditEvent() {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      // console.log("Formatted data:", formattedData.length, formattedData); 
-      
+      // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
 
@@ -286,18 +285,45 @@ export default function EditEvent() {
       setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
     }
   };
+  console.log("event id", id);
 
-  const handleSaveButtonClick = () => {
-    const updatedTableData = tableData.filter(
-      (vendor) =>
-        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
-    );
+  const handleSaveButtonClick = async () => {
+    const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
-    setTableData(updatedTableData);
-    setSelectedVendors((prev) => [...prev, ...selectedRows]);
-    setVendorModal(false);
-    setSelectedRows([]);
-    setResetSelectedRows(true);
+    const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+      ","
+    )}]`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        const updatedTableData = tableData.filter(
+          (vendor) =>
+            !selectedRows.some(
+              (selectedVendor) => selectedVendor.id === vendor.id
+            )
+        );
+        console.log("Updated table data:", updatedTableData);
+        setTableData(updatedTableData);
+        setSelectedVendors((prev) => [...prev, ...selectedRows]);
+        setVendorModal(false);
+        setSelectedRows([]);
+        setResetSelectedRows(true);
+        toast.success("Vendors added successfully!", {
+          autoClose: 1000,
+        });
+      } else {
+        throw new Error("Failed to add vendors.");
+      }
+    } catch (error) {
+      console.error("Error adding vendors:", error);
+      toast.error("Failed to add vendors.", {
+        autoClose: 1000,
+      });
+    }
   };
 
   const isVendorSelected = (vendorId) => {
@@ -334,7 +360,10 @@ export default function EditEvent() {
       setTextareas(
         textareas.map((textarea) =>
           textarea.id === id
-            ? { id: selectedCondition.value, value: selectedCondition.condition }
+            ? {
+                id: selectedCondition.value,
+                value: selectedCondition.condition,
+              }
             : textarea
         )
       );
@@ -400,7 +429,7 @@ export default function EditEvent() {
       return;
     }
 
-    setSubmitted(true);  
+    setSubmitted(true);
     const eventData = {
       event: {
         event_title: eventName,
@@ -468,31 +497,30 @@ export default function EditEvent() {
     console.log("Payload:", eventData);
 
     try {
-    //   const response = await fetch(
-    //     "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify(eventData),
-    //     }
-    //   );
-    //   if (response.ok) {
-    //     alert("Event created successfully!");
-    //     navigate(
-    //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-    //     );
-    //   } else {
-    //     const errorData = await response.json();
-    //     console.error("Error response data:", errorData);
-    //     throw new Error("Failed to Edit Event.");
-    //   }
+      //   const response = await fetch(
+      //     "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      //     {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //       },
+      //       body: JSON.stringify(eventData),
+      //     }
+      //   );
+      //   if (response.ok) {
+      //     alert("Event created successfully!");
+      //     navigate(
+      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //     );
+      //   } else {
+      //     const errorData = await response.json();
+      //     console.error("Error response data:", errorData);
+      //     throw new Error("Failed to Edit Event.");
+      //   }
     } catch (error) {
       console.error("Error creating event:", error);
       alert("Failed to Edit Event.");
-    }
-    finally {
+    } finally {
       setSubmitted(false);
     }
   };
@@ -518,10 +546,14 @@ export default function EditEvent() {
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      console.log("Filtered suggestions:", filteredSuggestions.length ,filteredSuggestions);
+      console.log(
+        "Filtered suggestions:",
+        filteredSuggestions.length,
+        filteredSuggestions
+      );
       setSuggestions(filteredSuggestions);
       console.log("Suggestions:", suggestions.length, suggestions);
-      
+
       setIsSuggestionsVisible(true);
     }
   };
@@ -536,7 +568,7 @@ export default function EditEvent() {
     if (searchTerm.trim() === "") {
       setFilteredTableData(tableData);
     } else {
-      console.log("search",searchTerm)
+      console.log("search", searchTerm);
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -860,7 +892,13 @@ export default function EditEvent() {
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
-                <button className={ submitted ? 'disabled-btn w-100' : 'purple-btn2 w-100' } onClick={handleSubmit} disabled={submitted}>
+                <button
+                  className={
+                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                  }
+                  onClick={handleSubmit}
+                  disabled={submitted}
+                >
                   Submit
                 </button>
               </div>
@@ -1146,7 +1184,6 @@ export default function EditEvent() {
                       placeholder="Enter Phone Number"
                     />
                   </div>
-                  
                 </form>
               </>
             }
@@ -1190,6 +1227,7 @@ export default function EditEvent() {
           />{" "}
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

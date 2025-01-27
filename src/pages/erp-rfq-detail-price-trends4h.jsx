@@ -467,7 +467,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                   orderConfOpen={orderConf}
                   orderDetails={orderDetails}
                 />
-                <ParticipantsTab data={participants} />
+                <ParticipantsTab data={participants} id={id} />
                 <AnalyticsTab id={id} />
                 <ParicipantsRemarksTab data={remarks} />
               </div>
