@@ -902,12 +902,12 @@ export default function CreateEvent() {
                 handleSaveSchedule={handleSaveSchedule}
               />
             </div>
-            <div className="row mt-2 justify-content-end mt-4">
+            <div className="row mt-2 justify-content-end align-items-center mt-4">
               <div className="col-md-2">
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
-                <button className="purple-btn2 w-100" onClick={handleSubmit} disabled={submitted}>
+                <button className={ submitted ? 'disabled-btn w-100' : 'purple-btn2 w-100' } onClick={handleSubmit} disabled={submitted}>
                   Submit
                 </button>
               </div>

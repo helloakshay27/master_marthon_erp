@@ -18537,5 +18537,7 @@ ul.pagination.justify-content-center {
   border: 0;
   color: #666666;
   cursor: not-allowed;
+  padding: 5px 1.5rem;
+  border-radius:5px;
 }
 /*# sourceMappingURL=mor.css-ed871f49aadae569d66f8e115a43114d30eed9833a2ddcbeef011041744e80a7.map */
