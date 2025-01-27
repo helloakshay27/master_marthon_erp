@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
+// @ts-ignore
 import Header from "../components/Header";
+// @ts-ignore
 import { Table, ShortTable, SelectBox } from "../components";
 import ShortDataTable from "../components/base/Table/ShortDataTable";
 import "../styles/mor.css";
+// @ts-ignore
 import { mumbaiLocations, product, unitMeasure } from "../constant/data";
 import { useNavigate, useParams } from "react-router-dom";
+// @ts-ignore
 import { Link } from "react-router-dom";
 import axios from "axios";
 import ClockIcon from "../components/common/Icon/ClockIcon";
@@ -83,6 +87,7 @@ export default function VendorDetails() {
 
   // Get the current, previous, and next bids
   // const previousBid = currentIndex > 0 ? currentIndex  : "No bid";
+  // @ts-ignore
   const currentBid = ` Current bid ${currentIndex + 1}`;
   // const nextBid = currentIndex < bids.length - 1 ? currentIndex+2:"No bid";
 
@@ -95,6 +100,7 @@ export default function VendorDetails() {
     { label: "Loading / Unloading *", value: { firstBid: "", counterBid: "" } },
   ]);
 
+  // @ts-ignore
   const [vendorId, setVendorId] = useState(() => {
     // Retrieve the vendorId from sessionStorage or default to an empty string
     return sessionStorage.getItem("vendorId") || "";
@@ -111,6 +117,7 @@ export default function VendorDetails() {
 
   const navigate = useNavigate();
 
+  // @ts-ignore
   const handleDescriptionOfItemChange = (selected, rowIndex) => {
     const updatedData = [...data];
     updatedData[rowIndex].descriptionOfItem = selected;
@@ -121,6 +128,7 @@ export default function VendorDetails() {
     updatedData[rowIndex].unit = selected;
     setData(updatedData);
   };
+  // @ts-ignore
   const handleLocationChange = (selected, rowIndex) => {
     const updatedData = [...data];
     updatedData[rowIndex].location = selected;
@@ -161,8 +169,14 @@ export default function VendorDetails() {
     updatedData[rowIndex].total = finalTotal.toFixed(2); // After GST
 
     setData(updatedData);
+    // @ts-ignore
+    const frt_vlu = document.querySelector(".frt_vlu").value;
+    const frt_vlu_parsed = parseFloat(frt_vlu) || 0;
 
-    const updatedGrossTotal = calculateSumTotal();
+    const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
+    debugger;
+    console.log("calculateFreightTotal()", frt_vlu);
+    console.log("updatedGrossTotal", updatedGrossTotal);
     setGrossTotal(updatedGrossTotal);
     // setData(updatedData, () => {
     //   const updatedGrossTotal = calculateSumTotal();
@@ -173,7 +187,7 @@ export default function VendorDetails() {
   const calculateFreightTotal = () => {
     const getFreightValue = (label) => {
       const row = freightData.find((row) => row.label === label);
-
+      console.log("row.value", row.value);
       if (row && row.value) {
         const { firstBid, counterBid } = row.value;
 
@@ -209,13 +223,15 @@ export default function VendorDetails() {
   };
 
   const calculateSumTotal = () => {
+    // @ts-ignore
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
+    // @ts-ignore
     const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-
+    console.log(dataSum, "dataSum");
+    console.log(freightTotal, "freightTotal");
     // Combine and return the sum
     return Math.round((dataSum + freightTotal) * 100) / 100;
   };
-
   const handleFreightDataChange = (updatedFreightData) => {
     setFreightData(updatedFreightData);
 
@@ -230,6 +246,7 @@ export default function VendorDetails() {
     marginTop: "10px",
   };
 
+  // @ts-ignore
   const fixedColumnStyle = {
     position: "sticky", // Make the first column sticky
     left: 0, // Align it to the left of the table
@@ -247,6 +264,7 @@ export default function VendorDetails() {
   const { eventId } = useParams();
 
   const [loading, setLoading] = useState(true);
+  // @ts-ignore
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
   const [bidIds, setBidIds] = useState([]);
   const [grossTotal, setGrossTotal] = useState(0);
@@ -352,6 +370,7 @@ export default function VendorDetails() {
       if (!revisedBid) {
         // If revisedBid is false, format the event materials data
         const formattedData = initialData.event_materials.map((item) => {
+          // @ts-ignore
           const materialType =
             item.bid_materials && item.bid_materials.length > 0
               ? item.bid_materials[0].material_type
@@ -543,6 +562,7 @@ export default function VendorDetails() {
   // console.log("Type of freightChargeRaw:", typeof freightChargeRaw);
 
   // Remove ₹ and commas, then parse it to a float (if not a valid number, default to 0)
+  // @ts-ignore
   const freightCharge21 = parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0;
 
   // Log the parsed value
@@ -677,6 +697,7 @@ export default function VendorDetails() {
         : 0;
 
     const realisedFreightChargeAmount = parseFloat(
+      // @ts-ignore
       freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
     );
 
@@ -729,6 +750,7 @@ export default function VendorDetails() {
 
       // console.log("vendor ID", vendorId);
 
+      // @ts-ignore
       const response = await axios.post(
         `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload,
@@ -907,6 +929,7 @@ export default function VendorDetails() {
         : 0;
 
     const realisedFreightChargeAmount = parseFloat(
+      // @ts-ignore
       freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
     );
 
@@ -972,6 +995,7 @@ export default function VendorDetails() {
       const payload2 = preparePayload2();
       // console.log("payloadssss2 revised", payload2);
 
+      // @ts-ignore
       const response = await axios.post(
         `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload2,
@@ -1019,6 +1043,7 @@ export default function VendorDetails() {
 
         const endTime = new Date(data.event_schedule.end_time); // Event end time
         const currentTime = new Date(); // Current time
+        // @ts-ignore
         const remainingTime = endTime - currentTime; // Time difference in milliseconds
 
         if (remainingTime > 0) {
@@ -1066,6 +1091,7 @@ ${seconds}s`);
   const [termss, setTermss] = useState(true);
   const [Contact, setContact] = useState(true);
   const [lineItems, setLineItems] = useState(true);
+  // @ts-ignore
   const [isHistoryActive, setIsHistoryActive] = useState(false);
 
   const [data1, setData1] = useState(null);
@@ -1090,6 +1116,7 @@ ${seconds}s`);
 
         setData1(response.data);
         // // console.log("response:", response.data);
+        // @ts-ignore
         const isoDate = response.data.event_schedule.start_time;
         setDate(response.data.event_schedule.start_time);
         setEndDate(response.data.event_schedule.end_time_duration);
@@ -1133,6 +1160,7 @@ ${seconds}s`);
     const date1 = new Date(date);
 
     // Extract date parts
+    // @ts-ignore
     const options = { month: "short" }; // Short month name like "Dec"
     const day = date1.getDate().toString().padStart(2, "0"); // Ensure 2 digits
     const month = (date1.getMonth() + 1).toString().padStart(2, "0"); // "Dec"
@@ -1159,6 +1187,7 @@ ${seconds}s`);
     const date1 = new Date(date);
 
     // Extract date parts
+    // @ts-ignore
     const options = { month: "short" }; // Short month name like "Dec"
     const day = date1.getDate().toString().padStart(2, "0"); // Ensure 2 digits
     const month = (date1.getMonth() + 1).toString().padStart(2, "0"); // "Dec"
@@ -1275,6 +1304,7 @@ ${seconds}s`);
           ];
 
           const freightData = processFreightData(firstBid);
+          // @ts-ignore
           setFreightData(freightData);
 
           // Map bid_materials to previousData format
@@ -1383,6 +1413,7 @@ ${seconds}s`);
           ];
 
           const freightData = processFreightData(firstBid);
+          // @ts-ignore
           setFreightData(freightData);
 
           // Map bid_materials to previousData format
@@ -1478,8 +1509,12 @@ ${seconds}s`);
           height: "calc(100vh - 100px)",
         }}
       >
-        <ul class="nav nav-tabs" id="myTabs" role="tablist">
-          <li class="nav-item ms-4" role="presentation">
+        <ul 
+// @ts-ignore
+        class="nav nav-tabs" id="myTabs" role="tablist">
+          <li 
+// @ts-ignore
+          class="nav-item ms-4" role="presentation">
             <a
               className="nav-link active ps-4 pe-4"
               id="home-tab"
@@ -1493,7 +1528,9 @@ ${seconds}s`);
               Event Overview
             </a>
           </li>
-          <li class="nav-item" role="presentation">
+          <li 
+// @ts-ignore
+          class="nav-item" role="presentation">
             <a
               className="nav-link ps-4 pe-4"
               id="profile-tab"
@@ -1510,8 +1547,11 @@ ${seconds}s`);
         </ul>
 
         {/* <!-- Tab content --> */}
-        <div class="tab-content " id="myTabContent">
+        <div 
+// @ts-ignore
+        class="tab-content " id="myTabContent">
           <div
+            // @ts-ignore
             class="tab-pane fade show active"
             id="home"
             role="tabpanel"
@@ -1897,9 +1937,9 @@ ${seconds}s`);
                                         </th>
                                         <th className="text-start">Quantity</th>
                                         <th className="text-start">UOM</th>
-                                        <th className="text-start">
+                                        {/* <th className="text-start">
                                           Material Type
-                                        </th>
+                                        </th> */}
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
@@ -1939,12 +1979,12 @@ ${seconds}s`);
                                             >
                                               {data.uom}
                                             </td>
-                                            <td
+                                            {/* <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
                                             >
                                               {data.material_type}
-                                            </td>
+                                            </td> */}
                                             <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
@@ -2092,6 +2132,7 @@ ${seconds}s`);
                                       ) || (
                                         <tr>
                                           <td
+                                            // @ts-ignore
                                             colSpan="5"
                                             className="text-center"
                                           >
@@ -2116,6 +2157,7 @@ ${seconds}s`);
             </div>
           </div>
           <div
+            // @ts-ignore
             class="tab-pane fade"
             id="profile"
             role="tabpanel"
@@ -2197,15 +2239,22 @@ ${seconds}s`);
                     )}
 
                     <div className="card-body">
-                      <div style={tableContainerStyle}>
-                        <Table
+                      <div 
+// @ts-ignore
+                      style={tableContainerStyle}>
+                        <
+// @ts-ignore
+                        Table
                           columns={[
                             { label: "Material", key: "descriptionOfItem" },
                             { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
-                            { label: "Section", key: "section" },
+                            { label: " Material Type Section", key: "section" },
 
-                            { label: "Sub Section", key: "subSection" },
+                            {
+                              label: "Material Sub Section",
+                              key: "subSection",
+                            },
 
                             { label: "Delivery Location", key: "location" },
                             { label: "Creator Attachment", key: "attachment" },
@@ -2231,6 +2280,7 @@ ${seconds}s`);
                           ]}
                           data={data}
                           customRender={{
+                            // @ts-ignore
                             descriptionOfItem: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -2242,6 +2292,7 @@ ${seconds}s`);
                               />
                             ),
 
+                            // @ts-ignore
                             varient: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -2253,6 +2304,7 @@ ${seconds}s`);
                               />
                             ),
 
+                            // @ts-ignore
                             section: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -2264,6 +2316,7 @@ ${seconds}s`);
                               />
                             ),
 
+                            // @ts-ignore
                             subSection: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -2284,10 +2337,12 @@ ${seconds}s`);
                                   handleUnitChange(selected, rowIndex)
                                 }
                                 style={otherColumnsStyle} // Other columns are scrollable
+                                // @ts-ignore
                                 disabled={isBid}
                               />
                             ),
 
+                            // @ts-ignore
                             location: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -2349,6 +2404,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2361,12 +2417,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2451,6 +2509,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2463,12 +2522,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2533,6 +2594,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2545,12 +2607,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2615,6 +2679,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2627,12 +2692,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2745,6 +2812,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2757,12 +2825,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2824,6 +2894,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2836,12 +2907,14 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
+                                      // @ts-ignore
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2902,6 +2975,7 @@ ${seconds}s`);
                                       className="me-2"
                                       viewBox="64 64 896 896"
                                       focusable="false"
+                                      // @ts-ignore
                                       class=""
                                       data-icon="arrow-right"
                                       width="1em"
@@ -2914,12 +2988,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
 
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2965,6 +3040,7 @@ ${seconds}s`);
                               />
                             ),
 
+                            // @ts-ignore
                             bestAmount: (cell, rowIndex) => {
                               const quantity =
                                 parseFloat(data[rowIndex].quantityAvail) || 0;
@@ -2981,6 +3057,7 @@ ${seconds}s`);
                                 />
                               );
                             },
+                            // @ts-ignore
                             attachment: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -3008,7 +3085,9 @@ ${seconds}s`);
                                   className="form-control"
                                   type="text"
                                   value={totalAmount.toFixed(2)}
+                                  // @ts-ignore
                                   readOnlyn
+                                  // @ts-ignore
                                   style={otherColumsStyle}
                                 />
                               );
@@ -3190,6 +3269,7 @@ ${seconds}s`);
                       <textarea
                         className="form-control"
                         placeholder="Enter remarks"
+                        // @ts-ignore
                         rows="3"
                         style={{ maxWidth: "300px", flex: "1" }}
                         value={remark} // Bind to state
@@ -3204,11 +3284,7 @@ ${seconds}s`);
                     />
                     {/* Terms and Conditions */}
 
-                    <div
-                      style={{ marginTop: "30px" }}
-                      id="terms-conditions"
-                      className=""
-                    >
+                    <div style={{ marginTop: "30px" }}>
                       <h5 className="fw-bold head-material">
                         Terms and Conditions
                       </h5>
