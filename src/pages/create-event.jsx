@@ -18,6 +18,8 @@ import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
 import { fi } from "date-fns/locale";
 import { set } from "date-fns";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
@@ -237,8 +239,7 @@ export default function CreateEvent() {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      // console.log("Formatted data:", formattedData.length, formattedData); 
-      
+      // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
 
@@ -334,7 +335,10 @@ export default function CreateEvent() {
       setTextareas(
         textareas.map((textarea) =>
           textarea.id === id
-            ? { id: selectedCondition.value, value: selectedCondition.condition }
+            ? {
+                id: selectedCondition.value,
+                value: selectedCondition.condition,
+              }
             : textarea
         )
       );
@@ -396,11 +400,13 @@ export default function CreateEvent() {
       !scheduleData.evaluation_time ||
       selectedVendors.length === 0
     ) {
-      alert("Please fill all the required fields.");
+      toast.error("Please fill all the required fields.", {
+        autoClose: 1000, // Duration for the toast to disappear (in ms)
+      });
       return;
     }
 
-    setSubmitted(true);  
+    setSubmitted(true);
     const eventData = {
       event: {
         event_title: eventName,
@@ -479,10 +485,14 @@ export default function CreateEvent() {
         }
       );
       if (response.ok) {
-        alert("Event created successfully!");
-        navigate(
-          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
+        toast.success("Event created successfully!", {
+          autoClose: 1000, // Duration for the toast to disappear (in ms)
+        });
+        setTimeout(() => {
+          navigate(
+            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+        }, 500);
       } else {
         const errorData = await response.json();
         console.error("Error response data:", errorData);
@@ -490,9 +500,10 @@ export default function CreateEvent() {
       }
     } catch (error) {
       console.error("Error creating event:", error);
-      alert("Failed to create event.");
-    }
-    finally {
+      toast.error("Failed to create event.", {
+        autoClose: 1000, // Duration for the toast to disappear (in ms)
+      });
+    } finally {
       setSubmitted(false);
     }
   };
@@ -518,10 +529,14 @@ export default function CreateEvent() {
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      console.log("Filtered suggestions:", filteredSuggestions.length ,filteredSuggestions);
+      console.log(
+        "Filtered suggestions:",
+        filteredSuggestions.length,
+        filteredSuggestions
+      );
       setSuggestions(filteredSuggestions);
       console.log("Suggestions:", suggestions.length, suggestions);
-      
+
       setIsSuggestionsVisible(true);
     }
     console.log("Search term:", e.target.value, filteredSuggestions);
@@ -907,7 +922,13 @@ export default function CreateEvent() {
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
-                <button className={ submitted ? 'disabled-btn w-100' : 'purple-btn2 w-100' } onClick={handleSubmit} disabled={submitted}>
+                <button
+                  className={
+                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                  }
+                  onClick={handleSubmit}
+                  disabled={submitted}
+                >
                   Submit
                 </button>
               </div>
@@ -1474,6 +1495,7 @@ export default function CreateEvent() {
             handleTrafficChange={handleTrafficChange}
           />{" "}
         </div>
+        <ToastContainer />
       </div>
     </>
   );
