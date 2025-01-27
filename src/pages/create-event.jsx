@@ -468,16 +468,16 @@ export default function CreateEvent() {
     console.log("Payload:", eventData);
 
     try {
-      // const response = await fetch(
-      //   "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(eventData),
-      //   }
-      // );
+      const response = await fetch(
+        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        }
+      );
       if (response.ok) {
         alert("Event created successfully!");
         navigate(
