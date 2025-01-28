@@ -63,13 +63,10 @@ import CreateBid from "./pages/create-bid";
 import Dashboard from "./pages/dashboard";
 import AuthData from "./confi/authData";
 import EoiDeatailPage from "./pages/eoi-detail";
-<<<<<<< Updated upstream
 import EditEvent from "./pages/edit-event";
-=======
 import ApprovalMatrics from "./pages/approvalMatrics";
 import InvoiceApproval from "./pages/invoice-approval";
 import ApprovalEdit from "./pages/approval-edit";
->>>>>>> Stashed changes
 
 function App() {
   return (

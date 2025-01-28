@@ -29,8 +29,8 @@ export default function CreateEvent() {
   const [publishEventModal, setPublishEventModal] = useState(false);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
-  const [eventType, setEventType] = useState(false);
-  const [awardType, setAwardType] = useState(false);
+  const [eventType, setEventType] = useState("");
+  const [awardType, setAwardType] = useState("");
   const [dynamicExtension, setDynamicExtension] = useState(false);
   const [resetSelectedRows, setResetSelectedRows] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -160,7 +160,8 @@ export default function CreateEvent() {
   };
 
   const handleEventTypeChange = (e) => {
-    setEventType(e);
+    setEventType(e.target.value);
+    log("eventType", eventType);
   };
 
   const handleTrafficChange = (value) => {
@@ -189,22 +190,37 @@ export default function CreateEvent() {
     setSelectedVendorProfile(profile);
   };
 
-  const handleEventConfigurationSubmit = () => {
+  const handleEventConfigurationSubmit = (config) => {
+    console.log("Submitted Event Configuration:", config);
+    setEventType(config.event_type);
+    setAwardType(config.award_scheme);
+    setSelectedStrategy(config.event_configuration);
+    setDynamicExtension(config.dynamic_time_extension);
+    setDynamicExtensionConfigurations({
+      time_extension_type: config.time_extension_type,
+      triggered_time_extension_on_last: config.triggered_time_extension_on_last,
+      extend_event_time_by: config.extend_event_time_by,
+      time_extension_on_change_in: config.time_extension_change,
+      delivery_date: config.delivery_date,
+    });
     handleEventTypeModalClose();
+    
     let eventTypeText = "";
-    // @ts-ignore
-    if (eventType === "rfq") {
+    if (config.event_type === "rfq") {
       eventTypeText = "RFQ";
       setIsService(false);
-      // @ts-ignore
-    } else if (eventType === "auction") {
+    } else if (config.event_type === "auction") {
       eventTypeText = "Auction";
       setIsService(false);
-    } else {
+    } else if (config.event_type === "contract") {
       eventTypeText = "Contract";
       setIsService(true);
+    } else {
+      alert("Please select a valid event type.");
+      return;
     }
     setEventTypeText(eventTypeText);
+    console.log("Submitted eventType:", config.event_type, "awardType:", config.award_scheme);
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -406,25 +422,36 @@ export default function CreateEvent() {
       return;
     }
 
+    console.log("Event Name:", eventName);
+    console.log("Created On:", createdOn);
+    console.log("Schedule Data:", scheduleData);
+    console.log("Selected Vendors:", selectedVendors);
+    console.log("Event Description:", eventDescription);
+    console.log("Event Type:", eventType);
+    console.log("Award Type:", awardType);
+    console.log("Selected Strategy:", selectedStrategy);
+    console.log("Dynamic Extension:", dynamicExtension);
+    console.log("Dynamic Extension Configurations:", dynamicExtensionConfigurations);
+    console.log("Material Form Data:", materialFormData);
+    console.log("Textareas:", textareas);
+    console.log("Document Rows:", documentRows);
+
     setSubmitted(true);
     const eventData = {
       event: {
         event_title: eventName,
         created_on: createdOn,
         status: "pending",
-        created_by_id: 2,
         event_description: eventDescription,
         event_schedule_attributes: {
           start_time: scheduleData.start_time,
           end_time: scheduleData.end_time_duration,
           evaluation_time: scheduleData.evaluation_time,
-          event_type_id: 1,
         },
         event_type_detail_attributes: {
           event_type: eventType,
           award_scheme: awardType,
           event_configuration: selectedStrategy,
-          dynamic_time_extension: dynamicExtension[1],
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type,
           triggered_time_extension_on_last:
@@ -551,7 +578,7 @@ export default function CreateEvent() {
     if (searchTerm.trim() === "") {
       setFilteredTableData(tableData);
     } else {
-      console.log("search",searchTerm)
+      console.log("search", searchTerm);
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -1252,224 +1279,6 @@ export default function CreateEvent() {
                       placeholder="Enter Phone Number"
                     />
                   </div>
-                  {/* <label>Choose vendor profile</label>
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <div
-                      className={`pro-radio-tabs__tab ${
-                        // @ts-ignore
-                        selectedVendorProfile === "Manufacturer /Trader"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={
-                        // @ts-ignore
-                        selectedVendorProfile === "Manufacturer /Trader"
-                      }
-                      onClick={() =>
-                        handleVendorProfileChange("Manufacturer /Trader")
-                      }
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorProfile === "Manufacturer /Trader"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={
-                            // @ts-ignore
-                            selectedVendorProfile === "Manufacturer /Trader"
-                          }
-                          onChange={() =>
-                            handleVendorProfileChange("Manufacturer /Trader")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Manufacturer /Trader
-                      </p>
-                    </div>
-                    <div
-                      className={`pro-radio-tabs__tab col-md-6 ${
-                        // @ts-ignore
-                        selectedVendorProfile === "Enter Details Manually"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={selectedVendorProfile === "Broker"}
-                      onClick={() => handleVendorProfileChange("Broker")}
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorProfile === "Broker"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={selectedVendorProfile === "Broker"}
-                          onChange={() => handleVendorProfileChange("Broker")}
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Broker
-                      </p>
-                    </div>
-                  </div>
-                  <label>Invite Vendor via</label>
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <div
-                      className={`pro-radio-tabs__tab ${
-                        // @ts-ignore
-                        selectedVendorDetails === "GST Number"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={selectedVendorDetails === "GST Number"}
-                      onClick={() => handleVendorDetailChange("GST Number")}
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorDetails === "GST Number"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={selectedVendorDetails === "GST Number"}
-                          onChange={() =>
-                            handleVendorDetailChange("GST Number")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        GST Number
-                      </p>
-                    </div>
-                    <div
-                      className={`pro-radio-tabs__tab col-md-6 ${
-                        // @ts-ignore
-                        selectedVendorDetails === "Enter Details Manually"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={
-                        // @ts-ignore
-                        selectedVendorDetails === "Enter Details Manually"
-                      }
-                      onClick={() =>
-                        handleVendorDetailChange("Enter Details Manually")
-                      }
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorDetails === "Enter Details Manually"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={
-                            // @ts-ignore
-                            selectedVendorDetails === "Enter Details Manually"
-                          }
-                          onChange={() =>
-                            handleRadioChange("Enter Details Manually")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Enter Details Manually
-                      </p>
-                    </div>
-                  </div>
-                  {
-                    // @ts-ignore
-                    selectedVendorDetails === "GST Number" && (
-                      <>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">GST Number</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter GST Number"
-                          />
-                        </div>
-                      </>
-                    )
-                  }
-                  {
-                    // @ts-ignore
-                    selectedVendorDetails === "Enter Details Manually" && (
-                      <>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Company Name</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter Company Name"
-                          />
-                        </div>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Address</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter Address"
-                          />
-                        </div>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">City</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter City"
-                          />
-                        </div>
-                      </>
-                    )
-                  } */}
                 </form>
               </>
             }

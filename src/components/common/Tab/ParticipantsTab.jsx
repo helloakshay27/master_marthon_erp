@@ -32,6 +32,60 @@ export default function ParticipantsTab({ data, id }) {
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
 
+  const [inviteForm, setInviteForm] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+  });
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    if (!inviteForm.name) errors.name = "Name is required";
+    if (!inviteForm.email) errors.email = "Email is required";
+    if (!inviteForm.mobile) errors.mobile = "Mobile number is required";
+    return errors;
+  };
+
+  const handleInviteInputChange = (e) => {
+    const { name, value } = e.target;
+    setInviteForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInviteSubmit = async (e) => {
+    e.preventDefault();
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Vendor invited successfully!", {
+          autoClose: 1000,
+        });
+        setInviteModal(false);
+        setInviteForm({ name: "", email: "", mobile: "" });
+        setFormErrors({});
+      } else {
+        throw new Error("Failed to invite vendor.");
+      }
+    } catch (error) {
+      console.error("Error inviting vendor:", error);
+      toast.error("Failed to invite vendor.", {
+        autoClose: 1000,
+      });
+    }
+  };
+
   const handleVendorTypeModalShow = () => {
     setVendorModal(true);
   };
@@ -636,7 +690,7 @@ export default function ParticipantsTab({ data, id }) {
           },
           {
             label: "Save Changes",
-            onClick: handleInviteModalClose,
+            onClick: handleInviteSubmit,
             props: {
               className: "purple-btn2",
             },
@@ -644,250 +698,44 @@ export default function ParticipantsTab({ data, id }) {
         ]}
         children={
           <>
-            <form className="p-2">
+            <form className="p-2" onSubmit={handleInviteSubmit}>
               <div className="form-group mb-3">
                 <label className="po-fontBold">POC - Full Name</label>
                 <input
                   className="form-control"
                   type="text"
+                  name="name"
                   placeholder="Enter POC Name"
+                  value={inviteForm.name}
+                  onChange={handleInviteInputChange}
                 />
+                {formErrors.name && <small className="text-danger">{formErrors.name}</small>}
               </div>
               <div className="form-group mb-3">
                 <label className="po-fontBold">Email</label>
                 <input
                   className="form-control"
                   type="email"
+                  name="email"
                   placeholder="Enter Email Address"
+                  value={inviteForm.email}
+                  onChange={handleInviteInputChange}
                 />
+                {formErrors.email && <small className="text-danger">{formErrors.email}</small>}
               </div>
               <div className="form-group mb-3">
                 <label className="po-fontBold">Phone Number</label>
                 <input
                   className="form-control"
                   type="text"
+                  name="mobile"
                   inputMode="tel"
                   placeholder="Enter Phone Number"
+                  value={inviteForm.mobile}
+                  onChange={handleInviteInputChange}
                 />
+                {formErrors.mobile && <small className="text-danger">{formErrors.mobile}</small>}
               </div>
-              {/* <label>Choose vendor profile</label>
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <div
-                      className={`pro-radio-tabs__tab ${
-                        // @ts-ignore
-                        selectedVendorProfile === "Manufacturer /Trader"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={
-                        // @ts-ignore
-                        selectedVendorProfile === "Manufacturer /Trader"
-                      }
-                      onClick={() =>
-                        handleVendorProfileChange("Manufacturer /Trader")
-                      }
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorProfile === "Manufacturer /Trader"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={
-                            // @ts-ignore
-                            selectedVendorProfile === "Manufacturer /Trader"
-                          }
-                          onChange={() =>
-                            handleVendorProfileChange("Manufacturer /Trader")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Manufacturer /Trader
-                      </p>
-                    </div>
-                    <div
-                      className={`pro-radio-tabs__tab col-md-6 ${
-                        // @ts-ignore
-                        selectedVendorProfile === "Enter Details Manually"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={selectedVendorProfile === "Broker"}
-                      onClick={() => handleVendorProfileChange("Broker")}
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorProfile === "Broker"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={selectedVendorProfile === "Broker"}
-                          onChange={() => handleVendorProfileChange("Broker")}
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Broker
-                      </p>
-                    </div>
-                  </div>
-                  <label>Invite Vendor via</label>
-                  <div className="d-flex align-items-center gap-2 mb-3">
-                    <div
-                      className={`pro-radio-tabs__tab ${
-                        // @ts-ignore
-                        selectedVendorDetails === "GST Number"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={selectedVendorDetails === "GST Number"}
-                      onClick={() => handleVendorDetailChange("GST Number")}
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorDetails === "GST Number"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={selectedVendorDetails === "GST Number"}
-                          onChange={() =>
-                            handleVendorDetailChange("GST Number")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        GST Number
-                      </p>
-                    </div>
-                    <div
-                      className={`pro-radio-tabs__tab col-md-6 ${
-                        // @ts-ignore
-                        selectedVendorDetails === "Enter Details Manually"
-                          ? "pro-radio-tabs__tab__selected"
-                          : ""
-                      }`}
-                      style={{ width: "50%" }}
-                      tabIndex={0}
-                      role="radio"
-                      // @ts-ignore
-                      aria-checked={
-                        // @ts-ignore
-                        selectedVendorDetails === "Enter Details Manually"
-                      }
-                      onClick={() =>
-                        handleVendorDetailChange("Enter Details Manually")
-                      }
-                    >
-                      <span
-                        className={`ant-radio ${
-                          // @ts-ignore
-                          selectedVendorDetails === "Enter Details Manually"
-                            ? "ant-radio-checked"
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          tabIndex={-1}
-                          className="ant-radio-input"
-                          // @ts-ignore
-                          checked={
-                            // @ts-ignore
-                            selectedVendorDetails === "Enter Details Manually"
-                          }
-                          onChange={() =>
-                            handleRadioChange("Enter Details Manually")
-                          }
-                        />
-                        <div className="ant-radio-inner" />
-                      </span>
-                      <p className="pro-text pro-body pro-text--medium ps-2">
-                        Enter Details Manually
-                      </p>
-                    </div>
-                  </div>
-                  {
-                    // @ts-ignore
-                    selectedVendorDetails === "GST Number" && (
-                      <>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">GST Number</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter GST Number"
-                          />
-                        </div>
-                      </>
-                    )
-                  }
-                  {
-                    // @ts-ignore
-                    selectedVendorDetails === "Enter Details Manually" && (
-                      <>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Company Name</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter Company Name"
-                          />
-                        </div>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Address</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter Address"
-                          />
-                        </div>
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">City</label>
-                          <input
-                            className="form-control"
-                            type="number"
-                            placeholder="Enter City"
-                          />
-                        </div>
-                      </>
-                    )
-                  } */}
             </form>
           </>
         }

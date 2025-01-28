@@ -3,21 +3,17 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 // @ts-ignore
 import format from "date-fns/format";
-import { event } from "jquery";
 
-const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
+const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData }) => {
   const [isLater, setIsLater] = useState(false);
   const [isFixedEndTime, setIsFixedEndTime] = useState(false);
   const [isCustomEndTimeSelected, setIsCustomEndTimeSelected] = useState(false);
-  const [isCustomEvaluationSelected, setIsCustomEvaluationSelected] =
-    useState(false);
-  const [customEvaluationDuration, setCustomEvaluationDuration] =
-    useState("Mins");
+  const [isCustomEvaluationSelected, setIsCustomEvaluationSelected] = useState(false);
+  const [customEvaluationDuration, setCustomEvaluationDuration] = useState("Mins");
   const [endTimeDuration, setEndTimeDuration] = useState("Mins");
   const [endTimeDurationVal, setEndTimeDurationVal] = useState("Mins");
   const [evaluationDurationVal, setEvaluationDurationVal] = useState("Mins");
-  const [isCustomEvaluationDuration, setIsCustomEvaluationDuration] =
-    useState(true);
+  const [isCustomEvaluationDuration, setIsCustomEvaluationDuration] = useState(true);
   const [laterDate, setLaterDate] = useState("");
   const [laterTime, setLaterTime] = useState("");
   const [fixedEndDate, setFixedEndDate] = useState("");
@@ -25,6 +21,29 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [formattedEndTime, setFormattedEndTime] = useState('');
+
+  useEffect(() => {
+    if (existingData) {
+      const startTime = new Date(existingData.start_time);
+      setLaterDate(startTime.toISOString().split("T")[0]);
+      setLaterTime(startTime.toTimeString().split(" ")[0].substring(0, 5));
+      const endTime = new Date(existingData.end_time);
+      setEndDate(endTime.toISOString().split("T")[0]);
+      setEndTime(endTime.toTimeString().split(" ")[0].substring(0, 5));
+
+      if (typeof existingData.evaluation_time === 'string') {
+        const [evaluationValue, evaluationUnit] = existingData.evaluation_time.split(" ");
+        setEvaluationDurationVal(evaluationValue || "Mins");
+        setCustomEvaluationDuration(evaluationUnit || "Mins");
+      } else if (typeof existingData.evaluation_time === 'number') {
+        setEvaluationDurationVal(existingData.evaluation_time.toString());
+        setCustomEvaluationDuration("Mins");
+      } else {
+        setEvaluationDurationVal("Mins");
+        setCustomEvaluationDuration("Mins");
+      }
+    }
+  }, [existingData]);
 
   const handleEndDateChange = (e) => {
     setEndDate(e.target.value);
@@ -38,6 +57,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
       setIsLater(false);
     }
   };
+
   const handleEndTimeDuration = (value) => {
     if (value === "Custom Duration") {
       // setIsCustomEndTimeSelected(true);
@@ -46,8 +66,8 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
       setEndTimeDuration(value);
     }
   };
-  const handleCustomEvaluationDuration = (value) => {
 
+  const handleCustomEvaluationDuration = (value) => {
     if (value === "Custom Duration") {
       // setIsCustomEvaluationSelected(true);
     } else {
@@ -55,6 +75,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
       setCustomEvaluationDuration(value);
     }
   };
+
   const handleEndTimeChange = (value) => {
     const selectedValue = value;
     if (selectedValue === "Fixed Time") {
@@ -66,6 +87,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
       setEndTimeDuration("30 mins");
     }
   };
+
   const handleEvaluationChange = (value) => {
     const selectedValue = value;
     if (selectedValue === "Duration") {
@@ -87,25 +109,28 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
   const handleSaveScheduleFun = () => {
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
-      : new Date().toISOString();
+      : existingData?.start_time || new Date().toISOString();
 
-    // const endTimeDurationFormatted = isFixedEndTime
-    //   ? `${fixedEndDate}T${fixedEndTime}:00Z`
-    //   : `${endTimeDurationVal} ${endTimeDuration}`;
-    const endTimeFormatted = `${endDate}T${endTime}:00Z`;
+    const endTimeFormatted = endDate && endTime
+      ? `${endDate}T${endTime}:00Z`
+      : existingData?.end_time || "";
 
-    const evaluationTimeFormatted = `${evaluationDurationVal} ${customEvaluationDuration}`;
-
-    console.log("eve",typeof evaluationTimeFormatted, evaluationTimeFormatted);
-    
+    const evaluationTimeFormatted = evaluationDurationVal && customEvaluationDuration
+      ? `${evaluationDurationVal} ${customEvaluationDuration}`
+      : existingData?.evaluation_time || "Mins Mins";
 
     const data = {
       start_time: startTime,
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     };
+    console.log("scheduleData.start_time:", data.start_time);
+    console.log("scheduleData.end_time_duration:", data.end_time_duration);
+    console.log("scheduleData.evaluation_time:", data.evaluation_time);
+    
     handleSaveSchedule(data);
   };
+
   return (
     <DynamicModalBox
       size="md"
@@ -142,7 +167,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
                 { value: "Start Now", label: "Start Now" },
                 { value: "Schedule for later", label: "Schedule for later" },
               ]}
-              defaultValue={"Start Now"}
+              defaultValue={isLater ? "Schedule for later" : "Start Now"}
               onChange={handleStartTimeChange}
             />
           </div>
@@ -172,18 +197,11 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
         </p>
         <div className="row">
           <div className="col-md-4">
-            {/* <input
-              type="date"
-              className="form-control"
-              value={endDate}
-              onChange={handleEndDateChange}
-              min={isLater ? laterDate : new Date().toISOString().split("T")[0]}
-            /> */}
             <input
               type="date"
               className="form-control"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={handleEndDateChange}
             />
           </div>
           <div className="col-md-4">
@@ -201,7 +219,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
         <p className="mt-2">
           Evaluation time <span style={{ color: "red" }}>*</span>
         </p>
-        <div className="d-flex gap-2   mt-2">
+        <div className="d-flex gap-2 mt-2">
           <div className="col-md-4">
             <SelectBox
               label={""}
@@ -229,7 +247,6 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
                     { value: "Mins", label: "Min(s)" },
                     { value: "Hours", label: "Hour(s)" },
                     { value: "Days", label: "Day(s)" },
-                    // { value: "Custom Duration", label: "Custom Duration" },
                   ]}
                   defaultValue={"Mins"}
                   onChange={handleCustomEvaluationDuration}
@@ -237,25 +254,6 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule }) => {
               </div>
             </>
           )}
-          {/* {isDurationTime && (
-            <SelectBox
-              label={""}
-              options={[
-                { value: "Mins(s)", label: "Mins(s)" },
-                { value: "Hour(s)", label: "Hour(s)" },
-                { value: "Day(s)", label: "Day(s)" },
-                { value: "Custom Duration", label: "Custom Duration" },
-              ]}
-              defaultValue={"Mins(s)"}
-              onChange={handleEvaluationTimeDurationChange}
-            />
-          )} */}
-
-          {/* {isCustomEvaluationDuration && isCustomEvaluationSelected && (
-            <div className="col-md-4">
-              <input type="time" className="form-control" />
-            </div>
-          )} */}
         </div>
       </div>
     </DynamicModalBox>

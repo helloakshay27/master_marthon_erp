@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
@@ -85,36 +85,40 @@ const EventTypeModal = ({
   trafficType,
   handleTrafficChange,
   handleDynamicExtensionBid,
+  existingData,
 }) => {
-  // const [eventType]
+  const [localEventType, setLocalEventType] = useState(eventType);
+  const [localSelectedStrategy, setLocalSelectedStrategy] = useState(selectedStrategy);
+  const [localAwardType, setLocalAwardType] = useState(awardType);
+  const [localDynamicExtension, setLocalDynamicExtension] = useState(dynamicExtension || [false, false, false, false]);
+  const [localDynamicExtensionConfigurations, setLocalDynamicExtensionConfigurations] = useState(dynamicExtensionConfigurations);
+
+  useEffect(() => {
+    if (existingData) {
+      setLocalEventType(existingData.event_type);
+      setLocalSelectedStrategy(existingData.event_configuration);
+      setLocalAwardType(existingData.award_scheme);
+      setLocalDynamicExtension(existingData.dynamic_time_extension || [false, false, false, false]);
+      setLocalDynamicExtensionConfigurations({
+        time_extension_type: existingData.time_extension_type,
+        triggered_time_extension_on_last: existingData.triggered_time_extension_on_last,
+        extend_event_time_by: existingData.extend_event_time_by,
+        time_extension_on_change_in: existingData.time_extension_change,
+        delivery_date: existingData.delivery_date ? new Date(existingData.delivery_date).toISOString().slice(0, 16) : "",
+      });
+    }
+  }, [existingData]);  
 
   const validateForm = () => {
-    if (!eventType) {
-      alert("Please select an event type.");
+    if (!["rfq", "contract", "auction"].includes(localEventType)) {
+      alert("Please select a valid event type.");
       return false;
     }
-    if (eventType === "0" && !selectedStrategy) {
-      alert("Please select a strategy.");
+    if (!["single_vendor", "multiple_vendors"].includes(localAwardType)) {
+      alert("Please select a valid award scheme.");
       return false;
     }
-    if (selectedStrategy === "2") {
-      if (!dynamicExtensionConfigurations.triggered_time_extension_on_last) {
-        alert("Please enter the trigger time extension.");
-        return false;
-      }
-      if (!dynamicExtensionConfigurations.extend_event_time_by) {
-        alert("Please enter the extend time.");
-        return false;
-      }
-    }
-    if (
-      dynamicExtension[2] &&
-      !dynamicExtensionConfigurations.minimum_revisions
-    ) {
-      alert("Please enter the minimum revisions required.");
-      return false;
-    }
-    if (dynamicExtension[3] && !dynamicExtensionConfigurations.delivery_date) {
+    if (localDynamicExtension[3] && !localDynamicExtensionConfigurations.delivery_date) {
       alert("Please select a delivery date.");
       return false;
     }
@@ -123,10 +127,35 @@ const EventTypeModal = ({
 
   const handleFormSubmit = () => {
     if (validateForm()) {
-      handleEventConfigurationSubmit();
+      console.log("Local Event Type:", localEventType);
+      console.log("Local Selected Strategy:", localSelectedStrategy);
+      console.log("Local Award Type:", localAwardType);
+      console.log("Local Dynamic Extension:", localDynamicExtension);
+      console.log("Local Dynamic Extension Configurations:", localDynamicExtensionConfigurations);
+
+      handleEventConfigurationSubmit({
+        event_type: localEventType,
+        event_configuration: localSelectedStrategy,
+        award_scheme: localAwardType,
+        dynamic_time_extension: localDynamicExtension,
+        time_extension_type: localDynamicExtensionConfigurations.time_extension_type || "",
+        triggered_time_extension_on_last: localDynamicExtensionConfigurations.triggered_time_extension_on_last || "",
+        extend_event_time_by: localDynamicExtensionConfigurations.extend_event_time_by || 0,
+        time_extension_change: localDynamicExtensionConfigurations.time_extension_on_change_in || "",
+        delivery_date: localDynamicExtensionConfigurations.delivery_date || "",
+      });
     }
   };
 
+  const handleDynamicExtensionBidLocal = (key, value) => {
+    setLocalDynamicExtensionConfigurations((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+
+console.log("local", awardType, localAwardType, "event", eventType, localEventType);
+  
   return (
     <DynamicModalBox
       size="xl"
@@ -134,7 +163,6 @@ const EventTypeModal = ({
       onHide={handleEventTypeModalClose}
       title="Configuration for Event"
       footerButtons={[
-        // @ts-ignore
         {
           label: "Close",
           onClick: handleEventTypeModalClose,
@@ -142,7 +170,6 @@ const EventTypeModal = ({
             className: "purple-btn1",
           },
         },
-        // @ts-ignore
         {
           label: "Save Changes",
           onClick: handleFormSubmit,
@@ -151,7 +178,6 @@ const EventTypeModal = ({
           },
         },
       ]}
-      // @ts-ignore
       modalType={true}
     >
       <div className="ant-drawer-body setting-modal">
@@ -168,30 +194,30 @@ const EventTypeModal = ({
             >
               <div
                 className={`pro-radio-tabs__tab ${
-                  eventType === "rfq" ? "pro-radio-tabs__tab__selected" : ""
+                  localEventType === "rfq" ? "pro-radio-tabs__tab__selected" : ""
                 }`}
                 role="radio"
-                aria-checked={eventType === "rfq"}
-                onClick={() => handleEventTypeChange("rfq")}
+                aria-checked={localEventType === "rfq"}
+                onClick={() => setLocalEventType("rfq")}
                 tabIndex={0}
               >
                 <div className="pro-radio-tabs__check-icon">
                   <label
                     className={`ant-radio-wrapper ${
-                      eventType === "rfq" ? "ant-radio-wrapper-checked" : ""
+                      localEventType === "rfq" ? "ant-radio-wrapper-checked" : ""
                     }`}
                   >
                     <span
                       className={`ant-radio ${
-                        eventType === "rfq" ? "ant-radio-checked" : ""
+                        localEventType === "rfq" ? "ant-radio-checked" : ""
                       }`}
                     >
                       <input
                         type="radio"
                         className="ant-radio-input"
                         value="rfq"
-                        checked={eventType === "rfq"}
-                        onChange={() => handleEventTypeChange("rfq")}
+                        checked={localEventType === "rfq"}
+                        onChange={() => setLocalEventType("rfq")}
                         tabIndex={-1}
                       />
                       <div className="ant-radio-inner"></div>
@@ -201,37 +227,36 @@ const EventTypeModal = ({
                 <p className="pro-text pro-body pro-text--normal">RFQ</p>
               </div>
 
-              {/* contract Tab */}
               <div
                 className={`pro-radio-tabs__tab ${
-                  eventType === "contract"
+                  localEventType === "contract"
                     ? "pro-radio-tabs__tab__selected"
                     : ""
                 }`}
                 role="radio"
-                aria-checked={eventType === "contract"}
+                aria-checked={localEventType === "contract"}
                 tabIndex={0}
-                onClick={() => handleEventTypeChange("contract")}
+                onClick={() => setLocalEventType("contract")}
               >
                 <div className="pro-radio-tabs__check-icon">
                   <label
                     className={`ant-radio-wrapper ${
-                      eventType === "contract"
+                      localEventType === "contract"
                         ? "ant-radio-wrapper-checked"
                         : ""
                     }`}
                   >
                     <span
                       className={`ant-radio ${
-                        eventType === "contract" ? "ant-radio-checked" : ""
+                        localEventType === "contract" ? "ant-radio-checked" : ""
                       }`}
                     >
                       <input
                         type="radio"
                         className="ant-radio-input"
                         value="contract"
-                        checked={eventType === "contract"}
-                        onChange={() => handleEventTypeChange("contract")}
+                        checked={localEventType === "contract"}
+                        onChange={() => setLocalEventType("contract")}
                       />
                       <div className="ant-radio-inner"></div>
                     </span>
@@ -242,31 +267,31 @@ const EventTypeModal = ({
 
               <div
                 className={`pro-radio-tabs__tab ${
-                  eventType === "auction" ? "pro-radio-tabs__tab__selected" : ""
+                  localEventType === "auction" ? "pro-radio-tabs__tab__selected" : ""
                 }`}
                 role="radio"
-                aria-checked={eventType === "auction"}
+                aria-checked={localEventType === "auction"}
                 tabIndex={0}
-                onClick={() => handleEventTypeChange("auction")}
+                onClick={() => setLocalEventType("auction")}
               >
                 <div className="pro-radio-tabs__check-icon">
                   <label
                     htmlFor="eventType"
                     className={`ant-radio-wrapper ${
-                      eventType === "auction" ? "ant-radio-wrapper-checked" : ""
+                      localEventType === "auction" ? "ant-radio-wrapper-checked" : ""
                     }`}
                   >
                     <span
                       className={`ant-radio ${
-                        eventType === "auction" ? "ant-radio-checked" : ""
+                        localEventType === "auction" ? "ant-radio-checked" : ""
                       }`}
                     >
                       <input
                         type="radio"
                         className="ant-radio-input"
                         value="auction"
-                        checked={eventType === "auction"}
-                        onChange={() => handleEventTypeChange("auction")}
+                        checked={localEventType === "auction"}
+                        onChange={() => setLocalEventType("auction")}
                         id="eventType"
                       />
                       <div className="ant-radio-inner"></div>
@@ -279,27 +304,27 @@ const EventTypeModal = ({
             </div>
           </div>
         </div>
-        {eventType === "auction" && (
+        {localEventType === "auction" && (
           <div
             className="pro-radio-tabs pro-radio-tabs2 rfq-tab-hide my-3"
             style={{ gridTemplateColumns: "6fr 6fr" }}
           >
             <div
               className={`pro-radio-tabs__tab ${
-                selectedStrategy === "rank_based"
+                localSelectedStrategy === "rank_based"
                   ? "pro-radio-tabs__tab__selected"
                   : ""
               }`}
               tabIndex={0}
               role="radio"
-              aria-checked={selectedStrategy === "rank_based"}
-              onClick={() => handleRadioChange("rank_based")}
+              aria-checked={localSelectedStrategy === "rank_based"}
+              onClick={() => setLocalSelectedStrategy("rank_based")}
             >
               <div className="pro-radio-tabs__check-icon">
                 <label className="ant-radio-wrapper">
                   <span
                     className={`ant-radio ${
-                      selectedStrategy === "rank_based"
+                      localSelectedStrategy === "rank_based"
                         ? "ant-radio-checked"
                         : ""
                     }`}
@@ -308,8 +333,8 @@ const EventTypeModal = ({
                       type="radio"
                       tabIndex={-1}
                       className="ant-radio-input"
-                      checked={selectedStrategy === "rank_based"}
-                      onChange={() => handleRadioChange("rank_based")}
+                      checked={localSelectedStrategy === "rank_based"}
+                      onChange={() => setLocalSelectedStrategy("rank_based")}
                     />
                     <div className="ant-radio-inner" />
                   </span>
@@ -328,20 +353,20 @@ const EventTypeModal = ({
             </div>
             <div
               className={`pro-radio-tabs__tab ${
-                selectedStrategy === "price_based"
+                localSelectedStrategy === "price_based"
                   ? "pro-radio-tabs__tab__selected"
                   : ""
               }`}
               tabIndex={0}
               role="radio"
-              aria-checked={selectedStrategy === "price_based"}
-              onClick={() => handleRadioChange("price_based")}
+              aria-checked={localSelectedStrategy === "price_based"}
+              onClick={() => setLocalSelectedStrategy("price_based")}
             >
               <div className="pro-radio-tabs__check-icon">
                 <label className="ant-radio-wrapper">
                   <span
                     className={`ant-radio ${
-                      selectedStrategy === "price_based"
+                      localSelectedStrategy === "price_based"
                         ? "ant-radio-checked"
                         : ""
                     }`}
@@ -350,8 +375,8 @@ const EventTypeModal = ({
                       type="radio"
                       tabIndex={-1}
                       className="ant-radio-input"
-                      checked={selectedStrategy === "price_based"}
-                      onChange={() => handleRadioChange("price_based")}
+                      checked={localSelectedStrategy === "price_based"}
+                      onChange={() => setLocalSelectedStrategy("price_based")}
                     />
                     <div className="ant-radio-inner" />
                   </span>
@@ -369,66 +394,22 @@ const EventTypeModal = ({
               </div>
             </div>
 
-            {/* Traffic Light Radio Button */}
-            {/* <div
-            className={`pro-radio-tabs__tab ${
-              selectedStrategy === "2"
-                ? "pro-radio-tabs__tab__selected"
-                : ""
-            }`}
-            tabIndex={0}
-            role="radio"
-            aria-checked={selectedStrategy === "2"}
-            onClick={() => handleRadioChange("Traffic Light")}
-          >
-            <div className="pro-radio-tabs__check-icon">
-              <label className="ant-radio-wrapper">
-                <span
-                  className={`ant-radio ${
-                    selectedStrategy === "2"
-                      ? "ant-radio-checked"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    tabIndex={-1}
-                    className="ant-radio-input"
-                    checked={selectedStrategy === "2"}
-                    onChange={() => handleRadioChange("Traffic Light")}
-                  />
-                  <div className="ant-radio-inner" />
-                </span>
-              </label>
-            </div>
-            <div className="styles_strategy__xc2r+">
-              <div className="styles_strategyContent__c-1Di">
-                <p className="pro-text pro-body pro-text--medium">
-                  Traffic Light
-                </p>
-                <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                  Vendors will be divided based on a specified range
-                </p>
-              </div>
-            </div>
-          </div> */}
-
             <div
               className={`pro-radio-tabs__tab ${
-                selectedStrategy === "traffic_light"
+                localSelectedStrategy === "traffic_light"
                   ? "pro-radio-tabs__tab__selected"
                   : ""
               }`}
               tabIndex={0}
               role="radio"
-              aria-checked={selectedStrategy === "traffic_light"}
-              onClick={() => handleRadioChange("traffic_light")}
+              aria-checked={localSelectedStrategy === "traffic_light"}
+              onClick={() => setLocalSelectedStrategy("traffic_light")}
             >
               <div className="pro-radio-tabs__check-icon">
                 <label className="ant-radio-wrapper">
                   <span
                     className={`ant-radio ${
-                      selectedStrategy === "traffic_light"
+                      localSelectedStrategy === "traffic_light"
                         ? "ant-radio-checked"
                         : ""
                     }`}
@@ -437,8 +418,8 @@ const EventTypeModal = ({
                       type="radio"
                       tabIndex={-1}
                       className="ant-radio-input"
-                      checked={selectedStrategy === "traffic_light"}
-                      onChange={() => handleRadioChange("traffic_light")}
+                      checked={localSelectedStrategy === "traffic_light"}
+                      onChange={() => setLocalSelectedStrategy("traffic_light")}
                     />
                     <div className="ant-radio-inner" />
                   </span>
@@ -455,90 +436,9 @@ const EventTypeModal = ({
                 </div>
               </div>
             </div>
-
-            {/* <div
-            className={`pro-radio-tabs__tab ${
-              selectedStrategy === "Knockout"
-                ? "pro-radio-tabs__tab__selected"
-                : ""
-            }`}
-            tabIndex={0}
-            role="radio"
-            aria-checked={selectedStrategy === "Knockout"}
-            onClick={() => handleRadioChange("Knockout")}
-          >
-            <div className="pro-radio-tabs__check-icon">
-              <label className="ant-radio-wrapper">
-                <span
-                  className={`ant-radio ${
-                    selectedStrategy === "Knockout" ? "ant-radio-checked" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    tabIndex={-1}
-                    className="ant-radio-input"
-                    checked={selectedStrategy === "Knockout"}
-                    onChange={() => handleRadioChange("Knockout")}
-                  />
-                  <div className="ant-radio-inner" />
-                </span>
-              </label>
-            </div>
-            <div className="styles_strategy__xc2r+">
-              <div className="styles_strategyContent__c-1Di">
-                <p className="pro-text pro-body pro-text--medium">Knockout</p>
-                <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                  Vendors will accept/reject your offer
-                </p>
-              </div>
-            </div>
-          </div> */}
-            {/* <div
-            className={`pro-radio-tabs__tab ${
-              selectedStrategy === "Dutch Auction"
-                ? "pro-radio-tabs__tab__selected"
-                : ""
-            }`}
-            tabIndex={0}
-            role="radio"
-            aria-checked={selectedStrategy === "Dutch Auction"}
-            onClick={() => handleRadioChange("Dutch Auction")}
-          >
-            <div className="pro-radio-tabs__check-icon">
-              <label className="ant-radio-wrapper">
-                <span
-                  className={`ant-radio ${
-                    selectedStrategy === "Dutch Auction"
-                      ? "ant-radio-checked"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    tabIndex={-1}
-                    className="ant-radio-input"
-                    checked={selectedStrategy === "Dutch Auction"}
-                    onChange={() => handleRadioChange("Dutch Auction")}
-                  />
-                  <div className="ant-radio-inner" />
-                </span>
-              </label>
-            </div>
-            <div className="styles_strategy__xc2r+">
-              <div className="styles_strategyContent__c-1Di">
-                <p className="pro-text pro-body pro-text--medium">
-                  Dutch Auction
-                </p>
-                <p className="pro-text pro-body pro-text--normal styles_strategySub__R7Aot">
-                  First come first serve allocation.
-                </p>
-              </div>
-            </div>
-          </div> */}
           </div>
         )}
-        {selectedStrategy === "2" && (
+        {localSelectedStrategy === "2" && (
           <div className="ant-row ant-form-item mt-3">
             <div className="ant-row ant-form-item mt-3">
               <div className="ant-col">
@@ -581,7 +481,6 @@ const EventTypeModal = ({
                 </div>
               </div>
             </div>
-            {/* // card  */}
             <div
               style={{
                 display: "flex",
@@ -594,13 +493,11 @@ const EventTypeModal = ({
                 title="GREEN"
                 middleText="Gross Total Less Than"
                 placeholder="223"
-                // bgColor="rgba(0, 128, 0, 0.3)"
                 bgColor="rgba(220,255,220,1)"
                 circleColor="green"
                 color={""}
               />
 
-              {/* Card for Yellow */}
               <Card
                 title="YELLOW"
                 color="yellow"
@@ -609,8 +506,6 @@ const EventTypeModal = ({
                 bgColor="rgba(255,255,220,1)"
                 circleColor="orange"
               />
-
-              {/* Card for Green */}
             </div>
           </div>
         )}
@@ -632,26 +527,26 @@ const EventTypeModal = ({
                 >
                   <div
                     className={`pro-radio-tabs__tab ${
-                      awardType === "single_vendor"
+                      localAwardType === "single_vendor"
                         ? "pro-radio-tabs__tab__selected"
                         : ""
                     }`}
                     role="radio"
-                    aria-checked={awardType === "single_vendor"}
-                    onClick={() => handleAwardTypeChange("single_vendor")}
+                    aria-checked={localAwardType === "single_vendor"}
+                    onClick={() => setLocalAwardType("single_vendor")}
                     tabIndex={-1}
                   >
                     <div className="pro-radio-tabs__check-icon">
                       <label
                         className={`ant-radio-wrapper ${
-                          awardType === "single_vendor"
+                          localAwardType === "single_vendor"
                             ? "ant-radio-wrapper-checked"
                             : ""
                         }`}
                       >
                         <span
                           className={`ant-radio ${
-                            awardType === "single_vendor"
+                            localAwardType === "single_vendor"
                               ? "ant-radio-checked"
                               : ""
                           }`}
@@ -660,10 +555,8 @@ const EventTypeModal = ({
                             type="radio"
                             className="ant-radio-input"
                             value="single_vendor"
-                            checked={awardType === "single_vendor"}
-                            onChange={() =>
-                              handleAwardTypeChange("single_vendor")
-                            }
+                            checked={localAwardType === "single_vendor"}
+                            onChange={() => setLocalAwardType("single_vendor")}
                             tabIndex={-1}
                           />
                           <div className="ant-radio-inner"></div>
@@ -676,26 +569,26 @@ const EventTypeModal = ({
                   </div>
                   <div
                     className={`pro-radio-tabs__tab ${
-                      awardType === "multiple_vendors"
+                      localAwardType === "multiple_vendors"
                         ? "pro-radio-tabs__tab__selected"
                         : ""
                     }`}
                     role="radio"
-                    aria-checked={awardType === "multiple_vendors"}
-                    onClick={() => handleAwardTypeChange("multiple_vendors")}
+                    aria-checked={localAwardType === "multiple_vendors"}
+                    onClick={() => setLocalAwardType("multiple_vendors")}
                     tabIndex={0}
                   >
                     <div className="pro-radio-tabs__check-icon">
                       <label
                         className={`ant-radio-wrapper ${
-                          awardType === "multiple_vendors"
+                          localAwardType === "multiple_vendors"
                             ? "ant-radio-wrapper-checked"
                             : ""
                         }`}
                       >
                         <span
                           className={`ant-radio ${
-                            awardType === "multiple_vendors"
+                            localAwardType === "multiple_vendors"
                               ? "ant-radio-checked"
                               : ""
                           }`}
@@ -704,10 +597,8 @@ const EventTypeModal = ({
                             type="radio"
                             className="ant-radio-input"
                             value="multiple_vendors"
-                            checked={awardType === "multiple_vendors"}
-                            onChange={() =>
-                              handleAwardTypeChange("multiple_vendors")
-                            }
+                            checked={localAwardType === "multiple_vendors"}
+                            onChange={() => setLocalAwardType("multiple_vendors")}
                             tabIndex={-1}
                           />
                           <div className="ant-radio-inner"></div>
@@ -725,14 +616,14 @@ const EventTypeModal = ({
         </div>
         <form className="ant-form-item my-4">
           <div>
-            {selectedStrategy === "0" && (
+            {localSelectedStrategy === "0" && (
               <div className="d-flex align-items-center gap-2 my-3">
                 <input
                   type="checkbox"
-                  // checked={dynamicExtension[0]}
-                  // onChange={(e) =>
-                  //   handleDynamicExtensionChange(0, e.target.checked)
-                  // }
+                  checked={localDynamicExtension[0]}
+                  onChange={(e) =>
+                    handleDynamicExtensionChange(0, e.target.checked)
+                  }
                 />
                 <div className="ant-col ant-form-item-label">
                   Show rank to vendor for individual item.
@@ -761,7 +652,7 @@ const EventTypeModal = ({
                 <div className="d-flex align-items-center gap-2">
                   <div
                     className={`pro-radio-tabs__tab ${
-                      dynamicExtensionConfigurations.time_extension_type ===
+                      localDynamicExtensionConfigurations.time_extension_type ===
                       "type1"
                         ? "pro-radio-tabs__tab__selected"
                         : ""
@@ -770,16 +661,16 @@ const EventTypeModal = ({
                     tabIndex={0}
                     role="radio"
                     aria-checked={
-                      dynamicExtensionConfigurations.time_extension_type ===
+                      localDynamicExtensionConfigurations.time_extension_type ===
                       "type1"
                     }
                     onClick={() =>
-                      handleDynamicExtensionBid("time_extension_type", "type1")
+                      handleDynamicExtensionBidLocal("time_extension_type", "type1")
                     }
                   >
                     <span
                       className={`ant-radio ${
-                        dynamicExtensionConfigurations.time_extension_type ===
+                        localDynamicExtensionConfigurations.time_extension_type ===
                         "type1"
                           ? "ant-radio-checked"
                           : ""
@@ -790,14 +681,11 @@ const EventTypeModal = ({
                         tabIndex={-1}
                         className="ant-radio-input"
                         checked={
-                          dynamicExtensionConfigurations.time_extension_type ===
+                          localDynamicExtensionConfigurations.time_extension_type ===
                           "type1"
                         }
                         onChange={() =>
-                          handleDynamicExtensionBid(
-                            "time_extension_type",
-                            "type1"
-                          )
+                          handleDynamicExtensionBidLocal("time_extension_type", "type1")
                         }
                       />
                       <div className="ant-radio-inner" />
@@ -808,7 +696,7 @@ const EventTypeModal = ({
                   </div>
                   <div
                     className={`pro-radio-tabs__tab col-md-6 ${
-                      dynamicExtensionConfigurations.time_extension_type ===
+                      localDynamicExtensionConfigurations.time_extension_type ===
                       "type2"
                         ? "pro-radio-tabs__tab__selected"
                         : ""
@@ -817,16 +705,16 @@ const EventTypeModal = ({
                     tabIndex={0}
                     role="radio"
                     aria-checked={
-                      dynamicExtensionConfigurations.time_extension_type ===
+                      localDynamicExtensionConfigurations.time_extension_type ===
                       "type2"
                     }
                     onClick={() =>
-                      handleDynamicExtensionBid("time_extension_type", "type2")
+                      handleDynamicExtensionBidLocal("time_extension_type", "type2")
                     }
                   >
                     <span
                       className={`ant-radio ${
-                        dynamicExtensionConfigurations.time_extension_type ===
+                        localDynamicExtensionConfigurations.time_extension_type ===
                         "type2"
                           ? "ant-radio-checked"
                           : ""
@@ -837,14 +725,11 @@ const EventTypeModal = ({
                         tabIndex={-1}
                         className="ant-radio-input"
                         checked={
-                          dynamicExtensionConfigurations.time_extension_type ===
+                          localDynamicExtensionConfigurations.time_extension_type ===
                           "type2"
                         }
                         onChange={() =>
-                          handleDynamicExtensionBid(
-                            "time_extension_type",
-                            "type2"
-                          )
+                          handleDynamicExtensionBidLocal("time_extension_type", "type2")
                         }
                       />
                       <div className="ant-radio-inner" />
@@ -869,13 +754,13 @@ const EventTypeModal = ({
                       className="form-control"
                       style={{ marginLeft: "5px" }}
                       value={
-                        dynamicExtensionConfigurations.triggered_time_extension_on_last
+                        localDynamicExtensionConfigurations.triggered_time_extension_on_last
                       }
                       onChange={(e) =>
-                        handleDynamicExtensionBid(
-                          "triggered_time_extension_on_last",
-                          e.target.value
-                        )
+                        setLocalDynamicExtensionConfigurations({
+                          ...localDynamicExtensionConfigurations,
+                          triggered_time_extension_on_last: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -889,13 +774,13 @@ const EventTypeModal = ({
                       className="form-control"
                       style={{ marginLeft: "5px" }}
                       value={
-                        dynamicExtensionConfigurations.extend_event_time_by
+                        localDynamicExtensionConfigurations.extend_event_time_by
                       }
                       onChange={(e) =>
-                        handleDynamicExtensionBid(
-                          "extend_event_time_by",
-                          e.target.value
-                        )
+                        setLocalDynamicExtensionConfigurations({
+                          ...localDynamicExtensionConfigurations,
+                          extend_event_time_by: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -909,10 +794,10 @@ const EventTypeModal = ({
                       options={bidsType}
                       defaultValue={"Select Top bids"}
                       onChange={(value) => {
-                        handleDynamicExtensionBid(
-                          "time_extension_on_change_in",
-                          value
-                        );
+                        setLocalDynamicExtensionConfigurations({
+                          ...localDynamicExtensionConfigurations,
+                          time_extension_on_change_in: value,
+                        });
                       }}
                     />
                   </div>
@@ -936,9 +821,12 @@ const EventTypeModal = ({
                 type="number"
                 className="form-control"
                 placeholder="Enter number of revisions required"
-                value={dynamicExtensionConfigurations.minimum_revisions}
+                value={localDynamicExtensionConfigurations.minimum_revisions}
                 onChange={(e) =>
-                  handleDynamicExtensionBid("minimum_revisions", e.target.value)
+                  setLocalDynamicExtensionConfigurations({
+                    ...localDynamicExtensionConfigurations,
+                    minimum_revisions: e.target.value,
+                  })
                 }
               />
             )}
@@ -957,9 +845,12 @@ const EventTypeModal = ({
                 type="datetime-local"
                 placeholder="Select Date"
                 className="form-control"
-                value={dynamicExtensionConfigurations.delivery_date}
+                value={localDynamicExtensionConfigurations.delivery_date}
                 onChange={(e) =>
-                  handleDynamicExtensionBid("delivery_date", e.target.value)
+                  setLocalDynamicExtensionConfigurations({
+                    ...localDynamicExtensionConfigurations,
+                    delivery_date: e.target.value,
+                  })
                 }
               />
             )}

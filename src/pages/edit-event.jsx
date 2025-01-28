@@ -17,9 +17,10 @@ import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useSWR from "swr";
 
 export default function EditEvent() {
-  const { id } = useParams(); // Get the id from the URL 
+  const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
@@ -27,8 +28,8 @@ export default function EditEvent() {
   const [publishEventModal, setPublishEventModal] = useState(false);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
-  const [eventType, setEventType] = useState(false);
-  const [awardType, setAwardType] = useState(false);
+  const [eventType, setEventType] = useState("");
+  const [awardType, setAwardType] = useState("");
   const [dynamicExtension, setDynamicExtension] = useState(false);
   const [resetSelectedRows, setResetSelectedRows] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -69,6 +70,7 @@ export default function EditEvent() {
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
+  const [eventDetails, setEventDetails] = useState([]);
 
   // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
@@ -136,6 +138,7 @@ export default function EditEvent() {
   };
   const handleEventScheduleModalShow = () => {
     setEventScheduleModal(true);
+    console.log("Event schedule modal:", eventScheduleModal);
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -158,7 +161,13 @@ export default function EditEvent() {
   };
 
   const handleEventTypeChange = (e) => {
-    setEventType(e);
+    const value = e.target.value;
+    if (["rfq", "contract", "auction"].includes(value)) {
+      setEventType(value);
+      console.log("Updated eventType:", value);
+    } else {
+      alert("Please select a valid event type.");
+    }
   };
 
   const handleTrafficChange = (value) => {
@@ -166,7 +175,13 @@ export default function EditEvent() {
   };
 
   const handleAwardTypeChange = (e) => {
-    setAwardType(e);
+    const value = e;
+    if (["single_vendor", "multiple_vendors"].includes(value)) {
+      setAwardType(value);
+      console.log("Updated awardType:", value);
+    } else {
+      alert("Please select a valid award scheme.");
+    }
   };
 
   const handleDynamicExtensionChange = (id, isChecked) => {
@@ -186,27 +201,42 @@ export default function EditEvent() {
   const handleVendorProfileChange = (profile) => {
     setSelectedVendorProfile(profile);
   };
+  console.log("event type", eventType, awardType);
 
-  const handleEventConfigurationSubmit = () => {
+  const handleEventConfigurationSubmit = (config) => {
+    console.log("Submitted Event Configuration:", config);
+    setEventType(config.event_type);
+    setAwardType(config.award_scheme);
+    setSelectedStrategy(config.event_configuration);
+    setDynamicExtension(config.dynamic_time_extension);
+    setDynamicExtensionConfigurations({
+      time_extension_type: config.time_extension_type,
+      triggered_time_extension_on_last: config.triggered_time_extension_on_last,
+      extend_event_time_by: config.extend_event_time_by,
+      time_extension_on_change_in: config.time_extension_change,
+      delivery_date: config.delivery_date,
+    });
     handleEventTypeModalClose();
+    
     let eventTypeText = "";
-    // @ts-ignore
-    if (eventType === "rfq") {
+    if (config.event_type === "rfq") {
       eventTypeText = "RFQ";
       setIsService(false);
-      // @ts-ignore
-    } else if (eventType === "auction") {
+    } else if (config.event_type === "auction") {
       eventTypeText = "Auction";
       setIsService(false);
-    } else {
+    } else if (config.event_type === "contract") {
       eventTypeText = "Contract";
       setIsService(true);
+    } else {
+      alert("Please select a valid event type.");
+      return;
     }
     setEventTypeText(eventTypeText);
+    console.log("Submitted eventType:", config.event_type, "awardType:", config.award_scheme);
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
-
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
@@ -217,6 +247,24 @@ export default function EditEvent() {
   // @ts-ignore
   const [loading, setLoading] = useState(true);
 
+  const fetchEventData = async () => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEventDetails(data);
+        console.log("Event details:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     if (searchTerm == "") {
     }
@@ -251,8 +299,46 @@ export default function EditEvent() {
   };
 
   useEffect(() => {
+    fetchEventData();
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (eventDetails) {
+      seteventName(eventDetails?.event_title);
+      setEventTypeText(eventDetails?.event_type_detail?.event_type);
+      setEventDescription(eventDetails?.event_description);
+      setEventScheduleText(
+        `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
+          eventDetails?.end_time
+        ).toLocaleString()}`
+      );
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name,
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+        }))
+      );
+      setMaterialFormData(
+        eventDetails?.event_materials?.map((material) => ({
+          descriptionOfItem: material.inventory_name,
+          inventory_id: material.inventory_id,
+          quantity: material.quantity,
+          unit: material.uom,
+          location: material.location,
+          rate: material.rate,
+          amount: material.amount,
+        }))
+      );
+      setTextareas(
+        eventDetails?.resource_term_conditions?.map((term) => ({
+          id: term.term_condition_id,
+          value: term.term_condition.condition,
+        }))
+      );
+    }
+  }, [eventDetails]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -285,7 +371,6 @@ export default function EditEvent() {
       setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
     }
   };
-  console.log("event id", id);
 
   const handleSaveButtonClick = async () => {
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
@@ -308,7 +393,9 @@ export default function EditEvent() {
         );
         console.log("Updated table data:", updatedTableData);
         setTableData(updatedTableData);
+
         setSelectedVendors((prev) => [...prev, ...selectedRows]);
+        console.log("selceted", selectedVendors);
         setVendorModal(false);
         setSelectedRows([]);
         setResetSelectedRows(true);
@@ -354,8 +441,6 @@ export default function EditEvent() {
       (option) => String(option.value) === String(selectedOption)
     );
 
-    console.log("selectedCondition:", selectedCondition);
-
     if (selectedCondition) {
       setTextareas(
         textareas.map((textarea) =>
@@ -367,7 +452,6 @@ export default function EditEvent() {
             : textarea
         )
       );
-      console.log("Updated textareas:", textareas);
     }
   };
 
@@ -414,8 +498,51 @@ export default function EditEvent() {
     }
   };
 
+  const fetcher = (url, options) =>
+    fetch(url, options).then((res) => res.json());
+
+  const updateEvent = async (id, eventData) => {
+    const url = `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const options = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update event.");
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log(
+      "Event data:",
+      eventName,
+      createdOn,
+      scheduleData,
+      selectedVendors
+    );
+
+    // Debugging statements
+    console.log("eventName:", eventName);
+    console.log("createdOn:", createdOn);
+    console.log("scheduleData.start_time:", scheduleData.start_time);
+    console.log(
+      "scheduleData.end_time_duration:",
+      scheduleData.end_time_duration
+    );
+    console.log("scheduleData.evaluation_time:", scheduleData.evaluation_time);
+    console.log("selectedVendors.length:", selectedVendors.length);
 
     if (
       !eventName ||
@@ -423,11 +550,14 @@ export default function EditEvent() {
       !scheduleData.start_time ||
       !scheduleData.end_time_duration ||
       !scheduleData.evaluation_time ||
+      scheduleData.evaluation_time === "Mins Mins" ||
       selectedVendors.length === 0
     ) {
-      alert("Please fill all the required fields.");
+      alert("Please fill all the required fields on Event Schedule Details.");
       return;
     }
+
+    console.log("sele te vendors", materialFormData);
 
     setSubmitted(true);
     const eventData = {
@@ -435,91 +565,83 @@ export default function EditEvent() {
         event_title: eventName,
         created_on: createdOn,
         status: "pending",
-        created_by_id: 2,
         event_description: eventDescription,
         event_schedule_attributes: {
           start_time: scheduleData.start_time,
           end_time: scheduleData.end_time_duration,
           evaluation_time: scheduleData.evaluation_time,
-          event_type_id: 1,
         },
         event_type_detail_attributes: {
           event_type: eventType,
           award_scheme: awardType,
           event_configuration: selectedStrategy,
-          dynamic_time_extension: dynamicExtension[1],
           time_extension_type:
-            dynamicExtensionConfigurations.time_extension_type,
+            dynamicExtensionConfigurations.time_extension_type || "",
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last,
-          extend_event_time_by: Number(
-            dynamicExtensionConfigurations.extend_event_time_by
-          ),
+            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
+            "",
+          extend_event_time_by:
+            Number(dynamicExtensionConfigurations.extend_event_time_by) || 0,
           enable_english_auction: true,
           extension_time_min: 5,
           extend_time_min: 10,
           time_extension_change:
-            dynamicExtensionConfigurations.time_extension_on_change_in,
-          delivery_date: dynamicExtensionConfigurations.delivery_date,
+            dynamicExtensionConfigurations.time_extension_on_change_in || "",
+          delivery_date: dynamicExtensionConfigurations.delivery_date || "",
         },
         event_materials_attributes: materialFormData.map((material) => ({
-          descriptionOfItem: material.descriptionOfItem,
+          id: material.id,
           inventory_id: material.inventory_id,
           quantity: material.quantity,
           uom: material.unit,
-          location: material.location,
+          location: material.location, 
           rate: material.rate,
           amount: material.amount,
-          sub_section_id: material.sub_section_id,
-          section_id: material.section_id,
+          sub_section_name: material.sub_section_id,
+          section_name: material.section_id,
+          _destroy: material._destroy || false,
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
-          status: 1,
-          pms_supplier_id: vendor.id,
+          id: vendor.id,
+          status: "invited",
+          pms_supplier_id: 1,
+          _destroy: vendor._destroy || false,
         })),
         status_logs_attributes: [
           {
             status: "pending",
             created_by_id: 2,
             remarks: "Initial status",
-            comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) => ({
-          term_condition_id: textarea.id,
-          condition_type: "general",
-          condition: textarea.value,
-        })),
+        resource_term_conditions_attributes: textareas.map((textarea) => {
+          const existingCondition = eventDetails.resource_term_conditions.find(
+            (condition) => condition.term_condition_id === textarea.id
+          );
+          return {
+            id: existingCondition ? existingCondition.id : undefined,
+            term_condition_id: textarea.id,
+            condition_type: "general",
+            condition: textarea.value,
+          };
+        }),
         attachments: documentRows.map((row) => row.upload),
       },
     };
 
-    console.log("Payload:", eventData);
-
     try {
-      //   const response = await fetch(
-      //     "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-      //     {
-      //       method: "POST",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //       },
-      //       body: JSON.stringify(eventData),
-      //     }
-      //   );
-      //   if (response.ok) {
-      //     alert("Event created successfully!");
-      //     navigate(
-      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //     );
-      //   } else {
-      //     const errorData = await response.json();
-      //     console.error("Error response data:", errorData);
-      //     throw new Error("Failed to Edit Event.");
-      //   }
+      const data = await updateEvent(id, eventData);
+      toast.success("Event updated successfully!", {
+        autoClose: 1000,
+      });
+      navigate(
+        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
     } catch (error) {
-      console.error("Error creating event:", error);
-      alert("Failed to Edit Event.");
+      console.error("Error updating event:", error);
+      toast.error("Failed to update event.", {
+        autoClose: 1000,
+      });
     } finally {
       setSubmitted(false);
     }
@@ -601,6 +723,10 @@ export default function EditEvent() {
   useEffect(() => {
     fetchTermsAndConditions();
   }, []);
+
+  useEffect(() => {
+    console.log("event type", eventType, awardType);
+  }, [eventType, awardType]);
 
   return (
     <>
@@ -694,6 +820,7 @@ export default function EditEvent() {
               data={materialFormData}
               setData={setMaterialFormData}
               isService={isService}
+              existingData={eventDetails?.event_materials}
             />
             <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
               <h5 className=" ">
@@ -731,33 +858,33 @@ export default function EditEvent() {
                   </thead>
 
                   <tbody>
-                    {selectedVendors.length > 0 ? (
-                      selectedVendors
-                        .filter(
-                          (vendor, index, self) =>
-                            index === self.findIndex((v) => v.id === vendor.id)
-                        )
-                        .map((vendor, index) => (
-                          <tr key={vendor.id}>
-                            <td>{index + 1}</td>
-                            <td>{vendor.name}</td>
-                            <td>{vendor.phone}</td>
-                            <td>Invited</td>
-                            <td>
-                              <button
-                                className="btn btn-danger"
-                                onClick={() =>
-                                  setSelectedVendors((prev) =>
-                                    prev.filter((v) => v.id !== vendor.id)
+                    {selectedVendors
+                      ?.filter((vendor) => !vendor._destroy)
+                      .map((vendor, index) => (
+                        <tr key={vendor.id}>
+                          <td>{index + 1}</td>
+                          <td>{vendor.name}</td>
+                          <td>{vendor.phone}</td>
+                          <td>Invited</td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                setSelectedVendors((prev) =>
+                                  prev.map((v) =>
+                                    v.id === vendor.id
+                                      ? { ...v, _destroy: true }
+                                      : v
                                   )
-                                }
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                    ) : (
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    {selectedVendors?.length === 0 && (
                       <tr>
                         <td
                           // @ts-ignore
@@ -850,7 +977,7 @@ export default function EditEvent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {textareas.map((textarea, idx) => (
+                  {textareas?.map((textarea, idx) => (
                     <tr key={idx}>
                       <td>
                         <SelectBox
@@ -861,9 +988,11 @@ export default function EditEvent() {
                           onChange={(option) =>
                             handleConditionChange(textarea.id, option)
                           }
-                          defaultValue={termsOptions.find(
-                            (option) => option.condition === textarea.value
-                          )}
+                          defaultValue={
+                            termsOptions.find(
+                              (option) => option.value === textarea.id
+                            ) || { label: "Select Condition", value: "" }
+                          }
                         />
                       </td>
                       <td>
@@ -899,7 +1028,7 @@ export default function EditEvent() {
                   onClick={handleSubmit}
                   disabled={submitted}
                 >
-                  Submit
+                  Update
                 </button>
               </div>
               <div className="col-md-2">
@@ -1189,6 +1318,7 @@ export default function EditEvent() {
             }
           />
           <EventTypeModal
+            existingData={eventDetails?.event_type_detail}
             show={eventTypeModal}
             handleDynamicExtensionBid={handleDynamicExtensionBid}
             onHide={handleEventTypeModalClose}
@@ -1224,7 +1354,13 @@ export default function EditEvent() {
             ]}
             trafficType={isTrafficSelected}
             handleTrafficChange={handleTrafficChange}
-          />{" "}
+          />
+          <EventScheduleModal
+            show={eventScheduleModal}
+            onHide={handleEventScheduleModalClose}
+            handleSaveSchedule={handleSaveSchedule}
+            existingData={eventDetails?.event_schedule}
+          />
         </div>
       </div>
       <ToastContainer />
