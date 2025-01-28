@@ -17,7 +17,6 @@ import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useSWR from "swr";
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
