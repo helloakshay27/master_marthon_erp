@@ -1,19 +1,32 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { Link } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import {
   LayoutModal,
   Table,
 } from "../components"
 
 const BOQDetailsPageMaster = () => {
- // State to manage rows
- const [rows, setRows] = useState([]);
+  const { id } = useParams()
+  const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
+  const [loading, setLoading] = useState(true);  // State for loading indicator
+  const [error, setError] = useState(null);  // State for handling errors
+
+  const [status, setStatus] = useState(''); // Assuming boqDetails.status is initially available
+  const [remark, setRemark] = useState('');
+  const [initialStatus, setInitialStatus] = useState('');
+
+  console.log('id', id)
+  // console.log(boqDetails.status," status....")
+  // State to manage rows
+  const [rows, setRows] = useState([]);
   // Function to add a new row
   const handleAddAttachment = () => {
     setRows([
@@ -28,11 +41,11 @@ const BOQDetailsPageMaster = () => {
       },
     ]);
   }
-    // Function to delete a row
-    const handleDeleteRow = (id) => {
-      setRows(rows.filter((row) => row.id !== id));
-    };
-  
+  // Function to delete a row
+  const handleDeleteRow = (id) => {
+    setRows(rows.filter((row) => row.id !== id));
+  };
+
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [showAssocoatedModal, setShowAssocoatedModal] = useState(false);
@@ -45,6 +58,107 @@ const BOQDetailsPageMaster = () => {
 
   const openAssocoatedModal = () => setShowAssocoatedModal(true);
   const closeAssocoatedModal = () => setShowAssocoatedModal(false);
+
+
+  useEffect(() => {
+    // Fetch the data when the component mounts or when 'id' changes
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`https://marathon.lockated.com/boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+
+        // Assuming the API returns data based on the id (you may need to adjust based on your response)
+        setBoqDetails(response.data);
+        setStatus(response.data.status || '');
+        setInitialStatus(response.data.status || '');
+        setLoading(false);
+      } catch (error) {
+        setError('An error occurred while fetching the data');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);  // Dependency array ensures fetch is triggered when 'id' changes
+
+  // Loading, error, and data display logic
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    // return <div>{error}</div>;
+    return <div>Something went wrong</div>;
+  }
+
+
+  // Group categories by level
+  const groupedCategories = boqDetails?.categories?.reduce((acc, category) => {
+    if (!acc[category.level]) {
+      acc[category.level] = [];
+    }
+    acc[category.level].push(category);
+    return acc;
+  }, {});
+
+  // status and remark
+
+  // Step 1: Set up state for status and remarks
+
+
+  // Step 2: Handle status change
+  const handleStatusChange = (e) => {
+    setStatus(e.target.value);
+  };
+
+  // Step 3: Handle remark change
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+
+  const handleSubmit = async () => {
+    // Prepare the payload for the API
+    const payload = {
+      status_log: {
+        status: status,
+        remarks: remark
+      }
+    };
+
+    console.log("detail status change", payload);
+
+    try {
+      const response = await axios.patch(
+        `https://marathon.lockated.com/boq_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload,  // The request body containing status and remarks
+        {
+          headers: {
+            'Content-Type': 'application/json', // Set the content type header
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log('Status updated successfully:', response.data);
+        alert('Status updated successfully');
+        // Handle success (e.g., update the UI, reset fields, etc.)
+      } else {
+        console.log('Error updating status:', response.data);
+        // Handle error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error('Request failed:', error);
+      // Handle network or other errors (e.g., show an error message)
+    }
+  };
+
+
+  const handleCancel = () => {
+    setStatus(initialStatus); // Reset status to the initial value
+    setRemark(''); // Optionally reset the remark as well
+  };
+
+
   return (
     <>
 
@@ -83,21 +197,21 @@ const BOQDetailsPageMaster = () => {
                         </button> */}
 
                         <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      fill="#6c757d"
-      className="bi bi-pencil-square me-2"
-      viewBox="0 0 16 16"
-    >
-      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-      <path
-        fillRule="evenodd"
-        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-      />
-    </svg>
-  </Link>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="#6c757d"
+                            className="bi bi-pencil-square me-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                            <path
+                              fillRule="evenodd"
+                              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                            />
+                          </svg>
+                        </Link>
                       </div>
 
                     </div>
@@ -109,7 +223,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3"> {boqDetails.id}</span>
                       </label>
                     </div>
                   </div>
@@ -120,7 +234,8 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">{groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
+                        </span>
                       </label>
                     </div>
                   </div>
@@ -131,7 +246,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3">Marathon Nexzone</span>
+                        <span className="me-3">{boqDetails.project}</span>
                       </label>
                     </div>
                   </div>
@@ -142,7 +257,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">{boqDetails.item_name} </span>
                       </label>
                     </div>
                   </div>
@@ -153,7 +268,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"></span>
+                        <span className="me-3">{boqDetails.sub_project}</span>
                       </label>
                     </div>
                   </div>
@@ -164,7 +279,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3"> {boqDetails.description}</span>
                       </label>
                     </div>
                   </div>
@@ -175,7 +290,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3"> {boqDetails.wing}</span>
                       </label>
                     </div>
                   </div>
@@ -197,7 +312,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">  {groupedCategories[1] && groupedCategories[1].length > 0 ? groupedCategories[1][0].category_name : ''} </span>
                       </label>
                     </div>
                   </div>
@@ -208,7 +323,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">{boqDetails.quantity} </span>
                       </label>
                     </div>
                   </div>
@@ -219,7 +334,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3"> {groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}</span>
                       </label>
                     </div>
                   </div>
@@ -231,7 +346,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">{boqDetails.note} </span>
                       </label>
                     </div>
                   </div>
@@ -243,7 +358,7 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3"> {groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''} </span>
                       </label>
                     </div>
                   </div>
@@ -267,7 +382,8 @@ const BOQDetailsPageMaster = () => {
                     <div className="col-6">
                       <label className="text">
                         <span className="me-3" style={{ color: "black" }}>:</span>
-                        <span className="me-3"> </span>
+                        <span className="me-3">{groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
+                        </span>
                       </label>
                     </div>
                   </div>
@@ -289,7 +405,7 @@ const BOQDetailsPageMaster = () => {
                       className="card-body mt-0 pt-0"
                       style={{ display: "block" }}
                     >
-                      <div className="tbl-container mx-3 mt-1">
+                      <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
                         <table className="">
                           <thead>
                             <tr>
@@ -301,7 +417,7 @@ const BOQDetailsPageMaster = () => {
                               <th rowSpan={2}>Brand </th>
                               <th rowSpan={2}>UOM</th>
                               <th rowSpan={2}>Cost QTY</th>
-                              <th colSpan={3}>Cost</th>
+                              <th colSpan={2}>Cost</th>
                               <th rowSpan={2}>Wastage</th>
                               <th rowSpan={2}>
                                 Total Estimated Qty Wastage
@@ -309,24 +425,27 @@ const BOQDetailsPageMaster = () => {
                             </tr>
                             <tr>
                               <th>Co-Efficient Factor</th>
-                              <th colSpan={2}>Estimated Qty</th>
+                              <th>Estimated Qty</th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>SAND</td>
-                                <td>SAND</td>
-                              <td>SAND</td>
-                              <td>SAND River (BAG)</td>
-                              <td>GOLD</td>
-                              <td />
-                              <td>Bags</td>
-                              <td />
-                              <td>2</td>
-                              <td colSpan={2}>2</td>
-                              <td>4%</td>
-                              <td>2.08</td>
-                            </tr>
+                            {boqDetails.materials.map((material, index) => (
+                              <tr key={index}>
+                                <td>{material.material_type}</td>
+                                <td>{material.material_name}</td>
+                                <td>{material.material_sub_type}</td>
+                                <td>{material.generic_info}</td>
+                                <td>{material.color}</td>
+                                <td>{material.brand}</td>
+                                <td>{material.uom}</td>
+                                <td></td>
+                                <td>{material.co_efficient_factor}</td>
+                                <td >{material.estimated_quantity}</td>
+                                <td>{material.wastage}</td>
+                                <td>{material.estimated_quantity_wastage}</td>
+                              </tr>
+                            ))}
+
                           </tbody>
                         </table>
                       </div>
@@ -335,7 +454,54 @@ const BOQDetailsPageMaster = () => {
 
                   </CollapsibleCard>
 
-                  <CollapsibleCard title="Assests">
+                  <CollapsibleCard title="Assets">
+                    <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
+                      <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th rowSpan={2}>Asset Type</th>
+                              <th rowSpan={2}>Asset</th>
+                              <th rowSpan={2}>Asset Sub-Type</th>
+                              <th rowSpan={2}>Generic Specification</th>
+                              <th rowSpan={2}>Colour</th>
+                              <th rowSpan={2}>Brand</th>
+                              <th rowSpan={2}>UOM</th>
+                              <th rowSpan={2}>Cost QTY</th>
+                              <th colSpan={2}>Cost</th>
+                              <th rowSpan={2}>Wastage</th>
+                              <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                            </tr>
+                            <tr>
+                              <th>Co-Efficient Factor</th>
+                              <th>Estimated Qty</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {boqDetails.assets.map((asset, index) => (
+                              <tr key={index}>
+                                <td>{asset.asset_type}</td>
+                                <td>{asset.asset_name}</td>
+                                <td>{asset.asset_sub_type}</td>
+                                <td>{asset.asset_specification}</td>
+                                <td>{asset.color}</td>
+                                <td>{asset.brand}</td>
+                                <td>{asset.uom}</td>
+                                <td></td>
+                                <td>{asset.co_efficient_factor}</td>
+                                <td>{asset.estimated_quantity}</td>
+                                <td>{asset.wastage}</td>
+                                <td>{asset.estimated_quantity_wastage}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </CollapsibleCard>
+
+
+                  {/* <CollapsibleCard title="Assests">
 
                     <div
                       className="card-body mt-0 pt-0"
@@ -370,7 +536,7 @@ const BOQDetailsPageMaster = () => {
                       </div>
                     </div>
 
-                  </CollapsibleCard>
+                  </CollapsibleCard> */}
 
                 </div>
 
@@ -401,72 +567,72 @@ const BOQDetailsPageMaster = () => {
 
                         </thead>
                         <tbody>
-                        {rows.map((row) => (
-              <tr key={row.id}>
-                <td>
-                  <input
-                    className="form-control"
-                    type="text"
-                    name="documentName"
-                    value={row.documentName}
-                    onChange={(e) => handleInputChange(e, row.id)}
-                  />
-                </td>
-                <td>
-                  <input
-                    className="form-control"
-                    type="text"
-                    name="fileType"
-                    value={row.fileType}
-                    onChange={(e) => handleInputChange(e, row.id)}
-                    disabled
-                  />
-                </td>
-                <td>
-                  <input
-                    className="form-control"
-                    type="text"
-                    name="fileName"
-                    value={row.fileName}
-                    onChange={(e) => handleInputChange(e, row.id)}
-                  />
-                </td>
-                <td>
-                  <input
-                    className="form-control"
-                    type="text"
-                    name="uploadedAt"
-                    value={row.uploadedAt}
-                    onChange={(e) => handleInputChange(e, row.id)}
-                    disabled
-                  />
-                </td>
-                <td>
-                  <input
-                    className="attachmod"
-                    required
-                    type="file"
-                    name="document"
-                    onChange={(e) => handleFileChange(e, row.id)}
-                  />
-                </td>
-                <td>
-                  <a
-                    className="text-danger cancel-icon remove_fields"
-                    href="#"
-                    onClick={() => handleDeleteRow(row.id)}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      // style={{ color: '#8b0203' }}
-                    >
-                      cancel
-                    </span>
-                  </a>
-                </td>
-              </tr>
-            ))}
-                        
+                          {rows.map((row) => (
+                            <tr key={row.id}>
+                              <td>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  name="documentName"
+                                  value={row.documentName}
+                                  onChange={(e) => handleInputChange(e, row.id)}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  name="fileType"
+                                  value={row.fileType}
+                                  onChange={(e) => handleInputChange(e, row.id)}
+                                  disabled
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  name="fileName"
+                                  value={row.fileName}
+                                  onChange={(e) => handleInputChange(e, row.id)}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  name="uploadedAt"
+                                  value={row.uploadedAt}
+                                  onChange={(e) => handleInputChange(e, row.id)}
+                                  disabled
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  className="attachmod"
+                                  required
+                                  type="file"
+                                  name="document"
+                                  onChange={(e) => handleFileChange(e, row.id)}
+                                />
+                              </td>
+                              <td>
+                                <a
+                                  className="text-danger cancel-icon remove_fields"
+                                  href="#"
+                                  onClick={() => handleDeleteRow(row.id)}
+                                >
+                                  <span
+                                    className="material-symbols-outlined"
+                                  // style={{ color: '#8b0203' }}
+                                  >
+                                    cancel
+                                  </span>
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+
                         </tbody>
                       </table>
                     </div>
@@ -478,7 +644,10 @@ const BOQDetailsPageMaster = () => {
                   <div className="col-md-12">
                     <div className="form-group">
                       <label>Remark</label>
-                      <textarea className="form-control" rows="3" placeholder=""></textarea>
+                      <textarea className="form-control" rows="3" placeholder=""
+                        value={remark}
+                        onChange={handleRemarkChange}
+                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -486,22 +655,22 @@ const BOQDetailsPageMaster = () => {
                 <div className="row mt-4 justify-content-end align-items-center mx-2">
                   <div className="col-md-3">
                     <div className="form-group d-flex gap-3 align-items-center mx-3">
-                      <label style={{ fontSize: '1.1rem' }}>Status</label>
-                      <select className="form-control form-select" style={{ width: '100%' }}>
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
+                      <label style={{ fontSize: '1.1rem', color: 'black' }}>Status</label>
+
+                      <select className="form-control form-select" style={{ width: '100%' }} value={status} onChange={handleStatusChange} >
+
+                        <option disabled={boqDetails.status} selected >{boqDetails.status}</option>
+                        <option value="" >Select Status</option>
+                        <option value="draft" disabled={boqDetails.status === 'draft'} >Draft</option>
+                        <option value="submitted" disabled={boqDetails.status === 'submitted'}>Submitted</option>
+                        <option value="approved" disabled={boqDetails.status === 'approved'}>Approved</option>
                       </select>
                     </div>
                   </div>
                 </div>
                 <div className="d-flex justify-content-center">
-                  <button className="purple-btn2">Submit</button>
-                  <button className="purple-btn1">Cancel</button>
+                  <button className="purple-btn2" onClick={handleSubmit}>Submit</button>
+                  <button className="purple-btn1" onClick={handleCancel}>Cancel</button>
                 </div>
               </CollapsibleCard>
 
@@ -525,7 +694,7 @@ const BOQDetailsPageMaster = () => {
                 </div> */}
               </div>
 
-              <div className="row mx-2 mt-2">
+              <div className="row mx-2 mt-2 mb-5">
                 <h5>Audit Log</h5>
                 <div className="">
                   <Table columns={auditLogColumns} data={auditLogData} />

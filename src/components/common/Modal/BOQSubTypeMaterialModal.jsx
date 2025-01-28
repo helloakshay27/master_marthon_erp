@@ -1,13 +1,12 @@
-
 // MaterialModal.js
 import React, { useState ,useEffect} from "react";
 import Modal from "react-bootstrap/Modal";
-import CustomPagination from "./CustomPagination";
-import SingleSelector from "./base/Select/SingleSelector";
-import MultiSelector from "./base/Select/MultiSelector";
+
+
+import MultiSelector from "../../base/Select/MultiSelector";
 import axios from "axios";
 
-const MaterialModal = ({ show, handleClose, handleAdd }) => {
+const BOQSubTypeMaterialModal = ({ show, handleClose, handleAdd }) => {
   const [selectedMaterials, setSelectedMaterials] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [page, setPage] = useState(1); // 1-based index
@@ -84,7 +83,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
    // Fetching inventory types data from API on component mount
    useEffect(() => {
-    axios.get('https://marathon.lockated.com/pms/inventory_types.json?category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+    axios.get('https://newerp.marathonrealty.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
       .then(response => {
         // Map the fetched data to the format required by react-select
         const options = response.data.map(inventory => ({
@@ -104,7 +103,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     if (selectedInventory) {
       const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-      axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      axios.get(`https://newerp.marathonrealty.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
         .then(response => {
           // Map the sub-types to options for the select dropdown
           const options = response.data.map(subType => ({
@@ -140,7 +139,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
       if (selectedInventory) {
         const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
   
-        axios.get(`https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&material_category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`https://newerp.marathonrealty.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             // Map the sub-types to options for the select dropdown
             const options = response.data.map(subType => ({
@@ -175,7 +174,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     // setLoading(true); // Start loading before fetching
     const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
     const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
-    const apiUrl = `https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&material_category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `https://newerp.marathonrealty.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     axios.get(apiUrl)
       .then(response => {
@@ -361,6 +360,6 @@ const handleReset = () => {
 
 };
 
-export default MaterialModal;
+export default BOQSubTypeMaterialModal;
 
 

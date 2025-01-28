@@ -263,12 +263,12 @@ function Members() {
                   <Link to="/boq-approval-list">BOQ Approval List</Link>
                 </li>
                 <li>
-                  <Link to="/boq-details-page-master">
+                  {/* <Link to="/boq-details-page-master">
                     BOQ Details Page Master
-                  </Link>
+                  </Link> */}
                 </li>
                 <li>
-                  <Link to="/boq-approval-details">BOQ Approval Details</Link>
+                  {/* <Link to="/boq-approval-details">BOQ Approval Details</Link> */}
                 </li>
               </ul>
             </div>
