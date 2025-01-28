@@ -13,6 +13,7 @@ export default function BulkCounterOfferModalTwo({
 }) {
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
+  const [setSubmitted, setSetSubmitted] = useState(false);
   const { id } = useParams();
   console.log("idddd", id);
 
@@ -157,6 +158,8 @@ export default function BulkCounterOfferModalTwo({
       })
     );
 
+    setsubmitted(true);
+
     const payload = {
       counter_bid: {
         event_vendor_id: formData?.event_vendor_id || null,
@@ -194,6 +197,9 @@ export default function BulkCounterOfferModalTwo({
       }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
+    }
+    finally {
+      setSubmitted(false);
     }
   };
 
@@ -479,7 +485,7 @@ export default function BulkCounterOfferModalTwo({
         {
           label: "Save",
           onClick: handleSubmit,
-          props: { className: "purple-btn2" },
+          props: { className: submitted ? 'disabled-btn' : 'purple-btn2' },
         },
       ]}
     >

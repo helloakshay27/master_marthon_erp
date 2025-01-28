@@ -12,6 +12,7 @@ export default function BulkCounterOfferModal({
 }) {
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
+  const [loading, setLoading] = useState(false); // Add loading state
 
   useEffect(() => {
     if (bidCounterData) {
@@ -23,11 +24,12 @@ export default function BulkCounterOfferModal({
       setSumTotal(initialSumTotal);
     }
   }, [bidCounterData]);
-  
+
   const eventId = bidCounterData?.event?.id;
-  const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];  
-  
+  const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
+
   const handleSubmit = async () => {
+    setLoading(true); // Set
     const payload = {
       counter_bid: {
         event_vendor_id: formData.event_vendor_id,
@@ -56,21 +58,29 @@ export default function BulkCounterOfferModal({
         ),
       },
     };
-
-    const response = await fetch(
-      `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (response.ok) {
+        handleClose(); // Close the modal if the request was successful
+      } else {
+        // Handle failure if the response wasn't OK
+        throw new Error("Failed to submit counter bid");
       }
-    );
-    if (response.ok) {
-      handleClose();
-    } else {
-      console.error("Failed to submit counter bid");
+    } catch (error) {
+      console.error("Error during submission:", error);
+      // Handle error if the request fails
+      alert("There was an error submitting the counter bid. Please try again.");
+    } finally {
+      setLoading(false); // Always set loading to false after the request completes
     }
   };
 
@@ -92,15 +102,15 @@ export default function BulkCounterOfferModal({
     const landedAmount = total - realisedDiscount;
     let realisedGst = 0;
     if (gst > 0) {
-      realisedGst = (landedAmount * gst) / 100; 
+      realisedGst = (landedAmount * gst) / 100;
     }
 
     const finalTotal = landedAmount + realisedGst;
 
     updatedMaterials[index].realised_discount = realisedDiscount.toFixed(2);
-    updatedMaterials[index].landed_amount = landedAmount.toFixed(2); 
+    updatedMaterials[index].landed_amount = landedAmount.toFixed(2);
     updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
-    updatedMaterials[index].total_amount = finalTotal.toFixed(2); 
+    updatedMaterials[index].total_amount = finalTotal.toFixed(2);
 
     setSumTotal(
       updatedMaterials.reduce(
@@ -135,7 +145,7 @@ export default function BulkCounterOfferModal({
       sumTotal + (updatedFormData.realised_freight_charge_amount || 0);
 
     setFormData(updatedFormData);
-    setSumTotal(totalSum); 
+    setSumTotal(totalSum);
   };
 
   const productTableData =
@@ -350,9 +360,25 @@ export default function BulkCounterOfferModal({
       size="xl"
       footerButtons={[
         {
-          label: "Save",
+          label: loading ? (
+            <div className="loader-container">
+              <div className="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+              <p>Submitting your bid...</p>
+            </div>
+          ) : (
+            "Save"
+          ),
           onClick: handleSubmit,
-          props: { className: "purple-btn2" },
+          props: { className: "purple-btn2", disabled: loading }, // Disable button when loading
         },
       ]}
     >

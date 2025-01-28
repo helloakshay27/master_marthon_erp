@@ -1,0 +1,77 @@
+{
+    "event": {
+        "event_title": "hwgDHMGHWBMW",
+        "created_on": "2025-01-27",
+        "status": "pending",
+        "created_by_id": 2,
+        "event_description": "kshbxjknadjcn,anc,and,nad,vm",
+        "event_schedule_attributes": {
+            "start_time": "2025-01-27T12:53:01.825Z",
+            "end_time": "2025-01-31T21:22:00Z",
+            "evaluation_time": "30 Mins",
+            "event_type_id": 1
+        },
+        "event_type_detail_attributes": {
+            "event_type": "rfq",
+            "award_scheme": "single_vendor",
+            "event_configuration": false,
+            "time_extension_type": "",
+            "triggered_time_extension_on_last": "",
+            "extend_event_time_by": 0,
+            "enable_english_auction": true,
+            "extension_time_min": 5,
+            "extend_time_min": 10,
+            "time_extension_change": "",
+            "delivery_date": "2025-01-12T21:22"
+        },
+        "event_materials_attributes": [
+            {
+                "id": 6,
+                "inventory_id": 45,
+                "quantity": 100.0,
+                "uom": "NOS",
+                "location": "MUMBAI",
+                "rate": 560.0,
+                "amount": 0.0,
+                "delivary_location": null,
+                "pickup_location": null,
+                "inventory_name": "1 HRS FRD MAIN DOOR",
+                "material_type": "DOOR WORK",
+                "sub_section_name": "hall decor",
+                "section_name": "designing work",
+                "_destroy": true
+            }
+        ],
+        "event_vendors_attributes": [
+            {
+                "id": 7,
+                "status": 1,
+                "pms_supplier_id": 1
+            },
+            {
+                "status": 1,
+                "pms_supplier_id": 1,
+                "_destroy": true
+            }
+        ],
+        "status_logs_attributes": [
+            {
+                "id": 10,
+                "status": "pending",
+                "created_by_id": 2,
+                "remarks": "Initial status"
+            }
+        ],
+        "resource_term_conditions_attributes": [
+            {
+                "id": 29,
+                "term_condition_id": 1,
+                "condition_type": "general",
+                "condition": "the order should be delivered before delivery date"
+            }
+        ],
+        "attachments": [
+            null
+        ]
+    }
+}

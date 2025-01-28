@@ -1,6 +1,6 @@
 import React from 'react'
 import '../styles/mor.css'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from './base/Card/CollapsibleCards';
@@ -8,6 +8,7 @@ import MaterialModal from "../components/MaterialModal";
 import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
 import SingleSelector from './base/Select/SingleSelector';
+import axios from 'axios';
 
 
 const BOQSubItemTable = ({
@@ -15,6 +16,7 @@ const BOQSubItemTable = ({
   setMaterials,
   labours,
   Assets,
+  setAssets,
   handleAddMaterials,
   handleDeleteAll,
   handleSelectRow,
@@ -23,7 +25,10 @@ const BOQSubItemTable = ({
   handleSelectRowLabour,
   handleAddAssets,
   handleDeleteAllAssets,
-  handleSelectRowAssets, }) => {
+  handleSelectRowAssets,
+  predefinedMaterialsData,
+  predefinedAssetsData
+}) => {
   const [materialshowModal, setmaterialShowModal] = useState(false);
   const [assetShowModal, setAssetShowModal] = useState(false);
   const [labourShowModal, setLabourShowModal] = useState(false);
@@ -37,7 +42,7 @@ const BOQSubItemTable = ({
   const openLabourModal = () => setLabourShowModal(true);
   const closeLabourModal = () => setLabourShowModal(false);
 
-
+  console.log('assets for boq sub:', Assets)
 
   //Material modal and table data handle add or delete
 
@@ -46,17 +51,6 @@ const BOQSubItemTable = ({
   const [selectedMaterials, setSelectedMaterials] = useState([]); // To track selected rows
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
-
-  // const handleAddMaterials = (newMaterials) => {
-  //   setMaterials((prev) => [
-  //     ...prev,
-  //     ...newMaterials.filter(
-  //       (material) => !prev.some((m) => m.name === material.name)
-  //     ),
-  //   ]);
-  // };
-
-  // console.log("materials", materials)
 
   const handleDeleteRow = (materialToDelete) => {
     setMaterials((prev) =>
@@ -71,45 +65,29 @@ const BOQSubItemTable = ({
     setSelectedMaterials([]); // Reset selected materials
   };
 
-  const handleSelectRowMaterial = (materialName) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(materialName)
-        ? prev.filter((name) => name !== materialName) // Unselect the material
-        : [...prev, materialName] // Select the material
-    );
+  // Handle input change in specific row
+  const handleInputChange = (index, field, value) => {
+    const updatedMaterials = [...materials];
+    updatedMaterials[index][field] = value;
+    setMaterials(updatedMaterials);
+    onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
   };
 
-  //labour modal and table data handle add or delete
-  const [showModalLabour, setShowModalLabour] = useState(false);
-  // const [labours, setLabours] = useState([]);
-  const [selectedlabours, setSelectedLabours] = useState([])
-  const handleOpenModalLabour = () => setShowModalLabour(true);
-  const handleCloseModalLabour = () => setShowModalLabour(false);
+  // Handle adding new material to the table
+  const handleAddMaterial = (newMaterial) => {
+    const updatedMaterials = [...materials, newMaterial];
+    setMaterials(updatedMaterials);
+    onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
+  };
 
+  // Handle material selection for checkbox
+  const handleSelectRowMaterial = (index) => {
+    const updatedMaterials = [...materials];
+    updatedMaterials[index].selected = !updatedMaterials[index].selected;
+    setMaterials(updatedMaterials);
+    onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
+  };
 
-  // const handleAddLabours = (newlabours) => {
-  //   setLabours((prev) => [
-  //     ...prev,
-  //     ...newlabours.filter(
-  //       (labours) => !prev.some((m) => m.labourType === labours.labourType)
-  //     ),
-  //   ]);
-  // };
-
-  // const handleDeleteAllLabour = () => {
-  //   setLabours((prev) =>
-  //     prev.filter((labours) => !selectedlabours.includes(labours.labourType))
-  //   );
-  //   setSelectedLabours([]); // Reset selected materials
-  // };
-
-  // const handleSelectRowLabour = (labourType) => {
-  //   setSelectedLabours((prev) =>
-  //     prev.includes(labourType)
-  //       ? prev.filter((type) => type !== labourType) // Unselect the material
-  //       : [...prev, labourType] // Select the material
-  //   );
-  // };
 
   //asset modal and table data handle add or delete
   const [showModalAsset, setShowModalAsset] = useState(false);
@@ -123,36 +101,506 @@ const BOQSubItemTable = ({
   //   setAssets((prev) => [
   //     ...prev,
   //     ...newAsset.filter(
-  //       (asset) => !prev.some((a) => a.assetType === asset.assetType)
+  //       (asset) => !prev.some((a) => a.id === asset.id)
   //     ),
   //   ]);
   // };
 
-  // const handleDeleteAllAssets = () => {
-  //   setAssets((prev) =>
-  //     prev.filter((asset) => !selectedAssets.includes(asset.assetType))
-  //   );
-  //   setSelectedAssets([]); // Reset selected materials
-  // };
-
-  // const handleSelectRowAssets = (assetType) => {
-  //   setSelectedAssets((prev) =>
-  //     prev.includes(assetType)
-  //       ? prev.filter((type) => type !== assetType) // Unselect the material
-  //       : [...prev, assetType] // Select the material
-  //   );
-  // };
+  const handleDeleteAllAssets2 = () => {
+    setAssets((prev) =>
+      prev.filter((asset) => !selectedAssets.includes(asset.id))
+    );
+    setSelectedAssets([]); // Reset selected materials
 
 
-  const options = [
-    { value: "alabama", label: "Alabama" },
-    { value: "alaska", label: "Alaska" },
-    { value: "california", label: "California" },
-    { value: "delaware", label: "Delaware" },
-    { value: "tennessee", label: "Tennessee" },
-    { value: "texas", label: "Texas" },
-    { value: "washington", label: "Washington" },
-  ];
+  };
+
+  const handleSelectRowAssets2 = (index) => {
+    const updatedAssets = [...Assets];
+    updatedAssets[index].selected = !updatedAssets[index].selected;
+    setMaterials(updatedAssets);
+    onMaterialsChange(updatedAssets);
+  };
+
+
+  // for subproject material table
+
+  const [inventorySubTypes, setInventorySubTypes] = useState([]); // State to hold the fetched inventory subtypes
+  const [selectedSubTypes, setSelectedSubTypes] = useState([]);  // Holds the selected subtypes for each material
+  const [assetSubTypes, setAssetSubTypes] = useState([]);  // For assets
+  const [selectedSubTypesAssets, setSelectedSubTypesAssets] = useState([]);
+  // Fetch inventory sub-types when materials array changes or inventory type changes
+  // useEffect(() => {
+  //   // Fetch sub-types only for materials that have an inventory type
+  //   materials.forEach((material, index) => {
+  //     if (material.inventory_type_id) {
+  //       axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(subType => ({
+  //             value: subType.id,
+  //             label: subType.name
+  //           }));
+  //           setInventorySubTypes(prevSubTypes => {
+  //             const newSubTypes = [...prevSubTypes];
+  //             newSubTypes[index] = options;  // Update sub-types for this specific material
+  //             return newSubTypes;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           console.error('Error fetching inventory sub-types:', error);
+  //         });
+  //     }
+  //   });
+  // }, [materials]);  // Trigger this effect whenever the materials array changes
+
+
+  useEffect(() => {
+    // Fetch sub-types for materials
+    materials.forEach((material, index) => {
+      if (material.inventory_type_id) {
+        axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(subType => ({
+              value: subType.id,
+              label: subType.name
+            }));
+            setInventorySubTypes(prevSubTypes => {
+              const newSubTypes = [...prevSubTypes];
+              newSubTypes[index] = options;  // Update sub-types for this specific material
+              return newSubTypes;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching inventory sub-types for material:', error);
+          });
+      }
+    });
+
+    // Fetch sub-types for assets
+    Assets.forEach((asset, index) => {
+      if (asset.inventory_type_id) {
+        console.log('aseets inventory id', asset.inventory_type_id)
+        axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(subType => ({
+              value: subType.id,
+              label: subType.name
+            }));
+            setAssetSubTypes(prevSubTypes => {
+              const newSubTypes = [...prevSubTypes];
+              newSubTypes[index] = options;  // Update sub-types for this specific asset
+              return newSubTypes;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching inventory sub-types for asset:', error);
+          });
+      }
+    });
+
+  }, [materials, Assets]); // Trigger this effect whenever the materials or assets arrays change
+
+
+  // Handler for inventory sub-type selection change
+  const handleSubTypeChange = (index, selectedOption) => {
+    setSelectedSubTypes(prevSelectedSubTypes => {
+      const newSelectedSubTypes = [...prevSelectedSubTypes];
+      newSelectedSubTypes[index] = selectedOption;  // Update sub-type for the specific material
+      return newSelectedSubTypes;
+    });
+  };
+
+
+  const handleSubTypeChangeAssets = (index, selectedOption) => {
+    setSelectedSubTypesAssets(prevSelectedSubTypes => {
+      const newSelectedSubTypes = [...prevSelectedSubTypes];
+      newSelectedSubTypes[index] = selectedOption;  // Update sub-type for the specific material
+      return newSelectedSubTypes;
+    });
+  };
+
+
+
+  // for generic specification 
+  const [genericSpecifications, setGenericSpecifications] = useState([]);  // State to hold the fetched generic specifications
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState([]);  // Holds the selected generic specifications for each material
+  const [assetGenericSpecifications, setAssetGenericSpecifications] = useState([]);  // State to hold the fetched generic specifications for assets
+  const [selectedAssetGenericSpecifications, setSelectedAssetGenericSpecifications] = useState([]);  // Holds the selected generic specifications for each asset
+
+  // Fetch generic specifications when materials array changes or material_id changes
+  useEffect(() => {
+    // Fetch generic specifications only for materials that have a valid material_id
+    materials.forEach((material, index) => {
+      if (material.id) {
+        axios.get(`https://marathon.lockated.com/pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(specification => ({
+              value: specification.id,
+              label: specification.generic_info
+            }));
+            setGenericSpecifications(prevSpecifications => {
+              const newSpecifications = [...prevSpecifications];
+              newSpecifications[index] = options;  // Update generic specifications for this specific material
+              return newSpecifications;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching generic specifications:', error);
+          });
+      }
+    });
+
+    // Fetch generic specifications for assets
+    Assets.forEach((asset, index) => {
+      if (asset.id) {
+        axios.get(`https://marathon.lockated.com/pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(specification => ({
+              value: specification.id,
+              label: specification.generic_info
+            }));
+            setAssetGenericSpecifications(prevSpecifications => {
+              const newSpecifications = [...prevSpecifications];
+              newSpecifications[index] = options;  // Update generic specifications for this specific asset
+              return newSpecifications;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching generic specifications for asset:', error);
+          });
+      }
+    });
+  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+
+  // Handler for generic specification selection change
+  const handleGenericSpecificationChange = (index, selectedOption) => {
+    setSelectedGenericSpecifications(prevSelectedSpecifications => {
+      const newSelectedSpecifications = [...prevSelectedSpecifications];
+      newSelectedSpecifications[index] = selectedOption;  // Update generic specification for the specific material
+      return newSelectedSpecifications;
+    });
+  };
+
+  const handleGenericSpecificationChangeForAsset = (index, selectedOption) => {
+    setSelectedAssetGenericSpecifications(prevSelectedSpecifications => {
+      const newSelectedSpecifications = [...prevSelectedSpecifications];
+      newSelectedSpecifications[index] = selectedOption;  // Update generic specification for the specific asset
+      return newSelectedSpecifications;
+    });
+  };
+
+
+
+  //for color in material table
+  const [colors, setColors] = useState([]);  // State to hold the fetched colors
+  const [selectedColors, setSelectedColors] = useState([]);  // Holds the selected colors for each material
+  const [assetColors, setAssetColors] = useState([]);  // State to hold the fetched colors for assets
+  const [selectedAssetColors, setSelectedAssetColors] = useState([]);  // Holds the selected color for each asset
+  // Fetch colors when materials array changes or material_id changes
+  useEffect(() => {
+    // Fetch colors only for materials that have a valid material_id
+    materials.forEach((material, index) => {
+      if (material.id) {
+        axios.get(`https://marathon.lockated.com/pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(color => ({
+              value: color.id,
+              label: color.colour
+            }));
+            setColors(prevColors => {
+              const newColors = [...prevColors];
+              newColors[index] = options;  // Update colors for this specific material
+              return newColors;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching colors:', error);
+          });
+      }
+    });
+
+    // Fetch colors for assets
+    Assets.forEach((asset, index) => {
+      if (asset.id) {
+        axios.get(`https://marathon.lockated.com/pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(color => ({
+              value: color.id,
+              label: color.colour
+            }));
+            setAssetColors(prevColors => {
+              const newColors = [...prevColors];
+              newColors[index] = options;  // Update colors for this specific asset
+              return newColors;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching colors for asset:', error);
+          });
+      }
+    });
+  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+
+  // Handler for color selection change
+  const handleColorChange = (index, selectedOption) => {
+    setSelectedColors(prevSelectedColors => {
+      const newSelectedColors = [...prevSelectedColors];
+      newSelectedColors[index] = selectedOption;  // Update color for the specific material
+      return newSelectedColors;
+    });
+  };
+
+  const handleAssetColorChange = (index, selectedOption) => {
+    setSelectedAssetColors(prevSelectedColors => {
+      const newSelectedColors = [...prevSelectedColors];
+      newSelectedColors[index] = selectedOption;  // Update color for the specific asset
+      return newSelectedColors;
+    });
+  };
+
+
+  //for brand in material table
+  const [inventoryBrands, setInventoryBrands] = useState([]);  // State to hold the fetched inventory brands
+  const [selectedInventoryBrands, setSelectedInventoryBrands] = useState([]);  // Holds the selected brands for each material
+  const [assetInventoryBrands, setAssetInventoryBrands] = useState([]);  // State to hold the fetched inventory brands for assets
+  const [selectedAssetInventoryBrands, setSelectedAssetInventoryBrands] = useState([]);  // Holds the selected brands for each asset
+  // Fetch inventory brands when materials array changes or material_id changes
+  useEffect(() => {
+    // Fetch brands only for materials that have a valid material_id
+    materials.forEach((material, index) => {
+      if (material.id) {
+        axios.get(`https://marathon.lockated.com/pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(brand => ({
+              value: brand.id,
+              label: brand.brand_name
+            }));
+            setInventoryBrands(prevBrands => {
+              const newBrands = [...prevBrands];
+              newBrands[index] = options;  // Update brands for this specific material
+              return newBrands;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching inventory brands:', error);
+          });
+      }
+    });
+
+    // Fetch inventory brands for assets
+    Assets.forEach((asset, index) => {
+      if (asset.id) {
+        axios.get(`https://marathon.lockated.com/pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            const options = response.data.map(brand => ({
+              value: brand.id,
+              label: brand.brand_name
+            }));
+            setAssetInventoryBrands(prevBrands => {
+              const newBrands = [...prevBrands];
+              newBrands[index] = options;  // Update brands for this specific asset
+              return newBrands;
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching inventory brands for asset:', error);
+          });
+      }
+    });
+  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+
+  // Handler for brand selection change
+  const handleBrandChange = (index, selectedOption) => {
+    setSelectedInventoryBrands(prevSelectedBrands => {
+      const newSelectedBrands = [...prevSelectedBrands];
+      newSelectedBrands[index] = selectedOption;  // Update brand for the specific material
+      return newSelectedBrands;
+    });
+  };
+  const handleAssetInventoryBrandChange = (index, selectedOption) => {
+    setSelectedAssetInventoryBrands(prevSelectedBrands => {
+      const newSelectedBrands = [...prevSelectedBrands];
+      newSelectedBrands[index] = selectedOption;  // Update brand for the specific asset
+      return newSelectedBrands;
+    });
+  };
+
+
+  // umo api
+
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [selectedUnit2, setSelectedUnit2] = useState([]);
+  const [selectedUnit3, setSelectedUnit3] = useState([]);
+
+  // Fetching the unit of measures data on component mount
+  useEffect(() => {
+    axios.get('https://marathon.lockated.com/unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+      .then(response => {
+        // Mapping the response to the format required by react-select
+        const options = response.data.map(unit => ({
+          value: unit.id,
+          label: unit.name
+        }));
+        setUnitOfMeasures(options);  // Save the formatted options to state
+      })
+      .catch(error => {
+        console.error('Error fetching unit of measures:', error);
+      });
+  }, []);
+
+  const handleUnitChange2 = (selectedOption) => {
+    setSelectedUnit2(selectedOption);  // Update selected unit state
+  };
+  const handleUnitChange3 = (selectedOption) => {
+    setSelectedUnit3(selectedOption);  // Update selected unit state
+  };
+  // // table data material 
+
+  const [coefficientFactors, setCoefficientFactors] = useState(materials.map(() => ''));
+  const [estimatedQuantities, setEstimatedQuantities] = useState(materials.map(() => ''));
+  const [wastages, setWastages] = useState(materials.map(() => ''));
+  const [totalEstimatedQtyWastages, setTotalEstimatedQtyWastages] = useState(materials.map(() => ''));
+  const [CostQTY, setCostQTY] = useState(materials.map(() => ''));
+
+  const handleCoefficientFactorChange = (index, value) => {
+    const updatedCoefficientFactors = [...coefficientFactors];
+    updatedCoefficientFactors[index] = value;
+    setCoefficientFactors(updatedCoefficientFactors);
+  };
+
+  const handleEstimatedQtyChange = (index, value) => {
+    const updatedEstimatedQuantities = [...estimatedQuantities];
+    updatedEstimatedQuantities[index] = value;
+    setEstimatedQuantities(updatedEstimatedQuantities);
+  };
+
+  const handleWastageChange = (index, value) => {
+    const updatedWastages = [...wastages];
+    updatedWastages[index] = value;
+    setWastages(updatedWastages);
+  };
+
+  const handleTotalEstimatedQtyWastageChange = (index, value) => {
+    const updatedTotalEstimatedQtyWastages = [...totalEstimatedQtyWastages];
+    updatedTotalEstimatedQtyWastages[index] = value;
+    setTotalEstimatedQtyWastages(updatedTotalEstimatedQtyWastages);
+  };
+
+  const handleCostQTY = (index, value) => {
+    const updatedCostQTY = [...CostQTY];
+    updatedCostQTY[index] = value;
+    setCostQTY(updatedCostQTY);
+  };
+
+  // assets 
+
+const [assetCoefficientFactors, setAssetCoefficientFactors] = useState(Assets.map(() => ''));
+const [assetEstimatedQuantities, setAssetEstimatedQuantities] = useState(Assets.map(() => ''));
+const [assetWastages, setAssetWastages] = useState(Assets.map(() => ''));
+const [assetTotalEstimatedQtyWastages, setAssetTotalEstimatedQtyWastages] = useState(Assets.map(() => ''));
+const [assetCostQTY, setAssetCostQTY] = useState(Assets.map(() => ''));
+
+const handleAssetCoefficientFactorChange = (index, value) => {
+  const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
+  updatedAssetCoefficientFactors[index] = value;
+  setAssetCoefficientFactors(updatedAssetCoefficientFactors);
+};
+
+const handleAssetEstimatedQtyChange = (index, value) => {
+  const updatedAssetEstimatedQuantities = [...assetEstimatedQuantities];
+  updatedAssetEstimatedQuantities[index] = value;
+  setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
+};
+
+const handleAssetWastageChange = (index, value) => {
+  const updatedAssetWastages = [...assetWastages];
+  updatedAssetWastages[index] = value;
+  setAssetWastages(updatedAssetWastages);
+};
+
+const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
+  const updatedAssetTotalEstimatedQtyWastages = [...assetTotalEstimatedQtyWastages];
+  updatedAssetTotalEstimatedQtyWastages[index] = value;
+  setAssetTotalEstimatedQtyWastages(updatedAssetTotalEstimatedQtyWastages);
+};
+
+const handleAssetCostQTY = (index, value) => {
+  const updatedAssetCostQTY = [...assetCostQTY];
+  updatedAssetCostQTY[index] = value;
+  setAssetCostQTY(updatedAssetCostQTY);
+};
+
+
+
+  useEffect(() => {
+    // Assuming you have a function to fetch or get the data
+    const predefinedMaterials2 = materials.map((material, index) => ({
+      material_id: material.id,
+      material_sub_type_id: selectedSubTypes[index] ? selectedSubTypes[index].value : '',
+      generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
+      colour_id: selectedColors[index] ? selectedColors[index].value : '',
+      brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
+      uom: unitOfMeasures.find(option => option.value === material.uom_id)?.value || selectedUnit2.value || '',
+      co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
+      estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
+      wastage: parseFloat(wastages[index]) || 0,
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0
+    }));
+
+    // Once the data is ready, send it to the parent component
+    predefinedMaterialsData(predefinedMaterials2);
+
+  }, [
+    materials,
+    selectedSubTypes,
+    selectedGenericSpecifications,
+    selectedColors,
+    selectedInventoryBrands,
+    selectedUnit2,
+    coefficientFactors,
+    estimatedQuantities,
+    wastages,
+    totalEstimatedQtyWastages,
+    unitOfMeasures
+  ]);
+
+
+  //assets
+
+  useEffect(() => {
+    // Assuming you have a function to fetch or get the data
+    const predefinedAssets2 = Assets.map((asset, index) => ({
+      asset_id: asset.id,
+      asset_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
+      generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
+      colour_id: selectedColors[index] ? selectedColors[index].value : '',
+      brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
+      uom: unitOfMeasures.find(option => option.value === asset.uom_id)?.value || selectedUnit2.value || '',
+      co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
+      estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
+      wastage: parseFloat(assetWastages[index]) || 0,
+      estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
+      cost_qty: parseFloat(assetCostQTY[index]) || 0,
+    }));
+    console.log("assets data :",predefinedAssets2)
+  
+    // Once the data is ready, send it to the parent component
+    predefinedAssetsData(predefinedAssets2);
+  }, [
+    Assets,
+    selectedSubTypesAssets,
+    selectedGenericSpecifications,
+    selectedColors,
+    selectedInventoryBrands,
+    selectedUnit2,
+    assetCoefficientFactors,
+    assetEstimatedQuantities,
+    assetWastages,
+    assetTotalEstimatedQtyWastages,
+    assetCostQTY,
+    unitOfMeasures,
+  ]);
+  
 
 
   return (
@@ -196,121 +644,123 @@ const BOQSubItemTable = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {/* {materials.length > 0 ? (
-                        materials.map((material, index) => ( */}
-                      <tr>
-                        <td>
-                          <input
-                            className="ms-5"
-                            type="checkbox"
-                          // checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                          // onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
-                          />
-                        </td>
-                        <td>
-                          {/* <input
-                                type="text"
+                      {materials.length > 0 ? (
+                        materials.map((material, index) => (
+                          <tr>
+                            <td>
+                              <input
+                                className="ms-5"
+                                type="checkbox"
+                                checked={selectedMaterials.includes(material.name)} // Check if material is selected
+                                onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
+                              />
+                            </td>
+                            <td>
+                              {material.inventory_type_name}
+                            </td>
+                            <td>
+                              {material.name}
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={inventorySubTypes[index] || []}  // Get the sub-types for the specific material
+                                onChange={(selectedOption) => handleSubTypeChange(index, selectedOption)}
+                                value={selectedSubTypes[index]}  // Display the selected sub-type for this material
+                                placeholder={`Select Sub-Type`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={genericSpecifications[index] || []}  // Get the generic specifications for the specific material
+                                onChange={(selectedOption) => handleGenericSpecificationChange(index, selectedOption)}
+                                value={selectedGenericSpecifications[index]}  // Display the selected generic specification for this material
+                                placeholder={`Select Specification`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={colors[index] || []}  // Get the colors for the specific material
+                                onChange={(selectedOption) => handleColorChange(index, selectedOption)}
+                                value={selectedColors[index]}  // Display the selected color for this material
+                                placeholder={`Select Colour`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+
+                              <SingleSelector
+                                options={inventoryBrands[index] || []}  // Get the brands for the specific material
+                                onChange={(selectedOption) => handleBrandChange(index, selectedOption)}
+                                value={selectedInventoryBrands[index]}  // Display the selected brand for this material
+                                placeholder={`Select Brand`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={unitOfMeasures}  // Providing the options to the select component
+                                onChange={handleUnitChange2}  // Setting the handler when an option is selected
+                                // value={unitOfMeasures.find(option => option.value === material.uom_id)||selectedUnit2}
+                                value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
+                                placeholder={`Select UOM`} // Dynamic placeholder
+
+                              />
+                            </td>
+                            <td>  <input
+                              type="text"
+                              className="form-control"
+
+                              placeholder="Cost QTY"
+                              value={CostQTY[index] || ''}
+                              onChange={(e) => handleCostQTY(index, e.target.value)}
+                            /></td>
+                            <td>
+                              <input
                                 className="form-control"
-                                // value={material.type}
-                              /> */}
-                        </td>
-                        <td>
-                          {/* <input
-                                type="text"
+                                type="number"
+
+                                placeholder="Co-efficient Factor"
+                                value={coefficientFactors[index] || ''}
+                                onChange={(e) => handleCoefficientFactorChange(index, e.target.value)}
+                              />
+                            </td>
+                            <td>
+                              <input
                                 className="form-control"
-                                // value={material.type}
-                              /> */}
-                        </td>
-                        <td>
-                          <SingleSelector
-                            options={options}
-                            // value={values[label]} // Pass current value
-                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                            placeholder={`Select Sub-Type`} // Dynamic placeholder
-                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-                          />
-                        </td>
-                        <td>
-                          <SingleSelector
-                            options={options}
-                            // value={values[label]} // Pass current value
-                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                            placeholder={`Select Specification`} // Dynamic placeholder
-                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-                          />
-                        </td>
-                        <td>
-                          <SingleSelector
-                            options={options}
-                            // value={values[label]} // Pass current value
-                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                            placeholder={`Select Colour`} // Dynamic placeholder
-                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-                          />
-                        </td>
-                        <td>
+                                type="number"
 
-                          <SingleSelector
-                            options={options}
-                            // value={values[label]} // Pass current value
-                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                            placeholder={`Select Brand`} // Dynamic placeholder
-                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-                          />
-                        </td>
-                        <td>
-                          <SingleSelector
-                            options={options}
-                            // value={values[label]} // Pass current value
-                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                            placeholder={`Select UOM`} // Dynamic placeholder
-                            onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-                          />
-                        </td>
-                        <td>  <input
-                          type="text"
-                          className="form-control"
+                                placeholder="Estimated Qty"
 
-                        /></td>
-                        <td>
-                          <input
-                            className="form-control"
-                            type="text"
-                            placeholder=""
+                                value={estimatedQuantities[index] || ''}
+                                onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
 
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control"
-                            type="text"
-                            placeholder=""
-
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            className="form-control"
-
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            className="form-control"
-
-                          />
-                        </td>
-                      </tr>
-                      {/* ))
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                className="form-control"
+                                placeholder="Wastage"
+                                value={wastages[index] || ''}
+                                onChange={(e) => handleWastageChange(index, e.target.value)}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                className="form-control"
+                                placeholder="Total Estimated Qty"
+                                value={totalEstimatedQtyWastages[index] || ''}
+                                onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                              />
+                            </td>
+                          </tr>
+                        ))
                       ) : (
                         <tr>
-                          <td colSpan="12" className="text-center">
+                          <td colSpan="12" className="text-center" style={{paddingLeft:"400px"}}>
                             No materials added yet.
                           </td>
                         </tr>
-                      )} */}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -348,14 +798,14 @@ const BOQSubItemTable = ({
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="w-100" id="table3">
+                  <table className="" id="table3">
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>
                           <input type="checkbox"
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedAssets(Assets.map((a) => a.assetType)); // Select all
+                                setSelectedAssets(Assets.map((a) => a.id)); // Select all
                               } else {
                                 setSelectedAssets([]); // Deselect all
                               }
@@ -364,10 +814,17 @@ const BOQSubItemTable = ({
                           />
                         </th>
                         <th rowSpan={2}>Assest Type</th>
-                        <th rowSpan={2}>Assest Sub-Type</th>
+
                         <th rowSpan={2}>Assest</th>
+                        <th rowSpan={2}>Assest Sub-Type</th>
+                        <th rowSpan={2}>Generic Specification</th>
+                        <th rowSpan={2}>Colour </th>
+                        <th rowSpan={2}>Brand </th>
                         <th rowSpan={2}>UOM</th>
+                        <th rowSpan={2}>Cost QTY</th>
                         <th colSpan={2}>Cost</th>
+                        <th rowSpan={2}>Wastage</th>
+                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
                         <th>Co-Efficient Factor</th>
@@ -382,62 +839,115 @@ const BOQSubItemTable = ({
                               <input
                                 className="ms-5"
                                 type="checkbox"
-                                checked={selectedAssets.includes(assets.assetType)} // Check if material is selected
-                                onChange={() => handleSelectRowAssets(assets.assetType)} // Toggle selection
+                                checked={selectedAssets.includes(assets.id)} // Check if material is selected
+                                onChange={() => handleSelectRowAssets2(assets.id)} // Toggle selection
                               />
                             </td>
 
                             <td>
-                              <input
+                              {assets.inventory_type_name}
+                            </td>
+                            <td>
+                              {assets.name}
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={assetSubTypes[index] || []}  // Get the sub-types for the specific material
+                                onChange={(selectedOption) => handleSubTypeChangeAssets(index, selectedOption)}
+                                value={selectedSubTypesAssets[index]}  // Display the selected sub-type for this material
+                                placeholder={`Select Sub-Type`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={assetGenericSpecifications[index] || []}  // Get the generic specifications for the specific material
+                                onChange={(selectedOption) => handleGenericSpecificationChangeForAsset(index, selectedOption)}
+                                value={selectedAssetGenericSpecifications[index]}  // Display the selected generic specification for this material
+                                placeholder={`Select Specification`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={assetColors[index] || []}  // Get the colors for the specific material
+                                onChange={(selectedOption) => handleAssetColorChange(index, selectedOption)}
+                                value={selectedAssetColors[index]}  // Display the selected color for this material
+                                placeholder={`Select Colour`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+
+                              <SingleSelector
+                                options={assetInventoryBrands[index] || []}  // Get the brands for the specific material
+                                onChange={(selectedOption) => handleAssetInventoryBrandChange(index, selectedOption)}
+                                value={selectedAssetInventoryBrands[index]}  // Display the selected brand for this material
+                                placeholder={`Select Brand`} // Dynamic placeholder
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                options={unitOfMeasures}  // Providing the options to the select component
+                                onChange={handleUnitChange3}  // Setting the handler when an option is selected
+                                value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3}
+                                // value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
+                                placeholder={`Select UOM`} // Dynamic placeholder
+
+                              />
+                            </td>
+                            <td>
+                            <input
+                              type="text"
+                              className="form-control"
+
+                              placeholder="Cost QTY"
+                              value={assetCostQTY[index] || ''}
+                              onChange={(e) => handleAssetCostQTY(index, e.target.value)}
+                            />
+                            </td>
+                            <td>
+                            <input
                                 className="form-control"
-                                type="text"
-                                placeholder=""
-                                value={assets.assetType}
+                                type="number"
+
+                                placeholder="Co-efficient Factor"
+                                value={assetCoefficientFactors[index] || ''}
+                                onChange={(e) => handleAssetCoefficientFactorChange(index, e.target.value)}
+                              />
+                            </td>
+                            <td>
+                            <input
+                                className="form-control"
+                                type="number"
+
+                                placeholder="Estimated Qty"
+
+                                value={assetEstimatedQuantities[index] || ''}
+                                onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
+
+                              />
+                            </td>
+                            <td>
+                            <input
+                                type="number"
+                                className="form-control"
+                                placeholder="Wastage"
+                                value={assetWastages[index] || ''}
+                                onChange={(e) => handleAssetWastageChange(index, e.target.value)}
                               />
                             </td>
                             <td>
                               <input
+                                type="number"
                                 className="form-control"
-                                type="text"
-                                placeholder=""
-                                value={assets.assetSubType}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                                value={assets.asset}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                                value={assets.uom}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
-                              />
-                            </td>
-                            <td>
-                              <input
-                                className="form-control"
-                                type="text"
-                                placeholder=""
+                                placeholder="Total Estimated Qty"
+                                value={assetTotalEstimatedQtyWastages[index] || ''}
+                                onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
                               />
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="text-center">
+                          <td colSpan="8" className="text-center" style={{paddingLeft:"400px"}}>
                             No asset added yet.
                           </td>
                         </tr>
@@ -450,8 +960,6 @@ const BOQSubItemTable = ({
                     <button
                       style={{ color: "var(--red)" }}
                       className="fw-bold text-decoration-underline border-0 bg-white"
-                      // onclick="myCreateFunction('table3')"
-                      // onClick={openAssestModal}
                       onClick={handleOpenModalAsset}
                     >
                       Add Assests
@@ -461,7 +969,7 @@ const BOQSubItemTable = ({
                       style={{ color: "var(--red)" }}
                       className="fw-bold text-decoration-underline border-0 bg-white"
                       onclick="myDeleteFunction('table3')"
-                      onClick={handleDeleteAllAssets}
+                      onClick={handleDeleteAllAssets2}
                     >
                       Delete Assests
                     </button>
@@ -479,352 +987,6 @@ const BOQSubItemTable = ({
       />
 
 
-      {/* material modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={materialshowModal}
-        onHide={closeModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Material</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div className="">
-                <select
-                  className="form-control"
-                  style={{ width: "100%" }}
-                  fdprocessedid="cda5b"
-                >
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div>
-          <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Material Type</th>
-                  <th>Material Sub-Type</th>
-                  <th>Material</th>
-                  <th>UOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>ADMIXTURE</td>
-                  <td>ADMIXTURE</td>
-                  <td>ADMIXTURE</td>
-                  <td>KGS</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>AGGREGATE</td>
-                  <td>KAPCHI</td>
-                  <td>KAPCHI</td>
-                  <td>cft</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
-      {/* material modal */}
-
-      {/* Labour modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={labourShowModal}
-        onHide={closeLabourModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Labour</h5>
-        </Modal.Header>
-        <Modal.Body>
-          {/* Pagination and Display options */}
-      {/* <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div>
-                <select className="form-control" style={{ width: "100%" }}>
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div> */}
-
-      {/* Table for Labour */}
-      {/* <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Labour Category</th>
-                  <th>Material Sub-Category</th>
-                  <th>Labour Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Departmental Work</td>
-                  <td>RCC</td>
-                  <td>Carpenter</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Departmental Work</td>
-                  <td>RCC</td>
-                  <td>Carpenter</td>
-                </tr>
-              </tbody>
-            </table>
-          </div> */}
-
-      {/* Add Button */}
-      {/* <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeLabourModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
-      {/* Labour modal */}
-
-      {/* Assest modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={assetShowModal}
-        onHide={closeAssestModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Asset</h5>
-        </Modal.Header>
-        <Modal.Body> */}
-      {/* Pagination and Display options */}
-      {/* <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div>
-                <select className="form-control" style={{ width: "100%" }}>
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div> */}
-
-      {/* Table for Assets */}
-      {/* <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Asset Type</th>
-                  <th>Asset Sub-Type</th>
-                  <th>Asset</th>
-                  <th>UOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Aluminium Ladder</td>
-                  <td>Aluminium Ladder</td>
-                  <td>Aluminium Ladder</td>
-                  <td>NOS</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>21'' IMAC Desktop 4K</td>
-                  <td>21'' IMAC Desktop 4K Retina Display</td>
-                  <td>21" IMAC Desktop 4K Retina Display</td>
-                  <td>NOS</td>
-                </tr>
-              </tbody>
-            </table>
-          </div> */}
-
-      {/* Add Button */}
-      {/* <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeAssestModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
-      {/* Assest modal */}
     </>
   )
 }

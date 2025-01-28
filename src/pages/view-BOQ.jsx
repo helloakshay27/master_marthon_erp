@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
@@ -10,6 +10,7 @@ import BOQListTable from "../components/BOQListTabe";
 import { Link } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 import { BulkAction } from "../components";
+import axios from "axios";
 
 
 
@@ -17,6 +18,24 @@ const BOQList = () => {
   const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
+  const [boqList, setBoqList] = useState(null); // State to store the fetched data
+
+   // Fetch data from the API when the component mounts
+   useEffect(() => {
+    axios
+      .get('https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+      .then((response) => {
+        setBoqList(response.data); // Set the data in state
+       
+      })
+      .catch((error) => {
+        console.loh('error',error)
+        
+      });
+  }, []); // Empty dependency array ensures it runs only once when the component mounts
+
+console.log('boq list', boqList)
+
   const navigate = useNavigate(); // hook to get navigate function
 
   const handleClick = () => {
@@ -357,7 +376,7 @@ const BOQList = () => {
    <BulkAction/>
 
             </CollapsibleCard>
-            <BOQListTable/>
+            <BOQListTable  boqList={boqList} />
           </div>
 
           <CopyBudgetModal show={show} handleClose={handleClose} />

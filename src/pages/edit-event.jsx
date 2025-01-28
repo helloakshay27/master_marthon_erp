@@ -10,18 +10,17 @@ import {
   SelectBox,
   Table,
 } from "../components";
-
+import { useParams, useNavigation, useNavigate } from "react-router-dom";
 import { citiesList, participantsTabColumns } from "../constant/data";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
-import { fi } from "date-fns/locale";
-import { set } from "date-fns";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useSWR from "swr";
 
-export default function CreateEvent() {
+export default function EditEvent() {
+  const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
@@ -71,6 +70,7 @@ export default function CreateEvent() {
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
+  const [eventDetails, setEventDetails] = useState([]);
 
   // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
@@ -138,6 +138,7 @@ export default function CreateEvent() {
   };
   const handleEventScheduleModalShow = () => {
     setEventScheduleModal(true);
+    console.log("Event schedule modal:", eventScheduleModal);
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -160,8 +161,13 @@ export default function CreateEvent() {
   };
 
   const handleEventTypeChange = (e) => {
-    setEventType(e.target.value);
-    log("eventType", eventType);
+    const value = e.target.value;
+    if (["rfq", "contract", "auction"].includes(value)) {
+      setEventType(value);
+      console.log("Updated eventType:", value);
+    } else {
+      alert("Please select a valid event type.");
+    }
   };
 
   const handleTrafficChange = (value) => {
@@ -169,7 +175,13 @@ export default function CreateEvent() {
   };
 
   const handleAwardTypeChange = (e) => {
-    setAwardType(e);
+    const value = e;
+    if (["single_vendor", "multiple_vendors"].includes(value)) {
+      setAwardType(value);
+      console.log("Updated awardType:", value);
+    } else {
+      alert("Please select a valid award scheme.");
+    }
   };
 
   const handleDynamicExtensionChange = (id, isChecked) => {
@@ -189,6 +201,7 @@ export default function CreateEvent() {
   const handleVendorProfileChange = (profile) => {
     setSelectedVendorProfile(profile);
   };
+  console.log("event type", eventType, awardType);
 
   const handleEventConfigurationSubmit = (config) => {
     console.log("Submitted Event Configuration:", config);
@@ -224,7 +237,6 @@ export default function CreateEvent() {
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
-
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
@@ -235,6 +247,24 @@ export default function CreateEvent() {
   // @ts-ignore
   const [loading, setLoading] = useState(true);
 
+  const fetchEventData = async () => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEventDetails(data);
+        console.log("Event details:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     if (searchTerm == "") {
     }
@@ -269,8 +299,46 @@ export default function CreateEvent() {
   };
 
   useEffect(() => {
+    fetchEventData();
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (eventDetails) {
+      seteventName(eventDetails?.event_title);
+      setEventTypeText(eventDetails?.event_type_detail?.event_type);
+      setEventDescription(eventDetails?.event_description);
+      setEventScheduleText(
+        `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
+          eventDetails?.end_time
+        ).toLocaleString()}`
+      );
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name,
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+        }))
+      );
+      setMaterialFormData(
+        eventDetails?.event_materials?.map((material) => ({
+          descriptionOfItem: material.inventory_name,
+          inventory_id: material.inventory_id,
+          quantity: material.quantity,
+          unit: material.uom,
+          location: material.location,
+          rate: material.rate,
+          amount: material.amount,
+        }))
+      );
+      setTextareas(
+        eventDetails?.resource_term_conditions?.map((term) => ({
+          id: term.term_condition_id,
+          value: term.term_condition.condition,
+        }))
+      );
+    }
+  }, [eventDetails]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -304,17 +372,45 @@ export default function CreateEvent() {
     }
   };
 
-  const handleSaveButtonClick = () => {
-    const updatedTableData = tableData.filter(
-      (vendor) =>
-        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
-    );
+  const handleSaveButtonClick = async () => {
+    const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
-    setTableData(updatedTableData);
-    setSelectedVendors((prev) => [...prev, ...selectedRows]);
-    setVendorModal(false);
-    setSelectedRows([]);
-    setResetSelectedRows(true);
+    const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+      ","
+    )}]`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        const updatedTableData = tableData.filter(
+          (vendor) =>
+            !selectedRows.some(
+              (selectedVendor) => selectedVendor.id === vendor.id
+            )
+        );
+        console.log("Updated table data:", updatedTableData);
+        setTableData(updatedTableData);
+
+        setSelectedVendors((prev) => [...prev, ...selectedRows]);
+        console.log("selceted", selectedVendors);
+        setVendorModal(false);
+        setSelectedRows([]);
+        setResetSelectedRows(true);
+        toast.success("Vendors added successfully!", {
+          autoClose: 1000,
+        });
+      } else {
+        throw new Error("Failed to add vendors.");
+      }
+    } catch (error) {
+      console.error("Error adding vendors:", error);
+      toast.error("Failed to add vendors.", {
+        autoClose: 1000,
+      });
+    }
   };
 
   const isVendorSelected = (vendorId) => {
@@ -345,8 +441,6 @@ export default function CreateEvent() {
       (option) => String(option.value) === String(selectedOption)
     );
 
-    console.log("selectedCondition:", selectedCondition);
-
     if (selectedCondition) {
       setTextareas(
         textareas.map((textarea) =>
@@ -358,7 +452,6 @@ export default function CreateEvent() {
             : textarea
         )
       );
-      console.log("Updated textareas:", textareas);
     }
   };
 
@@ -405,8 +498,51 @@ export default function CreateEvent() {
     }
   };
 
+  const fetcher = (url, options) =>
+    fetch(url, options).then((res) => res.json());
+
+  const updateEvent = async (id, eventData) => {
+    const url = `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const options = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update event.");
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log(
+      "Event data:",
+      eventName,
+      createdOn,
+      scheduleData,
+      selectedVendors
+    );
+
+    // Debugging statements
+    console.log("eventName:", eventName);
+    console.log("createdOn:", createdOn);
+    console.log("scheduleData.start_time:", scheduleData.start_time);
+    console.log(
+      "scheduleData.end_time_duration:",
+      scheduleData.end_time_duration
+    );
+    console.log("scheduleData.evaluation_time:", scheduleData.evaluation_time);
+    console.log("selectedVendors.length:", selectedVendors.length);
 
     if (
       !eventName ||
@@ -414,27 +550,14 @@ export default function CreateEvent() {
       !scheduleData.start_time ||
       !scheduleData.end_time_duration ||
       !scheduleData.evaluation_time ||
+      scheduleData.evaluation_time === "Mins Mins" ||
       selectedVendors.length === 0
     ) {
-      toast.error("Please fill all the required fields.", {
-        autoClose: 1000, // Duration for the toast to disappear (in ms)
-      });
+      alert("Please fill all the required fields on Event Schedule Details.");
       return;
     }
 
-    console.log("Event Name:", eventName);
-    console.log("Created On:", createdOn);
-    console.log("Schedule Data:", scheduleData);
-    console.log("Selected Vendors:", selectedVendors);
-    console.log("Event Description:", eventDescription);
-    console.log("Event Type:", eventType);
-    console.log("Award Type:", awardType);
-    console.log("Selected Strategy:", selectedStrategy);
-    console.log("Dynamic Extension:", dynamicExtension);
-    console.log("Dynamic Extension Configurations:", dynamicExtensionConfigurations);
-    console.log("Material Form Data:", materialFormData);
-    console.log("Textareas:", textareas);
-    console.log("Document Rows:", documentRows);
+    console.log("sele te vendors", materialFormData);
 
     setSubmitted(true);
     const eventData = {
@@ -453,82 +576,71 @@ export default function CreateEvent() {
           award_scheme: awardType,
           event_configuration: selectedStrategy,
           time_extension_type:
-            dynamicExtensionConfigurations.time_extension_type,
+            dynamicExtensionConfigurations.time_extension_type || "",
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last,
-          extend_event_time_by: Number(
-            dynamicExtensionConfigurations.extend_event_time_by
-          ),
+            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
+            "",
+          extend_event_time_by:
+            Number(dynamicExtensionConfigurations.extend_event_time_by) || 0,
           enable_english_auction: true,
           extension_time_min: 5,
           extend_time_min: 10,
           time_extension_change:
-            dynamicExtensionConfigurations.time_extension_on_change_in,
-          delivery_date: dynamicExtensionConfigurations.delivery_date,
+            dynamicExtensionConfigurations.time_extension_on_change_in || "",
+          delivery_date: dynamicExtensionConfigurations.delivery_date || "",
         },
         event_materials_attributes: materialFormData.map((material) => ({
-          descriptionOfItem: material.descriptionOfItem,
+          id: material.id,
           inventory_id: material.inventory_id,
           quantity: material.quantity,
           uom: material.unit,
-          location: material.location,
+          location: material.location, 
           rate: material.rate,
           amount: material.amount,
-          sub_section_id: material.sub_section_id,
-          section_id: material.section_id,
+          sub_section_name: material.sub_section_id,
+          section_name: material.section_id,
+          _destroy: material._destroy || false,
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
-          status: 1,
-          pms_supplier_id: vendor.id,
+          id: vendor.id,
+          status: "invited",
+          pms_supplier_id: 1,
+          _destroy: vendor._destroy || false,
         })),
         status_logs_attributes: [
           {
             status: "pending",
             created_by_id: 2,
             remarks: "Initial status",
-            comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) => ({
-          term_condition_id: textarea.id,
-          condition_type: "general",
-          condition: textarea.value,
-        })),
+        resource_term_conditions_attributes: textareas.map((textarea) => {
+          const existingCondition = eventDetails.resource_term_conditions.find(
+            (condition) => condition.term_condition_id === textarea.id
+          );
+          return {
+            id: existingCondition ? existingCondition.id : undefined,
+            term_condition_id: textarea.id,
+            condition_type: "general",
+            condition: textarea.value,
+          };
+        }),
         attachments: documentRows.map((row) => row.upload),
       },
     };
 
-    console.log("Payload:", eventData);
-
     try {
-      const response = await fetch(
-        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        }
+      const data = await updateEvent(id, eventData);
+      toast.success("Event updated successfully!", {
+        autoClose: 1000,
+      });
+      navigate(
+        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
       );
-      if (response.ok) {
-        toast.success("Event created successfully!", {
-          autoClose: 1000, // Duration for the toast to disappear (in ms)
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 500);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response data:", errorData);
-        throw new Error("Failed to create event.");
-      }
     } catch (error) {
-      console.error("Error creating event:", error);
-      toast.error("Failed to create event.", {
-        autoClose: 1000, // Duration for the toast to disappear (in ms)
+      console.error("Error updating event:", error);
+      toast.error("Failed to update event.", {
+        autoClose: 1000,
       });
     } finally {
       setSubmitted(false);
@@ -612,6 +724,10 @@ export default function CreateEvent() {
     fetchTermsAndConditions();
   }, []);
 
+  useEffect(() => {
+    console.log("event type", eventType, awardType);
+  }, [eventType, awardType]);
+
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -624,11 +740,11 @@ export default function CreateEvent() {
                 </a>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
-                Create Event
+                Edit Event
               </li>
             </ol>
           </nav>
-          <h5 className="mt-3 ms-3">Create RFQ &amp; Auction</h5>
+          <h5 className="mt-3 ms-3">Edit RFQ &amp; Auction</h5>
           <div style={{ width: "15%" }}></div>
         </div>
         <div className="module-data-section mx-3">
@@ -704,6 +820,7 @@ export default function CreateEvent() {
               data={materialFormData}
               setData={setMaterialFormData}
               isService={isService}
+              existingData={eventDetails?.event_materials}
             />
             <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
               <h5 className=" ">
@@ -741,33 +858,33 @@ export default function CreateEvent() {
                   </thead>
 
                   <tbody>
-                    {selectedVendors.length > 0 ? (
-                      selectedVendors
-                        .filter(
-                          (vendor, index, self) =>
-                            index === self.findIndex((v) => v.id === vendor.id)
-                        )
-                        .map((vendor, index) => (
-                          <tr key={vendor.id}>
-                            <td>{index + 1}</td>
-                            <td>{vendor.name}</td>
-                            <td>{vendor.phone}</td>
-                            <td>Invited</td>
-                            <td>
-                              <button
-                                className="btn btn-danger"
-                                onClick={() =>
-                                  setSelectedVendors((prev) =>
-                                    prev.filter((v) => v.id !== vendor.id)
+                    {selectedVendors
+                      ?.filter((vendor) => !vendor._destroy)
+                      .map((vendor, index) => (
+                        <tr key={vendor.id}>
+                          <td>{index + 1}</td>
+                          <td>{vendor.name}</td>
+                          <td>{vendor.phone}</td>
+                          <td>Invited</td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                setSelectedVendors((prev) =>
+                                  prev.map((v) =>
+                                    v.id === vendor.id
+                                      ? { ...v, _destroy: true }
+                                      : v
                                   )
-                                }
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                    ) : (
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    {selectedVendors?.length === 0 && (
                       <tr>
                         <td
                           // @ts-ignore
@@ -860,7 +977,7 @@ export default function CreateEvent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {textareas.map((textarea, idx) => (
+                  {textareas?.map((textarea, idx) => (
                     <tr key={idx}>
                       <td>
                         <SelectBox
@@ -871,9 +988,11 @@ export default function CreateEvent() {
                           onChange={(option) =>
                             handleConditionChange(textarea.id, option)
                           }
-                          defaultValue={termsOptions.find(
-                            (option) => option.condition === textarea.value
-                          )}
+                          defaultValue={
+                            termsOptions.find(
+                              (option) => option.value === textarea.id
+                            ) || { label: "Select Condition", value: "" }
+                          }
                         />
                       </td>
                       <td>
@@ -897,61 +1016,6 @@ export default function CreateEvent() {
                 </tbody>
               </table>
             </div>
-            <div className="row mt-4 mt-3">
-              {/* <h5>Audit Log</h5>
-            <div className="mx-0">
-              <div className="tbl-container px-0 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Enter User Name"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Enter Date"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Enter Status"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Enter Remark"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div> */}
-
-              <EventScheduleModal
-                show={eventScheduleModal}
-                onHide={handleEventScheduleModalClose}
-                handleSaveSchedule={handleSaveSchedule}
-              />
-            </div>
             <div className="row mt-2 justify-content-end align-items-center mt-4">
               <div className="col-md-2">
                 <button className="purple-btn2 w-100">Preview</button>
@@ -964,7 +1028,7 @@ export default function CreateEvent() {
                   onClick={handleSubmit}
                   disabled={submitted}
                 >
-                  Submit
+                  Update
                 </button>
               </div>
               <div className="col-md-2">
@@ -1049,13 +1113,6 @@ export default function CreateEvent() {
                       <i className="bi bi-person-plus"></i>
                       <span className="ms-2">Invite</span>
                     </button>
-                    {/* <button
-                      className="purple-btn2 viewBy-main-child2P mb-0"
-                      onClick={() => setShowPopup(true)}
-                    >
-                      <i className="bi bi-filter"></i>
-                      <span className="ms-2">Filters</span>
-                    </button> */}
 
                     <PopupBox
                       title="Filter by"
@@ -1088,29 +1145,6 @@ export default function CreateEvent() {
                               isDisableFirstOption={true}
                             />
                           </div>
-
-                          {/* <div style={{ marginBottom: "12px" }}>
-                            <p>Filter By Tags</p>
-                            <MultiSelector
-                              options={options}
-                              value={selectedTags}
-                              onChange={handleChange}
-                              placeholder={"Filter by tags"}
-                            />
-                          </div> */}
-                          {/* <div className="d-flex align-items-center">
-                            <div className="form-check form-switch mt-1">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="flexSwitchCheckDefault"
-                              />
-                            </div>
-                            <p className="mb-0 pe-1">
-                              Show only selected vendors
-                            </p>
-                          </div> */}
                         </div>
                       }
                     />
@@ -1284,6 +1318,7 @@ export default function CreateEvent() {
             }
           />
           <EventTypeModal
+            existingData={eventDetails?.event_type_detail}
             show={eventTypeModal}
             handleDynamicExtensionBid={handleDynamicExtensionBid}
             onHide={handleEventTypeModalClose}
@@ -1319,10 +1354,16 @@ export default function CreateEvent() {
             ]}
             trafficType={isTrafficSelected}
             handleTrafficChange={handleTrafficChange}
-          />{" "}
+          />
+          <EventScheduleModal
+            show={eventScheduleModal}
+            onHide={handleEventScheduleModalClose}
+            handleSaveSchedule={handleSaveSchedule}
+            existingData={eventDetails?.event_schedule}
+          />
         </div>
-        <ToastContainer />
       </div>
+      <ToastContainer />
     </>
   );
 }

@@ -8,28 +8,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import ClockIcon from "../components/common/Icon/ClockIcon";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import the default styles
 
 export default function VendorDetails() {
-  // const [freightData, setFreightData] = useState([
-
-  //   { label: "Freight Charge", value: "" },
-  //   { label: "GST on Freight", value: "" },
-
-  //   { label: "Realised Freight", value: "" },
-  //   { label: "Warranty Clause *", value: "" },
-  //   { label: "Payment Terms *", value: "" },
-  //   { label: "Loading / Unloading *", value: "" },
-  // ]);
-
   // Set the initial bid index to 0 (first bid in the array)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bids, setBids] = useState([]); // State to store the bids
-  const [isBid, setIsBid] = useState(false); // Track bid creation status
-
-  // Array of bid values
-  // const bids = [1555, 2, 3, 4787, 5, 66666, 7, 8, 9,10,11,12];
-
-  // Function to move to the next bid
+  const [isBid, setIsBid] = useState(false);
+  const [submitted, setSubmitted] = useState(false); // Track bid creation status
 
   const increment = () => {
     if (currentIndex + 1 < bids.length) {
@@ -105,6 +92,7 @@ export default function VendorDetails() {
   const [remark, setRemark] = useState("");
 
   const [revisedBid, setRevisedBid] = useState(false);
+
   const [data, setData] = useState([]);
   const [counterData, setCounterData] = useState(0);
   const [counterId, setCounterId] = useState(0);
@@ -161,8 +149,13 @@ export default function VendorDetails() {
     updatedData[rowIndex].total = finalTotal.toFixed(2); // After GST
 
     setData(updatedData);
+    const frt_vlu = document.querySelector(".frt_vlu").value;
+    const frt_vlu_parsed = parseFloat(frt_vlu) || 0;
 
-    const updatedGrossTotal = calculateSumTotal();
+    const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
+    // debugger;
+    console.log("calculateFreightTotal()", frt_vlu);
+    console.log("updatedGrossTotal", updatedGrossTotal);
     setGrossTotal(updatedGrossTotal);
     // setData(updatedData, () => {
     //   const updatedGrossTotal = calculateSumTotal();
@@ -173,7 +166,7 @@ export default function VendorDetails() {
   const calculateFreightTotal = () => {
     const getFreightValue = (label) => {
       const row = freightData.find((row) => row.label === label);
-
+      console.log("row.value", row.value);
       if (row && row.value) {
         const { firstBid, counterBid } = row.value;
 
@@ -211,11 +204,11 @@ export default function VendorDetails() {
   const calculateSumTotal = () => {
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
     const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-
+    console.log(dataSum, "dataSum");
+    console.log(freightTotal, "freightTotal");
     // Combine and return the sum
     return Math.round((dataSum + freightTotal) * 100) / 100;
   };
-
   const handleFreightDataChange = (updatedFreightData) => {
     setFreightData(updatedFreightData);
 
@@ -271,7 +264,13 @@ export default function VendorDetails() {
         : "";
 
       if (!fieldValue.trim()) {
-        alert(`Please fill the mandatory field: ${field.key}`);
+        // alert(`Please fill the mandatory field: ${field.key}`);
+        // return false; // Exit immediately after the first invalid field
+
+        toast.error(`Please fill the mandatory field: ${field.key}`, {
+          // position: toast.POSITION.TOP_CENTER, // Customize the position
+          autoClose: 1000, // Duration for the toast to disappear (in ms)
+        });
         return false; // Exit immediately after the first invalid field
       }
     }
@@ -294,7 +293,9 @@ export default function VendorDetails() {
           field.value === null ||
           field.value <= 0
         ) {
-          alert("Please fill the All mandatory field ");
+          toast.error("Please fill the All mandatory fields in the table", {
+            autoClose: 1000, // Duration for the toast to disappear (in ms)
+          });
           return false; // Exit immediately after the first invalid field
         }
       }
@@ -306,7 +307,6 @@ export default function VendorDetails() {
   const [previousData, setPreviousData] = useState([]); // Holds the data from bid_materials
   const [updatedData, setUpdatedData] = useState([]); // Holds th
 
-  // Set the initial bid index to 0 (first bid in the array)
   // const [currentIndex, setCurrentIndex] = useState(0);
 
   // // Array of bid values
@@ -532,7 +532,7 @@ export default function VendorDetails() {
 
   useEffect(() => {
     fetchEventData();
-  }, [eventId, currentIndex]);
+  }, []);
 
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
@@ -548,90 +548,9 @@ export default function VendorDetails() {
   // Log the parsed value
   // console.log("Parsed freight charge:", freightCharge21);
 
-  // const preparePayload = () => {
-  //   const totalAmount = parseFloat(calculateDataSumTotal());
-
-  //   const bidMaterialsAttributes = data.map((row) => ({
-  //     event_material_id: row.eventMaterialId,
-  //     quantity_available: row.quantityAvail || 0,
-  //     price: Number(row.price || 0),
-  //     discount: Number(row.discount || 0),
-  //     bid_material_id: row.id,
-  //     vendor_remark: row.vendorRemark || "",
-  //     gst: row.gst || 0,
-  //     realised_discount: row.realisedDiscount || 0,
-  //     realised_gst: row.realisedGst || 0,
-  //     landed_amount: row.landedAmount || 0,
-  //     total_amount: totalAmount,
-  //   }));
-
-  //   // console.log("------bid material :", bidMaterialsAttributes);
-
-  //   // Utility function to safely fetch and process values from freightData
-  //   const getFreightDataValue = (label, key) => {
-  //     const item = freightData.find((entry) => entry.label === label);
-  //     if (item?.value?.[key]) {
-  //       return String(item.value[key]); // Ensure the value is converted to a string
-  //     }
-  //     return ""; // Return empty string if value is not found
-  //   };
-
-  //   // Fetch and parse Freight Charge and GST on Freight
-  //   const freightChargeRaw = getFreightDataValue("Freight Charge", "firstBid");
-  //   const freightCharge21 =
-  //     freightChargeRaw && freightChargeRaw.replace
-  //       ? parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0
-  //       : 0; // Safeguard for invalid data
-
-  //   const gstOnFreightRaw = getFreightDataValue("GST on Freight", "firstBid");
-  //   const gstOnFreightt =
-  //     gstOnFreightRaw && gstOnFreightRaw.replace
-  //       ? parseFloat(gstOnFreightRaw.replace(/₹|,/g, "")) || 0
-  //       : 0;
-
-  //   const realisedFreightChargeAmount = parseFloat(
-  //     freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
-  //   );
-
-  //   // Fetch other fields
-  //   const warrantyClause =
-  //     getFreightDataValue("Warranty Clause *", "firstBid") || "1-year warranty";
-  //   const paymentTerms =
-  //     getFreightDataValue("Payment Terms *", "firstBid") || "Net 30";
-  //   const loadingUnloadingClause =
-  //     getFreightDataValue("Loading / Unloading *", "firstBid") ||
-  //     "Loading at supplier's location, unloading at buyer's location";
-
-  //   // Construct the payload
-  //   const payload = {
-  //     bid: {
-  //       event_vendor_id: vendorId,
-  //       price: 2000.0,
-  //       discount: 10.0,
-  //       freight_charge_amount: freightCharge21,
-  //       gst_on_freight: gstOnFreightt,
-  //       realised_freight_charge_amount: realisedFreightChargeAmount,
-  //       gross_total: grossTotal,
-  //       warranty_clause: warrantyClause,
-  //       payment_terms: paymentTerms,
-  //       loading_unloading_clause: loadingUnloadingClause,
-  //       bid_materials_attributes: bidMaterialsAttributes,
-  //     },
-  //   };
-
-  //   // console.log("Prepared Payload:", payload);
-  //   return payload;
-  // };
-
   const preparePayload = () => {
     // Calculate the total for each row individually
     const bidMaterialsAttributes = data.map((row) => {
-      // const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Calculate row-specific total
-      // const gstAmount = rowTotal * (parseFloat(row.gst || 0) / 100); // GST for the row
-      // const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100); // Discount for the row
-      // const landedAmount = rowTotal + gstAmount - discountAmount; // Final landed amount for the row
-      // const finalTotal = landedAmount + gstAmount;
-
       const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Row total based on price and quantity
       const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100); // Discount for the row
       const landedAmount = rowTotal - discountAmount; // Discounted total, before GST
@@ -713,6 +632,7 @@ export default function VendorDetails() {
 
   const handleSubmit = async () => {
     setLoading(true);
+    setSubmitted(true);
 
     try {
       // Send POST request
@@ -741,99 +661,32 @@ export default function VendorDetails() {
       );
 
       // console.log("API Response:", response.data);
-      alert("Bid submitted successfully!");
-      await fetchEventData();
+      console.log("API Response:", response.data); // Log response to debug
+      toast.success("Bid Created successfully!", {
+        position: toast.POSITION.TOP_CENTER,
+        autoClose: 3000, // Close after 3 seconds
+      });
+      setIsBidCreated(true);
+      setRevisedBid(true); // Update `revisedBid` to true
+      console.log("Updated revisedBid to true"); // Update state
+
+      console.log("Updated isBidCreated to true.");
       // console.log("vendor ID2", vendorId);
 
       // setData(response.data.bid_materials_attributes || []);
     } catch (error) {
       console.error("Error submitting bid:", error);
-      alert("Failed to submit bid. Please try again.");
+      toast.error("Failed to revise bid. Please try again.", {
+        position: toast.POSITION.TOP_CENTER,
+        autoClose: 3000,
+      });
     } finally {
       setLoading(false);
+      setSubmitted(false);
     }
   };
 
-  // terms and condition
-
-  // const preparePayload2 = () => {
-  //   const totalAmount = parseFloat(calculateDataSumTotal());
-
-  //   const bidMaterialsAttributes = data.map((row) => ({
-  //     event_material_id: row.eventMaterialId,
-  //     quantity_available: row.quantityAvail || 0,
-  //     price: Number(row.price || 0),
-  //     discount: Number(row.discount || 0),
-  //     bid_material_id: row.id,
-  //     vendor_remark: row.vendorRemark || "",
-  //     gst: row.gst || 0,
-  //     realised_discount: row.realisedDiscount || 0,
-  //     realised_gst: row.realisedGst || 0,
-  //     landed_amount: row.landedAmount || 0,
-  //     total_amount: totalAmount,
-  //   }));
-
-  //   // console.log("------bid material :", bidMaterialsAttributes);
-
-  //   // Utility function to safely fetch and process values from freightData
-  //   const getFreightDataValue = (label, key) => {
-  //     const item = freightData.find((entry) => entry.label === label);
-  //     if (item?.value?.[key]) {
-  //       return String(item.value[key]); // Ensure the value is converted to a string
-  //     }
-  //     return ""; // Return empty string if value is not found
-  //   };
-
-  //   // Fetch and parse Freight Charge and GST on Freight
-  //   const freightChargeRaw = getFreightDataValue("Freight Charge", "firstBid");
-  //   const freightCharge21 =
-  //     freightChargeRaw && freightChargeRaw.replace
-  //       ? parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0
-  //       : 0; // Safeguard for invalid data
-
-  //   const gstOnFreightRaw = getFreightDataValue("GST on Freight", "firstBid");
-  //   const gstOnFreightt =
-  //     gstOnFreightRaw && gstOnFreightRaw.replace
-  //       ? parseFloat(gstOnFreightRaw.replace(/₹|,/g, "")) || 0
-  //       : 0;
-
-  //   const realisedFreightChargeAmount = parseFloat(
-  //     freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
-  //   );
-
-  //   // Fetch other fields
-  //   const warrantyClause =
-  //     getFreightDataValue("Warranty Clause *", "firstBid") || "1-year warranty";
-  //   const paymentTerms =
-  //     getFreightDataValue("Payment Terms *", "firstBid") || "Net 30";
-  //   const loadingUnloadingClause =
-  //     getFreightDataValue("Loading / Unloading *", "firstBid") ||
-  //     "Loading at supplier's location, unloading at buyer's location";
-
-  //   const updatedGrossTotal = calculateSumTotal();
-  //   setGrossTotal(updatedGrossTotal); // Ensure state is updated
-
-  //   // Construct the payload
-
-  //   const payload = {
-  //     revised_bid: {
-  //       event_vendor_id: vendorId,
-  //       price: 500.0,
-  //       discount: 10.0,
-  //       freight_charge_amount: freightCharge21,
-  //       gst_on_freight: gstOnFreightt,
-  //       realised_freight_charge_amount: realisedFreightChargeAmount,
-  //       gross_total: updatedGrossTotal, //,
-  //       warranty_clause: warrantyClause,
-  //       payment_terms: paymentTerms,
-  //       loading_unloading_clause: loadingUnloadingClause,
-  //       revised_bid_materials_attributes: bidMaterialsAttributes,
-  //     },
-  //   };
-
-  //   // console.log("Prepared Payload: revised,", payload);
-  //   return payload;
-  // };
+  console.log("Bid Created:", isBidCreated); // Debugging state
 
   const preparePayload2 = () => {
     // const bidMaterialsAttributes = data.map((row) => {
@@ -950,13 +803,17 @@ export default function VendorDetails() {
     // console.log("Revising the existing bid...");
 
     // Example: API call to revise the bid
+    setLoading(true);
+
+    setSubmitted(true);
 
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
     );
 
     if (!userConfirmed) {
-      // console.log("Bid revision canceled by user.");
+      setLoading(false); // Ensure loader is removed if user cancels
+      setSubmitted(false);
       return; // Exit if the user selects "No"
     }
 
@@ -985,14 +842,22 @@ export default function VendorDetails() {
 
       // console.log("API Response revised....:", response.data);
 
-      alert("Bid revised successfully!");
+      // alert("Bid revised successfully!");
 
       // setData(response.data.bid_materials_attributes);
+      console.log("Triggering success toast");
+
+      toast.success("Bid revised successfully!", {
+        autoClose: 1000, // Close after 3 seconds
+      });
     } catch (error) {
       console.error("Error revising bid:", error);
-      alert("Failed to revise bid. Please try again.");
+      toast.error("Failed to revise bid. Please try again.", {
+        autoClose: 3000,
+      });
     } finally {
       setLoading(false);
+      setSubmitted(false);
     }
   };
 
@@ -1058,7 +923,7 @@ ${seconds}s`);
     }, 1000);
 
     return () => clearInterval(interval); // Cleanup the interval
-  }, [eventId]);
+  }, []);
 
   //user overview
 
@@ -1107,7 +972,7 @@ ${seconds}s`);
     };
 
     fetchEventMaterials();
-  }, [eventId]);
+  }, []);
 
   const handlepublishedStages = () => {
     setPublishedStages(!publishedStages);
@@ -1507,10 +1372,58 @@ ${seconds}s`);
               [{data1?.event_no}] {data1?.event_title}
             </a>
           </li>
+          {isBidCreated && (
+            <li className="nav-item" role="presentation">
+              <a
+                className="nav-link ps-4 pe-4"
+                id="participant-tab"
+                data-bs-toggle="tab"
+                href="#participant"
+                role="tab"
+                aria-controls="participant"
+                aria-selected="false"
+                style={{ color: "#8b0203", fontSize: "16px" }}
+              >
+                Participant Remark
+              </a>
+            </li>
+          )}
         </ul>
 
-        {/* <!-- Tab content --> */}
         <div class="tab-content " id="myTabContent">
+          <div
+            className="tab-pane fade"
+            id="participant"
+            role="tabpanel"
+            aria-labelledby="participant-tab"
+          >
+            {/* Participant Remark Content */}
+            {isBidCreated && (
+              <div className="priceTrends-list">
+                {/* {remarks.length > 0 ? (
+          remarks.map((remarkItem) => ( */}
+                <div idclassName="priceTrends-item my-3 d-flex">
+                  <div
+                    className="item-label rounded-circle bg-light me-2 d-flex justify-content-center align-items-center"
+                    style={{ width: "35px", height: "35px" }}
+                  >
+                    {/* {remarkItem.event_vendor?.full_name?.[0]?.toUpperCase() || "N/A"} */}
+                  </div>
+                  <div className="priceTrends-list-child go-shadow-k p-3 rounded-2">
+                    <p className="eventList-p2 mb-0 fw-bold">
+                      {/* {remarkItem.event_vendor?.full_name || "_"} from{" "}
+                  {remarkItem.event_vendor?.organization_name || "Unknown"} */}
+                    </p>
+                    {/* <p className="eventList-p1 mb-0">{remarkItem.remark}</p> */}
+                  </div>
+                </div>
+
+                <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
+                  No Participant Remark Details found
+                </h4>
+              </div>
+            )}
+          </div>
           <div
             class="tab-pane fade show active"
             id="home"
@@ -1893,21 +1806,21 @@ ${seconds}s`);
                                       <tr>
                                         <th className="text-start">Sr.No.</th>
                                         <th className="text-start">
-                                          Inventory Name
+                                          Material Name
                                         </th>
                                         <th className="text-start">Quantity</th>
                                         <th className="text-start">UOM</th>
-                                        <th className="text-start">
+                                        {/* <th className="text-start">
                                           Material Type
-                                        </th>
+                                        </th> */}
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
                                         <th className="text-start">
-                                          Section Name
+                                          Material Type Section
                                         </th>
                                         <th className="text-start">
-                                          Sub Section Name
+                                          Material Sub Section
                                         </th>
                                       </tr>
                                     </thead>
@@ -1939,12 +1852,12 @@ ${seconds}s`);
                                             >
                                               {data.uom}
                                             </td>
-                                            <td
+                                            {/* <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
                                             >
                                               {data.material_type}
-                                            </td>
+                                            </td> */}
                                             <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
@@ -2203,9 +2116,12 @@ ${seconds}s`);
                             { label: "Material", key: "descriptionOfItem" },
                             { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
-                            { label: "Section", key: "section" },
+                            { label: " Material Type Section", key: "section" },
 
-                            { label: "Sub Section", key: "subSection" },
+                            {
+                              label: "Material Sub Section",
+                              key: "subSection",
+                            },
 
                             { label: "Delivery Location", key: "location" },
                             { label: "Creator Attachment", key: "attachment" },
@@ -2361,12 +2277,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2463,12 +2380,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2545,12 +2463,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2627,12 +2546,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2757,12 +2677,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2836,12 +2757,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
                                       marginEnd: "",
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -2914,12 +2836,13 @@ ${seconds}s`);
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#fcc17e", // Yellow background
+                                      backgroundColor: "#b45253", // Yellow background
                                       padding: "4px 10px", // Add padding to resemble a badge
                                       borderRadius: "5px",
 
                                       // color:"#7c2d12",
                                       lineHeight: "1",
+                                      color: "white",
 
                                       // Rounded edges for the badge
                                       // Make text bold
@@ -3204,11 +3127,7 @@ ${seconds}s`);
                     />
                     {/* Terms and Conditions */}
 
-                    <div
-                      style={{ marginTop: "30px" }}
-                      id="terms-conditions"
-                      className=""
-                    >
+                    <div style={{ marginTop: "30px" }}>
                       <h5 className="fw-bold head-material">
                         Terms and Conditions
                       </h5>
@@ -3230,6 +3149,21 @@ ${seconds}s`);
                   </div>
 
                   <div className=" d-flex justify-content-end">
+                    {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>Submitting your bid...</p>
+                      </div>
+                    )}
                     {/* <button
                       onClick={handleSubmit}
                       disabled={loading}
@@ -3303,13 +3237,15 @@ ${seconds}s`);
                         isBid ||
                         loading ||
                         counterData > 0 ||
-                        currentIndex !== 0 // Disable if it's not the Current Bid
+                        currentIndex !== 0 || // Disable if it's not the Current Bid
+                        submitted
                       }
                       className={`button ${
                         isBid ||
                         loading ||
                         counterData > 0 ||
-                        currentIndex !== 0
+                        currentIndex !== 0 ||
+                        submitted
                           ? "disabled-btn"
                           : "button-enabled"
                       }`}
@@ -3318,28 +3254,32 @@ ${seconds}s`);
                           isBid ||
                           loading ||
                           counterData > 0 ||
-                          currentIndex !== 0
+                          currentIndex !== 0 ||
+                          submitted
                             ? "#ccc"
                             : "#8b0203",
                         color:
                           isBid ||
                           loading ||
                           counterData > 0 ||
-                          currentIndex !== 0
+                          currentIndex !== 0 ||
+                          submitted
                             ? "#666"
                             : "#fff",
                         border:
                           isBid ||
                           loading ||
                           counterData > 0 ||
-                          currentIndex !== 0
+                          currentIndex !== 0 ||
+                          submitted
                             ? "1px solid #aaa"
                             : "1px solid #8b0203",
                         cursor:
                           isBid ||
                           loading ||
                           counterData > 0 ||
-                          currentIndex !== 0
+                          currentIndex !== 0 ||
+                          submitted
                             ? "not-allowed"
                             : "pointer",
                         padding: "10px 20px",
@@ -3355,6 +3295,7 @@ ${seconds}s`);
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }
