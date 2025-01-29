@@ -663,8 +663,7 @@ export default function VendorDetails() {
       // console.log("API Response:", response.data);
       console.log("API Response:", response.data); // Log response to debug
       toast.success("Bid Created successfully!", {
-        position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000, // Close after 3 seconds
+        autoClose: 1000, // Close after 3 seconds
       });
       setIsBidCreated(true);
       setRevisedBid(true); // Update `revisedBid` to true
@@ -3292,7 +3291,7 @@ ${seconds}s`);
                 </div>
               </div>
             </div>
-          </div>
+          </d
         </div>
       </div>
       <ToastContainer />

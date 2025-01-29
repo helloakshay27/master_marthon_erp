@@ -124,8 +124,19 @@ const RecreateOrderModal = ({ show, handleClose }) => {
           comments: log.comments,
         })),
         terms_and_conditions: eventData.resource_term_conditions.map(
-          (term) => term.term_condition.condition
+          (term) => ({
+            // id: term.id,
+            term_condition_id: term.term_condition_id,
+            condition_type: term.condition_type,
+            condition: term.term_condition.condition,
+          })
         ),
+        // attachments: eventData.attachments.map((attachment) => ({
+        //   // id: attachment.id,
+        //   filename: attachment.filename,
+        //   content_type: attachment.content_type,
+        //   blob_id: attachment.blob_id,
+        // })),
       },
     };
 

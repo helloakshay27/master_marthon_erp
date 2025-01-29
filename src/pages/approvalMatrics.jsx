@@ -5,15 +5,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ApprovalMatrics = () => {
-  const [filters, setFilters] = useState({
-    created_by_id_in: "",
-    event_type_detail_award_scheme_in: "",
-    status_in: "",
-    title_in: "",
-    event_materials_inventory_id_in: "",
-    event_materials_pms_inventory_inventory_type_id_in: "",
-    event_materials_id_in: "",
-  });
   const [filterOptions, setFilterOptions] = useState({
     event_titles: [],
     event_numbers: [],

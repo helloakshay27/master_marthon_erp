@@ -204,7 +204,7 @@ export default function CreateEvent() {
       delivery_date: config.delivery_date,
     });
     handleEventTypeModalClose();
-    
+
     let eventTypeText = "";
     if (config.event_type === "rfq") {
       eventTypeText = "RFQ";
@@ -220,7 +220,12 @@ export default function CreateEvent() {
       return;
     }
     setEventTypeText(eventTypeText);
-    console.log("Submitted eventType:", config.event_type, "awardType:", config.award_scheme);
+    console.log(
+      "Submitted eventType:",
+      config.event_type,
+      "awardType:",
+      config.award_scheme
+    );
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -431,7 +436,10 @@ export default function CreateEvent() {
     console.log("Award Type:", awardType);
     console.log("Selected Strategy:", selectedStrategy);
     console.log("Dynamic Extension:", dynamicExtension);
-    console.log("Dynamic Extension Configurations:", dynamicExtensionConfigurations);
+    console.log(
+      "Dynamic Extension Configurations:",
+      dynamicExtensionConfigurations
+    );
     console.log("Material Form Data:", materialFormData);
     console.log("Textareas:", textareas);
     console.log("Document Rows:", documentRows);
@@ -566,6 +574,7 @@ export default function CreateEvent() {
 
       setIsSuggestionsVisible(true);
     }
+    console.log("Search term:", e.target.value, filteredSuggestions);
   };
 
   const handleSuggestionClick = (suggestion) => {
