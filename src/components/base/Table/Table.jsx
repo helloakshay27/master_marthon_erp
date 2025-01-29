@@ -1,140 +1,3 @@
-// import React, { useState, useEffect } from "react";
-
-// export default function Table({
-//   columns,
-//   data,
-//   onActionClick = null,
-//   showCheckbox = false,
-//   actionIcon = null,
-//   ...rest
-// }) {
-//   const [selectAll, setSelectAll] = useState(false); 
-//   const [selectedRows, setSelectedRows] = useState([]); 
-
-//   const handleCheckboxChange = (rowIndex) => {
-//     const updatedSelectedRows = [...selectedRows];
-//     if (updatedSelectedRows.includes(rowIndex)) {
-//       updatedSelectedRows.splice(updatedSelectedRows.indexOf(rowIndex), 1);
-//     } else {
-//       updatedSelectedRows.push(rowIndex);
-//     }
-//     // @ts-ignore
-//     setSelectedRows(updatedSelectedRows);
-//   };
-
-//   const handleSelectAllChange = () => {
-//     if (selectAll) {
-//       setSelectedRows([]); 
-//     } else {
-//       setSelectedRows(data.map((_, index) => index)); 
-//     }
-//     setSelectAll(!selectAll);
-//   };
-
-//   useEffect(() => {
-//     if (selectedRows.length === data.length) {
-//       setSelectAll(true); 
-//     } else {
-//       setSelectAll(false); 
-//     }
-//   }, [selectedRows, data.length]);
-
-//   return (
-//     <div className="tbl-container px-0 mt-3" {...rest}>
-//       <table className="w-100">
-//         <thead>
-//           <tr>
-//             {showCheckbox && (
-//               <th style={{ width: "50px", paddingLeft:'15px',paddingTop:'15px' }}>
-//                 <input
-//                   type="checkbox"
-//                   checked={selectAll}
-//                   onChange={handleSelectAllChange}
-//                 />
-//               </th>
-//             )}
-//             {columns.map((col, index) => (
-//               <th key={index} className="main2-th">
-//                 {col.label}
-//               </th>
-//             ))}
-//             {actionIcon && <th>Action</th>}
-//           </tr>
-//         </thead>
-
-//         <tbody>
-//           {data.map((row, rowIndex) => (
-//             <tr key={rowIndex}>
-//               {showCheckbox && (
-//                 <td>
-//                   <input
-//                     type="checkbox"
-//                     // @ts-ignore
-//                     checked={selectedRows.includes(rowIndex)} 
-//                     onChange={() => handleCheckboxChange(rowIndex)} 
-//                   />
-//                 </td>
-//               )}
-//               {columns.map((col, cellIndex) => {
-//                 const cell = row[col.key];
-//                 let cellContent = cell;
-
-//                 if (Array.isArray(cell)) {
-//                   cellContent = (
-//                     <table>
-//                       <tbody>
-//                         {cell.map((item, index) => (
-//                           <tr key={index}>
-//                             <td>{item}</td>
-//                           </tr>
-//                         ))}
-//                       </tbody>
-//                     </table>
-//                   );
-//                 } else if (
-//                   col.key === "date" ||
-//                   col.key === "liveOn" ||
-//                   col.key === "createdOn"
-//                 ) {
-//                   cellContent = (
-//                     <input
-//                       className="form-control"
-//                       type="date"
-//                       defaultValue={cell}
-//                     />
-//                   );
-//                 } else if (col.key === "checkbox") {
-//                   cellContent = (
-//                     <input type="checkbox" checked={cell} className="w-full" />
-//                   );
-//                 }
-
-//                 return (
-//                   <td key={cellIndex} style={{ whiteSpace: "nowrap" }}>
-//                     {cellContent}
-//                   </td>
-//                 );
-//               })}
-
-//               {actionIcon && onActionClick && (
-//                 <td>
-//                   <button
-//                     className="p-2 bg-white border"
-//                     // @ts-ignore
-//                     onClick={() => onActionClick(rowIndex)}
-//                   >
-//                     {actionIcon}
-//                   </button>
-//                 </td>
-//               )}
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect } from "react";
 
 // Utility to transpose data for horizontal alignment
@@ -161,6 +24,7 @@ export default function Table({
   onResetComplete,
   currentPage = 1,
   pageSize = 10,
+  onColumnClick,
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -231,6 +95,21 @@ export default function Table({
 
   if (isHorizontal) {
     const transposedData = transposeData(data, columns);
+
+    // Extract the total amounts for the last row
+    const totalAmounts = transposedData[transposedData.length - 1].values;
+    const sortedAmounts = [...totalAmounts].sort((a, b) => a - b);
+    const leastAmount = sortedAmounts[0];
+    const secondLeastAmount = sortedAmounts[1];
+    const thirdLeastAmount = sortedAmounts[2];
+
+    const getBackgroundColor = (amt) => {
+      if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
+      if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
+      if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
+      return "transparent";
+    };
+
     return (
       <div className="mb-0" {...rest} style={{ overflowX: "auto" }}>
         <table
@@ -242,7 +121,7 @@ export default function Table({
           }}
         >
           <colgroup>
-            <col style={{ width: "200px" }} />
+            <col style={{ width: "300px" }} />
             {data.map((_, index) => (
               <col key={index} style={{ width: "250px" }} />
             ))}
@@ -256,7 +135,7 @@ export default function Table({
                   style={{
                     fontWeight: "bold",
                     textAlign: "left",
-                    width: "200px",
+                    width: "300px",
                   }}
                 >
                   {row.header}
@@ -268,7 +147,16 @@ export default function Table({
                       width: "250px",
                       textAlign: "left",
                       whiteSpace: "nowrap",
+                      backgroundColor:
+                        rowIndex === transposedData.length - 1
+                          ? getBackgroundColor(value)
+                          : "transparent",
+                      fontWeight:
+                        rowIndex === transposedData.length - 1
+                          ? "semibold"
+                          : "normal",
                     }}
+                    onClick={() => onColumnClick && onColumnClick(data[valueIndex])}
                   >
                     {customRender[columns[rowIndex]?.key]
                       ? customRender[columns[rowIndex]?.key](
