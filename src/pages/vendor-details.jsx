@@ -676,7 +676,7 @@ export default function VendorDetails() {
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
-        position: toast.POSITION.TOP_CENTER,
+        // position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
       });
     } finally {
