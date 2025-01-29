@@ -1,6 +1,6 @@
 
 // MaterialModal.js
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-bootstrap/Modal";
 import CustomPagination from "./CustomPagination";
 import SingleSelector from "./base/Select/SingleSelector";
@@ -82,8 +82,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]); // State to hold the fetched inventory subtypes
   const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] = useState(null); // State to hold selected sub-type
 
-   // Fetching inventory types data from API on component mount
-   useEffect(() => {
+  // Fetching inventory types data from API on component mount
+  useEffect(() => {
     axios.get('https://marathon.lockated.com/pms/inventory_types.json?category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
       .then(response => {
         // Map the fetched data to the format required by react-select
@@ -99,8 +99,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   }, []);  // Empty dependency array to run only once on mount
 
 
-   // Fetch inventory sub-types when an inventory type is selected
-   useEffect(() => {
+  // Fetch inventory sub-types when an inventory type is selected
+  useEffect(() => {
     if (selectedInventory) {
       const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
@@ -135,46 +135,50 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
 
 
-    // Fetch inventory Material when an inventory type is selected
-    useEffect(() => {
-      if (selectedInventory) {
-        const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
-  
-        axios.get(`https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&material_category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            // Map the sub-types to options for the select dropdown
-            const options = response.data.map(subType => ({
-              value: subType.id,
-              label: subType.name
-            }));
-            setInventoryMaterialTypes(options); // Set the fetched sub-types to state
-          })
-          .catch(error => {
-            console.error('Error fetching inventory sub-types:', error);
-          });
-      }
-    }, [selectedInventory]); // Run this effect whenever the selectedInventory state changes
-  
-    // Handler for inventory Material selection change
-    const handleInventoryMaterialTypeChange = (selectedOption) => {
-      setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
-    };
+  // Fetch inventory Material when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory) {
+      const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-
-    // material list table data 
-    const [inventoryTableData, setInventoryTableData] = useState([]);
-    // const [loading, setLoading] = useState(false); // For loading indicator
-
-      // Handle the "Go" button click to fetch data
-  const handleGoButtonClick = () => {
-    if (selectedInventory.length === 0 || selectedInventoryMaterialTypes.length === 0) {
-      alert("Please select both Inventory Type and Material");
-      return;
+      axios.get(`https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&material_category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        .then(response => {
+          // Map the sub-types to options for the select dropdown
+          const options = response.data.map(subType => ({
+            value: subType.id,
+            label: subType.name
+          }));
+          setInventoryMaterialTypes(options); // Set the fetched sub-types to state
+        })
+        .catch(error => {
+          console.error('Error fetching inventory sub-types:', error);
+        });
     }
+  }, [selectedInventory]); // Run this effect whenever the selectedInventory state changes
 
-    // setLoading(true); // Start loading before fetching
-    const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
-    const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
+  // Handler for inventory Material selection change
+  const handleInventoryMaterialTypeChange = (selectedOption) => {
+    setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
+  };
+
+
+  // material list table data 
+  const [inventoryTableData, setInventoryTableData] = useState([]);
+  const [loading, setLoading] = useState(false); // For loading indicator
+
+  // Handle the "Go" button click to fetch data
+  const handleGoButtonClick = () => {
+    // if (selectedInventory.length === 0 || selectedInventoryMaterialTypes.length === 0) {
+    //   alert("Please select both Inventory Type and Material");
+    //   return;
+    // }
+
+    setLoading(true); // Start loading before fetching
+    // Get the selected inventory type IDs and material type IDs as a comma-separated list
+    const inventoryTypeIds = selectedInventory.length > 0 ? selectedInventory.map(item => item.value).join(',') : '';
+    const inventoryMaterialTypeIds = selectedInventoryMaterialTypes ? selectedInventoryMaterialTypes.map(item => item.value).join(',') : '';
+
+    // const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+    // const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
     const apiUrl = `https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&material_category_eq=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     axios.get(apiUrl)
@@ -183,20 +187,22 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
         setInventoryTableData(response.data); // Set the fetched data to state
       })
       .catch(error => {
-        // setLoading(false);
+
         console.error('Error fetching data:', error);
 
+      }).finally(() => {
+        setLoading(false); // Set loading to false once the data is fetched
       });
-      
+
   };
 
-// Handle reset functionality
-const handleReset = () => {
-  setSelectedInventory(null)
-  setSelectedSubType(null)
-  setSelectedInventoryMaterialTypes(null)
-  setInventoryTableData([])
-};
+  // Handle reset functionality
+  const handleReset = () => {
+    setSelectedInventory(null)
+    setSelectedSubType(null)
+    setSelectedInventoryMaterialTypes(null)
+    setInventoryTableData([])
+  };
 
   return (
     <Modal centered size="lg" show={show} onHide={handleClose}>
@@ -208,16 +214,16 @@ const handleReset = () => {
         <form onSubmit={handleSubmit} acceptCharset="UTF-8">
           <div className="row">
             <h5 className="">Search Material</h5>
-         
+
             <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Type</label>
                 <MultiSelector
-                options={inventoryTypes}  // Provide the fetched options to the select component
-                onChange={handleInventoryChange}  // Update the selected inventory type
-                value={selectedInventory}  // Set the selected inventory type
+                  options={inventoryTypes}  // Provide the fetched options to the select component
+                  onChange={handleInventoryChange}  // Update the selected inventory type
+                  value={selectedInventory}  // Set the selected inventory type
                   placeholder={`Select Material Type`} // Dynamic placeholder
-                 
+
                 />
               </div>
             </div>
@@ -225,10 +231,10 @@ const handleReset = () => {
               <div className="form-group">
                 <label className="po-fontBold">Material Sub Type</label>
                 <MultiSelector
-                 options={inventorySubTypes}
-                 onChange={handleSubTypeChange}
-                 value={selectedSubType}
-                 placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                  options={inventorySubTypes}
+                  onChange={handleSubTypeChange}
+                  value={selectedSubType}
+                  placeholder={`Select Material Sub Type`} // Dynamic placeholder
                 />
               </div>
             </div>
@@ -236,9 +242,9 @@ const handleReset = () => {
               <div className="form-group">
                 <label className="po-fontBold">Material</label>
                 <MultiSelector
-                options={inventoryMaterialTypes}
-                onChange={handleInventoryMaterialTypeChange}
-                value={selectedInventoryMaterialTypes}
+                  options={inventoryMaterialTypes}
+                  onChange={handleInventoryMaterialTypeChange}
+                  value={selectedInventoryMaterialTypes}
                   placeholder={`Select Material`} // Dynamic placeholder
                 />
               </div>
@@ -257,46 +263,70 @@ const handleReset = () => {
             </div>
           </div>
         </form>
-      
-      <h5 className="mt-3">Material List</h5>
+
+        <h5 className="mt-3">Material List</h5>
         <div className="tbl-container me-2 mt-3">
           <table className="w-100">
             <thead>
               <tr>
                 <th rowSpan={2}>
                   <input type="checkbox" className="all-materials"
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  checked={selectedMaterials.length === inventoryTableData.length} 
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    checked={selectedMaterials.length === inventoryTableData.length}
                   />
                 </th>
                 <th colSpan="4">Material Details</th>
               </tr>
               <tr>
-                <th  rowSpan={2}>Material-Type</th>
-                <th  rowSpan={2}>Material</th>
-                <th  rowSpan={2}>UOM</th>
+                <th rowSpan={2}>Material-Type</th>
+                <th rowSpan={2}>Material</th>
+                <th rowSpan={2}>UOM</th>
               </tr>
             </thead>
             <tbody className="material_details">
-            {inventoryTableData.length > 0 ? (
-            inventoryTableData.map((item, index) => (
-              <tr key={item.id}>
-                <td>
-                  <input type="checkbox" className="all-materials"
-                   checked={selectedMaterials.some((material) => material.id=== item.id )} // Check if material is selected
-                   onChange={() => handleCheckboxChange(item)} // Toggle selection
-                  />
-                </td>
-                <td>{item.inventory_type_name}</td>
-                <td>{item.name}</td>
-                <td>{item.uom_name}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="text-center">No data available</td>
-            </tr>
-          )}
+              {loading ? ( // If loading is true, show a loading spinner
+                <tr>
+                  <td colSpan="4" className="text-center">
+                    Loading...
+                  </td>
+                </tr>
+              )
+                // {/* {loading ? (
+                //   <div className="loader-container">
+                //     <div className="lds-ring">
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //       <div></div>
+                //     </div>
+                //     <p>Loading...</p>
+                //   </div>
+                // ) */}
+
+                :
+                inventoryTableData.length > 0 ? (
+                  inventoryTableData.map((item, index) => (
+                    <tr key={item.id}>
+                      <td>
+                        <input type="checkbox" className="all-materials"
+                          checked={selectedMaterials.some((material) => material.id === item.id)} // Check if material is selected
+                          onChange={() => handleCheckboxChange(item)} // Toggle selection
+                        />
+                      </td>
+                      <td>{item.inventory_type_name}</td>
+                      <td>{item.name}</td>
+                      <td>{item.uom_name}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center">No data available</td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>

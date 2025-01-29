@@ -244,8 +244,8 @@ const BOQApprovalList = () => {
 
                   <BulkAction />
                 </div>
-                <div className="tbl-container mx-3 mt-1">
-                  <table className="w-100">
+                <div className="tbl-container mt-1">
+                  <table className="w-100 ">
                     <thead>
                       <tr>
                         <th className="text-start">

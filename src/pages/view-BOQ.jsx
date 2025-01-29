@@ -1,5 +1,5 @@
 import React from "react";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
@@ -20,21 +20,7 @@ const BOQList = () => {
   const handleClose = () => setShow(false);
   const [boqList, setBoqList] = useState(null); // State to store the fetched data
 
-   // Fetch data from the API when the component mounts
-   useEffect(() => {
-    axios
-      .get('https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
-      .then((response) => {
-        setBoqList(response.data); // Set the data in state
-       
-      })
-      .catch((error) => {
-        console.loh('error',error)
-        
-      });
-  }, []); // Empty dependency array ensures it runs only once when the component mounts
 
-console.log('boq list', boqList)
 
   const navigate = useNavigate(); // hook to get navigate function
 
@@ -99,50 +85,111 @@ console.log('boq list', boqList)
     setOpenSubProject(!openSubProject)
   }
 
-  const tableData = [
-    {
-      id: 1,
-      project: "Sanvo",
-      boqId: "",
-      unit: "",
-      costQty: "",
-      costRate: "",
-      costValue: "",
-      status: "",
-      subRows: [
-        {
-          id: 11,
-          description: "Admin expense",
-          boqId: "",
-          unit: "",
-          costQty: "",
-          costRate: "",
-          costValue: "",
-          status: "",
-        },
-        {
-          id: 12,
-          description: "Purchase of Item",
-          boqId: "187062",
-          unit: "",
-          costQty: "",
-          costRate: "",
-          costValue: "",
-          status: "Approved",
-        },
-      ],
-    },
-  ];
 
-  const options = [
-    { value: "alabama", label: "Alabama" },
-    { value: "alaska", label: "Alaska" },
-    { value: "california", label: "California" },
-    { value: "delaware", label: "Delaware" },
-    { value: "tennessee", label: "Tennessee" },
-    { value: "texas", label: "Texas" },
-    { value: "washington", label: "Washington" },
-  ];
+
+  //  project ,sub project wing api 
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [wingsOptions, setWingsOptions] = useState([]);
+  const [siteOptions, setSiteOptions] = useState([]);
+
+  // Fetch projects on mount
+  useEffect(() => {
+    // Replace this with your actual API URL
+    axios.get('https://marathon.lockated.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+      .then(response => {
+        setProjects(response.data.projects);
+      })
+      .catch(error => {
+        console.error("Error fetching projects:", error);
+      });
+  }, []);
+
+  // Handle project selection change
+  const handleProjectChange = (selectedOption) => {
+    // Reset selected site and wing when a new project is selected
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset selected site
+    setSelectedWing(null); // Reset selected wing
+    setWingsOptions([]); // Clear wings options
+    setSiteOptions([]);
+
+    // Fetch sites based on the selected project
+    if (selectedOption) {
+      const selectedProjectData = projects.find(project => project.id === selectedOption.value);
+      setSiteOptions(selectedProjectData.pms_sites.map(site => ({
+        value: site.id,   // Use id as value for the site
+        label: site.name  // Display the site name
+      })));
+    }
+  };
+
+  // Handle site selection change
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+    setSelectedWing(null); // Reset selected wing
+    setWingsOptions([]); // Clear wings options
+
+    // Fetch wings for the selected site
+    if (selectedOption) {
+      const selectedProjectData = projects.find(project => project.id === selectedProject.value);
+      const selectedSiteData = selectedProjectData.pms_sites.find(site => site.id === selectedOption.value);
+      setWingsOptions(selectedSiteData.pms_wings.map(wing => ({
+        value: wing.id,    // Use id as value for the wing
+        label: wing.name   // Display the wing name
+      })));
+    }
+  };
+
+  // Handle wing selection change
+  const handleWingChange = (selectedOption) => {
+    setSelectedWing(selectedOption);
+    // You can perform further actions with the selected wing value if necessary
+  };
+
+  // Mapping projects for the dropdown
+  const projectOptions = projects.map(project => ({
+    value: project.id,         // Use id as value for the project
+    label: project.formatted_name
+  }));
+
+
+  // Fetch data from the API when the component mounts
+  useEffect(() => {
+    // axios
+    //   .get(`https://marathon.lockated.com/boq_details.json?project_id=31&site_id=35&wing_id=&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //   .then((response) => {
+    //     setBoqList(response.data); // Set the data in state
+
+    //   })
+    //   .catch((error) => {
+    //     console.loh('error',error)
+
+    //   });
+
+
+    if (selectedProject || selectedSite || selectedWing) {
+      const projectId = selectedProject ? selectedProject.value : "";
+      const siteId = selectedSite ? selectedSite.value : "";
+      const wingId = selectedWing ? selectedWing.value : "";
+
+      // Show alert with the values
+    // alert(` Select Project , Sub Project and Wing `);
+
+      axios
+        .get(`https://marathon.lockated.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        .then((response) => {
+          setBoqList(response.data); // Set the fetched data in state
+        })
+        .catch((error) => {
+          console.log('error', error);
+        });
+    }
+  }, [selectedProject, selectedSite, selectedWing]); // Empty dependency array ensures it runs only once when the component mounts
+
+  console.log('boq list', boqList)
 
 
   return (
@@ -179,22 +226,10 @@ console.log('boq list', boqList)
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Project</label>
-                      {/* <select
-                              className="form-control form-select"
-                              style={{ width: "100%" }}
-                            >
-                              <option selected="selected">Select</option>
-                              <option>Alaska</option>
-                              <option>California</option>
-                              <option>Delaware</option>
-                              <option>Tennessee</option>
-                              <option>Texas</option>
-                              <option>Washington</option>
-                            </select> */}
                       <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        options={projectOptions}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
                         placeholder={`Select Project`} // Dynamic placeholder
                       />
                     </div>
@@ -202,11 +237,10 @@ console.log('boq list', boqList)
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Sub-project</label>
-
                       <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
                     </div>
@@ -215,15 +249,15 @@ console.log('boq list', boqList)
                     <div className="form-group">
                       <label>Wing</label>
                       <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                        options={wingsOptions}
+                        value={selectedWing}
+                        onChange={handleWingChange}
                         placeholder={`Select Wing`} // Dynamic placeholder
                       />
                     </div>
                   </div>
                 </div>
-                <div className="row">
+                {/* <div className="row">
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Main Category</label>
@@ -279,8 +313,8 @@ console.log('boq list', boqList)
                       />
                     </div>
                   </div>
-                </div>
-                <div className="row">
+                </div> */}
+                {/* <div className="row">
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>BOQ Name</label>
@@ -370,13 +404,13 @@ console.log('boq list', boqList)
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
-   <BulkAction/>
+              {/* <BulkAction /> */}
 
             </CollapsibleCard>
-            <BOQListTable  boqList={boqList} />
+            <BOQListTable boqList={boqList} />
           </div>
 
           <CopyBudgetModal show={show} handleClose={handleClose} />

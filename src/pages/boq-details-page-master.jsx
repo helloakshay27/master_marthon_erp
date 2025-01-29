@@ -406,7 +406,7 @@ const BOQDetailsPageMaster = () => {
                       style={{ display: "block" }}
                     >
                       <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
-                        <table className="">
+                        <table className="w-100">
                           <thead>
                             <tr>
                               <th rowSpan={2}>Material Type</th>
@@ -416,7 +416,7 @@ const BOQDetailsPageMaster = () => {
                               <th rowSpan={2}>Colour </th>
                               <th rowSpan={2}>Brand </th>
                               <th rowSpan={2}>UOM</th>
-                              <th rowSpan={2}>Cost QTY</th>
+                              {/* <th rowSpan={2}>Cost QTY</th> */}
                               <th colSpan={2}>Cost</th>
                               <th rowSpan={2}>Wastage</th>
                               <th rowSpan={2}>
@@ -438,7 +438,7 @@ const BOQDetailsPageMaster = () => {
                                 <td>{material.color}</td>
                                 <td>{material.brand}</td>
                                 <td>{material.uom}</td>
-                                <td></td>
+                                {/* <td></td> */}
                                 <td>{material.co_efficient_factor}</td>
                                 <td >{material.estimated_quantity}</td>
                                 <td>{material.wastage}</td>
@@ -467,7 +467,7 @@ const BOQDetailsPageMaster = () => {
                               <th rowSpan={2}>Colour</th>
                               <th rowSpan={2}>Brand</th>
                               <th rowSpan={2}>UOM</th>
-                              <th rowSpan={2}>Cost QTY</th>
+                              {/* <th rowSpan={2}>Cost QTY</th> */}
                               <th colSpan={2}>Cost</th>
                               <th rowSpan={2}>Wastage</th>
                               <th rowSpan={2}>Total Estimated Qty Wastage</th>
@@ -487,7 +487,7 @@ const BOQDetailsPageMaster = () => {
                                 <td>{asset.color}</td>
                                 <td>{asset.brand}</td>
                                 <td>{asset.uom}</td>
-                                <td></td>
+                                {/* <td></td> */}
                                 <td>{asset.co_efficient_factor}</td>
                                 <td>{asset.estimated_quantity}</td>
                                 <td>{asset.wastage}</td>

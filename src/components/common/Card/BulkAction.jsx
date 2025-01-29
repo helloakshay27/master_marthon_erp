@@ -12,11 +12,12 @@ const validationSchema = Yup.object({
 });
 
 export default function BulkAction() {
+  
 
   const options = [
-    { value: '', label: 'Select Status' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'send_for_approval', label: 'Sent For Approval' },
+    { value: 'draft', label: ' Draft' },
+    { value: 'submitted', label: 'Submitted' },
+    { value: 'approved', label: 'Approved' },
   ];
   return (
     <CollapsibleCard title="Bulk Action">
@@ -40,7 +41,8 @@ export default function BulkAction() {
                   <Field as="select" name="fromStatus" className="form-control form-select">
                     <option value="">Select Status</option>
                     <option value="draft">Draft</option>
-                    <option value="send_for_approval">Sent For Approval</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
                   </Field>
                   {/* <SingleSelector
                     options={options}
@@ -60,7 +62,8 @@ export default function BulkAction() {
                   <Field as="select" name="toStatus" className="form-control form-select">
                     <option value="">Select Status</option>
                     <option value="draft">Draft</option>
-                    <option value="send_for_approval">Sent For Approval</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
                   </Field>
                    {/* <SingleSelector
                     options={options}
