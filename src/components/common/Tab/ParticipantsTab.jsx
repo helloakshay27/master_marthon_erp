@@ -31,6 +31,8 @@ export default function ParticipantsTab({ data, id }) {
   const [totalPages, setTotalPages] = useState(1); // Default total pages
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [inviteForm, setInviteForm] = useState({
     name: "",
@@ -43,9 +45,18 @@ export default function ParticipantsTab({ data, id }) {
 
   const validateForm = () => {
     const errors = {};
-    if (!inviteForm.name) errors.name = "Name is required";
-    if (!inviteForm.email) errors.email = "Email is required";
-    if (!inviteForm.mobile) errors.mobile = "Mobile number is required";
+    if (!inviteForm.name) {
+      errors.name = "Name is required";
+      toast.error(errors.name);
+    }
+    if (!inviteForm.email) {
+      errors.email = "Email is required";
+      toast.error(errors.email);
+    }
+    if (!inviteForm.mobile) {
+      errors.mobile = "Mobile number is required";
+      toast.error(errors.mobile);
+    }
     return errors;
   };
 
@@ -56,9 +67,12 @@ export default function ParticipantsTab({ data, id }) {
 
   const handleInviteSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      setIsSubmitting(false);
       return;
     }
 
@@ -85,6 +99,8 @@ export default function ParticipantsTab({ data, id }) {
       toast.error("Failed to invite vendor.", {
         autoClose: 1000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -218,6 +234,8 @@ export default function ParticipantsTab({ data, id }) {
   };
 
   const handleSaveButtonClick = async () => {
+    if (isSaving) return; // Prevent multiple submissions
+    setIsSaving(true);
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
     const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
@@ -258,6 +276,8 @@ export default function ParticipantsTab({ data, id }) {
       toast.error("Failed to add vendors.", {
         autoClose: 1000,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 

@@ -154,13 +154,7 @@ export default function CreateRFQForm({
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
-    if (updatedSections[sectionIndex].sectionData[rowIndex].id) {
-      updatedSections[sectionIndex].sectionData[rowIndex]._destroy = true;
-    } else {
-      updatedSections[sectionIndex].sectionData = updatedSections[
-        sectionIndex
-      ].sectionData.filter((_, index) => index !== rowIndex);
-    }
+    updatedSections[sectionIndex].sectionData[rowIndex]._destroy = true;
     setSections(updatedSections);
   };
 
@@ -177,6 +171,7 @@ export default function CreateRFQForm({
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
+      _destroy: false,
     };
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData = [
@@ -234,6 +229,7 @@ export default function CreateRFQForm({
           inventory_id: "",
           sub_section_id: "",
           section_id: "",
+          _destroy: false,
         },
       ],
       sectionId: Date.now(),
@@ -289,14 +285,16 @@ export default function CreateRFQForm({
                 <div className="col-md-8 col-sm-12 d-flex gap-3">
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Section"}
+                      label={"Select Material"}
                       options={sectionOptions}
                       defaultValue={
-                        sectionOptions.find(
-                          (option) =>
-                            option.value ===
-                            existingData?.[0]?.inventory_type_id
-                        )?.value || "Select Section"
+                        section.sectionData.some(row => row._destroy)
+                          ? "Select Material"
+                          : sectionOptions.find(
+                              (option) =>
+                                option.value ===
+                                existingData?.[0]?.inventory_type_id
+                            )?.value || "Select Material"
                       }
                       onChange={(selected) =>
                         handleSectionChange(selected, sectionIndex)
@@ -305,14 +303,16 @@ export default function CreateRFQForm({
                   </div>
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Sub Section"}
+                      label={"Select Sub Material"}
                       options={subSectionOptions}
                       defaultValue={
-                        subSectionOptions.find(
-                          (option) =>
-                            option.value ===
-                            existingData?.[0]?.inventory_sub_type_id
-                        )?.value || "Select Sub Section"
+                        section.sectionData.some(row => row._destroy)
+                          ? "Select Sub Material"
+                          : subSectionOptions.find(
+                              (option) =>
+                                option.value ===
+                                existingData?.[0]?.inventory_sub_type_id
+                            )?.value || "Select Sub Material"
                       }
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
@@ -356,25 +356,25 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
-                    <>
-                      <SelectBox
-                        options={materialOptions}
-                        onChange={(value) =>
-                          handleDescriptionOfItemChange(
-                            value,
-                            rowIndex,
-                            sectionIndex
-                          )
-                        }
-                        defaultValue={
-                          materialOptions.find(
-                            (option) =>
-                              option.value ===
-                              section.sectionData[rowIndex]?.inventory_id
-                          )?.value || ""
-                        }
-                      />
-                    </>
+                    <SelectBox
+                      options={materialOptions}
+                      onChange={(value) =>
+                        handleDescriptionOfItemChange(
+                          value,
+                          rowIndex,
+                          sectionIndex
+                        )
+                      }
+                      defaultValue={
+                        section.sectionData[rowIndex]._destroy
+                          ? ""
+                          : materialOptions.find(
+                              (option) =>
+                                option.value ===
+                                section.sectionData[rowIndex]?.inventory_id
+                            )?.value || ""
+                      }
+                    />
                   ),
                   unit: (cell, rowIndex) => (
                     <input
@@ -406,10 +406,13 @@ export default function CreateRFQForm({
                         handleLocationChange(value, rowIndex, sectionIndex)
                       }
                       defaultValue={
-                        locationOptions.find(
-                          (option) =>
-                            option.label === section.sectionData[rowIndex]?.location
-                        )?.value || ""
+                        section.sectionData[rowIndex]._destroy
+                          ? ""
+                          : locationOptions.find(
+                              (option) =>
+                                option.label ===
+                                section.sectionData[rowIndex]?.location
+                            )?.value || ""
                       }
                     />
                   ),
@@ -466,7 +469,6 @@ export default function CreateRFQForm({
                     <button
                       className="btn btn-danger"
                       onClick={() => handleRemoveRow(rowIndex, sectionIndex)}
-                      disabled={section.sectionData.length <= 1}
                     >
                       Remove
                     </button>
