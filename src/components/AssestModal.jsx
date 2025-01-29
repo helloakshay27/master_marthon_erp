@@ -206,18 +206,21 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
   
       // material list table data 
       const [inventoryTableData, setInventoryTableData] = useState([]);
-      // const [loading, setLoading] = useState(false); // For loading indicator
+      const [loading, setLoading] = useState(false); // For loading indicator
   
         // Handle the "Go" button click to fetch data
     const handleGoButtonClick = () => {
-      if (selectedInventory.length === 0 || selectedInventoryMaterialTypes.length === 0) {
-        alert("Please select both Inventory Type and Material");
-        return;
-      }
-  
-      // setLoading(true); // Start loading before fetching
-      const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
-      const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
+      // if (selectedInventory.length === 0 || selectedInventoryMaterialTypes.length === 0) {
+      //   alert("Please select both Inventory Type and Material");
+      //   return;
+      // }
+      setLoading(true); // Start loading before fetching
+
+      const inventoryTypeIds = selectedInventory.length > 0 ? selectedInventory.map(item => item.value).join(',') : '';
+      const inventoryMaterialTypeIds = selectedInventoryMaterialTypes ? selectedInventoryMaterialTypes.map(item => item.value).join(',') : '';
+     
+      // const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+      // const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
       const apiUrl = `https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&material_category_eq=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
   
       axios.get(apiUrl)
@@ -229,6 +232,8 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
           // setLoading(false);
           console.error('Error fetching data:', error);
   
+        }).finally(() => {
+          setLoading(false); // Set loading to false once the data is fetched
         });
         
     };
@@ -417,7 +422,14 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
                 </tr>
               </thead>
               <tbody className="material_details">
-              {inventoryTableData.length > 0 ? (
+              {loading ? ( // If loading is true, show a loading spinner
+                <tr>
+                  <td colSpan="4" className="text-center">
+                    Loading...
+                  </td>
+                </tr>
+              ):
+              inventoryTableData.length > 0 ? (
               inventoryTableData.map((item, index) => (
                 <tr key={item.id}>
                   <td>

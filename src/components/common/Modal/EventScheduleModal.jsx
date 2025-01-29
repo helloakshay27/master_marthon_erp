@@ -4,7 +4,7 @@ import SelectBox from "../../base/Select/SelectBox";
 // @ts-ignore
 import format from "date-fns/format";
 
-const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData }) => {
+const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, onLoadScheduleData }) => {
   const [isLater, setIsLater] = useState(false);
   const [isFixedEndTime, setIsFixedEndTime] = useState(false);
   const [isCustomEndTimeSelected, setIsCustomEndTimeSelected] = useState(false);
@@ -42,8 +42,10 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData }) 
         setEvaluationDurationVal("Mins");
         setCustomEvaluationDuration("Mins");
       }
+
+      onLoadScheduleData(isLater, laterDate, laterTime, endDate, endTime, evaluationDurationVal, customEvaluationDuration);
     }
-  }, [existingData]);
+  }, [existingData, onLoadScheduleData]);
 
   const handleEndDateChange = (e) => {
     setEndDate(e.target.value);
@@ -130,6 +132,9 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData }) 
     
     handleSaveSchedule(data);
   };
+
+  
+  
 
   return (
     <DynamicModalBox

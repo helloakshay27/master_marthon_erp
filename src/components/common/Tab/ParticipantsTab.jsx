@@ -9,7 +9,6 @@ import SelectBox from "../../base/Select/SelectBox";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 export default function ParticipantsTab({ data, id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -25,12 +24,15 @@ export default function ParticipantsTab({ data, id }) {
   const [selectedCity, setSelectedCity] = useState([]);
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
+  const [vendorData, setVendorData] = useState([]);
   // @ts-ignore
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [inviteForm, setInviteForm] = useState({
     name: "",
@@ -39,11 +41,22 @@ export default function ParticipantsTab({ data, id }) {
   });
   const [formErrors, setFormErrors] = useState({});
 
+  console.log("Data:", data);
+
   const validateForm = () => {
     const errors = {};
-    if (!inviteForm.name) errors.name = "Name is required";
-    if (!inviteForm.email) errors.email = "Email is required";
-    if (!inviteForm.mobile) errors.mobile = "Mobile number is required";
+    if (!inviteForm.name) {
+      errors.name = "Name is required";
+      toast.error(errors.name);
+    }
+    if (!inviteForm.email) {
+      errors.email = "Email is required";
+      toast.error(errors.email);
+    }
+    if (!inviteForm.mobile) {
+      errors.mobile = "Mobile number is required";
+      toast.error(errors.mobile);
+    }
     return errors;
   };
 
@@ -54,9 +67,12 @@ export default function ParticipantsTab({ data, id }) {
 
   const handleInviteSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      setIsSubmitting(false);
       return;
     }
 
@@ -83,6 +99,8 @@ export default function ParticipantsTab({ data, id }) {
       toast.error("Failed to invite vendor.", {
         autoClose: 1000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -93,8 +111,19 @@ export default function ParticipantsTab({ data, id }) {
     setVendorModal(false);
   };
 
+  useEffect(() => {
+    const formattedData = (data?.event_vendors || []).map((vendor, index) => ({
+      key: vendor.id,
+      serialNumber: index + 1,
+      name: vendor.pms_supplier.full_name,
+      phone: vendor.pms_supplier.mobile,
+      email: vendor.pms_supplier.email,
+    }));
+    setVendorData(formattedData);
+  }, [data, vendorData]);
+
   console.log("Data:", data);
-  
+  console.log("vendorData :-----", vendorData);
 
   useEffect(() => {
     setFilteredData(
@@ -141,9 +170,14 @@ export default function ParticipantsTab({ data, id }) {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      
+
       setTableData(formattedData);
-      console.log("Formatted data:", formattedData.length, formattedData, tableData);
+      console.log(
+        "Formatted data:",
+        formattedData.length,
+        formattedData,
+        tableData
+      );
 
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
@@ -159,8 +193,13 @@ export default function ParticipantsTab({ data, id }) {
   }, []);
 
   useEffect(() => {
-      setFilteredTableData(tableData);
-    }, [tableData]);
+    setFilteredTableData(tableData);
+  }, [tableData]);
+
+  useEffect(() => {
+    // This useEffect will trigger whenever vendorData is updated
+    setVendorData(vendorData);
+  }, [vendorData]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -195,43 +234,52 @@ export default function ParticipantsTab({ data, id }) {
   };
 
   const handleSaveButtonClick = async () => {
-      const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
-  
-      const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
-        ","
-      )}]`;
-  
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-        });
-  
-        if (response.ok) {
-          const updatedTableData = tableData.filter(
-            (vendor) =>
-              !selectedRows.some(
-                (selectedVendor) => selectedVendor.id === vendor.id
-              )
-          );
-          console.log("Updated table data:", updatedTableData);
-          setTableData(updatedTableData);
-          setSelectedVendors((prev) => [...prev, ...selectedRows]);
-          setVendorModal(false);
-          setSelectedRows([]);
-          setResetSelectedRows(true);
-          toast.success("Vendors added successfully!", {
-            autoClose: 1000,
-          });
-        } else {
-          throw new Error("Failed to add vendors.");
-        }
-      } catch (error) {
-        console.error("Error adding vendors:", error);
-        toast.error("Failed to add vendors.", {
+    if (isSaving) return; // Prevent multiple submissions
+    setIsSaving(true);
+    const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
+
+    const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+      ","
+    )}]`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        // Remove selected vendors from tableData
+        const updatedTableData = tableData.filter(
+          (vendor) =>
+            !selectedRows.some(
+              (selectedVendor) => selectedVendor.id === vendor.id
+            )
+        );
+        setTableData(updatedTableData);
+
+        // Add selected vendors to vendorData
+        const updatedVendorData = [...vendorData, ...selectedRows];
+        setVendorData(updatedVendorData);
+
+        setSelectedVendors((prev) => [...prev, ...selectedRows]);
+        setVendorModal(false);
+        setSelectedRows([]);
+        setResetSelectedRows(true);
+        toast.success("Vendors added successfully!", {
           autoClose: 1000,
         });
+      } else {
+        throw new Error("Failed to add vendors.");
       }
-    };
+    } catch (error) {
+      console.error("Error adding vendors:", error);
+      toast.error("Failed to add vendors.", {
+        autoClose: 1000,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const isVendorSelected = (vendorId) => {
     return (
@@ -239,44 +287,6 @@ export default function ParticipantsTab({ data, id }) {
       selectedVendors.some((vendor) => vendor.id === vendorId)
     );
   };
-
-  // const handleSearchChange = (e) => {
-  //   setSearchTerm(e.target.value);
-  //   if (e.target.value === "") {
-  //     setFilteredData(
-  //       Array.isArray(data?.event_vendors)
-  //         ? data.event_vendors.map((vendor) => {
-  //             const { organization_name, contact_number, email } =
-  //               vendor.pms_supplier || {};
-  //             return {
-  //               name: organization_name || "_",
-  //               phone: contact_number || "_",
-  //               email: email || "_",
-  //             };
-  //           })
-  //         : []
-  //     );
-  //   }
-  // };
-
-  // const handleSearchClick = () => {
-  //   const filtered = Array.isArray(data?.event_vendors)
-  //     ? data.event_vendors
-  //         .map((vendor) => {
-  //           const { organization_name, contact_number, email } =
-  //             vendor.pms_supplier || {};
-  //           return {
-  //             name: organization_name || "_",
-  //             phone: contact_number || "_",
-  //             email: email || "_",
-  //           };
-  //         })
-  //         .filter((vendor) =>
-  //           vendor.name.toLowerCase().includes(searchTerm.toLowerCase())
-  //         )
-  //     : [];
-  //   setFilteredData(filtered);
-  // };
 
   const handleInviteModalShow = () => {
     setVendorModal(false);
@@ -298,8 +308,13 @@ export default function ParticipantsTab({ data, id }) {
       setSuggestions([]);
       setIsSuggestionsVisible(false);
     } else {
-      const filteredSuggestions = tableData.filter((vendor) =>
-        vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
+      const filteredSuggestions = vendorData.filter(
+        (vendor) =>
+          vendor.full_name
+            ?.toLowerCase()
+            .includes(e.target.value.toLowerCase()) ||
+          vendor.mobile?.toLowerCase().includes(e.target.value.toLowerCase()) ||
+          vendor.email?.toLowerCase().includes(e.target.value.toLowerCase())
       );
       console.log(
         "Filtered suggestions:",
@@ -421,10 +436,10 @@ export default function ParticipantsTab({ data, id }) {
             <span>Add</span>
           </button>
         </div>
-        {tableData.length > 0 ? (
+        {vendorData.length > 0 ? (
           <Table
             columns={participantsTabColumns} // Use columns with serial number
-            data={tableData}
+            data={vendorData.reverse()}
           />
         ) : (
           <div className="text-center mt-4">No data found</div>
@@ -709,7 +724,9 @@ export default function ParticipantsTab({ data, id }) {
                   value={inviteForm.name}
                   onChange={handleInviteInputChange}
                 />
-                {formErrors.name && <small className="text-danger">{formErrors.name}</small>}
+                {formErrors.name && (
+                  <small className="text-danger">{formErrors.name}</small>
+                )}
               </div>
               <div className="form-group mb-3">
                 <label className="po-fontBold">Email</label>
@@ -721,7 +738,9 @@ export default function ParticipantsTab({ data, id }) {
                   value={inviteForm.email}
                   onChange={handleInviteInputChange}
                 />
-                {formErrors.email && <small className="text-danger">{formErrors.email}</small>}
+                {formErrors.email && (
+                  <small className="text-danger">{formErrors.email}</small>
+                )}
               </div>
               <div className="form-group mb-3">
                 <label className="po-fontBold">Phone Number</label>
@@ -734,7 +753,9 @@ export default function ParticipantsTab({ data, id }) {
                   value={inviteForm.mobile}
                   onChange={handleInviteInputChange}
                 />
-                {formErrors.mobile && <small className="text-danger">{formErrors.mobile}</small>}
+                {formErrors.mobile && (
+                  <small className="text-danger">{formErrors.mobile}</small>
+                )}
               </div>
             </form>
           </>

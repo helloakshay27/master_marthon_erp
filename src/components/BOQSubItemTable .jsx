@@ -633,7 +633,7 @@ const handleAssetCostQTY = (index, value) => {
                         <th rowSpan={2}>Colour </th>
                         <th rowSpan={2}>Brand </th>
                         <th rowSpan={2}>UOM</th>
-                        <th rowSpan={2}>Cost QTY</th>
+                        {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th colSpan={2}>Cost</th>
                         <th rowSpan={2}>Wastage</th>
                         <th rowSpan={2}>Total Estimated Qty Wastage</th>
@@ -704,14 +704,16 @@ const handleAssetCostQTY = (index, value) => {
 
                               />
                             </td>
-                            <td>  <input
+                            <td>  
+                              {/* <input
                               type="text"
                               className="form-control"
 
                               placeholder="Cost QTY"
                               value={CostQTY[index] || ''}
                               onChange={(e) => handleCostQTY(index, e.target.value)}
-                            /></td>
+                            /> */}
+                            </td>
                             <td>
                               <input
                                 className="form-control"
@@ -821,7 +823,7 @@ const handleAssetCostQTY = (index, value) => {
                         <th rowSpan={2}>Colour </th>
                         <th rowSpan={2}>Brand </th>
                         <th rowSpan={2}>UOM</th>
-                        <th rowSpan={2}>Cost QTY</th>
+                        {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th colSpan={2}>Cost</th>
                         <th rowSpan={2}>Wastage</th>
                         <th rowSpan={2}>Total Estimated Qty Wastage</th>
@@ -894,14 +896,14 @@ const handleAssetCostQTY = (index, value) => {
                               />
                             </td>
                             <td>
-                            <input
+                            {/* <input
                               type="text"
                               className="form-control"
 
                               placeholder="Cost QTY"
                               value={assetCostQTY[index] || ''}
                               onChange={(e) => handleAssetCostQTY(index, e.target.value)}
-                            />
+                            /> */}
                             </td>
                             <td>
                             <input

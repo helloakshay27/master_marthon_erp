@@ -70,6 +70,7 @@ export default function EditEvent() {
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
   const [eventDetails, setEventDetails] = useState([]);
+  const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
 
   // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
@@ -212,7 +213,7 @@ export default function EditEvent() {
       time_extension_type: config.time_extension_type,
       triggered_time_extension_on_last: config.triggered_time_extension_on_last,
       extend_event_time_by: config.extend_event_time_by,
-      time_extension_on_change_in: config.time_extension_change,
+      time_extension_change: config.time_extension_change,
       delivery_date: config.delivery_date,
     });
     handleEventTypeModalClose();
@@ -250,6 +251,7 @@ export default function EditEvent() {
   // @ts-ignore
   // @ts-ignore
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchEventData = async () => {
     try {
@@ -292,6 +294,7 @@ export default function EditEvent() {
       // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
+      console.log(tableData);
 
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
@@ -316,13 +319,6 @@ export default function EditEvent() {
         `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
           eventDetails?.end_time
         ).toLocaleString()}`
-      );
-      setSelectedVendors(
-        eventDetails?.event_vendors?.map((vendor) => ({
-          id: vendor.id,
-          name: vendor.full_name || vendor.organization_name,
-          phone: vendor.contact_number || vendor.mobile || "N/A",
-        }))
       );
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => ({
@@ -377,6 +373,8 @@ export default function EditEvent() {
   };
 
   const handleSaveButtonClick = async () => {
+    if (isSaving) return; // Prevent multiple submissions
+    setIsSaving(true);
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
     const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
@@ -398,8 +396,15 @@ export default function EditEvent() {
         console.log("Updated table data:", updatedTableData);
         setTableData(updatedTableData);
 
-        setSelectedVendors((prev) => [...prev, ...selectedRows]);
-        console.log("selceted", selectedVendors);
+        const updatedVendorData = [
+          ...selectedVendors,
+          ...selectedRows.map((vendor) => ({
+            ...vendor,
+            pms_supplier_id: vendor.id,
+          })),
+        ];
+        setSelectedVendors(updatedVendorData);
+
         setVendorModal(false);
         setSelectedRows([]);
         setResetSelectedRows(true);
@@ -414,6 +419,8 @@ export default function EditEvent() {
       toast.error("Failed to add vendors.", {
         autoClose: 1000,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -527,41 +534,76 @@ export default function EditEvent() {
     }
   };
 
+  console.log("scheduleData.start_time:", scheduleData.start_time);
+  console.log(
+    "scheduleData.end_time_duration:",
+    scheduleData.end_time_duration
+  );
+  console.log("scheduleData.evaluation_time:", scheduleData.evaluation_time);
+
+  const handleOnLoadScheduleData = (
+    isLater,
+    laterDate,
+    laterTime,
+    endDate,
+    endTime,
+    evaluationDurationVal,
+    customEvaluationDuration
+  ) => {
+    const startTime = isLater
+      ? `${laterDate}T${laterTime}:00Z`
+      : new Date().toISOString();
+
+    const endTimeFormatted =
+      endDate && endTime ? `${endDate}T${endTime}:00Z` : "";
+
+    const evaluationTimeFormatted =
+      evaluationDurationVal && customEvaluationDuration
+        ? `${evaluationDurationVal} ${customEvaluationDuration}`
+        : "Mins Mins";
+
+    setOnLoadScheduleData({
+      start_time: startTime,
+      end_time_duration: endTimeFormatted,
+      evaluation_time: evaluationTimeFormatted,
+    });
+
+    console.log("onLoadScheduleData:", onLoadScheduleData.start_time);
+  };
+
+  const validateForm = () => {
+    if (!eventName) {
+      toast.error("Event name is required");
+      return false;
+    }
+    if (!createdOn) {
+      toast.error("Created on date is required");
+      return false;
+    }
+    if (!onLoadScheduleData?.start_time && !scheduleData?.start_time) {
+      toast.error("Start time is required");
+      return false;
+    }
+    if (!onLoadScheduleData?.end_time_duration && !scheduleData?.end_time_duration) {
+      toast.error("End time duration is required");
+      return false;
+    }
+    if (!onLoadScheduleData?.evaluation_time && !scheduleData?.evaluation_time) {
+      toast.error("Evaluation time is required");
+      return false;
+    }
+    if (selectedVendors.length === 0) {
+      toast.error("At least one vendor must be selected");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(
-      "Event data:",
-      eventName,
-      createdOn,
-      scheduleData,
-      selectedVendors
-    );
-
-    // Debugging statements
-    console.log("eventName:", eventName);
-    console.log("createdOn:", createdOn);
-    console.log("scheduleData.start_time:", scheduleData.start_time);
-    console.log(
-      "scheduleData.end_time_duration:",
-      scheduleData.end_time_duration
-    );
-    console.log("scheduleData.evaluation_time:", scheduleData.evaluation_time);
-    console.log("selectedVendors.length:", selectedVendors.length);
-
-    if (
-      !eventName ||
-      !createdOn ||
-      !scheduleData.start_time ||
-      !scheduleData.end_time_duration ||
-      !scheduleData.evaluation_time ||
-      scheduleData.evaluation_time === "Mins Mins" ||
-      selectedVendors.length === 0
-    ) {
-      alert("Please fill all the required fields on Event Schedule Details.");
+    if (!validateForm()) {
       return;
     }
-
-    console.log("sele te vendors", materialFormData);
 
     setSubmitted(true);
     const eventData = {
@@ -571,9 +613,14 @@ export default function EditEvent() {
         status: "pending",
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: scheduleData.start_time,
-          end_time: scheduleData.end_time_duration,
-          evaluation_time: scheduleData.evaluation_time,
+          start_time:
+            onLoadScheduleData?.start_time || scheduleData?.start_time,
+          end_time:
+            onLoadScheduleData?.end_time_duration ||
+            scheduleData?.end_time_duration,
+          evaluation_time:
+            onLoadScheduleData?.evaluation_time ||
+            scheduleData?.evaluation_time,
         },
         event_type_detail_attributes: {
           event_type: eventType,
@@ -596,20 +643,18 @@ export default function EditEvent() {
         event_materials_attributes: materialFormData.map((material) => ({
           id: material.id,
           inventory_id: material.inventory_id,
-          quantity: material.quantity,
+          quantity: Number(material.quantity),
           uom: material.unit,
           location: material.location,
-          rate: material.rate,
+          rate: Number(material.rate),
           amount: material.amount,
           sub_section_name: material.sub_section_id,
           section_name: material.section_id,
           _destroy: material._destroy || false,
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
-          id: vendor.id,
           status: "invited",
-          pms_supplier_id: 1,
-          _destroy: vendor._destroy || false,
+          pms_supplier_id: vendor.pms_supplier_id,
         })),
         status_logs_attributes: [
           {
@@ -862,9 +907,14 @@ export default function EditEvent() {
                   </thead>
 
                   <tbody>
-                    {selectedVendors
-                      ?.filter((vendor) => !vendor._destroy)
-                      .map((vendor, index) => (
+                    {selectedVendors?.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No vendors selected
+                        </td>
+                      </tr>
+                    ) : (
+                      selectedVendors?.map((vendor, index) => (
                         <tr key={vendor.id}>
                           <td>{index + 1}</td>
                           <td>{vendor.name}</td>
@@ -887,17 +937,7 @@ export default function EditEvent() {
                             </button>
                           </td>
                         </tr>
-                      ))}
-                    {selectedVendors?.length === 0 && (
-                      <tr>
-                        <td
-                          // @ts-ignore
-                          colSpan="5"
-                          className="text-center"
-                        >
-                          No vendors selected
-                        </td>
-                      </tr>
+                      ))
                     )}
                   </tbody>
                 </table>
@@ -1364,6 +1404,7 @@ export default function EditEvent() {
             onHide={handleEventScheduleModalClose}
             handleSaveSchedule={handleSaveSchedule}
             existingData={eventDetails?.event_schedule}
+            onLoadScheduleData={handleOnLoadScheduleData}
           />
         </div>
       </div>

@@ -16,6 +16,7 @@ import { prepareDataForValidation } from "formik";
 const CreateBOQ = () => {
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
   const [showBOQSubItem, setShowBOQSubItem] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCheckboxChange = (e) => {
     const { id, checked } = e.target;
@@ -759,6 +760,58 @@ const CreateBOQ = () => {
   const [predefinedMaterialsData, setPredefinedMaterialsData] = useState([])
   const [predefinedAssetsData, setPredefinedAssetsData] = useState([]);
 
+  // calculations 
+  // If you want to update `estimatedQuantities` based on the `boqQuantity`, you can create a side effect.
+  // useEffect(() => {
+  //   // Here, assuming you want to calculate estimated quantities based on some logic with boqQuantity
+  //   if (boqQuantity) {
+  //     setEstimatedQuantities(materials.map((material, index) => {
+  //       // For example, calculate estimated quantity based on boqQuantity and coefficientFactor
+  //       const coefficient = coefficientFactors[index] || 1; // default to 1 if no coefficient is set
+  //       return parseFloat(boqQuantity) * parseFloat(coefficient); // simple calculation for estimated quantities
+  //     }));
+  //   }
+  // }, [boqQuantity, coefficientFactors, materials]);
+
+  // // Effect to update total estimated quantities including wastages
+  // useEffect(() => {
+  //   if (boqQuantity && wastages.length > 0) {
+  //     setTotalEstimatedQtyWastages(materials.map((material, index) => {
+  //       const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
+  //       const wastagePercentage = parseFloat(wastages[index]) || 0;
+  //       return estimatedQty * ( wastagePercentage / 100); // Adding wastage percentage
+  //     }));
+  //   }
+  // }, [estimatedQuantities, wastages, materials]);
+
+   // Normal function to calculate estimated quantities
+  //  const calculateEstimatedQuantities = () => {
+  //   if (boqQuantity) {
+  //     const newEstimatedQuantities = materials.map((material, index) => {
+  //       const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+  //       return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity: boqQuantity * coefficient
+  //     });
+  //     setEstimatedQuantities(newEstimatedQuantities);
+  //   }
+  // };
+
+  // Normal function to calculate total estimated quantities with wastage
+  // const calculateTotalEstimatedQtyWastages = () => {
+  //   if (boqQuantity && wastages.length > 0) {
+  //     const newTotalEstimatedQtyWastages = materials.map((material, index) => {
+  //       const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
+  //       const wastagePercentage = parseFloat(wastages[index]) || 0;
+  //       return estimatedQty * ( wastagePercentage / 100); // Adding wastage percentage
+  //     });
+  //     setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages);
+  //   }
+  // };
+
+
+ 
+
+  
+
 
   console.log("parent comp predef2", predefinedMaterialsData)
   const updatePredefinedMaterialsData = (data) => {
@@ -799,29 +852,7 @@ const CreateBOQ = () => {
 
   console.log("material Input:", materialsInputes)
 
-  const handleCoefficientFactorChange = (index, value) => {
-    const updatedCoefficientFactors = [...coefficientFactors];
-    updatedCoefficientFactors[index] = value;
-    setCoefficientFactors(updatedCoefficientFactors);
-  };
-
-  const handleEstimatedQtyChange = (index, value) => {
-    const updatedEstimatedQuantities = [...estimatedQuantities];
-    updatedEstimatedQuantities[index] = value;
-    setEstimatedQuantities(updatedEstimatedQuantities);
-  };
-
-  const handleWastageChange = (index, value) => {
-    const updatedWastages = [...wastages];
-    updatedWastages[index] = value;
-    setWastages(updatedWastages);
-  };
-
-  const handleTotalEstimatedQtyWastageChange = (index, value) => {
-    const updatedTotalEstimatedQtyWastages = [...totalEstimatedQtyWastages];
-    updatedTotalEstimatedQtyWastages[index] = value;
-    setTotalEstimatedQtyWastages(updatedTotalEstimatedQtyWastages);
-  };
+  
 
 
   // assets 
@@ -831,6 +862,36 @@ const CreateBOQ = () => {
   const [assetWastages, setAssetWastages] = useState(Assets.map(() => ''));
   const [assetTotalEstimatedQtyWastages, setAssetTotalEstimatedQtyWastages] = useState(Assets.map(() => ''));
   const [assetCostQTY, setAssetCostQTY] = useState(Assets.map(() => ''));
+
+
+  // Calculate Asset Estimated Quantities
+const calculateAssetEstimatedQuantities = () => {
+  if (boqQuantity && assetCoefficientFactors.length > 0) {
+    const newAssetEstimatedQuantities = Assets.map((asset, index) => {
+      const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+      return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
+    });
+    setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
+  }
+};
+
+// Calculate Asset Total Estimated Quantity with Wastages
+const calculateAssetTotalEstimatedQtyWastages = () => {
+  if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
+    const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
+      const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
+      const wastagePercentage = parseFloat(assetWastages[index]) || 0;
+      return estimatedQty * (wastagePercentage / 100); // Adding wastage percentage
+    });
+    setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
+  }
+};
+
+// Effect to recalculate asset quantities when dependencies change
+useEffect(() => {
+  calculateAssetEstimatedQuantities();
+  calculateAssetTotalEstimatedQtyWastages();
+}, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   const handleAssetCoefficientFactorChange = (index, value) => {
     const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
@@ -1027,17 +1088,83 @@ const CreateBOQ = () => {
     } else if (field === 'boqQuantity') {
       // setBoqQuantity(value);
       setBoqQuantity(value ? Number(value) : '')
+    calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
+    calculateTotalEstimatedQtyWastages();
     } else if (field === 'note') {
       setNote(value);
     }
   };
 
 
+  useEffect(() => {
+    calculateEstimatedQuantities(); 
+    calculateTotalEstimatedQtyWastages();
+  }, [boqQuantity, coefficientFactors,wastages]); // Recalculate when boqQuantity or coefficientFactors change
+
+
+  const handleCoefficientFactorChange = (index, value) => {
+    const updatedCoefficientFactors = [...coefficientFactors];
+    updatedCoefficientFactors[index] = value;
+    setCoefficientFactors(updatedCoefficientFactors);
+    
+  };
+
+  const handleEstimatedQtyChange = (index, value) => {
+    const updatedEstimatedQuantities = [...estimatedQuantities];
+    updatedEstimatedQuantities[index] = value;
+    setEstimatedQuantities(updatedEstimatedQuantities);
+  };
+
+  const handleWastageChange = (index, value) => {
+    const updatedWastages = [...wastages];
+    updatedWastages[index] = value;
+    setWastages(updatedWastages);
+    // calculateEstimatedQuantities(); // Recalculate estimated quantities when coefficient factor changes
+    // calculateTotalEstimatedQtyWastages()
+  };
+
+  const handleTotalEstimatedQtyWastageChange = (index, value) => {
+    const updatedTotalEstimatedQtyWastages = [...totalEstimatedQtyWastages];
+    updatedTotalEstimatedQtyWastages[index] = value;
+    setTotalEstimatedQtyWastages(updatedTotalEstimatedQtyWastages);
+  };
+
+
+
+  
+  // Function to calculate estimated quantities based on boqQuantity and coefficientFactors
+  const calculateEstimatedQuantities = () => {
+    if (boqQuantity) {
+      const newEstimatedQuantities = materials.map((material, index) => {
+        const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+        return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity = boqQuantity * coefficient
+      });
+      setEstimatedQuantities(newEstimatedQuantities); // Set the calculated estimated quantities
+    }
+  };
+
+  // Function to calculate total estimated quantities with wastage
+  const calculateTotalEstimatedQtyWastages = () => {
+    if (boqQuantity && estimatedQuantities.length > 0 && wastages.length > 0) {
+      const newTotalEstimatedQtyWastages = materials.map((material, index) => {
+        const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
+        const wastagePercentage = parseFloat(wastages[index]) || 0;
+        const totalWithWastage = estimatedQty * (1+wastagePercentage / 100);
+        return parseFloat(totalWithWastage.toFixed(4));; // Adding wastage percentage
+      });
+      setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
+    }
+  };
+
+
+
   const handleLevel5Change = (selectedOption) => setSelectedSubCategoryLevel5(selectedOption);
 
   const handleSubmitMaterialLabour = async () => {
+    setLoading(true);
     try {
       // Prepare the payload data
+      // setLoading(false);
 
       const payloadData = {
         boq_detail: {
@@ -1061,7 +1188,7 @@ const CreateBOQ = () => {
             ...(selectedSubCategory ? [{
               category_id: selectedSubCategory?.value,
               level: 2,
-              materials: !selectedSubCategoryLevel3 ? predefinedMaterials : [] ,// Filter for level 2
+              materials: !selectedSubCategoryLevel3 ? predefinedMaterials :[]  ,// Filter for level 2
               assets: !selectedSubCategoryLevel3 ? predefinedAssets : [] 
             }] : []),
 
@@ -1092,7 +1219,7 @@ const CreateBOQ = () => {
         }
       };
 
-      console.log("boq data payload ", payloadData)
+      console.log("boq data payload 1 ", payloadData)
 
 
       // Axios POST request
@@ -1105,11 +1232,13 @@ const CreateBOQ = () => {
       alert("BOQ created successfully")
       console.log('Data posted successfully:', response.data);
       // You can also display a success message or perform other actions after a successful request
-
+      // setLoading(false);
     } catch (error) {
       // Handle error if the request fails
       console.error('Error posting data:', error);
       // Optionally display an error message to the user
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1547,7 +1676,9 @@ const CreateBOQ = () => {
                                         placeholder="Estimated Qty"
 
                                         value={estimatedQuantities[index] || ''}
-                                        onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                        // value={calculateEstimatedQuantities()}
+                                        
+                                        // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                       />
                                     </td>
                                     <td>
@@ -1758,7 +1889,9 @@ const CreateBOQ = () => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="12" className="text-center" style={{paddingLeft:"500px"}}>
+                                  <td colSpan="12" className="text-center" 
+                                  style={{paddingLeft:"500px"}}
+                                  >
                                     No asset added yet.
                                   </td>
                                 </tr>
@@ -2013,8 +2146,23 @@ const CreateBOQ = () => {
               )}
 
             </div>
-            <div className="row mt-2 justify-content-center">
+            <div className="row mt-2 justify-content-center mb-5">
               <div className="col-md-2">
+              {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>Submitting your BOQ...</p>
+                      </div>
+                    )}
                 <button className="purple-btn2 w-100" fdprocessedid="u33pye" onClick={handleSubmit}>
                   Create
                 </button>
