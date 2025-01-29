@@ -1,15 +1,16 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { Link } from "react-router-dom";
 import BulkAction from "./common/Card/BulkAction";
+import axios from "axios";
 
 
 
-const BOQListTable = ({ boqList }) => {
+const BOQListTable = ({ boqList ,setBoqList }) => {
 
   const [openProjectId, setOpenProjectId] = useState(null);
   const [openSubProjectId, setOpenSubProjectId] = useState(null);
@@ -142,6 +143,77 @@ const BOQListTable = ({ boqList }) => {
 
   }
 
+  // bulk action 
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+  // const [boqList, setBoqList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+   // Handle input changes
+   const handleStatusChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "fromStatus") {
+      setFromStatus(value);
+    } else if (name === "toStatus") {
+      setToStatus(value);
+    }
+  };
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  // Handle Submit
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (!fromStatus || !toStatus) {
+  //     alert("Please select both From and To Status");
+  //     return;
+  //   }
+
+  //   setLoading(true); // Set loading state before making the API call
+
+  //   // Make the API call based on the selected statuses
+  //   axios
+  //     .get(
+  //       `https://marathon.lockated.com/boq_details.json?q[status_eq]=${fromStatus}&project_id=31&site_id=35&wing_id=&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //     )
+  //     .then((response) => {
+  //       setBoqList(response.data); // Set the filtered data to state
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching data:", error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false); // Stop loading when the request is complete
+  //     });
+  // };
+
+
+  // Fetch the data when 'fromStatus' changes
+  useEffect(() => {
+    if (fromStatus) { // Only fetch data if a status is selected
+      setLoading(true); // Show loading state while fetching
+      axios
+        .get(
+          `https://marathon.lockated.com/boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          setBoqList(response.data); // Set the fetched data to state
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading when request is complete
+        });
+    }
+  }, [fromStatus]);  // This will run every time 'fromStatus' changes
+
+
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -161,6 +233,8 @@ const BOQListTable = ({ boqList }) => {
                     <select
                       name="fromStatus"
                       className="form-control form-select"
+                      value={fromStatus}
+                      onChange={handleStatusChange}
                     // value={formValues.fromStatus}
                     // onChange={handleChange}
                     >
