@@ -532,7 +532,7 @@ export default function VendorDetails() {
 
   useEffect(() => {
     fetchEventData();
-  }, []);
+  }, [eventId, currentIndex]);
 
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
@@ -922,7 +922,7 @@ ${seconds}s`);
     }, 1000);
 
     return () => clearInterval(interval); // Cleanup the interval
-  }, []);
+  }, [eventId]);
 
   //user overview
 
