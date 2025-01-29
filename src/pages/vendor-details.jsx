@@ -31,6 +31,8 @@ export default function VendorDetails() {
     }
   };
 
+  const [endTime, setEndTime] = useState(null); // Store event end time
+
   const getOrdinalInText = (n) => {
     const ordinals = [
       "First",
@@ -865,6 +867,65 @@ export default function VendorDetails() {
   const [timeRemaining, setTimeRemaining] = useState("");
 
   // Fetch data from the API
+  //   useEffect(() => {
+  //     const fetchTerms = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+  //         const data = response.data;
+  //         console.log("my data", data.state);
+
+  //         if (data.state == "expired") {
+  //           setIsBid(true);
+  //           console.log("isBid", isBid);
+  //         } else {
+  //           setIsBid(false);
+  //         }
+
+  //         const endTime = new Date(data.event_schedule.end_time); // Event end time
+  //         const currentTime = new Date(); // Current time
+  //         const remainingTime = endTime - currentTime; // Time difference in milliseconds
+
+  //         if (remainingTime > 0) {
+  //           const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+  //           const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+  //           const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+  //           const seconds = Math.floor((remainingTime / 1000) % 60);
+
+  //           setTimeRemaining(`${days}d:
+  // ${hours}h:
+  // ${minutes}m:
+  // ${seconds}s`);
+  //         } else {
+  //           setTimeRemaining("Expired");
+  //           setIsBid(true); // Disable bidding if expired
+  //         }
+
+  //         // setTerms(response.data.terms_and_conditions || []);
+
+  //         const extractedTerms = response.data.resource_term_conditions.map(
+  //           (item) => ({
+  //             id: item.term_condition.id,
+  //             condition: item.term_condition.condition,
+  //           })
+  //         );
+
+  //         setTerms(extractedTerms || []); // Set the mapped terms
+  //       } catch (error) {
+  //         console.error("Error fetching terms and conditions:", error);
+  //       }
+  //     };
+
+  //     fetchTerms();
+
+  //     const interval = setInterval(() => {
+  //       fetchTerms();
+  //     }, 1000);
+
+  //     return () => clearInterval(interval); // Cleanup the interval
+  //   }, [eventId]);
+
   useEffect(() => {
     const fetchTerms = async () => {
       try {
@@ -874,55 +935,56 @@ export default function VendorDetails() {
         const data = response.data;
         console.log("my data", data.state);
 
-        if (data.state == "expired") {
+        // Handle bidding state
+        if (data.state === "expired") {
           setIsBid(true);
-          console.log("isBid", isBid);
         } else {
           setIsBid(false);
         }
 
-        const endTime = new Date(data.event_schedule.end_time); // Event end time
-        const currentTime = new Date(); // Current time
-        const remainingTime = endTime - currentTime; // Time difference in milliseconds
+        // Store event end time in state
+        setEndTime(new Date(data.event_schedule.end_time));
 
-        if (remainingTime > 0) {
-          const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
-          const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
-          const seconds = Math.floor((remainingTime / 1000) % 60);
+        // Set Terms
+        const extractedTerms = data.resource_term_conditions.map((item) => ({
+          id: item.term_condition.id,
+          condition: item.term_condition.condition,
+        }));
 
-          setTimeRemaining(`${days}d:
-${hours}h:
-${minutes}m:
-${seconds}s`);
-        } else {
-          setTimeRemaining("Expired");
-          setIsBid(true); // Disable bidding if expired
-        }
-
-        // setTerms(response.data.terms_and_conditions || []);
-
-        const extractedTerms = response.data.resource_term_conditions.map(
-          (item) => ({
-            id: item.term_condition.id,
-            condition: item.term_condition.condition,
-          })
-        );
-
-        setTerms(extractedTerms || []); // Set the mapped terms
+        setTerms(extractedTerms || []);
       } catch (error) {
         console.error("Error fetching terms and conditions:", error);
       }
     };
 
     fetchTerms();
+  }, [eventId]); // Fetch API only when eventId changes
 
-    const interval = setInterval(() => {
-      fetchTerms();
-    }, 1000);
+  useEffect(() => {
+    if (!endTime) return;
 
-    return () => clearInterval(interval); // Cleanup the interval
-  }, [eventId]);
+    const updateCountdown = () => {
+      const currentTime = new Date();
+      const remainingTime = endTime - currentTime;
+
+      if (remainingTime > 0) {
+        const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+        const seconds = Math.floor((remainingTime / 1000) % 60);
+
+        setTimeRemaining(`${days}d: ${hours}h: ${minutes}m: ${seconds}s`);
+      } else {
+        setTimeRemaining("Expired");
+        setIsBid(true);
+      }
+    };
+
+    updateCountdown(); // Initial call
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [endTime]); // Only run countdown effect when `endTime` is set
 
   //user overview
 
@@ -971,7 +1033,7 @@ ${seconds}s`);
     };
 
     fetchEventMaterials();
-  }, []);
+  }, [eventId]);
 
   const handlepublishedStages = () => {
     setPublishedStages(!publishedStages);
