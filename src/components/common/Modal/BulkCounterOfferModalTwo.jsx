@@ -5,6 +5,9 @@ import Table from "../../base/Table/Table";
 import ShortTable from "../../base/Table/ShortTable";
 import { productTableColumns } from "../../../constant/data";
 import { useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Toast } from "bootstrap";
 
 export default function BulkCounterOfferModalTwo({
   show,
@@ -13,7 +16,8 @@ export default function BulkCounterOfferModalTwo({
 }) {
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
-  const [setSubmitted, setSetSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   console.log("idddd", id);
 
@@ -143,6 +147,7 @@ export default function BulkCounterOfferModalTwo({
   // };
 
   const handleSubmit = async () => {
+    setLoading(true);
     const counterBidMaterialsAttributes = formData?.event_materials?.map(
       (item) => ({
         event_material_id: item.id,
@@ -158,7 +163,7 @@ export default function BulkCounterOfferModalTwo({
       })
     );
 
-    setsubmitted(true);
+    // setsubmitted(true);
 
     const payload = {
       counter_bid: {
@@ -190,16 +195,20 @@ export default function BulkCounterOfferModalTwo({
       );
 
       if (response.ok) {
-        alert("Counter bid submitted successfully!");
-        handleClose();
+        toast.success("Counter Bid Created successfully!", {
+          autoClose: 1000, // Close after 3 seconds
+        });
+        setTimeout(() => {
+          handleClose();
+        }, 1000); //
       } else {
-        console.error("Failed to submit counter bid", await response.text());
+        const errorText = await response.text();
+        toast.error(`Failed to submit counter bid: ${errorText}`);
       }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
-    }
-    finally {
-      setSubmitted(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -476,38 +485,65 @@ export default function BulkCounterOfferModalTwo({
   // console.log("Product Table Data:", productTableData);
 
   return (
-    <DynamicModalBox
-      show={show}
-      onHide={handleClose}
-      title="Counter Offer"
-      size="xl"
-      footerButtons={[
-        {
-          label: "Save",
-          onClick: handleSubmit,
-          props: { className: submitted ? 'disabled-btn' : 'purple-btn2' },
-        },
-      ]}
-    >
-      <h5 className="mt-5">Product Sheet</h5>
-      <Table columns={productTableColumns} data={productTableData} />
+    <>
+      <DynamicModalBox
+        show={show}
+        onHide={handleClose}
+        title="Counter Offer"
+        size="xl"
+        // footerButtons={[
+        //   {
+        //     label: "Save",
+        //     onClick: handleSubmit,
+        //     props: { className: submitted ? "disabled-btn" : "purple-btn2" },
+        //   },
+        // ]}
 
-      <div className="d-flex justify-content-end">
-        <ShortTable data={freightData} />
-      </div>
-      <div className="d-flex justify-content-end">
-        <h4>Sum Total : ₹{sumTotal}</h4>
-      </div>
+        footerButtons={[
+          {
+            label: loading ? (
+              <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Submitting your bid...</p>
+              </div>
+            ) : (
+              "Save"
+            ),
+            onClick: handleSubmit,
+            props: { className: "purple-btn2", disabled: loading }, // Disable button when loading
+          },
+        ]}
+      >
+        <h5 className="mt-5">Product Sheet</h5>
+        <Table columns={productTableColumns} data={productTableData} />
 
-      <div className="form-group">
-        <label htmlFor="counterOfferRemarks">Counter Offer Remarks</label>
-        <input
-          className="form-control"
-          placeholder="Enter your remarks here"
-          type="text"
-          id="counterOfferRemarks"
-        />
-      </div>
-    </DynamicModalBox>
+        <div className="d-flex justify-content-end">
+          <ShortTable data={freightData} />
+        </div>
+        <div className="d-flex justify-content-end">
+          <h4>Sum Total : ₹{sumTotal}</h4>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="counterOfferRemarks">Counter Offer Remarks</label>
+          <input
+            className="form-control"
+            placeholder="Enter your remarks here"
+            type="text"
+            id="counterOfferRemarks"
+          />
+        </div>
+      </DynamicModalBox>
+      <ToastContainer />
+    </>
   );
 }

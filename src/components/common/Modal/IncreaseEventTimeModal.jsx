@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { evaluationOptions } from "../../../constant/data";
+import { useParams } from "react-router-dom";
 
 const IncreaseEventTimeModal = ({ show, handleClose }) => {
   const [selectedDuration, setSelectedDuration] = useState(
@@ -21,6 +22,15 @@ const IncreaseEventTimeModal = ({ show, handleClose }) => {
     }
     console.log("selectedDuration :-", selectedDuration);
   };
+
+  const { id } = useParams();
+
+  const [eventData, setEventData] = useState(null); // To store fetched event data
+
+  const [vendorId, setVendorId] = useState(() => {
+    // Retrieve the vendorId from sessionStorage or default to an empty string
+    return sessionStorage.getItem("vendorId") || "";
+  });
 
   const handleSave = async () => {
     let payload = {};
@@ -59,7 +69,7 @@ const IncreaseEventTimeModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events/8/extend_event_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397",
+        `https://marathon.lockated.com/rfq/events/${id}/extend_event_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

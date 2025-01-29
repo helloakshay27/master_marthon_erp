@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { Alert } from "react-bootstrap";
+import { useParams } from "react-router-dom";
 
 const WithdrawOrderModal = ({ show, handleClose }) => {
   const [withdrawReason, setWithdrawReason] = useState("");
+
+  const { id } = useParams();
+
+  const [eventData, setEventData] = useState(null); // To store fetched event data
+
+  const [vendorId, setVendorId] = useState(() => {
+    // Retrieve the vendorId from sessionStorage or default to an empty string
+    return sessionStorage.getItem("vendorId") || "";
+  });
 
   const handleSave = async () => {
     const payload = {
@@ -12,7 +22,7 @@ const WithdrawOrderModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events/8/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=7397",
+        `https://marathon.lockated.com/rfq/events/${id}/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

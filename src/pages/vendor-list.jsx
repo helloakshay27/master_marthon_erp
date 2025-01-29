@@ -654,7 +654,7 @@ export default function VendorListPage() {
                             : "1px solid #ccc",
                         backgroundColor:
                           activeTab === "all" ? " #8b0203" : "#fff",
-                        color: "black",
+
                         color: activeTab === "all" ? "white" : "black",
                       }}
                     >

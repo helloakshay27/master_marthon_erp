@@ -663,8 +663,7 @@ export default function VendorDetails() {
       // console.log("API Response:", response.data);
       console.log("API Response:", response.data); // Log response to debug
       toast.success("Bid Created successfully!", {
-        position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000, // Close after 3 seconds
+        autoClose: 1000, // Close after 3 seconds
       });
       setIsBidCreated(true);
       setRevisedBid(true); // Update `revisedBid` to true
@@ -677,7 +676,7 @@ export default function VendorDetails() {
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
-        position: toast.POSITION.TOP_CENTER,
+        // position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
       });
     } finally {
