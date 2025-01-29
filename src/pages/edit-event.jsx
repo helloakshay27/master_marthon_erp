@@ -17,7 +17,6 @@ import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import useSWR from "swr";
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
@@ -217,7 +216,7 @@ export default function EditEvent() {
       delivery_date: config.delivery_date,
     });
     handleEventTypeModalClose();
-    
+
     let eventTypeText = "";
     if (config.event_type === "rfq") {
       eventTypeText = "RFQ";
@@ -233,7 +232,12 @@ export default function EditEvent() {
       return;
     }
     setEventTypeText(eventTypeText);
-    console.log("Submitted eventType:", config.event_type, "awardType:", config.award_scheme);
+    console.log(
+      "Submitted eventType:",
+      config.event_type,
+      "awardType:",
+      config.award_scheme
+    );
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -594,7 +598,7 @@ export default function EditEvent() {
           inventory_id: material.inventory_id,
           quantity: material.quantity,
           uom: material.unit,
-          location: material.location, 
+          location: material.location,
           rate: material.rate,
           amount: material.amount,
           sub_section_name: material.sub_section_id,
