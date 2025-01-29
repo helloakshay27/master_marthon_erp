@@ -212,7 +212,7 @@ export default function EditEvent() {
       time_extension_type: config.time_extension_type,
       triggered_time_extension_on_last: config.triggered_time_extension_on_last,
       extend_event_time_by: config.extend_event_time_by,
-      time_extension_on_change_in: config.time_extension_change,
+      time_extension_change: config.time_extension_change,
       delivery_date: config.delivery_date,
     });
     handleEventTypeModalClose();
@@ -292,7 +292,8 @@ export default function EditEvent() {
       // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
-
+      console.log(tableData);
+      
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
     } catch (error) {
@@ -316,13 +317,6 @@ export default function EditEvent() {
         `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
           eventDetails?.end_time
         ).toLocaleString()}`
-      );
-      setSelectedVendors(
-        eventDetails?.event_vendors?.map((vendor) => ({
-          id: vendor.id,
-          name: vendor.full_name || vendor.organization_name,
-          phone: vendor.contact_number || vendor.mobile || "N/A",
-        }))
       );
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => ({
@@ -378,16 +372,16 @@ export default function EditEvent() {
 
   const handleSaveButtonClick = async () => {
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
-
+  
     const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
       ","
     )}]`;
-
+  
     try {
       const response = await fetch(url, {
         method: "POST",
       });
-
+  
       if (response.ok) {
         const updatedTableData = tableData.filter(
           (vendor) =>
@@ -397,9 +391,16 @@ export default function EditEvent() {
         );
         console.log("Updated table data:", updatedTableData);
         setTableData(updatedTableData);
-
-        setSelectedVendors((prev) => [...prev, ...selectedRows]);
-        console.log("selceted", selectedVendors);
+  
+        const updatedVendorData = [
+          ...selectedVendors,
+          ...selectedRows.map((vendor) => ({
+            ...vendor,
+            pms_supplier_id: vendor.id,
+          })),
+        ];
+        setSelectedVendors(updatedVendorData);
+  
         setVendorModal(false);
         setSelectedRows([]);
         setResetSelectedRows(true);
@@ -416,6 +417,7 @@ export default function EditEvent() {
       });
     }
   };
+  
 
   const isVendorSelected = (vendorId) => {
     return (
@@ -561,7 +563,7 @@ export default function EditEvent() {
       return;
     }
 
-    console.log("sele te vendors", materialFormData);
+    console.log("selected vendors", selectedVendors);
 
     setSubmitted(true);
     const eventData = {
@@ -606,10 +608,8 @@ export default function EditEvent() {
           _destroy: material._destroy || false,
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
-          id: vendor.id,
           status: "invited",
-          pms_supplier_id: 1,
-          _destroy: vendor._destroy || false,
+          pms_supplier_id: vendor.pms_supplier_id,
         })),
         status_logs_attributes: [
           {
@@ -862,9 +862,14 @@ export default function EditEvent() {
                   </thead>
 
                   <tbody>
-                    {selectedVendors
-                      ?.filter((vendor) => !vendor._destroy)
-                      .map((vendor, index) => (
+                    {selectedVendors?.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No vendors selected
+                        </td>
+                      </tr>
+                    ) : (
+                      selectedVendors?.map((vendor, index) => (
                         <tr key={vendor.id}>
                           <td>{index + 1}</td>
                           <td>{vendor.name}</td>
@@ -887,17 +892,7 @@ export default function EditEvent() {
                             </button>
                           </td>
                         </tr>
-                      ))}
-                    {selectedVendors?.length === 0 && (
-                      <tr>
-                        <td
-                          // @ts-ignore
-                          colSpan="5"
-                          className="text-center"
-                        >
-                          No vendors selected
-                        </td>
-                      </tr>
+                      ))
                     )}
                   </tbody>
                 </table>
