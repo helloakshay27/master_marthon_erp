@@ -241,7 +241,7 @@ export default function ShortTable({
                   onChange={(e) => {
                     const inputValue =
                       row.label === "Freight Charge"
-                        ? e.target.value.replace(/[^0-9.]/g, "") // Allow only numeric input for Freight Charge
+                        ? e.target.value.replace(/[^0-9.]/g, "") 
                         : e.target.value;
                     handleInputChange(index, inputValue);
                   }}

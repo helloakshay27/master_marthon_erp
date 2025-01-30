@@ -11222,7 +11222,7 @@ table tbody th {
   font-size: 13px;
   font-weight: 700;
   border: 1px solid var(--filterBorder);
-  padding: 5px 8px;
+  /* padding: 5px 8px; */
 }
 .viewBy-tBody1-1-active {
   font-size: 13px;
@@ -11241,18 +11241,17 @@ table tbody th {
   display: flex;
 }
 .viewBy-collapT1 {
-  padding: 5px !important;
   background-color: var(--body-bg-color) !important;
   font-size: 14px !important;
   color: var(--black) !important;
   font-weight: 500;
+  padding: 0px !important;
 }
 .accordion-button::after {
   display: none !important;
 }
 .viewBy-collapT1-span {
   color: var(--light-grey) !important;
-  padding-right: 10px;
 }
 .viewBy-tBody2-p {
   font-size: 13px;
@@ -12037,7 +12036,6 @@ option {
   display: flex;
 }
 .viewBy-collapT1 {
-  padding: 5px !important;
   background-color: var(--body-bg-color) !important;
   font-size: 14px !important;
   color: var(--black) !important;
@@ -12045,13 +12043,11 @@ option {
 }
 .viewBy-collapT1-span {
   color: var(--light-grey) !important;
-  padding-right: 10px;
 }
 .viewBy-tBody2-p {
   font-size: 13px;
   font-weight: 600;
   border: 1px solid var(--filterBorder);
-  padding: 5px 8px;
 }
 /* Event view by product table end */
 /* Event view by product end */

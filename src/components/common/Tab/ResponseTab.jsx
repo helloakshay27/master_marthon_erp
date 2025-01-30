@@ -353,7 +353,7 @@ export default function ResponseTab({ isCounterOffer }) {
                     <colgroup>
                       <col style={{ width: "300px" }} />
                       {eventVendors.map((_, index) => (
-                        <col key={index} style={{ width: "250px" }} />
+                        <col key={index} style={{ width: "180px" }} />
                       ))}
                       <col style={{ width: "auto" }} />
                     </colgroup>
@@ -392,7 +392,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                   >
                                     &lt;
                                   </button>
-                                  <div className="carousel-item-content mx-4">
+                                  <div className="carousel-item-content">
                                     {activeIndex === 0 && "Current Bid"}
                                     {activeIndex === 1 && "Initial Bid"}
                                     {activeIndex === 2 && "1st Revision"}

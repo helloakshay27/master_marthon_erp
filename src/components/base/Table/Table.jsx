@@ -123,7 +123,7 @@ export default function Table({
           <colgroup>
             <col style={{ width: "300px" }} />
             {data.map((_, index) => (
-              <col key={index} style={{ width: "250px" }} />
+              <col key={index} style={{ width: "180px" }} />
             ))}
             <col style={{ width: "auto" }} />
           </colgroup>
@@ -144,7 +144,7 @@ export default function Table({
                   <td
                     key={valueIndex}
                     style={{
-                      width: "250px",
+                      width: "180px",
                       textAlign: "left",
                       whiteSpace: "nowrap",
                       backgroundColor:
@@ -153,10 +153,13 @@ export default function Table({
                           : "transparent",
                       fontWeight:
                         rowIndex === transposedData.length - 1
-                          ? "semibold"
+                          ? "bold"
                           : "normal",
+                      textTransform: "capitalize",
                     }}
-                    onClick={() => onColumnClick && onColumnClick(data[valueIndex])}
+                    onClick={() =>
+                      onColumnClick && onColumnClick(data[valueIndex])
+                    }
                   >
                     {customRender[columns[rowIndex]?.key]
                       ? customRender[columns[rowIndex]?.key](
@@ -200,7 +203,7 @@ export default function Table({
               <th
                 key={index}
                 className="main2-th"
-                style={{ whiteSpace: "nowrap" }}
+                style={{ whiteSpace: "nowrap", textTransform: "capitalize" }}
               >
                 {col.label}
               </th>

@@ -12,6 +12,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
 import Table from "../../base/Table/Table"
+import ShortTable from "../../base/Table/ShortTable";
 
 export default function AllocationTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -231,8 +232,20 @@ export default function AllocationTab({ isCounterOffer }) {
 
   const getSelectedDataRows = () => {
     if (!selectedData) return [];
+    console.log("selectedData",selectedData);
+    
     return [selectedData];
   };
+
+  const dummyData = [
+    { label: "Freight Charge Amount", value: "₹5000" },
+    { label: "GST on Freight", value: "28%" },
+    { label: "Realised Freight Amount", value: "₹6400" },
+    { label: "Warranty Clause", value: "first bid" },
+    { label: "Payment Terms", value: "second bid" },
+    { label: "Loading / Unloading Clause", value: "third bid" },
+    { label: "Gross Total", value: "_" },
+  ];
 
   return (
     <div
@@ -349,7 +362,7 @@ export default function AllocationTab({ isCounterOffer }) {
                     <colgroup>
                       <col style={{ width: "300px" }} />
                       {eventVendors.map((_, index) => (
-                        <col key={index} style={{ width: "250px" }} />
+                        <col key={index} style={{ width: "180px" }} />
                       ))}
                       <col style={{ width: "auto" }} />
                     </colgroup>
@@ -379,29 +392,7 @@ export default function AllocationTab({ isCounterOffer }) {
                                   <p>
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
                                   </p>
-                                </div>
-                                <div className="d-flex justify-content-between align-items-center w-100 my-2">
-                                  <button
-                                    className="px-2 border-0"
-                                    style={{ fontSize: "1.5rem" }}
-                                    onClick={() => handlePrev(vendor.id)}
-                                  >
-                                    &lt;
-                                  </button>
-                                  <div className="carousel-item-content mx-4">
-                                    {activeIndex === 0 && "Current Bid"}
-                                    {activeIndex === 1 && "Initial Bid"}
-                                    {activeIndex === 2 && "1st Revision"}
-                                  </div>
-                                  <button
-                                    className="px-2 border-0"
-                                    style={{ fontSize: "1.5rem" }}
-                                    onClick={() => handleNext(vendor.id)}
-                                  >
-                                    &gt;
-                                  </button>
-                                </div>
-                                
+                                </div>                                
                               </div>
                             </td>
                           );
@@ -527,12 +518,40 @@ export default function AllocationTab({ isCounterOffer }) {
                   <div className="card p-4 mt-4">
                     <h5>Material Summary</h5>
                     <Table
-                      columns={getSelectedDataColumns()}
+                      columns={[
+                        {
+                          label: "Best Total Amount",
+                          key: "bestTotalAmount",
+                        },
+                        {
+                          label: "Quantity Available",
+                          key: "quantityAvailable",
+                        },
+                        { label: "Price", key: "price" },
+                        { label: "Discount", key: "discount" },
+                        {
+                          label: "Realised Discount",
+                          key: "realisedDiscount",
+                        },
+                        { label: "GST", key: "gst" },
+                        { label: "Realised GST", key: "realisedGST" },
+                        { label: "Landed Amount", key: "landedAmount" },
+                        {
+                          label: "Participant Attachment",
+                          key: "participantAttachment",
+                        },
+                        { label: "Total Amount", key: "totalAmount" },
+                      ]}
                       data={getSelectedDataRows()}
                       isHorizontal={false}
                     />
 
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <ShortTable data={dummyData} editable={false} />
+                    </div>
+                    <div className="text-end">
                     <button className="purple-btn2 mt-4" style={{width:'200px'}}>Allocate Material</button>
+                    </div>
                   </div>
                 )}
               </>

@@ -26,35 +26,45 @@ export default function Accordion({
     }
   };
 
+  const getBackgroundColor = (amt) => {
+    if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
+    if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
+    if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
+    return "transparent";
+  };
+
   return (
     <div className="accordion rounded-0 border-0 mb-0" id="accordionExample">
       <div className="accordion-item rounded-0">
         <h2 className="accordion-header">
           <button
-            className="accordion-button viewBy-collapT1"
+            className="accordion-button viewBy-collapT1 p-0 "
             style={{
               position: "relative",
               width: "100%",
               background: "#000",
               fontSize: "8px",
+              height: "50px",
             }}
             type="button"
             onClick={toggleAccordion}
             aria-expanded={isOpen}
           >
-            <span className="pe-3">
+            <span className="p-2">
               <DropArrowIcon isOpen={isOpen} />
             </span>{" "}
-            <span style={{ width: "250px" }}>{title}</span>
+            <span style={{ width: "260px" }}>{title}</span>
             <span style={{ display: "flex", flexWrap: "wrap" }}>
               {amount?.map((amt, index) => (
                 <span
                   key={index}
                   style={{
-                    paddingLeft: '20px',
-                    width: "250px",
+                    padding: '15px',
+                    width: "180px",
                     textAlign: "left",
-                    whiteSpace: "nowrap"
+                    whiteSpace: "nowrap",
+                    backgroundColor: getBackgroundColor(amt),
+                    height:'50px'
                   }}
                 >
                   {amt}
