@@ -241,6 +241,7 @@ export default function EditEvent() {
   // @ts-ignore
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [eventStatus, setEventStatus] = useState("pending"); // Add state for event status
 
   const fetchEventData = async () => {
     try {
@@ -319,22 +320,25 @@ export default function EditEvent() {
           amount: material.amount,
         }))
       );
-      setTextareas(
-        eventDetails?.resource_term_conditions?.map((term) => {
-          const matchedTerm = termsOptions.find(
-            (option) => option.value === term.term_condition_id
-          );
-          return {
-            id: term.term_condition_id,
-            value: term.term_condition.condition,
-            defaultOption: matchedTerm
-              ? { label: matchedTerm.label, value: matchedTerm.value }
-              : { label: "Select Condition", value: "" },
-          };
-        })
-      );
     }
   }, [eventDetails, termsOptions]);
+
+  useEffect(() => {
+    setTextareas(
+      eventDetails?.resource_term_conditions?.map((term) => {
+        const matchedTerm = termsOptions.find(
+          (option) => option.value === term.term_condition_id
+        );
+        return {
+          id: term.term_condition_id,
+          value: term.term_condition.condition,
+          defaultOption: matchedTerm
+            ? { label: matchedTerm.label, value: matchedTerm.value }
+            : { label: "Select Condition", value: "" },
+        };
+      })
+    );
+  }, [eventDetails]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -377,7 +381,7 @@ export default function EditEvent() {
     setTableData(updatedTableData);
     setSelectedVendors((prev) => [...prev, ...selectedRows]);
     console.log("selectedRows", selectedRows);
-    
+
     setVendorModal(false);
     setSelectedRows([]);
     setResetSelectedRows(true);
@@ -428,10 +432,8 @@ export default function EditEvent() {
         )
       );
     }
-
-    
   };
-  console.log("textare default",textareas);
+  console.log("textare default", textareas);
 
   const handleAddDocumentRow = () => {
     const newRow = { srNo: documentRows.length + 1, upload: null };
@@ -571,13 +573,13 @@ export default function EditEvent() {
       return;
     }
     console.log("eventDetails", eventDetails);
-    
+
     setSubmitted(true);
     const eventData = {
       event: {
         event_title: eventName,
         created_on: createdOn,
-        status: "pending",
+        status: eventStatus, // Use the selected event status
         event_description: eventDescription,
         event_schedule_attributes: {
           start_time:
@@ -734,6 +736,10 @@ export default function EditEvent() {
 
   useEffect(() => {}, [eventType, awardType]);
 
+  const handleStatusChange = (selectedOption) => {
+    setEventStatus(selectedOption.value);
+  };
+
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -819,6 +825,21 @@ export default function EditEvent() {
                   placeholder="Enter Event Description"
                   value={eventDescription}
                   onChange={(e) => setEventDescription(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Event Status</label>
+                </div>
+                <SelectBox
+                  options={[
+                    { label: "Submitted", value: "submitted" },
+                    { label: "Approved", value: "approved" },
+                    { label: "Published", value: "published" },
+                    { label: "Expired", value: "expired" },
+                    { label: "Closed", value: "closed" },
+                  ]}
+                  onChange={handleStatusChange} // Pass the selected value to the handler
                 />
               </div>
             </div>
@@ -989,7 +1010,12 @@ export default function EditEvent() {
                           onChange={(option) =>
                             handleConditionChange(textarea.id, option)
                           }
-                          defaultValue={textarea?.defaultOption?.value || { label: "Select Condition", value: "" }}
+                          defaultValue={
+                            textarea?.defaultOption?.value || {
+                              label: "Select Condition",
+                              value: "",
+                            }
+                          }
                         />
                       </td>
                       <td>
