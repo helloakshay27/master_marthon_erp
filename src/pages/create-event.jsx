@@ -191,7 +191,6 @@ export default function CreateEvent() {
   };
 
   const handleEventConfigurationSubmit = (config) => {
-    console.log("Submitted Event Configuration:", config);
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
     setSelectedStrategy(config.event_configuration);
@@ -220,12 +219,7 @@ export default function CreateEvent() {
       return;
     }
     setEventTypeText(eventTypeText);
-    console.log(
-      "Submitted eventType:",
-      config.event_type,
-      "awardType:",
-      config.award_scheme
-    );
+    
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -260,7 +254,6 @@ export default function CreateEvent() {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
 
@@ -350,7 +343,6 @@ export default function CreateEvent() {
       (option) => String(option.value) === String(selectedOption)
     );
 
-    console.log("selectedCondition:", selectedCondition);
 
     if (selectedCondition) {
       setTextareas(
@@ -363,7 +355,6 @@ export default function CreateEvent() {
             : textarea
         )
       );
-      console.log("Updated textareas:", textareas);
     }
   };
 
@@ -427,23 +418,6 @@ export default function CreateEvent() {
       return;
     }
 
-    console.log("Event Name:", eventName);
-    console.log("Created On:", createdOn);
-    console.log("Schedule Data:", scheduleData);
-    console.log("Selected Vendors:", selectedVendors);
-    console.log("Event Description:", eventDescription);
-    console.log("Event Type:", eventType);
-    console.log("Award Type:", awardType);
-    console.log("Selected Strategy:", selectedStrategy);
-    console.log("Dynamic Extension:", dynamicExtension);
-    console.log(
-      "Dynamic Extension Configurations:",
-      dynamicExtensionConfigurations
-    );
-    console.log("Material Form Data:", materialFormData);
-    console.log("Textareas:", textareas);
-    console.log("Document Rows:", documentRows);
-
     setSubmitted(true);
     const eventData = {
       event: {
@@ -506,7 +480,6 @@ export default function CreateEvent() {
       },
     };
 
-    console.log("Payload:", eventData);
 
     try {
       const response = await fetch(
@@ -564,17 +537,10 @@ export default function CreateEvent() {
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      console.log(
-        "Filtered suggestions:",
-        filteredSuggestions.length,
-        filteredSuggestions
-      );
       setSuggestions(filteredSuggestions);
-      console.log("Suggestions:", suggestions.length, suggestions);
 
       setIsSuggestionsVisible(true);
     }
-    console.log("Search term:", e.target.value, filteredSuggestions);
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -587,7 +553,6 @@ export default function CreateEvent() {
     if (searchTerm.trim() === "") {
       setFilteredTableData(tableData);
     } else {
-      console.log("search", searchTerm);
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -611,7 +576,6 @@ export default function CreateEvent() {
         condition: term.condition, // Include condition text here
       }));
       setTermsOptions(termsList);
-      console.log("Terms and conditions:", termsList);
     } catch (error) {
       console.error("Error fetching terms and conditions:", error);
     }

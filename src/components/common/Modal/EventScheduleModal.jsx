@@ -45,7 +45,14 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
 
       onLoadScheduleData(isLater, laterDate, laterTime, endDate, endTime, evaluationDurationVal, customEvaluationDuration);
     }
-  }, [existingData, onLoadScheduleData]);
+  }, [existingData]);
+
+  useEffect(() => {
+    if (endDate && endTime) {
+      const endDateTime = new Date(`${endDate}T${endTime}`);
+      setFormattedEndTime(format(endDateTime, "dd MMM yyyy 'at' hh:mm a"));
+    }
+  }, [endDate, endTime]);
 
   const handleEndDateChange = (e) => {
     setEndDate(e.target.value);
@@ -101,13 +108,6 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     }
   };
 
-  useEffect(() => {
-    if (endDate && endTime) {
-      const endDateTime = new Date(`${endDate}T${endTime}`);
-      setFormattedEndTime(format(endDateTime, "dd MMM yyyy 'at' hh:mm a"));
-    }
-  }, [endDate, endTime]);
-
   const handleSaveScheduleFun = () => {
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
@@ -126,9 +126,6 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     };
-    console.log("scheduleData.start_time:", data.start_time);
-    console.log("scheduleData.end_time_duration:", data.end_time_duration);
-    console.log("scheduleData.evaluation_time:", data.evaluation_time);
     
     handleSaveSchedule(data);
   };

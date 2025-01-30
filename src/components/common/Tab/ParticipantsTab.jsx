@@ -41,7 +41,6 @@ export default function ParticipantsTab({ data, id }) {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  console.log("Data:", data);
 
   const validateForm = () => {
     const errors = {};
@@ -122,8 +121,6 @@ export default function ParticipantsTab({ data, id }) {
     setVendorData(formattedData);
   }, [data, vendorData]);
 
-  console.log("Data:", data);
-  console.log("vendorData :-----", vendorData);
 
   useEffect(() => {
     setFilteredData(
@@ -172,12 +169,6 @@ export default function ParticipantsTab({ data, id }) {
       }));
 
       setTableData(formattedData);
-      console.log(
-        "Formatted data:",
-        formattedData.length,
-        formattedData,
-        tableData
-      );
 
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
@@ -316,13 +307,7 @@ export default function ParticipantsTab({ data, id }) {
           vendor.mobile?.toLowerCase().includes(e.target.value.toLowerCase()) ||
           vendor.email?.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      console.log(
-        "Filtered suggestions:",
-        filteredSuggestions.length,
-        filteredSuggestions
-      );
       setSuggestions(filteredSuggestions);
-      console.log("Suggestions:", suggestions.length, suggestions);
 
       setIsSuggestionsVisible(true);
     }
@@ -338,7 +323,6 @@ export default function ParticipantsTab({ data, id }) {
     if (searchTerm.trim() === "") {
       setFilteredTableData(tableData);
     } else {
-      console.log("search", searchTerm);
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );

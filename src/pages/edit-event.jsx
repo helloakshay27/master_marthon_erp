@@ -138,7 +138,6 @@ export default function EditEvent() {
   };
   const handleEventScheduleModalShow = () => {
     setEventScheduleModal(true);
-    console.log("Event schedule modal:", eventScheduleModal);
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -164,7 +163,6 @@ export default function EditEvent() {
     const value = e.target.value;
     if (["rfq", "contract", "auction"].includes(value)) {
       setEventType(value);
-      console.log("Updated eventType:", value);
     } else {
       alert("Please select a valid event type.");
     }
@@ -178,7 +176,6 @@ export default function EditEvent() {
     const value = e;
     if (["single_vendor", "multiple_vendors"].includes(value)) {
       setAwardType(value);
-      console.log("Updated awardType:", value);
     } else {
       alert("Please select a valid award scheme.");
     }
@@ -201,10 +198,8 @@ export default function EditEvent() {
   const handleVendorProfileChange = (profile) => {
     setSelectedVendorProfile(profile);
   };
-  console.log("event type", eventType, awardType);
 
   const handleEventConfigurationSubmit = (config) => {
-    console.log("Submitted Event Configuration:", config);
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
     setSelectedStrategy(config.event_configuration);
@@ -233,12 +228,6 @@ export default function EditEvent() {
       return;
     }
     setEventTypeText(eventTypeText);
-    console.log(
-      "Submitted eventType:",
-      config.event_type,
-      "awardType:",
-      config.award_scheme
-    );
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -263,7 +252,6 @@ export default function EditEvent() {
 
       if (response.ok) {
         setEventDetails(data);
-        console.log("Event details:", data);
       }
     } catch (error) {
       console.error("Error fetching event details:", error);
@@ -291,10 +279,8 @@ export default function EditEvent() {
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
       }));
-      // console.log("Formatted data:", formattedData.length, formattedData);
 
       setTableData(formattedData);
-      console.log(tableData);
 
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
@@ -309,6 +295,8 @@ export default function EditEvent() {
     fetchEventData();
     fetchData();
   }, []);
+
+  const [termsOptions, setTermsOptions] = useState([]);
 
   useEffect(() => {
     if (eventDetails) {
@@ -332,13 +320,21 @@ export default function EditEvent() {
         }))
       );
       setTextareas(
-        eventDetails?.resource_term_conditions?.map((term) => ({
-          id: term.term_condition_id,
-          value: term.term_condition.condition,
-        }))
+        eventDetails?.resource_term_conditions?.map((term) => {
+          const matchedTerm = termsOptions.find(
+            (option) => option.value === term.term_condition_id
+          );
+          return {
+            id: term.term_condition_id,
+            value: term.term_condition.condition,
+            defaultOption: matchedTerm
+              ? { label: matchedTerm.label, value: matchedTerm.value }
+              : { label: "Select Condition", value: "" },
+          };
+        })
       );
     }
-  }, [eventDetails]);
+  }, [eventDetails, termsOptions]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -372,56 +368,19 @@ export default function EditEvent() {
     }
   };
 
-  const handleSaveButtonClick = async () => {
-    if (isSaving) return; // Prevent multiple submissions
-    setIsSaving(true);
-    const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
+  const handleSaveButtonClick = () => {
+    const updatedTableData = tableData.filter(
+      (vendor) =>
+        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
+    );
 
-    const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
-      ","
-    )}]`;
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        const updatedTableData = tableData.filter(
-          (vendor) =>
-            !selectedRows.some(
-              (selectedVendor) => selectedVendor.id === vendor.id
-            )
-        );
-        console.log("Updated table data:", updatedTableData);
-        setTableData(updatedTableData);
-
-        const updatedVendorData = [
-          ...selectedVendors,
-          ...selectedRows.map((vendor) => ({
-            ...vendor,
-            pms_supplier_id: vendor.id,
-          })),
-        ];
-        setSelectedVendors(updatedVendorData);
-
-        setVendorModal(false);
-        setSelectedRows([]);
-        setResetSelectedRows(true);
-        toast.success("Vendors added successfully!", {
-          autoClose: 1000,
-        });
-      } else {
-        throw new Error("Failed to add vendors.");
-      }
-    } catch (error) {
-      console.error("Error adding vendors:", error);
-      toast.error("Failed to add vendors.", {
-        autoClose: 1000,
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    setTableData(updatedTableData);
+    setSelectedVendors((prev) => [...prev, ...selectedRows]);
+    console.log("selectedRows", selectedRows);
+    
+    setVendorModal(false);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
   };
 
   const isVendorSelected = (vendorId) => {
@@ -449,7 +408,7 @@ export default function EditEvent() {
 
   const handleConditionChange = (id, selectedOption) => {
     const selectedCondition = termsOptions.find(
-      (option) => String(option.value) === String(selectedOption)
+      (option) => String(option.value) === String(selectedOption.value)
     );
 
     if (selectedCondition) {
@@ -457,14 +416,22 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
+                ...textarea,
                 id: selectedCondition.value,
                 value: selectedCondition.condition,
+                defaultOption: {
+                  label: selectedCondition.label,
+                  value: selectedCondition.value,
+                },
               }
             : textarea
         )
       );
     }
+
+    
   };
+  console.log("textare default",textareas);
 
   const handleAddDocumentRow = () => {
     const newRow = { srNo: documentRows.length + 1, upload: null };
@@ -534,13 +501,6 @@ export default function EditEvent() {
     }
   };
 
-  console.log("scheduleData.start_time:", scheduleData.start_time);
-  console.log(
-    "scheduleData.end_time_duration:",
-    scheduleData.end_time_duration
-  );
-  console.log("scheduleData.evaluation_time:", scheduleData.evaluation_time);
-
   const handleOnLoadScheduleData = (
     isLater,
     laterDate,
@@ -567,9 +527,9 @@ export default function EditEvent() {
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     });
-
-    console.log("onLoadScheduleData:", onLoadScheduleData.start_time);
   };
+
+  // console.log("eventDetails:----", eventDetails);
 
   const validateForm = () => {
     if (!eventName) {
@@ -584,11 +544,17 @@ export default function EditEvent() {
       toast.error("Start time is required");
       return false;
     }
-    if (!onLoadScheduleData?.end_time_duration && !scheduleData?.end_time_duration) {
+    if (
+      !onLoadScheduleData?.end_time_duration &&
+      !scheduleData?.end_time_duration
+    ) {
       toast.error("End time duration is required");
       return false;
     }
-    if (!onLoadScheduleData?.evaluation_time && !scheduleData?.evaluation_time) {
+    if (
+      !onLoadScheduleData?.evaluation_time &&
+      !scheduleData?.evaluation_time
+    ) {
       toast.error("Evaluation time is required");
       return false;
     }
@@ -604,7 +570,8 @@ export default function EditEvent() {
     if (!validateForm()) {
       return;
     }
-
+    console.log("eventDetails", eventDetails);
+    
     setSubmitted(true);
     const eventData = {
       event: {
@@ -654,7 +621,7 @@ export default function EditEvent() {
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: "invited",
-          pms_supplier_id: vendor.pms_supplier_id,
+          pms_supplier_id: vendor.id,
         })),
         status_logs_attributes: [
           {
@@ -683,9 +650,11 @@ export default function EditEvent() {
       toast.success("Event updated successfully!", {
         autoClose: 1000,
       });
-      navigate(
-        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      );
+      setTimeout(() => {
+        navigate(
+          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
@@ -717,13 +686,7 @@ export default function EditEvent() {
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      console.log(
-        "Filtered suggestions:",
-        filteredSuggestions.length,
-        filteredSuggestions
-      );
       setSuggestions(filteredSuggestions);
-      console.log("Suggestions:", suggestions.length, suggestions);
 
       setIsSuggestionsVisible(true);
     }
@@ -739,7 +702,6 @@ export default function EditEvent() {
     if (searchTerm.trim() === "") {
       setFilteredTableData(tableData);
     } else {
-      console.log("search", searchTerm);
       const filteredSuggestions = tableData.filter((vendor) =>
         vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -747,8 +709,6 @@ export default function EditEvent() {
     }
     setIsSuggestionsVisible(true);
   };
-
-  const [termsOptions, setTermsOptions] = useState([]);
 
   // Fetch terms and conditions from the API
   const fetchTermsAndConditions = async () => {
@@ -763,7 +723,6 @@ export default function EditEvent() {
         condition: term.condition, // Include condition text here
       }));
       setTermsOptions(termsList);
-      console.log("Terms and conditions:", termsList);
     } catch (error) {
       console.error("Error fetching terms and conditions:", error);
     }
@@ -773,9 +732,7 @@ export default function EditEvent() {
     fetchTermsAndConditions();
   }, []);
 
-  useEffect(() => {
-    console.log("event type", eventType, awardType);
-  }, [eventType, awardType]);
+  useEffect(() => {}, [eventType, awardType]);
 
   return (
     <>
@@ -1032,11 +989,7 @@ export default function EditEvent() {
                           onChange={(option) =>
                             handleConditionChange(textarea.id, option)
                           }
-                          defaultValue={
-                            termsOptions.find(
-                              (option) => option.value === textarea.id
-                            ) || { label: "Select Condition", value: "" }
-                          }
+                          defaultValue={textarea?.defaultOption?.value || { label: "Select Condition", value: "" }}
                         />
                       </td>
                       <td>
@@ -1408,7 +1361,17 @@ export default function EditEvent() {
           />
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </>
   );
 }

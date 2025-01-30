@@ -22,7 +22,6 @@ export default function CreateRFQForm({
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
 
-  // console.log("existingData :-", existingData);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -265,10 +264,7 @@ export default function CreateRFQForm({
   const materialOptions = materials.map((material) => ({
     value: material.id,
     label: material.name,
-  }));
-
-  console.log("existingData:----",existingData);
-  
+  }));  
 
   return (
     <div className="row px-3">

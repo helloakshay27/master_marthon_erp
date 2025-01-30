@@ -101,12 +101,16 @@ const EventTypeModal = ({
       setLocalDynamicExtension(existingData.dynamic_time_extension || [false, false, false, false]);
       setLocalDynamicExtensionConfigurations({
         time_extension_type: existingData.time_extension_type,
-        triggered_time_extension_on_last: existingData.triggered_time_extension_on_last,
+        triggered_time_extension_on_last: (existingData.triggered_time_extension_on_last),
         extend_event_time_by: existingData.extend_event_time_by,
         time_extension_on_change_in: existingData.time_extension_change,
         delivery_date: existingData.delivery_date ? new Date(existingData.delivery_date).toISOString().slice(0, 16) : "",
       });
     }
+
+    console.log("localDynamicExtensionConfigurations :------",
+      localDynamicExtensionConfigurations, existingData);
+    
   }, [existingData]);  
 
   const validateForm = () => {
@@ -127,11 +131,6 @@ const EventTypeModal = ({
 
   const handleFormSubmit = () => {
     if (validateForm()) {
-      console.log("Local Event Type:", localEventType);
-      console.log("Local Selected Strategy:", localSelectedStrategy);
-      console.log("Local Award Type:", localAwardType);
-      console.log("Local Dynamic Extension:", localDynamicExtension);
-      console.log("Local Dynamic Extension Configurations:", localDynamicExtensionConfigurations);
 
       handleEventConfigurationSubmit({
         event_type: localEventType,
@@ -153,8 +152,6 @@ const EventTypeModal = ({
       [key]: value,
     }));
   };
-
-console.log("local", awardType, localAwardType, "event", eventType, localEventType);
   
   return (
     <DynamicModalBox
