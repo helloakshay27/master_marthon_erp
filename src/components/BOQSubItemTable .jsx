@@ -27,7 +27,10 @@ const BOQSubItemTable = ({
   handleDeleteAllAssets,
   handleSelectRowAssets,
   predefinedMaterialsData,
-  predefinedAssetsData
+  predefinedAssetsData,
+  boqSubItems,
+  handleInputChange2,
+  // boqCostQty
 }) => {
   const [materialshowModal, setmaterialShowModal] = useState(false);
   const [assetShowModal, setAssetShowModal] = useState(false);
@@ -43,6 +46,8 @@ const BOQSubItemTable = ({
   const closeLabourModal = () => setLabourShowModal(false);
 
   console.log('assets for boq sub:', Assets)
+  // console.log(' costQuantity: ', boqCostQty)
+  console.log(' boq sub item  in sub table : ', boqSubItems)
 
   //Material modal and table data handle add or delete
 
@@ -448,12 +453,27 @@ const BOQSubItemTable = ({
       });
   }, []);
 
-  const handleUnitChange2 = (selectedOption) => {
-    setSelectedUnit2(selectedOption);  // Update selected unit state
+  // const handleUnitChange2 = (selectedOption) => {
+  //   setSelectedUnit2(selectedOption);  // Update selected unit state
+  // };
+
+  const handleUnitChange2 = (index, selectedOption) => {
+    setSelectedUnit2((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
+      return newSelectedUnits;
+    });
   };
-  const handleUnitChange3 = (selectedOption) => {
-    setSelectedUnit3(selectedOption);  // Update selected unit state
+  const handleUnitChange3 = (index, selectedOption) => {
+    setSelectedUnit2((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
+      return newSelectedUnits;
+    });
   };
+  // const handleUnitChange3 = (selectedOption) => {
+  //   setSelectedUnit3(selectedOption);  // Update selected unit state
+  // };
   // // table data material 
 
   const [coefficientFactors, setCoefficientFactors] = useState(materials.map(() => ''));
@@ -494,41 +514,41 @@ const BOQSubItemTable = ({
 
   // assets 
 
-const [assetCoefficientFactors, setAssetCoefficientFactors] = useState(Assets.map(() => ''));
-const [assetEstimatedQuantities, setAssetEstimatedQuantities] = useState(Assets.map(() => ''));
-const [assetWastages, setAssetWastages] = useState(Assets.map(() => ''));
-const [assetTotalEstimatedQtyWastages, setAssetTotalEstimatedQtyWastages] = useState(Assets.map(() => ''));
-const [assetCostQTY, setAssetCostQTY] = useState(Assets.map(() => ''));
+  const [assetCoefficientFactors, setAssetCoefficientFactors] = useState(Assets.map(() => ''));
+  const [assetEstimatedQuantities, setAssetEstimatedQuantities] = useState(Assets.map(() => ''));
+  const [assetWastages, setAssetWastages] = useState(Assets.map(() => ''));
+  const [assetTotalEstimatedQtyWastages, setAssetTotalEstimatedQtyWastages] = useState(Assets.map(() => ''));
+  const [assetCostQTY, setAssetCostQTY] = useState(Assets.map(() => ''));
 
-const handleAssetCoefficientFactorChange = (index, value) => {
-  const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
-  updatedAssetCoefficientFactors[index] = value;
-  setAssetCoefficientFactors(updatedAssetCoefficientFactors);
-};
+  const handleAssetCoefficientFactorChange = (index, value) => {
+    const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
+    updatedAssetCoefficientFactors[index] = value;
+    setAssetCoefficientFactors(updatedAssetCoefficientFactors);
+  };
 
-const handleAssetEstimatedQtyChange = (index, value) => {
-  const updatedAssetEstimatedQuantities = [...assetEstimatedQuantities];
-  updatedAssetEstimatedQuantities[index] = value;
-  setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
-};
+  const handleAssetEstimatedQtyChange = (index, value) => {
+    const updatedAssetEstimatedQuantities = [...assetEstimatedQuantities];
+    updatedAssetEstimatedQuantities[index] = value;
+    setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
+  };
 
-const handleAssetWastageChange = (index, value) => {
-  const updatedAssetWastages = [...assetWastages];
-  updatedAssetWastages[index] = value;
-  setAssetWastages(updatedAssetWastages);
-};
+  const handleAssetWastageChange = (index, value) => {
+    const updatedAssetWastages = [...assetWastages];
+    updatedAssetWastages[index] = value;
+    setAssetWastages(updatedAssetWastages);
+  };
 
-const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
-  const updatedAssetTotalEstimatedQtyWastages = [...assetTotalEstimatedQtyWastages];
-  updatedAssetTotalEstimatedQtyWastages[index] = value;
-  setAssetTotalEstimatedQtyWastages(updatedAssetTotalEstimatedQtyWastages);
-};
+  const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
+    const updatedAssetTotalEstimatedQtyWastages = [...assetTotalEstimatedQtyWastages];
+    updatedAssetTotalEstimatedQtyWastages[index] = value;
+    setAssetTotalEstimatedQtyWastages(updatedAssetTotalEstimatedQtyWastages);
+  };
 
-const handleAssetCostQTY = (index, value) => {
-  const updatedAssetCostQTY = [...assetCostQTY];
-  updatedAssetCostQTY[index] = value;
-  setAssetCostQTY(updatedAssetCostQTY);
-};
+  const handleAssetCostQTY = (index, value) => {
+    const updatedAssetCostQTY = [...assetCostQTY];
+    updatedAssetCostQTY[index] = value;
+    setAssetCostQTY(updatedAssetCostQTY);
+  };
 
 
 
@@ -582,8 +602,8 @@ const handleAssetCostQTY = (index, value) => {
       estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
       cost_qty: parseFloat(assetCostQTY[index]) || 0,
     }));
-    console.log("assets data :",predefinedAssets2)
-  
+    console.log("assets data :", predefinedAssets2)
+
     // Once the data is ready, send it to the parent component
     predefinedAssetsData(predefinedAssets2);
   }, [
@@ -600,8 +620,88 @@ const handleAssetCostQTY = (index, value) => {
     assetCostQTY,
     unitOfMeasures,
   ]);
+
+
+  // 
+
+  const handleCostQtyChange = (id, value) => {
+    // This will call the parent's handleInputChange2 method
+    handleInputChange2(id, "cost_quantity", value);
+  };
+
+  const [boqQuantity, setBoqQuantity] = useState("");
+
+  // Use effect to sync the qty values with boqSubItems
+  useEffect(() => {
+    // Collect all qty values from boqSubItems
+    const qtyArray = boqSubItems.map((item) => item.qty);
+    setBoqQuantity(qtyArray); // Update the state with the qty values
+  }, [boqSubItems]); // Re-run the effect when boqSubItems change
+
   
 
+  console.log(" cost........qty", boqQuantity)
+
+  
+
+  // Function to calculate estimated quantities based on boqQuantity and coefficientFactors
+  const calculateEstimatedQuantities = () => {
+    if (boqQuantity) {
+      const newEstimatedQuantities = materials.map((material, index) => {
+        const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+        return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity = boqQuantity * coefficient
+      });
+      setEstimatedQuantities(newEstimatedQuantities); // Set the calculated estimated quantities
+    }
+  };
+
+  // Function to calculate total estimated quantities with wastage
+  const calculateTotalEstimatedQtyWastages = () => {
+    if (boqQuantity && estimatedQuantities.length > 0 && wastages.length > 0) {
+      const newTotalEstimatedQtyWastages = materials.map((material, index) => {
+        const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
+        const wastagePercentage = parseFloat(wastages[index]) || 0;
+        const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
+        return parseFloat(totalWithWastage.toFixed(4));; // Adding wastage percentage
+      });
+      setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
+    }
+  };
+
+  useEffect(() => {
+    calculateEstimatedQuantities();
+    calculateTotalEstimatedQtyWastages();
+  }, [boqQuantity, coefficientFactors, wastages]);
+
+
+  // Calculate Asset Estimated Quantities
+  const calculateAssetEstimatedQuantities = () => {
+    if (boqQuantity && assetCoefficientFactors.length > 0) {
+      const newAssetEstimatedQuantities = Assets.map((asset, index) => {
+        const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+        return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
+      });
+      setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
+    }
+  };
+  
+  // Calculate Asset Total Estimated Quantity with Wastages
+  const calculateAssetTotalEstimatedQtyWastages = () => {
+    if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
+      const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
+        const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
+        const wastagePercentage = parseFloat(assetWastages[index]) || 0;
+        return estimatedQty * (1+wastagePercentage / 100); // Adding wastage percentage
+      });
+      setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
+    }
+  };
+  
+  // Effect to recalculate asset quantities when dependencies change
+  useEffect(() => {
+    calculateAssetEstimatedQuantities();
+    calculateAssetTotalEstimatedQtyWastages();
+  }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   return (
     <>
@@ -644,6 +744,7 @@ const handleAssetCostQTY = (index, value) => {
                       </tr>
                     </thead>
                     <tbody>
+                      
                       {materials.length > 0 ? (
                         materials.map((material, index) => (
                           <tr>
@@ -697,15 +798,18 @@ const handleAssetCostQTY = (index, value) => {
                             <td>
                               <SingleSelector
                                 options={unitOfMeasures}  // Providing the options to the select component
-                                onChange={handleUnitChange2}  // Setting the handler when an option is selected
+                                onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
+                                value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2[index]}
+                                // options={unitOfMeasures}  // Providing the options to the select component
+                                // onChange={handleUnitChange2}  // Setting the handler when an option is selected
                                 // value={unitOfMeasures.find(option => option.value === material.uom_id)||selectedUnit2}
-                                value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
+                                // value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
                                 placeholder={`Select UOM`} // Dynamic placeholder
 
                               />
                             </td>
-                            <td>  
-                              {/* <input
+                            {/* <td>   */}
+                            {/* <input
                               type="text"
                               className="form-control"
 
@@ -713,7 +817,7 @@ const handleAssetCostQTY = (index, value) => {
                               value={CostQTY[index] || ''}
                               onChange={(e) => handleCostQTY(index, e.target.value)}
                             /> */}
-                            </td>
+                            {/* </td> */}
                             <td>
                               <input
                                 className="form-control"
@@ -732,7 +836,7 @@ const handleAssetCostQTY = (index, value) => {
                                 placeholder="Estimated Qty"
 
                                 value={estimatedQuantities[index] || ''}
-                                onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                              // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
 
                               />
                             </td>
@@ -751,14 +855,14 @@ const handleAssetCostQTY = (index, value) => {
                                 className="form-control"
                                 placeholder="Total Estimated Qty"
                                 value={totalEstimatedQtyWastages[index] || ''}
-                                onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                              // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                               />
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="12" className="text-center" style={{paddingLeft:"400px"}}>
+                          <td colSpan="12" className="text-center" style={{ paddingLeft: "400px" }}>
                             No materials added yet.
                           </td>
                         </tr>
@@ -888,15 +992,18 @@ const handleAssetCostQTY = (index, value) => {
                             <td>
                               <SingleSelector
                                 options={unitOfMeasures}  // Providing the options to the select component
-                                onChange={handleUnitChange3}  // Setting the handler when an option is selected
-                                value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3}
+                                onChange={(selectedOption) => handleUnitChange3(index, selectedOption)}  // Update UOM for the specific material
+                                value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3[index]}
+                                // options={unitOfMeasures}  // Providing the options to the select component
+                                // onChange={handleUnitChange3}  // Setting the handler when an option is selected
+                                // value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3}
                                 // value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
                                 placeholder={`Select UOM`} // Dynamic placeholder
 
                               />
                             </td>
-                            <td>
-                            {/* <input
+                            {/* <td> */}
+                              {/* <input
                               type="text"
                               className="form-control"
 
@@ -904,9 +1011,9 @@ const handleAssetCostQTY = (index, value) => {
                               value={assetCostQTY[index] || ''}
                               onChange={(e) => handleAssetCostQTY(index, e.target.value)}
                             /> */}
-                            </td>
+                            {/* </td> */}
                             <td>
-                            <input
+                              <input
                                 className="form-control"
                                 type="number"
 
@@ -916,7 +1023,7 @@ const handleAssetCostQTY = (index, value) => {
                               />
                             </td>
                             <td>
-                            <input
+                              <input
                                 className="form-control"
                                 type="number"
 
@@ -928,7 +1035,7 @@ const handleAssetCostQTY = (index, value) => {
                               />
                             </td>
                             <td>
-                            <input
+                              <input
                                 type="number"
                                 className="form-control"
                                 placeholder="Wastage"
@@ -949,7 +1056,7 @@ const handleAssetCostQTY = (index, value) => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="text-center" style={{paddingLeft:"400px"}}>
+                          <td colSpan="8" className="text-center" style={{ paddingLeft: "400px" }}>
                             No asset added yet.
                           </td>
                         </tr>

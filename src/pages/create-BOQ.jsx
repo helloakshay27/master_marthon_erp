@@ -142,14 +142,34 @@ const CreateBOQ = () => {
   const handleOpenModal2 = () => setShowModal2(true);
   const handleCloseModal2 = () => setShowModal2(false);
 
-  const handleAddMaterials2 = (newMaterials) => {
-    setMaterials2((prev) => [
-      ...prev,
-      ...newMaterials.filter(
-        (material) => !prev.some((m) => m.id === material.id)
-      ),
-    ]);
+
+  const handleAddMaterials2 = (id, newMaterials) => {
+    setMaterials2((prev) => {
+      const updatedMaterials = { ...prev };
+  
+      if (!updatedMaterials[id]) {
+        updatedMaterials[id] = [];
+      }
+  
+      updatedMaterials[id] = [
+        ...updatedMaterials[id],
+        ...newMaterials.filter(
+          (material) => !updatedMaterials[id].some((m) => m.id === material.id)
+        ),
+      ];
+  
+      return updatedMaterials;
+    });
   };
+
+  // const handleAddMaterials2 = (newMaterials) => {
+  //   setMaterials2((prev) => [
+  //     ...prev,
+  //     ...newMaterials.filter(
+  //       (material) => !prev.some((m) => m.id === material.id)
+  //     ),
+  //   ]);
+  // };
 
   console.log("materials", materials2)
 
@@ -217,14 +237,34 @@ const CreateBOQ = () => {
   const handleCloseModalAsset2 = () => setShowModalAsset2(false);
 
 
-  const handleAddAssets2 = (newAsset) => {
-    setAssets2((prev) => [
-      ...prev,
-      ...newAsset.filter(
-        (asset) => !prev.some((a) => a.id === asset.id)
-      ),
-    ]);
+  // const handleAddAssets2 = (newAsset) => {
+  //   setAssets2((prev) => [
+  //     ...prev,
+  //     ...newAsset.filter(
+  //       (asset) => !prev.some((a) => a.id === asset.id)
+  //     ),
+  //   ]);
+  // };
+
+  const handleAddAssets2 = (id, newAssets) => {
+    setAssets2((prev) => {
+      const updatedAssets = { ...prev };
+  
+      if (!updatedAssets[id]) {
+        updatedAssets[id] = [];
+      }
+  
+      updatedAssets[id] = [
+        ...updatedAssets[id],
+        ...newAssets.filter(
+          (asset) => !updatedAssets[id].some((a) => a.id === asset.id)
+        ),
+      ];
+  
+      return updatedAssets;
+    });
   };
+  
 
   const handleDeleteAllAssets2 = () => {
     setAssets2((prev) =>
@@ -437,8 +477,8 @@ const CreateBOQ = () => {
 
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
-  const [selectedUnit2, setSelectedUnit2] = useState(null);
-  const [selectedUnit3, setSelectedUnit3] = useState(null);
+  const [selectedUnit2, setSelectedUnit2] = useState([]);
+  const [selectedUnit3, setSelectedUnit3] = useState([]);
 
 
   // Fetching the unit of measures data on component mount
@@ -462,13 +502,29 @@ const CreateBOQ = () => {
     setSelectedUnit(selectedOption);  // Update selected unit state
   };
 
-  const handleUnitChange2 = (selectedOption) => {
-    setSelectedUnit2(selectedOption);  // Update selected unit state
+  // const handleUnitChange2 = (selectedOption) => {
+  //   setSelectedUnit2(selectedOption);  // Update selected unit state
+  // };
+
+  const handleUnitChange2 = (index, selectedOption) => {
+    setSelectedUnit2((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
+      return newSelectedUnits;
+    });
   };
 
-  const handleUnitChange3 = (selectedOption) => {
-    setSelectedUnit3(selectedOption);  // Update selected unit state
+  const handleUnitChange3 = (index, selectedOption) => {
+    setSelectedUnit3((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
+      return newSelectedUnits;
+    });
   };
+
+  // const handleUnitChange3 = (selectedOption) => {
+  //   setSelectedUnit3(selectedOption);  // Update selected unit state
+  // };
 
 
 
@@ -760,59 +816,6 @@ const CreateBOQ = () => {
   const [predefinedMaterialsData, setPredefinedMaterialsData] = useState([])
   const [predefinedAssetsData, setPredefinedAssetsData] = useState([]);
 
-  // calculations 
-  // If you want to update `estimatedQuantities` based on the `boqQuantity`, you can create a side effect.
-  // useEffect(() => {
-  //   // Here, assuming you want to calculate estimated quantities based on some logic with boqQuantity
-  //   if (boqQuantity) {
-  //     setEstimatedQuantities(materials.map((material, index) => {
-  //       // For example, calculate estimated quantity based on boqQuantity and coefficientFactor
-  //       const coefficient = coefficientFactors[index] || 1; // default to 1 if no coefficient is set
-  //       return parseFloat(boqQuantity) * parseFloat(coefficient); // simple calculation for estimated quantities
-  //     }));
-  //   }
-  // }, [boqQuantity, coefficientFactors, materials]);
-
-  // // Effect to update total estimated quantities including wastages
-  // useEffect(() => {
-  //   if (boqQuantity && wastages.length > 0) {
-  //     setTotalEstimatedQtyWastages(materials.map((material, index) => {
-  //       const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
-  //       const wastagePercentage = parseFloat(wastages[index]) || 0;
-  //       return estimatedQty * ( wastagePercentage / 100); // Adding wastage percentage
-  //     }));
-  //   }
-  // }, [estimatedQuantities, wastages, materials]);
-
-   // Normal function to calculate estimated quantities
-  //  const calculateEstimatedQuantities = () => {
-  //   if (boqQuantity) {
-  //     const newEstimatedQuantities = materials.map((material, index) => {
-  //       const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
-  //       return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity: boqQuantity * coefficient
-  //     });
-  //     setEstimatedQuantities(newEstimatedQuantities);
-  //   }
-  // };
-
-  // Normal function to calculate total estimated quantities with wastage
-  // const calculateTotalEstimatedQtyWastages = () => {
-  //   if (boqQuantity && wastages.length > 0) {
-  //     const newTotalEstimatedQtyWastages = materials.map((material, index) => {
-  //       const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
-  //       const wastagePercentage = parseFloat(wastages[index]) || 0;
-  //       return estimatedQty * ( wastagePercentage / 100); // Adding wastage percentage
-  //     });
-  //     setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages);
-  //   }
-  // };
-
-
- 
-
-  
-
-
   console.log("parent comp predef2", predefinedMaterialsData)
   const updatePredefinedMaterialsData = (data) => {
     console.log('Received Data in Parent:', data);
@@ -924,10 +927,6 @@ useEffect(() => {
   };
 
 
-
-
-
-
   // Example predefined materials data (replace with actual data from your source)
   const predefinedMaterials =
     materials.map((material, index) => ({
@@ -965,13 +964,8 @@ useEffect(() => {
   console.log("asset data table", predefinedAssets);
 
 
-
-
-
   //boq sub item t data
-  const [boqSubItems, setBoqSubItems] = useState([
-
-  ]);
+  const [boqSubItems, setBoqSubItems] = useState([]);
 
 
   const handleInputChange2 = (index, field, value) => {
@@ -1246,6 +1240,7 @@ useEffect(() => {
   const handleSubmitBOQSubItem = async () => {
     // Logic for handling submission when BOQ SubItem is selected
     console.log('BOQ SubItem submitted');
+    setLoading(true);
 
     try {
       // Prepare the payload data
@@ -1318,6 +1313,8 @@ useEffect(() => {
       // Handle error if the request fails
       console.error('Error posting data:', error);
       // Optionally display an error message to the user
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -1653,9 +1650,9 @@ useEffect(() => {
                                     </td>
                                     <td>
                                       <SingleSelector
-                                        options={unitOfMeasures}  // Providing the options to the select component
-                                        onChange={handleUnitChange2}  // Setting the handler when an option is selected
-                                        value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
+                                      options={unitOfMeasures}  // Providing the options to the select component
+                                      onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
+                                        value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2[index]}
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                       />
 
@@ -1842,8 +1839,8 @@ useEffect(() => {
                                     <td>
                                       <SingleSelector
                                         options={unitOfMeasures}  // Providing the options to the select component
-                                        onChange={handleUnitChange3}  // Setting the handler when an option is selected
-                                        value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3}
+                                        onChange={(selectedOption) => handleUnitChange3(index, selectedOption)}  // Setting the handler when an option is selected
+                                        value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3[index]}
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                       />
 
@@ -2055,7 +2052,7 @@ useEffect(() => {
                                         />
                                       </td>
                                       <td colSpan={3}>
-                                        <input type="number" defaultValue={621.0}
+                                        <input type="number" 
                                           value={expandedRows.qty}
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
@@ -2081,20 +2078,26 @@ useEffect(() => {
                                         <td colSpan={11}>
                                           {/* <BOQSubItemTable /> */}
                                           <BOQSubItemTable
-                                            materials={materials2}
+                                            // materials={materials2}
+                                            materials={materials2[el.id] || []}
+                                            handleAddMaterials={(newMaterials) => handleAddMaterials2(el.id, newMaterials)}
+
+
                                             setMaterials={setMaterials2}
 
-                                            Assets={Assets2}
+                                            Assets={Assets2[el.id] || []}
                                             setAssets={setAssets2}
-                                            handleAddMaterials={handleAddMaterials2}
+                                            // handleAddMaterials={handleAddMaterials2}
                                             handleDeleteAll={handleDeleteAll2}
                                             handleSelectRow={handleSelectRow2}
 
-                                            handleAddAssets={handleAddAssets2}
+                                            handleAddAssets={(newMaterials) =>handleAddAssets2 (el.id, newMaterials)}
                                             handleDeleteAllAssets={handleDeleteAllAssets2}
                                             handleSelectRowAsset={handleSelectRowAssets2}
                                             predefinedMaterialsData={updatePredefinedMaterialsData}
                                             predefinedAssetsData={updatePredefinedAssetsData}
+                                            boqSubItems={boqSubItems}
+                                            // boqCostQty={expandedRows[el.id]?.qty}
                                           />
 
                                           {/* <MaterialModal
