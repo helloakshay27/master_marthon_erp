@@ -364,7 +364,7 @@ function App() {
           </Route>
           <Route path="/approval-materics" element={<ApprovalMatrics />} />
           <Route path="/invoice_approval" element={<InvoiceApproval />} />
-          <Route path="/approval_edit" element={<ApprovalEdit />} />
+          <Route path="/approval_edit/:id" element={<ApprovalEdit />} />
         </Routes>
       </div>
     </BrowserRouter>

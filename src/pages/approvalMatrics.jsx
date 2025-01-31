@@ -3,17 +3,29 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import Select from "../components/base/Select/Select";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { QuickFilter } from "../components";
 
 const ApprovalMatrics = () => {
+  const [approvals, setApprovals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [filterOptions, setFilterOptions] = useState({
-    event_titles: [],
-    event_numbers: [],
-    statuses: [],
-    creaters: [],
-    material_name: [],
-    material_type: [],
-    locations: [],
+    companies: [],
+    sites: [],
+    departments: [],
+    categories: [],
+    sub_categories: [],
+    // approval_types: [],
+    // users: [],
   });
+
+  const [currentPage, setCurrentPage] = useState(1); // Current page state
+  const [totalRecords, setTotalRecords] = useState(0); // Total records state
+  const [totalPages, setTotalPages] = useState(0); // T
+  const pageSize = 8;
 
   const navigate = useNavigate();
 
@@ -21,48 +33,246 @@ const ApprovalMatrics = () => {
     navigate("/invoice_approval");
   };
 
-  const data = [
-    {
-      id: 1,
-      function: "Finance",
-      company: "ABC Corp",
-      site: "New York",
-      department: "Accounts",
-      category: "Expense",
-      template: "Template A",
-      subCategory: "Travel",
-      createdOn: "2023-12-25",
-      createdBy: "John Doe",
-    },
-    {
-      id: 2,
-      function: "HR",
-      company: "XYZ Ltd",
-      site: "Los Angeles",
-      department: "Recruitment",
-      category: "Hiring",
-      template: "Template B",
-      subCategory: "Onboarding",
-      createdOn: "2023-11-20",
-      createdBy: "Jane Smith",
-    },
-    {
-      id: 3,
-      function: "IT",
-      company: "Tech Solutions",
-      site: "Chicago",
-      department: "Support",
-      category: "Software",
-      template: "Template C",
-      subCategory: "System Upgrade",
-      createdOn: "2023-10-15",
-      createdBy: "Michael Brown",
-    },
-  ];
-
-  const handleEditClick = () => {
-    navigate("/approval_edit");
+  const modifiedFilterOptions = {
+    companies: [
+      { label: "Select Company", value: "" },
+      ...filterOptions.companies, // Directly use the companies array from filterOptions
+    ],
+    // other fields
+    sites: [{ label: "Select Site", value: "" }, ...filterOptions.sites],
+    departments: [
+      { label: "Select Department", value: "" },
+      ...filterOptions.departments,
+    ],
+    categories: [
+      { label: "Select Category", value: "" },
+      ...filterOptions.categories,
+    ],
+    sub_categories: [
+      { label: "Select Sub Category", value: "" },
+      ...filterOptions.sub_categories,
+    ],
   };
+
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        const response = await fetch(
+          "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await response.json();
+        console.log("uiah", response.data);
+        setApprovals(data.invoice_approvals || []);
+        setTotalRecords(data.total_records || 0); // Set total records
+        setTotalPages(data.total_pages || 0); // Set total pages
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApprovals();
+  }, [currentPage]);
+
+  // const handleEditClick = () => {
+  //   navigate("/approval_edit");
+  // };
+
+  const handleEditClick = (id) => {
+    navigate(`/approval_edit/${id}`);
+  };
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        const response = await fetch(
+          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?quickfilter=true&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        if (!response.ok) throw new Error("Failed to fetch dropdown data");
+
+        const data = await response.json();
+
+        setFilterOptions({
+          companies: data.companies.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+          sites: data.sites.map(([name, id]) => ({ label: name, value: id })),
+          departments: data.departments.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+          categories: data.categories.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+          sub_categories: data.sub_categories.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+        });
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
+
+  const handleCompanyChange = (selectedOption) => {
+    console.log("Selected Option:", selectedOption.target.value);
+
+    const companyId = selectedOption.target.value; // Directly use companyId here
+
+    // Ensure valid selection
+    if (!companyId) {
+      console.warn("No valid company selected");
+      setSelectedCompany(null); // Reset the selected company state
+      setFilterOptions((prevState) => ({ ...prevState, sites: [] })); // Reset the sites
+      return;
+    }
+
+    // Update selected company state
+    setSelectedCompany(selectedOption);
+    console.log("Selected Company ID:", companyId);
+
+    // Construct API URL using the selected company ID
+    const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    // Fetch filtered sites
+    fetch(apiUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("API Response Data:", data);
+
+        if (!data || !Array.isArray(data.sites)) {
+          console.error("Invalid or missing site data:", data);
+          setFilterOptions((prevState) => ({ ...prevState, sites: [] })); // Reset sites
+          return;
+        }
+
+        // Map API response to match the select component's format
+        const formattedSites = data.sites.map(([name, id]) => ({
+          label: name,
+          value: id,
+        }));
+
+        // Update filter options with the fetched sites
+        setFilterOptions((prevState) => ({
+          ...prevState,
+          sites: formattedSites,
+        }));
+      })
+      .catch((error) => {
+        console.error("Error fetching sites:", error);
+        setFilterOptions((prevState) => ({ ...prevState, sites: [] })); // Reset sites
+      });
+  };
+
+  const handleCategoryChange = (selectedOption) => {
+    const categoryId = selectedOption.target.value;
+    setSelectedCategory(selectedOption);
+
+    console.log("categoryId", categoryId);
+
+    // Fetch subcategories based on the selected category
+    const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?category_id=${categoryId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    fetch(apiUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch subcategories");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!data || !Array.isArray(data.subcategories)) {
+          setFilterOptions((prevState) => ({
+            ...prevState,
+            sub_categories: [],
+          }));
+          return;
+        }
+
+        // Map API response to match the select component's format
+        const formattedSubcategories = data.subcategories.map(([name, id]) => ({
+          label: name,
+          value: id,
+        }));
+
+        // Update filter options with the fetched subcategories
+        setFilterOptions((prevState) => ({
+          ...prevState,
+          sub_categories: formattedSubcategories,
+        }));
+      })
+      .catch((error) => {
+        console.error("Error fetching subcategories:", error);
+        setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
+      });
+  };
+
+  const [filters, setFilters] = useState({
+    company: null,
+    site: null,
+    department: null,
+    category: null,
+    subCategory: null,
+  });
+
+  const handleFilterChange = (field, selectedOption) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [field]: selectedOption ? selectedOption.target.value : null,
+    }));
+  };
+
+  const handleFilterSubmit = async (e) => {
+    e.preventDefault();
+
+    let queryParams = new URLSearchParams();
+    console.log("kjasjc", filters);
+
+    if (filters.company) queryParams.append("company_id", filters.company);
+    if (filters.site) queryParams.append("site_id", filters.site);
+    if (filters.department)
+      queryParams.append("department_id", filters.department);
+    if (filters.category) queryParams.append("category_id", filters.category);
+    if (filters.subCategory)
+      queryParams.append("sub_category_id", filters.subCategory);
+
+    const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("Failed to fetch filtered data");
+
+      const data = await response.json();
+      setApprovals(data.invoice_approvals || []);
+      setTotalRecords(data.total_records || 0);
+      setTotalPages(data.total_pages || 0);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+    }
+  };
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return; // Prevent invalid page changes
+    setCurrentPage(page);
+  };
+
   return (
     <div>
       <div className="website-content" style={{ overflowY: "auto" }}>
@@ -111,7 +321,7 @@ const ApprovalMatrics = () => {
             </div>
             <div className="card mt-4 pb-4">
               <CollapsibleCard title="Quick Filter">
-                <form>
+                <div>
                   {/* {error && (
                         <div className="alert alert-danger">{error}</div>
                       )}
@@ -126,23 +336,29 @@ const ApprovalMatrics = () => {
                     {/* Event Title */}
                     <div className="col-md-2">
                       <label htmlFor="event-title-select">Company</label>
+                      {/* <Select
+                        id="company-select"
+                        options={modifiedFilterOptions.companies} // Ensure you're using the correct filter options
+                        onChange={(selectedOption) => {
+                          setTimeout(() => {
+                            handleCompanyChange(selectedOption); // Pass the selectedOption directly to the handler
+                          }, 500); // Delay of 500ms (adjust as needed)
+                        }}
+                        value={selectedCompany} // Bind the selected company state to the value prop
+                        placeholder="Select Company"
+                        isClearable // Allow clearing the selection
+                      /> */}
                       <Select
-                        id="event-title-select"
-                        options={filterOptions.event_titles}
-                        // onChange={(option) =>
-                        //   handleFilterChange(
-                        //     "title_in",
-                        //     option?.value || ""
-                        //   )
-                        // }
-                        // value={
-                        //   filters.title_in
-                        //     ? filterOptions.event_titles.find(
-                        //         (opt) => opt.value === filters.title_in
-                        //       )
-                        //     : null
-                        // }
-                        placeholder="Select Company "
+                        id="company-select"
+                        options={modifiedFilterOptions.companies}
+                        onChange={(selectedOption) => {
+                          setTimeout(() => {
+                            handleCompanyChange(selectedOption); // Keep this if it's needed for site filtering
+                            handleFilterChange("company", selectedOption); // Update the filters state
+                          }, 500);
+                        }}
+                        value={selectedCompany}
+                        placeholder="Select Company"
                         isClearable
                       />
                     </div>
@@ -150,22 +366,19 @@ const ApprovalMatrics = () => {
                     {/* Event Number */}
                     <div className="col-md-2">
                       <label htmlFor="event-no-select">Site</label>
+                      {/* <Select
+                        id="site-select"
+                        // options={filterOptions.sites}
+                        options={modifiedFilterOptions.sites}
+                        placeholder="Select Site"
+                        isClearable
+                      /> */}
                       <Select
-                        id="event-no-select"
-                        options={filterOptions.event_numbers}
-                        // onChange={(option) =>
-                        //   handleFilterChange(
-                        //     "event_no_cont",
-                        //     option?.value || ""
-                        //   )
-                        // }
-                        // value={
-                        //   filters.event_no_cont
-                        //     ? filterOptions.event_numbers.find(
-                        //         (opt) => opt.value === filters.event_no_cont
-                        //       )
-                        //     : null
-                        // }
+                        id="site-select"
+                        options={modifiedFilterOptions.sites}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("site", selectedOption)
+                        }
                         placeholder="Select Site"
                         isClearable
                       />
@@ -174,22 +387,18 @@ const ApprovalMatrics = () => {
                     {/* Status */}
                     <div className="col-md-2">
                       <label htmlFor="status-select">Department</label>
+                      {/* <Select
+                        id="status-select"
+                        options={modifiedFilterOptions.departments}
+                        placeholder="Select Department"
+                        isClearable
+                      /> */}
                       <Select
                         id="status-select"
-                        options={filterOptions.statuses}
-                        // onChange={(option) =>
-                        //   handleFilterChange(
-                        //     "status_in",
-                        //     option?.value || ""
-                        //   )
-                        // }
-                        // value={
-                        //   filters.status_in
-                        //     ? filterOptions.statuses.find(
-                        //         (opt) => opt.value === filters.status_in
-                        //       )
-                        //     : null
-                        // }
+                        options={modifiedFilterOptions.departments}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("department", selectedOption)
+                        }
                         placeholder="Select Department"
                         isClearable
                       />
@@ -198,103 +407,195 @@ const ApprovalMatrics = () => {
                     {/* Created By */}
                     <div className="col-md-2">
                       <label htmlFor="created-by-select">Category</label>
+                      {/* <Select
+                        id="created-by-select"
+                        options={modifiedFilterOptions.categories}
+                        onChange={handleCategoryChange}
+                        value={selectedCategory}
+                        placeholder="Select Category"
+                        isClearable
+                      /> */}
                       <Select
                         id="created-by-select"
-                        options={filterOptions.creaters}
-                        // onChange={(option) =>
-                        //   handleFilterChange(
-                        //     "created_by_id_in",
-                        //     option?.value || ""
-                        //   )
-                        // }
-                        // value={
-                        //   filters.created_by_id_in
-                        //     ? filterOptions.creaters.find(
-                        //         (opt) =>
-                        //           opt.value === filters.created_by_id_in
-                        //       )
-                        //     : null
-                        // }
+                        options={modifiedFilterOptions.categories}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("category", selectedOption)
+                        }
+                        value={selectedCategory}
                         placeholder="Select Category"
                         isClearable
                       />
                     </div>
                     <div className="col-md-2">
                       <label htmlFor="created-by-select"> Sub Category</label>
-                      <Select
+                      {/* <Select
                         id="created-by-select"
-                        options={filterOptions.creaters}
-                        // onChange={(option) =>
-                        //   handleFilterChange(
-                        //     "created_by_id_in",
-                        //     option?.value || ""
-                        //   )
-                        // }
-                        // value={
-                        //   filters.created_by_id_in
-                        //     ? filterOptions.creaters.find(
-                        //         (opt) =>
-                        //           opt.value === filters.created_by_id_in
-                        //       )
-                        //     : null
-                        // }
+                        options={modifiedFilterOptions.sub_categories}
                         placeholder="Select  Sub Category"
+                        isClearable
+                      /> */}
+                      <Select
+                        id="sub-category-select"
+                        options={modifiedFilterOptions.sub_categories}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("subCategory", selectedOption)
+                        }
+                        placeholder="Select Sub Category"
                         isClearable
                       />
                     </div>
-                    <button type="submit" className="col-md-1 purple-btn2">
+                    <button
+                      type="submit"
+                      className="col-md-1 purple-btn2"
+                      onClick={handleFilterSubmit}
+                    >
                       Go{" "}
                     </button>
                   </div>
-                </form>
+                  {/* </form> */}
+                </div>
               </CollapsibleCard>
-            </div>
 
-            <div className="tbl-container h-auto">
-              <table className="w-100" style={{ width: "100% !important" }}>
-                <thead>
-                  <tr>
-                    <th>Edit</th>
-                    <th>Id</th>
-                    <th>Function</th>
-                    <th>Company</th>
-                    <th>Site</th>
-                    <th>Department</th>
-                    <th>Category</th>
-                    <th>Template</th>
-                    <th>Sub Category</th>
-                    <th>Created On</th>
-                    <th>Created by</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((record, index) => (
-                    <tr key={index}>
-                      <td>
-                        <span
-                          className="material-symbols-outlined"
-                          onClick={handleEditClick}
-                        >
-                          edit
-                        </span>
-                      </td>
-                      <td>{record.id}</td>
-                      <td>{record.function}</td>
-                      <td>{record.company}</td>
-                      <td>{record.site}</td>
-                      <td>{record.department}</td>
-                      <td>{record.category}</td>
-                      <td>{record.template}</td>
-                      <td>{record.subCategory}</td>
-                      <td>{record.createdOn}</td>
-                      <td>{record.createdBy}</td>
+              <div className="tbl-container mt-3 px-3">
+                <table className="w-100" style={{ width: "100% !important" }}>
+                  <thead>
+                    <tr>
+                      <th>Edit</th>
+                      <th>Id</th>
+                      <th>Function</th>
+                      <th>Company</th>
+                      <th>Site</th>
+                      <th>Department</th>
+                      <th>Category</th>
+                      <th>Template</th>
+                      <th>Sub Category</th>
+                      <th>Created On</th>
+                      <th>Created by</th>
                     </tr>
+                  </thead>
+                  <tbody>
+                    {approvals.map((record) => (
+                      <tr key={record.id}>
+                        <td>
+                          <span
+                            className="material-symbols-outlined"
+                            onClick={() => handleEditClick(record.id)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            edit
+                          </span>
+                        </td>
+                        <td>{record.id}</td>
+                        {/* <td>{record.site_id}</td> */}
+                        <td>{record.approval_type}</td>
+                        <td>{record.company_name}</td>
+                        <td>{record.project_name}</td>
+                        <td>{record.department_name}</td>
+                        <td>{record.category_name}</td>
+                        <td>{record.template_name}</td>
+                        <td>{record.sub_category_name}</td>
+                        <td>{record.created_at}</td>
+
+                        <td>{record.created_by}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  {/* First Button */}
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                    >
+                      First
+                    </button>
+                  </li>
+
+                  {/* Previous Button */}
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {/* Dynamic Page Numbers */}
+                  {pageNumbers.map((pageNumber) => (
+                    <li
+                      key={pageNumber}
+                      className={`page-item ${
+                        currentPage === pageNumber ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pageNumber)}
+                      >
+                        {pageNumber}
+                      </button>
+                    </li>
                   ))}
-                </tbody>
-              </table>
+
+                  {/* Next Button */}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+
+                  {/* Last Button */}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+
+                {/* Showing entries count */}
+                <div>
+                  <p>
+                    Showing{" "}
+                    {Math.min(
+                      (currentPage - 1) * pageSize + 1 || 1,
+                      totalRecords
+                    )}{" "}
+                    to {Math.min(currentPage * pageSize, totalRecords)} of{" "}
+                    {totalRecords} entries
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="d-flex align-items-center justify-content-between px-3 pagination-section">
+            {/* <div className="d-flex align-items-center justify-content-between px-3 pagination-section">
             <nav className="pagination" role="navigation" aria-label="pager">
               <span className="page current">1</span>
               <span className="page">
@@ -322,7 +623,9 @@ const ApprovalMatrics = () => {
               </span>
             </nav>
             <p> Showing 1 to 10 of 2650 entries </p>
+          </div> */}
           </div>
+
           <div
             className="modal fade"
             id="importModal"
@@ -343,12 +646,7 @@ const ApprovalMatrics = () => {
                     aria-label="Close"
                   />
                 </div>
-                <form
-                  encType="multipart/form-data"
-                  action="/pms/admin/invoice_approvals/import"
-                  acceptCharset="UTF-8"
-                  method="post"
-                >
+                <div>
                   <input
                     type="hidden"
                     name="authenticity_token"
@@ -383,7 +681,7 @@ const ApprovalMatrics = () => {
                       data-disable-with="Import"
                     />
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           </div>
