@@ -146,20 +146,20 @@ const CreateBOQ = () => {
   const handleAddMaterials2 = (id, newMaterials) => {
     setMaterials2((prev) => {
       const updatedMaterials = { ...prev };
-  
+
       if (!updatedMaterials[id]) {
         updatedMaterials[id] = [];
       }
-  
+
       updatedMaterials[id] = [
         ...updatedMaterials[id],
         ...newMaterials.filter(
           (material) => !updatedMaterials[id].some((m) => m.id === material.id)
         ),
       ];
-  
+
       return updatedMaterials;
-    });
+    });
   };
 
   // const handleAddMaterials2 = (newMaterials) => {
@@ -249,22 +249,22 @@ const CreateBOQ = () => {
   const handleAddAssets2 = (id, newAssets) => {
     setAssets2((prev) => {
       const updatedAssets = { ...prev };
-  
+
       if (!updatedAssets[id]) {
         updatedAssets[id] = [];
       }
-  
+
       updatedAssets[id] = [
         ...updatedAssets[id],
         ...newAssets.filter(
           (asset) => !updatedAssets[id].some((a) => a.id === asset.id)
         ),
       ];
-  
+
       return updatedAssets;
     });
   };
-  
+
 
   const handleDeleteAllAssets2 = () => {
     setAssets2((prev) =>
@@ -855,7 +855,7 @@ const CreateBOQ = () => {
 
   console.log("material Input:", materialsInputes)
 
-  
+
 
 
   // assets 
@@ -868,33 +868,33 @@ const CreateBOQ = () => {
 
 
   // Calculate Asset Estimated Quantities
-const calculateAssetEstimatedQuantities = () => {
-  if (boqQuantity && assetCoefficientFactors.length > 0) {
-    const newAssetEstimatedQuantities = Assets.map((asset, index) => {
-      const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
-      return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
-    });
-    setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
-  }
-};
+  const calculateAssetEstimatedQuantities = () => {
+    if (boqQuantity && assetCoefficientFactors.length > 0) {
+      const newAssetEstimatedQuantities = Assets.map((asset, index) => {
+        const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+        return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
+      });
+      setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
+    }
+  };
 
-// Calculate Asset Total Estimated Quantity with Wastages
-const calculateAssetTotalEstimatedQtyWastages = () => {
-  if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
-    const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
-      const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
-      const wastagePercentage = parseFloat(assetWastages[index]) || 0;
-      return estimatedQty * (wastagePercentage / 100); // Adding wastage percentage
-    });
-    setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
-  }
-};
+  // Calculate Asset Total Estimated Quantity with Wastages
+  const calculateAssetTotalEstimatedQtyWastages = () => {
+    if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
+      const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
+        const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
+        const wastagePercentage = parseFloat(assetWastages[index]) || 0;
+        return estimatedQty * (wastagePercentage / 100); // Adding wastage percentage
+      });
+      setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
+    }
+  };
 
-// Effect to recalculate asset quantities when dependencies change
-useEffect(() => {
-  calculateAssetEstimatedQuantities();
-  calculateAssetTotalEstimatedQtyWastages();
-}, [boqQuantity, assetCoefficientFactors, assetWastages]);
+  // Effect to recalculate asset quantities when dependencies change
+  useEffect(() => {
+    calculateAssetEstimatedQuantities();
+    calculateAssetTotalEstimatedQtyWastages();
+  }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   const handleAssetCoefficientFactorChange = (index, value) => {
     const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
@@ -1080,27 +1080,63 @@ useEffect(() => {
     } else if (field === 'description') {
       setDescription(value);
     } else if (field === 'boqQuantity') {
+
+      // Only allow non-negative values, including decimals (e.g., "0", "10", "10.5")
+      if (value === '' || /^[+]?\d*\.?\d*$/.test(value)) {
+        if (parseFloat(value) >= 0) {
+          // setBoqQuantity(value); // Update state if value is valid
+          setBoqQuantity(value ? Number(value) : '')
+          calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
+          calculateTotalEstimatedQtyWastages();
+          calculateAssetEstimatedQuantities();
+          calculateAssetTotalEstimatedQtyWastages();
+        } else {
+          setBoqQuantity(''); // Clear the value if it is negative
+        }
+      }
+
+      // // Ensure the value is a positive number or an empty string
+      // const validValue = value === '' || /^\d+(\.\d+)?$/.test(value); // Allow numbers only, including decimals
+      // if ( value >= 0) {
+      //   setBoqQuantity(value); // Set the value to state if it's valid
+      // } else {
+      //   setBoqQuantity(''); // Otherwise, reset it or set it to empty
+      // }
+
       // setBoqQuantity(value);
-      setBoqQuantity(value ? Number(value) : '')
-    calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
-    calculateTotalEstimatedQtyWastages();
+      //   setBoqQuantity(value ? Number(value) : '')
+      // calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
+      // calculateTotalEstimatedQtyWastages();
     } else if (field === 'note') {
       setNote(value);
     }
   };
 
+  // const handleInputChangeBOQQty = (field, value) => {
+  //   if (field === 'boqQuantity') {
+  //     // Only allow non-negative values, including decimals (e.g., "0", "10", "10.5")
+  //     if (value === '' || /^[+]?\d*\.?\d*$/.test(value)) {
+  //       if (parseFloat(value) >= 0) {
+  //         setBoqQuantity(value); // Update state if value is valid
+  //       } else {
+  //         setBoqQuantity(''); // Clear the value if it is negative
+  //       }
+  //     }
+  //   }
+  // };
+
 
   useEffect(() => {
-    calculateEstimatedQuantities(); 
+    calculateEstimatedQuantities();
     calculateTotalEstimatedQtyWastages();
-  }, [boqQuantity, coefficientFactors,wastages]); // Recalculate when boqQuantity or coefficientFactors change
+  }, [boqQuantity, coefficientFactors, wastages]); // Recalculate when boqQuantity or coefficientFactors change
 
 
   const handleCoefficientFactorChange = (index, value) => {
     const updatedCoefficientFactors = [...coefficientFactors];
     updatedCoefficientFactors[index] = value;
     setCoefficientFactors(updatedCoefficientFactors);
-    
+
   };
 
   const handleEstimatedQtyChange = (index, value) => {
@@ -1125,7 +1161,7 @@ useEffect(() => {
 
 
 
-  
+
   // Function to calculate estimated quantities based on boqQuantity and coefficientFactors
   const calculateEstimatedQuantities = () => {
     if (boqQuantity) {
@@ -1143,7 +1179,7 @@ useEffect(() => {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
-        const totalWithWastage = estimatedQty * (1+wastagePercentage / 100);
+        const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
         return parseFloat(totalWithWastage.toFixed(4));; // Adding wastage percentage
       });
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
@@ -1182,8 +1218,8 @@ useEffect(() => {
             ...(selectedSubCategory ? [{
               category_id: selectedSubCategory?.value,
               level: 2,
-              materials: !selectedSubCategoryLevel3 ? predefinedMaterials :[]  ,// Filter for level 2
-              assets: !selectedSubCategoryLevel3 ? predefinedAssets : [] 
+              materials: !selectedSubCategoryLevel3 ? predefinedMaterials : [],// Filter for level 2
+              assets: !selectedSubCategoryLevel3 ? predefinedAssets : []
             }] : []),
 
             // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
@@ -1191,7 +1227,7 @@ useEffect(() => {
               category_id: selectedSubCategoryLevel3?.value,
               level: 3,
               materials: !selectedSubCategoryLevel4 ? predefinedMaterials : [], // Filter for level 3
-              assets: !selectedSubCategoryLevel4 ? predefinedAssets : [] 
+              assets: !selectedSubCategoryLevel4 ? predefinedAssets : []
             }] : []),
 
             // Only include materials for level 4 if it is selected
@@ -1199,15 +1235,15 @@ useEffect(() => {
               category_id: selectedSubCategoryLevel4?.value,
               level: 4,
               materials: !selectedSubCategoryLevel5 ? predefinedMaterials : [], // Filter for level 4
-              assets: !selectedSubCategoryLevel5 ? predefinedAssets : [] 
+              assets: !selectedSubCategoryLevel5 ? predefinedAssets : []
             }] : []),
 
             // Only include materials for level 5 if it is selected
             ...(selectedSubCategoryLevel5 ? [{
               category_id: selectedSubCategoryLevel5?.value,
               level: 5,
-              materials: predefinedMaterials ,// Filter for level 5
-              assets: predefinedAssets || [] 
+              materials: predefinedMaterials,// Filter for level 5
+              assets: predefinedAssets || []
             }] : []),
           ]
         }
@@ -1313,7 +1349,7 @@ useEffect(() => {
       // Handle error if the request fails
       console.error('Error posting data:', error);
       // Optionally display an error message to the user
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -1477,14 +1513,20 @@ useEffect(() => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>BOQ Quantity</label>
+                        <label>BOQ Quantity*</label>
                         <input
                           className="form-control"
                           type="number"
                           placeholder=""
                           fdprocessedid="qv9ju9"
                           onChange={(e) => handleInputChange('boqQuantity', e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                              e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                            }
+                          }}
                           disabled={showBOQSubItem}
+                          min="0"
                         />
                       </div>
                     </div>
@@ -1650,8 +1692,8 @@ useEffect(() => {
                                     </td>
                                     <td>
                                       <SingleSelector
-                                      options={unitOfMeasures}  // Providing the options to the select component
-                                      onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
+                                        options={unitOfMeasures}  // Providing the options to the select component
+                                        onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
                                         value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2[index]}
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                       />
@@ -1673,9 +1715,9 @@ useEffect(() => {
                                         placeholder="Estimated Qty"
 
                                         value={estimatedQuantities[index] || ''}
-                                        // value={calculateEstimatedQuantities()}
-                                        
-                                        // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                      // value={calculateEstimatedQuantities()}
+
+                                      // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                       />
                                     </td>
                                     <td>
@@ -1700,7 +1742,7 @@ useEffect(() => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="12" className="text-center" style={{paddingLeft:"500px"}}>
+                                  <td colSpan="12" className="text-center" style={{ paddingLeft: "500px" }}>
                                     No materials added yet.
                                   </td>
                                 </tr>
@@ -1886,8 +1928,8 @@ useEffect(() => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="12" className="text-center" 
-                                  style={{paddingLeft:"500px"}}
+                                  <td colSpan="12" className="text-center"
+                                    style={{ paddingLeft: "500px" }}
                                   >
                                     No asset added yet.
                                   </td>
@@ -2052,7 +2094,7 @@ useEffect(() => {
                                         />
                                       </td>
                                       <td colSpan={3}>
-                                        <input type="number" 
+                                        <input type="number"
                                           value={expandedRows.qty}
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
@@ -2091,13 +2133,12 @@ useEffect(() => {
                                             handleDeleteAll={handleDeleteAll2}
                                             handleSelectRow={handleSelectRow2}
 
-                                            handleAddAssets={(newMaterials) =>handleAddAssets2 (el.id, newMaterials)}
+                                            handleAddAssets={(newMaterials) => handleAddAssets2(el.id, newMaterials)}
                                             handleDeleteAllAssets={handleDeleteAllAssets2}
                                             handleSelectRowAsset={handleSelectRowAssets2}
                                             predefinedMaterialsData={updatePredefinedMaterialsData}
                                             predefinedAssetsData={updatePredefinedAssetsData}
                                             boqSubItems={boqSubItems}
-                                            // boqCostQty={expandedRows[el.id]?.qty}
                                           />
 
                                           {/* <MaterialModal
@@ -2151,21 +2192,21 @@ useEffect(() => {
             </div>
             <div className="row mt-2 justify-content-center mb-5">
               <div className="col-md-2">
-              {loading && (
-                      <div className="loader-container">
-                        <div className="lds-ring">
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                        </div>
-                        <p>Submitting your BOQ...</p>
-                      </div>
-                    )}
+                {loading && (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Submitting your BOQ...</p>
+                  </div>
+                )}
                 <button className="purple-btn2 w-100" fdprocessedid="u33pye" onClick={handleSubmit}>
                   Create
                 </button>

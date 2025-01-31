@@ -14,6 +14,9 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
     // const startEntry = (page - 1) * pageSize + 1;
     // const endEntry = Math.min(page * pageSize, filteredData.length);
 
+    const [errorMessage, setErrorMessage] = useState('');
+      const [errorMessage2, setErrorMessage2] = useState('');
+
 
     const materials = [
         {
@@ -111,6 +114,12 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
     };
   
     const handleAddMaterials = () => {
+      if (selectedMaterials.length === 0) {
+        setErrorMessage2("Please select at least one Asset ."); // Show error message
+        return;
+      }else{
+        setErrorMessage2(""); // Show error message
+      }
       handleAdd(selectedMaterials);
       setSelectedMaterials([]); // Clear selected items
       handleCloseAssets(); // Close the modal
@@ -214,6 +223,14 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
       //   alert("Please select both Inventory Type and Material");
       //   return;
       // }
+
+      if (!selectedInventory) {
+        // Set the error message state
+        setErrorMessage("Please select Asset Type");
+        return;
+      }else{
+        setErrorMessage("")
+      }
       setLoading(true); // Start loading before fetching
 
       const inventoryTypeIds = selectedInventory.length > 0 ? selectedInventory.map(item => item.value).join(',') : '';
@@ -351,11 +368,11 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
   
           <form onSubmit={handleSubmit} acceptCharset="UTF-8">
             <div className="row">
-              <h5 className="">Search Asset</h5>
+              <h5 className="text-center">Search Asset</h5>
            
               <div className="col-md-4 mt-3">
                 <div className="form-group">
-                  <label className="po-fontBold">Asset Type</label>
+                  <label className="po-fontBold">Asset Type*</label>
                   <MultiSelector
                   options={inventoryTypes}  // Provide the fetched options to the select component
                   onChange={handleInventoryChange}  // Update the selected inventory type
@@ -363,6 +380,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
                     placeholder={`Select Asset Type`} // Dynamic placeholder
                    
                   />
+                  {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
                 </div>
               </div>
               <div className="col-md-4 mt-3">
@@ -402,7 +420,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
             </div>
           </form>
         
-        <h5 className="mt-3">Asset List</h5>
+        <h5 className="mt-3 text-center">Asset List</h5>
           <div className="tbl-container me-2 mt-3">
             <table className="w-100">
               <thead>
@@ -451,6 +469,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
               </tbody>
             </table>
           </div>
+          {errorMessage2 && <div style={{ color: 'red' }}>{errorMessage2}</div>}
           <div className="modal-footer justify-content-center">
             <button type="button" className="purple-btn2 submit_mor" onClick={handleAddMaterials}>
               Accept Selected

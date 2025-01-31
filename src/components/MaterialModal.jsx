@@ -68,6 +68,12 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   };
 
   const handleAddMaterials = () => {
+    if (selectedMaterials.length === 0) {
+      setErrorMessage2("Please select at least one material."); // Show error message
+      return;
+    }else{
+      setErrorMessage2(""); // Show error message
+    }
     handleAdd(selectedMaterials);
     setSelectedMaterials([]); // Clear selected items
     handleClose(); // Close the modal
@@ -164,13 +170,18 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   // material list table data 
   const [inventoryTableData, setInventoryTableData] = useState([]);
   const [loading, setLoading] = useState(false); // For loading indicator
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage2, setErrorMessage2] = useState('');
 
   // Handle the "Go" button click to fetch data
   const handleGoButtonClick = () => {
-    // if (selectedInventory.length === 0 || selectedInventoryMaterialTypes.length === 0) {
-    //   alert("Please select both Inventory Type and Material");
-    //   return;
-    // }
+    if (!selectedInventory) {
+      // Set the error message state
+      setErrorMessage("Please select Material Type");
+      return;
+    }else{
+      setErrorMessage("")
+    }
 
     setLoading(true); // Start loading before fetching
     // Get the selected inventory type IDs and material type IDs as a comma-separated list
@@ -213,11 +224,11 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
         <form onSubmit={handleSubmit} acceptCharset="UTF-8">
           <div className="row">
-            <h5 className="">Search Material</h5>
+            <h5 className="text-center">Search Material</h5>
 
             <div className="col-md-4 mt-3">
               <div className="form-group">
-                <label className="po-fontBold">Material Type</label>
+                <label className="po-fontBold">Material Type*</label>
                 <MultiSelector
                   options={inventoryTypes}  // Provide the fetched options to the select component
                   onChange={handleInventoryChange}  // Update the selected inventory type
@@ -225,6 +236,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                   placeholder={`Select Material Type`} // Dynamic placeholder
 
                 />
+                 {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
               </div>
             </div>
             <div className="col-md-4 mt-3">
@@ -264,7 +276,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
           </div>
         </form>
 
-        <h5 className="mt-3">Material List</h5>
+        <h5 className="mt-3 text-center">Material List</h5>
         <div className="tbl-container me-2 mt-3">
           <table className="w-100">
             <thead>
@@ -330,10 +342,14 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
             </tbody>
           </table>
         </div>
+        {errorMessage2 && <div style={{ color: 'red' }}>{errorMessage2}</div>}
         <div className="modal-footer justify-content-center">
+       
+
           <button type="button" className="purple-btn2 submit_mor" onClick={handleAddMaterials}>
             Accept Selected
           </button>
+
         </div>
         {/* <div className="tbl-container mx-3 mt-1">
           <table className="w-100">
