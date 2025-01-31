@@ -218,13 +218,14 @@ const InvoiceApproval = () => {
   // Handle site change
 
   const handleSiteChange = (selected) => {
-    console.log("Selected Site ID:", selected?.value); //
+    console.log("Selected Site ID:", selected.target.value); //
+    const siteId = selected.target.value;
 
     console.log("site id", selected.target.value);
     // Logging the selected site value
     setFormData((prevState) => ({
       ...prevState,
-      site_id: selected.target.value, // Updating site_id in formData
+      site_id: siteId, // Updating site_id in formData
     }));
   };
   // Handle category change
@@ -404,17 +405,17 @@ const InvoiceApproval = () => {
   const handleCreate = () => {
     // Prepare the dynamic payload with data from formData and approvalLevels
     const payload = {
-      site_id: formData.site_id,
+      // site_id: formData.site_id,
       approval_type: formData.approval_type, // Use dynamic approval_type
-      organization_id: formData.template_id, // Or set dynamically if needed
+      // Or set dynamically if needed
       company_id: formData.company_id, // Dynamic company_id from formData
       project_id: formData.site_id, // Static or dynamic if needed
       department_id: formData.department_id, // Dynamic department_id from formData
-      snag_checklist_id: 1, // Static or dynamic if needed
+      snag_checklist_id: formData.template_id, // Static or dynamic if needed
       sub_category_id: formData.sub_category_id, // Dynamic sub_category_id from formData
-      category_order: 1, // Static or dynamic if needed
+      // category_order: 1, // Static or dynamic if needed
       category_id: formData.category_id, // Dynamic category_id from formData
-      invoice_approval_levels: approvalLevels.map((level) => ({
+      invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
         active: true, // Assuming that all levels are active; adjust as necessary

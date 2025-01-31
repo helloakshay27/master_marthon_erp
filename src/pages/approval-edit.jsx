@@ -23,33 +23,9 @@ const ApprovalEdit = () => {
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
-
   const [selectedTemplates, setSelectedTemplates] = useState(null);
-
-  const modifiedFilterOptions = {
-    companies: [
-      { label: "Select Company", value: "" },
-      ...filterOptions.companies, // Directly use the companies array from filterOptions
-    ],
-    // other fields
-    sites: [{ label: "Select Site", value: "" }, ...filterOptions.sites],
-    departments: [
-      { label: "Select Department", value: "" },
-      ...filterOptions.departments,
-    ],
-    categories: [
-      { label: "Select Category", value: "" },
-      ...filterOptions.categories,
-    ],
-    sub_categories: [
-      { label: "Select Sub Category", value: "" },
-      ...filterOptions.sub_categories,
-    ],
-    templates: [
-      { label: "Select templates", value: "" },
-      ...filterOptions.templates,
-    ],
-  };
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
 
   const [selectedUsers, setSelectedUsers] = useState([]);
 
@@ -167,16 +143,24 @@ const ApprovalEdit = () => {
         // Set form data from API response
         setFormData({
           company_id: data.company_id || null,
+          site_id: data.project_id || null, // Set site_id from project_id
           department_id: data.department_id || null,
           category_id: data.category_id || null,
+          template_id: data.snag_checklist_id || null,
           sub_category_id: data.sub_category_id || null,
           approval_type: data.approval_type || "mor_approval",
           invoice_approval_levels: data.invoice_approval_levels || [],
         });
 
+        // Set selected values based on fetched data
         setSelectedCompany(
           data.company_id
             ? { label: data.company_name, value: data.company_id }
+            : null
+        );
+        setSelectedSite(
+          data.project_id
+            ? { label: data.site_name, value: data.project_id }
             : null
         );
         setSelectedCategory(
@@ -185,8 +169,13 @@ const ApprovalEdit = () => {
             : null
         );
         setSelectedTemplates(
-          data.template_id
-            ? { label: data.template_name, value: data.template_id }
+          data.snag_checklist_id
+            ? { label: data.template_name, value: data.snag_checklist_id }
+            : null
+        );
+        setSelectedSubCategory(
+          data.sub_category_id
+            ? { label: data.sub_category_name, value: data.sub_category_id }
             : null
         );
 
@@ -194,86 +183,103 @@ const ApprovalEdit = () => {
           data.invoice_approval_levels.map((level) => ({
             order: level.order || "",
             name: level.name || "",
-            users: level.users.map((user) => ({
-              label: user.name,
-              value: user.id,
-            })),
+            users:
+              level.escalate_to_users?.map(
+                (user) => (typeof user === "object" ? user : { value: user }) // Ensure correct object structure
+              ) || [],
           }))
         );
+
+        // Fetch sites based on the selected company
+        if (data.company_id) {
+          await fetchSites(data.company_id);
+        }
+
+        // Fetch templates based on the selected category
+        if (data.category_id) {
+          await fetchTemplates(data.category_id);
+        }
+
+        // Fetch sub-categories based on the selected template
+        if (data.snag_checklist_id) {
+          await fetchSubCategories(data.snag_checklist_id);
+        }
       } catch (error) {
         console.error("Error fetching approval data:", error);
       }
     };
-
     fetchDropdownData();
     fetchApprovalData();
   }, [id]);
 
-  // const handleCompanyChange = (selectedOption) => {
-  //   console.log("Selected Option:", selectedOption); // Debugging
+  const fetchSites = async (companyId) => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      if (!response.ok) throw new Error("Failed to fetch sites");
 
-  //   // Extract company ID safely
-  //   console.log("Selected Option:", selectedOption.target.value);
+      const data = await response.json();
+      const formattedSites = data.sites.map(([name, id]) => ({
+        label: name,
+        value: id,
+      }));
 
-  //   const companyId = selectedOption.value; // Directly use companyId here
+      setFilterOptions((prevState) => ({
+        ...prevState,
+        sites: formattedSites,
+      }));
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+      setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+    }
+  };
 
-  //   if (!companyId) {
-  //     console.warn("No valid company selected.");
-  //     setSelectedCompany(null);
-  //     setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-  //     return;
-  //   }
+  const fetchTemplates = async (categoryId) => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?category_id=${categoryId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      if (!response.ok) throw new Error("Failed to fetch templates");
 
-  //   console.log("Selected Company ID:", companyId);
+      const data = await response.json();
+      const formattedTemplates = data.templates.map(([name, id]) => ({
+        label: name,
+        value: id,
+      }));
 
-  //   // Update state
-  //   setSelectedCompany(selectedOption);
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     company_id: companyId,
-  //     site_id: null, // Reset site selection
-  //   }));
+      setFilterOptions((prevState) => ({
+        ...prevState,
+        templates: formattedTemplates,
+      }));
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
+    }
+  };
 
-  //   // Fetch sites based on selected company
-  //   fetch(
-  //     `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //   )
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       console.log("API Response Data:", data);
+  const fetchSubCategories = async (templateId) => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?template_id=${templateId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      if (!response.ok) throw new Error("Failed to fetch sub-categories");
 
-  //       if (!data || !Array.isArray(data.sites)) {
-  //         console.error("Invalid or missing site data:", data);
-  //         setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-  //         return;
-  //       }
+      const data = await response.json();
+      const formattedSubCategories = data.sub_categories.map(([name, id]) => ({
+        label: name,
+        value: id,
+      }));
 
-  //       // Map API response to match the select component's format
-  //       const formattedSites = data.sites.map(([name, id]) => ({
-  //         label: name,
-  //         value: id,
-  //       }));
-
-  //       // Update filter options with the fetched sites
-  //       setFilterOptions((prevState) => ({
-  //         ...prevState,
-  //         sites: formattedSites,
-  //       }));
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching sites:", error);
-  //       setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-  //     });
-  // };
-
-  // Filter sites dynamically when company_id changes
-
-  // Handle site change
+      setFilterOptions((prevState) => ({
+        ...prevState,
+        sub_categories: formattedSubCategories,
+      }));
+    } catch (error) {
+      console.error("Error fetching sub-categories:", error);
+      setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
+    }
+  };
 
   const handleCompanyChange = (selectedOption) => {
     const companyId = selectedOption.target.value; // Use the value directly
@@ -494,43 +500,284 @@ const ApprovalEdit = () => {
     }));
   };
 
+  // const handleCreate = () => {
+  //   // Check for duplicate orders
+  //   const orderCounts = {};
+  //   let hasDuplicateOrder = false;
+
+  //   approvalLevels.forEach((level) => {
+  //     if (level.order) {
+  //       if (orderCounts[level.order]) {
+  //         hasDuplicateOrder = true; // Mark as duplicate found
+  //       }
+  //       orderCounts[level.order] = true;
+  //     }
+  //   });
+
+  //   // Show alert and stop execution if duplicate order found
+  //   if (hasDuplicateOrder) {
+  //     alert("Each approval level must have a unique order.");
+  //     return; // Stop function execution
+  //   }
+
+  //   // Prepare payload
+  //   const payload = {
+  //     approval_type: formData.approval_type,
+  //     company_id: formData.company_id,
+  //     project_id: formData.site_id,
+  //     department_id: formData.department_id,
+  //     snag_checklist_id: formData.template_id,
+  //     sub_category_id: formData.sub_category_id,
+  //     category_order: 1,
+  //     category_id: formData.category_id,
+  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+  //       name: level.name,
+  //       order: level.order,
+  //       active: true,
+  //       escalate_to_users: level.users?.map((user) => user.value) || [],
+  //     })),
+  //   };
+
+  //   console.log("Final Payload:", payload);
+
+  //   // Send API request
+  //   axios
+  //     .patch(
+  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       payload
+  //     )
+  //     .then((response) => {
+  //       console.log("Approval Created:", response.data);
+  //       alert("Approval created successfully!");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error creating invoice approval:", error);
+  //     });
+  // };
+
+  // const handleCreate = () => {
+  //   // Check for duplicate orders
+
+  //   const orderCounts = {};
+  //   let hasDuplicateOrder = false;
+
+  //   approvalLevels.forEach((level) => {
+  //     console.log("Level Order Before Normalization:", level.order); // Log before conversion
+
+  //     if (!level.order && level.order !== 0) {
+  //       console.log("Skipping because level.order is invalid:", level.order);
+  //       return;
+  //     }
+
+  //     const orderKey = String(level.order); // Convert to string for consistency
+
+  //     console.log(
+  //       "Before checking duplicate:",
+  //       orderKey,
+  //       orderCounts[orderKey]
+  //     );
+
+  //     if (orderCounts[orderKey]) {
+  //       console.log("Duplicate Found:", orderKey);
+  //       hasDuplicateOrder = true;
+  //     }
+
+  //     orderCounts[orderKey] = true; // Set this order in the map
+  //   });
+
+  //   if (hasDuplicateOrder) {
+  //     alert("Each approval level must have a unique order.");
+  //     return;
+  //   }
+
+  //   // Show alert and stop execution if duplicate order found
+  //   if (hasDuplicateOrder) {
+  //     alert("Each approval level must have a unique order.");
+  //     return; // Stop function execution
+  //   }
+
+  //   // Prepare payload
+  //   const payload = {
+  //     approval_type: formData.approval_type,
+  //     company_id: formData.company_id,
+  //     project_id: formData.site_id,
+  //     department_id: formData.department_id,
+  //     snag_checklist_id: formData.template_id,
+  //     sub_category_id: formData.sub_category_id,
+  //     category_order: 1,
+  //     category_id: formData.category_id,
+  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+  //       name: level.name,
+  //       order: level.order,
+  //       active: true,
+  //       escalate_to_users: level.users?.map((user) => user.value) || [],
+  //     })),
+  //   };
+
+  //   console.log("Final Payload:", payload);
+
+  //   // Send API request
+  //   axios
+  //     .patch(
+  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       payload
+  //     )
+  //     .then((response) => {
+  //       console.log("Approval Created:", response.data);
+  //       alert("Approval created successfully!");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error creating invoice approval:", error);
+  //     });
+  // };
+
+  // const handleCreate = () => {
+  //   // Check for duplicate orders
+
+  //   const orderCounts = {};
+  //   let hasDuplicateOrder = false;
+
+  //   approvalLevels.forEach((level) => {
+  //     console.log("Level Order Before Normalization:", level.order); // Log before conversion
+
+  //     // Skip invalid orders
+  //     if (!level.order && level.order !== 0) {
+  //       console.log("Skipping because level.order is invalid:", level.order);
+  //       return;
+  //     }
+
+  //     const orderKey = String(level.order); // Convert to string for consistency
+  //     orderCounts[orderKey];
+  //     console.log("Before checking duplicate:", orderKey, orderCounts);
+
+  //     console.log(orderCounts);
+
+  //     // Check for duplicate order
+  //     setTimeout(() => {
+  //       if (orderCounts.hasOwnProperty(orderKey)) {
+  //         // Using hasOwnProperty to check for duplicates
+  //         console.log("Duplicate Found:", orderKey);
+  //         hasDuplicateOrder = true;
+  //       }
+
+  //       // Mark this orderKey as processed
+  //       orderCounts[orderKey] = true; // Store the order in the map
+  //     });
+  //     // If a duplicate order is found, show an alert and stop further execution
+  //     if (hasDuplicateOrder) {
+  //       alert("Each approval level must have a unique order.");
+  //       return; // Stop function execution
+  //     }
+  //   }, 3000);
+
+  //   // Prepare payload
+  //   const payload = {
+  //     approval_type: formData.approval_type,
+  //     company_id: formData.company_id,
+  //     project_id: formData.site_id,
+  //     department_id: formData.department_id,
+  //     snag_checklist_id: formData.template_id,
+  //     sub_category_id: formData.sub_category_id,
+  //     category_order: 1,
+  //     category_id: formData.category_id,
+  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+  //       name: level.name,
+  //       order: level.order,
+  //       active: true,
+  //       escalate_to_users: level.users?.map((user) => user.value) || [],
+  //     })),
+  //   };
+
+  //   console.log("Final Payload:", payload);
+
+  //   // Send API request if no duplicates found
+  //   axios
+  //     .patch(
+  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       payload
+  //     )
+  //     .then((response) => {
+  //       console.log("Approval Created:", response.data);
+  //       alert("Approval created successfully!");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error creating invoice approval:", error);
+  //     });
+  // };
   const handleCreate = () => {
-    // Prepare the dynamic payload with data from formData and approvalLevels
+    const orderCounts = {}; // Store orders as keys
+    let hasDuplicateOrder = false;
+
+    // Iterate over the approvalLevels array
+    approvalLevels.forEach((level, index) => {
+      console.log(`Checking Level ${index + 1}:`, level.order);
+
+      // Skip levels with invalid orders
+      if (level.order === undefined || level.order === null) {
+        console.log(
+          `Skipping Level ${index + 1} as order is invalid:`,
+          level.order
+        );
+        return;
+      }
+
+      const orderKey = String(level.order); // Normalize the order to a string
+      console.log(`Normalized orderKey for Level ${index + 1}:`, orderKey);
+
+      // Check if the order already exists in orderCounts
+      if (orderCounts.hasOwnProperty(orderKey)) {
+        console.log(`Duplicate Found for Level ${index + 1}:`, orderKey);
+        hasDuplicateOrder = true;
+      } else {
+        console.log(
+          `No duplicate found for Level ${index + 1}. Adding orderKey:`,
+          orderKey
+        );
+      }
+
+      // Mark this orderKey as processed
+      orderCounts[orderKey] = true;
+    });
+
+    // If duplicate order found, show alert and stop further execution
+    if (hasDuplicateOrder) {
+      alert("Each approval level must have a unique order.");
+      return; // Stop function execution
+    }
+
+    // If no duplicate, prepare and send the payload (rest of the logic follows)
     const payload = {
-      site_id: formData.site_id,
-      approval_type: formData.approval_type, // Use dynamic approval_type
-      organization_id: 2, // Or set dynamically if needed
-      company_id: formData.company_id, // Dynamic company_id from formData
-      project_id: 30, // Static or dynamic if needed
-      department_id: formData.department_id, // Dynamic department_id from formData
-      snag_checklist_id: 1, // Static or dynamic if needed
-      sub_category_id: formData.sub_category_id, // Dynamic sub_category_id from formData
-      category_order: 1, // Static or dynamic if needed
-      category_id: formData.category_id, // Dynamic category_id from formData
-      invoice_approval_levels: approvalLevels.map((level) => ({
+      approval_type: formData.approval_type,
+      company_id: formData.company_id,
+      project_id: formData.site_id,
+      department_id: formData.department_id,
+      snag_checklist_id: formData.template_id,
+      sub_category_id: formData.sub_category_id,
+      category_order: 1,
+      category_id: formData.category_id,
+      invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
-        active: true, // Assuming that all levels are active; adjust as necessary
-        escalate_to_users: level.users.map((user) => user.value), // Mapping user IDs to escalate_to_users
+        active: true,
+        escalate_to_users: level.users?.map((user) => user.value) || [],
       })),
     };
 
-    // Log payload to verify its content
-    console.log("Payload for Create Request:", payload);
+    console.log("Final Payload:", payload);
 
-    // API call to create the invoice approval
+    // Send API request if no duplicates found
     axios
-      .post(
-        `https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      .patch(
+        `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       )
       .then((response) => {
         console.log("Approval Created:", response.data);
         alert("Approval created successfully!");
-        // Optionally reset form data here if needed
       })
-      .catch((error) => {
-        console.error("Error creating invoice approval:", error);
+      .catch((error, response) => {
+        console.error("Error creating invoice approval:", response);
+        alert("Each approval level must have a unique order");
       });
   };
 
@@ -614,6 +861,7 @@ const ApprovalEdit = () => {
                                   options={filterOptions.sites}
                                   placeholder="Select Site"
                                   onChange={handleSiteChange}
+                                  value={selectedSite}
                                   isClearable
                                 />
                               </div>
@@ -768,14 +1016,14 @@ const ApprovalEdit = () => {
                       {/* </div> */}
                       <div style={{ textAlign: "center" }}>
                         <button
-                          // name="subaction"
-                          // type="submit"
-                          className=" purple-btn1 submit-btn"
-                          // value="save"
-                          // fdprocessedid="4ksxs"
-                          onClick={() => handleCreate()}
+                          className="purple-btn1 submit-btn"
+                          onClick={() => {
+                            setTimeout(() => {
+                              handleCreate();
+                            }, 1000); // Delay of 2000 milliseconds (2 seconds)
+                          }}
                         >
-                          update
+                          Update
                         </button>
                       </div>
                     </div>
