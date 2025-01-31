@@ -10,17 +10,18 @@ const InvoiceApproval = () => {
     companies: [],
     departments: [],
     sites: [],
-    categories: [],
-    sub_categories: [],
+    modules: [], // Add modules to the state
+    material_types: [], // Add
     approval_types: [],
     users: [],
-    templates: [],
   });
 
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  // const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const [selectedTemplates, setSelectedTemplates] = useState(null);
+  // const [selectedTemplates, setSelectedTemplates] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null); // Track selected module
+  const [selectedMaterialType, setSelectedMaterialType] = useState(null);
 
   const modifiedFilterOptions = {
     companies: [
@@ -33,17 +34,15 @@ const InvoiceApproval = () => {
       { label: "Select Department", value: "" },
       ...filterOptions.departments,
     ],
-    categories: [
-      { label: "Select Category", value: "" },
-      ...filterOptions.categories,
-    ],
-    sub_categories: [
-      { label: "Select Sub Category", value: "" },
-      ...filterOptions.sub_categories,
-    ],
-    templates: [
-      { label: "Select templates", value: "" },
-      ...filterOptions.templates,
+    // approval_types: [
+    //   { label: "Select Module", value: "" },
+    //   ...filterOptions.approval_types, // Map your modules here
+    // ],
+    modules: [{ label: "Select Module", value: "" }, ...filterOptions.modules],
+
+    material_types: [
+      { label: "Select Material Type", value: "" },
+      ...filterOptions.material_types, // Map your material types here
     ],
   };
 
@@ -56,10 +55,10 @@ const InvoiceApproval = () => {
   const [formData, setFormData] = useState({
     company_id: null,
     department_id: null,
-    category_id: null,
-    sub_category_id: null,
-    approval_type: "mor_approval", // example approval type
-    template_id: null,
+    module_id: null, // Replace category_id with module_id
+    material_type_id: null, // Repla
+    // approval_type: "mor_approval", // example approval type
+
     invoice_approval_levels: [],
   });
 
@@ -97,45 +96,64 @@ const InvoiceApproval = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const response = await fetch(
-          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (!response.ok) throw new Error("Failed to fetch dropdown data");
+        // const response = await fetch(
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        // );
+        const [dropdownResponse, materialTypeResponse] = await Promise.all([
+          fetch(
+            "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+          fetch(
+            "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+        ]);
+        // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
-        const data = await response.json();
+        // const data = await response.json();
+        if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+          throw new Error("Failed to fetch dropdown data or material types");
+        }
 
+        const dropdownData = await dropdownResponse.json();
+
+        const materialTypesData = await materialTypeResponse.json();
+
+        console.log("materialsss", materialTypesData);
+
+        // Safeguard to check if material_types exists
+        const materialTypes = materialTypesData.material_types || [];
+        console.log("modifuiees", modifiedFilterOptions); // Check if material_types is correctly set
         setFilterOptions({
-          companies: data.companies.map(([name, id]) => ({
+          companies: dropdownData.companies.map(([name, id]) => ({
             label: name,
             value: id,
           })),
-          sites: data.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id, // Ensure company_id exists
-          })),
-          departments: data.departments.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          categories: data.categories.map(([name, id, company_id]) => ({
+          sites: dropdownData.sites.map(([name, id, company_id]) => ({
             label: name,
             value: id,
             company_id,
           })),
-          sub_categories: data.sub_categories.map(
-            ([name, id, template_id]) => ({
-              label: name,
-              value: id,
-              template_id,
-            })
-          ),
-          templates: data.templates.map(([name, id, category_id]) => ({
+          departments: dropdownData.departments.map(([name, id]) => ({
             label: name,
             value: id,
-            category_id,
           })),
-          users: data.users.map(([name, id]) => ({
+          modules: dropdownData.approval_types
+            ? Object.entries(dropdownData.approval_types).map(
+                ([key, value]) => ({
+                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
+                  value: value, // Assign the corresponding value
+                })
+              )
+            : [],
+
+          material_types: [
+            { label: "Select Material Type", value: "" },
+            ...materialTypesData.map((material) => ({
+              label: material.name,
+              value: material.id,
+            })),
+          ],
+          users: dropdownData.users.map(([name, id]) => ({
             label: name,
             value: id,
           })),
@@ -211,9 +229,6 @@ const InvoiceApproval = () => {
   };
 
   // Filter sites dynamically when company_id changes
-  const filteredSites = filterOptions.sites.filter(
-    (site) => site.company_id === formData.company_id
-  );
 
   // Handle site change
 
@@ -230,170 +245,6 @@ const InvoiceApproval = () => {
   };
   // Handle category change
 
-  const handleCategoryChange = (selectedOption) => {
-    console.log("Selected Category:", selectedOption);
-
-    const categoryId = selectedOption.target.value;
-
-    if (!categoryId) {
-      console.warn("No valid category selected.");
-      setFormData((prevData) => ({
-        ...prevData,
-        category_id: null,
-        template_id: null, // Reset the template selection
-        sub_category_id: null, // Reset sub category selection
-      }));
-      setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-      return;
-    }
-
-    console.log("Selected Category ID:", categoryId);
-
-    // Update formData with selected category
-    setSelectedCategory(selectedOption);
-    setFormData((prevData) => ({
-      ...prevData,
-      category_id: categoryId,
-      template_id: null, // Reset template selection
-      sub_category_id: null, // Reset sub-category selection
-    }));
-
-    // Fetch templates based on selected category
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?category_id=${categoryId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Response Data for Templates:", data);
-
-        if (!data || !Array.isArray(data.templates)) {
-          console.error("Invalid or missing template data:", data);
-          setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-          return;
-        }
-
-        // Format the templates for select component
-        const formattedTemplates = data.templates.map(
-          ([name, id, category_id]) => ({
-            label: name,
-            value: id,
-            category_id,
-          })
-        );
-
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          templates: formattedTemplates,
-        }));
-      })
-      .catch((error) => {
-        console.error("Error fetching templates:", error);
-        setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-      });
-  };
-
-  // Filter templates dynamically when category_id changes
-  const filteredTemplates = filterOptions.templates.filter(
-    (template) => template.category_id === formData.category_id
-  );
-
-  // Handle template change
-  const handleTemplateChange = (selectedOption) => {
-    console.log("Selected Template:", selectedOption);
-
-    const templateId = selectedOption.target.value;
-
-    if (!templateId) {
-      console.warn("No valid template selected.");
-      setSelectedTemplates(selectedOption);
-      setFormData((prevData) => ({
-        ...prevData,
-        template_id: null,
-        sub_category_id: null, // Reset sub-category selection
-      }));
-      setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
-      return;
-    }
-
-    console.log("Selected Template ID:", templateId);
-
-    // Update formData with selected template
-    setFormData((prevData) => ({
-      ...prevData,
-      template_id: templateId,
-      sub_category_id: null, // Reset sub-category selection
-    }));
-
-    // Fetch sub-categories based on selected template
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?template_id=${templateId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Response Data for Sub-Categories:", data);
-
-        if (!data || !Array.isArray(data.sub_categories)) {
-          console.error("Invalid or missing sub-category data:", data);
-          setFilterOptions((prevState) => ({
-            ...prevState,
-            sub_categories: [],
-          }));
-          return;
-        }
-
-        // Format the sub-categories for select component
-        const formattedSubCategories = data.sub_categories.map(
-          ([name, id]) => ({
-            label: name,
-            value: id,
-          })
-        );
-
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          sub_categories: formattedSubCategories,
-        }));
-      })
-      .catch((error) => {
-        console.error("Error fetching sub-categories:", error);
-        setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
-      });
-  };
-
-  // Filter sub-categories dynamically when template_id changes
-  const handleSubCategoryChange = (selectedOption) => {
-    console.log("Selected Sub-Category:", selectedOption);
-
-    const subCategoryId = selectedOption.target.value;
-
-    if (!subCategoryId) {
-      console.warn("No valid sub-category selected.");
-      setFormData((prevData) => ({
-        ...prevData,
-        sub_category_id: null,
-      }));
-      return;
-    }
-
-    console.log("Selected Sub-Category ID:", subCategoryId);
-
-    // Update formData with selected sub-category
-    setFormData((prevData) => ({
-      ...prevData,
-      sub_category_id: subCategoryId,
-    }));
-  };
-
   const handleDepartmentChange = (selectedOption) => {
     console.log("Selected Department ID:", selectedOption.target.value);
     setFormData((prevState) => ({
@@ -402,19 +253,46 @@ const InvoiceApproval = () => {
     }));
   };
 
+  const handleModuleChange = (selectedOption) => {
+    console.log("Selected Module ID:", selectedOption.target.value);
+
+    setFormData((prevState) => ({
+      ...prevState,
+      module_id: selectedOption.target.value, // Set module_id to selected module
+    }));
+  };
+
+  const handleMaterialTypeChange = (selectedOption) => {
+    console.log(
+      "Selected Material Type (PMS Supplier ID):",
+      selectedOption.target.value
+    );
+
+    setFormData((prevState) => ({
+      ...prevState,
+      pms_supplier_id: selectedOption.target.value, // Map material_id to pms_supplier_id
+    }));
+  };
+
+  const initialFormData = {
+    company_id: null, // Initial value is null, meaning no company selected
+    department_id: null, // No department selected
+    category_id: null, // No category selected
+    sub_category_id: null, // No sub-category selected
+    approval_type: "mor_approval", // Default approval type (can be changed based on your use case)
+    template_id: null, // No template selected
+    invoice_approval_levels: [], // An empty array, assuming no levels are set initially
+  };
   const handleCreate = () => {
     // Prepare the dynamic payload with data from formData and approvalLevels
     const payload = {
       // site_id: formData.site_id,
-      approval_type: formData.approval_type, // Use dynamic approval_type
+      approval_type: formData.module_id, // Use dynamic approval_type
       // Or set dynamically if needed
       company_id: formData.company_id, // Dynamic company_id from formData
       project_id: formData.site_id, // Static or dynamic if needed
       department_id: formData.department_id, // Dynamic department_id from formData
-      snag_checklist_id: formData.template_id, // Static or dynamic if needed
-      sub_category_id: formData.sub_category_id, // Dynamic sub_category_id from formData
-      // category_order: 1, // Static or dynamic if needed
-      category_id: formData.category_id, // Dynamic category_id from formData
+      pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
@@ -436,6 +314,54 @@ const InvoiceApproval = () => {
         console.log("Approval Created:", response.data);
         alert("Approval created successfully!");
         // Optionally reset form data here if needed
+      })
+      .catch((error) => {
+        console.error("Error creating invoice approval:", error);
+      });
+  };
+
+  const handleSaveAndCreate = () => {
+    // Prepare payload and send POST request (as you already have in handleCreate)
+    const payload = {
+      approval_type: formData.module_id,
+      company_id: formData.company_id,
+      project_id: formData.site_id,
+      department_id: formData.department_id,
+      snag_checklist_id: formData.template_id,
+      sub_category_id: formData.sub_category_id,
+      category_id: formData.category_id,
+      invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+        name: level.name,
+        order: level.order,
+        active: true,
+        escalate_to_users: level.users.map((user) => user.value),
+      })),
+    };
+
+    // Send API request
+    axios
+      .post(
+        "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        payload
+      )
+      .then((response) => {
+        console.log("Approval Created:", response.data);
+        alert("Approval created successfully!");
+
+        // Reset all the form fields to their initial values
+        setFormData(initialFormData); // Reset form data
+        setSelectedCompany(null); // Reset selected company
+        setSelectedCategory(null); // Reset selected category
+        setSelectedTemplates(null); // Reset selected templates
+        setFilterOptions((prevState) => ({
+          ...prevState,
+          sites: [],
+          sub_categories: [],
+          templates: [],
+        })); // Optionally reset dynamic filter options
+
+        // Optionally reset other states (approvalLevels, selectedUsers, etc.)
+        setApprovalLevels([{ order: "", name: "", users: [] }]);
       })
       .catch((error) => {
         console.error("Error creating invoice approval:", error);
@@ -540,42 +466,45 @@ const InvoiceApproval = () => {
                                 />
                               </div>
 
-                              {/* Created By */}
-                              <div className="col-md-3">
-                                <label htmlFor="created-by-select">
-                                  Category
-                                </label>
-                                <Select
-                                  id="created-by-select"
-                                  options={modifiedFilterOptions.categories}
-                                  onChange={handleCategoryChange}
-                                  value={selectedCategory}
-                                />
-                              </div>
-                              <div className="col-md-3 mt-3">
+                              <div className="col-md-3 mt-4">
                                 <label htmlFor="created-by-select">
                                   {" "}
-                                  Templates
+                                  Module
                                 </label>
                                 <Select
-                                  id="created-by-select"
-                                  options={modifiedFilterOptions.templates}
+                                  id="module-select"
+                                  options={modifiedFilterOptions.modules} // Use modifiedFilterOptions.modules
+                                  value={selectedModule}
+                                  onChange={handleModuleChange}
                                   isClearable
-                                  onChange={handleTemplateChange}
-                                  value={selectedTemplates}
                                 />
                               </div>
 
                               <div className="col-md-3 mt-4">
                                 <label htmlFor="created-by-select">
                                   {" "}
-                                  Sub Category
+                                  Material type
                                 </label>
-                                <Select
+                                {/* <Select
                                   id="created-by-select"
-                                  options={modifiedFilterOptions.sub_categories}
+                                  options={modifiedFilterOptions.material_types}
+                                  value={selectedMaterialType}
                                   isClearable
-                                  onChange={handleSubCategoryChange}
+
+                                  // onChange={handleSubCategoryChange}
+                                /> */}
+                                <Select
+                                  id="material-type-select"
+                                  options={filterOptions.material_types} // Use filterOptions directly
+                                  value={selectedMaterialType}
+                                  // onChange={(option) =>
+                                  //   setSelectedMaterialType(option)
+                                  // } // Ha
+                                  //
+                                  // ndle selection
+
+                                  onChange={handleMaterialTypeChange}
+                                  isClearable
                                 />
                               </div>
                             </div>
@@ -689,7 +618,7 @@ const InvoiceApproval = () => {
                           name="subaction"
                           type="submit"
                           className=" purple-btn2 submit-btn"
-                          onClick={() => handleCreate()}
+                          onClick={handleSaveAndCreate}
                         >
                           Save And Create New{" "}
                         </button>

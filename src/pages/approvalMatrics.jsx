@@ -11,15 +11,17 @@ const ApprovalMatrics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  // const [selectedCategory, setSelectedCategory] = useState(null);
   const [filterOptions, setFilterOptions] = useState({
     companies: [],
     sites: [],
     departments: [],
-    categories: [],
-    sub_categories: [],
+    // categories: [],
+    // sub_categories: [],
     // approval_types: [],
     // users: [],
+    modules: [],
+    material_types: [],
   });
 
   const [currentPage, setCurrentPage] = useState(1); // Current page state
@@ -44,13 +46,10 @@ const ApprovalMatrics = () => {
       { label: "Select Department", value: "" },
       ...filterOptions.departments,
     ],
-    categories: [
-      { label: "Select Category", value: "" },
-      ...filterOptions.categories,
-    ],
-    sub_categories: [
-      { label: "Select Sub Category", value: "" },
-      ...filterOptions.sub_categories,
+    modules: [{ label: "Select Module", value: "" }, ...filterOptions.modules],
+    material_types: [
+      { label: "Select Material Type", value: "" },
+      ...filterOptions.material_types, // Map your material types here
     ],
   };
 
@@ -89,28 +88,63 @@ const ApprovalMatrics = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const response = await fetch(
-          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?quickfilter=true&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (!response.ok) throw new Error("Failed to fetch dropdown data");
+        // const response = await fetch(
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        // );
+        const [dropdownResponse, materialTypeResponse] = await Promise.all([
+          fetch(
+            "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+          fetch(
+            "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+        ]);
+        // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
-        const data = await response.json();
+        // const data = await response.json();
+        if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+          throw new Error("Failed to fetch dropdown data or material types");
+        }
 
+        const dropdownData = await dropdownResponse.json();
+
+        const materialTypesData = await materialTypeResponse.json();
+
+        console.log("materialsss", materialTypesData);
+
+        // Safeguard to check if material_types exists
+        const materialTypes = materialTypesData.material_types || [];
+        console.log("modifuiees", modifiedFilterOptions); // Check if material_types is correctly set
         setFilterOptions({
-          companies: data.companies.map(([name, id]) => ({
+          companies: dropdownData.companies.map(([name, id]) => ({
             label: name,
             value: id,
           })),
-          sites: data.sites.map(([name, id]) => ({ label: name, value: id })),
-          departments: data.departments.map(([name, id]) => ({
+          sites: dropdownData.sites.map(([name, id, company_id]) => ({
+            label: name,
+            value: id,
+            company_id,
+          })),
+          departments: dropdownData.departments.map(([name, id]) => ({
             label: name,
             value: id,
           })),
-          categories: data.categories.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          sub_categories: data.sub_categories.map(([name, id]) => ({
+          modules: dropdownData.approval_types
+            ? Object.entries(dropdownData.approval_types).map(
+                ([key, value]) => ({
+                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
+                  value: value, // Assign the corresponding value
+                })
+              )
+            : [],
+          material_types: [
+            { label: "Select Material Type", value: "" },
+            ...materialTypesData.map((material) => ({
+              label: material.name,
+              value: material.id,
+            })),
+          ],
+          users: dropdownData.users.map(([name, id]) => ({
             label: name,
             value: id,
           })),
@@ -226,6 +260,7 @@ const ApprovalMatrics = () => {
     site: null,
     department: null,
     category: null,
+    modules: null,
     subCategory: null,
   });
 
@@ -243,13 +278,17 @@ const ApprovalMatrics = () => {
     console.log("kjasjc", filters);
 
     if (filters.company) queryParams.append("company_id", filters.company);
+
     if (filters.site) queryParams.append("site_id", filters.site);
+
     if (filters.department)
       queryParams.append("department_id", filters.department);
-    if (filters.category) queryParams.append("category_id", filters.category);
-    if (filters.subCategory)
-      queryParams.append("sub_category_id", filters.subCategory);
 
+    if (filters.modules) queryParams.append("module_id", filters.modules);
+
+    if (filters.materialtypes)
+      queryParams.append("pms_inventory_type_id", filters.materialTypes);
+    console.log("hhhh", queryParams.toString());
     const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     try {
@@ -406,7 +445,17 @@ const ApprovalMatrics = () => {
 
                     {/* Created By */}
                     <div className="col-md-2">
-                      <label htmlFor="created-by-select">Category</label>
+                      <label htmlFor="created-by-select">Module</label>
+
+                      <Select
+                        id="created-by-select"
+                        options={modifiedFilterOptions.modules}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("modules", selectedOption)
+                        }
+                        isClearable
+                        // onChange={handleSubCategoryChange}
+                      />
                       {/* <Select
                         id="created-by-select"
                         options={modifiedFilterOptions.categories}
@@ -415,7 +464,7 @@ const ApprovalMatrics = () => {
                         placeholder="Select Category"
                         isClearable
                       /> */}
-                      <Select
+                      {/* <Select
                         id="created-by-select"
                         options={modifiedFilterOptions.categories}
                         onChange={(selectedOption) =>
@@ -424,23 +473,32 @@ const ApprovalMatrics = () => {
                         value={selectedCategory}
                         placeholder="Select Category"
                         isClearable
-                      />
+                      /> */}
                     </div>
                     <div className="col-md-2">
-                      <label htmlFor="created-by-select"> Sub Category</label>
+                      <label htmlFor="created-by-select"> Material type</label>
                       {/* <Select
                         id="created-by-select"
                         options={modifiedFilterOptions.sub_categories}
                         placeholder="Select  Sub Category"
                         isClearable
                       /> */}
-                      <Select
+                      {/* <Select
                         id="sub-category-select"
                         options={modifiedFilterOptions.sub_categories}
                         onChange={(selectedOption) =>
                           handleFilterChange("subCategory", selectedOption)
                         }
                         placeholder="Select Sub Category"
+                        isClear
+                        able
+
+                      /> */}
+                      <Select
+                        id="material-type-select"
+                        options={modifiedFilterOptions.material_types} // Use filterOptions directly
+                        // value={selectedMaterialType}
+                        // onChange={(option) => setSelectedMaterialType(option)} // Handle selection
                         isClearable
                       />
                     </div>
@@ -466,9 +524,11 @@ const ApprovalMatrics = () => {
                       <th>Company</th>
                       <th>Site</th>
                       <th>Department</th>
-                      <th>Category</th>
+                      <th>Module</th>
+                      <th>Material Type</th>
+                      {/* <th>Category</th>
                       <th>Template</th>
-                      <th>Sub Category</th>
+                      <th>Sub Category</th> */}
                       <th>Created On</th>
                       <th>Created by</th>
                     </tr>
@@ -491,8 +551,8 @@ const ApprovalMatrics = () => {
                         <td>{record.company_name}</td>
                         <td>{record.project_name}</td>
                         <td>{record.department_name}</td>
-                        <td>{record.category_name}</td>
-                        <td>{record.template_name}</td>
+                        {/* <td>{record.category_name}</td> */}
+                        <td>{record.approval_type}</td>
                         <td>{record.sub_category_name}</td>
                         <td>{record.created_at}</td>
 

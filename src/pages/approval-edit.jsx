@@ -11,21 +11,20 @@ const ApprovalEdit = () => {
     companies: [],
     departments: [],
     sites: [],
-    categories: [],
-    sub_categories: [],
+    modules: [], // For Modules
+    material_types: [],
     approval_types: [],
     users: [],
-    templates: [],
   });
 
   const { id } = useParams(); // Ge
   const [loading, setLoading] = useState(true); // New loading state
 
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedTemplates, setSelectedTemplates] = useState(null);
+
   const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null); // For selected module
+  const [selectedMaterialType, setSelectedMaterialType] = useState(null); // For selected material type
 
   const [selectedUsers, setSelectedUsers] = useState([]);
 
@@ -36,8 +35,10 @@ const ApprovalEdit = () => {
   const [formData, setFormData] = useState({
     company_id: null,
     department_id: null,
-    category_id: null,
-    sub_category_id: null,
+    // category_id: null,
+    // sub_category_id: null,
+    module_id: null,
+    material_id: null,
     approval_type: "mor_approval", // example approval type
     invoice_approval_levels: [],
   });
@@ -84,42 +85,63 @@ const ApprovalEdit = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const response = await fetch(
-          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (!response.ok) throw new Error("Failed to fetch dropdown data");
+        // const response = await fetch(
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        // );
+        const [dropdownResponse, materialTypeResponse] = await Promise.all([
+          fetch(
+            "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+          fetch(
+            "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          ),
+        ]);
+        // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
-        const data = await response.json();
+        // const data = await response.json();
+        if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+          throw new Error("Failed to fetch dropdown data or material types");
+        }
 
+        const dropdownData = await dropdownResponse.json();
+
+        const materialTypesData = await materialTypeResponse.json();
+
+        console.log("materialsss", materialTypesData);
+
+        // Safeguard to check if material_types exists
+        const materialTypes = materialTypesData.material_types || [];
+        // Check if material_types is correctly set
         setFilterOptions({
-          companies: data.companies.map(([name, id]) => ({
+          companies: dropdownData.companies.map(([name, id]) => ({
             label: name,
             value: id,
           })),
-          sites: data.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id,
-          })),
-          departments: data.departments.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          categories: data.categories.map(([name, id, company_id]) => ({
+          sites: dropdownData.sites.map(([name, id, company_id]) => ({
             label: name,
             value: id,
             company_id,
           })),
-          sub_categories: data.sub_categories.map(([name, id]) => ({
+          departments: dropdownData.departments.map(([name, id]) => ({
             label: name,
             value: id,
           })),
-          templates: data.templates.map(([name, id, category_id]) => ({
-            label: name,
-            value: id,
-            category_id,
-          })),
-          users: data.users.map(([name, id]) => ({
+          modules: dropdownData.approval_types
+            ? Object.entries(dropdownData.approval_types).map(
+                ([key, value]) => ({
+                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
+                  value: value, // Assign the corresponding value
+                })
+              )
+            : [],
+          material_types: [
+            { label: "Select Material Type", value: "" },
+            ...materialTypesData.map((material) => ({
+              label: material.name,
+              value: material.id,
+            })),
+          ],
+          users: dropdownData.users.map(([name, id]) => ({
             label: name,
             value: id,
           })),
@@ -131,14 +153,31 @@ const ApprovalEdit = () => {
 
     const fetchApprovalData = async () => {
       try {
+        // Fetch approval data from the invoice_approvals API
         const response = await fetch(
           `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         if (!response.ok) throw new Error("Failed to fetch approval data");
 
         const data = await response.json();
-
         console.log("Fetched Approval Data:", data);
+
+        // Fetch users data from the dropdown_list API
+        const usersResponse = await fetch(
+          `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        if (!usersResponse.ok) throw new Error("Failed to fetch users data");
+
+        const usersData = await usersResponse.json();
+        console.log("Fetched Users Data:", usersData);
+
+        // Convert the users array into a Map for easier lookup
+        const userMap = new Map(
+          usersData.users.map((user) => [user[1], user[0]])
+        ); // Map user ID to user name
+
+        // Log the userMap to ensure it's correct
+        console.log("User Map:", userMap);
 
         // Set form data from API response
         setFormData({
@@ -163,44 +202,43 @@ const ApprovalEdit = () => {
             ? { label: data.site_name, value: data.project_id }
             : null
         );
-        setSelectedCategory(
-          data.category_id
-            ? { label: data.category_name, value: data.category_id }
-            : null
-        );
-        setSelectedTemplates(
-          data.snag_checklist_id
-            ? { label: data.template_name, value: data.snag_checklist_id }
-            : null
-        );
-        setSelectedSubCategory(
-          data.sub_category_id
-            ? { label: data.sub_category_name, value: data.sub_category_id }
-            : null
-        );
 
-        setApprovalLevels(
-          data.invoice_approval_levels.map((level) => ({
+        // Map user IDs to user names in invoice_approval_levels
+        const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
+          (level) => ({
             order: level.order || "",
             name: level.name || "",
             users:
-              level.escalate_to_users?.map(
-                (user) => (typeof user === "object" ? user : { value: user }) // Ensure correct object structure
-              ) || [],
-          }))
+              level.escalate_to_users?.map((userId) => {
+                // Log userId to check if it's correct
+                console.log("User ID:", userId);
+
+                const userName = userMap.get(userId) || "Unknown"; // Get the user name by ID from userMap
+                console.log("Mapped User Name:", userName); // Log the result to see if mapping works
+
+                return { label: userName, value: userId }; // Map the user ID to the name
+              }) || [],
+          })
         );
 
-        // Fetch sites based on the selected company
+        // Log the final approval levels to inspect the data
+        console.log(
+          "Approval Levels with User Names:",
+          approvalLevelsWithUserNames
+        );
+
+        // Set approval levels with mapped user names
+        setApprovalLevels(approvalLevelsWithUserNames);
+
+        // Fetch other data as needed (e.g., sites, templates)
         if (data.company_id) {
           await fetchSites(data.company_id);
         }
 
-        // Fetch templates based on the selected category
         if (data.category_id) {
           await fetchTemplates(data.category_id);
         }
 
-        // Fetch sub-categories based on the selected template
         if (data.snag_checklist_id) {
           await fetchSubCategories(data.snag_checklist_id);
         }
@@ -208,6 +246,7 @@ const ApprovalEdit = () => {
         console.error("Error fetching approval data:", error);
       }
     };
+
     fetchDropdownData();
     fetchApprovalData();
   }, [id]);
@@ -232,52 +271,6 @@ const ApprovalEdit = () => {
     } catch (error) {
       console.error("Error fetching sites:", error);
       setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-    }
-  };
-
-  const fetchTemplates = async (categoryId) => {
-    try {
-      const response = await fetch(
-        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?category_id=${categoryId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      if (!response.ok) throw new Error("Failed to fetch templates");
-
-      const data = await response.json();
-      const formattedTemplates = data.templates.map(([name, id]) => ({
-        label: name,
-        value: id,
-      }));
-
-      setFilterOptions((prevState) => ({
-        ...prevState,
-        templates: formattedTemplates,
-      }));
-    } catch (error) {
-      console.error("Error fetching templates:", error);
-      setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-    }
-  };
-
-  const fetchSubCategories = async (templateId) => {
-    try {
-      const response = await fetch(
-        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?template_id=${templateId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      if (!response.ok) throw new Error("Failed to fetch sub-categories");
-
-      const data = await response.json();
-      const formattedSubCategories = data.sub_categories.map(([name, id]) => ({
-        label: name,
-        value: id,
-      }));
-
-      setFilterOptions((prevState) => ({
-        ...prevState,
-        sub_categories: formattedSubCategories,
-      }));
-    } catch (error) {
-      console.error("Error fetching sub-categories:", error);
-      setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
     }
   };
 
@@ -328,170 +321,6 @@ const ApprovalEdit = () => {
   };
   // Handle category change
 
-  const handleCategoryChange = (selectedOption) => {
-    console.log("Selected Category:", selectedOption);
-
-    const categoryId = selectedOption.target.value;
-
-    if (!categoryId) {
-      console.warn("No valid category selected.");
-      setFormData((prevData) => ({
-        ...prevData,
-        category_id: null,
-        template_id: null, // Reset the template selection
-        sub_category_id: null, // Reset sub category selection
-      }));
-      setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-      return;
-    }
-
-    console.log("Selected Category ID:", categoryId);
-
-    // Update formData with selected category
-    setSelectedCategory(selectedOption);
-    setFormData((prevData) => ({
-      ...prevData,
-      category_id: categoryId,
-      template_id: null, // Reset template selection
-      sub_category_id: null, // Reset sub-category selection
-    }));
-
-    // Fetch templates based on selected category
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?category_id=${categoryId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Response Data for Templates:", data);
-
-        if (!data || !Array.isArray(data.templates)) {
-          console.error("Invalid or missing template data:", data);
-          setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-          return;
-        }
-
-        // Format the templates for select component
-        const formattedTemplates = data.templates.map(
-          ([name, id, category_id]) => ({
-            label: name,
-            value: id,
-            category_id,
-          })
-        );
-
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          templates: formattedTemplates,
-        }));
-      })
-      .catch((error) => {
-        console.error("Error fetching templates:", error);
-        setFilterOptions((prevState) => ({ ...prevState, templates: [] }));
-      });
-  };
-
-  // Filter templates dynamically when category_id changes
-  const filteredTemplates = filterOptions.templates.filter(
-    (template) => template.category_id === formData.category_id
-  );
-
-  // Handle template change
-  const handleTemplateChange = (selectedOption) => {
-    console.log("Selected Template:", selectedOption);
-
-    const templateId = selectedOption.target.value;
-
-    if (!templateId) {
-      console.warn("No valid template selected.");
-      setSelectedTemplates(selectedOption);
-      setFormData((prevData) => ({
-        ...prevData,
-        template_id: null,
-        sub_category_id: null, // Reset sub-category selection
-      }));
-      setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
-      return;
-    }
-
-    console.log("Selected Template ID:", templateId);
-
-    // Update formData with selected template
-    setFormData((prevData) => ({
-      ...prevData,
-      template_id: templateId,
-      sub_category_id: null, // Reset sub-category selection
-    }));
-
-    // Fetch sub-categories based on selected template
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?template_id=${templateId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Response Data for Sub-Categories:", data);
-
-        if (!data || !Array.isArray(data.sub_categories)) {
-          console.error("Invalid or missing sub-category data:", data);
-          setFilterOptions((prevState) => ({
-            ...prevState,
-            sub_categories: [],
-          }));
-          return;
-        }
-
-        // Format the sub-categories for select component
-        const formattedSubCategories = data.sub_categories.map(
-          ([name, id]) => ({
-            label: name,
-            value: id,
-          })
-        );
-
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          sub_categories: formattedSubCategories,
-        }));
-      })
-      .catch((error) => {
-        console.error("Error fetching sub-categories:", error);
-        setFilterOptions((prevState) => ({ ...prevState, sub_categories: [] }));
-      });
-  };
-
-  // Filter sub-categories dynamically when template_id changes
-  const handleSubCategoryChange = (selectedOption) => {
-    console.log("Selected Sub-Category:", selectedOption);
-
-    const subCategoryId = selectedOption.target.value;
-
-    if (!subCategoryId) {
-      console.warn("No valid sub-category selected.");
-      setFormData((prevData) => ({
-        ...prevData,
-        sub_category_id: null,
-      }));
-      return;
-    }
-
-    console.log("Selected Sub-Category ID:", subCategoryId);
-
-    // Update formData with selected sub-category
-    setFormData((prevData) => ({
-      ...prevData,
-      sub_category_id: subCategoryId,
-    }));
-  };
-
   const handleDepartmentChange = (selectedOption) => {
     console.log("Selected Department ID:", selectedOption.target.value);
     setFormData((prevState) => ({
@@ -500,210 +329,27 @@ const ApprovalEdit = () => {
     }));
   };
 
-  // const handleCreate = () => {
-  //   // Check for duplicate orders
-  //   const orderCounts = {};
-  //   let hasDuplicateOrder = false;
+  const handleModuleChange = (selectedOption) => {
+    console.log("Selected Module ID:", selectedOption.target.value);
 
-  //   approvalLevels.forEach((level) => {
-  //     if (level.order) {
-  //       if (orderCounts[level.order]) {
-  //         hasDuplicateOrder = true; // Mark as duplicate found
-  //       }
-  //       orderCounts[level.order] = true;
-  //     }
-  //   });
+    setFormData((prevState) => ({
+      ...prevState,
+      module_id: selectedOption.target.value, // Set module_id to selected module
+    }));
+  };
 
-  //   // Show alert and stop execution if duplicate order found
-  //   if (hasDuplicateOrder) {
-  //     alert("Each approval level must have a unique order.");
-  //     return; // Stop function execution
-  //   }
+  const handleMaterialTypeChange = (selectedOption) => {
+    console.log(
+      "Selected Material Type (PMS Supplier ID):",
+      selectedOption.target.value
+    );
 
-  //   // Prepare payload
-  //   const payload = {
-  //     approval_type: formData.approval_type,
-  //     company_id: formData.company_id,
-  //     project_id: formData.site_id,
-  //     department_id: formData.department_id,
-  //     snag_checklist_id: formData.template_id,
-  //     sub_category_id: formData.sub_category_id,
-  //     category_order: 1,
-  //     category_id: formData.category_id,
-  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-  //       name: level.name,
-  //       order: level.order,
-  //       active: true,
-  //       escalate_to_users: level.users?.map((user) => user.value) || [],
-  //     })),
-  //   };
+    setFormData((prevState) => ({
+      ...prevState,
+      pms_supplier_id: selectedOption.target.value, // Map material_id to pms_supplier_id
+    }));
+  };
 
-  //   console.log("Final Payload:", payload);
-
-  //   // Send API request
-  //   axios
-  //     .patch(
-  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-  //       payload
-  //     )
-  //     .then((response) => {
-  //       console.log("Approval Created:", response.data);
-  //       alert("Approval created successfully!");
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error creating invoice approval:", error);
-  //     });
-  // };
-
-  // const handleCreate = () => {
-  //   // Check for duplicate orders
-
-  //   const orderCounts = {};
-  //   let hasDuplicateOrder = false;
-
-  //   approvalLevels.forEach((level) => {
-  //     console.log("Level Order Before Normalization:", level.order); // Log before conversion
-
-  //     if (!level.order && level.order !== 0) {
-  //       console.log("Skipping because level.order is invalid:", level.order);
-  //       return;
-  //     }
-
-  //     const orderKey = String(level.order); // Convert to string for consistency
-
-  //     console.log(
-  //       "Before checking duplicate:",
-  //       orderKey,
-  //       orderCounts[orderKey]
-  //     );
-
-  //     if (orderCounts[orderKey]) {
-  //       console.log("Duplicate Found:", orderKey);
-  //       hasDuplicateOrder = true;
-  //     }
-
-  //     orderCounts[orderKey] = true; // Set this order in the map
-  //   });
-
-  //   if (hasDuplicateOrder) {
-  //     alert("Each approval level must have a unique order.");
-  //     return;
-  //   }
-
-  //   // Show alert and stop execution if duplicate order found
-  //   if (hasDuplicateOrder) {
-  //     alert("Each approval level must have a unique order.");
-  //     return; // Stop function execution
-  //   }
-
-  //   // Prepare payload
-  //   const payload = {
-  //     approval_type: formData.approval_type,
-  //     company_id: formData.company_id,
-  //     project_id: formData.site_id,
-  //     department_id: formData.department_id,
-  //     snag_checklist_id: formData.template_id,
-  //     sub_category_id: formData.sub_category_id,
-  //     category_order: 1,
-  //     category_id: formData.category_id,
-  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-  //       name: level.name,
-  //       order: level.order,
-  //       active: true,
-  //       escalate_to_users: level.users?.map((user) => user.value) || [],
-  //     })),
-  //   };
-
-  //   console.log("Final Payload:", payload);
-
-  //   // Send API request
-  //   axios
-  //     .patch(
-  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-  //       payload
-  //     )
-  //     .then((response) => {
-  //       console.log("Approval Created:", response.data);
-  //       alert("Approval created successfully!");
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error creating invoice approval:", error);
-  //     });
-  // };
-
-  // const handleCreate = () => {
-  //   // Check for duplicate orders
-
-  //   const orderCounts = {};
-  //   let hasDuplicateOrder = false;
-
-  //   approvalLevels.forEach((level) => {
-  //     console.log("Level Order Before Normalization:", level.order); // Log before conversion
-
-  //     // Skip invalid orders
-  //     if (!level.order && level.order !== 0) {
-  //       console.log("Skipping because level.order is invalid:", level.order);
-  //       return;
-  //     }
-
-  //     const orderKey = String(level.order); // Convert to string for consistency
-  //     orderCounts[orderKey];
-  //     console.log("Before checking duplicate:", orderKey, orderCounts);
-
-  //     console.log(orderCounts);
-
-  //     // Check for duplicate order
-  //     setTimeout(() => {
-  //       if (orderCounts.hasOwnProperty(orderKey)) {
-  //         // Using hasOwnProperty to check for duplicates
-  //         console.log("Duplicate Found:", orderKey);
-  //         hasDuplicateOrder = true;
-  //       }
-
-  //       // Mark this orderKey as processed
-  //       orderCounts[orderKey] = true; // Store the order in the map
-  //     });
-  //     // If a duplicate order is found, show an alert and stop further execution
-  //     if (hasDuplicateOrder) {
-  //       alert("Each approval level must have a unique order.");
-  //       return; // Stop function execution
-  //     }
-  //   }, 3000);
-
-  //   // Prepare payload
-  //   const payload = {
-  //     approval_type: formData.approval_type,
-  //     company_id: formData.company_id,
-  //     project_id: formData.site_id,
-  //     department_id: formData.department_id,
-  //     snag_checklist_id: formData.template_id,
-  //     sub_category_id: formData.sub_category_id,
-  //     category_order: 1,
-  //     category_id: formData.category_id,
-  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-  //       name: level.name,
-  //       order: level.order,
-  //       active: true,
-  //       escalate_to_users: level.users?.map((user) => user.value) || [],
-  //     })),
-  //   };
-
-  //   console.log("Final Payload:", payload);
-
-  //   // Send API request if no duplicates found
-  //   axios
-  //     .patch(
-  //       `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-  //       payload
-  //     )
-  //     .then((response) => {
-  //       console.log("Approval Created:", response.data);
-  //       alert("Approval created successfully!");
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error creating invoice approval:", error);
-  //     });
-  // };
   const handleCreate = () => {
     const orderCounts = {}; // Store orders as keys
     let hasDuplicateOrder = false;
@@ -747,7 +393,7 @@ const ApprovalEdit = () => {
 
     // If no duplicate, prepare and send the payload (rest of the logic follows)
     const payload = {
-      approval_type: formData.approval_type,
+      approval_type: formData.module_id,
       company_id: formData.company_id,
       project_id: formData.site_id,
       department_id: formData.department_id,
@@ -755,6 +401,7 @@ const ApprovalEdit = () => {
       sub_category_id: formData.sub_category_id,
       category_order: 1,
       category_id: formData.category_id,
+      pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
@@ -775,10 +422,39 @@ const ApprovalEdit = () => {
         console.log("Approval Created:", response.data);
         alert("Approval created successfully!");
       })
-      .catch((error, response) => {
-        console.error("Error creating invoice approval:", response);
-        alert("Each approval level must have a unique order");
-      });
+      // .catch((error, response) => {
+      //   console.error("Error creating invoice approval:", response);
+      //   alert("Each approval level must have a unique order");
+      // });
+      .catch((error) => {
+        // Check if error.response exists (server responded with an error)
+        if (error.response) {
+          // Check if the response contains the specific error message
+          const errorMessage = error.response.data.errors;
+
+          // Check if the specific error about duplicate orders is in the error messages
+          if (
+            errorMessage &&
+            errorMessage.includes(
+              "Invoice approval levels order has already been taken"
+            )
+          ) {
+            alert("Each approval level must have a unique order");
+          } else {
+            // Handle any other errors that are returned
+            console.error("Error Response:", error.response);
+            alert("An error occurred while creating the approval.");
+          }
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error("Error Request:", error.request);
+          alert("No response received from the server.");
+        } else {
+          // Something happened while setting up the request
+          console.error("Error Message:", error.message);
+          alert(`Error: ${error.message}`);
+        }
+      }); //
   };
 
   return (
@@ -883,30 +559,29 @@ const ApprovalEdit = () => {
                               {/* Created By */}
                               <div className="col-md-3">
                                 <label htmlFor="created-by-select">
-                                  Category
+                                  Module
                                 </label>
                                 <Select
                                   id="created-by-select"
-                                  options={filterOptions.categories}
-                                  onChange={handleCategoryChange}
-                                  value={selectedCategory}
+                                  options={filterOptions.modules}
+                                  onChange={handleModuleChange}
                                 />
                               </div>
                               <div className="col-md-3 mt-3">
                                 <label htmlFor="created-by-select">
                                   {" "}
-                                  Templates
+                                  Material type
                                 </label>
                                 <Select
                                   id="created-by-select"
-                                  options={filterOptions.templates}
+                                  options={filterOptions.material_types}
                                   isClearable
-                                  onChange={handleTemplateChange}
-                                  value={selectedTemplates}
+                                  // value={selectedMaterialType}
+                                  onChange={handleMaterialTypeChange}
                                 />
                               </div>
 
-                              <div className="col-md-3 mt-4">
+                              {/* <div className="col-md-3 mt-4">
                                 <label htmlFor="created-by-select">
                                   {" "}
                                   Sub Category
@@ -917,7 +592,7 @@ const ApprovalEdit = () => {
                                   isClearable
                                   onChange={handleSubCategoryChange}
                                 />
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         </CollapsibleCard>
@@ -1017,11 +692,7 @@ const ApprovalEdit = () => {
                       <div style={{ textAlign: "center" }}>
                         <button
                           className="purple-btn1 submit-btn"
-                          onClick={() => {
-                            setTimeout(() => {
-                              handleCreate();
-                            }, 1000); // Delay of 2000 milliseconds (2 seconds)
-                          }}
+                          onClick={handleCreate}
                         >
                           Update
                         </button>
