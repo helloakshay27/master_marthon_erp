@@ -86,12 +86,224 @@ const ApprovalEdit = () => {
     approval_type: "",
   });
 
+  // useEffect(() => {
+  //   const fetchDropdownData = async () => {
+  //     try {
+  //       // const response = await fetch(
+  //       //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+  //       // );
+  //       const [dropdownResponse, materialTypeResponse] = await Promise.all([
+  //         fetch(
+  //           "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+  //         ),
+  //         fetch(
+  //           "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+  //         ),
+  //       ]);
+  //       // if (!response.ok) throw new Error("Failed to fetch dropdown data");
+
+  //       // const data = await response.json();
+  //       if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+  //         throw new Error("Failed to fetch dropdown data or material types");
+  //       }
+
+  //       const dropdownData = await dropdownResponse.json();
+
+  //       const materialTypesData = await materialTypeResponse.json();
+
+  //       console.log("materialsss", materialTypesData);
+
+  //       // Safeguard to check if material_types exists
+  //       const materialTypes = materialTypesData.material_types || [];
+  //       // Check if material_types is correctly set
+
+  //       setFilterOptions({
+  //         companies: [
+  //           { label: "Select Company", value: "" },
+  //           ...dropdownData.companies.map(([name, id]) => ({
+  //             label: name,
+  //             value: id,
+  //           })),
+  //         ],
+  //         sites: [
+  //           { label: "Select Site", value: "" },
+  //           ...dropdownData.sites.map(([name, id, company_id]) => ({
+  //             label: name,
+  //             value: id,
+  //             company_id,
+  //           })),
+  //         ],
+  //         departments: [
+  //           { label: "Select Department", value: "" },
+  //           ...dropdownData.departments.map(([name, id]) => ({
+  //             label: name,
+  //             value: id,
+  //           })),
+  //         ],
+  //         modules: [
+  //           { label: "Select Module", value: "" },
+  //           ...(dropdownData.approval_types
+  //             ? Object.entries(dropdownData.approval_types).map(
+  //                 ([key, value]) => ({
+  //                   label: key.replace(/_/g, " "), // Format label (e.g., "material_order_request" → "Material Order Request")
+  //                   value: value,
+  //                 })
+  //               )
+  //             : []),
+  //         ],
+  //         material_types: [
+  //           { label: "Select Material Type", value: "" },
+  //           ...materialTypesData.map((material) => ({
+  //             label: material.name,
+  //             value: material.id,
+  //           })),
+  //         ],
+  //         users: [
+  //           { label: "Select User", value: "" },
+  //           ...dropdownData.users.map(([name, id]) => ({
+  //             label: name,
+  //             value: id,
+  //           })),
+  //         ],
+  //       });
+  //     } catch (error) {
+  //       console.error("Error fetching dropdown data:", error);
+  //     }
+  //   };
+
+  //   const fetchApprovalData = async () => {
+  //     try {
+  //       // Fetch approval data from the invoice_approvals API
+  //       const response = await fetch(
+  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       if (!response.ok) throw new Error("Failed to fetch approval data");
+
+  //       const data = await response.json();
+  //       console.log("Fetched Approval Data:", data);
+
+  //       // Fetch users data from the dropdown_list API
+  //       const usersResponse = await fetch(
+  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       if (!usersResponse.ok) throw new Error("Failed to fetch users data");
+
+  //       const usersData = await usersResponse.json();
+  //       console.log("Fetched Users Data:", usersData);
+
+  //       // Convert the users array into a Map for easier lookup
+  //       const userMap = new Map(
+  //         usersData.users.map((user) => [user[1], user[0]])
+  //       ); // Map user ID to user name
+
+  //       // Log the userMap to ensure it's correct
+  //       console.log("User Map:", userMap);
+
+  //       // const companyOptions =
+
+  //       // Set form data from API response
+  //       setFormData({
+  //         company_id: data.company_id || null,
+  //         site_id: data.project_id || null,
+  //         // Set site_id from project_id
+  //         department_id: data.department_id || null,
+  //         module_id: data.approval_type || null,
+  //         material_id: data.pms_inventory_type_id || null,
+
+  //         invoice_approval_levels: data.invoice_approval_levels || [],
+  //       });
+
+  //       console.log("Data Company ID:", data.company_id);
+  //       console.log("Companies List:", filterOptions.companies);
+
+  //       // setSelectedCompany(
+  //       //   filterOptions.companies.find(
+  //       //     (company) => company.value === data.company_id
+  //       //   ) || null
+  //       // );
+
+  //       const siteOption = filterOptions.sites.find(
+  //         (site) => site.value === data.project_id
+  //       );
+  //       setSelectedSite(siteOption || null);
+
+  //       const departmentOption = filterOptions.departments.find(
+  //         (department) => department.value === data.department_id
+  //       );
+  //       setSelectedDepartment(departmentOption || null); // Declare
+
+  //       const moduleOption = filterOptions.modules.find(
+  //         (mod) => mod.value === data.approval_type
+  //       );
+  //       setSelectedModule(moduleOption || null);
+
+  //       // Find and set selected material type
+  //       const materialTypeOption = filterOptions.material_types.find(
+  //         (mat) => mat.value === data.pms_inventory_type_id
+  //       );
+  //       setSelectedMaterialType(materialTypeOption || null);
+
+  //       // Map user IDs to user names in invoice_approval_levels
+  //       const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
+  //         (level) => ({
+  //           order: level.order || "",
+  //           name: level.name || "",
+  //           users:
+  //             level.escalate_to_users?.map((userId) => {
+  //               // Log userId to check if it's correct
+  //               console.log("User ID:", userId);
+
+  //               const userName = userMap.get(userId) || "Unknown"; // Get the user name by ID from userMap
+  //               console.log("Mapped User Name:", userName); // Log the result to see if mapping works
+
+  //               return { label: userName, value: userId }; // Map the user ID to the name
+  //             }) || [],
+  //         })
+  //       );
+
+  //       // Log the final approval levels to inspect the data
+  //       console.log(
+  //         "Approval Levels with User Names:",
+  //         approvalLevelsWithUserNames
+  //       );
+
+  //       // Set approval levels with mapped user names
+  //       setApprovalLevels(approvalLevelsWithUserNames);
+
+  //       // Fetch other data as needed (e.g., sites, templates)
+  //       if (data.company_id) {
+  //         await fetchSites(data.company_id);
+  //       }
+
+  //       if (data.category_id) {
+  //         await fetchTemplates(data.category_id);
+  //       }
+
+  //       if (data.snag_checklist_id) {
+  //         await fetchSubCategories(data.snag_checklist_id);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching approval data:", error);
+  //     }
+  //   };
+
+  //   fetchDropdownData();
+  //   fetchApprovalData();
+  // }, [id]);
+
+  // useEffect(() => {
+  //   if (filterOptions.companies.length > 0) {
+  //     setSelectedCompany(
+  //       filterOptions.companies.find(
+  //         (company) => company.value === data.company_id
+  //       ) || null
+  //     );
+  //   }
+  // }, [filterOptions, data.company_id]);
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        // const response = await fetch(
-        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        // );
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
             "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
@@ -100,9 +312,7 @@ const ApprovalEdit = () => {
             "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
           ),
         ]);
-        // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
-        // const data = await response.json();
         if (!dropdownResponse.ok || !materialTypeResponse.ok) {
           throw new Error("Failed to fetch dropdown data or material types");
         }
@@ -117,6 +327,12 @@ const ApprovalEdit = () => {
         const materialTypes = materialTypesData.material_types || [];
         // Check if material_types is correctly set
 
+        // const materialTypesData = await materialTypeResponse.json();
+
+        // // Safeguard to check if material_types exists
+        // const materialTypes = materialTypesData.material_types || [];
+
+        // Set filterOptions state
         setFilterOptions({
           companies: [
             { label: "Select Company", value: "" },
@@ -145,7 +361,7 @@ const ApprovalEdit = () => {
             ...(dropdownData.approval_types
               ? Object.entries(dropdownData.approval_types).map(
                   ([key, value]) => ({
-                    label: key.replace(/_/g, " "), // Format label (e.g., "material_order_request" → "Material Order Request")
+                    label: key.replace(/_/g, " "), // Format label
                     value: value,
                   })
                 )
@@ -171,9 +387,40 @@ const ApprovalEdit = () => {
       }
     };
 
+    fetchDropdownData();
+  }, []); // Run once when the component mounts
+
+  useEffect(() => {
+    if (selectedCompany && selectedCompany.value) {
+      const fetchSites = async (companyId) => {
+        try {
+          const response = await fetch(
+            `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          if (!response.ok) throw new Error("Failed to fetch sites");
+
+          const data = await response.json();
+          const formattedSites = data.sites.map(([name, id]) => ({
+            label: name,
+            value: id,
+          }));
+
+          setFilterOptions((prevState) => ({
+            ...prevState,
+            sites: formattedSites, // Update sites in filterOptions
+          }));
+        } catch (error) {
+          console.error("Error fetching sites:", error);
+          setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+        }
+      };
+
+      fetchSites(selectedCompany.value);
+    }
+  }, [selectedCompany]); //
+  useEffect(() => {
     const fetchApprovalData = async () => {
       try {
-        // Fetch approval data from the invoice_approvals API
         const response = await fetch(
           `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
@@ -182,174 +429,73 @@ const ApprovalEdit = () => {
         const data = await response.json();
         console.log("Fetched Approval Data:", data);
 
-        // Fetch users data from the dropdown_list API
-        const usersResponse = await fetch(
-          `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        if (!usersResponse.ok) throw new Error("Failed to fetch users data");
-
-        const usersData = await usersResponse.json();
-        console.log("Fetched Users Data:", usersData);
-
-        // Convert the users array into a Map for easier lookup
-        const userMap = new Map(
-          usersData.users.map((user) => [user[1], user[0]])
-        ); // Map user ID to user name
-
-        // Log the userMap to ensure it's correct
-        console.log("User Map:", userMap);
-
-        // const companyOptions =
-        //   usersData.companies && usersData.companies.length > 0
-        //     ? usersData.companies.map((company) => ({
-        //         value: company[0], // Assuming company[0] contains the ID
-        //         label: company[1], // Assuming company[1] contains the name
-        //       }))
-        //     : [];
-
-        // const companyMap = new Map(
-        //   usersData.companies.map(([name, id]) => [id, name]) // Map company ID to company name
-        // );
-
         // Set form data from API response
         setFormData({
           company_id: data.company_id || null,
           site_id: data.project_id || null,
-          // Set site_id from project_id
           department_id: data.department_id || null,
           module_id: data.approval_type || null,
           material_id: data.pms_inventory_type_id || null,
-
           invoice_approval_levels: data.invoice_approval_levels || [],
         });
 
-        // const companyLabel = companyMap.get(data.company_id) || "Unknown";
-        // console.log("comapny nameeee", companyLabel);
-        // console, log();
-
-        // const companyOption = filterOptions.companies.find(
-        //   (company) => company.value === data.company_id
-        // );
-        // setSelectedCompany(companyOption || null);
-
-        // console.log("filterOptions.companies", filterOptions.companies);
-        // console.log("data.company_id", data.company_id);
-        // console.log(
-        //   "Companies Data Structure:",
-        //   JSON.stringify(filterOptions.companies, null, 2)
-        // );
-
-        // console.log("c companyOption", companyOption);
-
-        console.log("Data Company ID:", data.company_id);
-        console.log("Companies List:", filterOptions.companies);
-
-        // Fallback to "Unknown" if not found
-        // setSelectedCompany(
-        //   filterOptions.companies.find((c) => c.value === data.company_id) ||
-        //     null
-        // );
-
-        setSelectedCompany(
-          filterOptions.companies.find(
-            (company) => company.value === data.company_id
-          ) || null
+        const companyOption = filterOptions.companies.find(
+          (company) => company.value === data.company_id
         );
+        setSelectedCompany(companyOption || null); // Set selected company
 
         const siteOption = filterOptions.sites.find(
           (site) => site.value === data.project_id
         );
-        setSelectedSite(siteOption || null);
+        setSelectedSite(siteOption || null); // Set selected site
 
         const departmentOption = filterOptions.departments.find(
           (department) => department.value === data.department_id
         );
-        setSelectedDepartment(departmentOption || null); // Declare
+        setSelectedDepartment(departmentOption || null); // Set selected department
 
         const moduleOption = filterOptions.modules.find(
           (mod) => mod.value === data.approval_type
         );
-        setSelectedModule(moduleOption || null);
+        setSelectedModule(moduleOption || null); // Set selected module
 
-        // Find and set selected material type
         const materialTypeOption = filterOptions.material_types.find(
           (mat) => mat.value === data.pms_inventory_type_id
         );
-        setSelectedMaterialType(materialTypeOption || null);
+        setSelectedMaterialType(materialTypeOption || null); // Set selected material type
 
-        // Map user IDs to user names in invoice_approval_levels
+        // Map approval levels to user names
+        const userMap = new Map(
+          filterOptions.users.map((user) => [user.value, user.label])
+        );
+
         const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
           (level) => ({
             order: level.order || "",
             name: level.name || "",
             users:
               level.escalate_to_users?.map((userId) => {
-                // Log userId to check if it's correct
-                console.log("User ID:", userId);
-
-                const userName = userMap.get(userId) || "Unknown"; // Get the user name by ID from userMap
-                console.log("Mapped User Name:", userName); // Log the result to see if mapping works
-
-                return { label: userName, value: userId }; // Map the user ID to the name
+                const userName = userMap.get(userId) || "Unknown";
+                return { label: userName, value: userId };
               }) || [],
           })
         );
 
-        // Log the final approval levels to inspect the data
-        console.log(
-          "Approval Levels with User Names:",
-          approvalLevelsWithUserNames
-        );
-
-        // Set approval levels with mapped user names
         setApprovalLevels(approvalLevelsWithUserNames);
-
-        // Fetch other data as needed (e.g., sites, templates)
-        // if (data.company_id) {
-        //   await fetchSites(data.company_id);
-        // }
-
-        if (data.category_id) {
-          await fetchTemplates(data.category_id);
-        }
-
-        if (data.snag_checklist_id) {
-          await fetchSubCategories(data.snag_checklist_id);
-        }
       } catch (error) {
         console.error("Error fetching approval data:", error);
       }
     };
 
-    fetchDropdownData();
-    fetchApprovalData();
-  }, [id]);
-
-  const fetchSites = async (companyId) => {
-    try {
-      const response = await fetch(
-        `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      if (!response.ok) throw new Error("Failed to fetch sites");
-
-      const data = await response.json();
-      const formattedSites = data.sites.map(([name, id]) => ({
-        label: name,
-        value: id,
-      }));
-
-      setFilterOptions((prevState) => ({
-        ...prevState,
-        sites: formattedSites,
-      }));
-    } catch (error) {
-      console.error("Error fetching sites:", error);
-      setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+    if (filterOptions.companies.length > 0) {
+      fetchApprovalData();
     }
-  };
+  }, [filterOptions, id]); // Trigger fetchApprovalData when filterOptions or id change
+
+  // Run this effect when filterOptions change
 
   const handleCompanyChange = (selectedOption) => {
-    const companyId = selectedOption.target.value; // Use the value directly
+    const companyId = selectedOption.value; // Use the value directly
 
     setSelectedCompany(selectedOption);
     setFormData((prevData) => ({
@@ -383,23 +529,31 @@ const ApprovalEdit = () => {
       });
   };
 
-  const handleSiteChange = (selected) => {
-    console.log("Selected Site ID:", selected?.value); //
+  // const handleSiteChange = (selected) => {
+  //   console.log("Selected Site ID:", selected?.value); //
 
-    console.log("site id", selected.target.value);
-    // Logging the selected site value
+  //   console.log("site id", selected.value);
+  //   // Logging the selected site value
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     site_id: selected.target.value, // Updating site_id in formData
+  //   }));
+  // };
+
+  const handleSiteChange = (selectedOption) => {
     setFormData((prevState) => ({
       ...prevState,
-      site_id: selected.target.value, // Updating site_id in formData
+      site_id: selectedOption.value, // Update site_id with the selected site's value
     }));
   };
+
   // Handle category change
 
   const handleDepartmentChange = (selectedOption) => {
     console.log("Selected Department ID:", selectedOption.target.value);
     setFormData((prevState) => ({
       ...prevState,
-      department_id: selectedOption.target.value,
+      department_id: selectedOption.value,
     }));
   };
 
@@ -587,24 +741,21 @@ const ApprovalEdit = () => {
                               {/* Event Title */}
                               <div className="col-md-3">
                                 <label htmlFor="event-title-select">
-                                  selcted comapny
+                                  Select Comapny
                                 </label>
 
-                                <Select
-                                  id="event-no-select"
+                                <MultiSelector
                                   options={filterOptions.companies}
-                                  placeholder="Select Site"
-                                  onChange={handleCompanyChange}
                                   value={selectedCompany}
-                                  getOptionLabel={(option) => option.label}
-                                  isClearable
+                                  onChange={handleCompanyChange}
+                                  placeholder="select comapny"
                                 />
                               </div>
 
                               {/* Event Number */}
                               <div className="col-md-3">
                                 <label htmlFor="event-no-select">Site</label>
-                                <Select
+                                <MultiSelector
                                   id="event-no-select"
                                   options={filterOptions.sites}
                                   placeholder="Select Site"
@@ -619,7 +770,7 @@ const ApprovalEdit = () => {
                                 <label htmlFor="status-select">
                                   Department
                                 </label>
-                                <Select
+                                <MultiSelector
                                   id="status-select"
                                   options={filterOptions.departments}
                                   onChange={handleDepartmentChange}
@@ -634,7 +785,7 @@ const ApprovalEdit = () => {
                                   {" "}
                                   Module
                                 </label>
-                                <Select
+                                <MultiSelector
                                   id="module-select"
                                   options={filterOptions.modules} // Use modifiedFilterOptions.modules
                                   value={selectedModule}
@@ -649,7 +800,7 @@ const ApprovalEdit = () => {
                                   Material type
                                 </label>
 
-                                <Select
+                                <MultiSelector
                                   id="material-type-select"
                                   options={filterOptions.material_types} // Use filterOptions directly
                                   value={selectedMaterialType}
