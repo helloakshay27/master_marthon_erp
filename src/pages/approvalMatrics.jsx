@@ -553,7 +553,7 @@ const ApprovalMatrics = () => {
                         <td>{record.department_name}</td>
                         {/* <td>{record.category_name}</td> */}
                         <td>{record.approval_type}</td>
-                        <td>{record.sub_category_name}</td>
+                        <td>{record.material_type}</td>
                         <td>{record.created_at}</td>
 
                         <td>{record.created_by}</td>

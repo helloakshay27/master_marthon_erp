@@ -13,7 +13,7 @@ const ApprovalEdit = () => {
     sites: [],
     modules: [], // For Modules
     material_types: [],
-    approval_types: [],
+
     users: [],
   });
 
@@ -27,6 +27,9 @@ const ApprovalEdit = () => {
   const [selectedMaterialType, setSelectedMaterialType] = useState(null); // For selected material type
 
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+
+  // const [department, selectedDeparment] = useState([]);
 
   const [approvalLevels, setApprovalLevels] = useState([
     { order: "", name: "", users: [] },
@@ -39,7 +42,8 @@ const ApprovalEdit = () => {
     // sub_category_id: null,
     module_id: null,
     material_id: null,
-    approval_type: "mor_approval", // example approval type
+
+    // example approval type
     invoice_approval_levels: [],
   });
 
@@ -112,28 +116,41 @@ const ApprovalEdit = () => {
         // Safeguard to check if material_types exists
         const materialTypes = materialTypesData.material_types || [];
         // Check if material_types is correctly set
+
         setFilterOptions({
-          companies: dropdownData.companies.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          sites: dropdownData.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id,
-          })),
-          departments: dropdownData.departments.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          modules: dropdownData.approval_types
-            ? Object.entries(dropdownData.approval_types).map(
-                ([key, value]) => ({
-                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
-                  value: value, // Assign the corresponding value
-                })
-              )
-            : [],
+          companies: [
+            { label: "Select Company", value: "" },
+            ...dropdownData.companies.map(([name, id]) => ({
+              label: name,
+              value: id,
+            })),
+          ],
+          sites: [
+            { label: "Select Site", value: "" },
+            ...dropdownData.sites.map(([name, id, company_id]) => ({
+              label: name,
+              value: id,
+              company_id,
+            })),
+          ],
+          departments: [
+            { label: "Select Department", value: "" },
+            ...dropdownData.departments.map(([name, id]) => ({
+              label: name,
+              value: id,
+            })),
+          ],
+          modules: [
+            { label: "Select Module", value: "" },
+            ...(dropdownData.approval_types
+              ? Object.entries(dropdownData.approval_types).map(
+                  ([key, value]) => ({
+                    label: key.replace(/_/g, " "), // Format label (e.g., "material_order_request" → "Material Order Request")
+                    value: value,
+                  })
+                )
+              : []),
+          ],
           material_types: [
             { label: "Select Material Type", value: "" },
             ...materialTypesData.map((material) => ({
@@ -141,10 +158,13 @@ const ApprovalEdit = () => {
               value: material.id,
             })),
           ],
-          users: dropdownData.users.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
+          users: [
+            { label: "Select User", value: "" },
+            ...dropdownData.users.map(([name, id]) => ({
+              label: name,
+              value: id,
+            })),
+          ],
         });
       } catch (error) {
         console.error("Error fetching dropdown data:", error);
@@ -179,29 +199,83 @@ const ApprovalEdit = () => {
         // Log the userMap to ensure it's correct
         console.log("User Map:", userMap);
 
+        // const companyOptions =
+        //   usersData.companies && usersData.companies.length > 0
+        //     ? usersData.companies.map((company) => ({
+        //         value: company[0], // Assuming company[0] contains the ID
+        //         label: company[1], // Assuming company[1] contains the name
+        //       }))
+        //     : [];
+
+        // const companyMap = new Map(
+        //   usersData.companies.map(([name, id]) => [id, name]) // Map company ID to company name
+        // );
+
         // Set form data from API response
         setFormData({
           company_id: data.company_id || null,
-          site_id: data.project_id || null, // Set site_id from project_id
+          site_id: data.project_id || null,
+          // Set site_id from project_id
           department_id: data.department_id || null,
-          category_id: data.category_id || null,
-          template_id: data.snag_checklist_id || null,
-          sub_category_id: data.sub_category_id || null,
-          approval_type: data.approval_type || "mor_approval",
+          module_id: data.approval_type || null,
+          material_id: data.pms_inventory_type_id || null,
+
           invoice_approval_levels: data.invoice_approval_levels || [],
         });
 
-        // Set selected values based on fetched data
+        // const companyLabel = companyMap.get(data.company_id) || "Unknown";
+        // console.log("comapny nameeee", companyLabel);
+        // console, log();
+
+        // const companyOption = filterOptions.companies.find(
+        //   (company) => company.value === data.company_id
+        // );
+        // setSelectedCompany(companyOption || null);
+
+        // console.log("filterOptions.companies", filterOptions.companies);
+        // console.log("data.company_id", data.company_id);
+        // console.log(
+        //   "Companies Data Structure:",
+        //   JSON.stringify(filterOptions.companies, null, 2)
+        // );
+
+        // console.log("c companyOption", companyOption);
+
+        console.log("Data Company ID:", data.company_id);
+        console.log("Companies List:", filterOptions.companies);
+
+        // Fallback to "Unknown" if not found
+        // setSelectedCompany(
+        //   filterOptions.companies.find((c) => c.value === data.company_id) ||
+        //     null
+        // );
+
         setSelectedCompany(
-          data.company_id
-            ? { label: data.company_name, value: data.company_id }
-            : null
+          filterOptions.companies.find(
+            (company) => company.value === data.company_id
+          ) || null
         );
-        setSelectedSite(
-          data.project_id
-            ? { label: data.site_name, value: data.project_id }
-            : null
+
+        const siteOption = filterOptions.sites.find(
+          (site) => site.value === data.project_id
         );
+        setSelectedSite(siteOption || null);
+
+        const departmentOption = filterOptions.departments.find(
+          (department) => department.value === data.department_id
+        );
+        setSelectedDepartment(departmentOption || null); // Declare
+
+        const moduleOption = filterOptions.modules.find(
+          (mod) => mod.value === data.approval_type
+        );
+        setSelectedModule(moduleOption || null);
+
+        // Find and set selected material type
+        const materialTypeOption = filterOptions.material_types.find(
+          (mat) => mat.value === data.pms_inventory_type_id
+        );
+        setSelectedMaterialType(materialTypeOption || null);
 
         // Map user IDs to user names in invoice_approval_levels
         const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
@@ -231,9 +305,9 @@ const ApprovalEdit = () => {
         setApprovalLevels(approvalLevelsWithUserNames);
 
         // Fetch other data as needed (e.g., sites, templates)
-        if (data.company_id) {
-          await fetchSites(data.company_id);
-        }
+        // if (data.company_id) {
+        //   await fetchSites(data.company_id);
+        // }
 
         if (data.category_id) {
           await fetchTemplates(data.category_id);
@@ -330,23 +404,23 @@ const ApprovalEdit = () => {
   };
 
   const handleModuleChange = (selectedOption) => {
-    console.log("Selected Module ID:", selectedOption.target.value);
-
-    setFormData((prevState) => ({
-      ...prevState,
-      module_id: selectedOption.target.value, // Set module_id to selected module
+    console.log("Selected Module ID:", selectedOption.value);
+    setSelectedModule(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      module_id: selectedOption.value, // Set module_id to selected module
     }));
   };
 
   const handleMaterialTypeChange = (selectedOption) => {
     console.log(
       "Selected Material Type (PMS Supplier ID):",
-      selectedOption.target.value
+      selectedOption.value
     );
-
-    setFormData((prevState) => ({
-      ...prevState,
-      pms_supplier_id: selectedOption.target.value, // Map material_id to pms_supplier_id
+    setSelectedMaterialType(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      pms_supplier_id: selectedOption.value, // Map material_id to pms_supplier_id
     }));
   };
 
@@ -513,19 +587,17 @@ const ApprovalEdit = () => {
                               {/* Event Title */}
                               <div className="col-md-3">
                                 <label htmlFor="event-title-select">
-                                  Company
+                                  selcted comapny
                                 </label>
+
                                 <Select
-                                  id="company-select"
-                                  options={filterOptions.companies} // Ensure you're using the correct filter options
-                                  onChange={(selectedOption) => {
-                                    setTimeout(() => {
-                                      handleCompanyChange(selectedOption); // Pass the selectedOption directly to the handler
-                                    }, 500); // Delay of 500ms (adjust as needed)
-                                  }}
-                                  value={selectedCompany} // Bind the selected company state to the value prop
-                                  placeholder="Select Company"
-                                  isClearable // Allow clearing the selection
+                                  id="event-no-select"
+                                  options={filterOptions.companies}
+                                  placeholder="Select Site"
+                                  onChange={handleCompanyChange}
+                                  value={selectedCompany}
+                                  getOptionLabel={(option) => option.label}
+                                  isClearable
                                 />
                               </div>
 
@@ -551,23 +623,59 @@ const ApprovalEdit = () => {
                                   id="status-select"
                                   options={filterOptions.departments}
                                   onChange={handleDepartmentChange}
+                                  value={selectedDepartment}
                                   placeholder="Select Department"
                                   isClearable
                                 />
                               </div>
 
+                              <div className="col-md-3 mt-4">
+                                <label htmlFor="created-by-select">
+                                  {" "}
+                                  Module
+                                </label>
+                                <Select
+                                  id="module-select"
+                                  options={filterOptions.modules} // Use modifiedFilterOptions.modules
+                                  value={selectedModule}
+                                  onChange={handleModuleChange}
+                                  isClearable
+                                />
+                              </div>
+
+                              <div className="col-md-3 mt-4">
+                                <label htmlFor="created-by-select">
+                                  {" "}
+                                  Material type
+                                </label>
+
+                                <Select
+                                  id="material-type-select"
+                                  options={filterOptions.material_types} // Use filterOptions directly
+                                  value={selectedMaterialType}
+                                  // onChange={(option) =>
+                                  //   setSelectedMaterialType(option)
+                                  // } // Ha
+                                  //
+                                  // ndle selection
+
+                                  onChange={handleMaterialTypeChange}
+                                  isClearable
+                                />
+                              </div>
                               {/* Created By */}
-                              <div className="col-md-3">
+                              {/* <div className="col-md-3">
                                 <label htmlFor="created-by-select">
                                   Module
                                 </label>
                                 <Select
                                   id="created-by-select"
-                                  options={filterOptions.modules}
+                                  
+                                  value={selectedModule}
                                   onChange={handleModuleChange}
                                 />
-                              </div>
-                              <div className="col-md-3 mt-3">
+                              </div> */}
+                              {/* <div className="col-md-3 mt-3">
                                 <label htmlFor="created-by-select">
                                   {" "}
                                   Material type
@@ -576,10 +684,10 @@ const ApprovalEdit = () => {
                                   id="created-by-select"
                                   options={filterOptions.material_types}
                                   isClearable
-                                  // value={selectedMaterialType}
+                                  value={selectedMaterialType}
                                   onChange={handleMaterialTypeChange}
                                 />
-                              </div>
+                              </div> */}
 
                               {/* <div className="col-md-3 mt-4">
                                 <label htmlFor="created-by-select">
