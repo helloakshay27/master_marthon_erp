@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { bidsType } from "../../../constant/data";
+import { toast } from 'react-toastify'; // Import toast
 
 const Card = ({
   title,
@@ -107,10 +108,6 @@ const EventTypeModal = ({
         delivery_date: existingData.delivery_date ? new Date(existingData.delivery_date).toISOString().slice(0, 16) : "",
       });
     }
-
-    console.log("localDynamicExtensionConfigurations :------",
-      localDynamicExtensionConfigurations, existingData);
-    
   }, [existingData]);  
 
   const validateForm = () => {
@@ -151,6 +148,10 @@ const EventTypeModal = ({
       ...prevState,
       [key]: value,
     }));
+  };
+
+  const showToasterMessage = () => {
+    toast.warn("Please fill the delivery date on Event Type modal.");
   };
   
   return (
@@ -834,6 +835,7 @@ const EventTypeModal = ({
                 onChange={(e) =>
                   handleDynamicExtensionChange(3, e.target.checked)
                 }
+                onClick={showToasterMessage}
               />
               <div className="ant-col ant-form-item-label">Delivery Date</div>
             </div>
@@ -843,6 +845,7 @@ const EventTypeModal = ({
                 placeholder="Select Date"
                 className="form-control"
                 value={localDynamicExtensionConfigurations.delivery_date}
+                min={new Date().toISOString().slice(0, 16)}
                 onChange={(e) =>
                   setLocalDynamicExtensionConfigurations({
                     ...localDynamicExtensionConfigurations,

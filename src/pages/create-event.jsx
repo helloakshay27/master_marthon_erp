@@ -137,7 +137,12 @@ export default function CreateEvent() {
     setPublishEventModal(false);
   };
   const handleEventScheduleModalShow = () => {
-    setEventScheduleModal(true);
+    if (!dynamicExtensionConfigurations.delivery_date) {
+      toast.warn("Please fill the delivery date on Event Type");
+    } else {
+      setEventScheduleModal(true);
+    }
+
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -920,6 +925,7 @@ export default function CreateEvent() {
             </div> */}
 
               <EventScheduleModal
+              deliveryDate={dynamicExtensionConfigurations.delivery_date}
                 show={eventScheduleModal}
                 onHide={handleEventScheduleModalClose}
                 handleSaveSchedule={handleSaveSchedule}
