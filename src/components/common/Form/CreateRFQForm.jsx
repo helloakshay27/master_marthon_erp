@@ -22,6 +22,48 @@ export default function CreateRFQForm({
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
 
+  const existingGroupedData = {
+    AGGREGATE: {
+      BLOCK: [
+        {
+          id: 133,
+          event_id: 11,
+          inventory_id: 62,
+          quantity: 10.0,
+          uom: "MT",
+          location: "Cedar",
+          rate: null,
+          amount: null,
+          delivary_location: null,
+          pickup_location: null,
+          created_at: "2025-01-28T08:48:04.588+05:30",
+          updated_at: "2025-01-28T08:48:04.588+05:30",
+          sub_section_id: null,
+          mor_inventory_id: 227,
+        },
+      ],
+    },
+    "DOOR WORK": {
+      "WOODEN DOOR FRAME": [
+        {
+          id: 134,
+          event_id: 11,
+          inventory_id: 62,
+          quantity: 10.0,
+          uom: "MT",
+          location: "Cedar",
+          rate: null,
+          amount: null,
+          delivary_location: null,
+          pickup_location: null,
+          created_at: "2025-01-28T08:48:04.588+05:30",
+          updated_at: "2025-01-28T08:48:04.588+05:30",
+          sub_section_id: null,
+          mor_inventory_id: 227,
+        },
+      ],
+    },
+  };
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -31,7 +73,6 @@ export default function CreateRFQForm({
         );
         if (response.data && Array.isArray(response.data.materials)) {
           setMaterials(response.data.materials);
-          
         } else {
           console.error("Unexpected response structure:", response.data);
         }
@@ -108,32 +149,35 @@ export default function CreateRFQForm({
   }, []);
 
   useEffect(() => {
-    setData(sections.flatMap((section) => section.sectionData));
-  }, [sections, setData]);
-
-  useEffect(() => {
     if (existingData) {
-      setSections([
-        {
-          sectionData: existingData.map((material) => ({
-            descriptionOfItem: material.inventory_name,
-            inventory_id: material.inventory_id,
-            quantity: material.quantity,
-            unit: material.uom,
-            location: material.location,
-            rate: material.rate,
-            amount: material.amount,
-            sub_section_id: material.inventory_sub_type_id,
-            section_id: material.inventory_type_id,
-            type: material.material_type,
-            id: material.id,
-            _destroy: false,
-          })),
-          sectionId: Date.now(),
-        },
-      ]);
+      const updatedSections = Object.entries(existingData).map(
+        ([materialType, subMaterials]) => ({
+          materialType,
+          sectionData: Object.entries(subMaterials).flatMap(
+            ([subMaterialType, materials]) =>
+              materials.map((material) => ({
+                descriptionOfItem:
+                  material.inventory_name || material.descriptionOfItem,
+                inventory_id: material.inventory_id,
+                quantity: material.quantity,
+                unit: material.uom,
+                location: material.location,
+                rate: material.rate,
+                amount: material.amount,
+                sub_section_id: subMaterialType,
+                section_id: material.inventory_type_id || material.section_id,
+                subMaterialType,
+              }))
+          ),
+        })
+      );
+      setSections(updatedSections);
     }
   }, [existingData]);
+
+  useEffect(() => {
+    setData(sections.flatMap((section) => section.sectionData));
+  }, [sections]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
@@ -195,7 +239,7 @@ export default function CreateRFQForm({
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
-      (material) => material.name === selected
+      (material) => material.id === selected
     );
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
@@ -226,8 +270,8 @@ export default function CreateRFQForm({
           rate: 0,
           amount: 0,
           inventory_id: "",
-          sub_section_id: "",
-          section_id: "",
+          sub_section_id: subSectionOptions[0]?.value || "",
+          section_id: sectionOptions[0]?.value || "",
           _destroy: false,
         },
       ],
@@ -237,12 +281,11 @@ export default function CreateRFQForm({
   };
 
   const handleRemoveSection = (sectionIndex) => {
-    if (sectionIndex > 0) {
-      const updatedSections = sections.filter(
-        (_, index) => index !== sectionIndex
-      );
-      setSections(updatedSections);
-    }
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex].sectionData.forEach((row) => {
+      row._destroy = true;
+    });
+    setSections(updatedSections);
   };
 
   const handleSectionChange = (selected, sectionIndex) => {
@@ -264,7 +307,9 @@ export default function CreateRFQForm({
   const materialOptions = materials.map((material) => ({
     value: material.id,
     label: material.name,
-  }));  
+  }));
+
+  console.log("sections", sections);
 
   return (
     <div className="row px-3">
@@ -284,12 +329,10 @@ export default function CreateRFQForm({
                       label={"Select Material"}
                       options={sectionOptions}
                       defaultValue={
-                        section.sectionData.some(row => row._destroy)
+                        section.sectionData.some((row) => row._destroy)
                           ? "Select Material"
                           : sectionOptions.find(
-                              (option) =>
-                                option.value ===
-                                existingData?.[0]?.inventory_type_id
+                              (option) => option.label === section.materialType
                             )?.value || "Select Material"
                       }
                       onChange={(selected) =>
@@ -302,12 +345,12 @@ export default function CreateRFQForm({
                       label={"Select Sub Material"}
                       options={subSectionOptions}
                       defaultValue={
-                        section.sectionData.some(row => row._destroy)
+                        section.sectionData.some((row) => row._destroy)
                           ? "Select Sub Material"
                           : subSectionOptions.find(
                               (option) =>
-                                option.value ===
-                                existingData?.[0]?.inventory_sub_type_id
+                                option.label ===
+                                section.sectionData[0]?.subMaterialType
                             )?.value || "Select Sub Material"
                       }
                       onChange={(selected) =>

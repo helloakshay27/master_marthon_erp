@@ -137,7 +137,11 @@ export default function EditEvent() {
     setPublishEventModal(false);
   };
   const handleEventScheduleModalShow = () => {
-    setEventScheduleModal(true);
+    if (!dynamicExtensionConfigurations.delivery_date) {
+      toast.warn("Please fill the delivery date on Event Type");
+    } else {
+      setEventScheduleModal(true);
+    }
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -338,7 +342,6 @@ export default function EditEvent() {
         };
       })
     );
-    
   }, [eventDetails]);
 
   const handlePageChange = (newPage) => {
@@ -381,7 +384,6 @@ export default function EditEvent() {
 
     setTableData(updatedTableData);
     setSelectedVendors((prev) => [...prev, ...selectedRows]);
-    console.log("selectedRows", selectedRows);
 
     setVendorModal(false);
     setSelectedRows([]);
@@ -412,11 +414,10 @@ export default function EditEvent() {
   };
 
   const handleConditionChange = (id, selectedOption) => {
-
     const selectedCondition = termsOptions.find(
       (option) => String(option.value) === String(selectedOption)
     );
-    
+
     if (selectedCondition) {
       setTextareas(
         textareas.map((textarea) =>
@@ -433,7 +434,6 @@ export default function EditEvent() {
             : textarea
         )
       );
-      console.log(textareas);
     }
   };
 
@@ -505,33 +505,14 @@ export default function EditEvent() {
     }
   };
 
-  const handleOnLoadScheduleData = (
-    isLater,
-    laterDate,
-    laterTime,
-    endDate,
-    endTime,
-    evaluationDurationVal,
-    customEvaluationDuration
-  ) => {
-    const startTime = isLater
-      ? `${laterDate}T${laterTime}:00Z`
-      : new Date().toISOString();
-
-    const endTimeFormatted =
-      endDate && endTime ? `${endDate}T${endTime}:00Z` : "";
-
-    const evaluationTimeFormatted =
-      evaluationDurationVal && customEvaluationDuration
-        ? `${evaluationDurationVal} ${customEvaluationDuration}`
-        : "Mins Mins";
-
+  const handleOnLoadScheduleData = (startTime, endTime, evaluationTime) => {    
     setOnLoadScheduleData({
       start_time: startTime,
-      end_time_duration: endTimeFormatted,
-      evaluation_time: evaluationTimeFormatted,
-    });
+      end_time_duration: endTime,
+      evaluation_time: evaluationTime,
+    });       
   };
+  
 
   // console.log("eventDetails:----", eventDetails);
 
@@ -613,7 +594,7 @@ export default function EditEvent() {
         },
         event_materials_attributes: materialFormData.map((material) => ({
           id: material.id,
-          inventory_id: material.inventory_id,
+          inventory_id: Number(material.inventory_id),
           quantity: Number(material.quantity),
           uom: material.unit,
           location: material.location,
@@ -645,7 +626,7 @@ export default function EditEvent() {
             condition: textarea.value,
           };
         }),
-        attachments: documentRows.map((row) => row.upload),
+        attachments: [],
       },
     };
 
@@ -849,7 +830,7 @@ export default function EditEvent() {
               data={materialFormData}
               setData={setMaterialFormData}
               isService={isService}
-              existingData={eventDetails?.event_materials}
+              existingData={eventDetails?.grouped_event_materials}
             />
             <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
               <h5 className=" ">
@@ -1381,6 +1362,7 @@ export default function EditEvent() {
             handleTrafficChange={handleTrafficChange}
           />
           <EventScheduleModal
+            deliveryDate={dynamicExtensionConfigurations.delivery_date}
             show={eventScheduleModal}
             onHide={handleEventScheduleModalClose}
             handleSaveSchedule={handleSaveSchedule}

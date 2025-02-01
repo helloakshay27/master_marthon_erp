@@ -4,7 +4,10 @@ import SelectBox from "../../base/Select/SelectBox";
 // @ts-ignore
 import format from "date-fns/format";
 
-const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, onLoadScheduleData }) => {
+const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, onLoadScheduleData, deliveryDate }) => {
+  // Convert deliveryDate to the desired format
+  const formattedDeliveryDate = deliveryDate.split("T")[0];
+
   const [isLater, setIsLater] = useState(false);
   const [isFixedEndTime, setIsFixedEndTime] = useState(false);
   const [isCustomEndTimeSelected, setIsCustomEndTimeSelected] = useState(false);
@@ -43,9 +46,9 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
         setCustomEvaluationDuration("Mins");
       }
 
-      onLoadScheduleData(isLater, laterDate, laterTime, endDate, endTime, evaluationDurationVal, customEvaluationDuration);
+      onLoadScheduleData(existingData.start_time, existingData.end_time, existingData.evaluation_time);      
     }
-  }, [existingData]);
+  }, [existingData]);  
 
   useEffect(() => {
     if (endDate && endTime) {
@@ -55,7 +58,10 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
   }, [endDate, endTime]);
 
   const handleEndDateChange = (e) => {
-    setEndDate(e.target.value);
+    const selectedDate = e.target.value;
+    if (selectedDate <= formattedDeliveryDate) {
+      setEndDate(selectedDate);
+    }
   };
 
   const handleStartTimeChange = (value) => {
@@ -126,12 +132,9 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     };
-    
+
     handleSaveSchedule(data);
   };
-
-  
-  
 
   return (
     <DynamicModalBox
@@ -204,6 +207,8 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
               className="form-control"
               value={endDate}
               onChange={handleEndDateChange}
+              min={new Date().toISOString().split("T")[0]}
+              max={formattedDeliveryDate}
             />
           </div>
           <div className="col-md-4">
