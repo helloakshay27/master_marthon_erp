@@ -150,28 +150,36 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     if (existingData) {
+      console.log("existingData", existingData);
+      
       const updatedSections = Object.entries(existingData).map(
-        ([materialType, subMaterials]) => ({
-          materialType,
-          sectionData: Object.entries(subMaterials).flatMap(
-            ([subMaterialType, materials]) =>
-              materials.map((material) => ({
-                descriptionOfItem:
-                  material.inventory_name || material.descriptionOfItem,
-                inventory_id: material.inventory_id,
-                quantity: material.quantity,
-                unit: material.uom,
-                location: material.location,
-                rate: material.rate,
-                amount: material.amount,
-                sub_section_id: subMaterialType,
-                section_id: material.inventory_type_id || material.section_id,
-                subMaterialType,
-              }))
-          ),
-        })
+        ([materialType, subMaterials]) => {
+          return {
+            materialType,
+            sectionData: Object.entries(subMaterials).flatMap(
+              ([subMaterialType, materials]) =>
+                materials.map((material) => ({
+                  id: material.id,
+                  descriptionOfItem:
+                    material.inventory_name || material.descriptionOfItem,
+                  inventory_id: material.inventory_id,
+                  quantity: material.quantity,
+                  unit: material.uom,
+                  location: material.location,
+                  rate: material.rate,
+                  amount: material.amount,
+                  sub_section_id: material.sub_section_id, // Correctly map sub_section_id
+                  section_id: material.inventory_type_id || material.section_id,
+                  inventory_type_id: material.inventory_type_id, // Add inventory_type_id
+                  inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
+                  subMaterialType,
+                }))
+            ),
+          };
+        }
       );
       setSections(updatedSections);
+      console.log("sections:-----", sections);
     }
   }, [existingData]);
 
@@ -203,6 +211,7 @@ export default function CreateRFQForm({
 
   const handleAddRow = (sectionIndex) => {
     const newRow = {
+      id: null, // Set id to null for new rows
       descriptionOfItem: [],
       quantity: "",
       unit: [],
@@ -214,6 +223,8 @@ export default function CreateRFQForm({
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
+      inventory_type_id: sections[sectionIndex].sectionData[0]?.inventory_type_id || "", // Add inventory_type_id
+      inventory_sub_type_id: sections[sectionIndex].sectionData[0]?.inventory_sub_type_id || "", // Add inventory_sub_type_id
       _destroy: false,
     };
     const updatedSections = [...sections];
@@ -262,6 +273,7 @@ export default function CreateRFQForm({
     const newSection = {
       sectionData: [
         {
+          id: null, // Set id to null for new sections
           descriptionOfItem: [],
           quantity: "",
           unit: [],
@@ -272,6 +284,8 @@ export default function CreateRFQForm({
           inventory_id: "",
           sub_section_id: subSectionOptions[0]?.value || "",
           section_id: sectionOptions[0]?.value || "",
+          inventory_type_id: sectionOptions[0]?.value || "", // Add inventory_type_id
+          inventory_sub_type_id: subSectionOptions[0]?.value || "", // Add inventory_sub_type_id
           _destroy: false,
         },
       ],
@@ -292,6 +306,7 @@ export default function CreateRFQForm({
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData.forEach((row) => {
       row.section_id = selected;
+      row.inventory_type_id = selected; // Update inventory_type_id
     });
     setSections(updatedSections);
   };
@@ -300,6 +315,7 @@ export default function CreateRFQForm({
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData.forEach((row) => {
       row.sub_section_id = selected;
+      row.inventory_sub_type_id = selected; // Update inventory_sub_type_id
     });
     setSections(updatedSections);
   };
@@ -308,8 +324,6 @@ export default function CreateRFQForm({
     value: material.id,
     label: material.name,
   }));
-
-  console.log("sections", sections);
 
   return (
     <div className="row px-3">

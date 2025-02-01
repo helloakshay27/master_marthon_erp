@@ -322,6 +322,15 @@ export default function EditEvent() {
           location: material.location,
           rate: material.rate,
           amount: material.amount,
+          inventory_type_id: material.inventory_type_id, // Add inventory_type_id
+          inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
+        }))
+      );
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.pms_supplier_id,
+          name: vendor.full_name,
+          phone: vendor.organization_name,
         }))
       );
     }
@@ -383,8 +392,10 @@ export default function EditEvent() {
     );
 
     setTableData(updatedTableData);
-    setSelectedVendors((prev) => [...prev, ...selectedRows]);
-
+    setSelectedVendors((prev) => [
+      ...prev,
+      ...selectedRows.map((vendor) => ({ ...vendor, id: null, pms_supplier_id: vendor.id })),
+    ]);
     setVendorModal(false);
     setSelectedRows([]);
     setResetSelectedRows(true);
@@ -555,14 +566,14 @@ export default function EditEvent() {
     if (!validateForm()) {
       return;
     }
-    console.log("eventDetails", eventDetails);
+    console.log("eventDetails", eventDetails, materialFormData);
 
     setSubmitted(true);
     const eventData = {
       event: {
         event_title: eventName,
         created_on: createdOn,
-        status: eventStatus, // Use the selected event status
+        status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
           start_time:
@@ -593,7 +604,7 @@ export default function EditEvent() {
           delivery_date: dynamicExtensionConfigurations.delivery_date || "",
         },
         event_materials_attributes: materialFormData.map((material) => ({
-          id: material.id,
+          id: material.id || null, // Set id to null for new rows
           inventory_id: Number(material.inventory_id),
           quantity: Number(material.quantity),
           uom: material.unit,
@@ -602,11 +613,14 @@ export default function EditEvent() {
           amount: material.amount,
           sub_section_name: material.sub_section_id,
           section_name: material.section_id,
+          inventory_type_id: material.inventory_type_id, // Add inventory_type_id
+          inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
           _destroy: material._destroy || false,
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
+          id: vendor.id === null ? null : vendor.id,
           status: "invited",
-          pms_supplier_id: vendor.id,
+          pms_supplier_id: vendor.pms_supplier_id || vendor.id,
         })),
         status_logs_attributes: [
           {
@@ -620,7 +634,7 @@ export default function EditEvent() {
             (condition) => condition.term_condition_id === textarea.id
           );
           return {
-            id: existingCondition ? existingCondition.id : undefined,
+            id: existingCondition ? existingCondition.id : null,
             term_condition_id: textarea.id,
             condition_type: "general",
             condition: textarea.value,
@@ -629,6 +643,9 @@ export default function EditEvent() {
         attachments: [],
       },
     };
+
+    console.log("eventData", eventData, eventStatus);
+    
 
     try {
       const data = await updateEvent(id, eventData);
@@ -719,8 +736,8 @@ export default function EditEvent() {
 
   useEffect(() => {}, [eventType, awardType]);
 
-  const handleStatusChange = (selectedOption) => {
-    setEventStatus(selectedOption.value);
+  const handleStatusChange = (selectedOption) => {    
+    setEventStatus(selectedOption);
   };
 
   return (
