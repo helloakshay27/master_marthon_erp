@@ -289,7 +289,6 @@ export default function OverviewTab({
             {documentsData?.length > 0 ? (
               <div className="mt-2" style={{ paddingLeft: "24px" }}>
                 <div className="card card-body rounded-3 p-4">
-                  {/* Document Details Table */}
                   <div className="tbl-container mt-3">
                     <table className="w-100 table">
                       <thead>

@@ -338,6 +338,7 @@ export default function EditEvent() {
         };
       })
     );
+    
   }, [eventDetails]);
 
   const handlePageChange = (newPage) => {
@@ -411,10 +412,11 @@ export default function EditEvent() {
   };
 
   const handleConditionChange = (id, selectedOption) => {
-    const selectedCondition = termsOptions.find(
-      (option) => String(option.value) === String(selectedOption.value)
-    );
 
+    const selectedCondition = termsOptions.find(
+      (option) => String(option.value) === String(selectedOption)
+    );
+    
     if (selectedCondition) {
       setTextareas(
         textareas.map((textarea) =>
@@ -431,9 +433,9 @@ export default function EditEvent() {
             : textarea
         )
       );
+      console.log(textareas);
     }
   };
-  console.log("textare default", textareas);
 
   const handleAddDocumentRow = () => {
     const newRow = { srNo: documentRows.length + 1, upload: null };
@@ -1028,7 +1030,7 @@ export default function EditEvent() {
                       <td>
                         <button
                           className="btn btn-danger"
-                          onClick={() => handleRemoveTextarea(textarea.id)}
+                          onClick={() => handleRemoveTextarea(textarea?.id)}
                           disabled={idx === 0}
                         >
                           Remove
