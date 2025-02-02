@@ -346,10 +346,10 @@ export default function CreateRFQForm({
                       label={"Select Material"}
                       options={sectionOptions}
                       defaultValue={
-                        section.sectionData.some((row) => row._destroy)
+                        section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material"
-                          : sectionOptions.find(
-                              (option) => option.label === section.materialType
+                          : sectionOptions?.find(
+                              (option) => option.label === section?.materialType
                             )?.value || "Select Material"
                       }
                       onChange={(selected) =>
@@ -362,12 +362,12 @@ export default function CreateRFQForm({
                       label={"Select Sub Material"}
                       options={subSectionOptions}
                       defaultValue={
-                        section.sectionData.some((row) => row._destroy)
+                        section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Sub Material"
-                          : subSectionOptions.find(
+                          : subSectionOptions?.find(
                               (option) =>
                                 option.label ===
-                                section.sectionData[0]?.subMaterialType
+                                section?.sectionData[0]?.subMaterialType
                             )?.value || "Select Sub Material"
                       }
                       onChange={(selected) =>
@@ -408,7 +408,7 @@ export default function CreateRFQForm({
                   { label: "Amount", key: "amount" },
                   { label: "Actions", key: "actions" },
                 ]}
-                data={section.sectionData.filter((row) => !row._destroy)}
+                data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
@@ -422,14 +422,14 @@ export default function CreateRFQForm({
                         )
                       }
                       defaultValue={
-                        section.sectionData[rowIndex]._destroy
+                        section?.sectionData[rowIndex]?._destroy
                           ? ""
-                          : materialOptions.find(
+                          : materialOptions?.find(
                               (option) =>
-                                option.value ===
-                                section.sectionData[rowIndex]?.inventory_id
+                                option?.value ===
+                                section?.sectionData[rowIndex]?.inventory_id
                             )?.value ||
-                            section.sectionData[rowIndex]?.descriptionOfItem ||
+                            section?.sectionData[rowIndex]?.descriptionOfItem ||
                             ""
                       }
                     />
