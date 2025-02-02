@@ -307,6 +307,7 @@ const ApprovalMatrics = () => {
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
+
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return; // Prevent invalid page changes
     setCurrentPage(page);
@@ -655,35 +656,6 @@ const ApprovalMatrics = () => {
                 </div>
               </div>
             </div>
-            {/* <div className="d-flex align-items-center justify-content-between px-3 pagination-section">
-            <nav className="pagination" role="navigation" aria-label="pager">
-              <span className="page current">1</span>
-              <span className="page">
-                <a rel="next" href="/pms/admin/invoice_approvals?page=2">
-                  2
-                </a>
-              </span>
-              <span className="page">
-                <a href="/pms/admin/invoice_approvals?page=3">3</a>
-              </span>
-              <span className="page">
-                <a href="/pms/admin/invoice_approvals?page=4">4</a>
-              </span>
-              <span className="page">
-                <a href="/pms/admin/invoice_approvals?page=5">5</a>
-              </span>
-              <span className="page gap">…</span>
-              <span className="next">
-                <a rel="next" href="/pms/admin/invoice_approvals?page=2">
-                  Next ›
-                </a>
-              </span>
-              <span className="last">
-                <a href="/pms/admin/invoice_approvals?page=265">Last »</a>
-              </span>
-            </nav>
-            <p> Showing 1 to 10 of 2650 entries </p>
-          </div> */}
           </div>
 
           <div

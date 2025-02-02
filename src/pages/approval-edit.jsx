@@ -20,14 +20,14 @@ const ApprovalEdit = () => {
   const { id } = useParams(); // Ge
   const [loading, setLoading] = useState(true); // New loading state
 
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState([]);
 
-  const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null); // For selected module
+  const [selectedSite, setSelectedSite] = useState([]);
+  const [selectedModule, setSelectedModule] = useState([]); // For selected module
   const [selectedMaterialType, setSelectedMaterialType] = useState(null); // For selected material type
 
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState([]);
 
   // const [department, selectedDeparment] = useState([]);
 
@@ -86,221 +86,6 @@ const ApprovalEdit = () => {
     approval_type: "",
   });
 
-  // useEffect(() => {
-  //   const fetchDropdownData = async () => {
-  //     try {
-  //       // const response = await fetch(
-  //       //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-  //       // );
-  //       const [dropdownResponse, materialTypeResponse] = await Promise.all([
-  //         fetch(
-  //           "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-  //         ),
-  //         fetch(
-  //           "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-  //         ),
-  //       ]);
-  //       // if (!response.ok) throw new Error("Failed to fetch dropdown data");
-
-  //       // const data = await response.json();
-  //       if (!dropdownResponse.ok || !materialTypeResponse.ok) {
-  //         throw new Error("Failed to fetch dropdown data or material types");
-  //       }
-
-  //       const dropdownData = await dropdownResponse.json();
-
-  //       const materialTypesData = await materialTypeResponse.json();
-
-  //       console.log("materialsss", materialTypesData);
-
-  //       // Safeguard to check if material_types exists
-  //       const materialTypes = materialTypesData.material_types || [];
-  //       // Check if material_types is correctly set
-
-  //       setFilterOptions({
-  //         companies: [
-  //           { label: "Select Company", value: "" },
-  //           ...dropdownData.companies.map(([name, id]) => ({
-  //             label: name,
-  //             value: id,
-  //           })),
-  //         ],
-  //         sites: [
-  //           { label: "Select Site", value: "" },
-  //           ...dropdownData.sites.map(([name, id, company_id]) => ({
-  //             label: name,
-  //             value: id,
-  //             company_id,
-  //           })),
-  //         ],
-  //         departments: [
-  //           { label: "Select Department", value: "" },
-  //           ...dropdownData.departments.map(([name, id]) => ({
-  //             label: name,
-  //             value: id,
-  //           })),
-  //         ],
-  //         modules: [
-  //           { label: "Select Module", value: "" },
-  //           ...(dropdownData.approval_types
-  //             ? Object.entries(dropdownData.approval_types).map(
-  //                 ([key, value]) => ({
-  //                   label: key.replace(/_/g, " "), // Format label (e.g., "material_order_request" → "Material Order Request")
-  //                   value: value,
-  //                 })
-  //               )
-  //             : []),
-  //         ],
-  //         material_types: [
-  //           { label: "Select Material Type", value: "" },
-  //           ...materialTypesData.map((material) => ({
-  //             label: material.name,
-  //             value: material.id,
-  //           })),
-  //         ],
-  //         users: [
-  //           { label: "Select User", value: "" },
-  //           ...dropdownData.users.map(([name, id]) => ({
-  //             label: name,
-  //             value: id,
-  //           })),
-  //         ],
-  //       });
-  //     } catch (error) {
-  //       console.error("Error fetching dropdown data:", error);
-  //     }
-  //   };
-
-  //   const fetchApprovalData = async () => {
-  //     try {
-  //       // Fetch approval data from the invoice_approvals API
-  //       const response = await fetch(
-  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
-  //       if (!response.ok) throw new Error("Failed to fetch approval data");
-
-  //       const data = await response.json();
-  //       console.log("Fetched Approval Data:", data);
-
-  //       // Fetch users data from the dropdown_list API
-  //       const usersResponse = await fetch(
-  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
-  //       if (!usersResponse.ok) throw new Error("Failed to fetch users data");
-
-  //       const usersData = await usersResponse.json();
-  //       console.log("Fetched Users Data:", usersData);
-
-  //       // Convert the users array into a Map for easier lookup
-  //       const userMap = new Map(
-  //         usersData.users.map((user) => [user[1], user[0]])
-  //       ); // Map user ID to user name
-
-  //       // Log the userMap to ensure it's correct
-  //       console.log("User Map:", userMap);
-
-  //       // const companyOptions =
-
-  //       // Set form data from API response
-  //       setFormData({
-  //         company_id: data.company_id || null,
-  //         site_id: data.project_id || null,
-  //         // Set site_id from project_id
-  //         department_id: data.department_id || null,
-  //         module_id: data.approval_type || null,
-  //         material_id: data.pms_inventory_type_id || null,
-
-  //         invoice_approval_levels: data.invoice_approval_levels || [],
-  //       });
-
-  //       console.log("Data Company ID:", data.company_id);
-  //       console.log("Companies List:", filterOptions.companies);
-
-  //       // setSelectedCompany(
-  //       //   filterOptions.companies.find(
-  //       //     (company) => company.value === data.company_id
-  //       //   ) || null
-  //       // );
-
-  //       const siteOption = filterOptions.sites.find(
-  //         (site) => site.value === data.project_id
-  //       );
-  //       setSelectedSite(siteOption || null);
-
-  //       const departmentOption = filterOptions.departments.find(
-  //         (department) => department.value === data.department_id
-  //       );
-  //       setSelectedDepartment(departmentOption || null); // Declare
-
-  //       const moduleOption = filterOptions.modules.find(
-  //         (mod) => mod.value === data.approval_type
-  //       );
-  //       setSelectedModule(moduleOption || null);
-
-  //       // Find and set selected material type
-  //       const materialTypeOption = filterOptions.material_types.find(
-  //         (mat) => mat.value === data.pms_inventory_type_id
-  //       );
-  //       setSelectedMaterialType(materialTypeOption || null);
-
-  //       // Map user IDs to user names in invoice_approval_levels
-  //       const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
-  //         (level) => ({
-  //           order: level.order || "",
-  //           name: level.name || "",
-  //           users:
-  //             level.escalate_to_users?.map((userId) => {
-  //               // Log userId to check if it's correct
-  //               console.log("User ID:", userId);
-
-  //               const userName = userMap.get(userId) || "Unknown"; // Get the user name by ID from userMap
-  //               console.log("Mapped User Name:", userName); // Log the result to see if mapping works
-
-  //               return { label: userName, value: userId }; // Map the user ID to the name
-  //             }) || [],
-  //         })
-  //       );
-
-  //       // Log the final approval levels to inspect the data
-  //       console.log(
-  //         "Approval Levels with User Names:",
-  //         approvalLevelsWithUserNames
-  //       );
-
-  //       // Set approval levels with mapped user names
-  //       setApprovalLevels(approvalLevelsWithUserNames);
-
-  //       // Fetch other data as needed (e.g., sites, templates)
-  //       if (data.company_id) {
-  //         await fetchSites(data.company_id);
-  //       }
-
-  //       if (data.category_id) {
-  //         await fetchTemplates(data.category_id);
-  //       }
-
-  //       if (data.snag_checklist_id) {
-  //         await fetchSubCategories(data.snag_checklist_id);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching approval data:", error);
-  //     }
-  //   };
-
-  //   fetchDropdownData();
-  //   fetchApprovalData();
-  // }, [id]);
-
-  // useEffect(() => {
-  //   if (filterOptions.companies.length > 0) {
-  //     setSelectedCompany(
-  //       filterOptions.companies.find(
-  //         (company) => company.value === data.company_id
-  //       ) || null
-  //     );
-  //   }
-  // }, [filterOptions, data.company_id]);
-
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -325,14 +110,7 @@ const ApprovalEdit = () => {
 
         // Safeguard to check if material_types exists
         const materialTypes = materialTypesData.material_types || [];
-        // Check if material_types is correctly set
 
-        // const materialTypesData = await materialTypeResponse.json();
-
-        // // Safeguard to check if material_types exists
-        // const materialTypes = materialTypesData.material_types || [];
-
-        // Set filterOptions state
         setFilterOptions({
           companies: [
             { label: "Select Company", value: "" },
@@ -418,6 +196,7 @@ const ApprovalEdit = () => {
       fetchSites(selectedCompany.value);
     }
   }, [selectedCompany]); //
+
   useEffect(() => {
     const fetchApprovalData = async () => {
       try {
@@ -490,38 +269,99 @@ const ApprovalEdit = () => {
     if (filterOptions.companies.length > 0) {
       fetchApprovalData();
     }
-  }, [filterOptions, id]); // Trigger fetchApprovalData when filterOptions or id change
+  }, [filterOptions.companies, id]); // Trigger fetchApprovalData when filterOptions or id change
 
+  //
   // Run this effect when filterOptions change
 
-  const handleCompanyChange = (selectedOption) => {
-    const companyId = selectedOption.value; // Use the value directly
+  // const handleCompanyChange = (selectedOptions) => {
+  //   const companyId = selectedOptions.value; // Use the value directly
 
-    setSelectedCompany(selectedOption);
+  //   setSelectedCompany(selectedOptions);
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     company_id: companyId,
+  //     site_id: null, // Reset site selection
+  //   }));
+
+  //   // setSelectedCompany(selectedOptions);
+  //   // setFormData((prevData) => ({
+  //   //   ...prevData,
+  //   //   company_id: selectedOptions.map((option) => option.value),
+  //   // }));
+
+  //   // Fetch sites based on selected company
+  //   fetch(
+  //     `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //   )
+  //     .then((response) => {
+  //       if (!response.ok)
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       const formattedSites = data.sites.map(([name, id]) => ({
+  //         label: name,
+  //         value: id,
+  //       }));
+  //       setFilterOptions((prevState) => ({
+  //         ...prevState,
+  //         sites: formattedSites,
+  //       }));
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching sites:", error);
+  //       setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+  //     });
+  // };
+
+  // const handleSiteChange = (selectedOption) => {
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     site_id: selectedOption ? selectedOption.value : '', // Set value or empty string if no selection
+  //   }));
+  // };
+
+  // const handleDepartmentChange = (selectedOption) => {
+  //   console.log("Selected deparmentsss:", selectedOption.value);
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: selectedOption ? selectedOption.value : "", // Set value or empty string if no selection
+  //   }));
+  // };
+
+  //
+
+  // When you handle company change:
+  const handleCompanyChange = (selectedOptions) => {
+    const companyId = selectedOptions.value; // Use the value directly
+
+    setSelectedCompany(selectedOptions);
     setFormData((prevData) => ({
       ...prevData,
       company_id: companyId,
       site_id: null, // Reset site selection
+      department_id: null, // Reset department selection as well
     }));
 
     // Fetch sites based on selected company
     fetch(
       `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
     )
-      .then((response) => {
-        if (!response.ok)
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
         const formattedSites = data.sites.map(([name, id]) => ({
           label: name,
           value: id,
         }));
+
         setFilterOptions((prevState) => ({
           ...prevState,
           sites: formattedSites,
         }));
+
+        // Optionally set selected site to null after fetching
+        setSelectedSite(null);
       })
       .catch((error) => {
         console.error("Error fetching sites:", error);
@@ -529,33 +369,26 @@ const ApprovalEdit = () => {
       });
   };
 
-  // const handleSiteChange = (selected) => {
-  //   console.log("Selected Site ID:", selected?.value); //
-
-  //   console.log("site id", selected.value);
-  //   // Logging the selected site value
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     site_id: selected.target.value, // Updating site_id in formData
-  //   }));
-  // };
-
+  // When you handle site change:
   const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
     setFormData((prevState) => ({
       ...prevState,
-      site_id: selectedOption.value, // Update site_id with the selected site's value
+      site_id: selectedOption ? selectedOption.value : "",
     }));
   };
 
-  // Handle category change
-
+  // When you handle department change:
   const handleDepartmentChange = (selectedOption) => {
-    console.log("Selected Department ID:", selectedOption.target.value);
+    console.log("selcted deaprment", selectedOption.value);
+    setSelectedDepartment(selectedOption);
     setFormData((prevState) => ({
       ...prevState,
-      department_id: selectedOption.value,
+      department_id: selectedOption ? selectedOption.value : "",
     }));
   };
+
+  // In your JSX (value should match the selected state):
 
   const handleModuleChange = (selectedOption) => {
     console.log("Selected Module ID:", selectedOption.value);
@@ -737,83 +570,167 @@ const ApprovalEdit = () => {
                       <div className="card mt-3 pb-4">
                         <CollapsibleCard title="Configure Details">
                           <div>
-                            <div className="row my-2 align-items-end">
+                            <div className="row my-2 align-items-end ">
                               {/* Event Title */}
-                              <div className="col-md-3">
+                              <div className="col-md-3 mb-2">
                                 <label htmlFor="event-title-select">
-                                  Select Comapny
+                                  Comapny
                                 </label>
 
-                                <MultiSelector
-                                  options={filterOptions.companies}
-                                  value={selectedCompany}
-                                  onChange={handleCompanyChange}
-                                  placeholder="select comapny"
-                                />
+                                <select
+                                  id="company-select"
+                                  className="form-control"
+                                  value={
+                                    selectedCompany ? selectedCompany.value : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleCompanyChange({
+                                      value: e.target.value,
+                                      label:
+                                        e.target.options[e.target.selectedIndex]
+                                          .text,
+                                    })
+                                  }
+                                >
+                                  {/* <option value="">Select Company</option> */}
+                                  {filterOptions.companies.map((option) => (
+                                    <option
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
 
                               {/* Event Number */}
-                              <div className="col-md-3">
-                                <label htmlFor="event-no-select">Site</label>
-                                <MultiSelector
-                                  id="event-no-select"
-                                  options={filterOptions.sites}
-                                  placeholder="Select Site"
-                                  onChange={handleSiteChange}
-                                  value={selectedSite}
-                                  isClearable
-                                />
+                              <div className="col-md-3 mb-2">
+                                <label htmlFor="site-select">Site</label>
+                                <select
+                                  id="site-select"
+                                  className="form-control"
+                                  value={selectedSite ? selectedSite.value : ""}
+                                  onChange={(e) =>
+                                    handleSiteChange({
+                                      value: e.target.value,
+                                      label:
+                                        e.target.options[e.target.selectedIndex]
+                                          .text,
+                                    })
+                                  }
+                                >
+                                  <option value="">Select Site</option>
+                                  {filterOptions.sites.map((option) => (
+                                    <option
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="col-md-3 mb-2">
+                                <label htmlFor="department-select">
+                                  Department
+                                </label>
+                                <select
+                                  id="department-select"
+                                  className="form-control"
+                                  value={
+                                    selectedDepartment
+                                      ? selectedDepartment.value
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleDepartmentChange({
+                                      value: e.target.value,
+                                      label:
+                                        e.target.options[e.target.selectedIndex]
+                                          .text,
+                                    })
+                                  }
+                                >
+                                  {/* <option value="">Select Department</option> */}
+                                  {filterOptions.departments.map((option) => (
+                                    <option
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="col-md-3 mb-2">
+                                <label htmlFor="module-select">Module</label>
+                                <select
+                                  id="module-select"
+                                  className="form-control"
+                                  value={
+                                    selectedModule ? selectedModule.value : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleModuleChange({
+                                      value: e.target.value,
+                                      label:
+                                        e.target.options[e.target.selectedIndex]
+                                          .text,
+                                    })
+                                  }
+                                >
+                                  {/* <option value="">Select Module</option> */}
+                                  {filterOptions.modules.map((option) => (
+                                    <option
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="col-md-3 mt-4">
+                                <label htmlFor="material-type-select">
+                                  Material type
+                                </label>
+                                <select
+                                  id="material-type-select"
+                                  className="form-control"
+                                  value={
+                                    selectedMaterialType
+                                      ? selectedMaterialType.value
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleMaterialTypeChange({
+                                      value: e.target.value,
+                                      label:
+                                        e.target.options[e.target.selectedIndex]
+                                          .text,
+                                    })
+                                  }
+                                >
+                                  {/* <option value="">Select Material Type</option> */}
+                                  {filterOptions.material_types.map(
+                                    (option) => (
+                                      <option
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </option>
+                                    )
+                                  )}
+                                </select>
                               </div>
 
                               {/* Status */}
-                              <div className="col-md-3">
-                                <label htmlFor="status-select">
-                                  Department
-                                </label>
-                                <MultiSelector
-                                  id="status-select"
-                                  options={filterOptions.departments}
-                                  onChange={handleDepartmentChange}
-                                  value={selectedDepartment}
-                                  placeholder="Select Department"
-                                  isClearable
-                                />
-                              </div>
 
-                              <div className="col-md-3 mt-4">
-                                <label htmlFor="created-by-select">
-                                  {" "}
-                                  Module
-                                </label>
-                                <MultiSelector
-                                  id="module-select"
-                                  options={filterOptions.modules} // Use modifiedFilterOptions.modules
-                                  value={selectedModule}
-                                  onChange={handleModuleChange}
-                                  isClearable
-                                />
-                              </div>
-
-                              <div className="col-md-3 mt-4">
-                                <label htmlFor="created-by-select">
-                                  {" "}
-                                  Material type
-                                </label>
-
-                                <MultiSelector
-                                  id="material-type-select"
-                                  options={filterOptions.material_types} // Use filterOptions directly
-                                  value={selectedMaterialType}
-                                  // onChange={(option) =>
-                                  //   setSelectedMaterialType(option)
-                                  // } // Ha
-                                  //
-                                  // ndle selection
-
-                                  onChange={handleMaterialTypeChange}
-                                  isClearable
-                                />
-                              </div>
                               {/* Created By */}
                               {/* <div className="col-md-3">
                                 <label htmlFor="created-by-select">

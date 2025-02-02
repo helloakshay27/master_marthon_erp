@@ -17,6 +17,7 @@ const InvoiceApproval = () => {
   });
 
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [loading, setLoading] = useState(false);
   // const [selectedCategory, setSelectedCategory] = useState(null);
 
   // const [selectedTemplates, setSelectedTemplates] = useState(null);
@@ -284,6 +285,7 @@ const InvoiceApproval = () => {
     invoice_approval_levels: [], // An empty array, assuming no levels are set initially
   };
   const handleCreate = () => {
+    setLoading(true);
     // Prepare the dynamic payload with data from formData and approvalLevels
     const payload = {
       // site_id: formData.site_id,
@@ -312,24 +314,37 @@ const InvoiceApproval = () => {
       )
       .then((response) => {
         console.log("Approval Created:", response.data);
-        alert("Approval created successfully!");
+        // alert("Approval created successfully!");
+        setTimeout(() => {
+          alert("Approval created successfully!");
+          // You can't close the native alert, but you could use a custom modal here
+          console.log(
+            "Alert closed (This is a simulation, as the native alert can't be dismissed)."
+          );
+        }, 500);
+
         // Optionally reset form data here if needed
       })
       .catch((error) => {
         console.error("Error creating invoice approval:", error);
+      })
+      .finally(() => {
+        // Set loading to false when the request finishes (success or failure)
+        setLoading(false);
       });
   };
 
   const handleSaveAndCreate = () => {
-    // Prepare payload and send POST request (as you already have in handleCreate)
+    setLoading(true);
+
+    // Prepare the payload to send with the POST request
     const payload = {
       approval_type: formData.module_id,
       company_id: formData.company_id,
       project_id: formData.site_id,
       department_id: formData.department_id,
       snag_checklist_id: formData.template_id,
-      sub_category_id: formData.sub_category_id,
-      category_id: formData.category_id,
+      pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
@@ -338,7 +353,7 @@ const InvoiceApproval = () => {
       })),
     };
 
-    // Send API request
+    // Send the API request to create the approval
     axios
       .post(
         "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
@@ -348,24 +363,112 @@ const InvoiceApproval = () => {
         console.log("Approval Created:", response.data);
         alert("Approval created successfully!");
 
-        // Reset all the form fields to their initial values
-        setFormData(initialFormData); // Reset form data
-        setSelectedCompany(null); // Reset selected company
-        setSelectedCategory(null); // Reset selected category
-        setSelectedTemplates(null); // Reset selected templates
+        // Reset dynamic fields but keep static options intact in filterOptions
         setFilterOptions((prevState) => ({
-          ...prevState,
-          sites: [],
-          sub_categories: [],
-          templates: [],
-        })); // Optionally reset dynamic filter options
+          companies: [], // Keep companies as is
+          sites: [], // Reset sites to empty
+          departments: [], // Reset departments to empty
+          modules: [], // Reset modules to empty
+          material_types: [], // Reset material types to empty
+          approval_types: [], // Reset approval types to empty
+          users: [], // Reset users to empty
+        }));
 
         // Optionally reset other states (approvalLevels, selectedUsers, etc.)
         setApprovalLevels([{ order: "", name: "", users: [] }]);
+
+        // Reset form data if necessary
+        // setFormData(initialFormData);
+
+        // Call the dropdown API again to fetch new data and repopulate dropdowns
+        fetchDropdownData(); // Fetch dropdown data after reset
       })
       .catch((error) => {
         console.error("Error creating invoice approval:", error);
+      })
+      .finally(() => {
+        // Set loading to false when the request finishes (success or failure)
+        setLoading(false);
       });
+  };
+
+  // Function to fetch the dropdown data again (for sites, departments, etc.)
+  const fetchDropdownData = async () => {
+    try {
+      const [dropdownResponse, materialTypeResponse] = await Promise.all([
+        fetch(
+          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        ),
+        fetch(
+          "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        ),
+      ]);
+
+      if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+        throw new Error("Failed to fetch dropdown data or material types");
+      }
+
+      const dropdownData = await dropdownResponse.json();
+      const materialTypesData = await materialTypeResponse.json();
+
+      console.log("Material Types:", materialTypesData);
+
+      // Safeguard to check if material_types exists
+      const materialTypes = materialTypesData.material_types || [];
+
+      // Update the filter options with the new data
+      setFilterOptions({
+        companies: [
+          { label: "Select Company", value: "" },
+          ...dropdownData.companies.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+        ],
+        sites: [
+          { label: "Select Site", value: "" },
+          ...dropdownData.sites.map(([name, id, company_id]) => ({
+            label: name,
+            value: id,
+            company_id,
+          })),
+        ],
+        departments: [
+          { label: "Select Department", value: "" },
+          ...dropdownData.departments.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+        ],
+        modules: [
+          { label: "Select Module", value: "" },
+          ...(dropdownData.approval_types
+            ? Object.entries(dropdownData.approval_types).map(
+                ([key, value]) => ({
+                  label: key.replace(/_/g, " "), // Format label
+                  value: value,
+                })
+              )
+            : []),
+        ],
+        material_types: [
+          { label: "Select Material Type", value: "" },
+          ...materialTypes.map((material) => ({
+            label: material.name,
+            value: material.id,
+          })),
+        ],
+        users: [
+          { label: "Select User", value: "" },
+          ...dropdownData.users.map(([name, id]) => ({
+            label: name,
+            value: id,
+          })),
+        ],
+      });
+    } catch (error) {
+      console.error("Error fetching dropdown data:", error);
+    }
   };
 
   return (
@@ -604,6 +707,21 @@ const InvoiceApproval = () => {
 
                       {/* </div> */}
                       <div style={{ textAlign: "center" }}>
+                        {loading && (
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Submitting ...</p>
+                          </div>
+                        )}
                         <button
                           // name="subaction"
                           // type="submit"
