@@ -640,7 +640,7 @@ export default function EditEvent() {
             condition: textarea.value,
           };
         }),
-        attachments: [],
+        attachments: documentRows.map((row) => row.upload),
       },
     };
 
@@ -656,7 +656,7 @@ export default function EditEvent() {
         navigate(
           "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-      }, 1500); // Increase the delay to 1.5 seconds before navigating
+      }, 1500); // Increase the delay to 1.5 seconds before navigating 
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {

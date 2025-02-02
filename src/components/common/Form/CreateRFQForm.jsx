@@ -179,6 +179,7 @@ export default function CreateRFQForm({
         }
       );
       setSections(updatedSections);
+      setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
       console.log("sections:-----", sections);
     }
   }, [existingData]);
@@ -425,7 +426,9 @@ export default function CreateRFQForm({
                               (option) =>
                                 option.value ===
                                 section.sectionData[rowIndex]?.inventory_id
-                            )?.value || ""
+                            )?.value ||
+                            section.sectionData[rowIndex]?.descriptionOfItem ||
+                            ""
                       }
                     />
                   ),
