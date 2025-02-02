@@ -151,7 +151,7 @@ export default function CreateRFQForm({
   useEffect(() => {
     if (existingData) {
       console.log("existingData", existingData);
-      
+
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           return {
@@ -224,8 +224,10 @@ export default function CreateRFQForm({
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
-      inventory_type_id: sections[sectionIndex].sectionData[0]?.inventory_type_id || "", // Add inventory_type_id
-      inventory_sub_type_id: sections[sectionIndex].sectionData[0]?.inventory_sub_type_id || "", // Add inventory_sub_type_id
+      inventory_type_id:
+        sections[sectionIndex].sectionData[0]?.inventory_type_id || "", // Add inventory_type_id
+      inventory_sub_type_id:
+        sections[sectionIndex].sectionData[0]?.inventory_sub_type_id || "", // Add inventory_sub_type_id
       _destroy: false,
     };
     const updatedSections = [...sections];
@@ -410,27 +412,38 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
-                    <SelectBox
-                      options={materialOptions}
-                      onChange={(value) =>
-                        handleDescriptionOfItemChange(
-                          value,
-                          rowIndex,
-                          sectionIndex
-                        )
-                      }
-                      defaultValue={
-                        section.sectionData[rowIndex]._destroy
-                          ? ""
-                          : materialOptions.find(
-                              (option) =>
-                                option.value ===
-                                section.sectionData[rowIndex]?.inventory_id
-                            )?.value ||
-                            section.sectionData[rowIndex]?.descriptionOfItem ||
-                            ""
-                      }
-                    />
+                    <>
+                      <SelectBox
+                        options={materialOptions}
+                        onChange={(value) =>
+                          handleDescriptionOfItemChange(
+                            value,
+                            rowIndex,
+                            sectionIndex
+                          )
+                        }
+                        defaultValue={
+                          section.sectionData[rowIndex]._destroy
+                            ? ""
+                            : materialOptions.find(
+                                (option) =>
+                                  option.value ===
+                                  section.sectionData[rowIndex]?.inventory_id
+                              )?.value || ""
+                        }
+                      />
+                      <p>{section.sectionData[rowIndex]?.descriptionOfItem}</p>
+                      <p>
+                        {" "}
+                        {
+                          materialOptions.find(
+                            (option) =>
+                              option.value ===
+                              section.sectionData[rowIndex]?.inventory_id
+                          )?.value
+                        }
+                      </p>
+                    </>
                   ),
                   unit: (cell, rowIndex) => (
                     <input
