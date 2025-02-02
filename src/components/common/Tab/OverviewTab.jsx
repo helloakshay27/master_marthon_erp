@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { EnvelopeIcon, ParticipantsIcon, ShowIcon, Table } from "../..";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 export default function OverviewTab({
   handleParticipants,
@@ -24,6 +26,14 @@ export default function OverviewTab({
   documentsData,
   handleDocuments,
 }) {
+  const [participationSummary, setParticipationSummary] = useState({
+    invited_vendor: 0,
+    participated_vendor: 0,
+  });
+  const [error, setError] = useState(null);
+
+  const { id } = useParams();
+
   const participants = [
     {
       label: "Total Participants",
@@ -70,6 +80,21 @@ export default function OverviewTab({
           : participantsData.revised_bids,
     },
   ];
+
+  useEffect(() => {
+    const fetchParticipationSummary = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/rfq/events/${id}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setParticipationSummary(response.data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchParticipationSummary();
+  }, [id]);
 
   const transformedData = biddingData.flatMap((vendor) =>
     vendor.materials.map((material) => ({
@@ -185,33 +210,29 @@ export default function OverviewTab({
                     className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                     aria-label="Participants"
                   >
-                    <i className="bi bi-check2 me-2"></i>4
+                    <i className="bi bi-check2 me-2"></i>
+                    {participationSummary.invited_vendor}
                   </div>
                   <div
                     className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                     aria-label="Emails"
                   >
-                    <EnvelopeIcon
-                      // @ts-ignore
-                      className="me-2"
-                    />{" "}
-                    4
+                    <i className="bi bi-envelope me-2"></i>
+                    {participationSummary.invited_vendor}
                   </div>
                   <div
                     className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                     aria-label="Views"
                   >
-                    <ShowIcon
-                      // @ts-ignore
-                      className="me-2"
-                    />{" "}
-                    4
+                    <i className="bi bi-eye me-2"></i>
+                    {participationSummary.participated_vendor || 0}
                   </div>
                   <div
                     className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                     aria-label="Completed"
                   >
-                    <i className="bi bi-check-circle me-2"></i> 4
+                    <i className="bi bi-check-circle me-2"></i>
+                    {participationSummary.participated_vendor || 0}
                   </div>
                 </div>
               </div>
@@ -394,7 +415,9 @@ export default function OverviewTab({
                       ) : (
                         <tr>
                           <td colSpan="3">
-                            <p style={{ textAlign: "center" }}>No data available</p>
+                            <p style={{ textAlign: "center" }}>
+                              No data available
+                            </p>
                           </td>
                         </tr>
                       )}
@@ -484,7 +507,9 @@ export default function OverviewTab({
                     </div>
                   ))
                 ) : (
-                  <p style={{ textAlign: "center" }}>No terms and conditions available</p>
+                  <p style={{ textAlign: "center" }}>
+                    No terms and conditions available
+                  </p>
                 )}
               </div>
             </div>

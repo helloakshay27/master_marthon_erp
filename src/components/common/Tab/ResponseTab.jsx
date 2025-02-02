@@ -205,7 +205,6 @@ export default function ResponseTab({ isCounterOffer }) {
           `https://marathon.lockated.com/rfq/events/${id}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
-        console.log("response.data :-----",response.data);
         
       } catch (err) {
         setError(err.message);
