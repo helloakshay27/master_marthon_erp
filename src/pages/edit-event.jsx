@@ -264,6 +264,10 @@ export default function EditEvent() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchEventData();
+  }, [setEventDetails])
+  
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     if (searchTerm == "") {
     }
