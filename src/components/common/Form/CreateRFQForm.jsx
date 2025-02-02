@@ -182,7 +182,7 @@ export default function CreateRFQForm({
       setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
       console.log("sections:-----", sections);
     }
-  }, [existingData]);
+  }, [existingData, setSections, setData]);
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
@@ -429,7 +429,7 @@ export default function CreateRFQForm({
                                 (option) =>
                                   option.value ===
                                   section.sectionData[rowIndex]?.inventory_id
-                              )?.value || ""
+                              )?.value || "" || section.sectionData[rowIndex]?.descriptionOfItem
                         }
                       />
                       <p>{section.sectionData[rowIndex]?.descriptionOfItem}</p>
