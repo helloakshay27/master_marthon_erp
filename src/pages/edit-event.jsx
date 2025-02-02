@@ -302,6 +302,8 @@ export default function EditEvent() {
   }, []);
 
   const [termsOptions, setTermsOptions] = useState([]);
+  console.log("eventDetails?.event_vendors",eventDetails?.event_vendors);
+  
 
   useEffect(() => {
     if (eventDetails) {
@@ -328,9 +330,10 @@ export default function EditEvent() {
       );
       setSelectedVendors(
         eventDetails?.event_vendors?.map((vendor) => ({
-          id: vendor.pms_supplier_id,
+          id: vendor.id,
           name: vendor.full_name,
           phone: vendor.organization_name,
+          pms_supplier_id: vendor.pms_supplier_id,
         }))
       );
     }
@@ -392,6 +395,8 @@ export default function EditEvent() {
     );
 
     setTableData(updatedTableData);
+    console.log("selectedRows:----",selectedRows, updatedTableData);
+    
     setSelectedVendors((prev) => [
       ...prev,
       ...selectedRows.map((vendor) => ({ ...vendor, id: null, pms_supplier_id: vendor.id })),
