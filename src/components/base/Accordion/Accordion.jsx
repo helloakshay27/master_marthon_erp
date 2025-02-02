@@ -20,9 +20,12 @@ export default function Accordion({
   const secondLeastAmount = sortedAmounts[1];
   const thirdLeastAmount = sortedAmounts[2];
 
-  const handleColumnClick = (data) => {
+  const handleColumnClick = (data, columnKey) => {
     if (onColumnClick) {
-      onColumnClick(data);
+      const bid_id = data.bid_id || data.bidId;
+      const material_id = data.material_id || data.materialId;
+      const vendor_id = data.vendor_id || data.vendorId;
+      onColumnClick({ bid_id, material_id, vendor_id, ...data }, columnKey);
     }
   };
 

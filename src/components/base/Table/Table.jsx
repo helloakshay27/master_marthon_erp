@@ -93,6 +93,16 @@ export default function Table({
     }
   };
 
+  const handleColumnClick = (data, columnKey) => {
+    if (onColumnClick) {
+      
+      const bid_id = data.bid_id || data.bidId;
+      const material_id = data.material_id || data.materialId;
+      const vendor_id = data.vendor_id || data.vendorId;
+      onColumnClick({ bid_id, material_id, vendor_id, ...data }, columnKey);
+    }
+  };
+
   if (isHorizontal) {
     const transposedData = transposeData(data, columns);
 
@@ -115,7 +125,6 @@ export default function Table({
         <table
           className="bid-tbl w-100"
           style={{
-            boxShadow: "none",
             tableLayout: "fixed",
             width: "100%",
           }}
@@ -129,49 +138,53 @@ export default function Table({
           </colgroup>
           <tbody>
             {transposedData.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                <td
-                  className="main2-th"
-                  style={{
-                    fontWeight: "bold",
-                    textAlign: "left",
-                    width: "300px",
-                  }}
-                >
-                  {row.header}
-                </td>
-                {row.values.map((value, valueIndex) => (
+              !["bid_id", "material_id", "vendor_id"].includes(columns[rowIndex]?.key) && (
+                <tr key={rowIndex}>
                   <td
-                    key={valueIndex}
+                    className="main2-th"
                     style={{
-                      width: "180px",
+                      fontWeight: "bold",
                       textAlign: "left",
-                      whiteSpace: "nowrap",
-                      backgroundColor:
-                        rowIndex === transposedData.length - 1
-                          ? getBackgroundColor(value)
-                          : "transparent",
-                      fontWeight:
-                        rowIndex === transposedData.length - 1
-                          ? "bold"
-                          : "normal",
-                      textTransform: "capitalize",
+                      width: "300px",
                     }}
-                    onClick={() =>
-                      onColumnClick && onColumnClick(data[valueIndex])
-                    }
                   >
-                    {customRender[columns[rowIndex]?.key]
-                      ? customRender[columns[rowIndex]?.key](
-                          value,
-                          valueIndex,
-                          data[valueIndex]
-                        )
-                      : value}
+                    {row.header}
                   </td>
-                ))}
-                <td style={{ width: "auto" }}></td>
-              </tr>
+                  {row.values.map((value, valueIndex) => (
+                    value !== "" && (
+                      <td
+                        key={valueIndex}
+                        style={{
+                          width: "180px",
+                          textAlign: "left",
+                          whiteSpace: "nowrap",
+                          backgroundColor:
+                            ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
+                              ? getBackgroundColor(value)
+                              : "transparent",
+                          fontWeight:
+                            ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
+                              ? "bold"
+                              : "normal",
+                          textTransform: "capitalize",
+                        }}
+                        onClick={() =>
+                          handleColumnClick(data[valueIndex], columns[rowIndex]?.key)
+                        }
+                      >
+                        {customRender[columns[rowIndex]?.key]
+                          ? customRender[columns[rowIndex]?.key](
+                              value,
+                              valueIndex,
+                              data[valueIndex]
+                            )
+                          : value}
+                      </td>
+                    )
+                  ))}
+                  <td style={{ width: "auto" }}></td>
+                </tr>
+              )
             ))}
           </tbody>
         </table>
@@ -270,3 +283,5 @@ export default function Table({
     </div>
   );
 }
+
+

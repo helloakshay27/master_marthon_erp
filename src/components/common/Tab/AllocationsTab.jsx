@@ -11,7 +11,8 @@ import BulkCounterOfferModal from "../Modal/BulkCounterOfferModal";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
-import Table from "../../base/Table/Table"
+import Table from "../../base/Table/Table";
+import DropArrowIcon from "../../common/Icon/DropArrowIcon";
 import ShortTable from "../../base/Table/ShortTable";
 
 export default function AllocationTab({ isCounterOffer }) {
@@ -28,7 +29,20 @@ export default function AllocationTab({ isCounterOffer }) {
   const [eventVendors, setEventVendors] = useState([]);
   const [segeregatedMaterialData, setSegeregatedMaterialData] = useState([]);
   const tableRef = useRef(null);
-  const [selectedData, setSelectedData] = useState(null);
+  const [selectedData, setSelectedData] = useState([]);
+  const [bidIdVal, setBidIdVal] = useState(null);
+  const [bidMaterialIdVal, setBidMaterialIdVal] = useState(null);
+  const [vendorIdVal, setVendorIdVal] = useState(null);
+  const [dummyData, setDummyData] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [openAccordions, setOpenAccordions] = useState({});
+
+  const toggleAccordion = (index) => {
+    setOpenAccordions((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
@@ -218,8 +232,98 @@ export default function AllocationTab({ isCounterOffer }) {
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
 
-  const handleColumnClick = (data) => {
-    setSelectedData(data);
+  const handleColumnClick = async (data, columnKey) => {
+    console.log("Clicked column data:", data, columnKey);
+
+    const { bid_id, material_id, vendor_id } = data;
+
+    console.log("Parsed column data:", {
+      bid_id,
+      material_id,
+      vendor_id,
+      columnKey,
+    });
+
+    // Ensure that bid_id, material_id, and vendor_id are correctly set
+    if (!bid_id || !material_id || !vendor_id) {
+      console.error("Missing bid_id, material_id, or vendor_id");
+      return;
+    }
+
+    setBidIdVal(bid_id);
+    setBidMaterialIdVal(material_id);
+    setVendorIdVal(vendor_id);
+
+    // Hit the API directly when a column is clicked
+    try {
+      const response = await axios.post(
+        `https://marathon.lockated.com/rfq/events/${id}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          bid_id: bid_id,
+          bid_material_id: material_id,
+          delete_material: "false",
+        }
+      );
+
+      const responseData = response.data;
+      console.log("response:-----x----xs---x-s--", responseData, material_id);
+
+      // Process bid_materials for the main table
+      const updatedSelectedData = responseData.bid_materials
+        .filter((material) => material?.id === material_id)
+        .map((material) => ({
+          bestTotalAmount: material.total_amount || "_",
+          quantityAvailable: material.quantity_available || "_",
+          price: material.price || "_",
+          discount: material.discount || "_",
+          realisedDiscount: material.realised_discount || "_",
+          gst: material.gst || "_",
+          realisedGST: material.realised_gst || "_",
+          landedAmount: material.landed_amount || "_",
+          participantAttachment: "_",
+          totalAmount: material.total_amount || "_",
+          materialName: material.material_name || "_",
+          vendorId: vendor_id,
+        }));
+
+      setSelectedData((prevSelectedData) => [
+        ...prevSelectedData.filter((data) => data.vendorId !== vendor_id),
+        ...updatedSelectedData,
+      ]);
+
+      // Process bids for the ShortTable
+      const updatedDummyData = [
+        {
+          label: "Freight Charge Amount",
+          value: `₹${responseData.bids[0].freight_charge_amount}`,
+        },
+        {
+          label: "GST on Freight",
+          value: `${responseData.bids[0].gst_on_freight}%`,
+        },
+        {
+          label: "Realised Freight Amount",
+          value: `₹${responseData.bids[0].realised_freight_charge_amount}`,
+        },
+        {
+          label: "Warranty Clause",
+          value: responseData.bids[0].warranty_clause,
+        },
+        { label: "Payment Terms", value: responseData.bids[0].payment_terms },
+        {
+          label: "Loading / Unloading Clause",
+          value: responseData.bids[0].loading_unloading_clause,
+        },
+        { label: "Gross Total", value: `₹${responseData.bids[0].gross_total}` },
+      ];
+
+      setDummyData((prevDummyData) => [
+        ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
+        { vendorId: vendor_id, data: updatedDummyData },
+      ]);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const getSelectedDataColumns = () => {
@@ -229,23 +333,6 @@ export default function AllocationTab({ isCounterOffer }) {
       key: key,
     }));
   };
-
-  const getSelectedDataRows = () => {
-    if (!selectedData) return [];
-    console.log("selectedData",selectedData);
-    
-    return [selectedData];
-  };
-
-  const dummyData = [
-    { label: "Freight Charge Amount", value: "₹5000" },
-    { label: "GST on Freight", value: "28%" },
-    { label: "Realised Freight Amount", value: "₹6400" },
-    { label: "Warranty Clause", value: "first bid" },
-    { label: "Payment Terms", value: "second bid" },
-    { label: "Loading / Unloading Clause", value: "third bid" },
-    { label: "Gross Total", value: "_" },
-  ];
 
   return (
     <div
@@ -377,7 +464,7 @@ export default function AllocationTab({ isCounterOffer }) {
                         ></td>
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
-                          
+
                           return (
                             <td
                               key={vendor.id}
@@ -392,7 +479,7 @@ export default function AllocationTab({ isCounterOffer }) {
                                   <p>
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
                                   </p>
-                                </div>                                
+                                </div>
                               </div>
                             </td>
                           );
@@ -422,7 +509,6 @@ export default function AllocationTab({ isCounterOffer }) {
                 </div>
 
                 {segeregatedMaterialData?.map((materialData, ind) => {
-                  
                   return (
                     <Accordion
                       key={ind}
@@ -452,6 +538,9 @@ export default function AllocationTab({ isCounterOffer }) {
                           key: "participantAttachment",
                         },
                         { label: "Total Amount", key: "totalAmount" },
+                        { label: "bid Id", key: "bid_id" },
+                        { label: "Material ID", key: "material_id" },
+                        { label: "vendor id", key: "vendor_id" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
                         return {
@@ -465,6 +554,9 @@ export default function AllocationTab({ isCounterOffer }) {
                           landedAmount: material.landed_amount || "_",
                           participantAttachment: "_",
                           totalAmount: material.total_amount || "_",
+                          bid_id: material.bid_id,
+                          material_id: material.material_id,
+                          vendor_id: material.vendor_id,
                         };
                       })}
                       onColumnClick={handleColumnClick}
@@ -491,6 +583,9 @@ export default function AllocationTab({ isCounterOffer }) {
                       key: "loading",
                     },
                     { label: "Gross Total", key: "grossTotal" },
+                    { label: "bidId", key: "bid_id" },
+                    { label: "Material ID", key: "material_id" },
+                    { label: "vendor id", key: "vendor_id" },
                   ]}
                   tableData={eventVendors?.flatMap((vendor) =>
                     vendor?.bids?.[0]
@@ -511,49 +606,119 @@ export default function AllocationTab({ isCounterOffer }) {
                         ]
                       : []
                   )}
-                  onColumnClick={handleColumnClick}
                 />
 
-                {selectedData && (
-                  <div className="card p-4 mt-4">
-                    <h5>Material Summary</h5>
-                    <Table
-                      columns={[
-                        {
-                          label: "Best Total Amount",
-                          key: "bestTotalAmount",
-                        },
-                        {
-                          label: "Quantity Available",
-                          key: "quantityAvailable",
-                        },
-                        { label: "Price", key: "price" },
-                        { label: "Discount", key: "discount" },
-                        {
-                          label: "Realised Discount",
-                          key: "realisedDiscount",
-                        },
-                        { label: "GST", key: "gst" },
-                        { label: "Realised GST", key: "realisedGST" },
-                        { label: "Landed Amount", key: "landedAmount" },
-                        {
-                          label: "Participant Attachment",
-                          key: "participantAttachment",
-                        },
-                        { label: "Total Amount", key: "totalAmount" },
-                      ]}
-                      data={getSelectedDataRows()}
-                      isHorizontal={false}
-                    />
+                <div className="card p-4 mt-4">
+                  <div
+                    className="accordion rounded-0 mb-0"
+                    id="accordionExample"
+                  >
+                    {selectedData.length > 0 &&
+                      selectedData.map((vendorData, index) => (
+                        <div key={index} className="accordion-item rounded-0">
+                          <h2 className="accordion-header">
+                            <button
+                              className="accordion-button viewBy-collapT1 p-0 "
+                              style={{
+                                position: "relative",
+                                width: "100%",
+                                background: "#000",
+                                fontSize: "8px",
+                                height: "50px",
+                              }}
+                              type="button"
+                              onClick={() => toggleAccordion(index)}
+                              aria-expanded={openAccordions[index] || false}
+                            >
+                              <span className="p-2">
+                                <DropArrowIcon
+                                  isOpen={openAccordions[index] || false}
+                                />
+                              </span>{" "}
+                              <span style={{ width: "260px" }}>
+                                {vendorData.materialName}
+                              </span>
+                            </button>
+                          </h2>
+                          <div
+                            className={`accordion-collapse collapse ${
+                              openAccordions[index] ? "show" : ""
+                            }`}
+                            aria-labelledby="headingOne"
+                          >
+                            <div className="accordion-body px-3">
+                              <div className="card p-4 m-0">
+                                <Table
+                                  columns={[
+                                    {
+                                      label: "Best Total Amount",
+                                      key: "bestTotalAmount",
+                                    },
+                                    {
+                                      label: "Quantity Available",
+                                      key: "quantityAvailable",
+                                    },
+                                    { label: "Price", key: "price" },
+                                    { label: "Discount", key: "discount" },
+                                    {
+                                      label: "Realised Discount",
+                                      key: "realisedDiscount",
+                                    },
+                                    { label: "GST", key: "gst" },
+                                    {
+                                      label: "Realised GST",
+                                      key: "realisedGST",
+                                    },
+                                    {
+                                      label: "Landed Amount",
+                                      key: "landedAmount",
+                                    },
+                                    {
+                                      label: "Participant Attachment",
+                                      key: "participantAttachment",
+                                    },
+                                    {
+                                      label: "Total Amount",
+                                      key: "totalAmount",
+                                    },
+                                  ]}
+                                  data={[vendorData]}
+                                  isHorizontal={false}
+                                />
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                      <ShortTable data={dummyData} editable={false} />
-                    </div>
-                    <div className="text-end">
-                    <button className="purple-btn2 mt-4" style={{width:'200px'}}>Allocate Material</button>
-                    </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    marginTop: "20px",
+                                  }}
+                                >
+                                  <ShortTable
+                                    data={
+                                      dummyData.find(
+                                        (d) =>
+                                          d.vendorId === vendorData.vendorId
+                                      )?.data || []
+                                    }
+                                    editable={false}
+                                  />
+                                </div>
+
+                                <div className="text-end">
+                                  <button
+                                    className="purple-btn2 mt-4"
+                                    style={{ width: "200px" }}
+                                  >
+                                    Allocate Material
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                )}
+                </div>
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
