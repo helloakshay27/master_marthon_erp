@@ -14,6 +14,8 @@ import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
 import Table from "../../base/Table/Table";
 import DropArrowIcon from "../../common/Icon/DropArrowIcon";
 import ShortTable from "../../base/Table/ShortTable";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function AllocationTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -37,6 +39,8 @@ export default function AllocationTab({ isCounterOffer }) {
   const [isOpen, setIsOpen] = useState(false);
   const [openAccordions, setOpenAccordions] = useState({});
   const [ materialName, setMaterialName ] = useState("");
+  const isCreatingPO = useRef(false);
+  const isUpdatingAllocation = useRef(false);
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -197,19 +201,14 @@ export default function AllocationTab({ isCounterOffer }) {
   };
 
   const handleColumnClick = async (data, columnKey) => {
-    console.log("Clicked column data:", data, columnKey);
+    if (isUpdatingAllocation.current) return;
+    isUpdatingAllocation.current = true;
 
     const { bid_id, material_id, vendor_id, vendor_name, pms_supplier_id } = data;
 
-    console.log("Parsed column data:", {
-      bid_id,
-      material_id,
-      vendor_id,
-      columnKey,
-    });
-
     if (!bid_id || !material_id || !vendor_id) {
       console.error("Missing bid_id, material_id, or vendor_id");
+      isUpdatingAllocation.current = false;
       return;
     }
 
@@ -228,7 +227,6 @@ export default function AllocationTab({ isCounterOffer }) {
       );
 
       const responseData = response.data;
-      console.log("response:", responseData);
 
       const bidMaterial = responseData.bid_materials.find(
         (material) => material.id === material_id
@@ -236,6 +234,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
       if (!bidMaterial) {
         console.error("Bid material not found");
+        isUpdatingAllocation.current = false;
         return;
       }
 
@@ -300,8 +299,13 @@ export default function AllocationTab({ isCounterOffer }) {
         ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
         { vendorId: vendor_id, data: updatedDummyData },
       ]);
+
+      toast.success('Allocation updated successfully');
     } catch (err) {
+      toast.error('Error updating allocation');
       setError(err.message);
+    } finally {
+      isUpdatingAllocation.current = false;
     }
   };
 
@@ -313,6 +317,41 @@ export default function AllocationTab({ isCounterOffer }) {
     }));
   };
 
+  const handleCreatePO = async (vendorData) => {
+    if (isCreatingPO.current) return;
+    isCreatingPO.current = true;
+
+    const jsonBody = {
+      orders: [
+        {
+          supplier_id: vendorData.pms_supplier_id,
+          bid: {
+            id: vendorData.bidId,
+            bid_materials: [
+              {
+                id: vendorData.materialId,
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    try {
+      const response = await axios.post(
+        `https://marathon.lockated.com/rfq/events/${id}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        jsonBody
+      );
+      toast.success('PO created successfully');
+      console.log('PO created successfully:', response.data);
+    } catch (error) {
+      toast.error('Error creating PO');
+      console.error('Error creating PO:', error);
+    } finally {
+      isCreatingPO.current = false;
+    }
+  };
+
   return (
     <div
       className="tab-pane fade"
@@ -321,6 +360,7 @@ export default function AllocationTab({ isCounterOffer }) {
       aria-labelledby="allocation-tab"
       tabIndex={0}
     >
+      <ToastContainer />
       <div className="viewBy-main">
         <div className="viewBy-main-child1">
           <div className="d-flex align-items-center mb-3">
@@ -653,6 +693,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           <button
                             className="purple-btn2 mt-4"
                             style={{ width: "200px" }}
+                            onClick={() => handleCreatePO(vendorData)}
                           >
                             Create PO
                           </button>
