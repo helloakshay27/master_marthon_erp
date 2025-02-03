@@ -162,14 +162,14 @@ const BOQDetailsPageMaster = () => {
   return (
     <>
 
-      <div className="website-content overflow-auto">
+      {/* <div className="website-content overflow-auto"> */}
         <div className="website-content overflow-auto">
-          <div className="module-data-section p-4">
+          <div className="module-data-section p-4 ">
             <a href="">
               Setup &gt; Engineering Setup &gt; BOQ &gt; BOQ Details
             </a>
-            <div className="tab-content1 active" id="total-content">
-              {/* Total Content Here */}
+            <div className="card mt-2 mb-5 p-4" id="total-content">
+              {/* Total Content Here  ..className="tab-content1 active" */}
 
 
               <CollapsibleCard title="BOQ Details">
@@ -704,7 +704,7 @@ const BOQDetailsPageMaster = () => {
           </div>
 
         </div>
-      </div>
+      {/* </div> */}
 
 
       {/* Modal start */}

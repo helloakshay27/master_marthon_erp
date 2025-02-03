@@ -438,7 +438,7 @@ const BOQList = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
-          <h5 className="mt-4">View BOQ</h5>
+          <h5 className="mt-4">BOQ</h5>
           <div className="d-flex justify-content-end">
             <button className="purple-btn2" onClick={handleClick}>Create</button>
             <button className="purple-btn2">Import</button>
@@ -459,7 +459,7 @@ const BOQList = () => {
 
 
           <div className="card mt-2 mb-5 p-4">
-            <CollapsibleCard title="View BOQ">
+            <CollapsibleCard title=" BOQ">
               <div className="card-body mt-0 pt-0">
                 <div className="row">
                   <div className="col-md-3">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import {
@@ -15,6 +15,9 @@ import {
 } from "../components"
 import { estimationListColumns, estimationListData } from "../constant/data";
 import EstimationQuickFilter from "../components/EstimationQuickFilter";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
+import axios from "axios";
 
 
 const EstimationList = () => {
@@ -38,7 +41,74 @@ const EstimationList = () => {
     const handleSettingModalShow = () => setSettingShow(true);
     const handleModalShow = () => setShow(true);
 
-    const myArray = ['Sr.No.','Certifying Company','Project','Sub-Project','Wing','Location'];
+    const myArray = ['Sr.No.', 'Certifying Company', 'Project', 'Sub-Project', 'Wing', 'Location'];
+
+    //  project ,sub project wing api 
+    const [projects, setProjects] = useState([]);
+    const [selectedProject, setSelectedProject] = useState(null);
+    const [selectedSite, setSelectedSite] = useState(null);
+    const [selectedWing, setSelectedWing] = useState(null);
+    const [wingsOptions, setWingsOptions] = useState([]);
+    const [siteOptions, setSiteOptions] = useState([]);
+    // Fetch projects on mount
+    useEffect(() => {
+        // Replace this with your actual API URL
+        axios.get('https://marathon.lockated.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+            .then(response => {
+                setProjects(response.data.projects);
+            })
+            .catch(error => {
+                console.error("Error fetching projects:", error);
+            });
+    }, []);
+
+    // Handle project selection change
+    const handleProjectChange = (selectedOption) => {
+        // Reset selected site and wing when a new project is selected
+        setSelectedProject(selectedOption);
+        setSelectedSite(null); // Reset selected site
+        setSelectedWing(null); // Reset selected wing
+        setWingsOptions([]); // Clear wings options
+        setSiteOptions([]);
+
+        // Fetch sites based on the selected project
+        if (selectedOption) {
+            const selectedProjectData = projects.find(project => project.id === selectedOption.value);
+            setSiteOptions(selectedProjectData.pms_sites.map(site => ({
+                value: site.id,   // Use id as value for the site
+                label: site.name  // Display the site name
+            })));
+        }
+    };
+
+    // Handle site selection change
+    const handleSiteChange = (selectedOption) => {
+        setSelectedSite(selectedOption);
+        setSelectedWing(null); // Reset selected wing
+        setWingsOptions([]); // Clear wings options
+
+        // Fetch wings for the selected site
+        if (selectedOption) {
+            const selectedProjectData = projects.find(project => project.id === selectedProject.value);
+            const selectedSiteData = selectedProjectData.pms_sites.find(site => site.id === selectedOption.value);
+            setWingsOptions(selectedSiteData.pms_wings.map(wing => ({
+                value: wing.id,    // Use id as value for the wing
+                label: wing.name   // Display the wing name
+            })));
+        }
+    };
+
+    // Handle wing selection change
+    const handleWingChange = (selectedOption) => {
+        setSelectedWing(selectedOption);
+        // You can perform further actions with the selected wing value if necessary
+    };
+
+    // Mapping projects for the dropdown
+    const projectOptions = projects.map(project => ({
+        value: project.id,         // Use id as value for the project
+        label: project.formatted_name
+    }));
     return (
         <>
 
@@ -47,9 +117,127 @@ const EstimationList = () => {
                     <a href="">
                         <a href="">Home &gt; Engineering &gt; Estimation &gt; Estimation List</a>
                     </a>
-                    <div className="card mt-3 pb-3">
+                    <div className="card mt-3 pb-3 mb-5">
                         {/* <QuickFilter /> */}
-                        <EstimationQuickFilter/>
+                        {/* <EstimationQuickFilter/> */}
+
+                        <CollapsibleCard title="Quick Filter">
+                            {/* <div className="card-body pt-0 mt-0">
+                <div className="row my-2 align-items-end">
+                  {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
+                    <div className="col-md-2" key={idx}>
+                      <div className="form-group">
+                        <label>{label}</label>
+                        <select className="form-control form-select" style={{ width: "100%" }}>
+                          <option selected="selected">Alabama</option>
+                          <option>Alaska</option>
+                          <option>California</option>
+                          <option>Delaware</option>
+                          <option>Tennessee</option>
+                          <option>Texas</option>
+                          <option>Washington</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="col-md-2">
+                    <button className="purple-btn2 m-0">Go</button>
+                  </div>
+                </div>
+              </div> */}
+                            <div className="card-body">
+                                <div className="row my-2 align-items-end">
+                                    {/* Company Dropdown */}
+                                    <div className="col-md-2">
+                                        <div className="form-group">
+                                            <label>
+                                                Company <span>*</span>
+                                            </label>
+                                            <SingleSelector
+                                                // options={wingsOptions}
+                                                // value={selectedWing}
+                                                // onChange={handleWingChange}
+                                                placeholder={`Select Company`} // Dynamic placeholder
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Project Dropdown */}
+                                    <div className="col-md-2">
+                                        <div className="form-group">
+                                            <label>Project</label>
+                                            <SingleSelector
+                                                options={projectOptions}
+                                                onChange={handleProjectChange}
+                                                value={selectedProject}
+                                                placeholder={`Select Project`} // Dynamic placeholder
+                                            />
+                                        </div>
+
+                                    </div>
+
+                                    {/* Sub-Project Dropdown */}
+                                    <div className="col-md-2">
+                                        <div className="form-group">
+                                            <label>Sub-Project</label>
+                                            <SingleSelector
+                                                options={siteOptions}
+                                                onChange={handleSiteChange}
+                                                value={selectedSite}
+                                                placeholder={`Select Sub-project`} // Dynamic placeholder
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Wings Dropdown */}
+                                    <div className="col-md-2">
+                                        <div className="form-group">
+                                            <label>Wings</label>
+                                            <SingleSelector
+                                                options={wingsOptions}
+                                                value={selectedWing}
+                                                onChange={handleWingChange}
+                                                placeholder={`Select Wing`} // Dynamic placeholder
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-2">
+                                        <button
+                                            className="purple-btn2 m-0"
+                                            onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                                        >
+                                            Go
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                            {/* <div className="card-body pt-0 mt-0">
+                    <div className="row my-2 align-items-end">
+                        {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
+                            <div className="col-md-2" key={idx}>
+                                <div className="form-group">
+                                    <label>{label}</label>
+                                    <SingleSelector
+                                        options={options}
+                                        value={values[label]} // Pass current value
+                                        onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                        placeholder={`Select ${label}`} // Dynamic placeholder
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        <div className="col-md-2">
+                            <button
+                                className="purple-btn2 m-0"
+                                onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                            >
+                                Go
+                            </button>
+                        </div>
+                    </div>
+                </div> */}
+                        </CollapsibleCard>
 
                         <div className="d-flex mt-3 align-items-end px-3">
                             <div className="col-md-6">

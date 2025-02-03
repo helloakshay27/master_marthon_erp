@@ -77,6 +77,18 @@ function App() {
           <Route path="/approvals-list" element={<ApprovalsList />} />
           <Route path="/edit-approvals" element={<EditApprovals />} />
           <Route path="/add-approvals" element={<AddApprovals />} />
+          <Route path="/create-BOQ" element={<CreateBOQ />} />
+            {/* <Route path='/boq-list' element={<BOQList />} /> */}
+            <Route path="/view-BOQ" element={<BOQList />} />
+            <Route path="/boq-approval-list" element={<BOQApprovalList />} />
+            {/* <Route
+              path="/boq-details-page-master"
+              element={<BOQDetailsPageMaster />}
+            /> */}
+             <Route
+              path="/boq-details-page-master/:id"
+              element={<BOQDetailsPageMaster />}
+            />
           <Route
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
@@ -138,14 +150,7 @@ function App() {
               element={<ErpRfqDetailPriceTrends4h />}
             />
             <Route path="/create-rfq" element={<CreateRfq />} />
-            <Route path="/create-BOQ" element={<CreateBOQ />} />
-            {/* <Route path='/boq-list' element={<BOQList />} /> */}
-            <Route path="/view-BOQ" element={<BOQList />} />
-            <Route path="/boq-approval-list" element={<BOQApprovalList />} />
-            <Route
-              path="/boq-details-page-master"
-              element={<BOQDetailsPageMaster />}
-            />
+            
             <Route path="/boq-edit" element={<BOQEdit />} />
             <Route
               path="/boq-approval-details"

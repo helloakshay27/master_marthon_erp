@@ -364,23 +364,44 @@ const ViewRate = () => {
                             <table className="w-100">
                                 <thead>
                                     <tr>
+                                    <th className="text-start">Material Type</th>
                                         <th className="text-start">Material</th>
-                                        {/* <th className="text-start">Material Sub-Type</th> */}
+                                        <th className="text-start">Material Sub-Type</th>
+                                        <th className="text-start">Generic Specification</th>
+                                        <th className="text-start">Colour</th>
+                                        <th className="text-start">Brand</th>
 
                                         <th className="text-start">Effective Date</th>
                                         <th className="text-start">Rate (INR)</th>
+                                        <th className="text-start">AVG Rate
+                                            {/* <span className="ms-2 pt-2">
+                                                <input type="checkbox" />
+                                            </span> */}
+                                        </th>
+                                        <th className="text-start">PO Rate
+                                            {/* <span className="ms-2 pt-2">
+                                                <input type="checkbox" />
+                                            </span> */}
+                                        </th>
                                         <th className="text-start">UOM</th>
                                         <th className="text-start">History</th>
-                                        <th className="text-start">Edit</th>
+                                        <th className="text-start">Action</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td className="text-start"></td>
                                         <td className="text-start">Aggregate</td>
-                                        {/* <td className="text-start">Metal 1</td> */}
+                                        <td className="text-start">Metal 1</td>
+                                        <td className="text-start"></td>
+                                        <td className="text-start"></td>
+                                        <td className="text-start"></td>
 
                                         <td className="text-start">June 11 2024</td>
                                         <td className="text-start">0.00</td>
+                                        <td className="text-start"></td>
+                                        <td className="text-start"></td>
                                         <td className="text-start"></td>
                                         <td className="text-start" style={{ color: "#8b0203" }}
                                         // onClick={() => setShowHistoryModal(true)}
