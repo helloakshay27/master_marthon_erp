@@ -36,6 +36,7 @@ export default function AllocationTab({ isCounterOffer }) {
   const [dummyData, setDummyData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [openAccordions, setOpenAccordions] = useState({});
+  const [ materialName, setMaterialName ] = useState("");
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -64,105 +65,6 @@ export default function AllocationTab({ isCounterOffer }) {
     } else {
       setIsVendor(false);
     }
-  };
-
-  const fetchRevisionData = async (
-    vendorId,
-    revisionNumber,
-    isCurrent = false
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
-      let data;
-      if (isCurrent) {
-        const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const responseData = await response.json();
-
-        let data = Array.isArray(responseData.vendors)
-          ? responseData.vendors.find((vendor) => vendor.id === vendorId)
-          : null;
-
-        if (!data) {
-          throw new Error("Vendor not found or invalid response format");
-        }
-
-        setEventVendors((prev) =>
-          prev.map((vendor) =>
-            vendor.id === vendorId ? { ...vendor, ...data } : vendor
-          )
-        );
-      } else {
-        // Use revision data
-        const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${id}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
-        );
-        data = response.data;
-        const updatedEventVendors = eventVendors.map((vendor) => {
-          if (vendor.id === vendorId) {
-            return {
-              ...vendor,
-              bids: [
-                {
-                  ...data,
-                  bid_materials: data.bid_materials || [],
-                },
-              ],
-            };
-          }
-          return vendor;
-        });
-        setEventVendors(updatedEventVendors);
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCarouselChange = async (vendorId, selectedIndex) => {
-    setActiveIndexes((prevIndexes) => ({
-      ...prevIndexes,
-      [vendorId]: selectedIndex,
-    }));
-
-    if (selectedIndex === 0) {
-      // Fetch current bid data
-      await fetchRevisionData(vendorId, null, true);
-    } else {
-      // Fetch revision data for the selected revision
-      const revisionNumber = selectedIndex - 1;
-      await fetchRevisionData(vendorId, revisionNumber);
-    }
-  };
-
-  const handlePrev = async (vendorId) => {
-    setActiveIndexes((prevIndexes) => {
-      const currentIndex =
-        prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-      const newIndex = currentIndex === 0 ? 2 : currentIndex - 1;
-      handleCarouselChange(vendorId, newIndex);
-      return { ...prevIndexes, [vendorId]: newIndex };
-    });
-  };
-
-  const handleNext = async (vendorId) => {
-    setActiveIndexes((prevIndexes) => {
-      const currentIndex =
-        prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-      const newIndex = currentIndex === 2 ? 0 : currentIndex + 1;
-      handleCarouselChange(vendorId, newIndex);
-      return { ...prevIndexes, [vendorId]: newIndex };
-    });
   };
 
   useEffect(() => {
@@ -297,7 +199,7 @@ export default function AllocationTab({ isCounterOffer }) {
   const handleColumnClick = async (data, columnKey) => {
     console.log("Clicked column data:", data, columnKey);
 
-    const { bid_id, material_id, vendor_id, vendor_name } = data;
+    const { bid_id, material_id, vendor_id, vendor_name, pms_supplier_id } = data;
 
     console.log("Parsed column data:", {
       bid_id,
@@ -326,88 +228,72 @@ export default function AllocationTab({ isCounterOffer }) {
       );
 
       const responseData = response.data;
-      console.log("response:", responseData, material_id);
+      console.log("response:", responseData);
 
-      const updatedSelectedData = responseData.bid_materials
-        .filter((material) => material?.id === material_id)
-        .map((material) => ({
-          bestTotalAmount: material.total_amount || "_",
-          quantityAvailable: material.quantity_available || "_",
-          price: material.price || "_",
-          discount: material.discount || "_",
-          realisedDiscount: material.realised_discount || "_",
-          gst: material.gst || "_",
-          realisedGST: material.realised_gst || "_",
-          landedAmount: material.landed_amount || "_",
-          participantAttachment: "_",
-          totalAmount: material.total_amount || "_",
-          materialName: material.material_name || "_",
-          vendorId: vendor_id,
-          vendor_name: vendor_name,
-        }));
+      const bidMaterial = responseData.bid_materials.find(
+        (material) => material.id === material_id
+      );
+
+      if (!bidMaterial) {
+        console.error("Bid material not found");
+        return;
+      }
+
+      const updatedSelectedData = {
+        bestTotalAmount: bidMaterial.total_amount || "_",
+        quantityAvailable: bidMaterial.quantity_available || "_",
+        price: bidMaterial.price || "_",
+        discount: bidMaterial.discount || "_",
+        realisedDiscount: bidMaterial.realised_discount || "_",
+        gst: bidMaterial.gst || "_",
+        realisedGST: bidMaterial.realised_gst || "_",
+        landedAmount: bidMaterial.landed_amount || "_",
+        participantAttachment: "_",
+        totalAmount: bidMaterial.total_amount || "_",
+        materialName: bidMaterial.material_name || "_",
+        vendorId: vendor_id,
+        vendor_name: vendor_name,
+        materialId: material_id,
+        bidId: bid_id,
+        pms_supplier_id: pms_supplier_id,
+      };
 
       setSelectedData((prevSelectedData) => {
-        console.log("prevSelectedData:", prevSelectedData);
-
-        const existingVendorIndex = prevSelectedData.findIndex(
-          (data) => data.vendorId === vendor_id
+        const existingIndex = prevSelectedData.findIndex(
+          (data) => data.materialName === bidMaterial.material_name
         );
-
-        if (existingVendorIndex !== -1) {
-          const existingMaterials =
-            prevSelectedData[existingVendorIndex].materials;
-          const isMaterialExists = existingMaterials.some(
-            (material) =>
-              material.materialName === updatedSelectedData[0].materialName
+        if (existingIndex !== -1) {
+          return prevSelectedData.map((data, index) =>
+            index === existingIndex ? updatedSelectedData : data
           );
-
-          if (!isMaterialExists) {
-            const updatedVendorData = {
-              ...prevSelectedData[existingVendorIndex],
-            };
-            updatedVendorData.materials = [
-              ...existingMaterials,
-              ...updatedSelectedData,
-            ];
-
-            return prevSelectedData.map((data, index) =>
-              index === existingVendorIndex ? updatedVendorData : data
-            );
-          } else {
-            return prevSelectedData;
-          }
         } else {
-          return [
-            ...prevSelectedData,
-            { vendorId: vendor_id, materials: updatedSelectedData },
-          ];
+          return [...prevSelectedData, updatedSelectedData];
         }
       });
 
-      // Process bids for ShortTable
       const updatedDummyData = [
         {
           label: "Freight Charge Amount",
-          value: `₹${responseData.bids[0].freight_charge_amount}`,
+          value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
         },
         {
           label: "GST on Freight",
-          value: `${responseData.bids[0].gst_on_freight}%`,
+          value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
         },
         {
           label: "Realised Freight Amount",
-          value: `₹${responseData.bids[0].realised_freight_charge_amount}`,
+          value: `₹${responseData.bids[0]?.realised_freight_charge_amount || 0}`,
         },
         {
           label: "Warranty Clause",
-          value: responseData.bids[0].warranty_clause,
+          value: responseData.bids[0]?.warranty_clause || "-",
         },
-        { label: "Payment Terms", value: responseData.bids[0].payment_terms },
+        { label: "Payment Terms", value: responseData.bids[0]?.payment_terms || "-" },
         {
           label: "Loading / Unloading Clause",
-          value: responseData.bids[0].loading_unloading_clause,
+          value: responseData.bids[0]?.loading_unloading_clause || "-",
         },
-        { label: "Gross Total", value: `₹${responseData.bids[0].gross_total}` },
+        { label: "Gross Total", value: `₹${responseData.bids[0]?.gross_total || 0}` },
       ];
 
       setDummyData((prevDummyData) => [
@@ -635,8 +521,10 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "Material ID", key: "material_id" },
                         { label: "vendor id", key: "vendor_id" },
                         { label: "vendor name", key: "vendor_name" },
+                        { label: "pms supplier id", key: "pms_supplier_id" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
+
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -652,6 +540,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           material_id: material.material_id,
                           vendor_id: material.vendor_id,
                           vendor_name: material.vendor_name,
+                          pms_supplier_id: material.pms_supplier_id,
                         };
                       })}
                       onColumnClick={handleColumnClick}
@@ -709,9 +598,8 @@ export default function AllocationTab({ isCounterOffer }) {
 
                     return (
                       <div className="card p-4 mt-3 border-0" key={index}>
-                        <h4>{vendorData.materials[0]?.vendor_name}</h4>
+                        <h4>{vendorData.vendor_name}</h4>
 
-                        {/* Bind the correct materials array to Table */}
                         <Table
                           enableOverflowScroll={true}
                           style={{ width: "100%", overflowX: "auto" }}
@@ -740,7 +628,7 @@ export default function AllocationTab({ isCounterOffer }) {
                             },
                             { label: "Total Amount", key: "totalAmount" },
                           ]}
-                          data={vendorData.materials} // ✅ Fix: Pass the materials array instead of vendorData
+                          data={[vendorData]}
                           isHorizontal={false}
                         />
 
