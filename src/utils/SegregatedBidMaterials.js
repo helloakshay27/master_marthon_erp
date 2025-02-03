@@ -4,15 +4,17 @@ export const SegregatedBidMaterials = (inputArray) => {
   const materialMap = new Map();
   inputArray.forEach((vendor) => {
     const bid = vendor.bids[0];
-    console.log("vendor:-----", vendor);
+    console.log("input :-----", vendor);
     
 
     bid.bid_materials.forEach((material) => {
       if (!materialMap.has(material.material_id)) {
         materialMap.set(material.material_id, {
+
           material_id: material.id,
           material_name: material.material_name,
           vendor_name: material.vendor_name,
+          pms_supplier_id: vendor.pms_supplier_id,
           total_amounts: [],
           bids_values: [],
           bid_ids: [],
@@ -25,6 +27,7 @@ export const SegregatedBidMaterials = (inputArray) => {
         bid_id: bid.id,
         material_id: material.id,
         vendor_id: vendor.id,
+        pms_supplier_id: vendor.pms_supplier_id,
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);
