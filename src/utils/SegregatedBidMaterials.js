@@ -12,6 +12,7 @@ export const SegregatedBidMaterials = (inputArray) => {
         materialMap.set(material.material_id, {
           material_id: material.id,
           material_name: material.material_name,
+          vendor_name: material.vendor_name,
           total_amounts: [],
           bids_values: [],
           bid_ids: [],

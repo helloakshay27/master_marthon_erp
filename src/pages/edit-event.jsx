@@ -71,6 +71,7 @@ export default function EditEvent() {
   const [eventDescription, setEventDescription] = useState("");
   const [eventDetails, setEventDetails] = useState([]);
   const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
+  const [matchedTerm, setMatchedTerm] = useState({});
 
   // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
@@ -266,8 +267,8 @@ export default function EditEvent() {
   };
   useEffect(() => {
     fetchEventData();
-  }, [setEventDetails])
-  
+  }, [setEventDetails]);
+
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     if (searchTerm == "") {
     }
@@ -306,8 +307,6 @@ export default function EditEvent() {
   }, []);
 
   const [termsOptions, setTermsOptions] = useState([]);
-  console.log("eventDetails?.event_vendors",eventDetails?.event_vendors);
-  
 
   useEffect(() => {
     if (eventDetails) {
@@ -346,19 +345,53 @@ export default function EditEvent() {
   useEffect(() => {
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        const matchedTerm = termsOptions.find(
-          (option) => option.value === term.term_condition_id
+        setMatchedTerm(
+          termsOptions.find((option) => option.value === term.term_condition_id)
         );
+        console.log(
+          "matchedTerm:-----",
+          matchedTerm,
+          "term.term_condition_id",
+          term.term_condition_id,
+          "term Option:----",
+          termsOptions
+        );
+        console.log("defaultOption", matchedTerm?.label, matchedTerm?.value);
         return {
           id: term.term_condition_id,
           value: term.term_condition.condition,
           defaultOption: matchedTerm
-            ? { label: matchedTerm.label, value: matchedTerm.value }
+            ? { label: matchedTerm?.label, value: matchedTerm?.value }
             : { label: "Select Condition", value: "" },
         };
       })
     );
-  }, [eventDetails]);
+    console.log(
+      "eventDetails?.event_vendors",
+      eventDetails?.event_vendors,
+      textareas
+    );
+  }, [eventDetails, matchedTerm]);
+
+  useEffect(() => {
+    if (eventDetails.length > 0 && termsOptions.length > 0) {
+      const updatedTextareas = eventDetails.resource_term_conditions.map(
+        (term) => {
+          const matchedTerm = termsOptions.find(
+            (option) => option.value === term.term_condition_id
+          );
+          return {
+            id: term.term_condition_id,
+            value: term.term_condition.condition,
+            defaultOption: matchedTerm
+              ? { label: matchedTerm.label, value: matchedTerm.value }
+              : { label: "Select Condition", value: "" },
+          };
+        }
+      );
+      setTextareas(updatedTextareas);
+    }
+  }, [eventDetails, termsOptions]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -399,11 +432,15 @@ export default function EditEvent() {
     );
 
     setTableData(updatedTableData);
-    console.log("selectedRows:----",selectedRows, updatedTableData);
-    
+    console.log("selectedRows:----", selectedRows, updatedTableData);
+
     setSelectedVendors((prev) => [
       ...prev,
-      ...selectedRows.map((vendor) => ({ ...vendor, id: null, pms_supplier_id: vendor.id })),
+      ...selectedRows.map((vendor) => ({
+        ...vendor,
+        id: null,
+        pms_supplier_id: vendor.id,
+      })),
     ]);
     setVendorModal(false);
     setSelectedRows([]);
@@ -525,14 +562,13 @@ export default function EditEvent() {
     }
   };
 
-  const handleOnLoadScheduleData = (startTime, endTime, evaluationTime) => {    
+  const handleOnLoadScheduleData = (startTime, endTime, evaluationTime) => {
     setOnLoadScheduleData({
       start_time: startTime,
       end_time_duration: endTime,
       evaluation_time: evaluationTime,
-    });       
+    });
   };
-  
 
   // console.log("eventDetails:----", eventDetails);
 
@@ -654,7 +690,6 @@ export default function EditEvent() {
     };
 
     console.log("eventData", eventData, eventStatus);
-    
 
     try {
       const data = await updateEvent(id, eventData);
@@ -665,7 +700,7 @@ export default function EditEvent() {
         navigate(
           "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-      }, 1500); // Increase the delay to 1.5 seconds before navigating 
+      }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
@@ -745,9 +780,29 @@ export default function EditEvent() {
 
   useEffect(() => {}, [eventType, awardType]);
 
-  const handleStatusChange = (selectedOption) => {    
+  const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
   };
+
+  useEffect(() => {
+    if (eventDetails.length > 0 && termsOptions.length > 0) {
+      const updatedTextareas = eventDetails.resource_term_conditions.map(
+        (term) => {
+          const matchedTerm = termsOptions.find(
+            (option) => option.value === term.term_condition_id
+          );
+          return {
+            id: term.term_condition_id,
+            value: term.term_condition.condition,
+            defaultOption: matchedTerm
+              ? { label: matchedTerm.label, value: matchedTerm.value }
+              : { label: "Select Condition", value: "" },
+          };
+        }
+      );
+      setTextareas(updatedTextareas);
+    }
+  }, [eventDetails, termsOptions]);
 
   return (
     <>
@@ -1008,43 +1063,47 @@ export default function EditEvent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {textareas?.map((textarea, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <SelectBox
-                          options={termsOptions.map((option) => ({
-                            label: option.label,
-                            value: option.value,
-                          }))}
-                          onChange={(option) =>
-                            handleConditionChange(textarea.id, option)
-                          }
-                          defaultValue={
-                            textarea?.defaultOption?.value || {
-                              label: "Select Condition",
-                              value: "",
+                  {textareas?.map((textarea, idx) => {
+                    console.log("textarea", textarea);
+                    if (textarea.id === null) {
+                      return null;
+                    }
+                    return (
+                      <tr key={idx}>
+                        <td>
+                          <SelectBox
+                            options={termsOptions.map((option) => ({
+                              label: option.label,
+                              value: option.value,
+                            }))}
+                            onChange={(option) =>
+                              handleConditionChange(textarea.id, option)
                             }
-                          }
-                        />
-                      </td>
-                      <td>
-                        <textarea
-                          className="form-control"
-                          value={textarea.value}
-                          readOnly
-                        />
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleRemoveTextarea(textarea?.id)}
-                          disabled={idx === 0}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                            defaultValue={{
+                              label: textarea.defaultOption?.label || "Select Condition",
+                              value: textarea.defaultOption?.value || "",
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <textarea
+                            className="form-control"
+                            value={textarea.value}
+                            readOnly
+                          />
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleRemoveTextarea(textarea?.id)}
+                            disabled={idx === 0}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

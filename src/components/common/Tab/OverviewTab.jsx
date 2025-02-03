@@ -321,7 +321,9 @@ export default function OverviewTab({
                         </tr>
                       </thead>
                       <tbody>
-                        {documentsData.map((attachment, index) => (
+                        {documentsData.map((attachment, index) => {
+                          console.log("attachment", attachment);
+                          return(
                           <tr key={attachment.id}>
                             <td className="text-start">{index + 1}</td>
                             <td className="text-start">
@@ -332,8 +334,8 @@ export default function OverviewTab({
                             </td>
                             <td className="text-start">
                               <a
-                                href={`path-to-your-files/${attachment.filename}`}
-                                download
+                                href={`https://marathon.lockated.com/rfq/events/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                download={attachment.filename}
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -349,8 +351,9 @@ export default function OverviewTab({
                                 </svg>
                               </a>
                             </td>
-                          </tr>
-                        ))}
+                          </tr>)
+                          }
+                        )}
                       </tbody>
                     </table>
                   </div>

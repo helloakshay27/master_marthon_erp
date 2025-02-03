@@ -25,6 +25,7 @@ export default function Table({
   currentPage = 1,
   pageSize = 10,
   onColumnClick,
+  enableOverflowScroll = false,
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -99,7 +100,8 @@ export default function Table({
       const bid_id = data.bid_id || data.bidId;
       const material_id = data.material_id || data.materialId;
       const vendor_id = data.vendor_id || data.vendorId;
-      onColumnClick({ bid_id, material_id, vendor_id, ...data }, columnKey);
+      const vendor_name = data.vendor_name || data.vendor_name;
+      onColumnClick({ bid_id, material_id, vendor_id, vendor_name, ...data }, columnKey);
     }
   };
 
@@ -138,7 +140,7 @@ export default function Table({
           </colgroup>
           <tbody>
             {transposedData.map((row, rowIndex) => (
-              !["bid_id", "material_id", "vendor_id"].includes(columns[rowIndex]?.key) && (
+              !["bid_id", "material_id", "vendor_id", "vendor_name"].includes(columns[rowIndex]?.key) && (
                 <tr key={rowIndex}>
                   <td
                     className="main2-th"
@@ -247,7 +249,18 @@ export default function Table({
                   ? customRender[col.key](cell, rowIndex, row)
                   : cell;
 
-                return <td key={cellIndex}>{cellContent}</td>;
+                return (
+                  <td
+                    key={cellIndex}
+                    style={{
+                      whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
+                      overflow: enableOverflowScroll ? "hidden" : "visible",
+                      textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
+                    }}
+                  >
+                    {cellContent}
+                  </td>
+                );
               })}
               {actionIcon && onActionClick && (
                 <td>

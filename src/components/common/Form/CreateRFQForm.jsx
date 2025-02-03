@@ -428,9 +428,7 @@ export default function CreateRFQForm({
                               (option) =>
                                 option?.value ===
                                 section?.sectionData[rowIndex]?.inventory_id
-                            )?.value ||
-                            section?.sectionData[rowIndex]?.descriptionOfItem ||
-                            ""
+                            )?.value || ""
                       }
                     />
                   ),
@@ -457,23 +455,31 @@ export default function CreateRFQForm({
                       }
                     />
                   ),
-                  location: (cell, rowIndex) => (
-                    <SelectBox
-                      options={locationOptions}
-                      onChange={(value) =>
-                        handleLocationChange(value, rowIndex, sectionIndex)
-                      }
-                      defaultValue={
-                        section.sectionData[rowIndex]._destroy
-                          ? ""
-                          : locationOptions.find(
-                              (option) =>
-                                option.label ===
-                                section.sectionData[rowIndex]?.location
-                            )?.value || ""
-                      }
-                    />
-                  ),
+                  location: (cell, rowIndex) => {
+                    console.log(
+                      "locationOptions",
+                      locationOptions,
+                      section.sectionData[rowIndex]
+                    );
+
+                    return (
+                      <SelectBox
+                        options={locationOptions}
+                        onChange={(value) =>
+                          handleLocationChange(value, rowIndex, sectionIndex)
+                        }
+                        defaultValue={
+                          section.sectionData[rowIndex]._destroy
+                            ? ""
+                            : locationOptions.find(
+                                (option) =>
+                                  option.label ===
+                                  section.sectionData[rowIndex]?.location
+                              )?.value || ""
+                        }
+                      />
+                    );
+                  },
                   quantity: (cell, rowIndex) => (
                     <input
                       className="form-control"
