@@ -24,9 +24,16 @@ const ApprovalMatrics = () => {
     material_types: [],
   });
 
-  const [currentPage, setCurrentPage] = useState(1); // Current page state
-  const [totalRecords, setTotalRecords] = useState(0); // Total records state
-  const [totalPages, setTotalPages] = useState(0); // T
+  // const [currentPage, setCurrentPage] = useState(1); // Current page state
+  // const [totalRecords, setTotalRecords] = useState(0); // Total records state
+  // const [totalPages, setTotalPages] = useState(0); // T
+
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    total_pages: 0,
+    total_count: 0,
+  });
+
   const pageSize = 8;
 
   const navigate = useNavigate();
@@ -57,7 +64,7 @@ const ApprovalMatrics = () => {
     const fetchApprovals = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch data");
@@ -65,8 +72,13 @@ const ApprovalMatrics = () => {
         const data = await response.json();
         console.log("uiah", response.data);
         setApprovals(data.invoice_approvals || []);
-        setTotalRecords(data.total_records || 0); // Set total records
-        setTotalPages(data.total_pages || 0); // Set total pages
+        // setTotalRecords(data.total_records || 0); // Set total records
+        // setTotalPages(data.total_pages || 0); // Set total pages
+        setPagination({
+          current_page: data.current_page || 1,
+          total_pages: data.total_pages || 1, // Ensure `total_pages` is always defined
+          total_count: data.total_records || 0,
+        });
       } catch (err) {
         setError(err.message);
       } finally {
@@ -75,7 +87,7 @@ const ApprovalMatrics = () => {
     };
 
     fetchApprovals();
-  }, [currentPage]);
+  }, [pagination.current_page]);
 
   // const handleEditClick = () => {
   //   navigate("/approval_edit");
@@ -259,16 +271,27 @@ const ApprovalMatrics = () => {
     company: null,
     site: null,
     department: null,
-    category: null,
-    modules: null,
-    subCategory: null,
+
+    materialtypes: null,
   });
+
+  // const handleFilterChange = (field, selectedOption) => {
+  //   setFilters((prevFilters) => ({
+  //     ...prevFilters,
+  //     [field]: selectedOption ? selectedOption.target.value : null,
+  //   }));
+  // };
 
   const handleFilterChange = (field, selectedOption) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
       [field]: selectedOption ? selectedOption.target.value : null,
     }));
+
+    console.log(
+      `Updated ${field}:`,
+      selectedOption ? selectedOption.target.value : null
+    );
   };
 
   const handleFilterSubmit = async (e) => {
@@ -279,16 +302,23 @@ const ApprovalMatrics = () => {
 
     if (filters.company) queryParams.append("company_id", filters.company);
 
-    if (filters.site) queryParams.append("site_id", filters.site);
+    if (filters.site) queryParams.append("project_id", filters.site);
 
     if (filters.department)
       queryParams.append("department_id", filters.department);
 
     if (filters.modules) queryParams.append("module_id", filters.modules);
 
-    if (filters.materialtypes)
-      queryParams.append("pms_inventory_type_id", filters.materialTypes);
-    console.log("hhhh", queryParams.toString());
+    if (filters.materialtypes) {
+      queryParams.append("pms_inventory_type_id", filters.materialtypes);
+      console.log("hhhh", queryParams.toString());
+    }
+
+    console.log("Filters:", filters);
+    console.log("Material Type Value:", filters.materialtypes);
+    console.log(" Type Value:", filters.company);
+    console.log("Query Params Before Fetch:", queryParams.toString());
+
     const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     try {
@@ -297,20 +327,60 @@ const ApprovalMatrics = () => {
 
       const data = await response.json();
       setApprovals(data.invoice_approvals || []);
-      setTotalRecords(data.total_records || 0);
-      setTotalPages(data.total_pages || 0);
+      // setTotalRecords(data.total_records || 0);
+      setPagination((prev) => ({
+        ...prev,
+        total_count: data.total_records || 0,
+        total_pages: Math.ceil((data.total_records || 0) / pageSize), // Ensure pages are calculated
+        current_page: 1, // Reset to page 1 when filtering
+      }));
+
+      // setTotalPages(data.total_pages || 0);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
     }
   };
   const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
+  for (let i = 1; i <= pagination.total_pages; i++) {
     pageNumbers.push(i);
   }
 
+  const getPageNumbers = () => {
+    const maxPagesToShow = 8;
+    let startPage, endPage;
+
+    if (pagination.total_pages <= maxPagesToShow) {
+      // Case 1: If total pages are <= 8, show all
+      startPage = 1;
+      endPage = pagination.total_pages;
+    } else if (pagination.current_page <= 4) {
+      // Case 2: If current page is in the beginning (pages 1-4), show 1-8
+      startPage = 1;
+      endPage = maxPagesToShow;
+    } else if (pagination.current_page + 4 >= pagination.total_pages) {
+      // Case 3: If current page is near the end, show last 8 pages
+      startPage = pagination.total_pages - maxPagesToShow + 1;
+      endPage = pagination.total_pages;
+    } else {
+      // Case 4: Show 4 pages before and after current page
+      startPage = pagination.current_page - 4;
+      endPage = pagination.current_page + 3;
+    }
+
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, i) => startPage + i
+    );
+  };
+
+  // const handlePageChange = (page) => {
+  //   if (page < 1 || page > totalPages) return; // Prevent invalid page changes
+  //   setCurrentPage(page);
+  // };
+
   const handlePageChange = (page) => {
-    if (page < 1 || page > totalPages) return; // Prevent invalid page changes
-    setCurrentPage(page);
+    if (page < 1 || page > pagination.total_pages) return;
+    setPagination((prev) => ({ ...prev, current_page: page }));
   };
 
   return (
@@ -500,6 +570,10 @@ const ApprovalMatrics = () => {
                         options={modifiedFilterOptions.material_types} // Use filterOptions directly
                         // value={selectedMaterialType}
                         // onChange={(option) => setSelectedMaterialType(option)} // Handle selection
+                        onChange={
+                          (selectedOption) =>
+                            handleFilterChange("materialtypes", selectedOption) // Fix key name
+                        }
                         isClearable
                       />
                     </div>
@@ -568,7 +642,7 @@ const ApprovalMatrics = () => {
                   {/* First Button */}
                   <li
                     className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
+                      pagination.current_page === 1 ? "disabled" : ""
                     }`}
                   >
                     <button
@@ -582,24 +656,33 @@ const ApprovalMatrics = () => {
                   {/* Previous Button */}
                   <li
                     className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
+                      pagination.current_page === 1 ? "disabled" : ""
                     }`}
                   >
                     <button
                       className="page-link"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
+                      onClick={() =>
+                        handlePageChange(pagination.current_page - 1)
+                      }
+                      disabled={pagination.current_page === 1}
                     >
                       Prev
                     </button>
                   </li>
 
+                  {/* Ellipsis before first page numbers if needed */}
+                  {pagination.current_page > 5 && (
+                    <li className="page-item disabled">
+                      <span className="page-link">...</span>
+                    </li>
+                  )}
+
                   {/* Dynamic Page Numbers */}
-                  {pageNumbers.map((pageNumber) => (
+                  {getPageNumbers().map((pageNumber) => (
                     <li
                       key={pageNumber}
                       className={`page-item ${
-                        currentPage === pageNumber ? "active" : ""
+                        pagination.current_page === pageNumber ? "active" : ""
                       }`}
                     >
                       <button
@@ -611,16 +694,29 @@ const ApprovalMatrics = () => {
                     </li>
                   ))}
 
+                  {/* Ellipsis after last page numbers if needed */}
+                  {pagination.current_page + 4 < pagination.total_pages && (
+                    <li className="page-item disabled">
+                      <span className="page-link">...</span>
+                    </li>
+                  )}
+
                   {/* Next Button */}
                   <li
                     className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
+                      pagination.current_page === pagination.total_pages
+                        ? "disabled"
+                        : ""
                     }`}
                   >
                     <button
                       className="page-link"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
+                      onClick={() =>
+                        handlePageChange(pagination.current_page + 1)
+                      }
+                      disabled={
+                        pagination.current_page === pagination.total_pages
+                      }
                     >
                       Next
                     </button>
@@ -629,13 +725,17 @@ const ApprovalMatrics = () => {
                   {/* Last Button */}
                   <li
                     className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
+                      pagination.current_page === pagination.total_pages
+                        ? "disabled"
+                        : ""
                     }`}
                   >
                     <button
                       className="page-link"
-                      onClick={() => handlePageChange(totalPages)}
-                      disabled={currentPage === totalPages}
+                      onClick={() => handlePageChange(pagination.total_pages)}
+                      disabled={
+                        pagination.current_page === pagination.total_pages
+                      }
                     >
                       Last
                     </button>
@@ -647,11 +747,15 @@ const ApprovalMatrics = () => {
                   <p>
                     Showing{" "}
                     {Math.min(
-                      (currentPage - 1) * pageSize + 1 || 1,
-                      totalRecords
+                      (pagination.current_page - 1) * pageSize + 1 || 1,
+                      pagination.total_count
                     )}{" "}
-                    to {Math.min(currentPage * pageSize, totalRecords)} of{" "}
-                    {totalRecords} entries
+                    to{" "}
+                    {Math.min(
+                      pagination.current_page * pageSize,
+                      pagination.total_count
+                    )}{" "}
+                    of {pagination.total_count} entries
                   </p>
                 </div>
               </div>

@@ -18,7 +18,7 @@ const ApprovalEdit = () => {
   });
 
   const { id } = useParams(); // Ge
-  const [loading, setLoading] = useState(true); // New loading state
+  const [loading, setLoading] = useState(false); // New loading state
 
   const [selectedCompany, setSelectedCompany] = useState([]);
 
@@ -38,6 +38,7 @@ const ApprovalEdit = () => {
   const [formData, setFormData] = useState({
     company_id: null,
     department_id: null,
+    site_id: null,
     // category_id: null,
     // sub_category_id: null,
     module_id: null,
@@ -48,7 +49,10 @@ const ApprovalEdit = () => {
   });
 
   console.log("Selected Company ID:", formData.company_id);
-  console.log("All Sites Data:", filterOptions.sites);
+  console.log("selected site:", formData.site_id);
+  console.log("selected deparment:", formData.department_id);
+  console.log("selected module:", formData.module_id);
+  console.log("selected materila", formData.material_id);
 
   const handleAddLevel = () => {
     setApprovalLevels([
@@ -236,6 +240,7 @@ const ApprovalEdit = () => {
         const moduleOption = filterOptions.modules.find(
           (mod) => mod.value === data.approval_type
         );
+
         setSelectedModule(moduleOption || null); // Set selected module
 
         const materialTypeOption = filterOptions.material_types.find(
@@ -270,67 +275,21 @@ const ApprovalEdit = () => {
       fetchApprovalData();
     }
   }, [filterOptions.companies, id]); // Trigger fetchApprovalData when filterOptions or id change
-
-  //
-  // Run this effect when filterOptions change
-
-  // const handleCompanyChange = (selectedOptions) => {
-  //   const companyId = selectedOptions.value; // Use the value directly
-
-  //   setSelectedCompany(selectedOptions);
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     company_id: companyId,
-  //     site_id: null, // Reset site selection
-  //   }));
-
-  //   // setSelectedCompany(selectedOptions);
-  //   // setFormData((prevData) => ({
-  //   //   ...prevData,
-  //   //   company_id: selectedOptions.map((option) => option.value),
-  //   // }));
-
-  //   // Fetch sites based on selected company
-  //   fetch(
-  //     `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //   )
-  //     .then((response) => {
-  //       if (!response.ok)
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       return response.json();
-  //     })
-  //     .then((data) => {
-  //       const formattedSites = data.sites.map(([name, id]) => ({
-  //         label: name,
-  //         value: id,
-  //       }));
-  //       setFilterOptions((prevState) => ({
-  //         ...prevState,
-  //         sites: formattedSites,
-  //       }));
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching sites:", error);
-  //       setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-  //     });
-  // };
-
-  // const handleSiteChange = (selectedOption) => {
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     site_id: selectedOption ? selectedOption.value : '', // Set value or empty string if no selection
-  //   }));
-  // };
-
-  // const handleDepartmentChange = (selectedOption) => {
-  //   console.log("Selected deparmentsss:", selectedOption.value);
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     department_id: selectedOption ? selectedOption.value : "", // Set value or empty string if no selection
-  //   }));
-  // };
-
-  //
+  useEffect(() => {
+    if (formData.site_id && filterOptions.sites.length > 0) {
+      setSelectedSite((prevSelectedSite) => {
+        // Only update if it's still unset or matches the preselected site
+        if (!prevSelectedSite || prevSelectedSite.value === formData.site_id) {
+          return (
+            filterOptions.sites.find(
+              (site) => site.value === formData.site_id
+            ) || null
+          );
+        }
+        return prevSelectedSite; // Keep user-selected site if changed manually
+      });
+    }
+  }, [filterOptions.sites]);
 
   // When you handle company change:
   const handleCompanyChange = (selectedOptions) => {
@@ -412,6 +371,8 @@ const ApprovalEdit = () => {
   };
 
   const handleCreate = () => {
+    setLoading(true);
+
     const orderCounts = {}; // Store orders as keys
     let hasDuplicateOrder = false;
 
@@ -515,6 +476,10 @@ const ApprovalEdit = () => {
           console.error("Error Message:", error.message);
           alert(`Error: ${error.message}`);
         }
+      })
+      .finally(() => {
+        // Set loading to false when the request finishes (success or failure)
+        setLoading(false);
       }); //
   };
 
@@ -866,6 +831,21 @@ const ApprovalEdit = () => {
 
                       {/* </div> */}
                       <div style={{ textAlign: "center" }}>
+                        {loading && (
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Submitting ...</p>
+                          </div>
+                        )}
                         <button
                           className="purple-btn1 submit-btn"
                           onClick={handleCreate}
