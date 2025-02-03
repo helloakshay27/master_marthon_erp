@@ -34,6 +34,7 @@ export default function EditEvent() {
   const [submitted, setSubmitted] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -244,7 +245,7 @@ export default function EditEvent() {
 
   // @ts-ignore
   // @ts-ignore
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending"); // Add state for event status
 
@@ -607,6 +608,7 @@ export default function EditEvent() {
   };
 
   const handleSubmit = async (event) => {
+    setLoading(true);
     event.preventDefault();
     if (!validateForm()) {
       return;
@@ -708,6 +710,7 @@ export default function EditEvent() {
       });
     } finally {
       setSubmitted(false);
+      setLoading(false);
     }
   };
 
@@ -1080,7 +1083,9 @@ export default function EditEvent() {
                               handleConditionChange(textarea.id, option)
                             }
                             defaultValue={{
-                              label: textarea.defaultOption?.label || "Select Condition",
+                              label:
+                                textarea.defaultOption?.label ||
+                                "Select Condition",
                               value: textarea.defaultOption?.value || "",
                             }}
                           />
@@ -1112,6 +1117,21 @@ export default function EditEvent() {
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
+                {loading && (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Submitting ..</p>
+                  </div>
+                )}
                 <button
                   className={
                     submitted ? "disabled-btn w-100" : "purple-btn2 w-100"

@@ -142,7 +142,6 @@ export default function CreateEvent() {
     } else {
       setEventScheduleModal(true);
     }
-
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -224,7 +223,6 @@ export default function CreateEvent() {
       return;
     }
     setEventTypeText(eventTypeText);
-    
   };
 
   const [eventTypeText, setEventTypeText] = useState("");
@@ -237,7 +235,7 @@ export default function CreateEvent() {
 
   // @ts-ignore
   // @ts-ignore
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     if (searchTerm == "") {
@@ -348,7 +346,6 @@ export default function CreateEvent() {
       (option) => String(option.value) === String(selectedOption)
     );
 
-
     if (selectedCondition) {
       setTextareas(
         textareas.map((textarea) =>
@@ -407,6 +404,7 @@ export default function CreateEvent() {
   };
 
   const handleSubmit = async (event) => {
+    setLoading(true);
     event.preventDefault();
 
     if (
@@ -420,10 +418,15 @@ export default function CreateEvent() {
       toast.error("Please fill all the required fields.", {
         autoClose: 1000, // Duration for the toast to disappear (in ms)
       });
+      setTimeout(() => {
+        setLoading(false);
+      }, 5); // Hide loader after 5ms
+
       return;
     }
 
     setSubmitted(true);
+
     const eventData = {
       event: {
         event_title: eventName,
@@ -485,7 +488,6 @@ export default function CreateEvent() {
       },
     };
 
-
     try {
       const response = await fetch(
         "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
@@ -518,6 +520,7 @@ export default function CreateEvent() {
       });
     } finally {
       setSubmitted(false);
+      setLoading(false);
     }
   };
 
@@ -925,7 +928,7 @@ export default function CreateEvent() {
             </div> */}
 
               <EventScheduleModal
-              deliveryDate={dynamicExtensionConfigurations.delivery_date}
+                deliveryDate={dynamicExtensionConfigurations.delivery_date}
                 show={eventScheduleModal}
                 onHide={handleEventScheduleModalClose}
                 handleSaveSchedule={handleSaveSchedule}
@@ -936,6 +939,21 @@ export default function CreateEvent() {
                 <button className="purple-btn2 w-100">Preview</button>
               </div>
               <div className="col-md-2">
+                {loading && (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Submitting ..</p>
+                  </div>
+                )}
                 <button
                   className={
                     submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
