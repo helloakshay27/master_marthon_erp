@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DropArrowIcon from "../../common/Icon/DropArrowIcon";
 import Table from "../Table/Table";
+import Tooltip from "../../common/Tooltip/Tooltip";
 
 export default function Accordion({
   title,
@@ -56,7 +57,11 @@ export default function Accordion({
             <span className="p-2">
               <DropArrowIcon isOpen={isOpen} />
             </span>{" "}
-            <span style={{ width: "260px" }}>{title}</span>
+            <Tooltip content={title}>
+              <span style={{ width: "260px", display: "inline-block", paddingRight:'10px' }}>
+                {title}
+              </span>
+            </Tooltip>
             <span style={{ display: "flex", flexWrap: "wrap" }}>
               {amount?.map((amt, index) => (
                 <span
