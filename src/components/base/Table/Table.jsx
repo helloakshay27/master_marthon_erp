@@ -140,7 +140,7 @@ export default function Table({
           </colgroup>
           <tbody>
             {transposedData.map((row, rowIndex) => (
-              !["bid_id", "material_id", "vendor_id", "vendor_name", "pms_supplier_id"].includes(columns[rowIndex]?.key) && (
+              !["bid_id", "material_id", "vendor_id", "vendor_name", "pms_supplier_id", "material_name"].includes(columns[rowIndex]?.key) && (
                 <tr key={rowIndex}>
                   <td
                     className="main2-th"

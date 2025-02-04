@@ -205,8 +205,17 @@ export default function AllocationTab({ isCounterOffer }) {
     if (isUpdatingAllocation.current) return;
     isUpdatingAllocation.current = true;
 
-    const { bid_id, material_id, vendor_id, vendor_name, pms_supplier_id } =
-      data;
+    const {
+      bid_id,
+      material_id,
+      material_name,
+      vendor_id,
+      vendor_name,
+      pms_supplier_id,
+    } = data;
+
+    console.log(data, material_name);
+    
 
     if (!bid_id || !material_id || !vendor_id) {
       console.error("Missing bid_id, material_id, or vendor_id");
@@ -259,30 +268,37 @@ export default function AllocationTab({ isCounterOffer }) {
         pms_supplier_id: pms_supplier_id,
       };
 
-      // ✅ Fix: Ensure materials are grouped under the same vendor
       setSelectedData((prevSelectedData) => {
-        const existingVendorIndex = prevSelectedData.findIndex(
+        // Remove the material from ALL existing vendors using materialName
+        console.log("material name:--------",material_name, prevSelectedData);
+        
+        let filteredData = prevSelectedData
+          .map((vendor) => ({
+            ...vendor,
+            materials: vendor.materials?.filter(
+              (material) => material.materialName !== material_name
+            ),
+          }))
+          .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
+
+        // Ensure the material is assigned ONLY to the latest vendor
+        const existingVendorIndex = filteredData.findIndex(
           (data) => data.vendorId === vendor_id
         );
 
         if (existingVendorIndex !== -1) {
-          return prevSelectedData.map((data, index) =>
-            index === existingVendorIndex
-              ? {
-                  ...data,
-                  materials: [
-                    ...(data.materials || [data]),
-                    updatedSelectedData,
-                  ],
-                }
-              : data
-          );
+          // Add material to the existing vendor
+          filteredData[existingVendorIndex].materials.push(updatedSelectedData);
         } else {
-          return [
-            ...prevSelectedData,
-            { ...updatedSelectedData, materials: [updatedSelectedData] },
-          ];
+          // Add new vendor with this material
+          filteredData.push({
+            vendorId: vendor_id,
+            vendor_name: vendor_name,
+            materials: [updatedSelectedData],
+          });
         }
+
+        return filteredData;
       });
 
       const updatedDummyData = [
@@ -347,14 +363,12 @@ export default function AllocationTab({ isCounterOffer }) {
     const jsonBody = {
       orders: [
         {
-          supplier_id: vendorData.pms_supplier_id,
+          supplier_id: vendorData.materials[0].pms_supplier_id,
           bid: {
-            id: vendorData.bidId,
-            bid_materials: [
-              {
-                id: vendorData?.materials.map((material) => material.materialId),
-              },
-            ],
+            id: vendorData.materials[0].bidId,
+            bid_materials: vendorData.materials.map((material) => ({
+              id: material.materialId,
+            })),
           },
         },
       ],
@@ -533,7 +547,7 @@ export default function AllocationTab({ isCounterOffer }) {
                                 style={{ height: "150px" }}
                               >
                                 <div className="">
-                                  {vendor.organization_name}
+                                  {vendor.full_name}
                                   <p>
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
                                   </p>
@@ -601,8 +615,10 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "vendor id", key: "vendor_id" },
                         { label: "vendor name", key: "vendor_name" },
                         { label: "pms supplier id", key: "pms_supplier_id" },
+                        { label: "material name", key: "material_name" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
+                        console.log("material", material);
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -619,6 +635,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           vendor_id: material.vendor_id,
                           vendor_name: material.vendor_name,
                           pms_supplier_id: material.pms_supplier_id,
+                          material_name: material.material_name,
                         };
                       })}
                       onColumnClick={handleColumnClick}

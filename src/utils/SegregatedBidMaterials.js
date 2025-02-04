@@ -26,6 +26,7 @@ export const SegregatedBidMaterials = (inputArray) => {
         ...material,
         bid_id: bid.id,
         material_id: material.id,
+        material_name: material.material_name,
         vendor_id: vendor.id,
         pms_supplier_id: vendor.pms_supplier_id,
       });

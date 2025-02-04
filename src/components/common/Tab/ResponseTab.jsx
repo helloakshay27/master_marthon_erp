@@ -236,6 +236,8 @@ export default function ResponseTab({ isCounterOffer }) {
     const remainingWidth = tableWidth - occupiedWidth;
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
+  console.log("eventVendors", eventVendors);
+  
 
   return (
     <div
@@ -378,7 +380,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                 style={{ height: "150px" }}
                               >
                                 <div className="">
-                                  {vendor.organization_name}
+                                  {vendor.full_name}
                                   <p>
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
                                   </p>
