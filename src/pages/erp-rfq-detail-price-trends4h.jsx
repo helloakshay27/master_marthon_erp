@@ -88,7 +88,6 @@ export default function ErpRfqDetailPriceTrends4h() {
           setCounterOfferData(data); // Set the fetched data
         }
 
-        console.log("dataaaaaaaaaaa", data);
       } catch (error) {
         console.error("Failed to fetch counter offer data", error);
       }
@@ -226,8 +225,6 @@ export default function ErpRfqDetailPriceTrends4h() {
         } else {
           setIsCounter(false);
         }
-        console.log("Data      overviewData", data);
-        console.log("end_tiem", data.event_schedule.end_time);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -250,8 +247,6 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
-        console.log("Data      bidding", data);
-
         setBidding(data);
       } catch (err) {
         setError(err.message);
@@ -275,8 +270,6 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
-        console.log("Data      participants", data);
-        
         setParticipantsTabData(data);
       } catch (err) {
         setError(err.message);

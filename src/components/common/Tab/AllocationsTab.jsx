@@ -33,6 +33,7 @@ export default function AllocationTab({ isCounterOffer }) {
   const tableRef = useRef(null);
   const [selectedData, setSelectedData] = useState([]);
   const [bidIdVal, setBidIdVal] = useState(null);
+  const [pmsIdVal, setPmsIdVal] = useState(null);
   const [bidMaterialIdVal, setBidMaterialIdVal] = useState(null);
   const [vendorIdVal, setVendorIdVal] = useState(null);
   const [dummyData, setDummyData] = useState([]);
@@ -42,6 +43,12 @@ export default function AllocationTab({ isCounterOffer }) {
   const isCreatingPO = useRef(false);
   const isUpdatingAllocation = useRef(false);
   const [poIsLoading, setPoIsLoading] = useState(false);
+  const [participationSummary, setParticipationSummary] = useState({
+    invited_vendor: 0,
+    participated_vendor: 0,
+  });
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -84,6 +91,10 @@ export default function AllocationTab({ isCounterOffer }) {
         }
         const data = await response.json();
         setResponse(data);
+        console.log("response:::::::________------___++_+_+_+_+_+_+_:--",data, data.vendor[0]?.pms_supplier_id);
+        setPmsIdVal(data.vendor[0]?.pms_supplier_id);
+        console.log("pmspmsp,spmspmspmspms +++++++___________------ PMS:-", pmsIdVal);
+        
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
       } catch (err) {
         setError(err.message);
@@ -178,6 +189,8 @@ export default function AllocationTab({ isCounterOffer }) {
     }
   }, [id, bidId]);
 
+  
+
   const formatDate = (dateString) => {
     if (!dateString) return "_";
     const date = new Date(dateString);
@@ -214,8 +227,6 @@ export default function AllocationTab({ isCounterOffer }) {
       pms_supplier_id,
     } = data;
 
-    console.log(data, material_name);
-    
 
     if (!bid_id || !material_id || !vendor_id) {
       console.error("Missing bid_id, material_id, or vendor_id");
@@ -226,6 +237,7 @@ export default function AllocationTab({ isCounterOffer }) {
     setBidIdVal(bid_id);
     setBidMaterialIdVal(material_id);
     setVendorIdVal(vendor_id);
+    setPmsIdVal(pms_supplier_id);
 
     try {
       const response = await axios.post(
@@ -269,9 +281,7 @@ export default function AllocationTab({ isCounterOffer }) {
       };
 
       setSelectedData((prevSelectedData) => {
-        // Remove the material from ALL existing vendors using materialName
-        console.log("material name:--------",material_name, prevSelectedData);
-        
+
         let filteredData = prevSelectedData
           .map((vendor) => ({
             ...vendor,
@@ -380,14 +390,61 @@ export default function AllocationTab({ isCounterOffer }) {
         jsonBody
       );
       toast.success("PO created successfully");
+      setTimeout(() => {          
+        setSelectedData([]);
+      }, 1000);
       console.log("PO created successfully:", response.data);
     } catch (error) {
-      toast.error("Error creating PO");
+      if (error.response.status === 422) {
+        toast.error("Already Ordered this purchase");
+        setTimeout(() => {          
+          setSelectedData([]);
+        }, 1000);
+      } 
       console.error("Error creating PO:", error);
     } finally {
       setPoIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchParticipationSummary = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/rfq/events/${id}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setParticipationSummary(response.data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchParticipationSummary();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchPurchaseOrders = async () => {
+
+      setPmsIdVal(eventVendors[0]?.pms_supplier_id);
+      console.log("pmsIdVal::--=------",pmsIdVal, eventVendors[0]?.pms_supplier_id, eventVendors);
+      
+      setPurchaseOrdersLoading(true);
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/rfq/events/${id}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${pmsIdVal}`
+        );
+        console.log("Purchase Orders:", response.data);
+        
+        setPurchaseOrders(response.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setPurchaseOrdersLoading(false);
+      }
+    };
+
+    fetchPurchaseOrders();
+  }, [id]);
 
   const Loader = () => (
     <div className="loader-container">
@@ -404,6 +461,25 @@ export default function AllocationTab({ isCounterOffer }) {
       <p>Submitting your bid...</p>
     </div>
   );
+
+  const purchaseOrderColumns = [
+    { label: "PO Number", key: "po_number" },
+    { label: "PO Date", key: "po_date" },
+    { label: "PO Type", key: "po_type" },
+    { label: "Consumption", key: "consumption" },
+    { label: "Company Name", key: "company_name" },
+    { label: "Project Name", key: "project_name" },
+    { label: "PMS Site Name", key: "pms_site_name" },
+    { label: "Material Type", key: "material_type" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Supplier Advance", key: "supplier_advance" },
+    { label: "Supplier Advance Amount", key: "supplier_advance_amount" },
+    { label: "Supplier Name", key: "supplier_name" },
+    { label: "Department Name", key: "department_name" },
+    { label: "Tax Applicable Cost", key: "tax_applicable_cost" },
+    { label: "Total Value", key: "total_value" },
+    { label: "Status", key: "status" },
+  ];
 
   return (
     <div
@@ -467,25 +543,29 @@ export default function AllocationTab({ isCounterOffer }) {
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Participants"
               >
-                <i className="bi bi-check2 me-2"></i>4
+                <i className="bi bi-check2 me-2"></i>
+                {participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Emails"
               >
-                <i className="bi bi-envelope me-2"></i>4
+                <i className="bi bi-envelope me-2"></i>
+                {participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Views"
               >
-                <i className="bi bi-eye me-2"></i>4
+                <i className="bi bi-eye me-2"></i>
+                {participationSummary.invited_vendor}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Completed"
               >
-                <i className="bi bi-check-circle me-2"></i> 4
+                <i className="bi bi-check-circle me-2"></i>
+                {participationSummary.invited_vendor}
               </div>
             </div>
           </div>
@@ -618,7 +698,6 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "material name", key: "material_name" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
-                        console.log("material", material);
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -785,6 +864,17 @@ export default function AllocationTab({ isCounterOffer }) {
         handleClose={handleCounterModalClose}
         bidCounterData={BidCounterData}
       />
+
+      {purchaseOrders.length > 0 && (
+        <div className="mt-4">
+          <h4>Purchased Orders</h4>
+          <Table
+            columns={purchaseOrderColumns}
+            data={purchaseOrders}
+            isHorizontal={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

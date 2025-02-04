@@ -88,6 +88,8 @@ export default function ResponseTab({ isCounterOffer }) {
             vendor.id === vendorId ? { ...vendor, ...data } : vendor
           )
         );
+        console.log("data of get event vendors", eventVendors);
+        
       } else {
         // Use revision data
         const response = await axios.get(
@@ -109,6 +111,8 @@ export default function ResponseTab({ isCounterOffer }) {
           return vendor;
         });
         setEventVendors(updatedEventVendors);
+        console.log("data of update event vendors", eventVendors);
+        
       }
     } catch (err) {
       setError(err.message);
@@ -166,6 +170,7 @@ export default function ResponseTab({ isCounterOffer }) {
         const data = await response.json();
         setResponse(data);
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
+        console.log("data of get fetch remarks", eventVendors);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -236,7 +241,6 @@ export default function ResponseTab({ isCounterOffer }) {
     const remainingWidth = tableWidth - occupiedWidth;
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
-  console.log("eventVendors", eventVendors);
   
 
   return (
@@ -300,25 +304,25 @@ export default function ResponseTab({ isCounterOffer }) {
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Participants"
               >
-                <i className="bi bi-check2 me-2"></i>{participationSummary.invited_vendor}
+                <i className="bi bi-check2 me-2"></i>{participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Emails"
               >
-                <i className="bi bi-envelope me-2"></i>{participationSummary.invited_vendor}
+                <i className="bi bi-envelope me-2"></i>{participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Views"
               >
-                <i className="bi bi-eye me-2"></i>{participationSummary.participated_vendor || 0}
+                <i className="bi bi-eye me-2"></i>{participationSummary.invited_vendor}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Completed"
               >
-                <i className="bi bi-check-circle me-2"></i>{participationSummary.participated_vendor || 0}
+                <i className="bi bi-check-circle me-2"></i>{participationSummary.invited_vendor}
               </div>
             </div>
           </div>
@@ -340,6 +344,8 @@ export default function ResponseTab({ isCounterOffer }) {
               }}
             ></div>
             {eventVendors.length > 0 ? (
+              console.log("event vendors", eventVendors),
+              
               <>
                 <div style={{ overflowX: "auto" }}>
                   <table
@@ -451,8 +457,7 @@ export default function ResponseTab({ isCounterOffer }) {
                   </table>
                 </div>
 
-                {segeregatedMaterialData?.map((materialData, ind) => {
-
+                {segeregatedMaterialData?.map((materialData, ind) => {                  
                   return (
                     <Accordion
                       key={ind}

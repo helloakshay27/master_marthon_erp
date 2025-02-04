@@ -19,6 +19,7 @@
   opacity: 0;
   transition: opacity 0.3s;
   background: linear-gradient(to bottom, white, lightgrey) !important;
+  padding: 10px;
 }
 
 .tooltip-container:hover .tooltip-content {
