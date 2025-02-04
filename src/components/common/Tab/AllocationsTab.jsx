@@ -15,7 +15,7 @@ import Table from "../../base/Table/Table";
 import DropArrowIcon from "../../common/Icon/DropArrowIcon";
 import ShortTable from "../../base/Table/ShortTable";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AllocationTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -38,9 +38,10 @@ export default function AllocationTab({ isCounterOffer }) {
   const [dummyData, setDummyData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [openAccordions, setOpenAccordions] = useState({});
-  const [ materialName, setMaterialName ] = useState("");
+  const [materialName, setMaterialName] = useState("");
   const isCreatingPO = useRef(false);
   const isUpdatingAllocation = useRef(false);
+  const [poIsLoading, setPoIsLoading] = useState(false);
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -204,7 +205,8 @@ export default function AllocationTab({ isCounterOffer }) {
     if (isUpdatingAllocation.current) return;
     isUpdatingAllocation.current = true;
 
-    const { bid_id, material_id, vendor_id, vendor_name, pms_supplier_id } = data;
+    const { bid_id, material_id, vendor_id, vendor_name, pms_supplier_id } =
+      data;
 
     if (!bid_id || !material_id || !vendor_id) {
       console.error("Missing bid_id, material_id, or vendor_id");
@@ -281,18 +283,26 @@ export default function AllocationTab({ isCounterOffer }) {
         },
         {
           label: "Realised Freight Amount",
-          value: `₹${responseData.bids[0]?.realised_freight_charge_amount || 0}`,
+          value: `₹${
+            responseData.bids[0]?.realised_freight_charge_amount || 0
+          }`,
         },
         {
           label: "Warranty Clause",
           value: responseData.bids[0]?.warranty_clause || "-",
         },
-        { label: "Payment Terms", value: responseData.bids[0]?.payment_terms || "-" },
+        {
+          label: "Payment Terms",
+          value: responseData.bids[0]?.payment_terms || "-",
+        },
         {
           label: "Loading / Unloading Clause",
           value: responseData.bids[0]?.loading_unloading_clause || "-",
         },
-        { label: "Gross Total", value: `₹${responseData.bids[0]?.gross_total || 0}` },
+        {
+          label: "Gross Total",
+          value: `₹${responseData.bids[0]?.gross_total || 0}`,
+        },
       ];
 
       setDummyData((prevDummyData) => [
@@ -300,9 +310,9 @@ export default function AllocationTab({ isCounterOffer }) {
         { vendorId: vendor_id, data: updatedDummyData },
       ]);
 
-      toast.success('Allocation updated successfully');
+      toast.success("Allocation updated successfully");
     } catch (err) {
-      toast.error('Error updating allocation');
+      toast.error("Error updating allocation");
       setError(err.message);
     } finally {
       isUpdatingAllocation.current = false;
@@ -319,7 +329,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
   const handleCreatePO = async (vendorData) => {
     if (isCreatingPO.current) return;
-    isCreatingPO.current = true;
+    setPoIsLoading(true);
 
     const jsonBody = {
       orders: [
@@ -342,15 +352,32 @@ export default function AllocationTab({ isCounterOffer }) {
         `https://marathon.lockated.com/rfq/events/${id}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         jsonBody
       );
-      toast.success('PO created successfully');
-      console.log('PO created successfully:', response.data);
+      toast.success("PO created successfully");
+      console.log("PO created successfully:", response.data);
     } catch (error) {
-      toast.error('Error creating PO');
-      console.error('Error creating PO:', error);
+      toast.error("Error creating PO");
+      console.error("Error creating PO:", error);
     } finally {
-      isCreatingPO.current = false;
+      setPoIsLoading(false);
     }
   };
+
+  // Loader Component
+  const Loader = () => (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <p>Submitting your bid...</p>
+    </div>
+  );
 
   return (
     <div
@@ -564,7 +591,6 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "pms supplier id", key: "pms_supplier_id" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
-
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -632,75 +658,89 @@ export default function AllocationTab({ isCounterOffer }) {
                   )}
                 />
 
-                {selectedData.length > 0 &&
-                  selectedData.map((vendorData, index) => {
-                    console.log("vendorData", vendorData);
+                <>
+                  {poIsLoading ? (
+                    <Loader />
+                  ) : (
+                    <>
+                      {selectedData.length > 0 &&
+                        selectedData.map((vendorData, index) => {
+                          console.log("vendorData", vendorData);
 
-                    return (
-                      <div className="card p-4 mt-3 border-0" key={index}>
-                        <h4>{vendorData.vendor_name}</h4>
+                          return (
+                            <div className="card p-4 mt-3 border-0" key={index}>
+                              <h4>{vendorData.vendor_name}</h4>
 
-                        <Table
-                          enableOverflowScroll={true}
-                          style={{ width: "100%", overflowX: "auto" }}
-                          columns={[
-                            { label: "Material Name", key: "materialName" },
-                            {
-                              label: "Quantity Available",
-                              key: "quantityAvailable",
-                            },
-                            {
-                              label: "Best Total Amount",
-                              key: "bestTotalAmount",
-                            },
-                            { label: "Price", key: "price" },
-                            { label: "Discount", key: "discount" },
-                            {
-                              label: "Realised Discount",
-                              key: "realisedDiscount",
-                            },
-                            { label: "GST", key: "gst" },
-                            { label: "Realised GST", key: "realisedGST" },
-                            { label: "Landed Amount", key: "landedAmount" },
-                            {
-                              label: "Participant Attachment",
-                              key: "participantAttachment",
-                            },
-                            { label: "Total Amount", key: "totalAmount" },
-                          ]}
-                          data={[vendorData]}
-                          isHorizontal={false}
-                        />
+                              <Table
+                                enableOverflowScroll={true}
+                                style={{ width: "100%", overflowX: "auto" }}
+                                columns={[
+                                  {
+                                    label: "Material Name",
+                                    key: "materialName",
+                                  },
+                                  {
+                                    label: "Quantity Available",
+                                    key: "quantityAvailable",
+                                  },
+                                  {
+                                    label: "Best Total Amount",
+                                    key: "bestTotalAmount",
+                                  },
+                                  { label: "Price", key: "price" },
+                                  { label: "Discount", key: "discount" },
+                                  {
+                                    label: "Realised Discount",
+                                    key: "realisedDiscount",
+                                  },
+                                  { label: "GST", key: "gst" },
+                                  { label: "Realised GST", key: "realisedGST" },
+                                  {
+                                    label: "Landed Amount",
+                                    key: "landedAmount",
+                                  },
+                                  {
+                                    label: "Participant Attachment",
+                                    key: "participantAttachment",
+                                  },
+                                  { label: "Total Amount", key: "totalAmount" },
+                                ]}
+                                data={[vendorData]}
+                                isHorizontal={false}
+                              />
 
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            marginTop: "20px",
-                          }}
-                        >
-                          <ShortTable
-                            data={
-                              dummyData.find(
-                                (d) => d.vendorId === vendorData.vendorId
-                              )?.data || []
-                            }
-                            editable={false}
-                          />
-                        </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                  marginTop: "20px",
+                                }}
+                              >
+                                <ShortTable
+                                  data={
+                                    dummyData.find(
+                                      (d) => d.vendorId === vendorData.vendorId
+                                    )?.data || []
+                                  }
+                                  editable={false}
+                                />
+                              </div>
 
-                        <div className="text-end">
-                          <button
-                            className="purple-btn2 mt-4"
-                            style={{ width: "200px" }}
-                            onClick={() => handleCreatePO(vendorData)}
-                          >
-                            Create PO
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                              <div className="text-end">
+                                <button
+                                  className="purple-btn2 mt-4"
+                                  style={{ width: "200px" }}
+                                  onClick={() => handleCreatePO(vendorData)}
+                                >
+                                  Create PO
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </>
+                  )}
+                </>
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
