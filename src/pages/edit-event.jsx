@@ -55,6 +55,15 @@ export default function EditEvent() {
       amount: 0,
     },
   ]);
+
+  const Loader = () => (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+      </div>
+      <p>fetching existing Data</p>
+    </div>
+  );
   const [selectedStrategy, setSelectedStrategy] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
@@ -129,9 +138,6 @@ export default function EditEvent() {
   const handleInviteModalClose = () => {
     setInviteModal(false);
   };
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const handlePublishEventModalShow = () => {
     setPublishEventModal(true);
   };
@@ -204,6 +210,27 @@ export default function EditEvent() {
   const handleVendorProfileChange = (profile) => {
     setSelectedVendorProfile(profile);
   };
+
+  const fetchTermsAndConditions = async () => {
+    try {
+      const response = await fetch(
+        "https://marathon.lockated.com/rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1"
+      );
+      const data = await response.json();
+      const termsList = data.list.map((term) => ({
+        label: term.condition_category,
+        value: term.id,
+        condition: term.condition,
+      }));
+      setTermsOptions(termsList);
+    } catch (error) {
+      console.error("Error fetching terms and conditions:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTermsAndConditions();
+  }, []);
 
   const handleEventConfigurationSubmit = (config) => {
     setEventType(config.event_type);
@@ -346,18 +373,6 @@ export default function EditEvent() {
   useEffect(() => {
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        setMatchedTerm(
-          termsOptions.find((option) => option.value === term.term_condition_id)
-        );
-        console.log(
-          "matchedTerm:-----",
-          matchedTerm,
-          "term.term_condition_id",
-          term.term_condition_id,
-          "term Option:----",
-          termsOptions
-        );
-        console.log("defaultOption", matchedTerm?.label, matchedTerm?.value);
         return {
           id: term.term_condition_id,
           value: term.term_condition.condition,
@@ -367,32 +382,12 @@ export default function EditEvent() {
         };
       })
     );
-    console.log(
-      "eventDetails?.event_vendors",
-      eventDetails?.event_vendors,
-      textareas
-    );
-  }, [eventDetails, matchedTerm]);
-
-  useEffect(() => {
-    if (eventDetails.length > 0 && termsOptions.length > 0) {
-      const updatedTextareas = eventDetails.resource_term_conditions.map(
-        (term) => {
-          const matchedTerm = termsOptions.find(
-            (option) => option.value === term.term_condition_id
-          );
-          return {
-            id: term.term_condition_id,
-            value: term.term_condition.condition,
-            defaultOption: matchedTerm
-              ? { label: matchedTerm.label, value: matchedTerm.value }
-              : { label: "Select Condition", value: "" },
-          };
-        }
+    eventDetails?.resource_term_conditions?.map((term) => {
+      setMatchedTerm(
+        termsOptions.find((option) => option.value === term.term_condition_id)
       );
-      setTextareas(updatedTextareas);
-    }
-  }, [eventDetails, termsOptions]);
+    });
+  }, [eventDetails, matchedTerm]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -433,8 +428,6 @@ export default function EditEvent() {
     );
 
     setTableData(updatedTableData);
-    console.log("selectedRows:----", selectedRows, updatedTableData);
-
     setSelectedVendors((prev) => [
       ...prev,
       ...selectedRows.map((vendor) => ({
@@ -571,7 +564,7 @@ export default function EditEvent() {
     });
   };
 
-  // console.log("eventDetails:----", eventDetails);
+  // ("eventDetails:----", eventDetails);
 
   const validateForm = () => {
     if (!eventName) {
@@ -613,8 +606,6 @@ export default function EditEvent() {
     if (!validateForm()) {
       return;
     }
-    console.log("eventDetails", eventDetails, materialFormData);
-
     setSubmitted(true);
     const eventData = {
       event: {
@@ -691,8 +682,6 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData", eventData, eventStatus);
-
     try {
       const data = await updateEvent(id, eventData);
       toast.success("Event updated successfully!", {
@@ -759,53 +748,11 @@ export default function EditEvent() {
     setIsSuggestionsVisible(true);
   };
 
-  // Fetch terms and conditions from the API
-  const fetchTermsAndConditions = async () => {
-    try {
-      const response = await fetch(
-        "https://marathon.lockated.com/rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1"
-      );
-      const data = await response.json();
-      const termsList = data.list.map((term) => ({
-        label: term.condition_category,
-        value: term.id,
-        condition: term.condition, // Include condition text here
-      }));
-      setTermsOptions(termsList);
-    } catch (error) {
-      console.error("Error fetching terms and conditions:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTermsAndConditions();
-  }, []);
-
   useEffect(() => {}, [eventType, awardType]);
 
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
   };
-
-  useEffect(() => {
-    if (eventDetails.length > 0 && termsOptions.length > 0) {
-      const updatedTextareas = eventDetails.resource_term_conditions.map(
-        (term) => {
-          const matchedTerm = termsOptions.find(
-            (option) => option.value === term.term_condition_id
-          );
-          return {
-            id: term.term_condition_id,
-            value: term.term_condition.condition,
-            defaultOption: matchedTerm
-              ? { label: matchedTerm.label, value: matchedTerm.value }
-              : { label: "Select Condition", value: "" },
-          };
-        }
-      );
-      setTextareas(updatedTextareas);
-    }
-  }, [eventDetails, termsOptions]);
 
   return (
     <>
@@ -814,7 +761,7 @@ export default function EditEvent() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
-                <a href="/" className="text-decoration-none text-primary">
+                <a href="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414" className="text-decoration-none text-primary">
                   Event List
                 </a>
               </li>
@@ -1067,28 +1014,26 @@ export default function EditEvent() {
                 </thead>
                 <tbody>
                   {textareas?.map((textarea, idx) => {
-                    console.log("textarea", textarea);
+                    // ("textarea", textarea);
                     if (textarea.id === null) {
                       return null;
                     }
                     return (
                       <tr key={idx}>
                         <td>
-                          <SelectBox
-                            options={termsOptions.map((option) => ({
-                              label: option.label,
-                              value: option.value,
-                            }))}
-                            onChange={(option) =>
-                              handleConditionChange(textarea.id, option)
-                            }
-                            defaultValue={{
-                              label:
-                                textarea.defaultOption?.label ||
-                                "Select Condition",
-                              value: textarea.defaultOption?.value || "",
-                            }}
-                          />
+                          {textarea?.defaultOption?.value && termsOptions ? (
+                            <>
+                              <SelectBox
+                                options={termsOptions}
+                                onChange={(option) =>
+                                  handleConditionChange(textarea.id, option)
+                                }
+                                defaultValue={textarea?.defaultOption?.value}
+                              />
+                            </>
+                          ) : (
+                            <Loader />
+                          )}
                         </td>
                         <td>
                           <textarea

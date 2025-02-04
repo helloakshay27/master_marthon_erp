@@ -72,7 +72,11 @@ export default function CreateRFQForm({
           "https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
         if (response.data && Array.isArray(response.data.materials)) {
-          setMaterials(response.data.materials);
+          const materialOptions = response.data.materials.map((material) => ({
+            value: material.id,
+            label: material.name,
+          }));
+          setMaterials(materialOptions);
         } else {
           console.error("Unexpected response structure:", response.data);
         }
@@ -150,8 +154,6 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     if (existingData) {
-      console.log("existingData", existingData);
-
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           return {
@@ -177,10 +179,9 @@ export default function CreateRFQForm({
             ),
           };
         }
-      );
+      );      
       setSections(updatedSections);
       setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
-      console.log("sections:-----", sections);
     }
   }, [existingData]);
 
@@ -323,11 +324,6 @@ export default function CreateRFQForm({
     setSections(updatedSections);
   };
 
-  const materialOptions = materials.map((material) => ({
-    value: material.id,
-    label: material.name,
-  }));
-
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -413,7 +409,7 @@ export default function CreateRFQForm({
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
                     <SelectBox
-                      options={materialOptions}
+                      options={materials}
                       onChange={(value) =>
                         handleDescriptionOfItemChange(
                           value,
@@ -424,7 +420,7 @@ export default function CreateRFQForm({
                       defaultValue={
                         section?.sectionData[rowIndex]?._destroy
                           ? ""
-                          : materialOptions?.find(
+                          : materials?.find(
                               (option) =>
                                 option?.value ===
                                 section?.sectionData[rowIndex]?.inventory_id
@@ -456,12 +452,6 @@ export default function CreateRFQForm({
                     />
                   ),
                   location: (cell, rowIndex) => {
-                    console.log(
-                      "locationOptions",
-                      locationOptions,
-                      section.sectionData[rowIndex]
-                    );
-
                     return (
                       <SelectBox
                         options={locationOptions}
