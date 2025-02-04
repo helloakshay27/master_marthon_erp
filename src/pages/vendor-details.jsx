@@ -9,7 +9,8 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import ClockIcon from "../components/common/Icon/ClockIcon";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import the default styles
+import "react-toastify/dist/ReactToastify.css";
+import FormatDate from "../components/FormatDate"; // Import the default styles
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
@@ -348,8 +349,8 @@ export default function VendorDetails() {
 
       setRevisedBid(revisedBid);
 
-      // console.log("initial data ", initialData);
-      // console.log("revised data ", revisedBid);
+      console.log("initial data ", initialData);
+      console.log("revised data ", revisedBid);
 
       if (!revisedBid) {
         // If revisedBid is false, format the event materials data
@@ -369,8 +370,8 @@ export default function VendorDetails() {
             unit: item.uom,
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
-            section: item.section_name,
-            subSection: item.sub_section_name,
+            section: item.material_type,
+            subSection: item.inventory_sub_type,
             amount: item.amount,
             totalAmt: "", // Placeholder for calculated total amount
             attachment: null, // Placeholder for attachment
@@ -384,6 +385,8 @@ export default function VendorDetails() {
         const bidResponse = await axios.get(
           `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
+
+        console.log("bidResponce", bidResponse.data);
 
         setCounterData(
           bidResponse.data?.bids[currentIndex]?.counter_bids.length
@@ -469,8 +472,8 @@ export default function VendorDetails() {
             quantityAvail: material.quantity_available,
             price: material.price,
             discount: material.discount,
-            section: material.event_material.section_name,
-            subSection: material.event_material.sub_section_name,
+            section: material.event_material.material_type,
+            subSection: material.event_material.inventory_sub_type,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
             realisedGst: material.realised_gst,
@@ -495,8 +498,8 @@ export default function VendorDetails() {
                     quantity: material.event_material.quantity,
                     quantityAvail: counterMaterial.quantity_available,
                     price: counterMaterial.price,
-                    section: material.event_material.section_name,
-                    subSection: material.event_material.sub_section_name,
+                    section: material.event_material.material_type,
+                    subSection: material.event_material.inventory_sub_type,
                     discount: counterMaterial.discount,
                     realisedDiscount: counterMaterial.realised_discount,
                     gst: counterMaterial.gst,
@@ -647,7 +650,7 @@ export default function VendorDetails() {
 
       const payload = preparePayload();
 
-      // console.log("payloadssss", payload);
+      console.log("payloadssss", payload);
 
       // console.log("vendor ID", vendorId);
 
@@ -677,9 +680,9 @@ export default function VendorDetails() {
       // setData(response.data.bid_materials_attributes || []);
     } catch (error) {
       console.error("Error submitting bid:", error);
-      toast.error("Failed to revise bid. Please try again.", {
+      toast.error("Failed to create bid. Please try again.", {
         // position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000,
+        autoClose: 1000,
       });
     } finally {
       setLoading(false);
@@ -829,6 +832,7 @@ export default function VendorDetails() {
 
       const payload2 = preparePayload2();
       // console.log("payloadssss2 revised", payload2);
+      console.log("bidsID", bidIds);
 
       const response = await axios.post(
         `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -1212,8 +1216,8 @@ export default function VendorDetails() {
             quantity: material.event_material.quantity,
             quantityAvail: material.quantity_available,
             price: material.price,
-            section: material.section_name,
-            subSection: material.sub_section_name,
+            section: material.material_type,
+            subSection: material.inventory_sub_type,
             discount: material.discount,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
@@ -1320,8 +1324,8 @@ export default function VendorDetails() {
             quantity: material.event_material.quantity,
             quantityAvail: material.quantity_available,
             price: material.price,
-            section: material.section_name,
-            subSection: material.sub_section_name,
+            section: material.material_type,
+            subSection: material.inventory_sub_type,
             discount: material.discount,
             realisedDiscount: material.realised_discount,
             gst: material.gst,
@@ -1601,13 +1605,29 @@ export default function VendorDetails() {
                                           className="text-start"
                                           // style={{ color: "#777777" }}
                                         >
-                                          {formattedDate}
+                                          {data1.event_schedule?.start_time ? (
+                                            <FormatDate
+                                              timestamp={
+                                                data1.event_schedule?.start_time
+                                              }
+                                            />
+                                          ) : (
+                                            "N/A"
+                                          )}
                                         </td>
                                         <td
                                           className="text-start"
                                           // style={{ color: "#777777" }}
                                         >
-                                          {formattedEndDate}
+                                          {data1.event_schedule?.end_time ? (
+                                            <FormatDate
+                                              timestamp={
+                                                data1.event_schedule?.end_time
+                                              }
+                                            />
+                                          ) : (
+                                            "N/A"
+                                          )}
                                         </td>
                                         <td
                                           className="text-start"
@@ -1867,6 +1887,12 @@ export default function VendorDetails() {
                                       <tr>
                                         <th className="text-start">Sr.No.</th>
                                         <th className="text-start">
+                                          Material Type
+                                        </th>
+                                        <th className="text-start">
+                                          Material Sub Type
+                                        </th>
+                                        <th className="text-start">
                                           Material Name
                                         </th>
                                         <th className="text-start">Quantity</th>
@@ -1877,12 +1903,12 @@ export default function VendorDetails() {
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
-                                        <th className="text-start">
-                                          Material Type Section
+                                        {/* <th className="text-start">
+                                          Material Type 
                                         </th>
                                         <th className="text-start">
-                                          Material Sub Section
-                                        </th>
+                                          Material Sub Type
+                                        </th> */}
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -1899,8 +1925,26 @@ export default function VendorDetails() {
                                               className="text-start"
                                               // style={{ color: "#777777" }}
                                             >
+                                              {data.material_type}
+                                            </td>
+                                            <td
+                                              className="text-start"
+                                              // style={{ color: "#777777" }}
+                                            >
+                                              {data.inventory_sub_type}
+                                            </td>
+                                            <td
+                                              className="text-start"
+                                              // style={{ color: "#777777" }}
+                                            >
                                               {data.inventory_name}
                                             </td>
+                                            {/* <td
+                                              className="text-start"
+                                              // style={{ color: "#777777" }}
+                                            >
+                                              {data.material_type}
+                                            </td> */}
                                             <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
@@ -1913,12 +1957,6 @@ export default function VendorDetails() {
                                             >
                                               {data.uom}
                                             </td>
-                                            {/* <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
-                                              {data.material_type}
-                                            </td> */}
                                             <td
                                               className="text-start"
                                               // style={{ color: "#777777" }}
@@ -1936,18 +1974,6 @@ export default function VendorDetails() {
                                               // style={{ color: "#777777" }}
                                             >
                                               {data.amount}
-                                            </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
-                                              {data.section_name}
-                                            </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
-                                              {data.sub_section_name}
                                             </td>
                                           </tr>
                                         )
@@ -2174,15 +2200,21 @@ export default function VendorDetails() {
                       <div style={tableContainerStyle}>
                         <Table
                           columns={[
-                            { label: "Material", key: "descriptionOfItem" },
-                            { label: "Material Variant", key: "varient" },
-                            { label: "Quantity Requested", key: "quantity" },
-                            { label: " Material Type Section", key: "section" },
-
+                            { label: " Material Type ", key: "section" },
                             {
-                              label: "Material Sub Section",
+                              label: "Material Sub Type",
                               key: "subSection",
                             },
+
+                            { label: "Material", key: "descriptionOfItem" },
+                            // { label: "Material Variant", key: "varient" },
+                            { label: "Quantity Requested", key: "quantity" },
+                            // { label: " Material Type ", key: "section" },
+
+                            // {
+                            //   label: "Material Sub Type",
+                            //   key: "subSection",
+                            // },
 
                             { label: "Delivery Location", key: "location" },
                             { label: "Creator Attachment", key: "attachment" },
