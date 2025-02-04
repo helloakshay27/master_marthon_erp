@@ -259,16 +259,29 @@ export default function AllocationTab({ isCounterOffer }) {
         pms_supplier_id: pms_supplier_id,
       };
 
+      // ✅ Fix: Ensure materials are grouped under the same vendor
       setSelectedData((prevSelectedData) => {
-        const existingIndex = prevSelectedData.findIndex(
-          (data) => data.materialName === bidMaterial.material_name
+        const existingVendorIndex = prevSelectedData.findIndex(
+          (data) => data.vendorId === vendor_id
         );
-        if (existingIndex !== -1) {
+
+        if (existingVendorIndex !== -1) {
           return prevSelectedData.map((data, index) =>
-            index === existingIndex ? updatedSelectedData : data
+            index === existingVendorIndex
+              ? {
+                  ...data,
+                  materials: [
+                    ...(data.materials || [data]),
+                    updatedSelectedData,
+                  ],
+                }
+              : data
           );
         } else {
-          return [...prevSelectedData, updatedSelectedData];
+          return [
+            ...prevSelectedData,
+            { ...updatedSelectedData, materials: [updatedSelectedData] },
+          ];
         }
       });
 
@@ -339,7 +352,7 @@ export default function AllocationTab({ isCounterOffer }) {
             id: vendorData.bidId,
             bid_materials: [
               {
-                id: vendorData.materialId,
+                id: vendorData?.materials.map((material) => material.materialId),
               },
             ],
           },
@@ -362,7 +375,6 @@ export default function AllocationTab({ isCounterOffer }) {
     }
   };
 
-  // Loader Component
   const Loader = () => (
     <div className="loader-container">
       <div className="lds-ring">
@@ -705,7 +717,7 @@ export default function AllocationTab({ isCounterOffer }) {
                                   },
                                   { label: "Total Amount", key: "totalAmount" },
                                 ]}
-                                data={[vendorData]}
+                                data={vendorData.materials}
                                 isHorizontal={false}
                               />
 
