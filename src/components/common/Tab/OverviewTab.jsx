@@ -32,7 +32,7 @@ export default function OverviewTab({
   });
   const [error, setError] = useState(null);
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const participants = [
     {
@@ -85,7 +85,7 @@ export default function OverviewTab({
     const fetchParticipationSummary = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${id}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -94,7 +94,7 @@ export default function OverviewTab({
     };
 
     fetchParticipationSummary();
-  }, [id]);
+  }, [eventId]);
 
   const transformedData = biddingData.flatMap((vendor) =>
     vendor.materials.map((material) => ({
@@ -332,7 +332,7 @@ export default function OverviewTab({
                               </td>
                               <td className="text-start">
                                 <a
-                                  href={`https://marathon.lockated.com/rfq/events/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                  href={`https://marathon.lockated.com/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                                   download={attachment.filename}
                                 >
                                   <svg

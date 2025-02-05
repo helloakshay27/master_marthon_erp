@@ -61,7 +61,7 @@ export default function AllocationTab({ isCounterOffer }) {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
   }, [eventVendors]);
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const handleCounterModalShow = () => {
     setCounterModal(true);
@@ -83,7 +83,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -106,7 +106,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchSelectedData = async () => {
       // try {
       //   const response = await fetch(
-      //     `https://marathon.lockated.com/rfq/events/${id}/event_vendors/allocations?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      //     `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/allocations?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       //   );
       //   if (!response.ok) {
       //     throw new Error(`HTTP error! status: ${response.status}`);
@@ -166,7 +166,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
     fetchRemarks();
     fetchSelectedData();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,7 +174,7 @@ export default function AllocationTab({ isCounterOffer }) {
       setError(null);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${id}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBidCounterData(response.data);
       } catch (err) {
@@ -187,7 +187,7 @@ export default function AllocationTab({ isCounterOffer }) {
     if (bidId) {
       fetchData();
     }
-  }, [id, bidId]);
+  }, [eventId, bidId]);
 
   
 
@@ -214,151 +214,154 @@ export default function AllocationTab({ isCounterOffer }) {
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
 
-  const handleColumnClick = async (data, columnKey) => {
-    if (isUpdatingAllocation.current) return;
-    isUpdatingAllocation.current = true;
+  // const handleColumnClick = async (data, columnKey) => {
+  //   if (isUpdatingAllocation.current) return;
+  //   isUpdatingAllocation.current = true;
 
-    const {
-      bid_id,
-      material_id,
-      material_name,
-      vendor_id,
-      vendor_name,
-      pms_supplier_id,
-    } = data;
+  //   const {
+  //     bid_id,
+  //     material_id,
+  //     material_name,
+  //     vendor_id,
+  //     vendor_name,
+  //     pms_supplier_id,
+  //     id
+  //   } = data;
 
 
-    if (!bid_id || !material_id || !vendor_id) {
-      console.error("Missing bid_id, material_id, or vendor_id");
-      isUpdatingAllocation.current = false;
-      return;
-    }
+  //   if (!bid_id || !material_id || !vendor_id) {
+  //     console.error("Missing bid_id, material_id, or vendor_id");
+  //     isUpdatingAllocation.current = false;
+  //     return;
+  //   }
 
-    setBidIdVal(bid_id);
-    setBidMaterialIdVal(material_id);
-    setVendorIdVal(vendor_id);
-    setPmsIdVal(pms_supplier_id);
+  //   setBidIdVal(bid_id);
+  //   setBidMaterialIdVal(material_id);
+  //   setVendorIdVal(vendor_id);
+  //   setPmsIdVal(pms_supplier_id);
 
-    try {
-      const response = await axios.post(
-        `https://marathon.lockated.com/rfq/events/${id}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          bid_id: bid_id,
-          bid_material_id: material_id,
-          delete_material: "false",
-        }
-      );
+  //   try {
+  //     const response = await axios.post(
+  //       `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       {
+  //         bid_id: bid_id,
+  //         bid_material_id: material_id,
+  //         delete_material: "false",
+  //       }
+  //     );
 
-      const responseData = response.data;
-      console.log("responseData", responseData.bid_materials, material_id);
+  //     const responseData = response.data;
+  //     console.log("responseData", responseData.bid_materials, "data", data.id, "id", id);
       
 
-      const bidMaterial = responseData.bid_materials.find(
-        (material) => material.material_id === material_id
-      );
+  //     const bidMaterial = responseData.bid_materials.find(
+  //       (material) => material.id === id
+  //     );
+  //     console.log(bidMaterial, "bidMaterial");
+      
 
-      if (!bidMaterial) {
-        console.error("Bid material not found");
-        isUpdatingAllocation.current = false;
-        return;
-      }
+  //     if (!bidMaterial) {
+  //       console.error("Bid material not found");
+  //       isUpdatingAllocation.current = false;
+  //       return;
+  //     }
 
-      const updatedSelectedData = {
-        bestTotalAmount: bidMaterial.total_amount || "_",
-        quantityAvailable: bidMaterial.quantity_available || "_",
-        price: bidMaterial.price || "_",
-        discount: bidMaterial.discount || "_",
-        realisedDiscount: bidMaterial.realised_discount || "_",
-        gst: bidMaterial.gst || "_",
-        realisedGST: bidMaterial.realised_gst || "_",
-        landedAmount: bidMaterial.landed_amount || "_",
-        participantAttachment: "_",
-        totalAmount: bidMaterial.total_amount || "_",
-        materialName: bidMaterial.material_name || "_",
-        vendorId: vendor_id,
-        vendor_name: vendor_name,
-        materialId: material_id,
-        bidId: bid_id,
-        pms_supplier_id: pms_supplier_id,
-      };
+  //     const updatedSelectedData = {
+  //       bestTotalAmount: bidMaterial.total_amount || "_",
+  //       quantityAvailable: bidMaterial.quantity_available || "_",
+  //       price: bidMaterial.price || "_",
+  //       discount: bidMaterial.discount || "_",
+  //       realisedDiscount: bidMaterial.realised_discount || "_",
+  //       gst: bidMaterial.gst || "_",
+  //       realisedGST: bidMaterial.realised_gst || "_",
+  //       landedAmount: bidMaterial.landed_amount || "_",
+  //       participantAttachment: "_",
+  //       totalAmount: bidMaterial.total_amount || "_",
+  //       materialName: bidMaterial.material_name || "_",
+  //       vendorId: vendor_id,
+  //       vendor_name: vendor_name,
+  //       materialId: material_id,
+  //       bidId: bid_id,
+  //       pms_supplier_id: pms_supplier_id,
+  //     };
 
-      setSelectedData((prevSelectedData) => {
+  //     setSelectedData((prevSelectedData) => {
 
-        let filteredData = prevSelectedData
-          .map((vendor) => ({
-            ...vendor,
-            materials: vendor.materials?.filter(
-              (material) => material.materialName !== material_name
-            ),
-          }))
-          .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
+  //       let filteredData = prevSelectedData
+  //         .map((vendor) => ({
+  //           ...vendor,
+  //           materials: vendor.materials?.filter(
+  //             (material) => material.materialName !== material_name
+  //           ),
+  //         }))
+  //         .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
 
-        // Ensure the material is assigned ONLY to the latest vendor
-        const existingVendorIndex = filteredData.findIndex(
-          (data) => data.vendorId === vendor_id
-        );
+  //       // Ensure the material is assigned ONLY to the latest vendor
+  //       const existingVendorIndex = filteredData.findIndex(
+  //         (data) => data.vendorId === vendor_id
+  //       );
 
-        if (existingVendorIndex !== -1) {
-          // Add material to the existing vendor
-          filteredData[existingVendorIndex].materials.push(updatedSelectedData);
-        } else {
-          // Add new vendor with this material
-          filteredData.push({
-            vendorId: vendor_id,
-            vendor_name: vendor_name,
-            materials: [updatedSelectedData],
-          });
-        }
+  //       if (existingVendorIndex !== -1) {
+  //         // Add material to the existing vendor
+  //         filteredData[existingVendorIndex].materials.push(updatedSelectedData);
+  //       } else {
+  //         // Add new vendor with this material
+  //         filteredData.push({
+  //           vendorId: vendor_id,
+  //           vendor_name: vendor_name,
+  //           materials: [updatedSelectedData],
+  //         });
+  //       }
 
-        return filteredData;
-      });
+  //       return filteredData;
+  //     });
 
-      const updatedDummyData = [
-        {
-          label: "Freight Charge Amount",
-          value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
-        },
-        {
-          label: "GST on Freight",
-          value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
-        },
-        {
-          label: "Realised Freight Amount",
-          value: `₹${
-            responseData.bids[0]?.realised_freight_charge_amount || 0
-          }`,
-        },
-        {
-          label: "Warranty Clause",
-          value: responseData.bids[0]?.warranty_clause || "-",
-        },
-        {
-          label: "Payment Terms",
-          value: responseData.bids[0]?.payment_terms || "-",
-        },
-        {
-          label: "Loading / Unloading Clause",
-          value: responseData.bids[0]?.loading_unloading_clause || "-",
-        },
-        {
-          label: "Gross Total",
-          value: `₹${responseData.bids[0]?.gross_total || 0}`,
-        },
-      ];
+  //     const updatedDummyData = [
+  //       {
+  //         label: "Freight Charge Amount",
+  //         value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
+  //       },
+  //       {
+  //         label: "GST on Freight",
+  //         value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
+  //       },
+  //       {
+  //         label: "Realised Freight Amount",
+  //         value: `₹${
+  //           responseData.bids[0]?.realised_freight_charge_amount || 0
+  //         }`,
+  //       },
+  //       {
+  //         label: "Warranty Clause",
+  //         value: responseData.bids[0]?.warranty_clause || "-",
+  //       },
+  //       {
+  //         label: "Payment Terms",
+  //         value: responseData.bids[0]?.payment_terms || "-",
+  //       },
+  //       {
+  //         label: "Loading / Unloading Clause",
+  //         value: responseData.bids[0]?.loading_unloading_clause || "-",
+  //       },
+  //       {
+  //         label: "Gross Total",
+  //         value: `₹${responseData.bids[0]?.gross_total || 0}`,
+  //       },
+  //     ];
 
-      setDummyData((prevDummyData) => [
-        ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
-        { vendorId: vendor_id, data: updatedDummyData },
-      ]);
+  //     setDummyData((prevDummyData) => [
+  //       ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
+  //       { vendorId: vendor_id, data: updatedDummyData },
+  //     ]);
 
-      toast.success("Allocation updated successfully");
-    } catch (err) {
-      toast.error("Error updating allocation");
-      setError(err.message);
-    } finally {
-      isUpdatingAllocation.current = false;
-    }
-  };
+  //     toast.success("Allocation updated successfully");
+  //   } catch (err) {
+  //     toast.error("Error updating allocation");
+  //     setError(err.message);
+  //   } finally {
+  //     isUpdatingAllocation.current = false;
+  //   }
+  // };
 
   const getSelectedDataColumns = () => {
     if (!selectedData) return [];
@@ -388,7 +391,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
     try {
       const response = await axios.post(
-        `https://marathon.lockated.com/rfq/events/${id}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         jsonBody
       );
       toast.success("PO created successfully");
@@ -413,7 +416,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchParticipationSummary = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${id}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -422,31 +425,31 @@ export default function AllocationTab({ isCounterOffer }) {
     };
 
     fetchParticipationSummary();
-  }, [id]);
+  }, [eventId]);
 
-  useEffect(() => {
-    const fetchPurchaseOrders = async () => {
+  // useEffect(() => {
+  //   const fetchPurchaseOrders = async () => {
 
-      setPmsIdVal(eventVendors[0]?.pms_supplier_id);
-      console.log("pmsIdVal::--=------",pmsIdVal, eventVendors[0]?.pms_supplier_id, eventVendors);
+  //     setPmsIdVal(eventVendors[0]?.pms_supplier_id);
+  //     console.log("pmsIdVal::--=------",pmsIdVal, eventVendors[0]?.pms_supplier_id, eventVendors);
       
-      setPurchaseOrdersLoading(true);
-      try {
-        const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${id}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${pmsIdVal}`
-        );
-        console.log("Purchase Orders:", response.data);
+  //     setPurchaseOrdersLoading(true);
+  //     try {
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${pmsIdVal}`
+  //       );
+  //       console.log("Purchase Orders:", response.data);
         
-        setPurchaseOrders(response.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setPurchaseOrdersLoading(false);
-      }
-    };
+  //       setPurchaseOrders(response.data);
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setPurchaseOrdersLoading(false);
+  //     }
+  //   };
 
-    fetchPurchaseOrders();
-  }, [id]);
+  //   fetchPurchaseOrders();
+  // }, [eventId]);
 
   const Loader = () => (
     <div className="loader-container">
@@ -694,6 +697,7 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "Total Amount", key: "totalAmount" },
                         { label: "bid Id", key: "bid_id" },
                         { label: "Material ID", key: "material_id" },
+                        { label: "ID", key: "id" },
                         { label: "vendor id", key: "vendor_id" },
                         { label: "vendor name", key: "vendor_name" },
                         { label: "pms supplier id", key: "pms_supplier_id" },
@@ -713,13 +717,14 @@ export default function AllocationTab({ isCounterOffer }) {
                           totalAmount: material.total_amount || "_",
                           bid_id: material.bid_id,
                           material_id: material.material_id,
+                          id: material.id,
                           vendor_id: material.vendor_id,
                           vendor_name: material.vendor_name,
                           pms_supplier_id: material.pms_supplier_id,
                           material_name: material.material_name,
                         };
                       })}
-                      onColumnClick={handleColumnClick}
+                      // onColumnClick={()}
                     />
                   );
                 })}
@@ -775,8 +780,6 @@ export default function AllocationTab({ isCounterOffer }) {
                     <>
                       {selectedData.length > 0 &&
                         selectedData.map((vendorData, index) => {
-                          console.log("vendorData", vendorData);
-
                           return (
                             <div className="card p-4 mt-3 border-0" key={index}>
                               <h4>{vendorData.vendor_name}</h4>

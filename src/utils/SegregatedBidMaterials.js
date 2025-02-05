@@ -5,12 +5,10 @@ console.log("inputArray----",inputArray);
     const bid = vendor.bids[0];
     
 
-    bid.bid_materials.forEach((material) => {
-      console.log("material----",material);
-      
+    bid.bid_materials.forEach((material) => {      
       if (!materialMap.has(material.event_material_id)) {
         materialMap.set(material.event_material_id, {
-
+          id: material.id,
           material_id: material.event_material_id,
           material_name: material.material_name,
           vendor_name: material.vendor_name,
@@ -22,9 +20,12 @@ console.log("inputArray----",inputArray);
         });
       }
       const materialData = materialMap.get(material.event_material_id);
+      console.log("materialData:-------",materialData);
+      
       materialData.bids_values.push({
         ...material,
         bid_id: bid.id,
+        id: material.id,
         material_id: material.material_id,
         material_name: material.material_name,
         vendor_id: vendor.id,
