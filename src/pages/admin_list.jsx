@@ -264,6 +264,10 @@ export default function adminList() {
     fetchEvents();
   }, [activeTab]);
 
+  setTimeout(() => {
+    setLoading(false);
+  }, 500);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
       fetchEvents(newPage);
@@ -493,8 +497,23 @@ export default function adminList() {
 
             <div className="material-boxes mt-3">
               <div className="container-fluid">
-                <div className="row separteinto5 justify-content-left">
+                <div className="row separteinto5 justify-content-center">
                   <div className="col-md-2 text-center">
+                    {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>loading..</p>
+                      </div>
+                    )}
                     <div
                       className="content-box"
                       onClick={() => handleTabChange("all")}
@@ -550,7 +569,7 @@ export default function adminList() {
                             : "1px solid #ccc",
                         backgroundColor:
                           activeTab === "history" ? "#8b0203" : "#fff",
-                        color: "black",
+                        color: activeTab === "history" ? "white" : "black",
                       }}
                     >
                       <h4 className="content-box-title">History Events</h4>
@@ -596,6 +615,11 @@ export default function adminList() {
                             }
                             placeholder="Select Event Title"
                             isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -619,6 +643,11 @@ export default function adminList() {
                             }
                             placeholder="Select Event Number"
                             isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -642,6 +671,11 @@ export default function adminList() {
                             }
                             placeholder="Select Status"
                             isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -667,6 +701,11 @@ export default function adminList() {
                             }
                             placeholder="Select Creator"
                             isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
                         <button type="submit" className="col-md-1 purple-btn2">
@@ -869,17 +908,15 @@ export default function adminList() {
                                 <button
                                   className="btn"
                                   onClick={() =>
-                                    navigate(
-                                      `/edit-event/${event.id}`
-                                    )
+                                    navigate(`/edit-event/${event.id}`)
                                   }
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="16"
                                     height="16"
-                                    fill="currentColor" 
-                                    className="bi bi-pencil-square" 
+                                    fill="currentColor"
+                                    className="bi bi-pencil-square"
                                     viewBox="0 0 16 16"
                                   >
                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />

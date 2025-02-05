@@ -314,6 +314,10 @@ export default function VendorListPage() {
     fetchEvents();
   }, [activeTab, vendorId]);
 
+  setTimeout(() => {
+    setLoading(false);
+  }, 500);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
       fetchEvents(newPage);
@@ -641,8 +645,23 @@ export default function VendorListPage() {
                   </div>
                 </div> */}
 
-                <div className="row separteinto5 justify-content-left">
+                <div className="row separteinto5 justify-content-center">
                   <div className="col-md-2 text-center">
+                    {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>loading..</p>
+                      </div>
+                    )}
                     <div
                       className="content-box"
                       onClick={() => handleTabChange("all")}
@@ -769,6 +788,12 @@ export default function VendorListPage() {
                             }
                             placeholder="Select Event Title"
                             isClearable
+                            classNamePrefix="select-dropdown" // This applies the CSS class
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -793,6 +818,12 @@ export default function VendorListPage() {
                             }
                             placeholder="Select Event Number"
                             isClearable
+                            classNamePrefix="select-dropdown" // This applies the CSS class
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -817,6 +848,12 @@ export default function VendorListPage() {
                             }
                             placeholder="Select Status"
                             isClearable
+                            classNamePrefix="select-dropdown" // This applies the CSS class
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
 
@@ -842,6 +879,12 @@ export default function VendorListPage() {
                             }
                             placeholder="Select Creator"
                             isClearable
+                            classNamePrefix="select-dropdown" // This applies the CSS class
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body} // Fixes overlapping issue
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
                           />
                         </div>
                         <button type="submit" className="col-md-1 purple-btn2">

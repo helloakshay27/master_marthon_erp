@@ -494,6 +494,17 @@ const ApprovalMatrics = () => {
                       />
                     </div>
 
+                    <div className="col-md-3">
+                      <label htmlFor="event-no-select"> Sub Project</label>
+                      <Select
+                        id="event-no-select"
+                        // options={modifiedFilterOptions.sites}
+                        // placeholder="Select Site"
+                        // onChange={handleSiteChange}
+                        // isClearable
+                      />
+                    </div>
+
                     {/* Status */}
                     <div className="col-md-2">
                       <label htmlFor="status-select">Department</label>
@@ -546,7 +557,7 @@ const ApprovalMatrics = () => {
                         isClearable
                       /> */}
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-2 mt-4">
                       <label htmlFor="created-by-select"> Material type</label>
                       {/* <Select
                         id="created-by-select"
@@ -579,7 +590,7 @@ const ApprovalMatrics = () => {
                     </div>
                     <button
                       type="submit"
-                      className="col-md-1 purple-btn2"
+                      className="col-md-1 purple-btn2 ms-2"
                       onClick={handleFilterSubmit}
                     >
                       Go{" "}

@@ -545,13 +545,27 @@ const InvoiceApproval = () => {
 
                               {/* Event Number */}
                               <div className="col-md-3">
-                                <label htmlFor="event-no-select">Site</label>
+                                <label htmlFor="event-no-select">Project</label>
                                 <Select
                                   id="event-no-select"
                                   options={modifiedFilterOptions.sites}
                                   placeholder="Select Site"
                                   onChange={handleSiteChange}
                                   isClearable
+                                />
+                              </div>
+
+                              <div className="col-md-3">
+                                <label htmlFor="event-no-select">
+                                  {" "}
+                                  Sub Project
+                                </label>
+                                <Select
+                                  id="event-no-select"
+                                  // options={modifiedFilterOptions.sites}
+                                  // placeholder="Select Site"
+                                  // onChange={handleSiteChange}
+                                  // isClearable
                                 />
                               </div>
 
