@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { MultiSelector } from "../components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const ApprovalEdit = () => {
   const [filterOptions, setFilterOptions] = useState({
@@ -18,7 +19,24 @@ const ApprovalEdit = () => {
   });
 
   const { id } = useParams(); // Ge
-  const [loading, setLoading] = useState(false); // New loading state
+
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  // const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  // const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  // const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // const [selectedTemplates, setSelectedTemplates] = useState(null);
+
+  const [selectedSubProject, setSelectedSubProject] = useState(null);
+
+  const [selectedDeparment, setSelectedDeparment] = useState(null);
 
   const [selectedCompany, setSelectedCompany] = useState([]);
 
@@ -49,7 +67,7 @@ const ApprovalEdit = () => {
   });
 
   console.log("Selected Company ID:", formData.company_id);
-  console.log("selected site:", formData.site_id);
+  console.log("selected site:", formData.project_id);
   console.log("selected deparment:", formData.department_id);
   console.log("selected module:", formData.module_id);
   console.log("selected materila", formData.material_id);
@@ -172,34 +190,34 @@ const ApprovalEdit = () => {
     fetchDropdownData();
   }, []); // Run once when the component mounts
 
-  useEffect(() => {
-    if (selectedCompany && selectedCompany.value) {
-      const fetchSites = async (companyId) => {
-        try {
-          const response = await fetch(
-            `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-          if (!response.ok) throw new Error("Failed to fetch sites");
+  // useEffect(() => {
+  //   if (selectedCompany && selectedCompany.value) {
+  //     const fetchSites = async (companyId) => {
+  //       try {
+  //         const response = await fetch(
+  //           `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+  //         if (!response.ok) throw new Error("Failed to fetch sites");
 
-          const data = await response.json();
-          const formattedSites = data.sites.map(([name, id]) => ({
-            label: name,
-            value: id,
-          }));
+  //         const data = await response.json();
+  //         const formattedSites = data.sites.map(([name, id]) => ({
+  //           label: name,
+  //           value: id,
+  //         }));
 
-          setFilterOptions((prevState) => ({
-            ...prevState,
-            sites: formattedSites, // Update sites in filterOptions
-          }));
-        } catch (error) {
-          console.error("Error fetching sites:", error);
-          setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-        }
-      };
+  //         setFilterOptions((prevState) => ({
+  //           ...prevState,
+  //           sites: formattedSites, // Update sites in filterOptions
+  //         }));
+  //       } catch (error) {
+  //         console.error("Error fetching sites:", error);
+  //         setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+  //       }
+  //     };
 
-      fetchSites(selectedCompany.value);
-    }
-  }, [selectedCompany]); //
+  //     fetchSites(selectedCompany.value);
+  //   }
+  // }, [selectedCompany]); //
 
   useEffect(() => {
     const fetchApprovalData = async () => {
@@ -215,38 +233,78 @@ const ApprovalEdit = () => {
         // Set form data from API response
         setFormData({
           company_id: data.company_id || null,
-          site_id: data.project_id || null,
+          site_id: data.site_id || null,
+          project_id: data.project_id || null,
           department_id: data.department_id || null,
           module_id: data.approval_type || null,
           material_id: data.pms_inventory_type_id || null,
           invoice_approval_levels: data.invoice_approval_levels || [],
         });
 
-        const companyOption = filterOptions.companies.find(
-          (company) => company.value === data.company_id
-        );
-        setSelectedCompany(companyOption || null); // Set selected company
+        // Ensure `companies` list is loaded before setting values
+        if (!companies.length) return;
 
-        const siteOption = filterOptions.sites.find(
-          (site) => site.value === data.project_id
-        );
-        setSelectedSite(siteOption || null); // Set selected site
+        const companyOption = companies.find((c) => c.id === data.company_id);
+        if (companyOption) {
+          setSelectedCompany({
+            value: companyOption.id,
+            label: companyOption.name,
+          });
+
+          // Fetch projects based on preselected company
+          setProjects(
+            companyOption.projects.map((prj) => ({
+              value: prj.id,
+              label: prj.name,
+            }))
+          );
+
+          // Find and set selected project
+          const projectOption = companyOption.projects.find(
+            (p) => p.id === data.project_id
+          );
+          setSelectedProject(
+            projectOption
+              ? { value: projectOption.id, label: projectOption.name }
+              : null
+          );
+          console.log;
+
+          if (projectOption) {
+            // Fetch sites (sub-projects) based on preselected project
+            setSiteOptions(
+              projectOption.pms_sites.map((site) => ({
+                value: site.id,
+                label: site.name,
+              }))
+            );
+
+            // Find and set selected sub-project (site)
+            const siteOption = projectOption.pms_sites.find(
+              (s) => s.id === data.site_id
+            );
+            setSelectedSite(
+              siteOption
+                ? { value: siteOption.id, label: siteOption.name }
+                : null
+            );
+          }
+        }
 
         const departmentOption = filterOptions.departments.find(
           (department) => department.value === data.department_id
         );
-        setSelectedDepartment(departmentOption || null); // Set selected department
+        setSelectedDepartment(departmentOption || null);
 
         const moduleOption = filterOptions.modules.find(
           (mod) => mod.value === data.approval_type
         );
-
-        setSelectedModule(moduleOption || null); // Set selected module
+        setSelectedModule(moduleOption || null);
 
         const materialTypeOption = filterOptions.material_types.find(
           (mat) => mat.value === data.pms_inventory_type_id
         );
-        setSelectedMaterialType(materialTypeOption || null); // Set selected material type
+        setSelectedMaterialType(materialTypeOption || null);
 
         // Map approval levels to user names
         const userMap = new Map(
@@ -271,83 +329,219 @@ const ApprovalEdit = () => {
       }
     };
 
-    if (filterOptions.companies.length > 0) {
+    if (companies.length > 0) {
       fetchApprovalData();
     }
-  }, [filterOptions.companies, id]); // Trigger fetchApprovalData when filterOptions or id change
+  }, [companies, id]);
+
+  // useEffect(() => {
+  //   const fetchApprovalData = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       if (!response.ok) throw new Error("Failed to fetch approval data");
+
+  //       const data = await response.json();
+  //       console.log("Fetched Approval Data:", data);
+
+  //       setFormData({
+  //         company_id: data.company_id || null,
+  //         project_id: data.project_id || null,
+  //         site_id: data.site_id || null,
+  //         department_id: data.department_id || null,
+  //         module_id: data.approval_type || null,
+  //         material_id: data.pms_inventory_type_id || null,
+  //         invoice_approval_levels: data.invoice_approval_levels || [],
+  //       });
+
+  //       // Set selected company
+  //       const companyOption = companies.find((c) => c.id === data.company_id);
+  //       setSelectedCompany(companyOption || null);
+
+  //       if (companyOption) {
+  //         // Fetch projects based on preselected company
+  //         setProjects(
+  //           companyOption.projects.map((prj) => ({
+  //             value: prj.id,
+  //             label: prj.name,
+  //           }))
+  //         );
+
+  //         // Find and set selected project
+  //         const projectOption = companyOption.projects.find(
+  //           (p) => p.id === data.project_id
+  //         );
+  //         setSelectedProject(
+  //           projectOption
+  //             ? { value: projectOption.id, label: projectOption.name }
+  //             : null
+  //         );
+
+  //         if (projectOption) {
+  //           // Fetch sites (sub-projects) based on preselected project
+  //           setSiteOptions(
+  //             projectOption.pms_sites.map((site) => ({
+  //               value: site.id,
+  //               label: site.name,
+  //             }))
+  //           );
+
+  //           // Find and set selected sub-project (site)
+  //           const siteOption = projectOption.pms_sites.find(
+  //             (s) => s.id === data.site_id
+  //           );
+  //           setSelectedSite(
+  //             siteOption
+  //               ? { value: siteOption.id, label: siteOption.name }
+  //               : null
+  //           );
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching approval data:", error);
+  //     }
+  //   };
+
+  //   if (companies.length > 0) {
+  //     fetchApprovalData();
+  //   }
+  // }, [companies, id]); // Run after companies are loaded
+  // Trigger fetchApprovalData when filterOptions or id change
+
   useEffect(() => {
-    if (formData.site_id && filterOptions.sites.length > 0) {
-      setSelectedSite((prevSelectedSite) => {
-        // Only update if it's still unset or matches the preselected site
-        if (!prevSelectedSite || prevSelectedSite.value === formData.site_id) {
-          return (
-            filterOptions.sites.find(
-              (site) => site.value === formData.site_id
-            ) || null
-          );
-        }
-        return prevSelectedSite; // Keep user-selected site if changed manually
-      });
-    }
-  }, [filterOptions.sites]);
-
-  // When you handle company change:
-  const handleCompanyChange = (selectedOptions) => {
-    const companyId = selectedOptions.value; // Use the value directly
-
-    setSelectedCompany(selectedOptions);
-    setFormData((prevData) => ({
-      ...prevData,
-      company_id: companyId,
-      site_id: null, // Reset site selection
-      department_id: null, // Reset department selection as well
-    }));
-
-    // Fetch sites based on selected company
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        const formattedSites = data.sites.map(([name, id]) => ({
-          label: name,
-          value: id,
-        }));
-
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          sites: formattedSites,
-        }));
-
-        // Optionally set selected site to null after fetching
-        setSelectedSite(null);
+    axios
+      .get(
+        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
       })
       .catch((error) => {
-        console.error("Error fetching sites:", error);
-        setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+        console.error("Error fetching company data:", error);
       });
+  }, []);
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+
+      setFormData((prevState) => ({
+        ...prevState,
+        company_id: selectedOption.value, // Update formData with company_id
+        project_id: null, // Reset project_id when company changes
+        site_id: null, // Reset site_id when company changes
+      }));
+    }
   };
 
-  // When you handle site change:
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        project_id: selectedOption.value, // Update formData with project_id
+        site_id: null, // Reset site_id when project changes
+      }));
+    }
+  };
+
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
-    setFormData((prevState) => ({
-      ...prevState,
-      site_id: selectedOption ? selectedOption.value : "",
-    }));
+    setSelectedWing(null); // Reset wing selection
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      setFormData((prevState) => ({
+        ...prevState,
+        site_id: selectedOption.value, // Update formData with site_id
+      }));
+    }
   };
 
-  // When you handle department change:
-  const handleDepartmentChange = (selectedOption) => {
-    console.log("selcted deaprment", selectedOption.value);
-    setSelectedDepartment(selectedOption);
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  const [departmentUsers, setDepartmentUsers] = useState([]);
+
+  const handleDepartmentChange = async (selectedOption) => {
+    console.log("Selected Department:", selectedOption);
+
+    setSelectedDepartment(selectedOption); // ✅ Ensure state updates
     setFormData((prevState) => ({
       ...prevState,
-      department_id: selectedOption ? selectedOption.value : "",
+      department_id: selectedOption ? selectedOption.value : null,
     }));
-  };
 
-  // In your JSX (value should match the selected state):
+    if (selectedOption) {
+      try {
+        // Fetch users based on department ID
+        const response = await axios.get(
+          `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (response.data && Array.isArray(response.data)) {
+          const userOptions = response.data.map((user) => ({
+            value: user.id,
+            label: user.full_name,
+          }));
+          setDepartmentUsers(userOptions);
+        }
+      } catch (error) {
+        console.error("Error fetching users for department:", error);
+        setDepartmentUsers([]); // Reset users on error
+      }
+    } else {
+      setDepartmentUsers([]); // Reset users if no department selected
+    }
+  };
 
   const handleModuleChange = (selectedOption) => {
     console.log("Selected Module ID:", selectedOption.value);
@@ -417,7 +611,8 @@ const ApprovalEdit = () => {
     const payload = {
       approval_type: formData.module_id,
       company_id: formData.company_id,
-      project_id: formData.site_id,
+      project_id: formData.project_id,
+      site_id: formData.site_id,
       department_id: formData.department_id,
       snag_checklist_id: formData.template_id,
       sub_category_id: formData.sub_category_id,
@@ -441,8 +636,8 @@ const ApprovalEdit = () => {
         payload
       )
       .then((response) => {
-        console.log("Approval Created:", response.data);
-        alert("Approval created successfully!");
+        console.log("Approval  updated Created:", response.data);
+        alert("Approval update successfully!");
       })
       // .catch((error, response) => {
       //   console.error("Error creating invoice approval:", response);
@@ -542,7 +737,7 @@ const ApprovalEdit = () => {
                                   Comapny
                                 </label>
 
-                                <select
+                                {/* <select
                                   id="company-select"
                                   className="form-control"
                                   value={
@@ -557,7 +752,6 @@ const ApprovalEdit = () => {
                                     })
                                   }
                                 >
-                                  {/* <option value="">Select Company</option> */}
                                   {filterOptions.companies.map((option) => (
                                     <option
                                       key={option.value}
@@ -566,13 +760,45 @@ const ApprovalEdit = () => {
                                       {option.label}
                                     </option>
                                   ))}
-                                </select>
+                                </select> */}
+                                <SingleSelector
+                                  options={companyOptions}
+                                  onChange={handleCompanyChange}
+                                  value={
+                                    companyOptions.find(
+                                      (opt) =>
+                                        opt.value === selectedCompany?.value
+                                    ) || null
+                                  }
+                                  placeholder="Select Company"
+                                />
+
+                                {/* <select
+                                  value={selectedCompany?.value || ""}
+                                  onChange={(e) => {
+                                    const selectedOption = companyOptions.find(
+                                      (option) =>
+                                        option.value === e.target.value
+                                    );
+                                    handleCompanyChange(selectedOption);
+                                  }}
+                                >
+                                  <option value="">Select Company</option>
+                                  {companyOptions.map((company) => (
+                                    <option
+                                      key={company.value}
+                                      value={company.value}
+                                    >
+                                      {company.label}
+                                    </option>
+                                  ))}
+                                </select> */}
                               </div>
 
                               {/* Event Number */}
                               <div className="col-md-3 mb-2">
                                 <label htmlFor="site-select">Site</label>
-                                <select
+                                {/* <select
                                   id="site-select"
                                   className="form-control"
                                   value={selectedSite ? selectedSite.value : ""}
@@ -594,14 +820,34 @@ const ApprovalEdit = () => {
                                       {option.label}
                                     </option>
                                   ))}
-                                </select>
+                                </select> */}
+                                <SingleSelector
+                                  options={projects}
+                                  onChange={handleProjectChange}
+                                  value={selectedProject}
+                                  placeholder={`Select Project`} // Dynamic placeholder
+                                />
+                              </div>
+
+                              <div className="col-md-3 mb-2">
+                                <label htmlFor="event-no-select">
+                                  {" "}
+                                  SubProject
+                                </label>
+                                <SingleSelector
+                                  elector
+                                  options={siteOptions}
+                                  onChange={handleSiteChange}
+                                  value={selectedSite}
+                                  placeholder={`Select Sub-project`} // Dynamic placeholder
+                                />
                               </div>
 
                               <div className="col-md-3 mb-2">
                                 <label htmlFor="department-select">
                                   Department
                                 </label>
-                                <select
+                                {/* <select
                                   id="department-select"
                                   className="form-control"
                                   value={
@@ -618,7 +864,6 @@ const ApprovalEdit = () => {
                                     })
                                   }
                                 >
-                                  {/* <option value="">Select Department</option> */}
                                   {filterOptions.departments.map((option) => (
                                     <option
                                       key={option.value}
@@ -627,12 +872,20 @@ const ApprovalEdit = () => {
                                       {option.label}
                                     </option>
                                   ))}
-                                </select>
+                                </select> */}
+                                <SingleSelector
+                                  id="status-select"
+                                  options={filterOptions.departments}
+                                  onChange={handleDepartmentChange}
+                                  value={selectedDepartment} // ✅ Use selectedDepartment directly
+                                  placeholder="Select Department"
+                                  isClearable
+                                />
                               </div>
 
-                              <div className="col-md-3 mb-2">
+                              <div className="col-md-3 mt-4">
                                 <label htmlFor="module-select">Module</label>
-                                <select
+                                {/* <select
                                   id="module-select"
                                   className="form-control"
                                   value={
@@ -647,7 +900,7 @@ const ApprovalEdit = () => {
                                     })
                                   }
                                 >
-                                  {/* <option value="">Select Module</option> */}
+                                  
                                   {filterOptions.modules.map((option) => (
                                     <option
                                       key={option.value}
@@ -656,42 +909,33 @@ const ApprovalEdit = () => {
                                       {option.label}
                                     </option>
                                   ))}
-                                </select>
+                                </select> */}
+                                <SingleSelector
+                                  id="module-select"
+                                  options={filterOptions.modules} // Use modifiedFilterOptions.modules
+                                  value={selectedModule}
+                                  onChange={handleModuleChange}
+                                  isClearable
+                                />
                               </div>
 
                               <div className="col-md-3 mt-4">
                                 <label htmlFor="material-type-select">
                                   Material type
                                 </label>
-                                <select
+                                <SingleSelector
                                   id="material-type-select"
-                                  className="form-control"
-                                  value={
-                                    selectedMaterialType
-                                      ? selectedMaterialType.value
-                                      : ""
-                                  }
-                                  onChange={(e) =>
-                                    handleMaterialTypeChange({
-                                      value: e.target.value,
-                                      label:
-                                        e.target.options[e.target.selectedIndex]
-                                          .text,
-                                    })
-                                  }
-                                >
-                                  {/* <option value="">Select Material Type</option> */}
-                                  {filterOptions.material_types.map(
-                                    (option) => (
-                                      <option
-                                        key={option.value}
-                                        value={option.value}
-                                      >
-                                        {option.label}
-                                      </option>
-                                    )
-                                  )}
-                                </select>
+                                  options={filterOptions.material_types} // Use filterOptions directly
+                                  value={selectedMaterialType}
+                                  // onChange={(option) =>
+                                  //   setSelectedMaterialType(option)
+                                  // } // Ha
+                                  //
+                                  // ndle selection
+
+                                  onChange={handleMaterialTypeChange}
+                                  isClearable
+                                />
                               </div>
 
                               {/* Status */}
@@ -800,7 +1044,7 @@ const ApprovalEdit = () => {
                                   <span style={{ color: "#f69380" }}>*</span>
                                 </legend>
                                 <MultiSelector
-                                  options={userOptions}
+                                  options={departmentUsers}
                                   value={level.users}
                                   onChange={(selected) =>
                                     handleInputChange(index, "users", selected)

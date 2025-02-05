@@ -3,47 +3,84 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import Select from "../components/base/Select/Select";
 import { useState, useEffect } from "react";
 import { MultiSelector } from "../components";
+import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 
 const InvoiceApproval = () => {
   const [filterOptions, setFilterOptions] = useState({
-    companies: [],
+    // companies: [],
     departments: [],
-    sites: [],
+    // sites: [],
+    // subprojects: [], //
     modules: [], // Add modules to the state
     material_types: [], // Add
     approval_types: [],
     users: [],
   });
 
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  // const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  // const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
+
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [loading, setLoading] = useState(false);
   // const [selectedCategory, setSelectedCategory] = useState(null);
 
   // const [selectedTemplates, setSelectedTemplates] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedSubProject, setSelectedSubProject] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null); // Track selected module
   const [selectedMaterialType, setSelectedMaterialType] = useState(null);
+  const [selectedDeparment, setSelectedDeparment] = useState(null);
+
+  // const modifiedFilterOptions = {
+  //   companies: [
+  //     { label: "Select Company", value: "" },
+  //     ...filterOptions.companies, // Directly use the companies array from filterOptions
+  //   ],
+  //   // other fields
+  //   sites: [{ label: "Select Site", value: "" }, ...filterOptions.sites],
+  //   departments: [
+  //     { label: "Select Department", value: "" },
+  //     ...filterOptions.departments,
+  //   ],
+  //   // approval_types: [
+  //   //   { label: "Select Module", value: "" },
+  //   //   ...filterOptions.approval_types, // Map your modules here
+  //   // ],
+  //   subprojects: [
+  //     { label: "Select Subproject", value: "" },
+  //     ...filterOptions.subprojects,
+  //   ],
+  //   modules: [{ label: "Select Module", value: "" }, ...filterOptions.modules],
+
+  //   material_types: [
+  //     { label: "Select Material Type", value: "" },
+  //     ...filterOptions.material_types, // Map your material types here
+  //   ],
+  // };
 
   const modifiedFilterOptions = {
-    companies: [
-      { label: "Select Company", value: "" },
-      ...filterOptions.companies, // Directly use the companies array from filterOptions
-    ],
-    // other fields
-    sites: [{ label: "Select Site", value: "" }, ...filterOptions.sites],
     departments: [
       { label: "Select Department", value: "" },
-      ...filterOptions.departments,
+      ...(filterOptions.departments || []), // Safeguard against undefined or null departments
     ],
-    // approval_types: [
-    //   { label: "Select Module", value: "" },
-    //   ...filterOptions.approval_types, // Map your modules here
-    // ],
-    modules: [{ label: "Select Module", value: "" }, ...filterOptions.modules],
-
+    subprojects: [
+      { label: "Select Subproject", value: "" },
+      ...(filterOptions.subprojects || []), // Safeguard against undefined or null subprojects
+    ],
+    modules: [
+      { label: "Select Module", value: "" },
+      ...(filterOptions.modules || []), // Safeguard against undefined or null modules
+    ],
     material_types: [
       { label: "Select Material Type", value: "" },
-      ...filterOptions.material_types, // Map your material types here
+      ...(filterOptions.material_types || []), // Safeguard against undefined or null material_types
     ],
   };
 
@@ -62,9 +99,6 @@ const InvoiceApproval = () => {
 
     invoice_approval_levels: [],
   });
-
-  console.log("Selected Company ID:", formData.company_id);
-  console.log("All Sites Data:", filterOptions.sites);
 
   const handleAddLevel = () => {
     setApprovalLevels([
@@ -125,15 +159,6 @@ const InvoiceApproval = () => {
         const materialTypes = materialTypesData.material_types || [];
         console.log("modifuiees", modifiedFilterOptions); // Check if material_types is correctly set
         setFilterOptions({
-          companies: dropdownData.companies.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          sites: dropdownData.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id,
-          })),
           departments: dropdownData.departments.map(([name, id]) => ({
             label: name,
             value: id,
@@ -167,91 +192,139 @@ const InvoiceApproval = () => {
     fetchDropdownData();
   }, []);
 
-  const handleCompanyChange = (selectedOption) => {
-    console.log("Selected Option:", selectedOption); // Debugging
-
-    // Extract company ID safely
-    console.log("Selected Option:", selectedOption.target.value);
-
-    const companyId = selectedOption.target.value; // Directly use companyId here
-
-    if (!companyId) {
-      console.warn("No valid company selected.");
-      setSelectedCompany(null);
-      setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-      return;
-    }
-
-    console.log("Selected Company ID:", companyId);
-
-    // Update state
-    setSelectedCompany(selectedOption);
-    setFormData((prevData) => ({
-      ...prevData,
-      company_id: companyId,
-      site_id: null, // Reset site selection
-    }));
-
-    // Fetch sites based on selected company
-    fetch(
-      `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    )
+  useEffect(() => {
+    axios
+      .get(
+        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("API Response Data:", data);
-
-        if (!data || !Array.isArray(data.sites)) {
-          console.error("Invalid or missing site data:", data);
-          setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-          return;
-        }
-
-        // Map API response to match the select component's format
-        const formattedSites = data.sites.map(([name, id]) => ({
-          label: name,
-          value: id,
-        }));
-
-        // Update filter options with the fetched sites
-        setFilterOptions((prevState) => ({
-          ...prevState,
-          sites: formattedSites,
-        }));
+        setCompanies(response.data.companies);
       })
       .catch((error) => {
-        console.error("Error fetching sites:", error);
-        setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
+        console.error("Error fetching company data:", error);
       });
+  }, []);
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+
+      setFormData((prevState) => ({
+        ...prevState,
+        company_id: selectedOption.value, // Update formData with company_id
+        project_id: null, // Reset project_id when company changes
+        site_id: null, // Reset site_id when company changes
+      }));
+    }
   };
 
-  // Filter sites dynamically when company_id changes
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
 
-  // Handle site change
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
 
-  const handleSiteChange = (selected) => {
-    console.log("Selected Site ID:", selected.target.value); //
-    const siteId = selected.target.value;
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
 
-    console.log("site id", selected.target.value);
-    // Logging the selected site value
-    setFormData((prevState) => ({
-      ...prevState,
-      site_id: siteId, // Updating site_id in formData
-    }));
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+      setFormData((prevState) => ({
+        ...prevState,
+        project_id: selectedOption.value, // Update formData with project_id
+        site_id: null, // Reset site_id when project changes
+      }));
+    }
   };
-  // Handle category change
 
-  const handleDepartmentChange = (selectedOption) => {
-    console.log("Selected Department ID:", selectedOption.target.value);
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+    setSelectedWing(null); // Reset wing selection
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      setFormData((prevState) => ({
+        ...prevState,
+        site_id: selectedOption.value, // Update formData with site_id
+      }));
+    }
+  };
+
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  const [departmentUsers, setDepartmentUsers] = useState([]);
+
+  const handleDepartmentChange = async (selectedOption) => {
+    const departmentId = selectedOption.target.value;
+    console.log("Selected Department ID:", departmentId);
+
     setFormData((prevState) => ({
       ...prevState,
-      department_id: selectedOption.target.value,
+      department_id: departmentId,
     }));
+
+    if (departmentId) {
+      try {
+        // Fetch users based on department ID
+        const response = await axios.get(
+          `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (response.data && Array.isArray(response.data)) {
+          // Transform API response to dropdown-friendly format
+          const userOptions = response.data.map((user) => ({
+            value: user.id,
+            label: user.full_name,
+          }));
+          setDepartmentUsers(userOptions);
+        }
+      } catch (error) {
+        console.error("Error fetching users for department:", error);
+        setDepartmentUsers([]); // Reset users on error
+      }
+    } else {
+      setDepartmentUsers([]); // Reset users if no department selected
+    }
   };
 
   const handleModuleChange = (selectedOption) => {
@@ -292,7 +365,8 @@ const InvoiceApproval = () => {
       approval_type: formData.module_id, // Use dynamic approval_type
       // Or set dynamically if needed
       company_id: formData.company_id, // Dynamic company_id from formData
-      project_id: formData.site_id, // Static or dynamic if needed
+      project_id: formData.project_id,
+      site_id: formData.site_id, // Static or dynamic if needed
       department_id: formData.department_id, // Dynamic department_id from formData
       pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
@@ -343,6 +417,7 @@ const InvoiceApproval = () => {
       company_id: formData.company_id,
       project_id: formData.site_id,
       department_id: formData.department_id,
+      site_id: formData.site_id,
       snag_checklist_id: formData.template_id,
       pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
@@ -529,43 +604,35 @@ const InvoiceApproval = () => {
                                 <label htmlFor="event-title-select">
                                   Company
                                 </label>
-                                <Select
-                                  id="company-select"
-                                  options={modifiedFilterOptions.companies} // Ensure you're using the correct filter options
-                                  onChange={(selectedOption) => {
-                                    setTimeout(() => {
-                                      handleCompanyChange(selectedOption); // Pass the selectedOption directly to the handler
-                                    }, 500); // Delay of 500ms (adjust as needed)
-                                  }}
-                                  value={selectedCompany} // Bind the selected company state to the value prop
-                                  placeholder="Select Company"
-                                  isClearable // Allow clearing the selection
+                                <SingleSelector
+                                  options={companyOptions}
+                                  onChange={handleCompanyChange}
+                                  value={selectedCompany}
+                                  placeholder={`Select Company`} // Dynamic placeholder
                                 />
                               </div>
 
                               {/* Event Number */}
                               <div className="col-md-3">
                                 <label htmlFor="event-no-select">Project</label>
-                                <Select
-                                  id="event-no-select"
-                                  options={modifiedFilterOptions.sites}
-                                  placeholder="Select Site"
-                                  onChange={handleSiteChange}
-                                  isClearable
+                                <SingleSelector
+                                  options={projects}
+                                  onChange={handleProjectChange}
+                                  value={selectedProject}
+                                  placeholder={`Select Project`} // Dynamic placeholder
                                 />
                               </div>
 
                               <div className="col-md-3">
                                 <label htmlFor="event-no-select">
                                   {" "}
-                                  Sub Project
+                                  SubProject
                                 </label>
-                                <Select
-                                  id="event-no-select"
-                                  // options={modifiedFilterOptions.sites}
-                                  // placeholder="Select Site"
-                                  // onChange={handleSiteChange}
-                                  // isClearable
+                                <SingleSelector
+                                  options={siteOptions}
+                                  onChange={handleSiteChange}
+                                  value={selectedSite}
+                                  placeholder={`Select Sub-project`} // Dynamic placeholder
                                 />
                               </div>
 
@@ -578,6 +645,7 @@ const InvoiceApproval = () => {
                                   id="status-select"
                                   options={modifiedFilterOptions.departments}
                                   onChange={handleDepartmentChange}
+                                  value={selectedDeparment}
                                   placeholder="Select Department"
                                   isClearable
                                 />
@@ -690,7 +758,7 @@ const InvoiceApproval = () => {
                                   <span style={{ color: "#f69380" }}>*</span>
                                 </legend>
                                 <MultiSelector
-                                  options={userOptions}
+                                  options={departmentUsers} // Use dynamically fetched users
                                   value={level.users}
                                   onChange={(selected) =>
                                     handleInputChange(index, "users", selected)
