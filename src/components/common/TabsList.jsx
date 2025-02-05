@@ -51,7 +51,7 @@ const TabsList = ({ handleShowModal, renderModal }) => {
               // { label: "Shared With", modalType: "Shared" },
               { label: "Extend Submission Time", modalType: "Extend" },
               { label: "Withdraw", modalType: "Withdraw" },
-              // { label: "Convert to Auction", modalType: "Convert" },
+              { label: "Convert to Auction", modalType: "Convert" },
               { label: "Rejected Bids", modalType: "Rejected" },
               // { label: "Order Activity", modalType: "Order" },
               { label: "Add Evaluation Time", modalType: "Evaluation" },
