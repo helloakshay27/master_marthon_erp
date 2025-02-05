@@ -25,7 +25,7 @@ console.log("inputArray----",inputArray);
       materialData.bids_values.push({
         ...material,
         bid_id: bid.id,
-        material_id: material.event_material_id,
+        material_id: material.material_id,
         material_name: material.material_name,
         vendor_id: vendor.id,
         pms_supplier_id: vendor.pms_supplier_id,

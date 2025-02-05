@@ -250,9 +250,11 @@ export default function AllocationTab({ isCounterOffer }) {
       );
 
       const responseData = response.data;
+      console.log("responseData", responseData.bid_materials, material_id);
+      
 
       const bidMaterial = responseData.bid_materials.find(
-        (material) => material.id === material_id
+        (material) => material.material_id === material_id
       );
 
       if (!bidMaterial) {
@@ -586,8 +588,6 @@ export default function AllocationTab({ isCounterOffer }) {
                 alignItems: "center",
               }}
             ></div>
-            {console.log("eventVendors.length", eventVendors.length,eventVendors)
-            }
             {eventVendors.length ? (
               <>
                 <div style={{ overflowX: "auto" }}>

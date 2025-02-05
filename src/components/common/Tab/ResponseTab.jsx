@@ -88,7 +88,6 @@ export default function ResponseTab({ isCounterOffer }) {
             vendor.id === vendorId ? { ...vendor, ...data } : vendor
           )
         );
-        console.log("data of get event vendors", eventVendors);
         
       } else {
         // Use revision data
@@ -111,7 +110,6 @@ export default function ResponseTab({ isCounterOffer }) {
           return vendor;
         });
         setEventVendors(updatedEventVendors);
-        console.log("data of update event vendors", eventVendors);
         
       }
     } catch (err) {
@@ -344,7 +342,6 @@ export default function ResponseTab({ isCounterOffer }) {
               }}
             ></div>
             {eventVendors.length > 0 ? (
-              console.log("event vendors", eventVendors),
               
               <>
                 <div style={{ overflowX: "auto" }}>
