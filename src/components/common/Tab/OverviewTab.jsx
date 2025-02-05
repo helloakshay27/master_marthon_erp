@@ -454,6 +454,8 @@ export default function OverviewTab({
               <div className="card card-body p-4 rounded-3">
                 <Table
                   columns={[
+                    { label: "Material Type ", key: "sectionName" },
+                    { label: "Sub Material Type ", key: "subSectionName" },
                     { label: "Material Name", key: "inventoryName" },
                     { label: "Quantity", key: "quantity" },
                     { label: "UOM", key: "uom" },
@@ -461,8 +463,6 @@ export default function OverviewTab({
                     { label: "Location", key: "location" },
                     { label: "Rate", key: "rate" },
                     { label: "Amount", key: "amount" },
-                    { label: "Material Type Name", key: "sectionName" },
-                    { label: "Sub Material Type Name", key: "subSectionName" },
                   ]}
                   data={overviewDatas}
                 />

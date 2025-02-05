@@ -147,7 +147,8 @@ export default function BulkCounterOfferModal({
     setFormData(updatedFormData);
     setSumTotal(totalSum);
   };
-
+  console.log("formData----", formData.bid_materials);
+  
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
       const productName = item.material_name || "_";

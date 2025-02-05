@@ -339,14 +339,14 @@ export default function CreateRFQForm({
                 <div className="col-md-8 col-sm-12 d-flex gap-3">
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Material"}
+                      label={"Select Material Type"}
                       options={sectionOptions}
                       defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
-                          ? "Select Material"
+                          ? "Select Material Type"
                           : sectionOptions?.find(
                               (option) => option.label === section?.materialType
-                            )?.value || "Select Material"
+                            )?.value || "Select Material Type"
                       }
                       onChange={(selected) =>
                         handleSectionChange(selected, sectionIndex)
@@ -355,16 +355,16 @@ export default function CreateRFQForm({
                   </div>
                   <div className="flex-grow-1">
                     <SelectBox
-                      label={"Select Sub Material"}
+                      label={"Select Sub Material Type"}
                       options={subSectionOptions}
                       defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
-                          ? "Select Sub Material"
+                          ? "Select Sub Material Type"
                           : subSectionOptions?.find(
                               (option) =>
                                 option.label ===
                                 section?.sectionData[0]?.subMaterialType
-                            )?.value || "Select Sub Material"
+                            )?.value || "Select Sub Material Type"
                       }
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
