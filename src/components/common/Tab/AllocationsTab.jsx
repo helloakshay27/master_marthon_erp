@@ -91,11 +91,11 @@ export default function AllocationTab({ isCounterOffer }) {
         }
         const data = await response.json();
         setResponse(data);
-        console.log("response:::::::________------___++_+_+_+_+_+_+_:--",data, data.vendor[0]?.pms_supplier_id);
-        setPmsIdVal(data.vendor[0]?.pms_supplier_id);
-        console.log("pmspmsp,spmspmspmspms +++++++___________------ PMS:-", pmsIdVal);
+        console.log("response:::::::________------___++_+_+_+_+_+_+_:--", data);
+        setPmsIdVal(data.vendors[0]?.pms_supplier_id);
+        // console.log("pmspmsp,spmspmspmspms +++++++___________------ PMS:-", pmsIdVal);
         
-        setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
+        setEventVendors(data.vendors);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -586,7 +586,9 @@ export default function AllocationTab({ isCounterOffer }) {
                 alignItems: "center",
               }}
             ></div>
-            {eventVendors.length > 0 ? (
+            {console.log("eventVendors.length", eventVendors.length,eventVendors)
+            }
+            {eventVendors.length ? (
               <>
                 <div style={{ overflowX: "auto" }}>
                   <table
