@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import {
@@ -15,6 +15,9 @@ import {
   Table,
 } from "../components";
 import EstimationQuickFilter from "../components/EstimationQuickFilter";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import axios from "axios";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 const EstimationApprovolList = () => {
   const [settingShow, setSettingShow] = useState(false);
@@ -24,6 +27,113 @@ const EstimationApprovolList = () => {
 
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
+
+  // States to store data
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
+
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios.get('https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+      .then(response => {
+        setCompanies(response.data.companies);
+      })
+      .catch(error => {
+        console.error('Error fetching company data:', error);
+      });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);  // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
+      setProjects(
+        selectedCompanyData?.projects.map(prj => ({
+          value: prj.id,
+          label: prj.name
+        }))
+      );
+    }
+  };
+
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+    setSelectedWing(null); // Reset wing selection
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+      const selectedProjectData = selectedCompanyData?.projects.find(project => project.id === selectedOption.value);
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map(site => ({
+          value: site.id,
+          label: site.name
+        })) || []
+      );
+    }
+  };
+
+
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+    setSelectedWing(null); // Reset wing selection
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project and site data
+      const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+      const selectedProjectData = selectedCompanyData.projects.find(project => project.id === selectedProject.value);
+      const selectedSiteData = selectedProjectData?.pms_sites.find(site => site.id === selectedOption.value);
+
+      // Set wings options based on selected site
+      setWingsOptions(
+        selectedSiteData?.pms_wings.map(wing => ({
+          value: wing.id,
+          label: wing.name
+        })) || []
+      );
+    }
+  };
+
+  // Handle wing selection
+  const handleWingChange = (selectedOption) => {
+    setSelectedWing(selectedOption);
+  };
+
+  // Map companies to options for the dropdown
+  const companyOptions = companies.map(company => ({
+    value: company.id,
+    label: company.company_name
+  }));
+
 
   return (
     <>
@@ -77,7 +187,125 @@ const EstimationApprovolList = () => {
           </div>
           <div className="card mt-3 pb-3">
             {/* <QuickFilter /> */}
-            <EstimationQuickFilter/>
+            {/* <EstimationQuickFilter/> */}
+
+            <CollapsibleCard title="Quick Filter">
+              {/* <div className="card-body pt-0 mt-0">
+                <div className="row my-2 align-items-end">
+                  {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
+                    <div className="col-md-2" key={idx}>
+                      <div className="form-group">
+                        <label>{label}</label>
+                        <select className="form-control form-select" style={{ width: "100%" }}>
+                          <option selected="selected">Alabama</option>
+                          <option>Alaska</option>
+                          <option>California</option>
+                          <option>Delaware</option>
+                          <option>Tennessee</option>
+                          <option>Texas</option>
+                          <option>Washington</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="col-md-2">
+                    <button className="purple-btn2 m-0">Go</button>
+                  </div>
+                </div>
+              </div> */}
+              <div className="card-body">
+                <div className="row my-2 align-items-end">
+                  {/* Company Dropdown */}
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>
+                        Company
+                      </label>
+                      <SingleSelector
+                        options={companyOptions}
+                        onChange={handleCompanyChange}
+                        value={selectedCompany}
+                        placeholder={`Select Company`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+
+                  {/* Project Dropdown */}
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>Project</label>
+                      <SingleSelector
+                        options={projects}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder={`Select Project`} // Dynamic placeholder
+                      />
+                    </div>
+
+                  </div>
+
+                  {/* Sub-Project Dropdown */}
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>Sub-Project</label>
+                      <SingleSelector
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+
+                  {/* Wings Dropdown */}
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>Wings</label>
+                      <SingleSelector
+                        options={wingsOptions}
+                        value={selectedWing}
+                        onChange={handleWingChange}
+                        placeholder={`Select Wing`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn2 m-0"
+                      onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                    >
+                      Go
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+              {/* <div className="card-body pt-0 mt-0">
+                    <div className="row my-2 align-items-end">
+                        {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
+                            <div className="col-md-2" key={idx}>
+                                <div className="form-group">
+                                    <label>{label}</label>
+                                    <SingleSelector
+                                        options={options}
+                                        value={values[label]} // Pass current value
+                                        onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                        placeholder={`Select ${label}`} // Dynamic placeholder
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        <div className="col-md-2">
+                            <button
+                                className="purple-btn2 m-0"
+                                onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                            >
+                                Go
+                            </button>
+                        </div>
+                    </div>
+                </div> */}
+            </CollapsibleCard>
 
             {/* bulk Action */}
             <BulkAction />

@@ -435,9 +435,9 @@ const BOQList = () => {
 
   return (
     <>
-      <div className="website-content overflow-auto">
+      <div className="website-content">
         <div className="module-data-section p-4">
-          <a href="">Setup &gt; Engineering Setup &gt; BOQ</a>
+          <a href="">Home &gt; Engineering  &gt; BOQ</a>
           <h5 className="mt-4">BOQ</h5>
           <div className="d-flex justify-content-end">
             <button className="purple-btn2" onClick={handleClick}>Create</button>

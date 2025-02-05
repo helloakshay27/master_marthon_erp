@@ -11,12 +11,15 @@ import AssetModal from "../components/AssestModal";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import axios from "axios"
 import { prepareDataForValidation } from "formik";
-
+import { useNavigate } from 'react-router-dom';
 
 const CreateBOQ = () => {
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
   const [showBOQSubItem, setShowBOQSubItem] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  
 
   const handleCheckboxChange = (e) => {
     const { id, checked } = e.target;
@@ -1260,6 +1263,7 @@ const CreateBOQ = () => {
 
       // Handle successful response
       alert("BOQ created successfully")
+      navigate('/view-BOQ');
       console.log('Data posted successfully:', response.data);
       // You can also display a success message or perform other actions after a successful request
       // setLoading(false);
@@ -1342,6 +1346,7 @@ const CreateBOQ = () => {
 
       // Handle successful response
       alert("BOQ Sub Items created successfully")
+      navigate('/view-BOQ');
       console.log('Data posted successfully:', response.data);
       // You can also display a success message or perform other actions after a successful request
 
@@ -1369,9 +1374,9 @@ const CreateBOQ = () => {
   return (
     <>
 
-      <div className="website-content overflow-auto">
+      <div className="website-content">
         <div className="module-data-section p-4">
-          <a href="">Setup &gt; Engineering Setup &gt; Create BOQ</a>
+          <a href="">Home &gt; Engineering &gt; Create BOQ</a>
           <h5 className="mt-4">Create BOQ</h5>
           <div className="tab-content1 active" id="total-content">
             {/* Total Content Here */}
@@ -1381,7 +1386,7 @@ const CreateBOQ = () => {
                   <div className="row">
                     <div className="col-md-4">
                       <div className="form-group">
-                        <label>Project</label>
+                        <label>Project <span>*</span></label>
                         <SingleSelector
                           options={projectOptions}
                           onChange={handleProjectChange}
@@ -1431,7 +1436,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label> Sub-category lvl 2</label>
+                        <label> Sub-category Level 2</label>
                         <SingleSelector
                           options={subCategoryOptions}
                           onChange={handleSubCategoryChange}
@@ -1442,7 +1447,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>Sub-category lvl 3</label>
+                        <label>Sub-category  Level 3</label>
                         <SingleSelector
                           options={subCategoryLevel3Options}
                           onChange={handleLevel3Change}
@@ -1453,7 +1458,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label> Sub-category lvl 4</label>
+                        <label> Sub-category  Level 4</label>
                         <SingleSelector
                           options={subCategoryLevel4Options}
                           onChange={handleLevel4Change}
@@ -1464,7 +1469,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label> Sub-category lvl 5</label>
+                        <label> Sub-category  Level 5</label>
                         <SingleSelector
                           options={subCategoryLevel5Options}
                           onChange={handleLevel5Change}
@@ -1477,7 +1482,7 @@ const CreateBOQ = () => {
                   <div className="row">
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>Item Name</label>
+                        <label>Item Name <span>*</span></label>
                         <input
                           className="form-control"
                           type="text"
@@ -1513,7 +1518,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>BOQ Quantity*</label>
+                        <label>BOQ Quantity <span>*</span></label>
                         <input
                           className="form-control"
                           type="number"

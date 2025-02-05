@@ -163,10 +163,10 @@ const BOQDetailsPageMaster = () => {
     <>
 
       {/* <div className="website-content overflow-auto"> */}
-        <div className="website-content overflow-auto">
+        <div className="website-content">
           <div className="module-data-section p-4 ">
             <a href="">
-              Setup &gt; Engineering Setup &gt; BOQ &gt; BOQ Details
+            Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
             </a>
             <div className="card mt-2 mb-5 p-4" id="total-content">
               {/* Total Content Here  ..className="tab-content1 active" */}

@@ -29,80 +29,114 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 
 
 const EstimationCreation = () => {
-
-    //  project ,sub project wing api 
+    // States to store data
+    const [companies, setCompanies] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [selectedSite, setSelectedSite] = useState(null);
     const [selectedWing, setSelectedWing] = useState(null);
-    const [wingsOptions, setWingsOptions] = useState([]);
     const [siteOptions, setSiteOptions] = useState([]);
-    // Fetch projects on mount
+    const [wingsOptions, setWingsOptions] = useState([]);
+
+    // Fetch company data on component mount
     useEffect(() => {
-        // Replace this with your actual API URL
-        axios.get('https://marathon.lockated.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+        axios.get('https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
             .then(response => {
-                setProjects(response.data.projects);
+                setCompanies(response.data.companies);
             })
             .catch(error => {
-                console.error("Error fetching projects:", error);
+                console.error('Error fetching company data:', error);
             });
     }, []);
 
-    // Handle project selection change
-    const handleProjectChange = (selectedOption) => {
-        // Reset selected site and wing when a new project is selected
-        setSelectedProject(selectedOption);
-        setSelectedSite(null); // Reset selected site
-        setSelectedWing(null); // Reset selected wing
-        setWingsOptions([]); // Clear wings options
-        setSiteOptions([]);
+    // Handle company selection
+    const handleCompanyChange = (selectedOption) => {
+        setSelectedCompany(selectedOption);  // Set selected company
+        setSelectedProject(null); // Reset project selection
+        setSelectedSite(null); // Reset site selection
+        setSelectedWing(null); // Reset wing selection
+        setProjects([]); // Reset projects
+        setSiteOptions([]); // Reset site options
+        setWingsOptions([]); // Reset wings options
 
-        // Fetch sites based on the selected project
         if (selectedOption) {
-            const selectedProjectData = projects.find(project => project.id === selectedOption.value);
-            setSiteOptions(selectedProjectData.pms_sites.map(site => ({
-                value: site.id,   // Use id as value for the site
-                label: site.name  // Display the site name
-            })));
+            // Find the selected company from the list
+            const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
+            setProjects(
+                selectedCompanyData?.projects.map(prj => ({
+                    value: prj.id,
+                    label: prj.name
+                }))
+            );
         }
     };
 
-    // Handle site selection change
+    //   console.log("selected company:",selectedCompany)
+    //   console.log("selected  prj...",projects)
+
+    // Handle project selection
+    const handleProjectChange = (selectedOption) => {
+        setSelectedProject(selectedOption);
+        setSelectedSite(null); // Reset site selection
+        setSelectedWing(null); // Reset wing selection
+        setSiteOptions([]); // Reset site options
+        setWingsOptions([]); // Reset wings options
+
+        if (selectedOption) {
+            // Find the selected project from the list of projects of the selected company
+            const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+            const selectedProjectData = selectedCompanyData?.projects.find(project => project.id === selectedOption.value);
+
+            // Set site options based on selected project
+            setSiteOptions(
+                selectedProjectData?.pms_sites.map(site => ({
+                    value: site.id,
+                    label: site.name
+                })) || []
+            );
+        }
+    };
+
+
+    //   console.log("selected prj:",selectedProject)
+    //   console.log("selected sub prj...",siteOptions)
+
+    // Handle site selection
     const handleSiteChange = (selectedOption) => {
         setSelectedSite(selectedOption);
-        setSelectedWing(null); // Reset selected wing
-        setWingsOptions([]); // Clear wings options
+        setSelectedWing(null); // Reset wing selection
+        setWingsOptions([]); // Reset wings options
 
-        // Fetch wings for the selected site
         if (selectedOption) {
-            const selectedProjectData = projects.find(project => project.id === selectedProject.value);
-            const selectedSiteData = selectedProjectData.pms_sites.find(site => site.id === selectedOption.value);
-            setWingsOptions(selectedSiteData.pms_wings.map(wing => ({
-                value: wing.id,    // Use id as value for the wing
-                label: wing.name   // Display the wing name
-            })));
+            // Find the selected project and site data
+            const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+            const selectedProjectData = selectedCompanyData.projects.find(project => project.id === selectedProject.value);
+            const selectedSiteData = selectedProjectData?.pms_sites.find(site => site.id === selectedOption.value);
+
+            // Set wings options based on selected site
+            setWingsOptions(
+                selectedSiteData?.pms_wings.map(wing => ({
+                    value: wing.id,
+                    label: wing.name
+                })) || []
+            );
         }
     };
 
-    // Handle wing selection change
+    // Handle wing selection
     const handleWingChange = (selectedOption) => {
         setSelectedWing(selectedOption);
-        // You can perform further actions with the selected wing value if necessary
     };
 
-    // Mapping projects for the dropdown
-    const projectOptions = projects.map(project => ({
-        value: project.id,         // Use id as value for the project
-        label: project.formatted_name
+    // Map companies to options for the dropdown
+    const companyOptions = companies.map(company => ({
+        value: company.id,
+        label: company.company_name
     }));
-
-
 
     return (
         <>
-
-
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
@@ -122,9 +156,9 @@ const EstimationCreation = () => {
                                                 Company <span>*</span>
                                             </label>
                                             <SingleSelector
-                                                // options={wingsOptions}
-                                                // value={selectedWing}
-                                                // onChange={handleWingChange}
+                                                options={companyOptions}
+                                                onChange={handleCompanyChange}
+                                                value={selectedCompany}
                                                 placeholder={`Select Company`} // Dynamic placeholder
                                             />
                                         </div>
@@ -135,7 +169,7 @@ const EstimationCreation = () => {
                                         <div className="form-group">
                                             <label>Project</label>
                                             <SingleSelector
-                                                options={projectOptions}
+                                                options={projects}
                                                 onChange={handleProjectChange}
                                                 value={selectedProject}
                                                 placeholder={`Select Project`} // Dynamic placeholder
@@ -290,9 +324,9 @@ const EstimationCreation = () => {
                             </div>
                         </div>
 
-                        <div className="mx-3">
-                            <div className="tbl-container  mt-3" >
-                                <table className="w-100">
+                        <div className="mx-4">
+                            <div className="tbl-container  mt-3 " >
+                                <table className="w-100 ">
                                     <thead>
                                         <tr>
                                             <th className="text-start">Expand</th>
