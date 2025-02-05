@@ -240,6 +240,12 @@ export default function ResponseTab({ isCounterOffer }) {
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
   
+  const getOrdinalSuffix = (num) => {
+    if (num === 1) return "st";
+    if (num === 2) return "nd";
+    if (num === 3) return "rd";
+    return "th";
+  };
 
   return (
     <div
@@ -372,7 +378,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         ></td>
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
-
+                          const bidLength = vendor?.bids?.length || 0;
                           return (
                             <td
                               key={vendor.id}
@@ -388,26 +394,33 @@ export default function ResponseTab({ isCounterOffer }) {
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
                                   </p>
                                 </div>
-                                <div className="d-flex justify-content-between align-items-center w-100 my-2">
-                                  <button
-                                    className="px-2 border-0"
-                                    style={{ fontSize: "1.5rem" }}
-                                    onClick={() => handlePrev(vendor.id)}
-                                  >
-                                    &lt;
-                                  </button>
+                                <div className="d-flex justify-content-center align-items-center w-100 my-2">
+                                  {activeIndex > 0 && (
+                                    <button
+                                      className="px-2 border-0"
+                                      style={{ fontSize: "1.5rem" }}
+                                      onClick={() => handlePrev(vendor.id)}
+                                    >
+                                      &lt;
+                                    </button>
+                                  )}
                                   <div className="carousel-item-content">
                                     {activeIndex === 0 && "Current Bid"}
                                     {activeIndex === 1 && "Initial Bid"}
-                                    {activeIndex === 2 && "1st Revision"}
+                                    {activeIndex > 1 &&
+                                      `${activeIndex - 1}${getOrdinalSuffix(
+                                        activeIndex - 1
+                                      )} Revision`}
                                   </div>
-                                  <button
-                                    className="px-2 border-0"
-                                    style={{ fontSize: "1.5rem" }}
-                                    onClick={() => handleNext(vendor.id)}
-                                  >
-                                    &gt;
-                                  </button>
+                                  {activeIndex < bidLength - 1 && (
+                                    <button
+                                      className="px-2 border-0"
+                                      style={{ fontSize: "1.5rem" }}
+                                      onClick={() => handleNext(vendor.id)}
+                                    >
+                                      &gt;
+                                    </button>
+                                  )}
                                 </div>
                                 <button
                                   className={`purple-btn1 d-block mt-2 ${isCounterOffer ? 'disabled-btn' : ''}`}
