@@ -27,7 +27,7 @@ import BulkCounterOfferModalTwo from "../components/common/Modal/BulkCounterOffe
 import AllocationTab from "../components/common/Tab/AllocationsTab";
 
 export default function ErpRfqDetailPriceTrends4h() {
-  const { id } = useParams(); // Get the id from the URL params
+  const { eventId } = useParams(); // Get the id from the URL params
   const [showModal, setShowModal] = useState(false);
   const [currentModal, setCurrentModal] = useState(null);
   const [participantsOpen, setParticipantsOpen] = useState(true);
@@ -81,7 +81,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchCounterOfferData = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=7398`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=7398`
         );
         const data = await response.json();
         if (data) {
@@ -208,7 +208,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (!response.ok) {
@@ -233,13 +233,13 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchRemarks();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/bidding_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bidding_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
         );
 
         if (!response.ok) {
@@ -256,13 +256,13 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchRemarks();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
         );
 
         if (!response.ok) {
@@ -279,13 +279,13 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchRemarks();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_vendors/event_vendor_remarks?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/event_vendor_remarks?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -302,13 +302,13 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchRemarks();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -324,7 +324,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchParticipants();
-  }, [id]);
+  }, [eventId]);
 
   return (
     <>
@@ -461,8 +461,8 @@ export default function ErpRfqDetailPriceTrends4h() {
                   orderConfOpen={orderConf}
                   orderDetails={orderDetails}
                 />
-                <ParticipantsTab data={participants} id={id} />
-                <AnalyticsTab id={id} />
+                <ParticipantsTab data={participants} id={eventId} />
+                <AnalyticsTab eventId={eventId} />
                 <AllocationTab isCounterOffer={isCounter} />
                 <ParicipantsRemarksTab data={remarks} />
               </div>

@@ -101,7 +101,8 @@ export default function Table({
       const material_id = data.material_id || data.materialId;
       const vendor_id = data.vendor_id || data.vendorId;
       const vendor_name = data.vendor_name || data.vendor_name;
-      onColumnClick({ bid_id, material_id, vendor_id, vendor_name, ...data }, columnKey);
+      const id = data.id || data.id;
+      onColumnClick({ bid_id, material_id, vendor_id, vendor_name, id, ...data }, columnKey);
     }
   };
 

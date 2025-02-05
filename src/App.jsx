@@ -116,7 +116,7 @@ function App() {
             element={<ErpRfqAuctionEvents4h />}
           />
           <Route
-            path="/erp-rfq-detail-price-trends4h/:id"
+            path="/erp-rfq-detail-price-trends4h/:eventId"
             element={<ErpRfqDetailPriceTrends4h />}
           />
           <Route path="/create-rfq" element={<CreateRfq />} />
