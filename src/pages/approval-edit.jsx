@@ -570,6 +570,20 @@ const ApprovalEdit = () => {
     const orderCounts = {}; // Store orders as keys
     let hasDuplicateOrder = false;
 
+    const errors = [];
+
+    if (!formData.company_id) errors.push("Company is required.");
+    if (!formData.department_id) errors.push("Department is required.");
+    if (!formData.module_id) errors.push("Module is required.");
+    if (approvalLevels.length === 0)
+      errors.push("At least one Approval Level is required.");
+
+    if (errors.length > 0) {
+      setLoading(false);
+      alert("plz fill all required fields"); // Show all errors in an alert
+      return; // Stop function execution
+    }
+
     // Iterate over the approvalLevels array
     approvalLevels.forEach((level, index) => {
       console.log(`Checking Level ${index + 1}:`, level.order);
@@ -734,7 +748,8 @@ const ApprovalEdit = () => {
                               {/* Event Title */}
                               <div className="col-md-3 mb-2">
                                 <label htmlFor="event-title-select">
-                                  Comapny
+                                  Comapny {""}
+                                  <span style={{ color: "red" }}>*</span>
                                 </label>
 
                                 {/* <select
@@ -845,7 +860,8 @@ const ApprovalEdit = () => {
 
                               <div className="col-md-3 mb-2">
                                 <label htmlFor="department-select">
-                                  Department
+                                  Department{" "}
+                                  <span style={{ color: "red" }}>*</span>
                                 </label>
                                 {/* <select
                                   id="department-select"
@@ -884,7 +900,9 @@ const ApprovalEdit = () => {
                               </div>
 
                               <div className="col-md-3 mt-4">
-                                <label htmlFor="module-select">Module</label>
+                                <label htmlFor="module-select">
+                                  Module <span style={{ color: "red" }}>*</span>
+                                </label>
                                 {/* <select
                                   id="module-select"
                                   className="form-control"
