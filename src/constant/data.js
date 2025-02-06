@@ -1191,3 +1191,21 @@ export const productCategories = [
   { value: "Concrete and Cement", label: "Concrete and Cement" },
 ];
 
+export const purchaseOrderColumns = [
+    { label: "PO Number", key: "po_number" },
+    { label: "PO Date", key: "po_date" },
+    { label: "PO Type", key: "po_type" },
+    { label: "Consumption", key: "consumption" },
+    { label: "Company Name", key: "company_name" },
+    { label: "Project Name", key: "project_name" },
+    { label: "PMS Site Name", key: "pms_site_name" },
+    { label: "Material Type", key: "material_type" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Supplier Advance", key: "supplier_advance" },
+    { label: "Supplier Advance Amount", key: "supplier_advance_amount" },
+    { label: "Supplier Name", key: "supplier_name" },
+    { label: "Department Name", key: "department_name" },
+    { label: "Tax Applicable Cost", key: "tax_applicable_cost" },
+    { label: "Total Value", key: "total_value" },
+    { label: "Status", key: "status" },
+  ];

@@ -25,6 +25,7 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import BulkCounterOfferModalTwo from "../components/common/Modal/BulkCounterOfferModalTwo";
 import AllocationTab from "../components/common/Tab/AllocationsTab";
+import PurchasedOrdersTab from "../components/common/Tab/PurchasedOrdersTab";
 
 export default function ErpRfqDetailPriceTrends4h() {
   const { eventId } = useParams(); // Get the id from the URL params
@@ -465,6 +466,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                 <AnalyticsTab eventId={eventId} />
                 <AllocationTab isCounterOffer={isCounter} />
                 <ParicipantsRemarksTab data={remarks} />
+                <PurchasedOrdersTab />
               </div>
             </div>
           </div>

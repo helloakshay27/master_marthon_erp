@@ -91,10 +91,7 @@ export default function AllocationTab({ isCounterOffer }) {
         }
         const data = await response.json();
         setResponse(data);
-        console.log("response:::::::________------___++_+_+_+_+_+_+_:--", data);
         setPmsIdVal(data.vendors[0]?.pms_supplier_id);
-        // console.log("pmspmsp,spmspmspmspms +++++++___________------ PMS:-", pmsIdVal);
-        
         setEventVendors(data.vendors);
       } catch (err) {
         setError(err.message);
@@ -458,25 +455,6 @@ export default function AllocationTab({ isCounterOffer }) {
       <p>Submitting your bid...</p>
     </div>
   );
-
-  const purchaseOrderColumns = [
-    { label: "PO Number", key: "po_number" },
-    { label: "PO Date", key: "po_date" },
-    { label: "PO Type", key: "po_type" },
-    { label: "Consumption", key: "consumption" },
-    { label: "Company Name", key: "company_name" },
-    { label: "Project Name", key: "project_name" },
-    { label: "PMS Site Name", key: "pms_site_name" },
-    { label: "Material Type", key: "material_type" },
-    { label: "MOR Number", key: "mor_number" },
-    { label: "Supplier Advance", key: "supplier_advance" },
-    { label: "Supplier Advance Amount", key: "supplier_advance_amount" },
-    { label: "Supplier Name", key: "supplier_name" },
-    { label: "Department Name", key: "department_name" },
-    { label: "Tax Applicable Cost", key: "tax_applicable_cost" },
-    { label: "Total Value", key: "total_value" },
-    { label: "Status", key: "status" },
-  ];
 
   return (
     <div
@@ -861,17 +839,6 @@ export default function AllocationTab({ isCounterOffer }) {
         handleClose={handleCounterModalClose}
         bidCounterData={BidCounterData}
       />
-
-      {purchaseOrders.length > 0 && (
-        <div className="mt-4">
-          <h4>Purchased Orders</h4>
-          <Table
-            columns={purchaseOrderColumns}
-            data={purchaseOrders}
-            isHorizontal={false}
-          />
-        </div>
-      )}
     </div>
   );
 }

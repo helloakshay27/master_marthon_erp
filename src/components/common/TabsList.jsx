@@ -13,6 +13,7 @@ const TabsList = ({ handleShowModal, renderModal }) => {
           { id: "participants", label: "Participants" },
           { id: "analytics", label: "Analytics" },
           { id: "allocation", label: "Allocation" },
+          { id: "purchasedOrders", label: "Purchased Orders" },
           { id: "participantRemarks", label: "Participant Remarks" },
         ].map((tab) => (
           <li className="nav-item" role="presentation" key={tab.id}>
