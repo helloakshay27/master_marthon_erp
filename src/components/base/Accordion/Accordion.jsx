@@ -10,6 +10,7 @@ export default function Accordion({
   tableColumn,
   tableData,
   onColumnClick,
+  enableHoverEffect,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -94,6 +95,7 @@ export default function Accordion({
               resetSelectedRows={undefined}
               onResetComplete={undefined}
               onColumnClick={handleColumnClick}
+              enableHoverEffect={enableHoverEffect}
             />
           </div>
         </div>

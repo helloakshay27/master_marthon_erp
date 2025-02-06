@@ -663,7 +663,7 @@ export default function AllocationTab({ isCounterOffer }) {
                       key={ind}
                       title={materialData.material_name || "_"}
                       amount={materialData.total_amounts}
-                      isDefault={true}
+                      enableHoverEffect={true}
                       tableColumn={[
                         {
                           label: "Best Total Amount",

@@ -26,6 +26,7 @@ export default function Table({
   pageSize = 10,
   onColumnClick,
   enableOverflowScroll = false,
+  enableHoverEffect = false, // Add new prop
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -170,10 +171,16 @@ export default function Table({
                               ? "bold"
                               : "normal",
                           textTransform: "capitalize",
+                          cursor: enableHoverEffect ? "pointer" : "default", // Conditionally add cursor pointer
                         }}
                         onClick={() =>
                           handleColumnClick(data[valueIndex], columns[rowIndex]?.key)
                         }
+                        onMouseOver={(e) => enableHoverEffect && (e.currentTarget.style.backgroundColor = "#f0f0f0")} // Conditionally add hover effect
+                        onMouseOut={(e) => enableHoverEffect && (e.currentTarget.style.backgroundColor = 
+                          ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
+                            ? getBackgroundColor(value)
+                            : "transparent")} // Conditionally reset background color on mouse out
                       >
                         {customRender[columns[rowIndex]?.key]
                           ? customRender[columns[rowIndex]?.key](
