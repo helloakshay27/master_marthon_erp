@@ -26,21 +26,28 @@ export default function SingleSelector({
     option: (base, state) => ({
       ...base,
       zIndex: 9999,
-      backgroundColor: state.isFocused
+      backgroundColor: state.isSelected
+        ? "#D3D3D3" // Gray background for selected option in the dropdown
+        : state.isFocused
         ? "#8b0203" // Custom background color on hover
         : "transparent", // Default background is transparent
-      color: state.isFocused ? "white" : "black", // White text on hover
+      color: state.isSelected
+        ? "#333" // Keep selected option text color dark
+        : state.isFocused
+        ? "white" // White text when hovering over an option
+        : "black", // Default text color
       cursor: "pointer",
       padding: "10px", // Optional padding to make options more clickable
       borderRadius: "4px", // Optional border radius for rounded options
     }),
     singleValue: (base) => ({
       ...base,
-      color: "#333", // Custom color for selected value
+      color: "#333", // Custom color for selected value text
+      backgroundColor: "transparent", // Ensure no background color is applied when selected
     }),
     dropdownIndicator: (base) => ({
       ...base,
-      color: "gray", // Change the dropdown arrow color
+      color: "#8b0203", // Change the dropdown arrow color
     }),
     clearIndicator: (base) => ({
       ...base,
@@ -58,8 +65,8 @@ export default function SingleSelector({
       classNamePrefix="select"
       styles={customStyles}
       isDisabled={isDisabled}
-      isClearable={true} //
       isSearchable={true} // Enable the search bar
+      isClearable={true} // Enable the clear (cancel) functionality for the selected value
       closeMenuOnSelect={true} // Optionally close the menu when a selection is made
     />
   );
