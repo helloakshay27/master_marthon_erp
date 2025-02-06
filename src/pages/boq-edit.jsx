@@ -38,13 +38,13 @@ const BOQEdit = () => {
     return (
         <>
 
-            <div className="website-content overflow-auto">
-                <div className="website-content overflow-auto">
+            {/* <div className="website-content overflow-auto"> */}
+                <div className="website-content ">
                     <div className="module-data-section p-4">
                         <a href="">
                             Setup &gt; Engineering Setup &gt; BOQ &gt; BOQ Edit
                         </a>
-                        <div className="tab-content1 active" id="total-content">
+                        <div className="card mt-2 mb-5 p-4">
                             {/* Total Content Here */}
 
 
@@ -580,7 +580,7 @@ const BOQEdit = () => {
                     </div>
 
                 </div>
-            </div>
+            {/* </div> */}
 
 
             {/* Modal start */}

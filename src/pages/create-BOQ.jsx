@@ -938,7 +938,7 @@ const CreateBOQ = () => {
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '', // Safe access with fallback
       colour_id: selectedColors[index] ? selectedColors[index].value : '', // Safe access with fallback
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '', // Safe access with fallback
-      uom: unitOfMeasures.find(option => option.value === material.uom_id)?.value || selectedUnit2?.value || "", // Safe access with optional chaining
+      uom: selectedUnit2[index]?selectedUnit2[index].value : "", // Safe access with optional chaining
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
@@ -954,7 +954,7 @@ const CreateBOQ = () => {
     generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
     colour_id: selectedColors[index] ? selectedColors[index].value : '',
     brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-    uom: unitOfMeasures.find(option => option.value === asset.uom_id)?.value || selectedUnit2?.value || '',
+    uom: selectedUnit3[index]?selectedUnit3[index].value : '',
     co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
     estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
     wastage: parseFloat(assetWastages[index]) || 0,
@@ -1506,7 +1506,7 @@ const CreateBOQ = () => {
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>UOM</label>
+                        <label>UOM <span>*</span></label>
                         <SingleSelector
                           options={unitOfMeasures}  // Providing the options to the select component
                           onChange={handleUnitChange}  // Setting the handler when an option is selected
@@ -1614,8 +1614,8 @@ const CreateBOQ = () => {
                                 <th rowSpan={2}>Colour</th>
                                 <th rowSpan={2}>Brand</th>
                                 <th rowSpan={2}>UOM</th>
-                                <th colSpan={2}>Cost</th>
-                                <th rowSpan={2}>Wastage</th>
+                                <th className="text-center" colSpan={2}>Cost</th>
+                                <th rowSpan={2}>Wastage%</th>
                                 <th rowSpan={2}>
                                   Total Estimated Quantity Wastage
                                 </th>
@@ -1699,7 +1699,7 @@ const CreateBOQ = () => {
                                       <SingleSelector
                                         options={unitOfMeasures}  // Providing the options to the select component
                                         onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
-                                        value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2[index]}
+                                        value={selectedUnit2[index]}
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                       />
 
@@ -1718,7 +1718,7 @@ const CreateBOQ = () => {
                                         className="form-control"
                                         type="number"
                                         placeholder="Estimated Qty"
-
+                                          disabled
                                         value={estimatedQuantities[index] || ''}
                                       // value={calculateEstimatedQuantities()}
 
@@ -1739,8 +1739,9 @@ const CreateBOQ = () => {
                                         className="form-control"
                                         type="number"
                                         placeholder="Total Estimated Quantity Wastage"
+                                        disabled
                                         value={totalEstimatedQtyWastages[index] || ''}
-                                        onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                        // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                       />
                                     </td>
                                   </tr>
@@ -1818,8 +1819,8 @@ const CreateBOQ = () => {
                                 <th rowSpan={2}>Colour</th>
                                 <th rowSpan={2}>Brand</th>
                                 <th rowSpan={2}>UOM</th>
-                                <th colSpan={2}>Cost</th>
-                                <th rowSpan={2}>Wastage</th>
+                                <th className="text-center" colSpan={2}>Cost</th>
+                                <th rowSpan={2}>Wastage%</th>
                                 <th rowSpan={2}>
                                   Total Estimated Quantity Wastage
                                 </th>
@@ -1887,7 +1888,7 @@ const CreateBOQ = () => {
                                       <SingleSelector
                                         options={unitOfMeasures}  // Providing the options to the select component
                                         onChange={(selectedOption) => handleUnitChange3(index, selectedOption)}  // Setting the handler when an option is selected
-                                        value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3[index]}
+                                        value={selectedUnit3[index]}
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                       />
 
@@ -1906,8 +1907,9 @@ const CreateBOQ = () => {
                                         className="form-control"
                                         type="number"
                                         placeholder="Estimated Qty"
+                                        disabled
                                         value={assetEstimatedQuantities[index] || ''}
-                                        onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
+                                        // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
 
                                       />
                                     </td>
@@ -1925,8 +1927,9 @@ const CreateBOQ = () => {
                                         type="number"
                                         className="form-control"
                                         placeholder="Total Estimated Qty"
+                                        disabled
                                         value={assetTotalEstimatedQtyWastages[index] || ''}
-                                        onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                        // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
                                       />
                                     </td>
                                   </tr>
@@ -2057,7 +2060,8 @@ const CreateBOQ = () => {
                                         <input
                                           type="text"
                                           className="form-control"
-                                          defaultValue="MS Fabrication"
+                                          // defaultValue="MS Fabrication"
+                                          placeholder="Enter Sub Item Name"
                                           value={expandedRows.name}
                                           onChange={(e) => handleInputChange2(index, "name", e.target.value)}
 
@@ -2067,7 +2071,8 @@ const CreateBOQ = () => {
                                       <td>
                                         <input
                                           type="text"
-                                          defaultValue="MS Fabrication_20010"
+                                          // defaultValue="MS Fabrication_20010"
+                                          placeholder="Enter Description"
                                           className="form-control"
                                           value={expandedRows.description}
                                           onChange={(e) => handleInputChange2(index, "description", e.target.value)}
@@ -2077,7 +2082,8 @@ const CreateBOQ = () => {
                                       <td>
                                         <input
                                           type="text"
-                                          defaultValue="MS Fabrication_20010"
+                                          // defaultValue="MS Fabrication_20010"
+                                           placeholder="Enter Notes"
                                           className="form-control"
                                           value={expandedRows.notes}
                                           onChange={(e) => handleInputChange2(index, "notes", e.target.value)}
@@ -2085,6 +2091,7 @@ const CreateBOQ = () => {
                                       </td>
                                       <td>
                                         <input type="text" defaultValue=""
+                                         placeholder="Enter Remark"
                                           value={expandedRows.remarks}
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "remarks", e.target.value)}
@@ -2101,6 +2108,7 @@ const CreateBOQ = () => {
                                       <td colSpan={3}>
                                         <input type="number"
                                           value={expandedRows.qty}
+                                           placeholder="Enter Quantity"
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
                                         />

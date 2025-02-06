@@ -292,7 +292,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
               <tr>
                 <th rowSpan={2}>Material-Type</th>
                 <th rowSpan={2}>Material</th>
-                <th rowSpan={2}>UOM</th>
+                {/* <th rowSpan={2}>UOM</th> */}
               </tr>
             </thead>
             <tbody className="material_details">
@@ -331,7 +331,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                       </td>
                       <td>{item.inventory_type_name}</td>
                       <td>{item.name}</td>
-                      <td>{item.uom_name}</td>
+                      {/* <td>{item.uom_name}</td> */}
                     </tr>
                   ))
                 ) : (

@@ -560,7 +560,7 @@ const BOQSubItemTable = ({
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
       colour_id: selectedColors[index] ? selectedColors[index].value : '',
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-      uom: unitOfMeasures.find(option => option.value === material.uom_id)?.value || selectedUnit2.value || '',
+      uom:  selectedUnit2[index]? selectedUnit2[index].value : '',
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
@@ -595,7 +595,7 @@ const BOQSubItemTable = ({
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
       colour_id: selectedColors[index] ? selectedColors[index].value : '',
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-      uom: unitOfMeasures.find(option => option.value === asset.uom_id)?.value || selectedUnit2.value || '',
+      uom: selectedUnit3[index]? selectedUnit3[index].value :'',
       co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
       wastage: parseFloat(assetWastages[index]) || 0,
@@ -734,8 +734,8 @@ const BOQSubItemTable = ({
                         <th rowSpan={2}>Brand </th>
                         <th rowSpan={2}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
-                        <th colSpan={2}>Cost</th>
-                        <th rowSpan={2}>Wastage</th>
+                        <th className="text-center" colSpan={2}>Cost</th>
+                        <th rowSpan={2}>Wastage%</th>
                         <th rowSpan={2}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
@@ -799,7 +799,7 @@ const BOQSubItemTable = ({
                               <SingleSelector
                                 options={unitOfMeasures}  // Providing the options to the select component
                                 onChange={(selectedOption) => handleUnitChange2(index, selectedOption)}  // Update UOM for the specific material
-                                value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2[index]}
+                                value={selectedUnit2[index]}
                                 // options={unitOfMeasures}  // Providing the options to the select component
                                 // onChange={handleUnitChange2}  // Setting the handler when an option is selected
                                 // value={unitOfMeasures.find(option => option.value === material.uom_id)||selectedUnit2}
@@ -928,8 +928,8 @@ const BOQSubItemTable = ({
                         <th rowSpan={2}>Brand </th>
                         <th rowSpan={2}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
-                        <th colSpan={2}>Cost</th>
-                        <th rowSpan={2}>Wastage</th>
+                        <th className="text-center" colSpan={2}>Cost</th>
+                        <th rowSpan={2}>Wastage%</th>
                         <th rowSpan={2}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
@@ -993,7 +993,7 @@ const BOQSubItemTable = ({
                               <SingleSelector
                                 options={unitOfMeasures}  // Providing the options to the select component
                                 onChange={(selectedOption) => handleUnitChange3(index, selectedOption)}  // Update UOM for the specific material
-                                value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3[index]}
+                                value={selectedUnit3[index]}
                                 // options={unitOfMeasures}  // Providing the options to the select component
                                 // onChange={handleUnitChange3}  // Setting the handler when an option is selected
                                 // value={unitOfMeasures.find(option => option.value === assets.uom_id) || selectedUnit3}

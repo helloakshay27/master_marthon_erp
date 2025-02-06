@@ -11,7 +11,7 @@ import BOQListTable from "../components/BOQListTabe";
 import { useNavigate } from 'react-router-dom';
 import { BulkAction } from "../components";
 import axios from "axios";
- import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 
 
@@ -440,11 +440,23 @@ const BOQList = () => {
           <a href="">Home &gt; Engineering  &gt; BOQ</a>
           <h5 className="mt-4">BOQ</h5>
           <div className="d-flex justify-content-end">
-            <button className="purple-btn2" onClick={handleClick}>Create</button>
-            <button className="purple-btn2">Import</button>
+            <button className="purple-btn2" onClick={handleClick}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="white"
+                className="bi bi-plus"
+                viewBox="0 0 16 16"
+              >
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+              </svg>
+              <span> Create</span>
+            </button>
+            {/* <button className="purple-btn2">Import</button>
             <button className="purple-btn2">Export</button>
-            <button className="purple-btn2">Delete</button>
-            <button
+            <button className="purple-btn2">Delete</button> */}
+            {/* <button
               className="purple-btn2"
               // data-bs-toggle="modal"
               // data-bs-target="#copyModal"
@@ -452,7 +464,7 @@ const BOQList = () => {
               onClick={handleShow}
             >
               Copy
-            </button>
+            </button> */}
           </div>
           {/* <div className="tab-content1 active" id="total-content"> */}
           {/* Total Content Here */}
@@ -719,7 +731,7 @@ const BOQList = () => {
 
             {/* boq list table is here  start */}
             <div className="d-flex justify-content-start ms-3">
-              <button className="purple-btn2" onClick={handleClickCollapse}>Collapse All</button>
+              <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
             </div>
             <div className="mx-3">
               <div className="tbl-container mt-1">
