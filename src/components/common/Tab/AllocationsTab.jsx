@@ -214,154 +214,154 @@ export default function AllocationTab({ isCounterOffer }) {
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
 
-  // const handleColumnClick = async (data, columnKey) => {
-  //   if (isUpdatingAllocation.current) return;
-  //   isUpdatingAllocation.current = true;
+  const handleColumnClick = async (data, columnKey) => {
+    if (isUpdatingAllocation.current) return;
+    isUpdatingAllocation.current = true;
 
-  //   const {
-  //     bid_id,
-  //     material_id,
-  //     material_name,
-  //     vendor_id,
-  //     vendor_name,
-  //     pms_supplier_id,
-  //     id
-  //   } = data;
+    const {
+      bid_id,
+      material_id,
+      material_name,
+      vendor_id,
+      vendor_name,
+      pms_supplier_id,
+      id
+    } = data;
 
 
-  //   if (!bid_id || !material_id || !vendor_id) {
-  //     console.error("Missing bid_id, material_id, or vendor_id");
-  //     isUpdatingAllocation.current = false;
-  //     return;
-  //   }
+    if (!bid_id || !material_id || !vendor_id) {
+      console.error("Missing bid_id, material_id, or vendor_id");
+      isUpdatingAllocation.current = false;
+      return;
+    }
 
-  //   setBidIdVal(bid_id);
-  //   setBidMaterialIdVal(material_id);
-  //   setVendorIdVal(vendor_id);
-  //   setPmsIdVal(pms_supplier_id);
+    setBidIdVal(bid_id);
+    setBidMaterialIdVal(material_id);
+    setVendorIdVal(vendor_id);
+    setPmsIdVal(pms_supplier_id);
 
-  //   try {
-  //     const response = await axios.post(
-  //       `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-  //       {
-  //         bid_id: bid_id,
-  //         bid_material_id: material_id,
-  //         delete_material: "false",
-  //       }
-  //     );
+    try {
+      const response = await axios.post(
+        `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          bid_id: bid_id,
+          bid_material_id: id,
+          delete_material: "false",
+        }
+      );
 
-  //     const responseData = response.data;
-  //     console.log("responseData", responseData.bid_materials, "data", data.id, "id", id);
+      const responseData = response.data;
+      console.log("responseData", responseData.bid_materials, "data", data.id, "id", id);
       
 
-  //     const bidMaterial = responseData.bid_materials.find(
-  //       (material) => material.id === id
-  //     );
-  //     console.log(bidMaterial, "bidMaterial");
+      const bidMaterial = responseData.bid_materials.find(
+        (material) => material.id === id
+      );
+      console.log(bidMaterial, "bidMaterial");
       
 
-  //     if (!bidMaterial) {
-  //       console.error("Bid material not found");
-  //       isUpdatingAllocation.current = false;
-  //       return;
-  //     }
+      if (!bidMaterial) {
+        console.error("Bid material not found");
+        isUpdatingAllocation.current = false;
+        return;
+      }
 
-  //     const updatedSelectedData = {
-  //       bestTotalAmount: bidMaterial.total_amount || "_",
-  //       quantityAvailable: bidMaterial.quantity_available || "_",
-  //       price: bidMaterial.price || "_",
-  //       discount: bidMaterial.discount || "_",
-  //       realisedDiscount: bidMaterial.realised_discount || "_",
-  //       gst: bidMaterial.gst || "_",
-  //       realisedGST: bidMaterial.realised_gst || "_",
-  //       landedAmount: bidMaterial.landed_amount || "_",
-  //       participantAttachment: "_",
-  //       totalAmount: bidMaterial.total_amount || "_",
-  //       materialName: bidMaterial.material_name || "_",
-  //       vendorId: vendor_id,
-  //       vendor_name: vendor_name,
-  //       materialId: material_id,
-  //       bidId: bid_id,
-  //       pms_supplier_id: pms_supplier_id,
-  //     };
+      const updatedSelectedData = {
+        bestTotalAmount: bidMaterial.total_amount || "_",
+        quantityAvailable: bidMaterial.quantity_available || "_",
+        price: bidMaterial.price || "_",
+        discount: bidMaterial.discount || "_",
+        realisedDiscount: bidMaterial.realised_discount || "_",
+        gst: bidMaterial.gst || "_",
+        realisedGST: bidMaterial.realised_gst || "_",
+        landedAmount: bidMaterial.landed_amount || "_",
+        participantAttachment: "_",
+        totalAmount: bidMaterial.total_amount || "_",
+        materialName: bidMaterial.material_name || "_",
+        vendorId: vendor_id,
+        vendor_name: vendor_name,
+        materialId: material_id,
+        bidId: bid_id,
+        pms_supplier_id: pms_supplier_id,
+      };
 
-  //     setSelectedData((prevSelectedData) => {
+      setSelectedData((prevSelectedData) => {
 
-  //       let filteredData = prevSelectedData
-  //         .map((vendor) => ({
-  //           ...vendor,
-  //           materials: vendor.materials?.filter(
-  //             (material) => material.materialName !== material_name
-  //           ),
-  //         }))
-  //         .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
+        let filteredData = prevSelectedData
+          .map((vendor) => ({
+            ...vendor,
+            materials: vendor.materials?.filter(
+              (material) => material.materialName !== material_name
+            ),
+          }))
+          .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
 
-  //       // Ensure the material is assigned ONLY to the latest vendor
-  //       const existingVendorIndex = filteredData.findIndex(
-  //         (data) => data.vendorId === vendor_id
-  //       );
+        // Ensure the material is assigned ONLY to the latest vendor
+        const existingVendorIndex = filteredData.findIndex(
+          (data) => data.vendorId === vendor_id
+        );
 
-  //       if (existingVendorIndex !== -1) {
-  //         // Add material to the existing vendor
-  //         filteredData[existingVendorIndex].materials.push(updatedSelectedData);
-  //       } else {
-  //         // Add new vendor with this material
-  //         filteredData.push({
-  //           vendorId: vendor_id,
-  //           vendor_name: vendor_name,
-  //           materials: [updatedSelectedData],
-  //         });
-  //       }
+        if (existingVendorIndex !== -1) {
+          // Add material to the existing vendor
+          filteredData[existingVendorIndex].materials.push(updatedSelectedData);
+        } else {
+          // Add new vendor with this material
+          filteredData.push({
+            vendorId: vendor_id,
+            vendor_name: vendor_name,
+            materials: [updatedSelectedData],
+          });
+        }
 
-  //       return filteredData;
-  //     });
+        return filteredData;
+      });
 
-  //     const updatedDummyData = [
-  //       {
-  //         label: "Freight Charge Amount",
-  //         value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
-  //       },
-  //       {
-  //         label: "GST on Freight",
-  //         value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
-  //       },
-  //       {
-  //         label: "Realised Freight Amount",
-  //         value: `₹${
-  //           responseData.bids[0]?.realised_freight_charge_amount || 0
-  //         }`,
-  //       },
-  //       {
-  //         label: "Warranty Clause",
-  //         value: responseData.bids[0]?.warranty_clause || "-",
-  //       },
-  //       {
-  //         label: "Payment Terms",
-  //         value: responseData.bids[0]?.payment_terms || "-",
-  //       },
-  //       {
-  //         label: "Loading / Unloading Clause",
-  //         value: responseData.bids[0]?.loading_unloading_clause || "-",
-  //       },
-  //       {
-  //         label: "Gross Total",
-  //         value: `₹${responseData.bids[0]?.gross_total || 0}`,
-  //       },
-  //     ];
+      const updatedDummyData = [
+        {
+          label: "Freight Charge Amount",
+          value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
+        },
+        {
+          label: "GST on Freight",
+          value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
+        },
+        {
+          label: "Realised Freight Amount",
+          value: `₹${
+            responseData.bids[0]?.realised_freight_charge_amount || 0
+          }`,
+        },
+        {
+          label: "Warranty Clause",
+          value: responseData.bids[0]?.warranty_clause || "-",
+        },
+        {
+          label: "Payment Terms",
+          value: responseData.bids[0]?.payment_terms || "-",
+        },
+        {
+          label: "Loading / Unloading Clause",
+          value: responseData.bids[0]?.loading_unloading_clause || "-",
+        },
+        {
+          label: "Gross Total",
+          value: `₹${responseData.bids[0]?.gross_total || 0}`,
+        },
+      ];
 
-  //     setDummyData((prevDummyData) => [
-  //       ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
-  //       { vendorId: vendor_id, data: updatedDummyData },
-  //     ]);
+      setDummyData((prevDummyData) => [
+        ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
+        { vendorId: vendor_id, data: updatedDummyData },
+      ]);
 
-  //     toast.success("Allocation updated successfully");
-  //   } catch (err) {
-  //     toast.error("Error updating allocation");
-  //     setError(err.message);
-  //   } finally {
-  //     isUpdatingAllocation.current = false;
-  //   }
-  // };
+      toast.success("Allocation updated successfully");
+    } catch (err) {
+      toast.error("Error updating allocation");
+      setError(err.message);
+    } finally {
+      isUpdatingAllocation.current = false;
+    }
+  };
 
   const getSelectedDataColumns = () => {
     if (!selectedData) return [];
@@ -724,7 +724,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           material_name: material.material_name,
                         };
                       })}
-                      // onColumnClick={()}
+                      onColumnClick={handleColumnClick}
                     />
                   );
                 })}
