@@ -650,6 +650,12 @@ export default function CreateEvent() {
                     type="date"
                     defaultValue={createdOn} // Sets default value to today's date
                     readOnly // Prevents user from changing the value
+                    style={{
+                      backgroundColor: "#f5f5f5", // Light gray background to show it is readonly
+                      color: "#888", // Light gray text color to indicate it's not editable
+                      cursor: "not-allowed", // Show the cursor as not allowed
+                      borderColor: "#ddd", // Lighter border color
+                    }}
                   />
                 </div>
               </div>

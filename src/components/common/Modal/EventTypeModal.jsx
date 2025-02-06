@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { bidsType } from "../../../constant/data";
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from "react-toastify"; // Import toast
 
 const Card = ({
   title,
@@ -89,26 +89,37 @@ const EventTypeModal = ({
   existingData,
 }) => {
   const [localEventType, setLocalEventType] = useState(eventType);
-  const [localSelectedStrategy, setLocalSelectedStrategy] = useState(selectedStrategy);
+  const [localSelectedStrategy, setLocalSelectedStrategy] =
+    useState(selectedStrategy);
   const [localAwardType, setLocalAwardType] = useState(awardType);
-  const [localDynamicExtension, setLocalDynamicExtension] = useState(dynamicExtension || [false, false, false, false]);
-  const [localDynamicExtensionConfigurations, setLocalDynamicExtensionConfigurations] = useState(dynamicExtensionConfigurations);
+  const [localDynamicExtension, setLocalDynamicExtension] = useState(
+    dynamicExtension || [false, false, false, false]
+  );
+  const [
+    localDynamicExtensionConfigurations,
+    setLocalDynamicExtensionConfigurations,
+  ] = useState(dynamicExtensionConfigurations);
 
   useEffect(() => {
     if (existingData) {
       setLocalEventType(existingData.event_type);
       setLocalSelectedStrategy(existingData.event_configuration);
       setLocalAwardType(existingData.award_scheme);
-      setLocalDynamicExtension(existingData.dynamic_time_extension || [false, false, false, false]);
+      setLocalDynamicExtension(
+        existingData.dynamic_time_extension || [false, false, false, false]
+      );
       setLocalDynamicExtensionConfigurations({
         time_extension_type: existingData.time_extension_type,
-        triggered_time_extension_on_last: (existingData.triggered_time_extension_on_last),
+        triggered_time_extension_on_last:
+          existingData.triggered_time_extension_on_last,
         extend_event_time_by: existingData.extend_event_time_by,
         time_extension_on_change_in: existingData.time_extension_change,
-        delivery_date: existingData.delivery_date ? new Date(existingData.delivery_date).toISOString().slice(0, 16) : "",
+        delivery_date: existingData.delivery_date
+          ? new Date(existingData.delivery_date).toISOString().slice(0, 16)
+          : "",
       });
     }
-  }, [existingData]);  
+  }, [existingData]);
 
   const validateForm = () => {
     if (!["rfq", "contract", "auction"].includes(localEventType)) {
@@ -119,7 +130,10 @@ const EventTypeModal = ({
       alert("Please select a valid award scheme.");
       return false;
     }
-    if (localDynamicExtension[3] && !localDynamicExtensionConfigurations.delivery_date) {
+    if (
+      localDynamicExtension[3] &&
+      !localDynamicExtensionConfigurations.delivery_date
+    ) {
       alert("Please select a delivery date.");
       return false;
     }
@@ -128,16 +142,20 @@ const EventTypeModal = ({
 
   const handleFormSubmit = () => {
     if (validateForm()) {
-
       handleEventConfigurationSubmit({
         event_type: localEventType,
         event_configuration: localSelectedStrategy,
         award_scheme: localAwardType,
         dynamic_time_extension: localDynamicExtension,
-        time_extension_type: localDynamicExtensionConfigurations.time_extension_type || "",
-        triggered_time_extension_on_last: localDynamicExtensionConfigurations.triggered_time_extension_on_last || "",
-        extend_event_time_by: localDynamicExtensionConfigurations.extend_event_time_by || 0,
-        time_extension_change: localDynamicExtensionConfigurations.time_extension_on_change_in || "",
+        time_extension_type:
+          localDynamicExtensionConfigurations.time_extension_type || "",
+        triggered_time_extension_on_last:
+          localDynamicExtensionConfigurations.triggered_time_extension_on_last ||
+          "",
+        extend_event_time_by:
+          localDynamicExtensionConfigurations.extend_event_time_by || 0,
+        time_extension_change:
+          localDynamicExtensionConfigurations.time_extension_on_change_in || "",
         delivery_date: localDynamicExtensionConfigurations.delivery_date || "",
       });
     }
@@ -153,7 +171,7 @@ const EventTypeModal = ({
   const showToasterMessage = () => {
     toast.warn("Please fill the delivery date on Event Type modal.");
   };
-  
+
   return (
     <DynamicModalBox
       size="xl"
@@ -192,7 +210,9 @@ const EventTypeModal = ({
             >
               <div
                 className={`pro-radio-tabs__tab ${
-                  localEventType === "rfq" ? "pro-radio-tabs__tab__selected" : ""
+                  localEventType === "rfq"
+                    ? "pro-radio-tabs__tab__selected"
+                    : ""
                 }`}
                 role="radio"
                 aria-checked={localEventType === "rfq"}
@@ -202,7 +222,9 @@ const EventTypeModal = ({
                 <div className="pro-radio-tabs__check-icon">
                   <label
                     className={`ant-radio-wrapper ${
-                      localEventType === "rfq" ? "ant-radio-wrapper-checked" : ""
+                      localEventType === "rfq"
+                        ? "ant-radio-wrapper-checked"
+                        : ""
                     }`}
                   >
                     <span
@@ -265,7 +287,9 @@ const EventTypeModal = ({
 
               <div
                 className={`pro-radio-tabs__tab ${
-                  localEventType === "auction" ? "pro-radio-tabs__tab__selected" : ""
+                  localEventType === "auction"
+                    ? "pro-radio-tabs__tab__selected"
+                    : ""
                 }`}
                 role="radio"
                 aria-checked={localEventType === "auction"}
@@ -276,7 +300,9 @@ const EventTypeModal = ({
                   <label
                     htmlFor="eventType"
                     className={`ant-radio-wrapper ${
-                      localEventType === "auction" ? "ant-radio-wrapper-checked" : ""
+                      localEventType === "auction"
+                        ? "ant-radio-wrapper-checked"
+                        : ""
                     }`}
                   >
                     <span
@@ -298,7 +324,6 @@ const EventTypeModal = ({
                 </div>
                 <p className="pro-text pro-body pro-text--normal">Auction</p>
               </div>
-              
             </div>
           </div>
         </div>
@@ -596,7 +621,9 @@ const EventTypeModal = ({
                             className="ant-radio-input"
                             value="multiple_vendors"
                             checked={localAwardType === "multiple_vendors"}
-                            onChange={() => setLocalAwardType("multiple_vendors")}
+                            onChange={() =>
+                              setLocalAwardType("multiple_vendors")
+                            }
                             tabIndex={-1}
                           />
                           <div className="ant-radio-inner"></div>
@@ -663,7 +690,10 @@ const EventTypeModal = ({
                       "type1"
                     }
                     onClick={() =>
-                      handleDynamicExtensionBidLocal("time_extension_type", "type1")
+                      handleDynamicExtensionBidLocal(
+                        "time_extension_type",
+                        "type1"
+                      )
                     }
                   >
                     <span
@@ -683,7 +713,10 @@ const EventTypeModal = ({
                           "type1"
                         }
                         onChange={() =>
-                          handleDynamicExtensionBidLocal("time_extension_type", "type1")
+                          handleDynamicExtensionBidLocal(
+                            "time_extension_type",
+                            "type1"
+                          )
                         }
                       />
                       <div className="ant-radio-inner" />
@@ -707,7 +740,10 @@ const EventTypeModal = ({
                       "type2"
                     }
                     onClick={() =>
-                      handleDynamicExtensionBidLocal("time_extension_type", "type2")
+                      handleDynamicExtensionBidLocal(
+                        "time_extension_type",
+                        "type2"
+                      )
                     }
                   >
                     <span
@@ -727,7 +763,10 @@ const EventTypeModal = ({
                           "type2"
                         }
                         onChange={() =>
-                          handleDynamicExtensionBidLocal("time_extension_type", "type2")
+                          handleDynamicExtensionBidLocal(
+                            "time_extension_type",
+                            "type2"
+                          )
                         }
                       />
                       <div className="ant-radio-inner" />

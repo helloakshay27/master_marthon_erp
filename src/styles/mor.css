@@ -3864,7 +3864,7 @@ ul#pills-tab {
 }
 .form-control:disabled,
 .form-control[readonly] {
-  background-color: rgb(233, 236, 239);
+  /* background-color: rgb(233, 236, 239); */
   opacity: 1;
 }
 
