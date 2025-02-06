@@ -618,6 +618,7 @@ const ApprovalMatrics = () => {
                         }
                         value={selectedCompany}
                         placeholder={`Select Company`} // Dynamic placeholder
+                        isSearchable={true}
                       />
                     </div>
 

@@ -1,18 +1,25 @@
-import React from 'react';
+import React from "react";
 
 const FormatDate = ({ timestamp }) => {
-  const formattedDate = new Date(timestamp).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    // timeZoneName: 'short',
+  if (!timestamp) return <div>N/A</div>;
+
+  const date = new Date(timestamp);
+
+  const formattedDate = date.toLocaleDateString("en-GB", {
+    // 'en-GB' ensures DD-MM-YYYY format
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 
-  return <div>{formattedDate}</div>;
-};
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    // second: "2-digit",
+    hour12: false, // 24-hour format
+  });
 
+  return <div>{`${formattedDate} ${formattedTime}`}</div>;
+};
 
 export default FormatDate;
