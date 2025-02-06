@@ -283,6 +283,7 @@ export default function AllocationTab({ isCounterOffer }) {
         materialId: material_id,
         bidId: bid_id,
         pms_supplier_id: pms_supplier_id,
+        id:id
       };
 
       setSelectedData((prevSelectedData) => {
@@ -363,17 +364,9 @@ export default function AllocationTab({ isCounterOffer }) {
     }
   };
 
-  const getSelectedDataColumns = () => {
-    if (!selectedData) return [];
-    return Object.keys(selectedData).map((key) => ({
-      label: key,
-      key: key,
-    }));
-  };
-
   const handleCreatePO = async (vendorData) => {
     if (isCreatingPO.current) return;
-    setPoIsLoading(true);
+    setPoIsLoading(true);   
 
     const jsonBody = {
       orders: [
@@ -382,7 +375,7 @@ export default function AllocationTab({ isCounterOffer }) {
           bid: {
             id: vendorData.materials[0].bidId,
             bid_materials: vendorData.materials.map((material) => ({
-              id: material.materialId,
+              id: material.id,
             })),
           },
         },
@@ -398,7 +391,6 @@ export default function AllocationTab({ isCounterOffer }) {
       setTimeout(() => {          
         setSelectedData([]);
       }, 1000);
-      console.log("PO created successfully:", response.data);
     } catch (error) {
       if (error.response.status === 422) {
         toast.error("Already Ordered this purchase");
