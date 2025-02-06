@@ -558,7 +558,8 @@ const BOQEdit = () => {
                                         className="purple-btn2 w-100"
                                         fdprocessedid="u33pye"
                                     >
-                                        Amend
+                                        {/* Amend */}
+                                        Update
                                     </button>
                                 </div>
                                 <div className="col-md-2">
@@ -566,7 +567,8 @@ const BOQEdit = () => {
                                         className="purple-btn1 w-100"
                                         fdprocessedid="u33pye"
                                     >
-                                        Back
+                                        {/* Back */}
+                                        Cancel
                                     </button>
                                 </div>
                             </div>

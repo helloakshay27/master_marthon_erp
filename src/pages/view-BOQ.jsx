@@ -177,11 +177,19 @@ const BOQList = () => {
 
   // Handle Go button click
   const [loading, setLoading] = useState(false);
+   const [errors, setErrors] = useState({});
   const handleGoClick = () => {
     // if (!selectedProject || !selectedSite || !selectedWing) {
     //   alert("Please select Project, Site, and Wing");
     //   return;
     // }
+    let validationErrors = {};
+    // Validate required fields
+    if (!selectedProject) validationErrors.project = 'Project is required.';
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+    } else {
+      // setLoading(true);
 
     const projectId = selectedProject ? selectedProject.value : "";
     const siteId = selectedSite ? selectedSite.value : "";
@@ -202,6 +210,8 @@ const BOQList = () => {
       .finally(() => {
         setLoading(false); // Stop loading when request completes
       });
+
+    }
   };
 
   // boq list table 
@@ -443,8 +453,8 @@ const BOQList = () => {
             <button className="purple-btn2" onClick={handleClick}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 fill="white"
                 className="bi bi-plus"
                 viewBox="0 0 16 16"
@@ -471,18 +481,21 @@ const BOQList = () => {
 
 
           <div className="card mt-2 mb-5 p-4">
-            <CollapsibleCard title=" BOQ">
+            <CollapsibleCard title="Quick Filter"  isInitiallyCollapsed={true}>
               <div className="card-body mt-0 pt-0">
                 <div className="row">
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>Project</label>
+                      <label>Project <span>*</span></label>
                       <SingleSelector
                         options={projectOptions}
                         onChange={handleProjectChange}
                         value={selectedProject}
                         placeholder={`Select Project`} // Dynamic placeholder
                       />
+                      {errors.project && (
+                          <div className="error-message">{errors.project}</div>
+                        )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -667,7 +680,7 @@ const BOQList = () => {
 
             </CollapsibleCard>
 
-            <CollapsibleCard title="Bulk Action">
+            <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
               <form
                 onSubmit={handleSubmit}
               >
@@ -678,6 +691,7 @@ const BOQList = () => {
                       <select
                         name="fromStatus"
                         className="form-control form-select"
+                         classNamePrefix="react-select"
                         value={fromStatus}
                         onChange={handleStatusChange}
                       // value={formValues.fromStatus}
@@ -738,6 +752,7 @@ const BOQList = () => {
                 <table className="w-100">
                   <thead>
                     <tr>
+                      <th>Sr.No.</th>
                       <th className="text-start"> <input className="ms-1 me-1 mb-1" type="checkbox" /></th>
                       <th className="text-start">Expand</th>
                       <th className="text-start">Project/Sub-Project</th>
@@ -766,10 +781,11 @@ const BOQList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {boqList && boqList.projects && boqList.projects.map(project => (
+                    {boqList && boqList.projects && boqList.projects.map((project,index) => (
                       <React.Fragment key={project.id}>
 
                         <tr>
+                          <td>{index+1}</td>
                           <td>
                             {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                           </td>
@@ -850,6 +866,7 @@ const BOQList = () => {
                         {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
                           <React.Fragment key={subProject.id}>
                             <tr>
+                            <td></td>
                               <td>
                                 {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                               </td>
@@ -915,6 +932,7 @@ const BOQList = () => {
                               subProject.categories.map((category) => (
                                 <React.Fragment key={category.id}>
                                   <tr>
+                                  <td></td>
                                     <td>
                                       {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                     </td>
@@ -983,6 +1001,7 @@ const BOQList = () => {
                                     category.sub_categories_2.map((subCategory) => (
                                       <React.Fragment key={subCategory.id}>
                                         <tr>
+                                        <td></td>
                                           <td>
                                             {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                           </td>
@@ -1033,6 +1052,7 @@ const BOQList = () => {
                                           subCategory.boq_details.map((boqDetail2) => (
                                             <React.Fragment key={boqDetail2.id}>
                                               <tr>
+                                              <td></td>
                                                 <td>
                                                   {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                   <input
@@ -1073,7 +1093,7 @@ const BOQList = () => {
                                                 <td className="text-start">
 
                                                   <Link to={`/boq-details-page-master/${boqDetail2.id}`}>
-                                                    {boqDetail2.id}
+                                                  <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail2.id}</span>
                                                   </Link>
                                                 </td>
                                                 <td className="text-start"></td>
@@ -1208,6 +1228,7 @@ const BOQList = () => {
                                           subCategory.sub_categories_3.map((subCategory3) => (
                                             <React.Fragment key={subCategory3.id}>
                                               <tr>
+                                              <td></td>
                                                 <td>
                                                   {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                 </td>
@@ -1249,6 +1270,7 @@ const BOQList = () => {
                                                 subCategory3.boq_details.map((boqDetail3) => (
                                                   <React.Fragment key={boqDetail3.id}>
                                                     <tr>
+                                                    <td></td>
                                                       <td>
                                                         {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                         <input
@@ -1277,9 +1299,9 @@ const BOQList = () => {
                                                         </button>
                                                         {boqDetail3.item_name}
                                                       </td>
-                                                      <td className="text-start">
+                                                      <td className="text-start" >
                                                         <Link to={`/boq-details-page-master/${boqDetail3.id}`}>
-                                                          {boqDetail3.id}
+                                                          <span style={{ color: ' #8b0203', textDecoration: 'underline'}}>{boqDetail3.id}</span>
                                                         </Link>
                                                       </td>
                                                       <td className="text-start"></td>
@@ -1408,6 +1430,7 @@ const BOQList = () => {
                                                       subCategory3.sub_categories_4.map((subCategory4) => (
                                                         <React.Fragment key={subCategory4.id}>
                                                           <tr>
+                                                          <td></td>
                                                             <td>
                                                               {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                             </td>
@@ -1449,6 +1472,7 @@ const BOQList = () => {
                                                             subCategory4.boq_details.map((boqDetail4) => (
                                                               <React.Fragment key={boqDetail4.id}>
                                                                 <tr>
+                                                                <td></td>
                                                                   <td>
                                                                     {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                     <input
@@ -1479,7 +1503,7 @@ const BOQList = () => {
                                                                   </td>
                                                                   <td className="text-start">
                                                                     <Link to={`/boq-details-page-master/${boqDetail4.id}`}>
-                                                                      {boqDetail4.id}
+                                                                    <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail4.id} </span>
                                                                     </Link>
                                                                   </td>
                                                                   <td className="text-start"></td>
@@ -1606,6 +1630,7 @@ const BOQList = () => {
                                                                   subCategory4.sub_categories_5.map((subCategory5) => (
                                                                     <React.Fragment key={subCategory5.id}>
                                                                       <tr>
+                                                                      <td></td>
                                                                         <td>
                                                                           {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                         </td>
@@ -1648,6 +1673,7 @@ const BOQList = () => {
                                                                         subCategory5.boq_details.map((boqDetail5) => (
                                                                           <React.Fragment key={boqDetail5.id}>
                                                                             <tr>
+                                                                            <td></td>
                                                                               <td>
                                                                                 {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                                 <input
@@ -1678,7 +1704,7 @@ const BOQList = () => {
                                                                               </td>
                                                                               <td className="text-start">
                                                                                 <Link to={`/boq-details-page-master/${boqDetail5.id}`}>
-                                                                                  {boqDetail5.id}
+                                                                                <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail5.id}</span>
                                                                                 </Link>
                                                                               </td>
                                                                               <td className="text-start"></td>

@@ -825,6 +825,12 @@ const BOQSubItemTable = ({
 
                                 placeholder="Co-efficient Factor"
                                 value={coefficientFactors[index] || ''}
+                                onKeyDown={(e) => {
+                                  if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                    e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                  }
+                                }}
+                                min="0"
                                 onChange={(e) => handleCoefficientFactorChange(index, e.target.value)}
                               />
                             </td>
@@ -1019,6 +1025,12 @@ const BOQSubItemTable = ({
 
                                 placeholder="Co-efficient Factor"
                                 value={assetCoefficientFactors[index] || ''}
+                                onKeyDown={(e) => {
+                                  if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                    e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                  }
+                                }}
+                                min="0"
                                 onChange={(e) => handleAssetCoefficientFactorChange(index, e.target.value)}
                               />
                             </td>

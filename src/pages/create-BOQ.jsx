@@ -12,14 +12,26 @@ import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust
 import axios from "axios"
 import { prepareDataForValidation } from "formik";
 import { useNavigate } from 'react-router-dom';
+// import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CreateBOQ = () => {
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
   const [showBOQSubItem, setShowBOQSubItem] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // const [errors, setErrors] = useState({
+  //   project: false,
+  //   itemName: false,
+  //   boqQuantity: false,
+  //   unit: false,
+  // });
 
-  
+  const [errors, setErrors] = useState({});
+
+
 
   const handleCheckboxChange = (e) => {
     const { id, checked } = e.target;
@@ -938,7 +950,7 @@ const CreateBOQ = () => {
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '', // Safe access with fallback
       colour_id: selectedColors[index] ? selectedColors[index].value : '', // Safe access with fallback
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '', // Safe access with fallback
-      uom: selectedUnit2[index]?selectedUnit2[index].value : "", // Safe access with optional chaining
+      uom: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
@@ -954,7 +966,7 @@ const CreateBOQ = () => {
     generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
     colour_id: selectedColors[index] ? selectedColors[index].value : '',
     brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-    uom: selectedUnit3[index]?selectedUnit3[index].value : '',
+    uom: selectedUnit3[index] ? selectedUnit3[index].value : '',
     co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
     estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
     wastage: parseFloat(assetWastages[index]) || 0,
@@ -1194,168 +1206,224 @@ const CreateBOQ = () => {
   const handleLevel5Change = (selectedOption) => setSelectedSubCategoryLevel5(selectedOption);
 
   const handleSubmitMaterialLabour = async () => {
-    setLoading(true);
-    try {
-      // Prepare the payload data
-      // setLoading(false);
 
-      const payloadData = {
-        boq_detail: {
-          project_id: selectedProject ? selectedProject.value : null,
-          pms_site_id: selectedSite ? selectedSite.value : null,
-          pms_wing_id: selectedWing ? selectedWing.value : null,
-          item_name: itemName,
-          description: description,
-          unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
-          quantity: boqQuantity,
-          note: note,
+    // Validate mandatory fields
+    // Track validation errors
+    // const newErrors = {
+    //   project: !selectedProject,
+    //   itemName: !itemName,
+    //   boqQuantity: !boqQuantity,
+    //   unit: !selectedUnit,
+    // };
 
-          sub_categories: [
-            // Always include main category (level 1)
-            {
-              category_id: selectedCategory?.value,
-              level: 1,
-            },
+    // setErrors(newErrors);
+    let validationErrors = {};
+    // Validate required fields
+    if (!selectedProject) validationErrors.project = 'Project is required.';
+    if (!itemName) validationErrors.itemName = 'Item Name is required.';
+    if (!selectedUnit) validationErrors.unit = 'UOM is required.';
+    if (!boqQuantity) validationErrors.boqQuantity = 'BOQ Quantity is required.';
 
-            // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
-            ...(selectedSubCategory ? [{
-              category_id: selectedSubCategory?.value,
-              level: 2,
-              materials: !selectedSubCategoryLevel3 ? predefinedMaterials : [],// Filter for level 2
-              assets: !selectedSubCategoryLevel3 ? predefinedAssets : []
-            }] : []),
 
-            // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
-            ...(selectedSubCategoryLevel3 ? [{
-              category_id: selectedSubCategoryLevel3?.value,
-              level: 3,
-              materials: !selectedSubCategoryLevel4 ? predefinedMaterials : [], // Filter for level 3
-              assets: !selectedSubCategoryLevel4 ? predefinedAssets : []
-            }] : []),
+    // Show toast messages for each missing field
+    //  if (!selectedProject) toast.error("Project is required.");
+    //  if (!itemName) toast.error("Item Name is required.");
+    //  if (!boqQuantity) toast.error("BOQ Quantity is required.");
+    //  if (!selectedUnit) toast.error("UOM is required.");
 
-            // Only include materials for level 4 if it is selected
-            ...(selectedSubCategoryLevel4 ? [{
-              category_id: selectedSubCategoryLevel4?.value,
-              level: 4,
-              materials: !selectedSubCategoryLevel5 ? predefinedMaterials : [], // Filter for level 4
-              assets: !selectedSubCategoryLevel5 ? predefinedAssets : []
-            }] : []),
+    // if (!newErrors.project && !newErrors.itemName && !newErrors.boqQuantity && !newErrors.unit) {
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+    } else {
+      setLoading(true);
+      try {
+        // Prepare the payload data
+        // setLoading(false);
 
-            // Only include materials for level 5 if it is selected
-            ...(selectedSubCategoryLevel5 ? [{
-              category_id: selectedSubCategoryLevel5?.value,
-              level: 5,
-              materials: predefinedMaterials,// Filter for level 5
-              assets: predefinedAssets || []
-            }] : []),
-          ]
+        const payloadData = {
+          boq_detail: {
+            project_id: selectedProject ? selectedProject.value : null,
+            pms_site_id: selectedSite ? selectedSite.value : null,
+            pms_wing_id: selectedWing ? selectedWing.value : null,
+            item_name: itemName,
+            description: description,
+            unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+            quantity: boqQuantity,
+            note: note,
+
+            sub_categories: [
+              // Always include main category (level 1)
+              {
+                category_id: selectedCategory?.value,
+                level: 1,
+              },
+
+              // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
+              ...(selectedSubCategory ? [{
+                category_id: selectedSubCategory?.value,
+                level: 2,
+                materials: !selectedSubCategoryLevel3 ? predefinedMaterials : [],// Filter for level 2
+                assets: !selectedSubCategoryLevel3 ? predefinedAssets : []
+              }] : []),
+
+              // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
+              ...(selectedSubCategoryLevel3 ? [{
+                category_id: selectedSubCategoryLevel3?.value,
+                level: 3,
+                materials: !selectedSubCategoryLevel4 ? predefinedMaterials : [], // Filter for level 3
+                assets: !selectedSubCategoryLevel4 ? predefinedAssets : []
+              }] : []),
+
+              // Only include materials for level 4 if it is selected
+              ...(selectedSubCategoryLevel4 ? [{
+                category_id: selectedSubCategoryLevel4?.value,
+                level: 4,
+                materials: !selectedSubCategoryLevel5 ? predefinedMaterials : [], // Filter for level 4
+                assets: !selectedSubCategoryLevel5 ? predefinedAssets : []
+              }] : []),
+
+              // Only include materials for level 5 if it is selected
+              ...(selectedSubCategoryLevel5 ? [{
+                category_id: selectedSubCategoryLevel5?.value,
+                level: 5,
+                materials: predefinedMaterials,// Filter for level 5
+                assets: predefinedAssets || []
+              }] : []),
+            ]
+          }
+        };
+
+        console.log("boq data payload 1 ", payloadData)
+
+
+        // Axios POST request
+        const response = await axios.post(
+          'https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414',
+          payloadData
+        );
+
+        // Handle successful response
+        if (response.data) {
+          navigate('/view-BOQ'); // Navigate to BOQ list on success
+        } else {
+          toast.error('Failed to create BOQ.', { position: "top-right" });
         }
-      };
-
-      console.log("boq data payload 1 ", payloadData)
-
-
-      // Axios POST request
-      const response = await axios.post(
-        'https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414',
-        payloadData
-      );
-
-      // Handle successful response
-      alert("BOQ created successfully")
-      navigate('/view-BOQ');
-      console.log('Data posted successfully:', response.data);
-      // You can also display a success message or perform other actions after a successful request
-      // setLoading(false);
-    } catch (error) {
-      // Handle error if the request fails
-      console.error('Error posting data:', error);
-      // Optionally display an error message to the user
-    } finally {
-      setLoading(false);
+        // alert("BOQ created successfully")
+        // navigate('/view-BOQ');
+        console.log('Data posted successfully:', response.data);
+        // You can also display a success message or perform other actions after a successful request
+        // setLoading(false);
+      } catch (error) {
+        // Handle error if the request fails
+        console.error('Error posting data:', error);
+        toast.error('Something went wrong.', { position: "top-right" });
+        // Optionally display an error message to the user
+      } finally {
+        setLoading(false);
+      }
     }
+
+
   };
 
   // Handle submit for BOQ SubItem
   const handleSubmitBOQSubItem = async () => {
     // Logic for handling submission when BOQ SubItem is selected
     console.log('BOQ SubItem submitted');
-    setLoading(true);
 
-    try {
-      // Prepare the payload data
+    let validationErrors = {};
+    // Validate required fields
+    if (!selectedProject) validationErrors.project = 'Project is required.';
+    if (!itemName) validationErrors.itemName = 'Item Name is required.';
 
-      const payloadData2 = {
-        boq_detail: {
-          project_id: selectedProject ? selectedProject.value : null,
-          pms_site_id: selectedSite ? selectedSite.value : null,
-          pms_wing_id: selectedWing ? selectedWing.value : null,
-          item_name: itemName,
-          description: description,
-          note: note,
-
-          sub_categories: [
-            // Always include main category (level 1)
-            {
-              category_id: selectedCategory?.value,
-              level: 1,
-            },
-            // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
-            ...(selectedSubCategory ? [{
-              category_id: selectedSubCategory?.value,
-              level: 2,
-              boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] // Filter for level 2
-            }] : []),
-
-            // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
-            ...(selectedSubCategoryLevel3 ? [{
-              category_id: selectedSubCategoryLevel3?.value,
-              level: 3,
-              boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [] // Filter for level 3
-            }] : []),
-
-            // Only include materials for level 4 if it is selected
-            ...(selectedSubCategoryLevel4 ? [{
-              category_id: selectedSubCategoryLevel4?.value,
-              level: 4,
-              boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [] // Filter for level 4
-            }] : []),
-
-            // Only include materials for level 5 if it is selected
-            ...(selectedSubCategoryLevel5 ? [{
-              category_id: selectedSubCategoryLevel5?.value,
-              level: 5,
-              boq_sub_items: boqSubItems || [] // Filter for level 5
-            }] : []),
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+    } else {
+      setLoading(true);
 
 
-          ]
+      try {
+        // Prepare the payload data
+
+        const payloadData2 = {
+          boq_detail: {
+            project_id: selectedProject ? selectedProject.value : null,
+            pms_site_id: selectedSite ? selectedSite.value : null,
+            pms_wing_id: selectedWing ? selectedWing.value : null,
+            item_name: itemName,
+            description: description,
+            note: note,
+
+            sub_categories: [
+              // Always include main category (level 1)
+              {
+                category_id: selectedCategory?.value,
+                level: 1,
+              },
+              // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
+              ...(selectedSubCategory ? [{
+                category_id: selectedSubCategory?.value,
+                level: 2,
+                boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] // Filter for level 2
+              }] : []),
+
+              // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
+              ...(selectedSubCategoryLevel3 ? [{
+                category_id: selectedSubCategoryLevel3?.value,
+                level: 3,
+                boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [] // Filter for level 3
+              }] : []),
+
+              // Only include materials for level 4 if it is selected
+              ...(selectedSubCategoryLevel4 ? [{
+                category_id: selectedSubCategoryLevel4?.value,
+                level: 4,
+                boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [] // Filter for level 4
+              }] : []),
+
+              // Only include materials for level 5 if it is selected
+              ...(selectedSubCategoryLevel5 ? [{
+                category_id: selectedSubCategoryLevel5?.value,
+                level: 5,
+                boq_sub_items: boqSubItems || [] // Filter for level 5
+              }] : []),
+
+
+            ]
+
+          }
 
         }
 
+        console.log("boq data payload 2 for sub item:", payloadData2)
+
+
+        // Axios POST request
+        const response = await axios.post(
+          'https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414',
+          payloadData2
+        );
+
+        // Handle successful response
+        if (response.data) {
+          navigate('/view-BOQ'); // Navigate to BOQ list on success
+        } else {
+          toast.error('Failed to create BOQ Sub Item.', { position: "top-right" });
+        }
+        // alert("BOQ Sub Items created successfully")
+        // navigate('/view-BOQ');
+        console.log('Data posted successfully:', response.data);
+        // You can also display a success message or perform other actions after a successful request
+
+      } catch (error) {
+        // Handle error if the request fails
+        console.error('Error posting data:', error);
+        toast.error('Something went wrong.', { position: "top-right" });
+        // Optionally display an error message to the user
+      } finally {
+        setLoading(false);
       }
 
-      console.log("boq data payload 2 for sub item:", payloadData2)
-
-
-      // Axios POST request
-      const response = await axios.post(
-        'https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414',
-        payloadData2
-      );
-
-      // Handle successful response
-      alert("BOQ Sub Items created successfully")
-      navigate('/view-BOQ');
-      console.log('Data posted successfully:', response.data);
-      // You can also display a success message or perform other actions after a successful request
-
-    } catch (error) {
-      // Handle error if the request fails
-      console.error('Error posting data:', error);
-      // Optionally display an error message to the user
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -1367,10 +1435,25 @@ const CreateBOQ = () => {
       handleSubmitBOQSubItem();
     } else {
       console.log('No option selected');
+      toast.error('Please select Material/Asset or BOQ Sub-Item.', { position: "top-right" });
     }
   };
 
+  const [file, setFile] = useState(null);
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      // You can further process the file, e.g., upload it to a server
+      console.log('Selected file:', selectedFile);
+    }
+  };
 
+  // Trigger the file input click event when the SVG icon is clicked
+  const handleIconClick = () => {
+    document.getElementById('file-input').click();
+  };
   return (
     <>
 
@@ -1379,6 +1462,7 @@ const CreateBOQ = () => {
           <a href="">Home &gt; Engineering &gt; Create BOQ</a>
           <h5 className="mt-4">Create BOQ</h5>
           <div className="tab-content1 active" id="total-content">
+            <ToastContainer />
             {/* Total Content Here */}
             <div className="card mt-5 pb-4">
               <CollapsibleCard title="Create Boq">
@@ -1392,7 +1476,14 @@ const CreateBOQ = () => {
                           onChange={handleProjectChange}
                           value={selectedProject}
                           placeholder="Select Project"
+                          classNamePrefix="react-select"
+
                         />
+                        {errors.project && (
+                          <div className="error-message">{errors.project}</div>
+                        )}
+
+                        {/* {errors.project && <span className="text-danger">Project is required.</span>} */}
                       </div>
                     </div>
                     <div className="col-md-4">
@@ -1403,6 +1494,7 @@ const CreateBOQ = () => {
                           onChange={handleSiteChange}
                           value={selectedSite}
                           placeholder={`Select Sub-project`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
                       </div>
                     </div>
@@ -1490,6 +1582,11 @@ const CreateBOQ = () => {
                           fdprocessedid="qv9ju9"
                           onChange={(e) => handleInputChange('itemName', e.target.value)}
                         />
+                        {errors.itemName && (
+                          <div className="error-message">
+                            {errors.itemName}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-4 mt-2">
@@ -1514,6 +1611,10 @@ const CreateBOQ = () => {
                           placeholder={`Select UOM`} // Dynamic placeholder
                           isDisabled={showBOQSubItem}
                         />
+                        {errors.unit && (
+                          <div className="error-message">{errors.unit}</div>
+                        )}
+
                       </div>
                     </div>
                     <div className="col-md-4 mt-2">
@@ -1533,6 +1634,9 @@ const CreateBOQ = () => {
                           disabled={showBOQSubItem}
                           min="0"
                         />
+                        {errors.boqQuantity && (
+                          <div className="error-message">{errors.boqQuantity}</div>
+                        )}
                       </div>
                     </div>
 
@@ -1555,13 +1659,17 @@ const CreateBOQ = () => {
                       <div className="col-md-6 d-flex align-items-center">
                         <div className="form-check me-3">
                           <input type="checkbox" className="form-check-input" id="checkbox1" onChange={handleCheckboxChange} />
-                          <label className="form-check-label" htmlFor="checkbox1">
+                          <label
+                          // className="form-check-label" htmlFor="checkbox1"
+                          >
                             Add Material/Assests
                           </label>
                         </div>
                         <div className="form-check">
                           <input type="checkbox" className="form-check-input" id="checkbox2" onChange={handleCheckboxChange} />
-                          <label className="form-check-label" htmlFor="checkbox2">
+                          <label
+                          // className="form-check-label" htmlFor="checkbox2"
+                          >
                             Add BOQ Sub-Item
                           </label>
                         </div>
@@ -1710,6 +1818,12 @@ const CreateBOQ = () => {
                                         type="number"
                                         placeholder="Co-efficient Factor"
                                         value={coefficientFactors[index] || ''}
+                                        onKeyDown={(e) => {
+                                          if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                            e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                          }
+                                        }}
+                                        min="0"
                                         onChange={(e) => handleCoefficientFactorChange(index, e.target.value)}
                                       />
                                     </td>
@@ -1718,7 +1832,7 @@ const CreateBOQ = () => {
                                         className="form-control"
                                         type="number"
                                         placeholder="Estimated Qty"
-                                          disabled
+                                        disabled
                                         value={estimatedQuantities[index] || ''}
                                       // value={calculateEstimatedQuantities()}
 
@@ -1741,7 +1855,7 @@ const CreateBOQ = () => {
                                         placeholder="Total Estimated Quantity Wastage"
                                         disabled
                                         value={totalEstimatedQtyWastages[index] || ''}
-                                        // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                      // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                       />
                                     </td>
                                   </tr>
@@ -1899,6 +2013,12 @@ const CreateBOQ = () => {
                                         type="number"
                                         placeholder="Co-efficient Factor"
                                         value={assetCoefficientFactors[index] || ''}
+                                        onKeyDown={(e) => {
+                                          if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                            e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                          }
+                                        }}
+                                        min="0"
                                         onChange={(e) => handleAssetCoefficientFactorChange(index, e.target.value)}
                                       />
                                     </td>
@@ -1909,7 +2029,7 @@ const CreateBOQ = () => {
                                         placeholder="Estimated Qty"
                                         disabled
                                         value={assetEstimatedQuantities[index] || ''}
-                                        // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
+                                      // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
 
                                       />
                                     </td>
@@ -1929,7 +2049,7 @@ const CreateBOQ = () => {
                                         placeholder="Total Estimated Qty"
                                         disabled
                                         value={assetTotalEstimatedQtyWastages[index] || ''}
-                                        // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                      // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
                                       />
                                     </td>
                                   </tr>
@@ -2083,7 +2203,7 @@ const CreateBOQ = () => {
                                         <input
                                           type="text"
                                           // defaultValue="MS Fabrication_20010"
-                                           placeholder="Enter Notes"
+                                          placeholder="Enter Notes"
                                           className="form-control"
                                           value={expandedRows.notes}
                                           onChange={(e) => handleInputChange2(index, "notes", e.target.value)}
@@ -2091,7 +2211,7 @@ const CreateBOQ = () => {
                                       </td>
                                       <td>
                                         <input type="text" defaultValue=""
-                                         placeholder="Enter Remark"
+                                          placeholder="Enter Remark"
                                           value={expandedRows.remarks}
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "remarks", e.target.value)}
@@ -2108,7 +2228,13 @@ const CreateBOQ = () => {
                                       <td colSpan={3}>
                                         <input type="number"
                                           value={expandedRows.qty}
-                                           placeholder="Enter Quantity"
+                                          onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                              e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                            }
+                                          }}
+                                          min="0"
+                                          placeholder="Enter Quantity"
                                           className="form-control"
                                           onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
                                         />
@@ -2122,10 +2248,21 @@ const CreateBOQ = () => {
                                           fill="currentColor"
                                           className="bi bi-file-earmark-text"
                                           viewBox="0 0 16 16"
+                                          onClick={handleIconClick} // Trigger file input on click
                                         >
                                           <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                           <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
                                         </svg>
+                                        {/* Hidden file input */}
+                                        <input
+                                          id="file-input"
+                                          type="file"
+                                          style={{ display: 'none' }} // Hide the file input
+                                          onChange={handleFileChange} // Handle file change
+                                        />
+                                        {/* Display the selected file name */}
+                                        {file && <div>Selected File: {file.name}</div>}
+
                                       </td>
                                     </tr>
                                     {expandedRows.includes(el.id) && (

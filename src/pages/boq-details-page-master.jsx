@@ -542,7 +542,7 @@ const BOQDetailsPageMaster = () => {
 
                 {/* </div> */}
 
-
+{/* 
                 <div className="row mt-3 px-2 mx-3 ">
                   <div className="d-flex justify-content-between align-items-center">
                     <h5 className="">Document Attachment</h5>
@@ -553,7 +553,7 @@ const BOQDetailsPageMaster = () => {
                     {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
 
 
-                    <div className="tbl-container  mt-1">
+                    {/* <div className="tbl-container  mt-1">
                       <table className="w-100">
                         <thead>
                           <tr>
@@ -638,7 +638,7 @@ const BOQDetailsPageMaster = () => {
                     </div>
                   </div>
 
-                </div>
+                </div> */} 
 
                 <div className="row mt-4 px-2 mx-3">
                   <div className="col-md-12">
