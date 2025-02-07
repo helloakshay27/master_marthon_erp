@@ -97,13 +97,15 @@ export default function Table({
 
   const handleColumnClick = (data, columnKey) => {
     if (onColumnClick) {
-      
       const bid_id = data.bid_id || data.bidId;
       const material_id = data.material_id || data.materialId;
       const vendor_id = data.vendor_id || data.vendorId;
       const vendor_name = data.vendor_name || data.vendor_name;
       const id = data.id || data.id;
-      onColumnClick({ bid_id, material_id, vendor_id, vendor_name, id, ...data }, columnKey);
+      onColumnClick(
+        { bid_id, material_id, vendor_id, vendor_name, id, ...data },
+        columnKey
+      );
     }
   };
 
@@ -141,61 +143,87 @@ export default function Table({
             <col style={{ width: "auto" }} />
           </colgroup>
           <tbody>
-            {transposedData.map((row, rowIndex) => (
-              !["bid_id", "material_id", "vendor_id", "vendor_name", "pms_supplier_id", "material_name","id"].includes(columns[rowIndex]?.key) && (
-                <tr key={rowIndex}>
-                  <td
-                    className="main2-th"
-                    style={{
-                      fontWeight: "bold",
-                      textAlign: "left",
-                      width: "300px",
-                    }}
-                  >
-                    {row.header}
-                  </td>
-                  {row.values.map((value, valueIndex) => (
-                    value !== "" && (
-                      <td
-                        key={valueIndex}
-                        style={{
-                          width: "180px",
-                          textAlign: "left",
-                          whiteSpace: "nowrap",
-                          backgroundColor:
-                            ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
-                              ? getBackgroundColor(value)
-                              : "transparent",
-                          fontWeight:
-                            ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
-                              ? "bold"
-                              : "normal",
-                          textTransform: "capitalize",
-                          cursor: enableHoverEffect ? "pointer" : "default", // Conditionally add cursor pointer
-                        }}
-                        onClick={() =>
-                          handleColumnClick(data[valueIndex], columns[rowIndex]?.key)
-                        }
-                        onMouseOver={(e) => enableHoverEffect && (e.currentTarget.style.backgroundColor = "#f0f0f0")} // Conditionally add hover effect
-                        onMouseOut={(e) => enableHoverEffect && (e.currentTarget.style.backgroundColor = 
-                          ["totalAmount", "grossTotal"].includes(columns[rowIndex]?.key)
-                            ? getBackgroundColor(value)
-                            : "transparent")} // Conditionally reset background color on mouse out
-                      >
-                        {customRender[columns[rowIndex]?.key]
-                          ? customRender[columns[rowIndex]?.key](
-                              value,
-                              valueIndex,
-                              data[valueIndex]
-                            )
-                          : value}
-                      </td>
-                    )
-                  ))}
-                  <td style={{ width: "auto" }}></td>
-                </tr>
-              )
-            ))}
+            {transposedData.map(
+              (row, rowIndex) =>
+                ![
+                  "bid_id",
+                  "material_id",
+                  "vendor_id",
+                  "vendor_name",
+                  "pms_supplier_id",
+                  "material_name",
+                  "id",
+                ].includes(columns[rowIndex]?.key) && (
+                  <tr key={rowIndex}>
+                    <td
+                      className="main2-th"
+                      style={{
+                        fontWeight: "bold",
+                        textAlign: "left",
+                        width: "300px",
+                      }}
+                    >
+                      {row.header}
+                    </td>
+                    {row.values.map(
+                      (value, valueIndex) =>
+                        value !== "" && (
+                          <td
+                            key={valueIndex}
+                            style={{
+                              width: "180px",
+                              textAlign: "center",
+                              whiteSpace: "nowrap",
+                              backgroundColor: [
+                                "totalAmount",
+                                "grossTotal",
+                              ].includes(columns[rowIndex]?.key)
+                                ? getBackgroundColor(value)
+                                : "transparent",
+                              fontWeight: [
+                                "totalAmount",
+                                "grossTotal",
+                              ].includes(columns[rowIndex]?.key)
+                                ? "bold"
+                                : "normal",
+                              textTransform: "capitalize",
+                              cursor: enableHoverEffect ? "pointer" : "default", // Conditionally add cursor pointer
+                            }}
+                            onClick={() =>
+                              handleColumnClick(
+                                data[valueIndex],
+                                columns[rowIndex]?.key
+                              )
+                            }
+                            onMouseOver={(e) =>
+                              enableHoverEffect &&
+                              (e.currentTarget.style.backgroundColor =
+                                "#f0f0f0")
+                            } // Conditionally add hover effect
+                            onMouseOut={(e) =>
+                              enableHoverEffect &&
+                              (e.currentTarget.style.backgroundColor = [
+                                "totalAmount",
+                                "grossTotal",
+                              ].includes(columns[rowIndex]?.key)
+                                ? getBackgroundColor(value)
+                                : "transparent")
+                            } // Conditionally reset background color on mouse out
+                          >
+                            {customRender[columns[rowIndex]?.key]
+                              ? customRender[columns[rowIndex]?.key](
+                                  value,
+                                  valueIndex,
+                                  data[valueIndex]
+                                )
+                              : value}
+                          </td>
+                        )
+                    )}
+                    <td style={{ width: "auto" }}></td>
+                  </tr>
+                )
+            )}
           </tbody>
         </table>
       </div>
@@ -304,5 +332,3 @@ export default function Table({
     </div>
   );
 }
-
-

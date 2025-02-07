@@ -4,12 +4,14 @@ import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { de } from "date-fns/locale";
 
 export default function CreateRFQForm({
   data,
   setData,
   isService,
   existingData,
+  deliveryData,
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -64,6 +66,8 @@ export default function CreateRFQForm({
       ],
     },
   };
+
+  console.log("deliveryData", deliveryData);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -179,7 +183,7 @@ export default function CreateRFQForm({
             ),
           };
         }
-      );      
+      );
       setSections(updatedSections);
       setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
     }
@@ -324,6 +328,13 @@ export default function CreateRFQForm({
     setSections(updatedSections);
   };
 
+  const deliveryColumns = [
+    { label: "Material Name", key: "material_formatted_name" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Expected Date", key: "expected_date" },
+    { label: "Expected Quantity", key: "expected_quantity" },
+  ];
+
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -395,7 +406,7 @@ export default function CreateRFQForm({
               <Table
                 columns={[
                   { label: "Sr no.", key: "srno" },
-                  { label: "Description of Item", key: "descriptionOfItem" },
+                  { label: "Material Name", key: "descriptionOfItem" },
                   { label: "Quantity", key: "quantity" },
                   { label: "UOM", key: "unit" },
                   { label: "Type", key: "type" },
@@ -535,6 +546,9 @@ export default function CreateRFQForm({
               />
             </div>
           ))}
+          {deliveryData.length > 0 && (
+            <Table columns={deliveryColumns} data={deliveryData} />
+          )}
           <button className="purple-btn2" onClick={handleAddSection}>
             <span className="material-symbols-outlined align-text-top">
               add{" "}

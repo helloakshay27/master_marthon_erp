@@ -13798,7 +13798,7 @@ input[type="checkbox"] {
 .bid-tbl td,
 .bid-tbl th {
   width: 80px; /* Ensure all cells have a fixed width */
-  text-align: left;
+  text-align: center;
   border: 1px solid #dee2e6 !important;
   font-family: "Open Sans", sans-serif;
   font-weight: 500;

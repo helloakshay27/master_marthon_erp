@@ -143,22 +143,22 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
       show={show}
       onHide={onHide}
       title="Event Schedule"
-      footerButtons={[
-        {
-          label: "Back",
-          onClick: onHide,
-          props: {
-            className: "purple-btn1",
-          },
-        },
-        {
-          label: "Save",
-          onClick: handleSaveScheduleFun,
-          props: {
-            className: "purple-btn2",
-          },
-        },
-      ]}
+      // footerButtons={[
+      //   {
+      //     label: "Back",
+      //     onClick: onHide,
+      //     props: {
+      //       className: "purple-btn1",
+      //     },
+      //   },
+      //   {
+      //     label: "Save",
+      //     onClick: handleSaveScheduleFun,
+      //     props: {
+      //       className: "purple-btn2",
+      //     },
+      //   },
+      // ]}
     >
       <div className="pb-4">
         <p>
@@ -261,6 +261,21 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
               </div>
             </>
           )}
+        </div>
+
+        <div className="d-flex justify-content-center mt-4">
+          <button
+            className="purple-btn1"
+            onClick={onHide}
+            >
+            Back
+            </button>
+          <button
+            className="purple-btn2"
+            onClick={handleSaveScheduleFun}
+          >
+            Save
+          </button>
         </div>
       </div>
     </DynamicModalBox>

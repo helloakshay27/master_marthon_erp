@@ -862,6 +862,7 @@ export default function EditEvent() {
               setData={setMaterialFormData}
               isService={isService}
               existingData={eventDetails?.grouped_event_materials}
+              deliveryData={eventDetails?.delivery_schedules}
             />
             <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
               <h5 className=" ">

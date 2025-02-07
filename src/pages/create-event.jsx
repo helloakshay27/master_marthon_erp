@@ -668,7 +668,7 @@ export default function CreateEvent() {
                 <input
                   className="form-control"
                   onClick={handleEventScheduleModalShow}
-                  placeholder="From [dd-mm-yy hh:mm] To [dd-mm-yy hh:mm] ([DD] Days [HH] Hrs [MM] Mins)"
+                  placeholder="Enter Event Schedule Details"
                   value={eventScheduleText} // Display the selected event schedule
                   readOnly
                 />
@@ -691,6 +691,7 @@ export default function CreateEvent() {
               data={materialFormData}
               setData={setMaterialFormData}
               isService={isService}
+              deliveryData={[]}
             />
             <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
               <h5 className=" ">

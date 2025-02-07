@@ -161,8 +161,8 @@ export default function OverviewTab({
     },
   ];
 
-  // console.log("overviewData:-----", overviewData);
-
+  console.log("materialData", materialData);
+  
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
     quantity: item.quantity || "_",
@@ -171,8 +171,8 @@ export default function OverviewTab({
     location: item.location || "_",
     rate: item.rate || "_",
     amount: item.rate * item.quantity || "_",
-    sectionName: item.section_name || "_",
-    subSectionName: item.sub_section_name || "_",
+    sectionName: item.material_type || "_",
+    subSectionName: item.inventory_sub_type || "_",
   }));
 
   const formatValue = (value) => {

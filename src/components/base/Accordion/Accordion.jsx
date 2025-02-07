@@ -70,7 +70,7 @@ export default function Accordion({
                   style={{
                     padding: '15px',
                     width: "180px",
-                    textAlign: "left",
+                    textAlign: "center",
                     whiteSpace: "nowrap",
                     backgroundColor: getBackgroundColor(amt),
                     height:'50px'
