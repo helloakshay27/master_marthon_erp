@@ -511,10 +511,42 @@ const ApprovalEdit = () => {
 
   const [departmentUsers, setDepartmentUsers] = useState([]);
 
+  // const handleDepartmentChange = async (selectedOption) => {
+  //   console.log("Selected Department:", selectedOption);
+
+  //   setSelectedDepartment(selectedOption); // ✅ Ensure state updates
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: selectedOption ? selectedOption.value : null,
+  //   }));
+
+  //   if (selectedOption) {
+  //     try {
+  //       // Fetch users based on department ID
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+
+  //       if (response.data && Array.isArray(response.data)) {
+  //         const userOptions = response.data.map((user) => ({
+  //           value: user.id,
+  //           label: user.full_name,
+  //         }));
+  //         setDepartmentUsers(userOptions);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching users for department:", error);
+  //       setDepartmentUsers([]); // Reset users on error
+  //     }
+  //   } else {
+  //     setDepartmentUsers([]); // Reset users if no department selected
+  //   }
+  // };
+
   const handleDepartmentChange = async (selectedOption) => {
     console.log("Selected Department:", selectedOption);
 
-    setSelectedDepartment(selectedOption); // ✅ Ensure state updates
+    setSelectedDepartment(selectedOption);
     setFormData((prevState) => ({
       ...prevState,
       department_id: selectedOption ? selectedOption.value : null,
@@ -522,7 +554,6 @@ const ApprovalEdit = () => {
 
     if (selectedOption) {
       try {
-        // Fetch users based on department ID
         const response = await axios.get(
           `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
@@ -532,7 +563,11 @@ const ApprovalEdit = () => {
             value: user.id,
             label: user.full_name,
           }));
+
+          console.log("Fetched Users:", userOptions);
           setDepartmentUsers(userOptions);
+        } else {
+          setDepartmentUsers([]); // Reset users if no valid data
         }
       } catch (error) {
         console.error("Error fetching users for department:", error);
@@ -542,6 +577,12 @@ const ApprovalEdit = () => {
       setDepartmentUsers([]); // Reset users if no department selected
     }
   };
+
+  useEffect(() => {
+    if (selectedDepartment) {
+      handleDepartmentChange(selectedDepartment);
+    }
+  }, [selectedDepartment]);
 
   const handleModuleChange = (selectedOption) => {
     console.log("Selected Module ID:", selectedOption.value);
@@ -618,6 +659,7 @@ const ApprovalEdit = () => {
     // If duplicate order found, show alert and stop further execution
     if (hasDuplicateOrder) {
       alert("Each approval level must have a unique order.");
+      setLoading(false);
       return; // Stop function execution
     }
 
