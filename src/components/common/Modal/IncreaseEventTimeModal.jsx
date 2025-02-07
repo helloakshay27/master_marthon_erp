@@ -23,7 +23,7 @@ const IncreaseEventTimeModal = ({ show, handleClose }) => {
     console.log("selectedDuration :-", selectedDuration);
   };
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const [eventData, setEventData] = useState(null); // To store fetched event data
 
@@ -69,7 +69,7 @@ const IncreaseEventTimeModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/extend_event_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/extend_event_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

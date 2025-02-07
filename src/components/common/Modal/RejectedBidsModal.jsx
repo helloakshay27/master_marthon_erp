@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 const RejectedBidsModal = ({ show, handleClose }) => {
   const [rejectedBids, setRejectedBids] = useState([]);
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const [eventData, setEventData] = useState(null); // To store fetched event data
 
@@ -24,7 +24,7 @@ const RejectedBidsModal = ({ show, handleClose }) => {
   const fetchRejectedBids = async () => {
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`
+        `https://marathon.lockated.com/rfq/events/${eventId}/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`
       );
       const data = await response.json();
 

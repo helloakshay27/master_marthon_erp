@@ -25,7 +25,9 @@ const AddEvaluationTimeModal = ({ show, handleClose }) => {
     }
   };
 
-  const { id } = useParams();
+  const { eventId } = useParams();
+
+  console.log("eventId", eventId);
 
   const [vendorId, setVendorId] = useState(() => {
     // Retrieve the vendorId from sessionStorage or default to an empty string
@@ -92,7 +94,7 @@ const AddEvaluationTimeModal = ({ show, handleClose }) => {
 
       // API Call
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/edit_evaluation_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/edit_evaluation_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

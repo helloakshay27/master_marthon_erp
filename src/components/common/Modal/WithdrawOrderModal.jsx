@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 const WithdrawOrderModal = ({ show, handleClose }) => {
   const [withdrawReason, setWithdrawReason] = useState("");
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const [eventData, setEventData] = useState(null); // To store fetched event data
 
@@ -22,7 +22,7 @@ const WithdrawOrderModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

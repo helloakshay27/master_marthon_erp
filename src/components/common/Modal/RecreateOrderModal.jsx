@@ -33,7 +33,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
   const [tableData, setTableData] = useState([]); // To store fetched data
   const [isLoading, setIsLoading] = useState(false); // For loading state
 
-  const { id } = useParams();
+  const { eventId } = useParams();
 
   const [eventData, setEventData] = useState(null); // To store fetched event data
 
@@ -48,7 +48,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
         const result = await response.json();
         console.log("API Response Structure", result); // Inspect the API response structure
