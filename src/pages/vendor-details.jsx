@@ -1363,6 +1363,159 @@ export default function VendorDetails() {
     }
   };
 
+  const [linkedEventData, setLinkedEventData] = useState([]);
+
+  useEffect(() => {
+    const fetchEventMaterials = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        );
+
+        console.log("Main Event Data:", response.data);
+        setData1(response.data);
+
+        if (response.data.linked_event_id) {
+          fetchLinkedEventData(response.data.linked_event_id);
+        } else {
+          setLinkedEventData([]); // Ensure it's an array
+        }
+      } catch (err) {
+        console.error("Error fetching event materials:", err.message);
+        setError("Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventMaterials();
+  }, [eventId]);
+
+  //  const [grossTotal, setGrossTotal] = useState(0); // State for Gross Total
+
+  const fetchLinkedEventData = async (linkedEventId) => {
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/rfq/events/${linkedEventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+      );
+
+      console.log("Linked Event Data Response:", response.data);
+
+      let bidData = [];
+      let freightData = [];
+      let totalGrossAmount = 0;
+
+      if (response.data?.bids?.length > 0) {
+        console.log("Bids found, fetching bid data...");
+
+        const bidResponse = await axios.get(
+          `https://marathon.lockated.com/rfq/events/${linkedEventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        console.log("Bid Data Response:", bidResponse.data);
+
+        const bids = bidResponse.data.bids;
+
+        if (bids.length > 0) {
+          bidData = bids.flatMap((bid) =>
+            bid.bid_materials.map((material) => ({
+              bidId: bid.id,
+              eventMaterialId: material.event_material_id,
+              descriptionOfItem: material.material_name,
+              quantity: material.event_material.quantity,
+              quantityAvail: material.quantity_available,
+              price: material.price,
+              discount: material.discount,
+              section: material.event_material.material_type,
+              subSection: material.event_material.inventory_sub_type,
+              realisedDiscount: material.realised_discount,
+              gst: material.gst,
+              realisedGst: material.realised_gst,
+              total: material.total_amount,
+              location: material.event_material.location,
+              vendorRemark: material.vendor_remark,
+              landedAmount: material.landed_amount,
+            }))
+          );
+
+          console.log("Mapped Bid Data:", bidData);
+
+          // Extract Freight & Other Bid Data
+          const latestBid = bids[0]; // Assuming latest bid is the first one
+          freightData = [
+            {
+              label: "Freight Charge",
+              value: `₹${latestBid.freight_charge_amount}`,
+            },
+            {
+              label: "GST on Freight",
+              value: `${latestBid.gst_on_freight}%`,
+            },
+            {
+              label: "Realised Freight",
+              value: `₹${latestBid.realised_freight_charge_amount}`,
+            },
+            {
+              label: "Warranty Clause",
+              value: latestBid.warranty_clause || "N/A",
+            },
+            {
+              label: "Payment Terms",
+              value: latestBid.payment_terms || "N/A",
+            },
+            {
+              label: "Loading/Unloading Clause",
+              value: latestBid.loading_unloading_clause || "N/A",
+            },
+          ];
+
+          // Set Gross Total from API
+          totalGrossAmount = latestBid.gross_total || 0;
+        }
+      }
+
+      // If no bids exist, fallback to event materials
+      if (bidData.length === 0 && response.data?.event_materials) {
+        console.log("No bids found, displaying event materials...");
+
+        bidData = response.data.event_materials.map((item) => ({
+          eventMaterialId: item.id,
+          descriptionOfItem: item.inventory_name,
+          quantity: item.quantity,
+          quantityAvail: "",
+          unit: item.uom,
+          location: item.location,
+          rate: item.rate || "",
+          section: item.material_type,
+          subSection: item.inventory_sub_type,
+          amount: item.amount,
+          totalAmt: "",
+          attachment: null,
+          price: "",
+          discount: "",
+          gst: "",
+          landedAmount: "",
+          vendorRemark: "",
+          total: "",
+        }));
+      }
+
+      console.log("Final Freight Data:", freightData);
+      console.log("Final Bid Data:", bidData);
+      console.log("Gross Total:", totalGrossAmount);
+
+      setLinkedEventData(bidData);
+      setFreightData(freightData);
+      setGrossTotal(totalGrossAmount); // Store the gross total
+    } catch (err) {
+      console.error("Error fetching linked event data:", err.message);
+      setLinkedEventData([]);
+      setFreightData([]);
+      setGrossTotal(0);
+    }
+  };
+  // const [isReadOnly, setIsReadOnly] = useState(true); // Default to read-only
+
   return (
     <div className="">
       <div className="styles_projectTabsHeader__148No" id="project-header">
@@ -1434,9 +1587,27 @@ export default function VendorDetails() {
               aria-selected="false"
               style={{ color: "#8b0203", fontSize: "16px" }}
             >
-              [{data1?.event_no}] {data1?.event_title}
+              [{data1?.event_no}]{/* {data1?.event_title} */}
             </a>
           </li>
+
+          {data1?.linked_event_id && (
+            <li className="nav-item" role="presentation">
+              <a
+                className="nav-link ps-4 pe-4"
+                id="profile-tab2"
+                data-bs-toggle="tab"
+                href="#profile2"
+                role="tab"
+                aria-controls="profile2"
+                aria-selected="false"
+                style={{ color: "#8b0203", fontSize: "16px" }}
+              >
+                More Details [{data1?.event_no}]
+              </a>
+            </li>
+          )}
+
           {isBidCreated && (
             <li className="nav-item" role="presentation">
               <a
@@ -1456,6 +1627,437 @@ export default function VendorDetails() {
         </ul>
 
         <div class="tab-content " id="myTabContent">
+          <div
+            className="tab-pane fade"
+            id="profile2"
+            role="tabpanel"
+            aria-labelledby="profile-tab2"
+          >
+            <div className="main-content">
+              <div className="p-3" style={{ overflowX: "auto" }}>
+                <div className="card mx-3 p-4 mt-3 pb-4 mb-2">
+                  <div className="d-flex flex-row-reverse">
+                    <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1">
+                      <div className="d-flex align-items-center gap-1">
+                        <ClockIcon />
+                        <p className="mb-0 eventList-p1">Ends In</p>
+                      </div>
+                      <span>{timeRemaining}</span>
+                      <div className="d-flex align-items-center gap-2">
+                        <i className="bi bi-hourglass-split"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card p-2 m-1">
+                    <div className="card-header4">
+                      <h4>
+                        Submission Sheet
+                        <span
+                          style={{
+                            backgroundColor: "#fff2e8",
+                            color: "#8b0203",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            marginLeft: "25px",
+                            fontSize: "0.85rem",
+                            fontWeight: "bold",
+                            borderColor: "#ffbb96",
+                          }}
+                        >
+                          RFQ
+                        </span>
+                      </h4>
+                    </div>
+
+                    {counterData > 0 && (
+                      <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
+                        <div className="">
+                          <p>Counter Offer</p>
+                          <p>
+                            A counter is pending on your bid. You cannot ake any
+                            further changes to your bid untill your resolve the
+                            counter offer
+                          </p>
+                        </div>
+                        <div className="d-flex">
+                          <button
+                            className="purple-btn1"
+                            onClick={handleDecline}
+                          >
+                            Decline
+                          </button>
+                          <button
+                            className="purple-btn2"
+                            onClick={handleAccept}
+                          >
+                            Accept Offer
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="card-body">
+                      {linkedEventData.length > 0 ? (
+                        <div style={tableContainerStyle}>
+                          <Table
+                            columns={[
+                              { label: "Material Type", key: "section" },
+                              { label: "Material Sub Type", key: "subSection" },
+                              { label: "Material", key: "descriptionOfItem" },
+                              { label: "Quantity Requested", key: "quantity" },
+                              { label: "Delivery Location", key: "location" },
+                              // {
+                              //   label: "Creator Attachment",
+                              //   key: "attachment",
+                              // },
+                              {
+                                label: "Quantity Available",
+                                key: "quantityAvail",
+                              },
+                              { label: "Price", key: "price" },
+                              { label: "Discount", key: "discount" },
+                              { label: "GST", key: "gst" },
+                              { label: "Landed Amount", key: "landedAmount" },
+                              { label: "Vendor Remark", key: "vendorRemark" },
+                              { label: "Total", key: "total" },
+                            ]}
+                            data={linkedEventData}
+                            customRender={{
+                              section: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              subSection: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              descriptionOfItem: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              quantity: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              location: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              attachment: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              quantityAvail: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              price: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              discount: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              gst: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              landedAmount: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              vendorRemark: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              total: (cell) => (
+                                <input
+                                  className="form-control"
+                                  type="number"
+                                  value={cell || ""}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <p>No data available</p>
+                      )}
+
+                      <div className="d-flex justify-content-end">
+                        <ShortTable
+                          data={freightData}
+                          editable={true}
+                          // readOnly={isReadOnly} //// Flag to enable input fields
+                          // onValueChange={handleFreightDataChange} // Callback for changes
+                        />
+                      </div>
+
+                      <div className="d-flex justify-content-end mt-2 mx-2">
+                        <h4>Sum Total: ₹{grossTotal}</h4>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr
+                    style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
+                  />
+
+                  <div style={{ marginTop: "10px" }}>
+                    {/* bid button */}
+
+                    {revisedBid && (
+                      <div className="d-flex justify-content-center align-items-center">
+                        <div className="d-flex align-items-center">
+                          {/* Decrement button (Previous bid) */}
+                          <button
+                            className="me-2 mb-3"
+                            onClick={decrement}
+                            style={{
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                            >
+                              <path
+                                d="M18 4l-12 8l12 8"
+                                fill="rgb(139, 2, 3)"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Scrollable buttons container with dynamic width */}
+                          <div
+                            className="scrollmenu"
+                            style={{
+                              backgroundColor: "white",
+                              overflowX: "auto",
+                              whiteSpace: "nowrap",
+                              paddingBottom: "10px", // Space for scrollbar
+                              width:
+                                bids.length <= 2
+                                  ? `${bids.length * 120}px`
+                                  : "350px", // Dynamic width for 1 or 2 bids
+                              margin: "0 auto", // Center the container horizontally
+                            }}
+                          >
+                            {bids.length > 0 &&
+                              bids.map((_, index) => {
+                                // For the first button, show "Current Bid"
+                                const buttonName =
+                                  index === 0
+                                    ? "Current Bid"
+                                    : index === bids.length - 1
+                                    ? "Initial Bid" // The last button shows "Initial Bid"
+                                    : `${getOrdinalInText(
+                                        bids.length - index
+                                      )} Bid`; // Use the ordinal word for other buttons
+
+                                return (
+                                  <a
+                                    key={index}
+                                    href={`#bid-${index + 1}`}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setCurrentIndex(index); // Update current index on click
+                                    }}
+                                    style={{
+                                      display: "inline-block",
+                                      color:
+                                        index === currentIndex
+                                          ? "white"
+                                          : "#8b0203",
+                                      textAlign: "center",
+                                      padding: "10px",
+                                      textDecoration: "none",
+                                      backgroundColor:
+                                        index === currentIndex
+                                          ? "#8b0203"
+                                          : "white", // Active button color
+                                      borderRadius: "4px",
+                                      marginRight: "10px",
+                                      border: `1px solid #8b0203`,
+                                      transition: "background-color 0.3s ease",
+                                    }}
+                                    className={
+                                      index === currentIndex ? "active" : ""
+                                    }
+                                  >
+                                    {buttonName}
+                                  </a>
+                                );
+                              })}
+                          </div>
+
+                          {/* Increment button (Next bid) */}
+                          <button
+                            className="mb-3"
+                            onClick={increment}
+                            style={{
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                            >
+                              <path d="M6 4l12 8l-12 8" fill="rgb(139, 2, 3)" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Heading and Subtext */}
+
+                    <hr
+                      style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
+                    />
+                    {/* Remarks Section */}
+                    <div
+                      className="mb-3 d-flex align-items-center pt-2 "
+                      style={{ gap: "200px" }}
+                    >
+                      <label
+                        className=" head-material"
+                        style={{
+                          minWidth: "250px",
+                          marginRight: "10px",
+                          marginBottom: "0",
+                          fontSize: "16px",
+                        }}
+                      >
+                        Remarks
+                      </label>
+                      {/* Textarea */}
+                      <textarea
+                        className="form-control"
+                        placeholder="Enter remarks"
+                        rows="3"
+                        style={{ maxWidth: "300px", flex: "1" }}
+                        value={remark} // Bind to state
+                        onChange={(e) => setRemark(e.target.value)} // Update state on input
+                      >
+                        test for haven infoline
+                      </textarea>
+                    </div>
+
+                    <hr
+                      style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
+                    />
+                    {/* Terms and Conditions */}
+
+                    <div style={{ marginTop: "30px" }}>
+                      <h5 className="fw-bold head-material">
+                        Terms and Conditions
+                      </h5>
+                      <p className="head-material  text-muted ">
+                        Please find below the terms and conditions associated
+                        with the orders
+                      </p>
+                      <ul
+                        className="head-material  "
+                        style={{ fontSize: "13px", marginLeft: "0px" }}
+                      >
+                        {terms.map((term) => (
+                          <li key={term.id} className="mb-3 mt-3">
+                            {term.condition}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div
             className="tab-pane fade"
             id="participant"
