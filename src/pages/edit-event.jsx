@@ -92,7 +92,8 @@ export default function EditEvent() {
   const [eventSchedule, setEventSchedule] = useState("");
   // @ts-ignore
   const [scheduleData, setScheduleData] = useState({});
-
+  const [addTerm, setAddTerm] = useState(false);
+  const [showSelectBox, setShowSelectBox] = useState(false);
   // @ts-ignore
   // @ts-ignore
   const [data, setData] = useState([
@@ -450,10 +451,12 @@ export default function EditEvent() {
 
   const handleAddTextarea = () => {
     setTextareas([...textareas, { id: Date.now(), value: "" }]);
+    setShowSelectBox(false);
+    setAddTerm(true);
   };
 
-  const handleRemoveTextarea = (id) => {
-    setTextareas(textareas.filter((textarea) => textarea.id !== id));
+  const handleRemoveTextarea = (index) => {
+    setTextareas((prev) => prev.filter((_, idx) => idx !== index));
   };
 
   const handleTextareaChange = (id, value) => {
@@ -485,6 +488,7 @@ export default function EditEvent() {
             : textarea
         )
       );
+      setShowSelectBox(true);
     }
   };
 
@@ -494,13 +498,15 @@ export default function EditEvent() {
     setDocumentRows([...documentRowsRef.current]);
   };
 
-  const handleRemoveDocumentRow = (index) => {
-    if (documentRows.length > 1) {
-      documentRowsRef.current = documentRowsRef.current.filter(
-        (_, i) => i !== index
-      );
-      setDocumentRows([...documentRowsRef.current]);
-    }
+  const handleRemoveDocumentRow = (id) => {
+    let getId = id + 1;
+    setDocumentRows((prev) => {
+      const updatedRows = prev.filter((row) => row.srNo !== id);
+      documentRowsRef.current = updatedRows;
+      console.log(id, updatedRows, documentRowsRef.current);
+
+      return updatedRows;
+    });
   };
 
   const handleFileChange = (index, file) => {
@@ -754,6 +760,10 @@ export default function EditEvent() {
     setEventStatus(selectedOption);
   };
 
+  const handleRemoveVendor = (id) => {
+    setSelectedVendors((prev) => prev.filter((vendor) => vendor.id !== id));
+  };
+
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -761,7 +771,10 @@ export default function EditEvent() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
-                <a href="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414" className="text-decoration-none text-primary">
+                <a
+                  href="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                  className="text-decoration-none text-primary"
+                >
                   Event List
                 </a>
               </li>
@@ -916,15 +929,7 @@ export default function EditEvent() {
                           <td>
                             <button
                               className="btn btn-danger"
-                              onClick={() =>
-                                setSelectedVendors((prev) =>
-                                  prev.map((v) =>
-                                    v.id === vendor.id
-                                      ? { ...v, _destroy: true }
-                                      : v
-                                  )
-                                )
-                              }
+                              onClick={() => handleRemoveVendor(vendor.id)}
                             >
                               Remove
                             </button>
@@ -962,13 +967,13 @@ export default function EditEvent() {
                 onRowSelect={undefined}
                 resetSelectedRows={undefined}
                 onResetComplete={undefined}
-                data={documentRows.map((row, index) => ({
+                data={documentRows.map((row) => ({
                   ...row,
                   upload: (
                     <input
                       type="file"
                       onChange={(e) =>
-                        handleFileChange(index, e.target.files[0])
+                        handleFileChange(row.srNo, e.target.files[0])
                       }
                       ref={fileInputRef}
                       multiple
@@ -978,8 +983,8 @@ export default function EditEvent() {
                   action: (
                     <button
                       className="btn btn-danger"
-                      onClick={() => handleRemoveDocumentRow(index)}
-                      disabled={index === 0}
+                      onClick={() => handleRemoveDocumentRow(row.srNo)}
+                      disabled={row.srNo === 1}
                     >
                       Remove
                     </button>
@@ -1015,25 +1020,31 @@ export default function EditEvent() {
                 </thead>
                 <tbody>
                   {textareas?.map((textarea, idx) => {
-                    // ("textarea", textarea);
                     if (textarea.id === null) {
                       return null;
                     }
                     return (
                       <tr key={idx}>
                         <td>
-                          {textarea?.defaultOption?.value && termsOptions ? (
-                            <>
-                              <SelectBox
-                                options={termsOptions}
-                                onChange={(option) =>
-                                  handleConditionChange(textarea.id, option)
-                                }
-                                defaultValue={textarea?.defaultOption?.value}
-                              />
-                            </>
-                          ) : (
-                            <Loader />
+                          {textarea?.defaultOption?.value && termsOptions && (
+                            <SelectBox
+                              options={termsOptions}
+                              onChange={(option) =>
+                                handleConditionChange(textarea.id, option)
+                              }
+                              defaultValue={textarea?.defaultOption?.value}
+                            />
+                          )}
+                          {addTerm && !textarea?.defaultOption?.value && (
+                            <SelectBox
+                              options={termsOptions}
+                              onChange={(option) =>
+                                handleConditionChange(textarea.id, option)
+                              }
+                              defaultValue={termsOptions.find(
+                                (option) => option.condition === textarea.value
+                              )}
+                            />
                           )}
                         </td>
                         <td>
@@ -1046,7 +1057,7 @@ export default function EditEvent() {
                         <td>
                           <button
                             className="btn btn-danger"
-                            onClick={() => handleRemoveTextarea(textarea?.id)}
+                            onClick={() => handleRemoveTextarea(idx)}
                             disabled={idx === 0}
                           >
                             Remove

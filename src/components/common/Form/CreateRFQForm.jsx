@@ -67,8 +67,6 @@ export default function CreateRFQForm({
     },
   };
 
-  console.log("deliveryData", deliveryData);
-
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
@@ -546,7 +544,7 @@ export default function CreateRFQForm({
               />
             </div>
           ))}
-          {deliveryData.length > 0 && (
+          {deliveryData?.length > 0 && (
             <Table columns={deliveryColumns} data={deliveryData} />
           )}
           <button className="purple-btn2" onClick={handleAddSection}>
