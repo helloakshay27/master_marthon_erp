@@ -225,7 +225,7 @@ const BOQDetailsPageMaster = () => {
     <>
 
       {/* <div className="website-content overflow-auto"> */}
-      {/* <div className="website-content"> */}
+      <div className="website-content">
         <div className="module-data-section p-2">
           <a href="" style={{color:'black'}}>
             Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
@@ -453,7 +453,7 @@ const BOQDetailsPageMaster = () => {
           </CollapsibleCard>
 
           <CollapsibleCard title="BOQ Items">
-            {/* <div className="card mx-3 mt-2"> */}
+            <div className="m-0 p-0">
 
 
             <div
@@ -602,7 +602,7 @@ const BOQDetailsPageMaster = () => {
 
             </div>
 
-            {/* </div> */}
+            </div>
 
             {/* 
                 <div className="row mt-3 px-2 mx-3 ">
@@ -812,7 +812,7 @@ const BOQDetailsPageMaster = () => {
           {/* </div> */}
         </div>
 
-      {/* </div> */}
+      </div>
       {/* </div> */}
 
 

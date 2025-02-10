@@ -469,7 +469,7 @@ const BOQList = () => {
 
   return (
     <>
-      {/* <div className="website-content"> */}
+      <div className="website-content">
         <div className="module-data-section p-4">
           <a href="" style={{color:'black'}}>Home &gt; Engineering  &gt; BOQ List</a>
           {/* <h5 className="mt-4">BOQ</h5> */}
@@ -1947,7 +1947,7 @@ const BOQList = () => {
 
           <CopyBudgetModal show={show} handleClose={handleClose} />
         </div>
-      {/* </div> */}
+      </div>
 
       {/* copy modal */}
       {/* <Modal

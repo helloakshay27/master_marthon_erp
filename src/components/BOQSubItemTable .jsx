@@ -711,7 +711,7 @@ const BOQSubItemTable = ({
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="" id="table1">
+                  <table className="mb-5" id="table1">
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>
@@ -910,7 +910,7 @@ const BOQSubItemTable = ({
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="" id="table3">
+                  <table className="mb-5" id="table3">
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>
@@ -1068,7 +1068,7 @@ const BOQSubItemTable = ({
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="text-center" style={{ paddingLeft: "400px" }}>
+                          <td colSpan="12" className="text-center" style={{ paddingLeft: "400px" }}>
                             No asset added yet.
                           </td>
                         </tr>

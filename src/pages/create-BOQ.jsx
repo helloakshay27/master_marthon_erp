@@ -1463,10 +1463,10 @@ const CreateBOQ = () => {
   return (
     <>
 
-      {/* <div className="website-content"> */}
+      <div className="website-content">
         <div className="module-data-section p-4">
-          <a href="" style={{color:'black'}}>Home &gt; Engineering &gt; Create BOQ</a>
-          <h5 className="mt-4">Create BOQ</h5>
+          <a href="">Home &gt; Engineering &gt; Create BOQ</a>
+          {/* <h5 className="mt-4">Create BOQ</h5> */}
           <div className="tab-content1 active" id="total-content">
             <ToastContainer />
             {/* Total Content Here */}
@@ -1692,7 +1692,7 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="tbl-container mx-3 mt-1">
-                          <table className="">
+                          <table className="mb-5">
                             <thead>
                               <tr>
                                 <th rowSpan={2}>
@@ -1902,7 +1902,7 @@ const CreateBOQ = () => {
 
                       <div className="card-body mt-0 pt-0">
                         <div className="tbl-container mx-3 mt-1">
-                          <table className="">
+                          <table className="mb-5">
                             <thead >
                               <tr>
                                 <th rowSpan={2}>
@@ -2375,7 +2375,7 @@ const CreateBOQ = () => {
             </div>
           </div>
         </div>
-      {/* </div> */}
+      </div>
 
 
       {/* Modal start */}
