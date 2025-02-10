@@ -225,7 +225,7 @@ const BOQDetailsPageMaster = () => {
     <>
 
       {/* <div className="website-content overflow-auto"> */}
-      <div className="website-content">
+      {/* <div className="website-content"> */}
         <div className="module-data-section p-2">
           <a href="" style={{color:'black'}}>
             Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
@@ -810,7 +810,7 @@ const BOQDetailsPageMaster = () => {
             </div>
           </div>
           {/* </div> */}
-        </div>
+        {/* </div> */}
 
       </div>
       {/* </div> */}
