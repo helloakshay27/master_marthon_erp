@@ -46,11 +46,12 @@ const ApprovalEdit = () => {
 
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState([]);
+  const [departmentUsers, setDepartmentUsers] = useState([]);
 
   // const [department, selectedDeparment] = useState([]);
 
   const [approvalLevels, setApprovalLevels] = useState([
-    { order: "", name: "", users: [] },
+    { id: "", order: "", name: "", users: [] },
   ]);
 
   const [formData, setFormData] = useState({
@@ -75,7 +76,7 @@ const ApprovalEdit = () => {
   const handleAddLevel = () => {
     setApprovalLevels([
       ...approvalLevels,
-      { order: "", name: "", users: [] }, // Add a new empty level
+      { id: "", order: "", name: "", users: [] }, // Add a new empty level
     ]);
   };
 
@@ -85,11 +86,14 @@ const ApprovalEdit = () => {
   };
 
   const handleInputChange = (index, field, value) => {
+    console.log(`Updating ${field} at index ${index}:`, value);
     const updatedLevels = approvalLevels.map((level, i) =>
       i === index ? { ...level, [field]: value } : level
     );
     setApprovalLevels(updatedLevels);
   };
+
+  // console.log("Selected Users:", level.users);
 
   const userOptions =
     filterOptions.users && filterOptions.users.length > 0
@@ -220,6 +224,33 @@ const ApprovalEdit = () => {
   // }, [selectedCompany]); //
 
   useEffect(() => {
+    const fetchUsers = async () => {
+      if (!selectedDepartment?.value) return; // Ensure department is selected
+
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (response.data && Array.isArray(response.data)) {
+          const userOptions = response.data.map((user) => ({
+            value: user.id,
+            label: user.full_name, // Ensure full_name is mapped correctly
+          }));
+
+          console.log("Fetched Users:", userOptions);
+          setDepartmentUsers(userOptions);
+        }
+      } catch (error) {
+        console.error("Error fetching users for department:", error);
+        setDepartmentUsers([]); // Reset users on error
+      }
+    };
+
+    fetchUsers(); // Fetch users on mount & when department changes
+  }, [selectedDepartment]);
+
+  useEffect(() => {
     const fetchApprovalData = async () => {
       try {
         const response = await fetch(
@@ -308,20 +339,31 @@ const ApprovalEdit = () => {
 
         // Map approval levels to user names
         const userMap = new Map(
-          filterOptions.users.map((user) => [user.value, user.label])
+          departmentUsers?.length
+            ? departmentUsers.map((user) => [
+                user.value,
+                user.label || "Unknown User",
+              ])
+            : []
         );
 
-        const approvalLevelsWithUserNames = data.invoice_approval_levels.map(
-          (level) => ({
-            order: level.order || "",
-            name: level.name || "",
-            users:
-              level.escalate_to_users?.map((userId) => {
-                const userName = userMap.get(userId) || "Unknown";
-                return { label: userName, value: userId };
-              }) || [],
-          })
-        );
+        console.log("User Map:", userMap);
+
+        const approvalLevelsWithUserNames = Array.isArray(
+          data.invoice_approval_levels
+        )
+          ? data.invoice_approval_levels.map((level) => ({
+              id: level.id,
+              order: level.order || "",
+              name: level.name || "",
+              users: Array.isArray(level.escalate_to_users)
+                ? level.escalate_to_users.map((userId) => {
+                    const userName = userMap.get(userId) || "Unknown"; // Fetch full_name
+                    return { label: userName, value: userId };
+                  })
+                : [],
+            }))
+          : [];
 
         setApprovalLevels(approvalLevelsWithUserNames);
       } catch (error) {
@@ -333,6 +375,29 @@ const ApprovalEdit = () => {
       fetchApprovalData();
     }
   }, [companies, id]);
+
+  useEffect(() => {
+    if (departmentUsers.length > 0 && formData.invoice_approval_levels) {
+      // Map stored user IDs to departmentUsers list
+      const updatedApprovalLevels = formData.invoice_approval_levels.map(
+        (level) => ({
+          ...level,
+          users: level.escalate_to_users
+            ?.map((userId) => {
+              const userOption = departmentUsers.find(
+                (user) => user.value === userId
+              );
+              return userOption
+                ? { value: userOption.value, label: userOption.label }
+                : null;
+            })
+            .filter(Boolean), // Remove any null values
+        })
+      );
+
+      setApprovalLevels(updatedApprovalLevels);
+    }
+  }, [departmentUsers, formData.invoice_approval_levels]); // Run when users or approval levels update
 
   // useEffect(() => {
   //   const fetchApprovalData = async () => {
@@ -509,40 +574,6 @@ const ApprovalEdit = () => {
     label: company.company_name,
   }));
 
-  const [departmentUsers, setDepartmentUsers] = useState([]);
-
-  // const handleDepartmentChange = async (selectedOption) => {
-  //   console.log("Selected Department:", selectedOption);
-
-  //   setSelectedDepartment(selectedOption); // ✅ Ensure state updates
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     department_id: selectedOption ? selectedOption.value : null,
-  //   }));
-
-  //   if (selectedOption) {
-  //     try {
-  //       // Fetch users based on department ID
-  //       const response = await axios.get(
-  //         `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
-
-  //       if (response.data && Array.isArray(response.data)) {
-  //         const userOptions = response.data.map((user) => ({
-  //           value: user.id,
-  //           label: user.full_name,
-  //         }));
-  //         setDepartmentUsers(userOptions);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching users for department:", error);
-  //       setDepartmentUsers([]); // Reset users on error
-  //     }
-  //   } else {
-  //     setDepartmentUsers([]); // Reset users if no department selected
-  //   }
-  // };
-
   const handleDepartmentChange = async (selectedOption) => {
     console.log("Selected Department:", selectedOption);
 
@@ -561,13 +592,11 @@ const ApprovalEdit = () => {
         if (response.data && Array.isArray(response.data)) {
           const userOptions = response.data.map((user) => ({
             value: user.id,
-            label: user.full_name,
+            label: user.full_name, // Ensure full_name is mapped correctly
           }));
 
           console.log("Fetched Users:", userOptions);
           setDepartmentUsers(userOptions);
-        } else {
-          setDepartmentUsers([]); // Reset users if no valid data
         }
       } catch (error) {
         console.error("Error fetching users for department:", error);
@@ -664,6 +693,7 @@ const ApprovalEdit = () => {
     }
 
     // If no duplicate, prepare and send the payload (rest of the logic follows)
+
     const payload = {
       approval_type: formData.module_id,
       company_id: formData.company_id,
@@ -676,6 +706,7 @@ const ApprovalEdit = () => {
       category_id: formData.category_id,
       pms_inventory_type_id: formData.pms_supplier_id,
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+        id: level.id,
         name: level.name,
         order: level.order,
         active: true,
@@ -938,6 +969,7 @@ const ApprovalEdit = () => {
                                   value={selectedDepartment} // ✅ Use selectedDepartment directly
                                   placeholder="Select Department"
                                   isClearable
+                                  isDisabled //
                                 />
                               </div>
 
@@ -1097,15 +1129,24 @@ const ApprovalEdit = () => {
                               </fieldset>
                               <fieldset
                                 className="user-list ms-3 mb-3"
-                                style={{ width: "15%" }} //
+                                style={{ width: "30%" }} //
                               >
                                 <legend className="float-none mb-2">
                                   Users{" "}
                                   <span style={{ color: "#f69380" }}>*</span>
                                 </legend>
-                                <MultiSelector
+                                {/* <MultiSelector
                                   options={departmentUsers}
                                   value={level.users}
+                                  onChange={(selected) =>
+                                    handleInputChange(index, "users", selected)
+                                  }
+                                  placeholder="Select Users"
+                                /> */}
+
+                                <MultiSelector
+                                  options={departmentUsers} // Available options
+                                  value={level.users} // Preselected users
                                   onChange={(selected) =>
                                     handleInputChange(index, "users", selected)
                                   }
