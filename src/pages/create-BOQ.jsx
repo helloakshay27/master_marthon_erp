@@ -895,7 +895,7 @@ const CreateBOQ = () => {
 
   // Calculate Asset Total Estimated Quantity with Wastages
   const calculateAssetTotalEstimatedQtyWastages = () => {
-    if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
+    if (boqQuantity && assetEstimatedQuantities.length > 0 ) {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
         const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(assetWastages[index]) || 0;
@@ -906,10 +906,10 @@ const CreateBOQ = () => {
   };
 
   // Effect to recalculate asset quantities when dependencies change
-  useEffect(() => {
-    calculateAssetEstimatedQuantities();
-    calculateAssetTotalEstimatedQtyWastages();
-  }, [boqQuantity, assetCoefficientFactors, assetWastages]);
+  // useEffect(() => {
+  //   calculateAssetEstimatedQuantities();
+  //   calculateAssetTotalEstimatedQtyWastages();
+  // }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   const handleAssetCoefficientFactorChange = (index, value) => {
     const updatedAssetCoefficientFactors = [...assetCoefficientFactors];
@@ -1105,6 +1105,7 @@ const CreateBOQ = () => {
           calculateTotalEstimatedQtyWastages();
           calculateAssetEstimatedQuantities();
           calculateAssetTotalEstimatedQtyWastages();
+          
         } else {
           setBoqQuantity(''); // Clear the value if it is negative
         }
@@ -1144,8 +1145,13 @@ const CreateBOQ = () => {
   useEffect(() => {
     calculateEstimatedQuantities();
     calculateTotalEstimatedQtyWastages();
-  }, [boqQuantity, coefficientFactors, wastages]); // Recalculate when boqQuantity or coefficientFactors change
+    calculateAssetEstimatedQuantities();
+    calculateAssetTotalEstimatedQtyWastages();
+  }, [boqQuantity, coefficientFactors, wastages,assetCoefficientFactors, assetWastages]); // Recalculate when boqQuantity or coefficientFactors change
 
+  // useEffect(() => {
+   
+  // }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   const handleCoefficientFactorChange = (index, value) => {
     const updatedCoefficientFactors = [...coefficientFactors];
@@ -1190,7 +1196,7 @@ const CreateBOQ = () => {
 
   // Function to calculate total estimated quantities with wastage
   const calculateTotalEstimatedQtyWastages = () => {
-    if (boqQuantity && estimatedQuantities.length > 0 && wastages.length > 0) {
+    if (boqQuantity && estimatedQuantities.length > 0 ) {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
@@ -1457,9 +1463,9 @@ const CreateBOQ = () => {
   return (
     <>
 
-      <div className="website-content">
+      {/* <div className="website-content"> */}
         <div className="module-data-section p-4">
-          <a href="">Home &gt; Engineering &gt; Create BOQ</a>
+          <a href="" style={{color:'black'}}>Home &gt; Engineering &gt; Create BOQ</a>
           <h5 className="mt-4">Create BOQ</h5>
           <div className="tab-content1 active" id="total-content">
             <ToastContainer />
@@ -2369,7 +2375,7 @@ const CreateBOQ = () => {
             </div>
           </div>
         </div>
-      </div>
+      {/* </div> */}
 
 
       {/* Modal start */}

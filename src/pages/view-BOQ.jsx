@@ -345,18 +345,20 @@ const BOQList = () => {
   // const [loading, setLoading] = useState(false);
 
   // Handle input changes
-  const handleStatusChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "fromStatus") {
-      setFromStatus(value);
-    } else if (name === "toStatus") {
-      setToStatus(value);
-    }
+  const handleStatusChange = (selectedOption) => {
+    // const { name, value } = e.target;
+    // if (name === "fromStatus") {
+    //   setFromStatus(selectedOption.value);
+    // } else if (name === "toStatus") {
+    //   setToStatus(selectedOption.value);
+    // }
+
+    setFromStatus(selectedOption.value);
   };
 
   // Handle status change for 'To Status'
-  const handleToStatusChange = (e) => {
-    setToStatus(e.target.value);
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
   };
 
 
@@ -443,12 +445,34 @@ const BOQList = () => {
   console.log("selected boq id array :", selectedBoqDetails)
 
 
+  //bulkaction options 
+  const options = [
+    {
+      label: 'Select Status',
+      value: '',
+    },
+    {
+      label: 'Draft',
+      value: 'draft',
+    },
+    {
+      label: 'Submitted',
+      value: 'submitted',
+    },
+    {
+      label: 'Approved',
+      value: 'approved',
+    },
+  ];
+  
+
+
   return (
     <>
-      <div className="website-content">
+      {/* <div className="website-content"> */}
         <div className="module-data-section p-4">
-          <a href="">Home &gt; Engineering  &gt; BOQ</a>
-          <h5 className="mt-4">BOQ</h5>
+          <a href="" style={{color:'black'}}>Home &gt; Engineering  &gt; BOQ List</a>
+          {/* <h5 className="mt-4">BOQ</h5> */}
           <div className="d-flex justify-content-end">
             <button className="purple-btn2" onClick={handleClick}>
               <svg
@@ -461,7 +485,7 @@ const BOQList = () => {
               >
                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
               </svg>
-              <span> Create</span>
+              <span> Create BOQ</span>
             </button>
             {/* <button className="purple-btn2">Import</button>
             <button className="purple-btn2">Export</button>
@@ -480,7 +504,7 @@ const BOQList = () => {
           {/* Total Content Here */}
 
 
-          <div className="card mt-2 mb-5 p-4">
+          <div className="card mt-2 mb-5 ">
             <CollapsibleCard title="Quick Filter"  isInitiallyCollapsed={true}>
               <div className="card-body mt-0 pt-0">
                 <div className="row">
@@ -688,7 +712,7 @@ const BOQList = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>From Status</label>
-                      <select
+                      {/* <select
                         name="fromStatus"
                         className="form-control form-select"
                          classNamePrefix="react-select"
@@ -701,12 +725,25 @@ const BOQList = () => {
                         <option value="draft">Draft</option>
                         <option value="submitted">Submitted</option>
                         <option value="approved">Approved</option>
-                      </select>
+                      </select> */}
                       {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
+
+                       <SingleSelector
+                                          options={options}
+                                          value={options.value}
+                        onChange={handleStatusChange}
+                                          // onChange={handleStatusChange}
+                                          // options.find(option => option.value === status)
+                                          // value={filteredOptions.find(option => option.value === status)}
+                                          // value={options.find(option => option.value === status)}
+                                          // value={selectedSite}
+                                          placeholder={`Select Status`} // Dynamic placeholder
+                                          classNamePrefix="react-select"
+                                        />
                     </div>
                     <div className="form-group mt-3">
                       <label>To Status</label>
-                      <select
+                      {/* <select
                         name="toStatus"
                         className="form-control form-select"
                         value={toStatus}
@@ -716,7 +753,20 @@ const BOQList = () => {
                         <option value="draft">Draft</option>
                         <option value="submitted">Submitted</option>
                         <option value="approved">Approved</option>
-                      </select>
+                      </select> */}
+
+                      <SingleSelector
+                                          options={options}
+                                          value={options.value}
+                        onChange={handleToStatusChange}
+                                          // onChange={handleStatusChange}
+                                          // options.find(option => option.value === status)
+                                          // value={filteredOptions.find(option => option.value === status)}
+                                          // value={options.find(option => option.value === status)}
+                                          // value={selectedSite}
+                                          placeholder={`Select Status`} // Dynamic placeholder
+                                          classNamePrefix="react-select"
+                                        />
                     </div>
                   </div>
                   <div className="col-md-4">
@@ -744,7 +794,7 @@ const BOQList = () => {
             {/* <BOQListTable boqList={boqList} setBoqList={setBoqList} /> */}
 
             {/* boq list table is here  start */}
-            <div className="d-flex justify-content-start ms-3">
+            <div className="d-flex justify-content-end me-2">
               <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
             </div>
             <div className="mx-3">
@@ -887,6 +937,17 @@ const BOQList = () => {
                                         {/* Minus Icon (for when toggled) */}
                                         <line x1="8" y1="12" x2="16" y2="12" />
                                       </svg>
+                                    //   <svg
+                                    //   xmlns="http://www.w3.org/2000/svg"
+                                    //   width="16"
+                                    //   height="16"
+                                    //   fill="black"
+                                    //   className="bi bi-caret-up"
+                                    //   viewBox="0 0 16 16"
+                                    // >
+                                    //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+
+                                    // </svg>
                                     ) : (
 
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
@@ -896,6 +957,17 @@ const BOQList = () => {
                                         <line x1="12" y1="8" x2="12" y2="16" />
                                         <line x1="8" y1="12" x2="16" y2="12" />
                                       </svg>
+
+                                    //   <svg
+                                    //   xmlns="http://www.w3.org/2000/svg"
+                                    //   width="16"
+                                    //   height="16"
+                                    //   fill="black"
+                                    //   className="bi bi-caret-up"
+                                    //   viewBox="0 0 16 16"
+                                    // >
+                                    //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                    // </svg>
                                     )
                                   }
                                 </button>
@@ -1875,7 +1947,7 @@ const BOQList = () => {
 
           <CopyBudgetModal show={show} handleClose={handleClose} />
         </div>
-      </div>
+      {/* </div> */}
 
       {/* copy modal */}
       {/* <Modal

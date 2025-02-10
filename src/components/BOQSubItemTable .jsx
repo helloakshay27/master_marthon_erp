@@ -657,7 +657,7 @@ const BOQSubItemTable = ({
 
   // Function to calculate total estimated quantities with wastage
   const calculateTotalEstimatedQtyWastages = () => {
-    if (boqQuantity && estimatedQuantities.length > 0 && wastages.length > 0) {
+    if (boqQuantity && estimatedQuantities.length > 0 ) {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
@@ -687,7 +687,7 @@ const BOQSubItemTable = ({
   
   // Calculate Asset Total Estimated Quantity with Wastages
   const calculateAssetTotalEstimatedQtyWastages = () => {
-    if (boqQuantity && assetEstimatedQuantities.length > 0 && assetWastages.length > 0) {
+    if (boqQuantity && assetEstimatedQuantities.length > 0 ) {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
         const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(assetWastages[index]) || 0;
