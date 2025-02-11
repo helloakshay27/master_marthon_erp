@@ -150,7 +150,7 @@ import React from "react";
 // }
 
 export default function ShortTable({
-  data,
+  data = [],
   editable = false,
   onValueChange,
   ...rest
@@ -241,7 +241,7 @@ export default function ShortTable({
                   onChange={(e) => {
                     const inputValue =
                       row.label === "Freight Charge"
-                        ? e.target.value.replace(/[^0-9.]/g, "") 
+                        ? e.target.value.replace(/[^0-9.]/g, "")
                         : e.target.value;
                     handleInputChange(index, inputValue);
                   }}

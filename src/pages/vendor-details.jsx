@@ -1393,6 +1393,8 @@ export default function VendorDetails() {
 
   //  const [grossTotal, setGrossTotal] = useState(0); // State for Gross Total
 
+  const [freightData2, setFreightData2] = useState();
+
   const fetchLinkedEventData = async (linkedEventId) => {
     try {
       const response = await axios.get(
@@ -1402,7 +1404,7 @@ export default function VendorDetails() {
       console.log("Linked Event Data Response:", response.data);
 
       let bidData = [];
-      let freightData = [];
+      let freightData2 = [];
       let totalGrossAmount = 0;
 
       if (response.data?.bids?.length > 0) {
@@ -1442,7 +1444,7 @@ export default function VendorDetails() {
 
           // Extract Freight & Other Bid Data
           const latestBid = bids[0]; // Assuming latest bid is the first one
-          freightData = [
+          freightData2 = [
             {
               label: "Freight Charge",
               value: `₹${latestBid.freight_charge_amount}`,
@@ -1500,17 +1502,17 @@ export default function VendorDetails() {
         }));
       }
 
-      console.log("Final Freight Data:", freightData);
+      console.log("Final Freight Data:", freightData2);
       console.log("Final Bid Data:", bidData);
       console.log("Gross Total:", totalGrossAmount);
 
       setLinkedEventData(bidData);
-      setFreightData(freightData);
+      setFreightData2(freightData2);
       setGrossTotal(totalGrossAmount); // Store the gross total
     } catch (err) {
       console.error("Error fetching linked event data:", err.message);
       setLinkedEventData([]);
-      setFreightData([]);
+      setFreightData2([]);
       setGrossTotal(0);
     }
   };
@@ -1862,7 +1864,7 @@ export default function VendorDetails() {
 
                       <div className="d-flex justify-content-end">
                         <ShortTable
-                          data={freightData}
+                          data={freightData2}
                           editable={true}
                           // readOnly={isReadOnly} //// Flag to enable input fields
                           // onValueChange={handleFreightDataChange} // Callback for changes
