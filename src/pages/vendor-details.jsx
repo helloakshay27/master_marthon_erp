@@ -2786,8 +2786,8 @@ export default function VendorDetails() {
                         >
                           {data1?.event_type_detail?.event_configuration ===
                           "rank_based"
-                            ? `rank: ${data1.bids[0].rank}`
-                            : `price: ${data1.bids[0].min_price} `}
+                            ? `rank: ${data1?.bids[0]?.rank}`
+                            : `price: ${data1?.bids[0]?.min_price} `}
                         </span>
                       </div>
                     </div>
