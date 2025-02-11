@@ -1518,6 +1518,7 @@ export default function VendorDetails() {
       setGrossTotal(0);
     }
   };
+  
   // const [isReadOnly, setIsReadOnly] = useState(true); // Default to read-only
 
   return (
@@ -1652,7 +1653,8 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
-                      <div className="d-flex justify-content-between">
+                      {linkedData ? 
+                      (<div className="d-flex justify-content-between">
                         <h4>
                           Submission Sheet
                           <span
@@ -1685,9 +1687,12 @@ export default function VendorDetails() {
                           {linkedData?.event_type_detail
                             ?.event_configuration === "rank_based"
                             ? `rank: ${linkedData?.bids[0]?.rank}`
-                            : `price: ${linkedData?.bids[0]?.min_price} `}
+                            : `price: ${linkedData?.bids[0]?.min_price}`}
                         </span>
-                      </div>
+                      </div>):(
+                        <></>
+                      )
+                      }
                     </div>
 
                     {counterData > 0 && (
