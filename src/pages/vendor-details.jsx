@@ -18,6 +18,7 @@ export default function VendorDetails() {
   const [bids, setBids] = useState([]); // State to store the bids
   const [isBid, setIsBid] = useState(false);
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
+  const [linkedData, setLinkedData] = useState([]);
 
   const increment = () => {
     if (currentIndex + 1 < bids.length) {
@@ -1402,6 +1403,7 @@ export default function VendorDetails() {
       );
 
       console.log("Linked Event Data Response:", response.data);
+      setLinkedData(response.data);
 
       let bidData = [];
       let freightData2 = [];
@@ -1593,22 +1595,20 @@ export default function VendorDetails() {
             </a>
           </li>
 
-          {data1?.linked_event_id && (
-            <li className="nav-item" role="presentation">
-              <a
-                className="nav-link ps-4 pe-4"
-                id="profile-tab2"
-                data-bs-toggle="tab"
-                href="#profile2"
-                role="tab"
-                aria-controls="profile2"
-                aria-selected="false"
-                style={{ color: "#8b0203", fontSize: "16px" }}
-              >
-                MOR Details [{data1?.event_no}]
-              </a>
-            </li>
-          )}
+          <li className="nav-item" role="presentation">
+            <a
+              className="nav-link ps-4 pe-4"
+              id="profile-tab2"
+              data-bs-toggle="tab"
+              href="#profile2"
+              role="tab"
+              aria-controls="profile2"
+              aria-selected="false"
+              style={{ color: "#8b0203", fontSize: "16px" }}
+            >
+              {`${linkedData?.event_title} ${data1?.event_no}`}
+            </a>
+          </li>
 
           {isBidCreated && (
             <li className="nav-item" role="presentation">
@@ -1652,6 +1652,7 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
+                      <div className="d-flex justify-content-between">
                         <h4>
                           Submission Sheet
                           <span
@@ -1666,10 +1667,28 @@ export default function VendorDetails() {
                               borderColor: "#ffbb96",
                             }}
                           >
-                            {data1?.event_type_detail?.event_type}
+                            {linkedData?.event_type_detail?.event_type}
                           </span>
                         </h4>
+                        <span
+                          style={{
+                            backgroundColor: "#fff2e8",
+                            color: "#8b0203",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            marginLeft: "25px",
+                            fontSize: "0.85rem",
+                            fontWeight: "bold",
+                            borderColor: "#ffbb96",
+                          }}
+                        >
+                          {linkedData?.event_type_detail
+                            ?.event_configuration === "rank_based"
+                            ? `rank: ${linkedData?.bids[0]?.rank}`
+                            : `price: ${linkedData?.bids[0]?.min_price} `}
+                        </span>
                       </div>
+                    </div>
 
                     {counterData > 0 && (
                       <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
@@ -2754,7 +2773,7 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
-                    <div className="d-flex justify-content-between">
+                      <div className="d-flex justify-content-between">
                         <h4>
                           Submission Sheet
                           <span
@@ -2772,23 +2791,31 @@ export default function VendorDetails() {
                             {data1?.event_type_detail?.event_type}
                           </span>
                         </h4>
-                        <span
-                          style={{
-                            backgroundColor: "#fff2e8",
-                            color: "#8b0203",
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            marginLeft: "25px",
-                            fontSize: "0.85rem",
-                            fontWeight: "bold",
-                            borderColor: "#ffbb96",
-                          }}
-                        >
-                          {data1?.event_type_detail?.event_configuration ===
-                          "rank_based"
-                            ? `rank: ${data1?.bids[0]?.rank}`
-                            : `price: ${data1?.bids[0]?.min_price} `}
-                        </span>
+                        {isBid ||
+                        loading ||
+                        counterData > 0 ||
+                        currentIndex !== 0 || // Disable if it's not the Current Bid
+                        submitted ? (
+                          <></>
+                        ) : (
+                          <span
+                            style={{
+                              backgroundColor: "#fff2e8",
+                              color: "#8b0203",
+                              padding: "5px 10px",
+                              borderRadius: "5px",
+                              marginLeft: "25px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              borderColor: "#ffbb96",
+                            }}
+                          >
+                            {data1?.event_type_detail?.event_configuration ===
+                            "rank_based"
+                              ? `rank: ${data1?.bids[0]?.rank}`
+                              : `price: ${data1?.bids[0]?.min_price} `}
+                          </span>
+                        )}
                       </div>
                     </div>
 
