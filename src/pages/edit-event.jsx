@@ -498,18 +498,22 @@ export default function EditEvent() {
     setDocumentRows([...documentRowsRef.current]);
   };
 
-  const handleRemoveDocumentRow = (id) => {
-    let getId = id + 1;
-    setDocumentRows((prev) => {
-      const updatedRows = prev.filter((row) => row.srNo !== id);
-      documentRowsRef.current = updatedRows;
-      console.log(id, updatedRows, documentRowsRef.current);
-
-      return updatedRows;
-    });
+  const handleRemoveDocumentRow = (index) => {
+    if (documentRows.length > 1) {
+      documentRowsRef.current = documentRowsRef.current.filter(
+        (_, i) => i !== index
+      );
+      setDocumentRows([...documentRowsRef.current]);
+    }
   };
 
-  const handleFileChange = (index, file) => {
+  const handleFileChange = (srNo, file) => {
+    const index = documentRows.findIndex(row => row.srNo === srNo);
+    if (index === -1) {
+      console.error("Invalid index for file upload:", srNo);
+      return;
+    }
+  
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
@@ -522,20 +526,7 @@ export default function EditEvent() {
     };
     reader.readAsDataURL(file);
   };
-
-  const appendFormData = (formData, data, parentKey = "") => {
-    if (data && typeof data === "object" && !(data instanceof File)) {
-      Object.keys(data).forEach((key) => {
-        appendFormData(
-          formData,
-          data[key],
-          parentKey ? `${parentKey}[${key}]` : key
-        );
-      });
-    } else {
-      formData.append(parentKey, data);
-    }
-  };
+  
 
   const fetcher = (url, options) =>
     fetch(url, options).then((res) => res.json());
@@ -684,7 +675,7 @@ export default function EditEvent() {
             condition: textarea.value,
           };
         }),
-        attachments: documentRows.map((row) => row.upload),
+        attachments: documentRows?.map((row) => row?.upload),
       },
     };
 
@@ -1086,7 +1077,7 @@ export default function EditEvent() {
                       <div></div>
                       <div></div>
                     </div>
-                    <p>Submitting ..</p>
+                    <p>Loading ..</p>
                   </div>
                 )}
                 <button
