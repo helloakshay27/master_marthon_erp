@@ -1589,7 +1589,7 @@ export default function VendorDetails() {
               aria-selected="false"
               style={{ color: "#8b0203", fontSize: "16px" }}
             >
-              [{data1?.event_no}]{/* {data1?.event_title} */}
+              {data1?.event_title} {data1?.event_no}
             </a>
           </li>
 
@@ -1605,7 +1605,7 @@ export default function VendorDetails() {
                 aria-selected="false"
                 style={{ color: "#8b0203", fontSize: "16px" }}
               >
-                More Details [{data1?.event_no}]
+                MOR Details [{data1?.event_no}]
               </a>
             </li>
           )}
@@ -1652,24 +1652,24 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
-                      <h4>
-                        Submission Sheet
-                        <span
-                          style={{
-                            backgroundColor: "#fff2e8",
-                            color: "#8b0203",
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            marginLeft: "25px",
-                            fontSize: "0.85rem",
-                            fontWeight: "bold",
-                            borderColor: "#ffbb96",
-                          }}
-                        >
-                          RFQ
-                        </span>
-                      </h4>
-                    </div>
+                        <h4>
+                          Submission Sheet
+                          <span
+                            style={{
+                              backgroundColor: "#fff2e8",
+                              color: "#8b0203",
+                              padding: "5px 10px",
+                              borderRadius: "5px",
+                              marginLeft: "25px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              borderColor: "#ffbb96",
+                            }}
+                          >
+                            {data1?.event_type_detail?.event_type}
+                          </span>
+                        </h4>
+                      </div>
 
                     {counterData > 0 && (
                       <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
@@ -2754,8 +2754,24 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
-                      <h4 className="">
-                        Submission Sheet
+                    <div className="d-flex justify-content-between">
+                        <h4>
+                          Submission Sheet
+                          <span
+                            style={{
+                              backgroundColor: "#fff2e8",
+                              color: "#8b0203",
+                              padding: "5px 10px",
+                              borderRadius: "5px",
+                              marginLeft: "25px",
+                              fontSize: "0.85rem",
+                              fontWeight: "bold",
+                              borderColor: "#ffbb96",
+                            }}
+                          >
+                            {data1?.event_type_detail?.event_type}
+                          </span>
+                        </h4>
                         <span
                           style={{
                             backgroundColor: "#fff2e8",
@@ -2768,9 +2784,12 @@ export default function VendorDetails() {
                             borderColor: "#ffbb96",
                           }}
                         >
-                          RFQ
+                          {data1?.event_type_detail?.event_configuration ===
+                          "rank_based"
+                            ? `rank: ${data1.bids[0].rank}`
+                            : `price: ${data1.bids[0].min_price} `}
                         </span>
-                      </h4>
+                      </div>
                     </div>
 
                     {counterData > 0 && (
