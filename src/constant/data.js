@@ -1209,3 +1209,12 @@ export const purchaseOrderColumns = [
     { label: "Total Value", key: "total_value" },
     { label: "Status", key: "status" },
   ];
+
+  export const eventStatusOptions = [
+    { label: "Submitted", value: "submitted" },
+    { label: "Approved", value: "approved" },
+    { label: "Published", value: "published" },
+    { label: "Expired", value: "expired" },
+    { label: "Closed", value: "closed" },
+    { label: "Pending", value: "pending" },
+  ]

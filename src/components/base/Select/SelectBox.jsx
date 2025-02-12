@@ -69,11 +69,11 @@ export default function SelectBox({
       {label && <label>{label}</label>}
       <Select
         options={formattedOptions}
-        defaultValue={defaultOption}
+        value={defaultOption}
         onChange={(selectedOption) => onChange(selectedOption?.value)}
-        isOptionDisabled={(option) => option.isDisabled} // Disabling logic
+        isOptionDisabled={(option) => option.isDisabled}
         styles={customStyles}
-        menuPortalTarget={document.body} // Render dropdown outside the table
+        menuPortalTarget={document.body}
       />
     </div>
   );

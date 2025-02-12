@@ -1,6 +1,5 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -11,7 +10,7 @@ import {
   Table,
 } from "../components";
 import { useParams, useNavigation, useNavigate } from "react-router-dom";
-import { citiesList, participantsTabColumns } from "../constant/data";
+import { citiesList, participantsTabColumns, eventStatusOptions } from "../constant/data";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
@@ -21,6 +20,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
+  const myRef = useRef(null);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
@@ -563,17 +563,33 @@ export default function EditEvent() {
 
   // ("eventDetails:----", eventDetails);
 
+  const scrollToTop = () => {
+    if (myRef.current) {
+      console.log("scrolling to top", myRef.current);
+
+      myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
+    }
+  };
+
   const validateForm = () => {
     if (!eventName) {
       toast.error("Event name is required");
+      scrollToTop()
+      return false;
+    }
+    if(!eventType || !awardType || !dynamicExtensionConfigurations.delivery_date){
+      toast.error("Please select event type details");
+      scrollToTop()
       return false;
     }
     if (!createdOn) {
       toast.error("Created on date is required");
+      scrollToTop()
       return false;
     }
     if (!onLoadScheduleData?.start_time && !scheduleData?.start_time) {
       toast.error("Start time is required");
+      scrollToTop()
       return false;
     }
     if (
@@ -581,6 +597,7 @@ export default function EditEvent() {
       !scheduleData?.end_time_duration
     ) {
       toast.error("End time duration is required");
+      scrollToTop()
       return false;
     }
     if (
@@ -588,6 +605,7 @@ export default function EditEvent() {
       !scheduleData?.evaluation_time
     ) {
       toast.error("Evaluation time is required");
+      scrollToTop()
       return false;
     }
     if (selectedVendors.length === 0) {
@@ -598,7 +616,7 @@ export default function EditEvent() {
   };
 
   const handleSubmit = async (event) => {
-    setLoading(true);
+    
     event.preventDefault();
     if (!validateForm()) {
       return;
@@ -679,16 +697,18 @@ export default function EditEvent() {
       },
     };
 
+    console.log("eventData :---",eventData);
+    
     try {
-      const data = await updateEvent(id, eventData);
-      toast.success("Event updated successfully!", {
-        autoClose: 1000,
-      });
-      setTimeout(() => {
-        navigate(
-          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500); // Increase the delay to 1.5 seconds before navigating
+      // const data = await updateEvent(id, eventData);
+      // toast.success("Event updated successfully!", {
+      //   autoClose: 1000,
+      // });
+      // setTimeout(() => {
+      //   navigate(
+      //     "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
@@ -777,6 +797,7 @@ export default function EditEvent() {
           <h5 className="mt-3 ms-3">Edit RFQ &amp; Auction</h5>
           <div style={{ width: "15%" }}></div>
         </div>
+        <div className="pt-3" ref={myRef}>
         <div className="module-data-section mx-3">
           <div className="card p-3 mt-3">
             <div className="row align-items-end justify-items-end mb-5 mt-3">
@@ -850,14 +871,9 @@ export default function EditEvent() {
                   <label className="po-fontBold">Event Status</label>
                 </div>
                 <SelectBox
-                  options={[
-                    { label: "Submitted", value: "submitted" },
-                    { label: "Approved", value: "approved" },
-                    { label: "Published", value: "published" },
-                    { label: "Expired", value: "expired" },
-                    { label: "Closed", value: "closed" },
-                  ]}
-                  onChange={handleStatusChange} // Pass the selected value to the handler
+                  options={eventStatusOptions}
+                  onChange={handleStatusChange} 
+                  defaultValue={eventDetails?.status} 
                 />
               </div>
             </div>
@@ -1422,6 +1438,7 @@ export default function EditEvent() {
             existingData={eventDetails?.event_schedule}
             onLoadScheduleData={handleOnLoadScheduleData}
           />
+        </div>
         </div>
       </div>
       <ToastContainer
