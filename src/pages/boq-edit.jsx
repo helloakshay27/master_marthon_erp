@@ -44,7 +44,7 @@ const BOQEdit = () => {
                         <a href="">
                             Setup &gt; Engineering Setup &gt; BOQ &gt; BOQ Edit
                         </a>
-                        <div className="card mt-2 mb-5 p-4">
+                        <div className="card mt-3 mb-5">
                             {/* Total Content Here */}
 
 

@@ -950,7 +950,7 @@ const CreateBOQ = () => {
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '', // Safe access with fallback
       colour_id: selectedColors[index] ? selectedColors[index].value : '', // Safe access with fallback
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '', // Safe access with fallback
-      uom: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
+      uom_id: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
@@ -966,7 +966,7 @@ const CreateBOQ = () => {
     generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
     colour_id: selectedColors[index] ? selectedColors[index].value : '',
     brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-    uom: selectedUnit3[index] ? selectedUnit3[index].value : '',
+    uom_id: selectedUnit3[index] ? selectedUnit3[index].value : '',
     co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
     estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
     wastage: parseFloat(assetWastages[index]) || 0,
@@ -1463,7 +1463,7 @@ const CreateBOQ = () => {
   return (
     <>
 
-      {/* <div className="website-content"> */}
+      <div className="website-content">
         <div className="module-data-section p-4">
           <a href="" style={{color:'black'}}>Home &gt; Engineering &gt; Create BOQ</a>
           {/* <h5 className="mt-4">Create BOQ</h5> */}
@@ -2375,7 +2375,7 @@ const CreateBOQ = () => {
             </div>
           </div>
         </div>
-      {/* </div> */}
+      </div>
 
 
       {/* Modal start */}

@@ -225,15 +225,32 @@ const BOQDetailsPageMaster = () => {
     <>
 
       {/* <div className="website-content overflow-auto"> */}
-      {/* <div className="website-content"> */}
+      <div className="website-content">
         <div className="module-data-section p-2">
           <a href="" style={{color:'black'}}>
             Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
           </a>
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
+<div className="d-flex justify-content-end m-4">
+          <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="#6c757d"
+                        className="bi bi-pencil-square me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                        />
+                      </svg>
+                    </Link>
 
-
+                    </div>
           <CollapsibleCard title="BOQ Details">
 
             <div className="row px-3 mt-2">
@@ -258,7 +275,7 @@ const BOQDetailsPageMaster = () => {
 
                         </button> */}
 
-                    <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                    {/* <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -273,7 +290,7 @@ const BOQDetailsPageMaster = () => {
                           d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                         />
                       </svg>
-                    </Link>
+                    </Link> */}
                   </div>
 
                 </div>
@@ -291,7 +308,7 @@ const BOQDetailsPageMaster = () => {
               </div>
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                 <div className="col-6">
-                  <label>Sub-Lvl 5</label>
+                  <label>Sub-Level 5</label>
                 </div>
                 <div className="col-6">
                   <label className="text">
@@ -363,7 +380,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> </span>
+                    <span className="me-3"> {boqDetails.uom}</span>
                   </label>
                 </div>
               </div>
@@ -391,7 +408,7 @@ const BOQDetailsPageMaster = () => {
               </div>
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                 <div className="col-6">
-                  <label>Sub-Lvl 2</label>
+                  <label>Sub-Level 2</label>
                 </div>
                 <div className="col-6">
                   <label className="text">
@@ -415,7 +432,7 @@ const BOQDetailsPageMaster = () => {
 
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                 <div className="col-6">
-                  <label>Sub-Lvl 3</label>
+                  <label>Sub-Level 3</label>
                 </div>
                 <div className="col-6">
                   <label className="text">
@@ -439,7 +456,7 @@ const BOQDetailsPageMaster = () => {
 
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                 <div className="col-6">
-                  <label> Sub-Lvl 4</label>
+                  <label> Sub-Level 4</label>
                 </div>
                 <div className="col-6">
                   <label className="text">
@@ -813,7 +830,7 @@ const BOQDetailsPageMaster = () => {
         {/* </div> */}
 
       </div>
-      {/* </div> */}
+      </div>
 
 
       {/* Modal start */}

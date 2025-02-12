@@ -166,7 +166,7 @@ const BOQList = () => {
 
       })
       .catch((error) => {
-        console.loh('error', error)
+        console.log('error', error)
 
       });
 
@@ -473,8 +473,8 @@ const BOQList = () => {
         <div className="module-data-section p-4">
           <a href="" style={{color:'black'}}>Home &gt; Engineering  &gt; BOQ List</a>
           {/* <h5 className="mt-4">BOQ</h5> */}
-          <div className="d-flex justify-content-end">
-            <button className="purple-btn2" onClick={handleClick}>
+          <div className="d-flex justify-content-end mt-4">
+            {/* <button className="purple-btn2" onClick={handleClick}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -486,7 +486,7 @@ const BOQList = () => {
                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
               </svg>
               <span> Create BOQ</span>
-            </button>
+            </button> */}
             {/* <button className="purple-btn2">Import</button>
             <button className="purple-btn2">Export</button>
             <button className="purple-btn2">Delete</button> */}
@@ -504,7 +504,7 @@ const BOQList = () => {
           {/* Total Content Here */}
 
 
-          <div className="card mt-2 mb-5 ">
+          <div className="card mt-2 There is no selected portion. The entire code file is provided. If you could specify the portion of the code you would like me to improve, I can help you with that.mb-5 ">
             <CollapsibleCard title="Quick Filter"  isInitiallyCollapsed={true}>
               <div className="card-body mt-0 pt-0">
                 <div className="row">
@@ -796,6 +796,19 @@ const BOQList = () => {
             {/* boq list table is here  start */}
             <div className="d-flex justify-content-end me-2">
               <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
+              <button className="purple-btn2" onClick={handleClick}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="white"
+                className="bi bi-plus"
+                viewBox="0 0 16 16"
+              >
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+              </svg>
+              <span> Create BOQ</span>
+            </button>
             </div>
             <div className="mx-3">
               <div className="tbl-container mt-1">
@@ -853,7 +866,7 @@ const BOQList = () => {
                                     width="24"
                                     height="24"
                                     viewBox="0 0 24 24"
-                                    fill="none"
+                                    fill=" #e0e0e0"
                                     stroke="black"
                                     strokeWidth="1"
                                     strokeLinecap="round"
@@ -870,7 +883,7 @@ const BOQList = () => {
                                     width="24"
                                     height="24"
                                     viewBox="0 0 24 24"
-                                    fill="none"
+                                    fill=" #e0e0e0"
                                     stroke="black"
                                     strokeWidth="1"
                                     strokeLinecap="round"
@@ -931,9 +944,11 @@ const BOQList = () => {
                                   {openSubProjectId === subProject.id ?
                                     (
 
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                         {/* Square */}
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
                                         {/* Circle */}
-                                        <circle cx="12" cy="12" r="9" />
+                                        {/* <circle cx="12" cy="12" r="9" /> */}
                                         {/* Minus Icon (for when toggled) */}
                                         <line x1="8" y1="12" x2="16" y2="12" />
                                       </svg>
@@ -950,9 +965,11 @@ const BOQList = () => {
                                     // </svg>
                                     ) : (
 
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                        {/* Square */}
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
                                         {/* Circle */}
-                                        <circle cx="12" cy="12" r="9" />
+                                        {/* <circle cx="12" cy="12" r="9" /> */}
                                         {/* Plus Icon */}
                                         <line x1="12" y1="8" x2="12" y2="16" />
                                         <line x1="8" y1="12" x2="16" y2="12" />
