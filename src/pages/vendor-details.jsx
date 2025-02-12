@@ -1504,11 +1504,15 @@ export default function VendorDetails() {
         }));
       }
 
+      const uniqueBidData = bidData.filter((item, index, self) =>
+        index === self.findIndex((t) => t.eventMaterialId === item.eventMaterialId)
+      );
+
       console.log("Final Freight Data:", freightData2);
-      console.log("Final Bid Data:", bidData);
+      console.log("Final Bid Data:", uniqueBidData);
       console.log("Gross Total:", totalGrossAmount);
 
-      setLinkedEventData(bidData);
+      setLinkedEventData(uniqueBidData);
       setFreightData2(freightData2);
       setGrossTotal(totalGrossAmount); // Store the gross total
     } catch (err) {
@@ -3897,32 +3901,31 @@ export default function VendorDetails() {
                         ))}
                       </ul>
                     </div>
-                  </div>
 
-                  <div className=" d-flex justify-content-end">
-                    {loading && (
-                      <div className="loader-container">
-                        <div className="lds-ring">
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
+                    <div className=" d-flex justify-content-end">
+                      {loading && (
+                        <div className="loader-container">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                          </div>
+                          <p>Submitting your bid...</p>
                         </div>
-                        <p>Submitting your bid...</p>
-                      </div>
-                    )}
-                    {/* <button
+                      )}
+                      {/* <button
                       onClick={handleSubmit}
                       disabled={loading}
                       className="purple-btn2 m-0"
                     >
                       Create Bid
                     </button> */}
-                    {/* <button
+                      {/* <button
                       // onClick={handleSubmit}
 
                       onClick={revisedBid ? handleReviseBid : handleSubmit} // Conditional onClick
@@ -3953,7 +3956,7 @@ export default function VendorDetails() {
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button> */}
-                    {/* <button
+                      {/* <button
                       onClick={revisedBid ? handleReviseBid : handleSubmit}
                       disabled={isBid || loading || counterData > 0}
                       className={`button ${
@@ -3982,63 +3985,64 @@ export default function VendorDetails() {
                     >
                       {revisedBid ? "Revise Bid" : "Create Bid"}
                     </button> */}
-                    <button
-                      onClick={revisedBid ? handleReviseBid : handleSubmit}
-                      disabled={
-                        isBid ||
-                        loading ||
-                        counterData > 0 ||
-                        currentIndex !== 0 || // Disable if it's not the Current Bid
-                        submitted
-                      }
-                      className={`button ${
-                        isBid ||
-                        loading ||
-                        counterData > 0 ||
-                        currentIndex !== 0 ||
-                        submitted
-                          ? "disabled-btn"
-                          : "button-enabled"
-                      }`}
-                      style={{
-                        backgroundColor:
+                      <button
+                        onClick={revisedBid ? handleReviseBid : handleSubmit}
+                        disabled={
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0 || // Disable if it's not the Current Bid
+                          submitted
+                        }
+                        className={`button ${
                           isBid ||
                           loading ||
                           counterData > 0 ||
                           currentIndex !== 0 ||
                           submitted
-                            ? "#ccc"
-                            : "#8b0203",
-                        color:
-                          isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted
-                            ? "#666"
-                            : "#fff",
-                        border:
-                          isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted
-                            ? "1px solid #aaa"
-                            : "1px solid #8b0203",
-                        cursor:
-                          isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted
-                            ? "not-allowed"
-                            : "pointer",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      {revisedBid ? "Revise Bid" : "Create Bid"}
-                    </button>
+                            ? "disabled-btn"
+                            : "button-enabled"
+                        }`}
+                        style={{
+                          backgroundColor:
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                              ? "#ccc"
+                              : "#8b0203",
+                          color:
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                              ? "#666"
+                              : "#fff",
+                          border:
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                              ? "1px solid #aaa"
+                              : "1px solid #8b0203",
+                          cursor:
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                              ? "not-allowed"
+                              : "pointer",
+                          padding: "10px 20px",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        {revisedBid ? "Revise Bid" : "Create Bid"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
