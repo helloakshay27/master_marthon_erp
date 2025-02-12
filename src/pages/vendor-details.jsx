@@ -1740,7 +1740,7 @@ export default function VendorDetails() {
                               {linkedData?.event_type_detail?.event_type}
                             </span>
                           </h4>
-                          <span
+                          {/* <span
                             style={{
                               backgroundColor: "#fff2e8",
                               color: "#8b0203",
@@ -1756,14 +1756,14 @@ export default function VendorDetails() {
                               ?.event_configuration === "rank_based"
                               ? `rank: ${linkedData?.bids?.[0]?.rank}`
                               : `price: ${linkedData?.bids?.[0]?.min_price}`}
-                          </span>
+                          </span> */}
                         </div>
                       ) : (
                         <></>
                       )}
                     </div>
 
-                    {counterData > 0 && (
+                    {/* {counterData > 0 && (
                       <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
                         <div className="">
                           <p>Counter Offer</p>
@@ -1788,7 +1788,7 @@ export default function VendorDetails() {
                           </button>
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     <div className="card-body">
                       {linkedEventData.length > 0 ? (

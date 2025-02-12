@@ -40,6 +40,8 @@ const ApprovalEdit = () => {
 
   const [selectedCompany, setSelectedCompany] = useState([]);
 
+  const [showMaterialType, setShowMaterialType] = useState(false);
+
   const [selectedSite, setSelectedSite] = useState([]);
   const [selectedModule, setSelectedModule] = useState([]); // For selected module
   const [selectedMaterialType, setSelectedMaterialType] = useState(null); // For selected material type
@@ -250,12 +252,148 @@ const ApprovalEdit = () => {
     fetchUsers(); // Fetch users on mount & when department changes
   }, [selectedDepartment]);
 
+  // useEffect(() => {
+  //   const fetchApprovalData = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       if (!response.ok) throw new Error("Failed to fetch approval data");
+
+  //       const data = await response.json();
+  //       console.log("Fetched Approval Data:", data);
+
+  //       // Set form data from API response
+  //       setFormData({
+  //         company_id: data.company_id || null,
+  //         site_id: data.site_id || null,
+  //         project_id: data.project_id || null,
+  //         department_id: data.department_id || null,
+  //         module_id: data.approval_type || null,
+  //         material_id: data.pms_inventory_type_id || null,
+  //         invoice_approval_levels: data.invoice_approval_levels || [],
+  //       });
+
+  //       // Ensure `companies` list is loaded before setting values
+  //       if (!companies.length) return;
+
+  //       const companyOption = companies.find((c) => c.id === data.company_id);
+  //       if (companyOption) {
+  //         setSelectedCompany({
+  //           value: companyOption.id,
+  //           label: companyOption.name,
+  //         });
+
+  //         // Fetch projects based on preselected company
+  //         setProjects(
+  //           companyOption.projects.map((prj) => ({
+  //             value: prj.id,
+  //             label: prj.name,
+  //           }))
+  //         );
+
+  //         // Find and set selected project
+  //         const projectOption = companyOption.projects.find(
+  //           (p) => p.id === data.project_id
+  //         );
+  //         setSelectedProject(
+  //           projectOption
+  //             ? { value: projectOption.id, label: projectOption.name }
+  //             : null
+  //         );
+  //         console.log;
+
+  //         if (projectOption) {
+  //           // Fetch sites (sub-projects) based on preselected project
+  //           setSiteOptions(
+  //             projectOption.pms_sites.map((site) => ({
+  //               value: site.id,
+  //               label: site.name,
+  //             }))
+  //           );
+
+  //           // Find and set selected sub-project (site)
+  //           const siteOption = projectOption.pms_sites.find(
+  //             (s) => s.id === data.site_id
+  //           );
+  //           setSelectedSite(
+  //             siteOption
+  //               ? { value: siteOption.id, label: siteOption.name }
+  //               : null
+  //           );
+  //         }
+  //       }
+
+  //       const departmentOption = filterOptions.departments.find(
+  //         (department) => department.value === data.department_id
+  //       );
+  //       setSelectedDepartment(departmentOption || null);
+
+  //       // Find the preselected module option
+  //       const moduleOption = filterOptions.modules.find(
+  //         (mod) => mod.value === data.approval_type
+  //       );
+
+  //       // Determine if Material Type dropdown should be shown
+  //       const isMaterialOrderRequest =
+  //         moduleOption?.label?.toLowerCase() === "material order request";
+
+  //       setShowMaterialType(isMaterialOrderRequest); // Update visibility state
+
+  //       setSelectedModule(moduleOption || null);
+
+  //       // Find and set preselected material type
+  //       const materialTypeOption = filterOptions.material_types.find(
+  //         (mat) => mat.value === data.pms_inventory_type_id
+  //       );
+  //       setSelectedMaterialType(materialTypeOption || null);
+
+  //       const userMap = new Map(
+  //         departmentUsers?.length
+  //           ? departmentUsers.map((user) => [
+  //               user.value,
+  //               user.label || "Unknown User",
+  //             ])
+  //           : []
+  //       );
+
+  //       console.log("User Map:", userMap);
+
+  //       const approvalLevelsWithUserNames = Array.isArray(
+  //         data.invoice_approval_levels
+  //       )
+  //         ? data.invoice_approval_levels.map((level) => ({
+  //             id: level.id,
+  //             order: level.order || "",
+  //             name: level.name || "",
+  //             users: Array.isArray(level.escalate_to_users)
+  //               ? level.escalate_to_users.map((userId) => {
+  //                   const userName = userMap.get(userId) || "Unknown"; // Fetch full_name
+  //                   return { label: userName, value: userId };
+  //                 })
+  //               : [],
+  //           }))
+  //         : [];
+
+  //       setApprovalLevels(approvalLevelsWithUserNames);
+  //     } catch (error) {
+  //       console.error("Error fetching approval data:", error);
+  //     }
+  //   };
+
+  //   if (companies.length > 0) {
+  //     fetchApprovalData();
+  //   }
+  // }, [companies, id]);
+
+  const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
   useEffect(() => {
     const fetchApprovalData = async () => {
       try {
         const response = await fetch(
           `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
+
         if (!response.ok) throw new Error("Failed to fetch approval data");
 
         const data = await response.json();
@@ -299,7 +437,6 @@ const ApprovalEdit = () => {
               ? { value: projectOption.id, label: projectOption.name }
               : null
           );
-          console.log;
 
           if (projectOption) {
             // Fetch sites (sub-projects) based on preselected project
@@ -327,45 +464,27 @@ const ApprovalEdit = () => {
         );
         setSelectedDepartment(departmentOption || null);
 
+        // Find the preselected module option
         const moduleOption = filterOptions.modules.find(
           (mod) => mod.value === data.approval_type
         );
+
+        // Determine if Material Type dropdown should be shown
+        const isMaterialOrderRequest =
+          moduleOption?.label?.toLowerCase() === "material order request";
+
+        setShowMaterialType(isMaterialOrderRequest); // Update visibility state
+
         setSelectedModule(moduleOption || null);
 
+        // Find and set preselected material type
         const materialTypeOption = filterOptions.material_types.find(
           (mat) => mat.value === data.pms_inventory_type_id
         );
         setSelectedMaterialType(materialTypeOption || null);
 
-        // Map approval levels to user names
-        const userMap = new Map(
-          departmentUsers?.length
-            ? departmentUsers.map((user) => [
-                user.value,
-                user.label || "Unknown User",
-              ])
-            : []
-        );
-
-        console.log("User Map:", userMap);
-
-        const approvalLevelsWithUserNames = Array.isArray(
-          data.invoice_approval_levels
-        )
-          ? data.invoice_approval_levels.map((level) => ({
-              id: level.id,
-              order: level.order || "",
-              name: level.name || "",
-              users: Array.isArray(level.escalate_to_users)
-                ? level.escalate_to_users.map((userId) => {
-                    const userName = userMap.get(userId) || "Unknown"; // Fetch full_name
-                    return { label: userName, value: userId };
-                  })
-                : [],
-            }))
-          : [];
-
-        setApprovalLevels(approvalLevelsWithUserNames);
+        // Store raw approval levels for later processing when users are available
+        setApprovalLevelsRaw(data.invoice_approval_levels || []);
       } catch (error) {
         console.error("Error fetching approval data:", error);
       }
@@ -375,6 +494,31 @@ const ApprovalEdit = () => {
       fetchApprovalData();
     }
   }, [companies, id]);
+
+  // Process approval levels when departmentUsers are available
+  useEffect(() => {
+    if (!departmentUsers.length || !approvalLevelsRaw.length) return;
+
+    const userMap = new Map(
+      departmentUsers.map((user) => [user.value, user.label || "Unknown User"])
+    );
+
+    console.log("User Map:", userMap);
+
+    const approvalLevelsWithUserNames = approvalLevelsRaw.map((level) => ({
+      id: level.id,
+      order: level.order || "",
+      name: level.name || "",
+      users: Array.isArray(level.escalate_to_users)
+        ? level.escalate_to_users.map((userId) => {
+            const userName = userMap.get(userId) || "Unknown";
+            return { label: userName, value: userId };
+          })
+        : [],
+    }));
+
+    setApprovalLevels(approvalLevelsWithUserNames);
+  }, [departmentUsers, approvalLevelsRaw]);
 
   useEffect(() => {
     if (departmentUsers.length > 0 && formData.invoice_approval_levels) {
@@ -398,81 +542,6 @@ const ApprovalEdit = () => {
       setApprovalLevels(updatedApprovalLevels);
     }
   }, [departmentUsers, formData.invoice_approval_levels]); // Run when users or approval levels update
-
-  // useEffect(() => {
-  //   const fetchApprovalData = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
-  //       if (!response.ok) throw new Error("Failed to fetch approval data");
-
-  //       const data = await response.json();
-  //       console.log("Fetched Approval Data:", data);
-
-  //       setFormData({
-  //         company_id: data.company_id || null,
-  //         project_id: data.project_id || null,
-  //         site_id: data.site_id || null,
-  //         department_id: data.department_id || null,
-  //         module_id: data.approval_type || null,
-  //         material_id: data.pms_inventory_type_id || null,
-  //         invoice_approval_levels: data.invoice_approval_levels || [],
-  //       });
-
-  //       // Set selected company
-  //       const companyOption = companies.find((c) => c.id === data.company_id);
-  //       setSelectedCompany(companyOption || null);
-
-  //       if (companyOption) {
-  //         // Fetch projects based on preselected company
-  //         setProjects(
-  //           companyOption.projects.map((prj) => ({
-  //             value: prj.id,
-  //             label: prj.name,
-  //           }))
-  //         );
-
-  //         // Find and set selected project
-  //         const projectOption = companyOption.projects.find(
-  //           (p) => p.id === data.project_id
-  //         );
-  //         setSelectedProject(
-  //           projectOption
-  //             ? { value: projectOption.id, label: projectOption.name }
-  //             : null
-  //         );
-
-  //         if (projectOption) {
-  //           // Fetch sites (sub-projects) based on preselected project
-  //           setSiteOptions(
-  //             projectOption.pms_sites.map((site) => ({
-  //               value: site.id,
-  //               label: site.name,
-  //             }))
-  //           );
-
-  //           // Find and set selected sub-project (site)
-  //           const siteOption = projectOption.pms_sites.find(
-  //             (s) => s.id === data.site_id
-  //           );
-  //           setSelectedSite(
-  //             siteOption
-  //               ? { value: siteOption.id, label: siteOption.name }
-  //               : null
-  //           );
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching approval data:", error);
-  //     }
-  //   };
-
-  //   if (companies.length > 0) {
-  //     fetchApprovalData();
-  //   }
-  // }, [companies, id]); // Run after companies are loaded
-  // Trigger fetchApprovalData when filterOptions or id change
 
   useEffect(() => {
     axios
@@ -616,9 +685,16 @@ const ApprovalEdit = () => {
   const handleModuleChange = (selectedOption) => {
     console.log("Selected Module ID:", selectedOption.value);
     setSelectedModule(selectedOption);
+
+    // Check if selected module is "Material Order Request"
+    const isMaterialOrderRequest =
+      selectedOption.label.toLowerCase() === "material order request";
+
+    setShowMaterialType(isMaterialOrderRequest); // Update visibility
+
     setFormData((prevData) => ({
       ...prevData,
-      module_id: selectedOption.value, // Set module_id to selected module
+      module_id: selectedOption.value,
     }));
   };
 
@@ -1012,64 +1088,24 @@ const ApprovalEdit = () => {
                               </div>
 
                               <div className="col-md-3 mt-4">
-                                <label htmlFor="material-type-select">
-                                  Material type
-                                </label>
-                                <SingleSelector
-                                  id="material-type-select"
-                                  options={filterOptions.material_types} // Use filterOptions directly
-                                  value={selectedMaterialType}
-                                  // onChange={(option) =>
-                                  //   setSelectedMaterialType(option)
-                                  // } // Ha
-                                  //
-                                  // ndle selection
-
-                                  onChange={handleMaterialTypeChange}
-                                  isClearable
-                                />
+                                {showMaterialType && (
+                                  <>
+                                    <label htmlFor="material-type-select">
+                                      Material Type
+                                    </label>
+                                    <SingleSelector
+                                      id="material-type-select"
+                                      options={filterOptions.material_types}
+                                      value={selectedMaterialType}
+                                      onChange={handleMaterialTypeChange}
+                                      placeholder="Select Material Type"
+                                      isClearable
+                                    />
+                                  </>
+                                )}
                               </div>
 
                               {/* Status */}
-
-                              {/* Created By */}
-                              {/* <div className="col-md-3">
-                                <label htmlFor="created-by-select">
-                                  Module
-                                </label>
-                                <Select
-                                  id="created-by-select"
-                                  
-                                  value={selectedModule}
-                                  onChange={handleModuleChange}
-                                />
-                              </div> */}
-                              {/* <div className="col-md-3 mt-3">
-                                <label htmlFor="created-by-select">
-                                  {" "}
-                                  Material type
-                                </label>
-                                <Select
-                                  id="created-by-select"
-                                  options={filterOptions.material_types}
-                                  isClearable
-                                  value={selectedMaterialType}
-                                  onChange={handleMaterialTypeChange}
-                                />
-                              </div> */}
-
-                              {/* <div className="col-md-3 mt-4">
-                                <label htmlFor="created-by-select">
-                                  {" "}
-                                  Sub Category
-                                </label>
-                                <Select
-                                  id="created-by-select"
-                                  options={filterOptions.sub_categories}
-                                  isClearable
-                                  onChange={handleSubCategoryChange}
-                                />
-                              </div> */}
                             </div>
                           </div>
                         </CollapsibleCard>
