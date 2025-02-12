@@ -23,6 +23,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
+  const myRef = useRef(null); // Ensure this is defined at the top
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
@@ -81,7 +82,6 @@ export default function CreateEvent() {
   const [eventSchedule, setEventSchedule] = useState("");
   // @ts-ignore
   const [scheduleData, setScheduleData] = useState({});
-
   // @ts-ignore
   // @ts-ignore
   const [data, setData] = useState([
@@ -203,7 +203,7 @@ export default function CreateEvent() {
       time_extension_type: config.time_extension_type,
       triggered_time_extension_on_last: config.triggered_time_extension_on_last,
       extend_event_time_by: config.extend_event_time_by,
-      time_extension_on_change_in: config.time_extension_change,
+      time_extension_change: config.time_extension_change,
       delivery_date: config.delivery_date,
     });
     handleEventTypeModalClose();
@@ -403,6 +403,14 @@ export default function CreateEvent() {
     }
   };
 
+  const scrollToTop = () => {
+    if (myRef.current) {
+      console.log("scrolling to top", myRef.current);
+
+      myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
+    }
+  };
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -415,12 +423,13 @@ export default function CreateEvent() {
       !scheduleData.evaluation_time ||
       selectedVendors.length === 0
     ) {
+      scrollToTop();
       toast.error("Please fill all the required fields.", {
-        autoClose: 1000, // Duration for the toast to disappear (in ms)
+        autoClose: 1000,
       });
       setTimeout(() => {
         setLoading(false);
-      }, 5); // Hide loader after 5ms
+      }, 500); // Adjusted the delay to 500ms for better visibility
 
       return;
     }
@@ -612,281 +621,283 @@ export default function CreateEvent() {
           <h5 className="mt-3 ms-3">Create RFQ &amp; Auction</h5>
           <div style={{ width: "15%" }}></div>
         </div>
-        <div className="module-data-section mx-3">
-          <div className="card p-3 mt-3">
-            <div className="row align-items-end justify-items-end mb-5 mt-3">
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Name <span style={{ color: "red" }}>*</span>
-                  </label>
-                </div>
-                <input
-                  className="form-control"
-                  placeholder="Enter Event Name"
-                  value={eventName}
-                  onChange={(e) => seteventName(e.target.value)}
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Type <span style={{ color: "red" }}>*</span>
-                  </label>
-                </div>
-                <input
-                  className="form-control"
-                  onClick={handleEventTypeModalShow}
-                  placeholder="Configure The Event"
-                  value={eventTypeText} // Display the selected event type
-                  readOnly
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">Created On</label>
+        <div className="pt-3" ref={myRef}>
+          <div className="module-data-section mx-3">
+            <div className="card p-3 mt-3">
+              <div className="row align-items-end justify-items-end mb-5 mt-3">
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Name <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
                   <input
                     className="form-control"
-                    type="date"
-                    defaultValue={createdOn} // Sets default value to today's date
-                    readOnly // Prevents user from changing the value
-                    style={{
-                      backgroundColor: "#f5f5f5", // Light gray background to show it is readonly
-                      color: "#888", // Light gray text color to indicate it's not editable
-                      cursor: "not-allowed", // Show the cursor as not allowed
-                      borderColor: "#ddd", // Lighter border color
-                    }}
+                    placeholder="Enter Event Name"
+                    value={eventName}
+                    onChange={(e) => seteventName(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Type <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    onClick={handleEventTypeModalShow}
+                    placeholder="Configure The Event"
+                    value={eventTypeText} // Display the selected event type
+                    readOnly
+                  />
+                </div>
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">Created On</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      defaultValue={createdOn} // Sets default value to today's date
+                      readOnly // Prevents user from changing the value
+                      style={{
+                        backgroundColor: "#f5f5f5", // Light gray background to show it is readonly
+                        color: "#888", // Light gray text color to indicate it's not editable
+                        cursor: "not-allowed", // Show the cursor as not allowed
+                        borderColor: "#ddd", // Lighter border color
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Schedule <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    onClick={handleEventScheduleModalShow}
+                    placeholder="Enter Event Schedule Details"
+                    value={eventScheduleText} // Display the selected event schedule
+                    readOnly
+                  />
+                </div>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Description <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <textarea
+                    className="form-control"
+                    placeholder="Enter Event Description"
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
                   />
                 </div>
               </div>
-              <div className="col-md-4 col-sm-6 mt-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Schedule <span style={{ color: "red" }}>*</span>
-                  </label>
+              <CreateRFQForm
+                data={materialFormData}
+                setData={setMaterialFormData}
+                isService={isService}
+                deliveryData={[]}
+              />
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className=" ">
+                  Select Vendors{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <div className="card-tools">
+                  <button
+                    className="purple-btn2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#venderModal"
+                    onClick={handleVendorTypeModalShow}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add{" "}
+                    </span>
+                    <span>Add</span>
+                  </button>
                 </div>
-                <input
-                  className="form-control"
-                  onClick={handleEventScheduleModalShow}
-                  placeholder="Enter Event Schedule Details"
-                  value={eventScheduleText} // Display the selected event schedule
-                  readOnly
-                />
               </div>
-              <div className="col-md-4 col-sm-6 mt-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Description <span style={{ color: "red" }}>*</span>
-                  </label>
-                </div>
-                <textarea
-                  className="form-control"
-                  placeholder="Enter Event Description"
-                  value={eventDescription}
-                  onChange={(e) => setEventDescription(e.target.value)}
-                />
-              </div>
-            </div>
-            <CreateRFQForm
-              data={materialFormData}
-              setData={setMaterialFormData}
-              isService={isService}
-              deliveryData={[]}
-            />
-            <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-              <h5 className=" ">
-                Select Vendors{" "}
-                <span style={{ color: "red", fontSize: "16px" }}>*</span>
-              </h5>
-              <div className="card-tools">
-                <button
-                  className="purple-btn2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#venderModal"
-                  onClick={handleVendorTypeModalShow}
+              <div className="row justify-content-center mx-1">
+                <div
+                  className="tbl-container px-0 mx-5 mt-3"
+                  style={{ maxHeight: "250px", overflowY: "auto" }}
                 >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add{" "}
-                  </span>
-                  <span>Add</span>
-                </button>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr No.</th> {/* Add serial number column header */}
+                        <th>Vendor Name</th>
+                        <th>Mob No.</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {selectedVendors.length > 0 ? (
+                        selectedVendors
+                          .filter(
+                            (vendor, index, self) =>
+                              index ===
+                              self.findIndex((v) => v.id === vendor.id)
+                          )
+                          .map((vendor, index) => (
+                            <tr key={vendor.id}>
+                              <td>{index + 1}</td>
+                              <td>{vendor.name}</td>
+                              <td>{vendor.phone}</td>
+                              <td>Invited</td>
+                              <td>
+                                <button
+                                  className="btn btn-danger"
+                                  onClick={() =>
+                                    setSelectedVendors((prev) =>
+                                      prev.filter((v) => v.id !== vendor.id)
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                      ) : (
+                        <tr>
+                          <td
+                            // @ts-ignore
+                            colSpan="5"
+                            className="text-center"
+                          >
+                            No vendors selected
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-            <div className="row justify-content-center mx-1">
-              <div
-                className="tbl-container px-0 mx-5 mt-3"
-                style={{ maxHeight: "250px", overflowY: "auto" }}
-              >
-                <table className="w-100">
+              <div>
+                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                  <h5 className="mt-3">
+                    Document Attachments{" "}
+                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                  </h5>
+                  <button
+                    className="purple-btn2 mt-3"
+                    onClick={handleAddDocumentRow}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <Table
+                  columns={[
+                    { label: "Sr No", key: "srNo" },
+                    { label: "Upload File", key: "upload" },
+                    { label: "Action", key: "action" },
+                  ]}
+                  onRowSelect={undefined}
+                  resetSelectedRows={undefined}
+                  onResetComplete={undefined}
+                  data={documentRows.map((row, index) => ({
+                    ...row,
+                    upload: (
+                      <input
+                        type="file"
+                        onChange={(e) =>
+                          handleFileChange(index, e.target.files[0])
+                        }
+                        ref={fileInputRef}
+                        multiple
+                        accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                      />
+                    ),
+                    action: (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleRemoveDocumentRow(index)}
+                        disabled={index === 0}
+                      >
+                        Remove
+                      </button>
+                    ),
+                  }))}
+                />
+              </div>
+
+              <div>
+                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                  <h5 className="mt-3">
+                    Terms & Conditions{" "}
+                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                  </h5>
+                  <button
+                    className="purple-btn2 mt-3"
+                    onClick={handleAddTextarea}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <table className="tbl-container w-100">
                   <thead>
                     <tr>
-                      <th>Sr No.</th> {/* Add serial number column header */}
-                      <th>Vendor Name</th>
-                      <th>Mob No.</th>
-                      <th>Status</th>
+                      <th>Condition Category</th>
+                      <th>Condition</th>
                       <th>Action</th>
                     </tr>
                   </thead>
-
                   <tbody>
-                    {selectedVendors.length > 0 ? (
-                      selectedVendors
-                        .filter(
-                          (vendor, index, self) =>
-                            index === self.findIndex((v) => v.id === vendor.id)
-                        )
-                        .map((vendor, index) => (
-                          <tr key={vendor.id}>
-                            <td>{index + 1}</td>
-                            <td>{vendor.name}</td>
-                            <td>{vendor.phone}</td>
-                            <td>Invited</td>
-                            <td>
-                              <button
-                                className="btn btn-danger"
-                                onClick={() =>
-                                  setSelectedVendors((prev) =>
-                                    prev.filter((v) => v.id !== vendor.id)
-                                  )
-                                }
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                    ) : (
-                      <tr>
-                        <td
-                          // @ts-ignore
-                          colSpan="5"
-                          className="text-center"
-                        >
-                          No vendors selected
+                    {textareas.map((textarea, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <SelectBox
+                            options={termsOptions.map((option) => ({
+                              label: option.label,
+                              value: option.value,
+                            }))}
+                            onChange={(option) =>
+                              handleConditionChange(textarea.id, option)
+                            }
+                            defaultValue={termsOptions.find(
+                              (option) => option.condition === textarea.value
+                            )}
+                          />
+                        </td>
+                        <td>
+                          <textarea
+                            className="form-control"
+                            value={textarea.value}
+                            readOnly
+                          />
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleRemoveTextarea(textarea.id)}
+                            disabled={idx === 0}
+                          >
+                            Remove
+                          </button>
                         </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-            <div>
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className="mt-3">
-                  Document Attachments{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <button
-                  className="purple-btn2 mt-3"
-                  onClick={handleAddDocumentRow}
-                >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add
-                  </span>
-                  <span>Add</span>
-                </button>
-              </div>
-
-              <Table
-                columns={[
-                  { label: "Sr No", key: "srNo" },
-                  { label: "Upload File", key: "upload" },
-                  { label: "Action", key: "action" },
-                ]}
-                onRowSelect={undefined}
-                resetSelectedRows={undefined}
-                onResetComplete={undefined}
-                data={documentRows.map((row, index) => ({
-                  ...row,
-                  upload: (
-                    <input
-                      type="file"
-                      onChange={(e) =>
-                        handleFileChange(index, e.target.files[0])
-                      }
-                      ref={fileInputRef}
-                      multiple
-                      accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                    />
-                  ),
-                  action: (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleRemoveDocumentRow(index)}
-                      disabled={index === 0}
-                    >
-                      Remove
-                    </button>
-                  ),
-                }))}
-              />
-            </div>
-
-            <div>
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className="mt-3">
-                  Terms & Conditions{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <button
-                  className="purple-btn2 mt-3"
-                  onClick={handleAddTextarea}
-                >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add
-                  </span>
-                  <span>Add</span>
-                </button>
-              </div>
-
-              <table className="tbl-container w-100">
-                <thead>
-                  <tr>
-                    <th>Condition Category</th>
-                    <th>Condition</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {textareas.map((textarea, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <SelectBox
-                          options={termsOptions.map((option) => ({
-                            label: option.label,
-                            value: option.value,
-                          }))}
-                          onChange={(option) =>
-                            handleConditionChange(textarea.id, option)
-                          }
-                          defaultValue={termsOptions.find(
-                            (option) => option.condition === textarea.value
-                          )}
-                        />
-                      </td>
-                      <td>
-                        <textarea
-                          className="form-control"
-                          value={textarea.value}
-                          readOnly
-                        />
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleRemoveTextarea(textarea.id)}
-                          disabled={idx === 0}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="row mt-4 mt-3">
-              {/* <h5>Audit Log</h5>
+              <div className="row mt-4 mt-3">
+                {/* <h5>Audit Log</h5>
             <div className="mx-0">
               <div className="tbl-container px-0 mt-3">
                 <table className="w-100">
@@ -934,126 +945,126 @@ export default function CreateEvent() {
               </div>
             </div> */}
 
-              <EventScheduleModal
-                deliveryDate={dynamicExtensionConfigurations.delivery_date}
-                show={eventScheduleModal}
-                onHide={handleEventScheduleModalClose}
-                handleSaveSchedule={handleSaveSchedule}
-              />
-            </div>
-            <div className="row mt-2 justify-content-end align-items-center mt-4">
-              <div className="col-md-2">
-                <button className="purple-btn2 w-100">Preview</button>
+                <EventScheduleModal
+                  deliveryDate={dynamicExtensionConfigurations.delivery_date}
+                  show={eventScheduleModal}
+                  onHide={handleEventScheduleModalClose}
+                  handleSaveSchedule={handleSaveSchedule}
+                />
               </div>
-              <div className="col-md-2">
-                {loading && (
-                  <div className="loader-container">
-                    <div className="lds-ring">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
+              <div className="row mt-2 justify-content-end align-items-center mt-4">
+                <div className="col-md-2">
+                  <button className="purple-btn2 w-100">Preview</button>
+                </div>
+                <div className="col-md-2">
+                  {loading && (
+                    <div className="loader-container">
+                      <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                      <p>Submitting ..</p>
                     </div>
-                    <p>Submitting ..</p>
-                  </div>
-                )}
-                <button
-                  className={
-                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
-                  }
-                  onClick={handleSubmit}
-                  disabled={submitted}
-                >
-                  Submit
-                </button>
-              </div>
-              <div className="col-md-2">
-                <button
-                  className="purple-btn1 w-100"
-                  onClick={() => {
-                    navigate(
-                      "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
-                    );
-                  }}
-                >
-                  Cancel
-                </button>
+                  )}
+                  <button
+                    className={
+                      submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                    }
+                    onClick={handleSubmit}
+                    disabled={submitted}
+                  >
+                    Submit
+                  </button>
+                </div>
+                <div className="col-md-2">
+                  <button
+                    className="purple-btn1 w-100"
+                    onClick={() => {
+                      navigate(
+                        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
+                      );
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          {/* // vendor model with vendor data */}
-          <DynamicModalBox
-            size="xl"
-            title="All Vendors"
-            show={vendorModal}
-            onHide={handleVendorTypeModalClose}
-            footerButtons={[
-              {
-                label: "Cancel",
-                onClick: handleVendorTypeModalClose,
-                props: { className: "purple-btn1" },
-              },
-              {
-                label: "Save",
-                onClick: handleSaveButtonClick,
-                props: { className: "purple-btn2" },
-              },
-            ]}
-            children={
-              <>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="input-group w-50 position-relative">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="tbl-search form-control"
-                      placeholder="Search Vendors"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      onFocus={() => setIsSuggestionsVisible(true)}
-                      onBlur={() =>
-                        setTimeout(() => setIsSuggestionsVisible(false), 200)
-                      }
-                    />
-                    <div className="input-group-append">
+            {/* // vendor model with vendor data */}
+            <DynamicModalBox
+              size="xl"
+              title="All Vendors"
+              show={vendorModal}
+              onHide={handleVendorTypeModalClose}
+              footerButtons={[
+                {
+                  label: "Cancel",
+                  onClick: handleVendorTypeModalClose,
+                  props: { className: "purple-btn1" },
+                },
+                {
+                  label: "Save",
+                  onClick: handleSaveButtonClick,
+                  props: { className: "purple-btn2" },
+                },
+              ]}
+              children={
+                <>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="input-group w-50 position-relative">
+                      <input
+                        type="search"
+                        id="searchInput"
+                        className="tbl-search form-control"
+                        placeholder="Search Vendors"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => setIsSuggestionsVisible(true)}
+                        onBlur={() =>
+                          setTimeout(() => setIsSuggestionsVisible(false), 200)
+                        }
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
+                          onClick={handleSearchClick}
+                        >
+                          <SearchIcon />
+                        </button>
+                      </div>
+                      {isSuggestionsVisible && suggestions.length > 0 && (
+                        <ul
+                          className="suggestions-list position-absolute bg-white border rounded w-100"
+                          style={{ zIndex: 1000, top: "100%" }}
+                        >
+                          {suggestions.map((suggestion) => (
+                            <li
+                              key={suggestion.id}
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              className="p-2 cursor-pointer"
+                            >
+                              {suggestion.name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="d-flex">
                       <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        onClick={handleSearchClick}
+                        className="purple-btn2 viewBy-main-child2P mb-0"
+                        onClick={handleInviteModalShow}
                       >
-                        <SearchIcon />
+                        <i className="bi bi-person-plus"></i>
+                        <span className="ms-2">Invite</span>
                       </button>
-                    </div>
-                    {isSuggestionsVisible && suggestions.length > 0 && (
-                      <ul
-                        className="suggestions-list position-absolute bg-white border rounded w-100"
-                        style={{ zIndex: 1000, top: "100%" }}
-                      >
-                        {suggestions.map((suggestion) => (
-                          <li
-                            key={suggestion.id}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className="p-2 cursor-pointer"
-                          >
-                            {suggestion.name}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div className="d-flex">
-                    <button
-                      className="purple-btn2 viewBy-main-child2P mb-0"
-                      onClick={handleInviteModalShow}
-                    >
-                      <i className="bi bi-person-plus"></i>
-                      <span className="ms-2">Invite</span>
-                    </button>
-                    {/* <button
+                      {/* <button
                       className="purple-btn2 viewBy-main-child2P mb-0"
                       onClick={() => setShowPopup(true)}
                     >
@@ -1061,39 +1072,39 @@ export default function CreateEvent() {
                       <span className="ms-2">Filters</span>
                     </button> */}
 
-                    <PopupBox
-                      title="Filter by"
-                      show={showPopup}
-                      onClose={() => setShowPopup(false)}
-                      footerButtons={[
-                        {
-                          label: "Cancel",
-                          onClick: () => setShowPopup(false),
-                          props: {
-                            className: "purple-btn1",
+                      <PopupBox
+                        title="Filter by"
+                        show={showPopup}
+                        onClose={() => setShowPopup(false)}
+                        footerButtons={[
+                          {
+                            label: "Cancel",
+                            onClick: () => setShowPopup(false),
+                            props: {
+                              className: "purple-btn1",
+                            },
                           },
-                        },
-                        {
-                          label: "Apply",
-                          onClick: handleApply,
-                          props: {
-                            className: "purple-btn2",
+                          {
+                            label: "Apply",
+                            onClick: handleApply,
+                            props: {
+                              className: "purple-btn2",
+                            },
                           },
-                        },
-                      ]}
-                      children={
-                        <div>
-                          <div style={{ marginBottom: "12px" }}>
-                            <SelectBox
-                              label={"City"}
-                              options={citiesList}
-                              defaultValue={""}
-                              onChange={handleCityChange}
-                              isDisableFirstOption={true}
-                            />
-                          </div>
+                        ]}
+                        children={
+                          <div>
+                            <div style={{ marginBottom: "12px" }}>
+                              <SelectBox
+                                label={"City"}
+                                options={citiesList}
+                                defaultValue={""}
+                                onChange={handleCityChange}
+                                isDisableFirstOption={true}
+                              />
+                            </div>
 
-                          {/* <div style={{ marginBottom: "12px" }}>
+                            {/* <div style={{ marginBottom: "12px" }}>
                             <p>Filter By Tags</p>
                             <MultiSelector
                               options={options}
@@ -1102,7 +1113,7 @@ export default function CreateEvent() {
                               placeholder={"Filter by tags"}
                             />
                           </div> */}
-                          {/* <div className="d-flex align-items-center">
+                            {/* <div className="d-flex align-items-center">
                             <div className="form-check form-switch mt-1">
                               <input
                                 className="form-check-input"
@@ -1115,215 +1126,219 @@ export default function CreateEvent() {
                               Show only selected vendors
                             </p>
                           </div> */}
-                        </div>
-                      }
-                    />
+                          </div>
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                  {filteredTableData.length > 0 ? (
-                    <Table
-                      columns={participantsTabColumns}
-                      showCheckbox={true}
-                      data={filteredTableData.map((vendor, index) => ({
-                        ...vendor,
-                        srNo: (currentPage - 1) * pageSize + index + 1,
-                      }))}
-                      handleCheckboxChange={handleCheckboxChange}
-                      isRowSelected={isVendorSelected}
-                      resetSelectedRows={resetSelectedRows}
-                      onResetComplete={() => setResetSelectedRows(false)}
-                      onRowSelect={undefined}
-                      cellClass="text-start"
-                      currentPage={currentPage}
-                      pageSize={pageSize}
-                    />
-                  ) : (
-                    <p>No vendors found</p>
-                  )}
-                </div>
-                <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                  <ul className="pagination justify-content-center d-flex ">
-                    {/* First Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        First
-                      </button>
-                    </li>
-
-                    {/* Previous Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Prev
-                      </button>
-                    </li>
-
-                    {/* Dynamic Page Numbers */}
-                    {getPageRange().map((pageNumber) => (
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                    {filteredTableData.length > 0 ? (
+                      <Table
+                        columns={participantsTabColumns}
+                        showCheckbox={true}
+                        data={filteredTableData.map((vendor, index) => ({
+                          ...vendor,
+                          srNo: (currentPage - 1) * pageSize + index + 1,
+                        }))}
+                        handleCheckboxChange={handleCheckboxChange}
+                        isRowSelected={isVendorSelected}
+                        resetSelectedRows={resetSelectedRows}
+                        onResetComplete={() => setResetSelectedRows(false)}
+                        onRowSelect={undefined}
+                        cellClass="text-start"
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                      />
+                    ) : (
+                      <p>No vendors found</p>
+                    )}
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                    <ul className="pagination justify-content-center d-flex ">
+                      {/* First Button */}
                       <li
-                        key={pageNumber}
                         className={`page-item ${
-                          currentPage === pageNumber ? "active" : ""
+                          currentPage === 1 ? "disabled" : ""
                         }`}
                       >
                         <button
                           className="page-link"
-                          onClick={() => handlePageChange(pageNumber)}
+                          onClick={() => handlePageChange(1)}
                         >
-                          {pageNumber}
+                          First
                         </button>
                       </li>
-                    ))}
 
-                    {/* Next Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                      {/* Previous Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
                       >
-                        Next
-                      </button>
-                    </li>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
 
-                    {/* Last Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
+                      {/* Dynamic Page Numbers */}
+                      {getPageRange().map((pageNumber) => (
+                        <li
+                          key={pageNumber}
+                          className={`page-item ${
+                            currentPage === pageNumber ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(pageNumber)}
+                          >
+                            {pageNumber}
+                          </button>
+                        </li>
+                      ))}
+
+                      {/* Next Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
                       >
-                        Last
-                      </button>
-                    </li>
-                  </ul>
-                  {/* Display Data */}
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
 
-                  {/* Showing entries count */}
-                  <div>
-                    <p>
-                      Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                      {Math.min(currentPage * pageSize, totalPages * pageSize)}{" "}
-                      of {totalPages * pageSize} entries
-                    </p>
+                      {/* Last Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+                    {/* Display Data */}
+
+                    {/* Showing entries count */}
+                    <div>
+                      <p>
+                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
+                        {Math.min(
+                          currentPage * pageSize,
+                          totalPages * pageSize
+                        )}{" "}
+                        of {totalPages * pageSize} entries
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </>
-            }
-          />
-          <DynamicModalBox
-            show={inviteModal}
-            onHide={handleInviteModalClose}
-            modalType={true}
-            title="Invite New Vendor"
-            footerButtons={[
-              {
-                label: "Close",
-                onClick: handleInviteModalClose,
-                props: {
-                  className: "purple-btn1",
+                </>
+              }
+            />
+            <DynamicModalBox
+              show={inviteModal}
+              onHide={handleInviteModalClose}
+              modalType={true}
+              title="Invite New Vendor"
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleInviteModalClose,
+                  props: {
+                    className: "purple-btn1",
+                  },
                 },
-              },
-              {
-                label: "Save Changes",
-                onClick: handleInviteModalClose,
-                props: {
-                  className: "purple-btn2",
+                {
+                  label: "Save Changes",
+                  onClick: handleInviteModalClose,
+                  props: {
+                    className: "purple-btn2",
+                  },
                 },
-              },
-            ]}
-            children={
-              <>
-                <form className="p-2">
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">POC - Full Name</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder="Enter POC Name"
-                    />
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Email</label>
-                    <input
-                      className="form-control"
-                      type="email"
-                      placeholder="Enter Email Address"
-                    />
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Phone Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      inputMode="tel"
-                      placeholder="Enter Phone Number"
-                    />
-                  </div>
-                </form>
-              </>
-            }
-          />
-          <EventTypeModal
-            show={eventTypeModal}
-            handleDynamicExtensionBid={handleDynamicExtensionBid}
-            onHide={handleEventTypeModalClose}
-            handleEventConfigurationSubmit={handleEventConfigurationSubmit}
-            title={"Configuration for Event"}
-            eventType={eventType}
-            handleEventTypeChange={handleEventTypeChange}
-            eventTypeModal={eventTypeModal}
-            handleEventTypeModalClose={handleEventTypeModalClose}
-            selectedStrategy={selectedStrategy}
-            handleRadioChange={handleRadioChange}
-            awardType={awardType}
-            handleAwardTypeChange={handleAwardTypeChange}
-            dynamicExtension={dynamicExtension}
-            dynamicExtensionConfigurations={dynamicExtensionConfigurations}
-            handleDynamicExtensionChange={handleDynamicExtensionChange}
-            size={"xl"}
-            footerButtons={[
-              {
-                label: "Close",
-                onClick: handleEventTypeModalClose,
-                props: {
-                  className: "purple-btn1",
+              ]}
+              children={
+                <>
+                  <form className="p-2">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">POC - Full Name</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        placeholder="Enter POC Name"
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Email</label>
+                      <input
+                        className="form-control"
+                        type="email"
+                        placeholder="Enter Email Address"
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Phone Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        inputMode="tel"
+                        placeholder="Enter Phone Number"
+                      />
+                    </div>
+                  </form>
+                </>
+              }
+            />
+            <EventTypeModal
+              show={eventTypeModal}
+              handleDynamicExtensionBid={handleDynamicExtensionBid}
+              onHide={handleEventTypeModalClose}
+              handleEventConfigurationSubmit={handleEventConfigurationSubmit}
+              title={"Configuration for Event"}
+              eventType={eventType}
+              handleEventTypeChange={handleEventTypeChange}
+              eventTypeModal={eventTypeModal}
+              handleEventTypeModalClose={handleEventTypeModalClose}
+              selectedStrategy={selectedStrategy}
+              handleRadioChange={handleRadioChange}
+              awardType={awardType}
+              handleAwardTypeChange={handleAwardTypeChange}
+              dynamicExtension={dynamicExtension}
+              dynamicExtensionConfigurations={dynamicExtensionConfigurations}
+              handleDynamicExtensionChange={handleDynamicExtensionChange}
+              size={"xl"}
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleEventTypeModalClose,
+                  props: {
+                    className: "purple-btn1",
+                  },
                 },
-              },
-              {
-                label: "Save Changes",
-                onClick: handleEventTypeModalClose,
-                props: {
-                  className: "purple-btn2",
+                {
+                  label: "Save Changes",
+                  onClick: handleEventTypeModalClose,
+                  props: {
+                    className: "purple-btn2",
+                  },
                 },
-              },
-            ]}
-            trafficType={isTrafficSelected}
-            handleTrafficChange={handleTrafficChange}
-          />{" "}
+              ]}
+              trafficType={isTrafficSelected}
+              handleTrafficChange={handleTrafficChange}
+            />{" "}
+          </div>
         </div>
         <ToastContainer />
       </div>
