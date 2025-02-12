@@ -1413,7 +1413,7 @@ export default function VendorDetails() {
         console.log("Bids found, fetching bid data...");
 
         const bidResponse = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${linkedEventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
 
         console.log("Bid Data Response:", bidResponse.data);
@@ -1504,8 +1504,10 @@ export default function VendorDetails() {
         }));
       }
 
-      const uniqueBidData = bidData.filter((item, index, self) =>
-        index === self.findIndex((t) => t.eventMaterialId === item.eventMaterialId)
+      const uniqueBidData = bidData.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.eventMaterialId === item.eventMaterialId)
       );
 
       console.log("Final Freight Data:", freightData2);
@@ -1522,6 +1524,62 @@ export default function VendorDetails() {
       setGrossTotal(0);
     }
   };
+
+  useEffect(() => {
+    if (bids.length > 0 && currentIndex >= 0 && currentIndex < bids.length) {
+      const selectedBid = bids[currentIndex];
+
+      // Ensure bid materials exist
+      if (selectedBid.bid_materials) {
+        const bidData = selectedBid.bid_materials.map((material) => ({
+          bidId: selectedBid.id,
+          eventMaterialId: material.event_material_id,
+          descriptionOfItem: material.material_name,
+          quantity: material.event_material.quantity,
+          quantityAvail: material.quantity_available,
+          price: material.price,
+          discount: material.discount,
+          section: material.event_material.material_type,
+          subSection: material.event_material.inventory_sub_type,
+          realisedDiscount: material.realised_discount,
+          gst: material.gst,
+          realisedGst: material.realised_gst,
+          total: material.total_amount,
+          location: material.event_material.location,
+          vendorRemark: material.vendor_remark,
+          landedAmount: material.landed_amount,
+        }));
+
+        setLinkedEventData(bidData); // ✅ Update table data dynamically
+      }
+
+      // Update Freight Data
+      const freightDetails = [
+        {
+          label: "Freight Charge",
+          value: `₹${selectedBid.freight_charge_amount}`,
+        },
+        { label: "GST on Freight", value: `${selectedBid.gst_on_freight}%` },
+        {
+          label: "Realised Freight",
+          value: `₹${selectedBid.realised_freight_charge_amount}`,
+        },
+        {
+          label: "Warranty Clause",
+          value: selectedBid.warranty_clause || "N/A",
+        },
+        { label: "Payment Terms", value: selectedBid.payment_terms || "N/A" },
+        {
+          label: "Loading/Unloading Clause",
+          value: selectedBid.loading_unloading_clause || "N/A",
+        },
+      ];
+      setFreightData2(freightDetails);
+
+      // Update Gross Total
+      setGrossTotal(selectedBid.gross_total || 0);
+    }
+  }, [currentIndex, bids]); // ✅ Runs when `currentIndex` or `bids` change
 
   // const [isReadOnly, setIsReadOnly] = useState(true); // Default to read-only
 
@@ -1585,6 +1643,27 @@ export default function VendorDetails() {
               Event Overview
             </a>
           </li>
+
+          {data1?.linked_event_id && (
+            <li className="nav-item" role="presentation">
+              <a
+                className="nav-link ps-4 pe-4"
+                id="profile-tab2"
+                data-bs-toggle="tab"
+                href="#profile2"
+                role="tab"
+                aria-controls="profile2"
+                aria-selected="false"
+                style={{ color: "#8b0203", fontSize: "16px" }}
+              >
+                {
+                  // @ts-ignore
+                  linkedData?.event_title
+                }{" "}
+                {linkedData?.event_no}
+              </a>
+            </li>
+          )}
           <li class="nav-item" role="presentation">
             <a
               className="nav-link ps-4 pe-4"
@@ -1597,24 +1676,6 @@ export default function VendorDetails() {
               style={{ color: "#8b0203", fontSize: "16px" }}
             >
               {data1?.event_title} {data1?.event_no}
-            </a>
-          </li>
-
-          <li className="nav-item" role="presentation">
-            <a
-              className="nav-link ps-4 pe-4"
-              id="profile-tab2"
-              data-bs-toggle="tab"
-              href="#profile2"
-              role="tab"
-              aria-controls="profile2"
-              aria-selected="false"
-              style={{ color: "#8b0203", fontSize: "16px" }}
-            >
-              {`${
-                // @ts-ignore
-                linkedData?.event_title
-              } ${linkedData?.event_no}`}
             </a>
           </li>
 
