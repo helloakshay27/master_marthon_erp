@@ -18,7 +18,7 @@ export default function VendorDetails() {
   const [bids, setBids] = useState([]); // State to store the bids
   const [isBid, setIsBid] = useState(false);
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
-  const [linkedData, setLinkedData] = useState([]);
+  const [linkedData, setLinkedData] = useState({});
 
   const increment = () => {
     if (currentIndex + 1 < bids.length) {
@@ -1518,7 +1518,7 @@ export default function VendorDetails() {
       setGrossTotal(0);
     }
   };
-  
+
   // const [isReadOnly, setIsReadOnly] = useState(true); // Default to read-only
 
   return (
@@ -1607,7 +1607,10 @@ export default function VendorDetails() {
               aria-selected="false"
               style={{ color: "#8b0203", fontSize: "16px" }}
             >
-              {`${linkedData?.event_title} ${data1?.event_no}`}
+              {`${
+                // @ts-ignore
+                linkedData?.event_title
+              } ${linkedData?.event_no}`}
             </a>
           </li>
 
@@ -1653,10 +1656,25 @@ export default function VendorDetails() {
                   </div>
                   <div className="card p-2 m-1">
                     <div className="card-header4">
-                      {linkedData ? 
-                      (<div className="d-flex justify-content-between">
-                        <h4>
-                          Submission Sheet
+                      {linkedData ? (
+                        <div className="d-flex justify-content-between">
+                          <h4>
+                            Submission Sheet
+                            <span
+                              style={{
+                                backgroundColor: "#fff2e8",
+                                color: "#8b0203",
+                                padding: "5px 10px",
+                                borderRadius: "5px",
+                                marginLeft: "25px",
+                                fontSize: "0.85rem",
+                                fontWeight: "bold",
+                                borderColor: "#ffbb96",
+                              }}
+                            >
+                              {linkedData?.event_type_detail?.event_type}
+                            </span>
+                          </h4>
                           <span
                             style={{
                               backgroundColor: "#fff2e8",
@@ -1669,30 +1687,15 @@ export default function VendorDetails() {
                               borderColor: "#ffbb96",
                             }}
                           >
-                            {linkedData?.event_type_detail?.event_type}
+                            {linkedData?.event_type_detail
+                              ?.event_configuration === "rank_based"
+                              ? `rank: ${linkedData?.bids?.[0]?.rank}`
+                              : `price: ${linkedData?.bids?.[0]?.min_price}`}
                           </span>
-                        </h4>
-                        <span
-                          style={{
-                            backgroundColor: "#fff2e8",
-                            color: "#8b0203",
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            marginLeft: "25px",
-                            fontSize: "0.85rem",
-                            fontWeight: "bold",
-                            borderColor: "#ffbb96",
-                          }}
-                        >
-                          {linkedData?.event_type_detail
-                            ?.event_configuration === "rank_based"
-                            ? `rank: ${linkedData?.bids[0]?.rank}`
-                            : `price: ${linkedData?.bids[0]?.min_price}`}
-                        </span>
-                      </div>):(
+                        </div>
+                      ) : (
                         <></>
-                      )
-                      }
+                      )}
                     </div>
 
                     {counterData > 0 && (
