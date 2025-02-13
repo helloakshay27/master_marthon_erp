@@ -461,6 +461,7 @@ export default function CreateEvent() {
     }
 
     setSubmitted(true);
+    
 
     const eventData = {
       event: {

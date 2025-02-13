@@ -232,12 +232,6 @@ export default function CreateRFQForm({
 
   const handleInputChange = (value, rowIndex, key, sectionIndex) => {
     const updatedSections = [...sections];
-    if (
-      updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] === ""
-    ) {
-      updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] =
-        materials[rowIndex]?.id || "";
-    }
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
     setSections(updatedSections);
   };
@@ -245,7 +239,7 @@ export default function CreateRFQForm({
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
-      (material) => material.id === selected
+      (material) => material.value === selected
     );
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
@@ -260,7 +254,7 @@ export default function CreateRFQForm({
     updatedSections[sectionIndex].sectionData[rowIndex].type =
       selectedMaterial?.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.id || "";
+      selectedMaterial?.value || "";
     setSections(updatedSections);
   };
 
