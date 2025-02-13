@@ -160,32 +160,32 @@ export default function EditEvent() {
   const handleSaveSchedule = (data) => {
     setScheduleData(data);
     handleEventScheduleModalClose();
-  
-    const timeZone = 'Asia/Kolkata'; 
-  
+
+    const timeZone = "Asia/Kolkata";
+
     const formatDateTime = (dateTime) => {
       const date = new Date(dateTime);
-      return new Intl.DateTimeFormat('en-GB', {
+      return new Intl.DateTimeFormat("en-GB", {
         timeZone,
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: true,
       }).format(date);
     };
-  
+
     const adjustTimeZone = (dateTime) => {
       const date = new Date(dateTime);
       date.setHours(date.getHours() - 5);
       date.setMinutes(date.getMinutes() - 30);
       return date;
     };
-  
+
     const startDateTime = formatDateTime(data.start_time);
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
-  
+
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
     console.log("scheduleText", scheduleText, data.end_time_duration);
@@ -909,9 +909,9 @@ export default function EditEvent() {
                       { label: "Closed", value: "closed" },
                       { label: "Pending", value: "pending" },
                     ]}
-                    onChange={handleStatusChange} // Pass the selected value to the handler
+                    onChange={handleStatusChange}
+                    defaultValue={eventStatus}
                   />
-                  {console.log("eventDetails :--", eventDetails)}
                 </div>
               </div>
               <CreateRFQForm
