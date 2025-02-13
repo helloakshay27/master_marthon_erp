@@ -18,8 +18,8 @@ export default function BulkCounterOfferModalTwo({
   const [sumTotal, setSumTotal] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { id } = useParams();
-  console.log("idddd", id);
+  const { eventId } = useParams();
+  console.log("idddd", eventId);
 
   // console.log("gormmm data", formData);
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function BulkCounterOfferModalTwo({
 
   // const eventId = bidCounterData?.event?.id || "N/A";
 
-  const eventId = Array.isArray(bidCounterData?.event_materials)
+  const eventId2 = Array.isArray(bidCounterData?.event_materials)
     ? bidCounterData.event_materials[0]?.id || "N/A"
     : "N/A";
 
@@ -184,7 +184,7 @@ export default function BulkCounterOfferModalTwo({
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `https://marathon.lockated.com/rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {
