@@ -1007,38 +1007,6 @@ export default function VendorDetails() {
   const [deliveryDate, setDelivaryDate] = useState(null);
 
   // console.log("Event ID:", eventId);
-  useEffect(() => {
-    const fetchEventMaterials = async () => {
-      // const eventId = 8
-      // // console.log("Event ID:", eventId);
-      try {
-        // Fetch data directly without headers
-        const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
-        );
-
-        // Transform the API response into the required table data format
-
-        setData1(response.data);
-        // // console.log("response:", response.data);
-        const isoDate = response.data.event_schedule.start_time;
-        setDate(response.data.event_schedule.start_time);
-        setEndDate(response.data.event_schedule.end_time_duration);
-        setDelivaryDate(response.data.delivery_date);
-        // console.log("date:", isoDate);
-      } catch (err) {
-        console.error(
-          "Error fetching event materials:",
-          err.response || err.message || err
-        );
-        setError("Failed to load data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEventMaterials();
-  }, [eventId]);
 
   const handlepublishedStages = () => {
     setPublishedStages(!publishedStages);
@@ -1368,13 +1336,23 @@ export default function VendorDetails() {
 
   useEffect(() => {
     const fetchEventMaterials = async () => {
+      // const eventId = 8
+      // // console.log("Event ID:", eventId);
       try {
+        // Fetch data directly without headers
         const response = await axios.get(
           `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
-        console.log("Main Event Data:", response.data);
+        // Transform the API response into the required table data format
+
         setData1(response.data);
+        // // console.log("response:", response.data);
+        const isoDate = response.data.event_schedule.start_time;
+        setDate(response.data.event_schedule.start_time);
+        setEndDate(response.data.event_schedule.end_time_duration);
+        setDelivaryDate(response.data.delivery_date);
+        // console.log("date:", isoDate);
 
         if (response.data.linked_event_id) {
           fetchLinkedEventData(response.data.linked_event_id);
@@ -1382,7 +1360,10 @@ export default function VendorDetails() {
           setLinkedEventData([]); // Ensure it's an array
         }
       } catch (err) {
-        console.error("Error fetching event materials:", err.message);
+        console.error(
+          "Error fetching event materials:",
+          err.response || err.message || err
+        );
         setError("Failed to load data.");
       } finally {
         setLoading(false);
@@ -1392,9 +1373,10 @@ export default function VendorDetails() {
     fetchEventMaterials();
   }, [eventId]);
 
-  //  const [grossTotal, setGrossTotal] = useState(0); // State for Gross Total
-
   const [freightData2, setFreightData2] = useState();
+
+  const [rank, setRank] = useState(null);
+  const [minPrice, setMinPrice] = useState(null);
 
   const fetchLinkedEventData = async (linkedEventId) => {
     try {
@@ -1443,9 +1425,13 @@ export default function VendorDetails() {
           );
 
           console.log("Mapped Bid Data:", bidData);
+          setBids(bids); // Store all bids
 
           // Extract Freight & Other Bid Data
           const latestBid = bids[0]; // Assuming latest bid is the first one
+          setRank(latestBid.rank);
+          setMinPrice(latestBid.min_price);
+
           freightData2 = [
             {
               label: "Freight Charge",
@@ -2891,8 +2877,8 @@ export default function VendorDetails() {
                             >
                               {data1?.event_type_detail?.event_configuration ===
                               "rank_based"
-                                ? `rank: ${data1?.bids[0]?.rank}`
-                                : `price: ${data1?.bids[0]?.min_price} `}
+                                ? `Rank: ${bids[0]?.rank ?? "N/A"}`
+                                : `Price: ₹${bids[0]?.min_price ?? "N/A"}`}
                             </span>
                           )
                         )}
