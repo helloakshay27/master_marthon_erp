@@ -254,7 +254,7 @@ const GoodReceiveNoteDetails = () => {
 
               <div className="col-md-12 mb-3 row">
                 <div className="col-md-9">
-                  <h5 style={{fontWeight:"bold"}}>GRN Details</h5>
+                  <h5 style={{ fontWeight: "bold" }}>GRN Details</h5>
                 </div>
                 <div className="col-md-2 nav-item">
                   <button
@@ -934,41 +934,50 @@ const GoodReceiveNoteDetails = () => {
                 <div className="row mt-2 px-2">
                   <div className="col-12">
                     <div className="tbl-container me-2 mt-3">
-                      <table className="w-100" style={{ width: "100%" }}>
-                        <thead>
-                          <tr>
-                            <th style={{ width: "66px !important" }}>Sr.No.</th>
-                            <th>Approval Level</th>
-                            <th>Approved By</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Remark</th>
-                            <th>Users</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {approvalLogs.map((log) => (
-                            <tr key={log.id}>
-                              <td>{log.id}</td>
-                              <td>{log.approvalLevel}</td>
-                              <td>{log.approvedBy}</td>
-                              <td>{log.date}</td>
-                              <td>
-                                <span
-                                  className="px-2 py-1 rounded text-white"
-                                  style={{ backgroundColor: "green" }}
-                                >
-                                  {log.status}
-                                </span>
-                              </td>
-                              <td>
-                                <p>{log.remark}</p>
-                              </td>
-                              <td>{log.users}</td>
+                      {/* Check if approval_logs is empty or undefined */}
+                      {!data?.approval_logs || data.approval_logs.length === 0 ? (
+                        // Display a message if no logs are available
+                        <div className="text-center py-4">
+                          <p className="text-muted">No approval logs available.</p>
+                        </div>
+                      ) : (
+                        // Render the table if logs are available
+                        <table className="w-100" style={{ width: "100%" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: "66px !important" }}>Sr.No.</th>
+                              <th>Approval Level</th>
+                              <th>Approved By</th>
+                              <th>Date</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                              <th>Users</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {data.approval_logs.map((log, id) => (
+                              <tr key={id}>
+                                <td>{id + 1}</td>
+                                <td>{log.approval_level}</td>
+                                <td>{log.approved_by}</td>
+                                <td>{log.date}</td>
+                                <td>
+                                  <span
+                                    className="px-2 py-1 rounded text-white"
+                                    style={{ backgroundColor: "green" }}
+                                  >
+                                    {log.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <p>{log.remark}</p>
+                                </td>
+                                <td>{log.users}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   </div>
                 </div>
