@@ -613,7 +613,7 @@ export default function adminList() {
                                   )
                                 : null
                             }
-                            placeholder="Select Event Title"
+                            placeholder="Select title"
                             isClearable
                             menuPlacement="auto"
                             menuPortalTarget={document.body} // Fixes overlapping issue
@@ -641,7 +641,7 @@ export default function adminList() {
                                   )
                                 : null
                             }
-                            placeholder="Select Event Number"
+                            placeholder="Select No"
                             isClearable
                             menuPlacement="auto"
                             menuPortalTarget={document.body} // Fixes overlapping issue

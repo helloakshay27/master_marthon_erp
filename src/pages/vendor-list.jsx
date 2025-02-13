@@ -786,7 +786,7 @@ export default function VendorListPage() {
                                   )
                                 : null
                             }
-                            placeholder="Select Event Title"
+                            placeholder="Select Title"
                             isClearable
                             classNamePrefix="select-dropdown" // This applies the CSS class
                             menuPlacement="auto"
@@ -816,7 +816,7 @@ export default function VendorListPage() {
                                   )
                                 : null
                             }
-                            placeholder="Select Event Number"
+                            placeholder="Select No"
                             isClearable
                             classNamePrefix="select-dropdown" // This applies the CSS class
                             menuPlacement="auto"
