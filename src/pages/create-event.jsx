@@ -969,7 +969,7 @@ export default function CreateEvent() {
                         <div></div>
                         <div></div>
                       </div>
-                      <p>Submitting ..</p>
+                      <p>Loading ...</p>
                     </div>
                   )}
                   <button
