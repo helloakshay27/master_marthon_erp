@@ -91,7 +91,7 @@ export default function VendorDetails() {
     return sessionStorage.getItem("vendorId") || "";
   });
 
-  console.log(" vednor idddddddddddddddddd", vendorId);
+  // console.log(" vednor idddddddddddddddddd", vendorId);
 
   const [remark, setRemark] = useState("");
 
@@ -158,8 +158,8 @@ export default function VendorDetails() {
 
     const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
     // debugger;
-    console.log("calculateFreightTotal()", frt_vlu);
-    console.log("updatedGrossTotal", updatedGrossTotal);
+    // console.log("calculateFreightTotal()", frt_vlu);
+    // console.log("updatedGrossTotal", updatedGrossTotal);
     setGrossTotal(updatedGrossTotal);
     // setData(updatedData, () => {
     //   const updatedGrossTotal = calculateSumTotal();
@@ -170,7 +170,7 @@ export default function VendorDetails() {
   const calculateFreightTotal = () => {
     const getFreightValue = (label) => {
       const row = freightData.find((row) => row.label === label);
-      console.log("row.value", row.value);
+      // console.log("row.value", row.value);
       if (row && row.value) {
         const { firstBid, counterBid } = row.value;
 
@@ -208,8 +208,8 @@ export default function VendorDetails() {
   const calculateSumTotal = () => {
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
     const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-    console.log(dataSum, "dataSum");
-    console.log(freightTotal, "freightTotal");
+    // console.log(dataSum, "dataSum");
+    // console.log(freightTotal, "freightTotal");
     // Combine and return the sum
     return Math.round((dataSum + freightTotal) * 100) / 100;
   };
@@ -679,6 +679,12 @@ export default function VendorDetails() {
       // console.log("vendor ID2", vendorId);
 
       // setData(response.data.bid_materials_attributes || []);
+
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -833,7 +839,7 @@ export default function VendorDetails() {
 
       const payload2 = preparePayload2();
       // console.log("payloadssss2 revised", payload2);
-      console.log("bidsID", bidIds);
+      // console.log("bidsID", bidIds);
 
       const response = await axios.post(
         `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -851,11 +857,17 @@ export default function VendorDetails() {
       // alert("Bid revised successfully!");
 
       // setData(response.data.bid_materials_attributes);
-      console.log("Triggering success toast");
+      // console.log("Triggering success toast");
 
       toast.success("Bid revised successfully!", {
         autoClose: 1000, // Close after 3 seconds
       });
+
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
@@ -930,40 +942,6 @@ export default function VendorDetails() {
 
   //     return () => clearInterval(interval); // Cleanup the interval
   //   }, [eventId]);
-
-  useEffect(() => {
-    const fetchTerms = async () => {
-      try {
-        const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        const data = response.data;
-        console.log("my data", data.state);
-
-        // Handle bidding state
-        if (data.state === "expired") {
-          setIsBid(true);
-        } else {
-          setIsBid(false);
-        }
-
-        // Store event end time in state
-        setEndTime(new Date(data.event_schedule.end_time));
-
-        // Set Terms
-        const extractedTerms = data.resource_term_conditions.map((item) => ({
-          id: item.term_condition.id,
-          condition: item.term_condition.condition,
-        }));
-
-        setTerms(extractedTerms || []);
-      } catch (error) {
-        console.error("Error fetching terms and conditions:", error);
-      }
-    };
-
-    fetchTerms();
-  }, [eventId]); // Fetch API only when eventId changes
 
   useEffect(() => {
     if (!endTime) return;
@@ -1334,34 +1312,114 @@ export default function VendorDetails() {
 
   const [linkedEventData, setLinkedEventData] = useState([]);
 
+  // useEffect(() => {
+  //   const fetchTerms = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       const data = response.data;
+  //       console.log("my data", data.state);
+
+  //       // Handle bidding state
+  //       if (data.state === "expired") {
+  //         setIsBid(true);
+  //       } else {
+  //         setIsBid(false);
+  //       }
+
+  //       // Store event end time in state
+  //       setEndTime(new Date(data.event_schedule.end_time));
+
+  //       // Set Terms
+  //       const extractedTerms = data.resource_term_conditions.map((item) => ({
+  //         id: item.term_condition.id,
+  //         condition: item.term_condition.condition,
+  //       }));
+
+  //       setTerms(extractedTerms || []);
+  //     } catch (error) {
+  //       console.error("Error fetching terms and conditions:", error);
+  //     }
+  //   };
+
+  //   fetchTerms();
+  // }, [eventId]); // Fetch API only when eventId changes
+
+  // useEffect(() => {
+  //   const fetchEventMaterials = async () => {
+  //     // const eventId = 8
+  //     // // console.log("Event ID:", eventId);
+  //     try {
+  //       // Fetch data directly without headers
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+  //       );
+
+  //       // Transform the API response into the required table data format
+
+  //       setData1(response.data);
+  //       // // console.log("response:", response.data);
+  //       const isoDate = response.data.event_schedule.start_time;
+  //       setDate(response.data.event_schedule.start_time);
+  //       setEndDate(response.data.event_schedule.end_time_duration);
+  //       setDelivaryDate(response.data.delivery_date);
+  //       // console.log("date:", isoDate);
+
+  //       if (response.data.linked_event_id) {
+  //         fetchLinkedEventData(response.data.linked_event_id);
+  //       } else {
+  //         setLinkedEventData([]); // Ensure it's an array
+  //       }
+  //     } catch (err) {
+  //       console.error(
+  //         "Error fetching event materials:",
+  //         err.response || err.message || err
+  //       );
+  //       setError("Failed to load data.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchEventMaterials();
+  // }, [eventId]);
+
   useEffect(() => {
-    const fetchEventMaterials = async () => {
-      // const eventId = 8
-      // // console.log("Event ID:", eventId);
+    const fetchEventData = async () => {
       try {
-        // Fetch data directly without headers
         const response = await axios.get(
           `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
-        // Transform the API response into the required table data format
+        const data = response.data;
+        console.log("Event Data Response:", data);
 
-        setData1(response.data);
-        // // console.log("response:", response.data);
-        const isoDate = response.data.event_schedule.start_time;
-        setDate(response.data.event_schedule.start_time);
-        setEndDate(response.data.event_schedule.end_time_duration);
-        setDelivaryDate(response.data.delivery_date);
-        // console.log("date:", isoDate);
+        setData1(data);
 
-        if (response.data.linked_event_id) {
-          fetchLinkedEventData(response.data.linked_event_id);
+        setDate(data?.event_schedule?.start_time || "");
+        setEndDate(data?.event_schedule?.end_time_duration || "");
+
+        setDelivaryDate(data.delivery_date || "");
+        setEndTime(new Date(data.event_schedule.end_time || ""));
+
+        setIsBid(data.state === "expired");
+
+        const extractedTerms = data.resource_term_conditions.map((item) => ({
+          id: item.term_condition.id,
+          condition: item.term_condition.condition,
+        }));
+        setTerms(extractedTerms || []);
+
+        //  Handle Linked Event Data
+        if (data.linked_event_id) {
+          fetchLinkedEventData(data.linked_event_id);
         } else {
           setLinkedEventData([]); // Ensure it's an array
         }
       } catch (err) {
         console.error(
-          "Error fetching event materials:",
+          "Error fetching event data:",
           err.response || err.message || err
         );
         setError("Failed to load data.");
@@ -1370,7 +1428,7 @@ export default function VendorDetails() {
       }
     };
 
-    fetchEventMaterials();
+    fetchEventData();
   }, [eventId]);
 
   const [freightData2, setFreightData2] = useState();
@@ -1947,7 +2005,7 @@ export default function VendorDetails() {
                       <div className="d-flex justify-content-end">
                         <ShortTable
                           data={freightData2}
-                          editable={true}
+                          editable={false}
                           // readOnly={isReadOnly} //// Flag to enable input fields
                           // onValueChange={handleFreightDataChange} // Callback for changes
                         />
@@ -2877,8 +2935,8 @@ export default function VendorDetails() {
                             >
                               {data1?.event_type_detail?.event_configuration ===
                               "rank_based"
-                                ? `rank: ${data1?.bids?.[0]?.rank}`
-                                : `price: ${data1?.bids?.[0]?.min_price}`}
+                                ? `Rank: ${bids[0]?.rank ?? "N/A"}`
+                                : `Price: ₹${bids[0]?.min_price ?? "N/A"}`}
                             </span>
                           )
                         )}
@@ -3972,73 +4030,7 @@ export default function VendorDetails() {
                           <p>Submitting your bid...</p>
                         </div>
                       )}
-                      {/* <button
-                      onClick={handleSubmit}
-                      disabled={loading}
-                      className="purple-btn2 m-0"
-                    >
-                      Create Bid
-                    </button> */}
-                      {/* <button
-                      // onClick={handleSubmit}
 
-                      onClick={revisedBid ? handleReviseBid : handleSubmit} // Conditional onClick
-                      // disabled={loading}
-                      disabled={isBid || loading || counterData > 0} // Disable if loading or counterData exists
-                      className={`button ${
-                        isBid || loading || counterData > 0
-                          ? "disabled-btn"
-                          : "button-enabled"
-                      }`}
-                      // disabled={loading || counterData > 0} // Disable if loading or counterData exists
-                      style={{
-                        backgroundColor:
-                          loading || counterData > 0 ? "#ccc" : "#8b0203", // Gray for disabled, purple for enabled
-                        color: loading || counterData > 0 ? "#666" : "#fff", // Muted text for disabled, white for enabled
-                        border:
-                          loading || counterData > 0
-                            ? "1px solid #aaa"
-                            : "1px solid #8b0203", // Adjust border color
-                        cursor:
-                          loading || counterData > 0
-                            ? "not-allowed"
-                            : "pointer", // Not-allowed cursor for disabled
-                        padding: "10px 20px", // Add padding for consistent button appearance
-                        borderRadius: "5px", // Add rounded corners
-                      }}
-                      // className="m-0"
-                    >
-                      {revisedBid ? "Revise Bid" : "Create Bid"}
-                    </button> */}
-                      {/* <button
-                      onClick={revisedBid ? handleReviseBid : handleSubmit}
-                      disabled={isBid || loading || counterData > 0}
-                      className={`button ${
-                        isBid || loading || counterData > 0
-                          ? "disabled-btn"
-                          : "button-enabled"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          isBid || loading || counterData > 0
-                            ? "#ccc"
-                            : "#8b0203",
-                        color:
-                          isBid || loading || counterData > 0 ? "#666" : "#fff",
-                        border:
-                          isBid || loading || counterData > 0
-                            ? "1px solid #aaa"
-                            : "1px solid #8b0203",
-                        cursor:
-                          isBid || loading || counterData > 0
-                            ? "not-allowed"
-                            : "pointer",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      {revisedBid ? "Revise Bid" : "Create Bid"}
-                    </button> */}
                       <button
                         onClick={revisedBid ? handleReviseBid : handleSubmit}
                         disabled={
