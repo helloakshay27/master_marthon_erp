@@ -16,8 +16,8 @@ const GoodReceiveNoteDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [statuses, setStatuses] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [loadStatus, setloadStatus] = useState("");
+  const [selectedOption, setSelectedOption] = useState("");
+  const [loadStatus, setLoadStatus] = useState("");
 
   const [remarks, setRemarks] = useState("");
   const [comments, setComments] = useState("");
@@ -32,85 +32,65 @@ const GoodReceiveNoteDetails = () => {
   };
 
 
+
+
+
+
+
+
   useEffect(() => {
-    const fetchData = () => {
-      const statusData = {
-        status_logs: [
-          { status_log: { remarks: "Draft created", comments: "Draft status is now active", status: "draft" } },
-          { status_log: { remarks: "Status updated", comments: "Changed status to submitted", status: "submitted" } },
-          { status_log: { remarks: "Status updated", comments: "Draft status has been cancelled", status: "cancel" } },
-          { status_log: { remarks: "Status updated", comments: "Changed status to approved", status: "approved" } },
-          { status_log: { remarks: "Status updated", comments: "Submission rejected", status: "rejected" } },
-        ],
-      };
+    const fetchStatus = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        const apiUrl = `${baseURL1}/good_receive_notes/${id}.json?token=${token}`;
 
-      // Extract and normalize statuses
-      const extractedStatuses = statusData?.status_logs?.map(
-        (log) => log?.status_log?.status.toLowerCase()
-      ) || [];
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Failed to fetch details.");
 
-      const options = extractedStatuses.map((status) => ({
-        value: status,
-        label: status.charAt(0).toUpperCase() + status.slice(1),
-      }));
+        const data = await response.json();
+        const { status_list, selected_status, disabled } = data; // ✅ Correct structure
 
-      setStatuses(options);
+        // Format statuses for react-select
+        const formattedStatuses = status_list.map((status) => ({
+          label: status,
+          value: status.toLowerCase(),
+        }));
 
-      if (data?.status) {
-        const selectedStatusOption = options.find(
-          (status) => status.value === data.status
+        setStatuses(formattedStatuses);
+
+        // Preselect the matching status
+        const preselectedStatus = formattedStatuses.find(
+          (status) => status.value === selected_status.toLowerCase()
         );
-        if (selectedStatusOption) {
-          setSelectedStatus(selectedStatusOption);
-        }
+        setSelectedOption(preselectedStatus);
+        setLoadStatus(selected_status.toLowerCase());
+        setData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, [data?.status]);
-
-  const roleStatuses = useMemo(() => {
-    console.log("Evaluating roleStatuses with role_name:", data?.role_name);
-    switch (data?.role_name?.trim().toLowerCase()) {
-      case "store_officer":
-        console.log("Role: store_officer matched");
-        return ["draft", "submitted", "cancel"];
-      case "store_manager":
-        return ["approved", "rejected"];
-      default:
-        console.log("Role does not match predefined roles");
-        return [];
-    }
-  }, [data?.role_name]);
-
-  const filteredStatuses = useMemo(() => {
-    console.log("Filtering statuses with roleStatuses:", roleStatuses);
-    console.log("Statuses before filtering:", statuses);
-
-    const filtered = statuses.filter((status) =>
-      roleStatuses.includes(status.value)
-    );
-
-    // Ensure current status is included
-    const currentStatus = statuses.find((status) => status.value === data?.status);
-    if (currentStatus && !filtered.some((status) => status.value === currentStatus.value)) {
-      filtered.push(currentStatus);
-    }
-
-    console.log("Filtered Statuses:", filtered);
-    return filtered;
-  }, [roleStatuses, statuses, data?.status]);
+    fetchStatus();
+  }, [id, baseURL1]);
 
   const handleStatusChange = (selectedOption) => {
-    setSelectedStatus(selectedOption); // Set the value (not the full object)
-    console.log(selectedOption.value);
-    setloadStatus(selectedOption.value);
+    if (data?.disabled) {
+      toast.error("Status change is not allowed.");
+      return;
+    }
+    setSelectedOption(selectedOption);
+    setLoadStatus(selectedOption.value);
   };
 
-  const handleRemarksChange = (event) => setRemarks(event.target.value);
-  const handleCommentsChange = (event) => setComments(event.target.value);
-
   const handleUpdateStatus = async () => {
+    if (data?.disabled) {
+      toast.error("Status update is not allowed.");
+      return;
+    }
+
     const payload = {
       status_log: {
         remarks: remarks,
@@ -122,7 +102,7 @@ const GoodReceiveNoteDetails = () => {
     console.log(JSON.stringify(payload));
 
     try {
-      const urlParams = new URLSearchParams(location.search);
+      const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
       const response = await fetch(
         `${baseURL1}/good_receive_notes/${id}/update_status.json?token=${token}`,
@@ -142,28 +122,8 @@ const GoodReceiveNoteDetails = () => {
     }
   };
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get("token");
-    const apiUrl = `${baseURL1}/good_receive_notes/${id}.json?token=${token}`;
-
-    fetch(apiUrl)
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch details.");
-        return response.json();
-      })
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [id, location.search]);
-
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
     <>
@@ -800,8 +760,8 @@ const GoodReceiveNoteDetails = () => {
                         placeholder={data?.remark || "-"}
                         defaultValue={""}
                         value={remarks}
-                        onChange={handleRemarksChange}
-                        disabled
+                        onChange={(e) => setRemarks(e.target.value)}
+                        disabled={data?.disabled}
                       />
                     </div>
                   </div>
@@ -815,8 +775,9 @@ const GoodReceiveNoteDetails = () => {
                         rows={3}
                         defaultValue={""}
                         value={comments}
-                        onChange={handleCommentsChange}
-                      />
+                        onChange={(e) => setComments(e.target.value)}
+                        disabled={data?.disabled}                    
+                          />
                     </div>
                   </div>
                 </div>
@@ -824,21 +785,19 @@ const GoodReceiveNoteDetails = () => {
                   <div className="" style={{ width: 300 }}>
                     <div className="d-flex gap-3 align-items-end w-100">
                       <label className="">Status</label>
-                      {filteredStatuses.length > 0 ? (
-                        <Select
-                          className="w-100"
-                          options={filteredStatuses}
-                          value={
-                            selectedStatus ||
-                            statuses.find((status) => status.value === data?.status)
-                          }
-                          onChange={handleStatusChange}
-                          isClearable // Allows clearing the selection
-                          placeholder="Select a status"
-                          classNamePrefix="react-select" // Apply custom classes using the prefix
-                        />
+                      {statuses.length > 0 ? (
+                         <Select
+                         className="w-100"
+                         options={statuses}
+                         value={selectedOption}
+                         onChange={handleStatusChange}
+                         isClearable
+                         isDisabled={data?.disabled} // Disable dropdown if `disabled: true`
+                         placeholder="Select a status"
+                         classNamePrefix="react-select"
+                       />
                       ) : (
-                        <p className="text-muted">No options available</p>
+                        <p className="text-muted">Loading statuses...</p>
                       )}
                     </div>
                   </div>
@@ -851,8 +810,10 @@ const GoodReceiveNoteDetails = () => {
                     <button
                       onClick={handleUpdateStatus}
                       className="purple-btn2 w-100"
+                      disabled={data?.disabled}
+
                     >
-                      Submit
+                      Update 
                     </button>
                   </div>
                   <div className="col-md-2">
