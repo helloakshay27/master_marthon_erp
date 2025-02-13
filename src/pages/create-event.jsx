@@ -730,7 +730,7 @@ export default function CreateEvent() {
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th>Sr No.</th> {/* Add serial number column header */}
+                      <th style={{ width: "100px" }}>Sr No.</th> 
                         <th>Vendor Name</th>
                         <th>Mob No.</th>
                         <th>Status</th>
@@ -748,7 +748,7 @@ export default function CreateEvent() {
                           )
                           .map((vendor, index) => (
                             <tr key={vendor.id}>
-                              <td>{index + 1}</td>
+                              <td style={{ width: "100px" }}>{index + 1}</td>
                               <td>{vendor.name}</td>
                               <td>{vendor.phone}</td>
                               <td>Invited</td>

@@ -218,12 +218,12 @@ export default function CreateRFQForm({
       id: null, // Set id to null for new rows
       descriptionOfItem: [],
       quantity: "",
-      unit: [],
+      unit: "",
       type: materials[0]?.type || "",
       location: [],
       rate: 0,
       amount: 0,
-      inventory_id: "",
+      inventory_id: 0,
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
@@ -256,7 +256,7 @@ export default function CreateRFQForm({
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
-      (material) => material.id === selected
+      (material) => material.value === selected
     );
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
@@ -264,14 +264,14 @@ export default function CreateRFQForm({
 
     if (selectedMaterial && selectedMaterial.uom) {
       updatedSections[sectionIndex].sectionData[rowIndex].unit =
-        selectedMaterial.uom.uom_short_name;
+        selectedMaterial.uom;
     } else {
       updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
     }
     updatedSections[sectionIndex].sectionData[rowIndex].type =
       selectedMaterial?.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.id || "";
+      selectedMaterial?.value || 0;
     setSections(updatedSections);
   };
 

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
+
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -10,7 +11,7 @@ import {
   Table,
 } from "../components";
 import { useParams, useNavigation, useNavigate } from "react-router-dom";
-import { citiesList, participantsTabColumns, eventStatusOptions } from "../constant/data";
+import { citiesList, participantsTabColumns } from "../constant/data";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
@@ -508,12 +509,12 @@ export default function EditEvent() {
   };
 
   const handleFileChange = (srNo, file) => {
-    const index = documentRows.findIndex(row => row.srNo === srNo);
+    const index = documentRows.findIndex((row) => row.srNo === srNo);
     if (index === -1) {
       console.error("Invalid index for file upload:", srNo);
       return;
     }
-  
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
@@ -526,7 +527,6 @@ export default function EditEvent() {
     };
     reader.readAsDataURL(file);
   };
-  
 
   const fetcher = (url, options) =>
     fetch(url, options).then((res) => res.json());
@@ -574,22 +574,26 @@ export default function EditEvent() {
   const validateForm = () => {
     if (!eventName) {
       toast.error("Event name is required");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
-    if(!eventType || !awardType || !dynamicExtensionConfigurations.delivery_date){
+    if (
+      !eventType ||
+      !awardType ||
+      !dynamicExtensionConfigurations.delivery_date
+    ) {
       toast.error("Please select event type details");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
     if (!createdOn) {
       toast.error("Created on date is required");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
     if (!onLoadScheduleData?.start_time && !scheduleData?.start_time) {
       toast.error("Start time is required");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
     if (
@@ -597,7 +601,7 @@ export default function EditEvent() {
       !scheduleData?.end_time_duration
     ) {
       toast.error("End time duration is required");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
     if (
@@ -605,7 +609,7 @@ export default function EditEvent() {
       !scheduleData?.evaluation_time
     ) {
       toast.error("Evaluation time is required");
-      scrollToTop()
+      scrollToTop();
       return false;
     }
     if (selectedVendors.length === 0) {
@@ -616,7 +620,6 @@ export default function EditEvent() {
   };
 
   const handleSubmit = async (event) => {
-    
     event.preventDefault();
     if (!validateForm()) {
       return;
@@ -697,18 +700,18 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData :---",eventData);
-    
+    console.log("eventData :---", eventData);
+
     try {
-      const data = await updateEvent(id, eventData);
-      toast.success("Event updated successfully!", {
-        autoClose: 1000,
-      });
-      setTimeout(() => {
-        navigate(
-          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500); // Increase the delay to 1.5 seconds before navigating
+      // const data = await updateEvent(id, eventData);
+      // toast.success("Event updated successfully!", {
+      //   autoClose: 1000,
+      // });
+      // setTimeout(() => {
+      //   navigate(
+      //     "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
@@ -798,647 +801,658 @@ export default function EditEvent() {
           <div style={{ width: "15%" }}></div>
         </div>
         <div className="pt-3" ref={myRef}>
-        <div className="module-data-section mx-3">
-          <div className="card p-3 mt-3">
-            <div className="row align-items-end justify-items-end mb-5 mt-3">
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Name <span style={{ color: "red" }}>*</span>
-                  </label>
-                </div>
-                <input
-                  className="form-control"
-                  placeholder="Enter Event Name"
-                  value={eventName}
-                  onChange={(e) => seteventName(e.target.value)}
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Type <span style={{ color: "red" }}>*</span>
-                  </label>
-                </div>
-                <input
-                  className="form-control"
-                  onClick={handleEventTypeModalShow}
-                  placeholder="Configure The Event"
-                  value={eventTypeText} // Display the selected event type
-                  readOnly
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                <div className="form-group">
-                  <label className="po-fontBold">Created On</label>
+          <div className="module-data-section mx-3">
+            <div className="card p-3 mt-3">
+              <div className="row align-items-end justify-items-end mb-5 mt-3">
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Name <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
                   <input
                     className="form-control"
-                    type="date"
-                    defaultValue={createdOn} // Sets default value to today's date
-                    readOnly // Prevents user from changing the value
+                    placeholder="Enter Event Name"
+                    value={eventName}
+                    onChange={(e) => seteventName(e.target.value)}
                   />
                 </div>
-              </div>
-              <div className="col-md-4 col-sm-6 mt-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Schedule <span style={{ color: "red" }}>*</span>
-                  </label>
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Type <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    onClick={handleEventTypeModalShow}
+                    placeholder="Configure The Event"
+                    value={eventTypeText} // Display the selected event type
+                    readOnly
+                  />
                 </div>
-                <input
-                  className="form-control"
-                  onClick={handleEventScheduleModalShow}
-                  placeholder="From [dd-mm-yy hh:mm] To [dd-mm-yy hh:mm] ([DD] Days [HH] Hrs [MM] Mins)"
-                  value={eventScheduleText} // Display the selected event schedule
-                  readOnly
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-2">
-                <div className="form-group">
-                  <label className="po-fontBold">
-                    Event Description <span style={{ color: "red" }}>*</span>
-                  </label>
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">Created On</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      defaultValue={createdOn} // Sets default value to today's date
+                      readOnly // Prevents user from changing the value
+                    />
+                  </div>
                 </div>
-                <textarea
-                  className="form-control"
-                  placeholder="Enter Event Description"
-                  value={eventDescription}
-                  onChange={(e) => setEventDescription(e.target.value)}
-                />
-              </div>
-              <div className="col-md-4 col-sm-6 mt-2">
-                <div className="form-group">
-                  <label className="po-fontBold">Event Status</label>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Schedule <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    onClick={handleEventScheduleModalShow}
+                    placeholder="From [dd-mm-yy hh:mm] To [dd-mm-yy hh:mm] ([DD] Days [HH] Hrs [MM] Mins)"
+                    value={eventScheduleText} // Display the selected event schedule
+                    readOnly
+                  />
                 </div>
-                <SelectBox
-                  options={eventStatusOptions}
-                  onChange={handleStatusChange} 
-                  defaultValue={eventDetails?.status} 
-                />
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Description <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <textarea
+                    className="form-control"
+                    placeholder="Enter Event Description"
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
+                  />
+                </div>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">Event Status</label>
+                  </div>
+                  <SelectBox
+                    options={[
+                      { label: "Submitted", value: "submitted" },
+                      { label: "Approved", value: "approved" },
+                      { label: "Published", value: "published" },
+                      { label: "Expired", value: "expired" },
+                      { label: "Closed", value: "closed" },
+                      { label: "Pending", value: "pending" },
+                    ]}
+                    onChange={handleStatusChange} // Pass the selected value to the handler
+                  />
+                  {console.log("eventDetails :--", eventDetails)}
+                </div>
               </div>
-            </div>
-            <CreateRFQForm
-              data={materialFormData}
-              setData={setMaterialFormData}
-              isService={isService}
-              existingData={eventDetails?.grouped_event_materials}
-              deliveryData={eventDetails?.delivery_schedules}
-            />
-            <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-              <h5 className=" ">
-                Select Vendors{" "}
-                <span style={{ color: "red", fontSize: "16px" }}>*</span>
-              </h5>
-              <div className="card-tools">
-                <button
-                  className="purple-btn2"
-                  data-bs-toggle="modal"
-                  data-bs-target="#venderModal"
-                  onClick={handleVendorTypeModalShow}
+              <CreateRFQForm
+                data={materialFormData}
+                setData={setMaterialFormData}
+                isService={isService}
+                existingData={eventDetails?.grouped_event_materials}
+                deliveryData={eventDetails?.delivery_schedules}
+              />
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className=" ">
+                  Select Vendors{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <div className="card-tools">
+                  <button
+                    className="purple-btn2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#venderModal"
+                    onClick={handleVendorTypeModalShow}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add{" "}
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+              <div className="row justify-content-center mx-1">
+                <div
+                  className="tbl-container px-0 mx-5 mt-3"
+                  style={{ maxHeight: "250px", overflowY: "auto" }}
                 >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add{" "}
-                  </span>
-                  <span>Add</span>
-                </button>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th style={{ width: "100px" }}>Sr No.</th>
+                        <th>Vendor Name</th>
+                        <th>Mob No.</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {selectedVendors?.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="text-center">
+                            No vendors selected
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedVendors?.map((vendor, index) => (
+                          <tr key={vendor.id}>
+                            <td style={{ width: "100px" }}>{index + 1}</td>
+                            <td>{vendor.name}</td>
+                            <td>{vendor.phone}</td>
+                            <td>Invited</td>
+                            <td>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleRemoveVendor(vendor.id)}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-            <div className="row justify-content-center mx-1">
-              <div
-                className="tbl-container px-0 mx-5 mt-3"
-                style={{ maxHeight: "250px", overflowY: "auto" }}
-              >
-                <table className="w-100">
+              <div>
+                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                  <h5 className="mt-3">
+                    Document Attachments{" "}
+                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                  </h5>
+                  <button
+                    className="purple-btn2 mt-3"
+                    onClick={handleAddDocumentRow}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <Table
+                  columns={[
+                    { label: "Sr No", key: "srNo" },
+                    { label: "Upload File", key: "upload" },
+                    { label: "Action", key: "action" },
+                  ]}
+                  onRowSelect={undefined}
+                  resetSelectedRows={undefined}
+                  onResetComplete={undefined}
+                  data={documentRows.map((row) => ({
+                    ...row,
+                    upload: (
+                      <input
+                        type="file"
+                        onChange={(e) =>
+                          handleFileChange(row.srNo, e.target.files[0])
+                        }
+                        ref={fileInputRef}
+                        multiple
+                        accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                      />
+                    ),
+                    action: (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleRemoveDocumentRow(row.srNo)}
+                        disabled={row.srNo === 1}
+                      >
+                        Remove
+                      </button>
+                    ),
+                  }))}
+                />
+              </div>
+
+              <div>
+                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                  <h5 className="mt-3">
+                    Terms & Conditions{" "}
+                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                  </h5>
+                  <button
+                    className="purple-btn2 mt-3"
+                    onClick={handleAddTextarea}
+                  >
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add
+                    </span>
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <table className="tbl-container w-100">
                   <thead>
                     <tr>
-                      <th>Sr No.</th> {/* Add serial number column header */}
-                      <th>Vendor Name</th>
-                      <th>Mob No.</th>
-                      <th>Status</th>
+                      <th>Condition Category</th>
+                      <th>Condition</th>
                       <th>Action</th>
                     </tr>
                   </thead>
-
                   <tbody>
-                    {selectedVendors?.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          No vendors selected
-                        </td>
-                      </tr>
-                    ) : (
-                      selectedVendors?.map((vendor, index) => (
-                        <tr key={vendor.id}>
-                          <td>{index + 1}</td>
-                          <td>{vendor.name}</td>
-                          <td>{vendor.phone}</td>
-                          <td>Invited</td>
+                    {textareas?.map((textarea, idx) => {
+                      if (textarea.id === null) {
+                        return null;
+                      }
+                      return (
+                        <tr key={idx}>
+                          <td>
+                            {textarea?.defaultOption?.value && termsOptions && (
+                              <SelectBox
+                                options={termsOptions}
+                                onChange={(option) =>
+                                  handleConditionChange(textarea.id, option)
+                                }
+                                defaultValue={textarea?.defaultOption?.value}
+                              />
+                            )}
+                            {addTerm && !textarea?.defaultOption?.value && (
+                              <SelectBox
+                                options={termsOptions}
+                                onChange={(option) =>
+                                  handleConditionChange(textarea.id, option)
+                                }
+                                defaultValue={termsOptions.find(
+                                  (option) =>
+                                    option.condition === textarea.value
+                                )}
+                              />
+                            )}
+                          </td>
+                          <td>
+                            <textarea
+                              className="form-control"
+                              value={textarea.value}
+                              readOnly
+                            />
+                          </td>
                           <td>
                             <button
                               className="btn btn-danger"
-                              onClick={() => handleRemoveVendor(vendor.id)}
+                              onClick={() => handleRemoveTextarea(idx)}
+                              disabled={idx === 0}
                             >
                               Remove
                             </button>
                           </td>
                         </tr>
-                      ))
-                    )}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-            </div>
-            <div>
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className="mt-3">
-                  Document Attachments{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <button
-                  className="purple-btn2 mt-3"
-                  onClick={handleAddDocumentRow}
-                >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add
-                  </span>
-                  <span>Add</span>
-                </button>
-              </div>
-
-              <Table
-                columns={[
-                  { label: "Sr No", key: "srNo" },
-                  { label: "Upload File", key: "upload" },
-                  { label: "Action", key: "action" },
-                ]}
-                onRowSelect={undefined}
-                resetSelectedRows={undefined}
-                onResetComplete={undefined}
-                data={documentRows.map((row) => ({
-                  ...row,
-                  upload: (
-                    <input
-                      type="file"
-                      onChange={(e) =>
-                        handleFileChange(row.srNo, e.target.files[0])
-                      }
-                      ref={fileInputRef}
-                      multiple
-                      accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                    />
-                  ),
-                  action: (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleRemoveDocumentRow(row.srNo)}
-                      disabled={row.srNo === 1}
-                    >
-                      Remove
-                    </button>
-                  ),
-                }))}
-              />
-            </div>
-
-            <div>
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className="mt-3">
-                  Terms & Conditions{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <button
-                  className="purple-btn2 mt-3"
-                  onClick={handleAddTextarea}
-                >
-                  <span className="material-symbols-outlined align-text-top me-2">
-                    add
-                  </span>
-                  <span>Add</span>
-                </button>
-              </div>
-
-              <table className="tbl-container w-100">
-                <thead>
-                  <tr>
-                    <th>Condition Category</th>
-                    <th>Condition</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {textareas?.map((textarea, idx) => {
-                    if (textarea.id === null) {
-                      return null;
+              <div className="row mt-2 justify-content-end align-items-center mt-4">
+                <div className="col-md-2">
+                  <button className="purple-btn2 w-100">Preview</button>
+                </div>
+                <div className="col-md-2">
+                  {loading && (
+                    <div className="loader-container">
+                      <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                      <p>Loading ..</p>
+                    </div>
+                  )}
+                  <button
+                    className={
+                      submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
                     }
-                    return (
-                      <tr key={idx}>
-                        <td>
-                          {textarea?.defaultOption?.value && termsOptions && (
-                            <SelectBox
-                              options={termsOptions}
-                              onChange={(option) =>
-                                handleConditionChange(textarea.id, option)
-                              }
-                              defaultValue={textarea?.defaultOption?.value}
-                            />
-                          )}
-                          {addTerm && !textarea?.defaultOption?.value && (
-                            <SelectBox
-                              options={termsOptions}
-                              onChange={(option) =>
-                                handleConditionChange(textarea.id, option)
-                              }
-                              defaultValue={termsOptions.find(
-                                (option) => option.condition === textarea.value
-                              )}
-                            />
-                          )}
-                        </td>
-                        <td>
-                          <textarea
-                            className="form-control"
-                            value={textarea.value}
-                            readOnly
-                          />
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleRemoveTextarea(idx)}
-                            disabled={idx === 0}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="row mt-2 justify-content-end align-items-center mt-4">
-              <div className="col-md-2">
-                <button className="purple-btn2 w-100">Preview</button>
+                    onClick={handleSubmit}
+                    disabled={submitted}
+                  >
+                    Update
+                  </button>
+                </div>
+                <div className="col-md-2">
+                  <button
+                    className="purple-btn1 w-100"
+                    onClick={() => {
+                      navigate(
+                        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
+                      );
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-              <div className="col-md-2">
-                {loading && (
-                  <div className="loader-container">
-                    <div className="lds-ring">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
+            </div>
+            {/* // vendor model with vendor data */}
+            <DynamicModalBox
+              size="xl"
+              title="All Vendors"
+              show={vendorModal}
+              onHide={handleVendorTypeModalClose}
+              footerButtons={[
+                {
+                  label: "Cancel",
+                  onClick: handleVendorTypeModalClose,
+                  props: { className: "purple-btn1" },
+                },
+                {
+                  label: "Save",
+                  onClick: handleSaveButtonClick,
+                  props: { className: "purple-btn2" },
+                },
+              ]}
+              children={
+                <>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="input-group w-50 position-relative">
+                      <input
+                        type="search"
+                        id="searchInput"
+                        className="tbl-search form-control"
+                        placeholder="Search Vendors"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => setIsSuggestionsVisible(true)}
+                        onBlur={() =>
+                          setTimeout(() => setIsSuggestionsVisible(false), 200)
+                        }
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
+                          onClick={handleSearchClick}
+                        >
+                          <SearchIcon />
+                        </button>
+                      </div>
+                      {isSuggestionsVisible && suggestions.length > 0 && (
+                        <ul
+                          className="suggestions-list position-absolute bg-white border rounded w-100"
+                          style={{ zIndex: 1000, top: "100%" }}
+                        >
+                          {suggestions.map((suggestion) => (
+                            <li
+                              key={suggestion.id}
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              className="p-2 cursor-pointer"
+                            >
+                              {suggestion.name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                    <p>Loading ..</p>
-                  </div>
-                )}
-                <button
-                  className={
-                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
-                  }
-                  onClick={handleSubmit}
-                  disabled={submitted}
-                >
-                  Update
-                </button>
-              </div>
-              <div className="col-md-2">
-                <button
-                  className="purple-btn1 w-100"
-                  onClick={() => {
-                    navigate(
-                      "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
-                    );
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* // vendor model with vendor data */}
-          <DynamicModalBox
-            size="xl"
-            title="All Vendors"
-            show={vendorModal}
-            onHide={handleVendorTypeModalClose}
-            footerButtons={[
-              {
-                label: "Cancel",
-                onClick: handleVendorTypeModalClose,
-                props: { className: "purple-btn1" },
-              },
-              {
-                label: "Save",
-                onClick: handleSaveButtonClick,
-                props: { className: "purple-btn2" },
-              },
-            ]}
-            children={
-              <>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="input-group w-50 position-relative">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="tbl-search form-control"
-                      placeholder="Search Vendors"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      onFocus={() => setIsSuggestionsVisible(true)}
-                      onBlur={() =>
-                        setTimeout(() => setIsSuggestionsVisible(false), 200)
-                      }
-                    />
-                    <div className="input-group-append">
+                    <div className="d-flex">
                       <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        onClick={handleSearchClick}
+                        className="purple-btn2 viewBy-main-child2P mb-0"
+                        onClick={handleInviteModalShow}
                       >
-                        <SearchIcon />
+                        <i className="bi bi-person-plus"></i>
+                        <span className="ms-2">Invite</span>
                       </button>
+
+                      <PopupBox
+                        title="Filter by"
+                        show={showPopup}
+                        onClose={() => setShowPopup(false)}
+                        footerButtons={[
+                          {
+                            label: "Cancel",
+                            onClick: () => setShowPopup(false),
+                            props: {
+                              className: "purple-btn1",
+                            },
+                          },
+                          {
+                            label: "Apply",
+                            onClick: handleApply,
+                            props: {
+                              className: "purple-btn2",
+                            },
+                          },
+                        ]}
+                        children={
+                          <div>
+                            <div style={{ marginBottom: "12px" }}>
+                              <SelectBox
+                                label={"City"}
+                                options={citiesList}
+                                defaultValue={""}
+                                onChange={handleCityChange}
+                                isDisableFirstOption={true}
+                              />
+                            </div>
+                          </div>
+                        }
+                      />
                     </div>
-                    {isSuggestionsVisible && suggestions.length > 0 && (
-                      <ul
-                        className="suggestions-list position-absolute bg-white border rounded w-100"
-                        style={{ zIndex: 1000, top: "100%" }}
-                      >
-                        {suggestions.map((suggestion) => (
-                          <li
-                            key={suggestion.id}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className="p-2 cursor-pointer"
-                          >
-                            {suggestion.name}
-                          </li>
-                        ))}
-                      </ul>
+                  </div>
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                    {filteredTableData.length > 0 ? (
+                      <Table
+                        columns={participantsTabColumns}
+                        showCheckbox={true}
+                        data={filteredTableData.map((vendor, index) => ({
+                          ...vendor,
+                          srNo: (currentPage - 1) * pageSize + index + 1,
+                        }))}
+                        handleCheckboxChange={handleCheckboxChange}
+                        isRowSelected={isVendorSelected}
+                        resetSelectedRows={resetSelectedRows}
+                        onResetComplete={() => setResetSelectedRows(false)}
+                        onRowSelect={undefined}
+                        cellClass="text-start"
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                      />
+                    ) : (
+                      <p>No vendors found</p>
                     )}
                   </div>
-                  <div className="d-flex">
-                    <button
-                      className="purple-btn2 viewBy-main-child2P mb-0"
-                      onClick={handleInviteModalShow}
-                    >
-                      <i className="bi bi-person-plus"></i>
-                      <span className="ms-2">Invite</span>
-                    </button>
-
-                    <PopupBox
-                      title="Filter by"
-                      show={showPopup}
-                      onClose={() => setShowPopup(false)}
-                      footerButtons={[
-                        {
-                          label: "Cancel",
-                          onClick: () => setShowPopup(false),
-                          props: {
-                            className: "purple-btn1",
-                          },
-                        },
-                        {
-                          label: "Apply",
-                          onClick: handleApply,
-                          props: {
-                            className: "purple-btn2",
-                          },
-                        },
-                      ]}
-                      children={
-                        <div>
-                          <div style={{ marginBottom: "12px" }}>
-                            <SelectBox
-                              label={"City"}
-                              options={citiesList}
-                              defaultValue={""}
-                              onChange={handleCityChange}
-                              isDisableFirstOption={true}
-                            />
-                          </div>
-                        </div>
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                  {filteredTableData.length > 0 ? (
-                    <Table
-                      columns={participantsTabColumns}
-                      showCheckbox={true}
-                      data={filteredTableData.map((vendor, index) => ({
-                        ...vendor,
-                        srNo: (currentPage - 1) * pageSize + index + 1,
-                      }))}
-                      handleCheckboxChange={handleCheckboxChange}
-                      isRowSelected={isVendorSelected}
-                      resetSelectedRows={resetSelectedRows}
-                      onResetComplete={() => setResetSelectedRows(false)}
-                      onRowSelect={undefined}
-                      cellClass="text-start"
-                      currentPage={currentPage}
-                      pageSize={pageSize}
-                    />
-                  ) : (
-                    <p>No vendors found</p>
-                  )}
-                </div>
-                <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                  <ul className="pagination justify-content-center d-flex ">
-                    {/* First Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        First
-                      </button>
-                    </li>
-
-                    {/* Previous Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Prev
-                      </button>
-                    </li>
-
-                    {/* Dynamic Page Numbers */}
-                    {getPageRange().map((pageNumber) => (
+                  <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                    <ul className="pagination justify-content-center d-flex ">
+                      {/* First Button */}
                       <li
-                        key={pageNumber}
                         className={`page-item ${
-                          currentPage === pageNumber ? "active" : ""
+                          currentPage === 1 ? "disabled" : ""
                         }`}
                       >
                         <button
                           className="page-link"
-                          onClick={() => handlePageChange(pageNumber)}
+                          onClick={() => handlePageChange(1)}
                         >
-                          {pageNumber}
+                          First
                         </button>
                       </li>
-                    ))}
 
-                    {/* Next Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                      {/* Previous Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
                       >
-                        Next
-                      </button>
-                    </li>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
 
-                    {/* Last Button */}
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
+                      {/* Dynamic Page Numbers */}
+                      {getPageRange().map((pageNumber) => (
+                        <li
+                          key={pageNumber}
+                          className={`page-item ${
+                            currentPage === pageNumber ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(pageNumber)}
+                          >
+                            {pageNumber}
+                          </button>
+                        </li>
+                      ))}
+
+                      {/* Next Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
                       >
-                        Last
-                      </button>
-                    </li>
-                  </ul>
-                  {/* Display Data */}
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
 
-                  {/* Showing entries count */}
-                  <div>
-                    <p>
-                      Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                      {Math.min(currentPage * pageSize, totalPages * pageSize)}{" "}
-                      of {totalPages * pageSize} entries
-                    </p>
+                      {/* Last Button */}
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+                    {/* Display Data */}
+
+                    {/* Showing entries count */}
+                    <div>
+                      <p>
+                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
+                        {Math.min(
+                          currentPage * pageSize,
+                          totalPages * pageSize
+                        )}{" "}
+                        of {totalPages * pageSize} entries
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </>
-            }
-          />
-          <DynamicModalBox
-            show={inviteModal}
-            onHide={handleInviteModalClose}
-            modalType={true}
-            title="Invite New Vendor"
-            footerButtons={[
-              {
-                label: "Close",
-                onClick: handleInviteModalClose,
-                props: {
-                  className: "purple-btn1",
+                </>
+              }
+            />
+            <DynamicModalBox
+              show={inviteModal}
+              onHide={handleInviteModalClose}
+              modalType={true}
+              title="Invite New Vendor"
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleInviteModalClose,
+                  props: {
+                    className: "purple-btn1",
+                  },
                 },
-              },
-              {
-                label: "Save Changes",
-                onClick: handleInviteModalClose,
-                props: {
-                  className: "purple-btn2",
+                {
+                  label: "Save Changes",
+                  onClick: handleInviteModalClose,
+                  props: {
+                    className: "purple-btn2",
+                  },
                 },
-              },
-            ]}
-            children={
-              <>
-                <form className="p-2">
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">POC - Full Name</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder="Enter POC Name"
-                    />
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Email</label>
-                    <input
-                      className="form-control"
-                      type="email"
-                      placeholder="Enter Email Address"
-                    />
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Phone Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      inputMode="tel"
-                      placeholder="Enter Phone Number"
-                    />
-                  </div>
-                </form>
-              </>
-            }
-          />
-          <EventTypeModal
-            existingData={eventDetails?.event_type_detail}
-            show={eventTypeModal}
-            handleDynamicExtensionBid={handleDynamicExtensionBid}
-            onHide={handleEventTypeModalClose}
-            handleEventConfigurationSubmit={handleEventConfigurationSubmit}
-            title={"Configuration for Event"}
-            eventType={eventType}
-            handleEventTypeChange={handleEventTypeChange}
-            eventTypeModal={eventTypeModal}
-            handleEventTypeModalClose={handleEventTypeModalClose}
-            selectedStrategy={selectedStrategy}
-            handleRadioChange={handleRadioChange}
-            awardType={awardType}
-            handleAwardTypeChange={handleAwardTypeChange}
-            dynamicExtension={dynamicExtension}
-            dynamicExtensionConfigurations={dynamicExtensionConfigurations}
-            handleDynamicExtensionChange={handleDynamicExtensionChange}
-            size={"xl"}
-            footerButtons={[
-              {
-                label: "Close",
-                onClick: handleEventTypeModalClose,
-                props: {
-                  className: "purple-btn1",
+              ]}
+              children={
+                <>
+                  <form className="p-2">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">POC - Full Name</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        placeholder="Enter POC Name"
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Email</label>
+                      <input
+                        className="form-control"
+                        type="email"
+                        placeholder="Enter Email Address"
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Phone Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        inputMode="tel"
+                        placeholder="Enter Phone Number"
+                      />
+                    </div>
+                  </form>
+                </>
+              }
+            />
+            <EventTypeModal
+              existingData={eventDetails?.event_type_detail}
+              show={eventTypeModal}
+              handleDynamicExtensionBid={handleDynamicExtensionBid}
+              onHide={handleEventTypeModalClose}
+              handleEventConfigurationSubmit={handleEventConfigurationSubmit}
+              title={"Configuration for Event"}
+              eventType={eventType}
+              handleEventTypeChange={handleEventTypeChange}
+              eventTypeModal={eventTypeModal}
+              handleEventTypeModalClose={handleEventTypeModalClose}
+              selectedStrategy={selectedStrategy}
+              handleRadioChange={handleRadioChange}
+              awardType={awardType}
+              handleAwardTypeChange={handleAwardTypeChange}
+              dynamicExtension={dynamicExtension}
+              dynamicExtensionConfigurations={dynamicExtensionConfigurations}
+              handleDynamicExtensionChange={handleDynamicExtensionChange}
+              size={"xl"}
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleEventTypeModalClose,
+                  props: {
+                    className: "purple-btn1",
+                  },
                 },
-              },
-              {
-                label: "Save Changes",
-                onClick: handleEventTypeModalClose,
-                props: {
-                  className: "purple-btn2",
+                {
+                  label: "Save Changes",
+                  onClick: handleEventTypeModalClose,
+                  props: {
+                    className: "purple-btn2",
+                  },
                 },
-              },
-            ]}
-            trafficType={isTrafficSelected}
-            handleTrafficChange={handleTrafficChange}
-          />
-          <EventScheduleModal
-            deliveryDate={dynamicExtensionConfigurations.delivery_date}
-            show={eventScheduleModal}
-            onHide={handleEventScheduleModalClose}
-            handleSaveSchedule={handleSaveSchedule}
-            existingData={eventDetails?.event_schedule}
-            onLoadScheduleData={handleOnLoadScheduleData}
-          />
-        </div>
+              ]}
+              trafficType={isTrafficSelected}
+              handleTrafficChange={handleTrafficChange}
+            />
+            <EventScheduleModal
+              deliveryDate={dynamicExtensionConfigurations.delivery_date}
+              show={eventScheduleModal}
+              onHide={handleEventScheduleModalClose}
+              handleSaveSchedule={handleSaveSchedule}
+              existingData={eventDetails?.event_schedule}
+              onLoadScheduleData={handleOnLoadScheduleData}
+            />
+          </div>
         </div>
       </div>
       <ToastContainer

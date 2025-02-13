@@ -254,7 +254,11 @@ export default function Table({
               <th
                 key={index}
                 className="main2-th"
-                style={{ whiteSpace: "nowrap", textTransform: "capitalize" }}
+                style={{
+                  whiteSpace: "nowrap",
+                  textTransform: "capitalize",
+                  width: col.key === "srNo" ? "100px !important" : "auto",
+                }}
               >
                 {col.label}
               </th>
@@ -292,6 +296,7 @@ export default function Table({
                       whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
                       overflow: enableOverflowScroll ? "hidden" : "visible",
                       textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
+                      width: col.key === "srNo" ? "100px !important" : "auto", // Set width for srNo column
                     }}
                   >
                     {cellContent}
