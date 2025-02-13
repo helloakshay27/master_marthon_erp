@@ -791,7 +791,9 @@ const ApprovalEdit = () => {
       .then((response) => {
         console.log("Approval  updated Created:", response.data);
         alert("Approval update successfully!");
-        navigate("/approval-metrics"); // Redirect to Approval Metrics page
+        setTimeout(() => {
+          navigate("/approval-materics"); // Change route as per your app
+        }, 500); // Redirect to Approval Metrics page
       })
       // .catch((error, response) => {
       //   console.error("Error creating invoice approval:", response);
