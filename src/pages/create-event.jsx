@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-
+import { format, parseISO } from 'date-fns';
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -80,6 +80,7 @@ export default function CreateEvent() {
   // @ts-ignore
   // @ts-ignore
   const [eventSchedule, setEventSchedule] = useState("");
+  const [eventScheduleText, setEventScheduleText] = useState("");
   // @ts-ignore
   const [scheduleData, setScheduleData] = useState({});
   // @ts-ignore
@@ -150,11 +151,36 @@ export default function CreateEvent() {
   const handleSaveSchedule = (data) => {
     setScheduleData(data);
     handleEventScheduleModalClose();
-    const scheduleText = `${data.start_time} ~ ${data.end_time_duration}`;
+  
+    const timeZone = 'Asia/Kolkata'; // Replace with your desired timezone
+  
+    const formatDateTime = (dateTime) => {
+      const date = new Date(dateTime);
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone,
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }).format(date);
+    };
+  
+    const adjustTimeZone = (dateTime) => {
+      const date = new Date(dateTime);
+      date.setHours(date.getHours() - 5);
+      date.setMinutes(date.getMinutes() - 30);
+      return date;
+    };
+  
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
+  
+    const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
-  };
-
-  const [eventScheduleText, setEventScheduleText] = useState("");
+    console.log("scheduleText", scheduleText, data.end_time_duration);
+  }; 
 
   const handleVendorTypeModalShow = () => {
     setVendorModal(true);
@@ -679,7 +705,7 @@ export default function CreateEvent() {
                     className="form-control"
                     onClick={handleEventScheduleModalShow}
                     placeholder="Enter Event Schedule Details"
-                    value={eventScheduleText} // Display the selected event schedule
+                    value={eventScheduleText}
                     readOnly
                   />
                 </div>
