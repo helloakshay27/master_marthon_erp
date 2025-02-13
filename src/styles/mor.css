@@ -9071,6 +9071,7 @@ ul#pills-tab {
   position: relative;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
+  border-bottom: unset !important;
 }
 
 .card-header2 {

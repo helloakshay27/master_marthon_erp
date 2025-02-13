@@ -22,6 +22,10 @@ const GoodReceiveNoteDetails = () => {
   const [remarks, setRemarks] = useState("");
   const [comments, setComments] = useState("");
   const [collapsed, setCollapsed] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   // Toggle collapse state for the card
   const toggleCollapse = (index) => {
@@ -30,6 +34,27 @@ const GoodReceiveNoteDetails = () => {
       [index]: !prev[index], // Toggle the state of the clicked card
     }));
   };
+  const approvalLogs = [
+    {
+      id: 1,
+      approvalLevel: 'L 1',
+      approvedBy: 'Sachind Kale',
+      date: '13-02-2025 12:22:28',
+      status: 'Approved',
+      remark: 'Approved By Sachin',
+      users: 'Sachind Kale',
+    },
+    {
+      id: 2,
+      approvalLevel: 'L 2',
+      approvedBy: 'Jitendra Kale',
+      date: '13-02-2025 12:24:24',
+      status: 'Approved',
+      remark: 'Approved by Jitendra',
+      users: 'Jitendra Kale',
+    },
+    // Add more entries as needed
+  ];
 
 
 
@@ -130,14 +155,11 @@ const GoodReceiveNoteDetails = () => {
       <ToastContainer />
 
       <div className="website-content overflow-auto details_page">
-        <div className="module-data-section container-fluid details_page p-3">
+        <div className="module-data-section container-fluid details_page p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; GRN</a>
-          <h5 className="mt-3">Create Goods Received Note</h5>
           <div className="row my-4 align-items-center">
             <div className="col-md-12 px-2">
-              <div className="head-material text-center">
-                <h4>GRN For Purchase Order</h4>
-              </div>
+
               <div className="mor-tabs mt-4">
                 <ul
                   className="nav nav-pills mb-3 justify-content-center"
@@ -229,6 +251,22 @@ const GoodReceiveNoteDetails = () => {
                   <li className="nav-item" role="presentation"></li>
                 </ul>
               </div>
+
+              <div className="col-md-12 mb-3 row">
+                <div className="col-md-9">
+                  <h5 style={{fontWeight:"bold"}}>GRN Details</h5>
+                </div>
+                <div className="col-md-2 nav-item">
+                  <button
+                    className="purple-btn2"
+                    onClick={openModal}
+
+                  >
+                    <span>Approval Logs</span>
+                  </button>
+                </div>
+              </div>
+
               <div
                 className="tab-pane fade show active"
                 id="nav-home"
@@ -776,8 +814,8 @@ const GoodReceiveNoteDetails = () => {
                         defaultValue={""}
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
-                        disabled={data?.disabled}                    
-                          />
+                        disabled={data?.disabled}
+                      />
                     </div>
                   </div>
                 </div>
@@ -786,16 +824,16 @@ const GoodReceiveNoteDetails = () => {
                     <div className="d-flex gap-3 align-items-end w-100">
                       <label className="">Status</label>
                       {statuses.length > 0 ? (
-                         <Select
-                         className="w-100"
-                         options={statuses}
-                         value={selectedOption}
-                         onChange={handleStatusChange}
-                         isClearable
-                         isDisabled={data?.disabled} // Disable dropdown if `disabled: true`
-                         placeholder="Select a status"
-                         classNamePrefix="react-select"
-                       />
+                        <Select
+                          className="w-100"
+                          options={statuses}
+                          value={selectedOption}
+                          onChange={handleStatusChange}
+                          isClearable
+                          isDisabled={data?.disabled} // Disable dropdown if `disabled: true`
+                          placeholder="Select a status"
+                          classNamePrefix="react-select"
+                        />
                       ) : (
                         <p className="text-muted">Loading statuses...</p>
                       )}
@@ -813,7 +851,7 @@ const GoodReceiveNoteDetails = () => {
                       disabled={data?.disabled}
 
                     >
-                      Update 
+                      Update
                     </button>
                   </div>
                   <div className="col-md-2">
@@ -866,6 +904,80 @@ const GoodReceiveNoteDetails = () => {
           </div>
         </div>
       </div>
+
+
+
+      {isModalOpen && (
+        <div
+          className="modal fade show"
+          id="log"
+          tabIndex={-1}
+          aria-labelledby="amendModalLabel"
+          style={{ display: "block", paddingLeft: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title fs-5" id="exampleModalLabel">
+                  Approval Log
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={closeModal}
+                  aria-label="Close"
+                />
+              </div>
+              <div className="modal-body">
+                <div className="row mt-2 px-2">
+                  <div className="col-12">
+                    <div className="tbl-container me-2 mt-3">
+                      <table className="w-100" style={{ width: "100%" }}>
+                        <thead>
+                          <tr>
+                            <th style={{ width: "66px !important" }}>Sr.No.</th>
+                            <th>Approval Level</th>
+                            <th>Approved By</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Remark</th>
+                            <th>Users</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {approvalLogs.map((log) => (
+                            <tr key={log.id}>
+                              <td>{log.id}</td>
+                              <td>{log.approvalLevel}</td>
+                              <td>{log.approvedBy}</td>
+                              <td>{log.date}</td>
+                              <td>
+                                <span
+                                  className="px-2 py-1 rounded text-white"
+                                  style={{ backgroundColor: "green" }}
+                                >
+                                  {log.status}
+                                </span>
+                              </td>
+                              <td>
+                                <p>{log.remark}</p>
+                              </td>
+                              <td>{log.users}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 };
