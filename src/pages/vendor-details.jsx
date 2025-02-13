@@ -1436,8 +1436,151 @@ export default function VendorDetails() {
   const [rank, setRank] = useState(null);
   const [minPrice, setMinPrice] = useState(null);
 
+  // const fetchLinkedEventData = async (linkedEventId) => {
+  //   try {
+  //     const response = await axios.get(
+  //       `https://marathon.lockated.com/rfq/events/${linkedEventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+  //     );
+
+  //     console.log("Linked Event Data Response:", response.data);
+  //     setLinkedData(response.data);
+
+  //     let bidData = [];
+  //     let freightData2 = [];
+  //     let totalGrossAmount = 0;
+
+  //     if (response.data?.bids?.length > 0) {
+  //       console.log("Bids found, fetching bid data...");
+
+  //       const bidResponse = await axios.get(
+  //         `https://marathon.lockated.com/rfq/events/${linkedEventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+  //       );
+
+  //       console.log("Bid Data Response:", bidResponse.data);
+
+  //       const bids = bidResponse.data.bids;
+
+  //       if (bids.length > 0) {
+  //         bidData = bids.flatMap((bid) =>
+  //           bid.bid_materials.map((material) => ({
+  //             bidId: bid.id,
+  //             eventMaterialId: material.event_material_id,
+  //             descriptionOfItem: material.material_name,
+  //             quantity: material.event_material.quantity,
+  //             quantityAvail: material.quantity_available,
+  //             price: material.price,
+  //             discount: material.discount,
+  //             section: material.event_material.material_type,
+  //             subSection: material.event_material.inventory_sub_type,
+  //             realisedDiscount: material.realised_discount,
+  //             gst: material.gst,
+  //             realisedGst: material.realised_gst,
+  //             total: material.total_amount,
+  //             location: material.event_material.location,
+  //             vendorRemark: material.vendor_remark,
+  //             landedAmount: material.landed_amount,
+  //           }))
+  //         );
+
+  //         console.log("Mapped Bid Data:", bidData);
+  //         setBids(bids); // Store all bids
+
+  //         // Extract Freight & Other Bid Data
+  //         const latestBid = bids[0]; // Assuming latest bid is the first one
+  //         setRank(latestBid.rank);
+  //         setMinPrice(latestBid.min_price);
+
+  //         freightData2 = [
+  //           {
+  //             label: "Freight Charge",
+  //             value: `₹${latestBid.freight_charge_amount}`,
+  //           },
+  //           {
+  //             label: "GST on Freight",
+  //             value: `${latestBid.gst_on_freight}%`,
+  //           },
+  //           {
+  //             label: "Realised Freight",
+  //             value: `₹${latestBid.realised_freight_charge_amount}`,
+  //           },
+  //           {
+  //             label: "Warranty Clause",
+  //             value: latestBid.warranty_clause || "N/A",
+  //           },
+  //           {
+  //             label: "Payment Terms",
+  //             value: latestBid.payment_terms || "N/A",
+  //           },
+  //           {
+  //             label: "Loading/Unloading Clause",
+  //             value: latestBid.loading_unloading_clause || "N/A",
+  //           },
+  //         ];
+
+  //         // Set Gross Total from API
+  //         totalGrossAmount = latestBid.gross_total || 0;
+  //       }
+  //     }
+
+  //     // If no bids exist, fallback to event materials
+  //     if (bidData.length === 0 && response.data?.event_materials) {
+  //       console.log("No bids found, displaying event materials...");
+
+  //       bidData = response.data.event_materials.map((item) => ({
+  //         eventMaterialId: item.id,
+  //         descriptionOfItem: item.inventory_name,
+  //         quantity: item.quantity,
+  //         quantityAvail: "",
+  //         unit: item.uom,
+  //         location: item.location,
+  //         rate: item.rate || "",
+  //         section: item.material_type,
+  //         subSection: item.inventory_sub_type,
+  //         amount: item.amount,
+  //         totalAmt: "",
+  //         attachment: null,
+  //         price: "",
+  //         discount: "",
+  //         gst: "",
+  //         landedAmount: "",
+  //         vendorRemark: "",
+  //         total: "",
+  //       }));
+  //     }
+
+  //     const uniqueBidData = bidData.filter(
+  //       (item, index, self) =>
+  //         index ===
+  //         self.findIndex((t) => t.eventMaterialId === item.eventMaterialId)
+  //     );
+
+  //     console.log("Final Freight Data:", freightData2);
+  //     console.log("Final Bid Data:", uniqueBidData);
+  //     console.log("Gross Total:", totalGrossAmount);
+
+  //     setLinkedEventData(uniqueBidData);
+  //     setFreightData2(freightData2);
+  //     setGrossTotal(totalGrossAmount); // Store the gross total
+  //   } catch (err) {
+  //     console.error("Error fetching linked event data:", err.message);
+  //     setLinkedEventData([]);
+  //     setFreightData2([]);
+  //     setGrossTotal(0);
+  //   }
+  // };
+
+  const [bids2, setBids2] = useState([]);
+  const [grossTotal2, setGrossTotal2] = useState(0);
+
   const fetchLinkedEventData = async (linkedEventId) => {
     try {
+      if (!linkedEventId) {
+        console.error("Error: linkedEventId is missing!");
+        return;
+      }
+
+      console.log("Fetching Linked Event Data for ID:", linkedEventId);
+
       const response = await axios.get(
         `https://marathon.lockated.com/rfq/events/${linkedEventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
       );
@@ -1449,105 +1592,122 @@ export default function VendorDetails() {
       let freightData2 = [];
       let totalGrossAmount = 0;
 
-      if (response.data?.bids?.length > 0) {
-        console.log("Bids found, fetching bid data...");
+      // Always make the bids API call (even if bids are missing in first response)
+      console.log("Fetching Bid Data...");
 
-        const bidResponse = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+      const bidResponse = await axios.get(
+        `https://marathon.lockated.com/rfq/events/${linkedEventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+      );
+
+      console.log("Bid Data Response :", bidResponse.data);
+
+      const bids2 = bidResponse.data.bids || [];
+
+      if (bids2.length > 0) {
+        console.log("Processing Bids...");
+
+        bidData = bids2.flatMap((bid) =>
+          (bid.bid_materials || []).map((material) => ({
+            bidId: bid.id,
+            eventId: bid.event_id,
+            price: bid.price,
+            discount: bid.discount,
+            warrantyClause: bid.warranty_clause,
+            paymentTerms: bid.payment_terms,
+            loadingUnloadingClause: bid.loading_unloading_clause,
+            freightCharge: bid.freight_charge_amount,
+            gstOnFreight: bid.gst_on_freight,
+            realisedFreightCharge: bid.realised_freight_charge_amount,
+            grossTotal: bid.gross_total,
+            bidRemark: bid.remark,
+            revisionNumber: bid.revision_number,
+            rank: bid.rank,
+            bidTotalAmount: bid.bid_total_amount,
+
+            // Material-specific data
+            materialId: material.id,
+            eventMaterialId: material.event_material_id,
+            quantityAvail: material.quantity_available,
+            materialName: material.material_name,
+            pricePerUnit: material.price,
+            materialDiscount: material.discount,
+            totalAmount: material.total_amount,
+            realisedDiscount: material.realised_discount,
+            gst: material.gst,
+            realisedGst: material.realised_gst,
+            vendorRemark: material.vendor_remark,
+            materialType: material.material_type,
+            landedAmount: material.landed_amount,
+            materialRank: material.rank,
+          }))
         );
 
-        console.log("Bid Data Response:", bidResponse.data);
+        console.log("Mapped Bid Data:", bidData);
+        setBids2(bids2); // Store all bids
 
-        const bids = bidResponse.data.bids;
+        // Extract Freight & Other Bid Data
+        const latestBid = bids2[0]; // Assuming latest bid is the first one
+        setRank(latestBid.rank);
+        setMinPrice(latestBid.min_price);
 
-        if (bids.length > 0) {
-          bidData = bids.flatMap((bid) =>
-            bid.bid_materials.map((material) => ({
-              bidId: bid.id,
-              eventMaterialId: material.event_material_id,
-              descriptionOfItem: material.material_name,
-              quantity: material.event_material.quantity,
-              quantityAvail: material.quantity_available,
-              price: material.price,
-              discount: material.discount,
-              section: material.event_material.material_type,
-              subSection: material.event_material.inventory_sub_type,
-              realisedDiscount: material.realised_discount,
-              gst: material.gst,
-              realisedGst: material.realised_gst,
-              total: material.total_amount,
-              location: material.event_material.location,
-              vendorRemark: material.vendor_remark,
-              landedAmount: material.landed_amount,
-            }))
-          );
+        freightData2 = [
+          {
+            label: "Freight Charge",
+            value: `₹${latestBid.freight_charge_amount}`,
+          },
+          {
+            label: "GST on Freight",
+            value: `${latestBid.gst_on_freight}%`,
+          },
+          {
+            label: "Realised Freight",
+            value: `₹${latestBid.realised_freight_charge_amount}`,
+          },
+          {
+            label: "Warranty Clause",
+            value: latestBid.warranty_clause || "N/A",
+          },
+          {
+            label: "Payment Terms",
+            value: latestBid.payment_terms || "N/A",
+          },
+          {
+            label: "Loading/Unloading Clause",
+            value: latestBid.loading_unloading_clause || "N/A",
+          },
+        ];
 
-          console.log("Mapped Bid Data:", bidData);
-          setBids(bids); // Store all bids
+        // Set Gross Total from API
+        totalGrossAmount = latestBid.gross_total || 0;
+      } else {
+        console.log("No Bids Found, Displaying Event Materials...");
 
-          // Extract Freight & Other Bid Data
-          const latestBid = bids[0]; // Assuming latest bid is the first one
-          setRank(latestBid.rank);
-          setMinPrice(latestBid.min_price);
-
-          freightData2 = [
-            {
-              label: "Freight Charge",
-              value: `₹${latestBid.freight_charge_amount}`,
-            },
-            {
-              label: "GST on Freight",
-              value: `${latestBid.gst_on_freight}%`,
-            },
-            {
-              label: "Realised Freight",
-              value: `₹${latestBid.realised_freight_charge_amount}`,
-            },
-            {
-              label: "Warranty Clause",
-              value: latestBid.warranty_clause || "N/A",
-            },
-            {
-              label: "Payment Terms",
-              value: latestBid.payment_terms || "N/A",
-            },
-            {
-              label: "Loading/Unloading Clause",
-              value: latestBid.loading_unloading_clause || "N/A",
-            },
-          ];
-
-          // Set Gross Total from API
-          totalGrossAmount = latestBid.gross_total || 0;
+        // If no bids exist, fallback to event materials
+        if (bids2.length === 0 && response.data?.event_materials) {
+          bidData = response.data.event_materials.map((item) => ({
+            eventMaterialId: item.id,
+            descriptionOfItem: item.inventory_name,
+            quantity: item.quantity,
+            quantityAvail: "",
+            unit: item.uom,
+            location: item.location,
+            rate: item.rate || "",
+            section: item.material_type,
+            subSection: item.inventory_sub_type,
+            amount: item.amount,
+            totalAmt: "",
+            attachment: null,
+            price: "",
+            discount: "",
+            gst: "",
+            landedAmount: "",
+            vendorRemark: "",
+            total: "",
+          }));
         }
       }
 
-      // If no bids exist, fallback to event materials
-      if (bidData.length === 0 && response.data?.event_materials) {
-        console.log("No bids found, displaying event materials...");
-
-        bidData = response.data.event_materials.map((item) => ({
-          eventMaterialId: item.id,
-          descriptionOfItem: item.inventory_name,
-          quantity: item.quantity,
-          quantityAvail: "",
-          unit: item.uom,
-          location: item.location,
-          rate: item.rate || "",
-          section: item.material_type,
-          subSection: item.inventory_sub_type,
-          amount: item.amount,
-          totalAmt: "",
-          attachment: null,
-          price: "",
-          discount: "",
-          gst: "",
-          landedAmount: "",
-          vendorRemark: "",
-          total: "",
-        }));
-      }
-
+      // Ensure bid data has unique items
       const uniqueBidData = bidData.filter(
         (item, index, self) =>
           index ===
@@ -1560,21 +1720,20 @@ export default function VendorDetails() {
 
       setLinkedEventData(uniqueBidData);
       setFreightData2(freightData2);
-      setGrossTotal(totalGrossAmount); // Store the gross total
+      setGrossTotal2(totalGrossAmount);
     } catch (err) {
       console.error("Error fetching linked event data:", err.message);
       setLinkedEventData([]);
       setFreightData2([]);
-      setGrossTotal(0);
+      setGrossTotal2(0);
     }
   };
 
   useEffect(() => {
-    if (bids.length > 0 && currentIndex >= 0 && currentIndex < bids.length) {
-      const selectedBid = bids[currentIndex];
+    if (bids2.length > 0 && currentIndex >= 0 && currentIndex < bids2.length) {
+      const selectedBid = bids2[currentIndex];
 
-      // Ensure bid materials exist
-      if (selectedBid.bid_materials) {
+      if (selectedBid?.bid_materials) {
         const bidData = selectedBid.bid_materials.map((material) => ({
           bidId: selectedBid.id,
           eventMaterialId: material.event_material_id,
@@ -1594,11 +1753,10 @@ export default function VendorDetails() {
           landedAmount: material.landed_amount,
         }));
 
-        setLinkedEventData(bidData); // ✅ Update table data dynamically
+        setLinkedEventData(bidData);
       }
 
-      // Update Freight Data
-      const freightDetails = [
+      setFreightData2([
         {
           label: "Freight Charge",
           value: `₹${selectedBid.freight_charge_amount}`,
@@ -1617,15 +1775,11 @@ export default function VendorDetails() {
           label: "Loading/Unloading Clause",
           value: selectedBid.loading_unloading_clause || "N/A",
         },
-      ];
-      setFreightData2(freightDetails);
+      ]);
 
-      // Update Gross Total
-      setGrossTotal(selectedBid.gross_total || 0);
+      setGrossTotal2(selectedBid.gross_total || 0);
     }
-  }, [currentIndex, bids]); // ✅ Runs when `currentIndex` or `bids` change
-
-  // const [isReadOnly, setIsReadOnly] = useState(true); // Default to read-only
+  }, [currentIndex, bids2]);
 
   return (
     <div className="">
@@ -2012,7 +2166,7 @@ export default function VendorDetails() {
                       </div>
 
                       <div className="d-flex justify-content-end mt-2 mx-2">
-                        <h4>Sum Total: ₹{grossTotal}</h4>
+                        <h4>Sum Total: ₹{grossTotal2}</h4>
                       </div>
                     </div>
                   </div>
@@ -2065,13 +2219,13 @@ export default function VendorDetails() {
                               margin: "0 auto", // Center the container horizontally
                             }}
                           >
-                            {bids.length > 0 &&
-                              bids.map((_, index) => {
+                            {bids2.length > 0 &&
+                              bids2.map((_, index) => {
                                 // For the first button, show "Current Bid"
                                 const buttonName =
                                   index === 0
                                     ? "Current Bid"
-                                    : index === bids.length - 1
+                                    : index === bids2.length - 1
                                     ? "Initial Bid" // The last button shows "Initial Bid"
                                     : `${getOrdinalInText(
                                         bids.length - index
