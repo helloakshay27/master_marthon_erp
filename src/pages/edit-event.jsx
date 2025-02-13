@@ -865,7 +865,9 @@ export default function EditEvent() {
                       className="form-control"
                       type="date"
                       defaultValue={createdOn} // Sets default value to today's date
-                      readOnly // Prevents user from changing the value
+                      readOnly // Prevents user from ch
+                      // anging the value
+                      disabled
                     />
                   </div>
                 </div>
