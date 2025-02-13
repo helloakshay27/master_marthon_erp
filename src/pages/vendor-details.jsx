@@ -1738,25 +1738,29 @@ export default function VendorDetails() {
                               }}
                             >
                               {linkedData?.event_type_detail?.event_type}
+                              {console.log("linkedData :----", linkedData)}
                             </span>
                           </h4>
-                          {/* <span
-                            style={{
-                              backgroundColor: "#fff2e8",
-                              color: "#8b0203",
-                              padding: "5px 10px",
-                              borderRadius: "5px",
-                              marginLeft: "25px",
-                              fontSize: "0.85rem",
-                              fontWeight: "bold",
-                              borderColor: "#ffbb96",
-                            }}
-                          >
-                            {linkedData?.event_type_detail
-                              ?.event_configuration === "rank_based"
-                              ? `rank: ${linkedData?.bids?.[0]?.rank}`
-                              : `price: ${linkedData?.bids?.[0]?.min_price}`}
-                          </span> */}
+                          {linkedData?.event_type_detail?.event_type ===
+                            "auction" && (
+                            <span
+                              style={{
+                                backgroundColor: "#fff2e8",
+                                color: "#8b0203",
+                                padding: "5px 10px",
+                                borderRadius: "5px",
+                                marginLeft: "25px",
+                                fontSize: "0.85rem",
+                                fontWeight: "bold",
+                                borderColor: "#ffbb96",
+                              }}
+                            >
+                              {linkedData?.event_type_detail
+                                ?.event_configuration === "rank_based"
+                                ? `rank: ${linkedData?.bids?.[0]?.rank}`
+                                : `price: ${linkedData?.bids?.[0]?.min_price}`}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <></>
@@ -2867,27 +2871,30 @@ export default function VendorDetails() {
                         {isBid ||
                         loading ||
                         counterData > 0 ||
-                        currentIndex !== 0 || // Disable if it's not the Current Bid
+                        currentIndex !== 0 ||
                         submitted ? (
                           <></>
                         ) : (
-                          <span
-                            style={{
-                              backgroundColor: "#fff2e8",
-                              color: "#8b0203",
-                              padding: "5px 10px",
-                              borderRadius: "5px",
-                              marginLeft: "25px",
-                              fontSize: "0.85rem",
-                              fontWeight: "bold",
-                              borderColor: "#ffbb96",
-                            }}
-                          >
-                            {data1?.event_type_detail?.event_configuration ===
-                            "rank_based"
-                              ? `rank: ${data1?.bids[0]?.rank}`
-                              : `price: ${data1?.bids[0]?.min_price} `}
-                          </span>
+                          data1?.event_type_detail?.event_type ===
+                            "auction" && (
+                            <span
+                              style={{
+                                backgroundColor: "#fff2e8",
+                                color: "#8b0203",
+                                padding: "5px 10px",
+                                borderRadius: "5px",
+                                marginLeft: "25px",
+                                fontSize: "0.85rem",
+                                fontWeight: "bold",
+                                borderColor: "#ffbb96",
+                              }}
+                            >
+                              {data1?.event_type_detail?.event_configuration ===
+                              "rank_based"
+                                ? `rank: ${data1?.bids[0]?.rank}`
+                                : `price: ${data1?.bids[0]?.min_price} `}
+                            </span>
+                          )
                         )}
                       </div>
                     </div>
