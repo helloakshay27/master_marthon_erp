@@ -1,10 +1,10 @@
+import axios from "axios";
 import { mumbaiLocations, product, unitMeasure } from "../../../constant/data";
 import MultiSelector from "../../base/Select/MultiSelector";
 import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { de } from "date-fns/locale";
+import { useEffect, useState } from "react";
+import React from "react";
 
 export default function CreateRFQForm({
   data,
@@ -23,49 +23,7 @@ export default function CreateRFQForm({
   const [sectionOptions, setSectionOptions] = useState([]);
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
-
-  const existingGroupedData = {
-    AGGREGATE: {
-      BLOCK: [
-        {
-          id: 133,
-          event_id: 11,
-          inventory_id: 62,
-          quantity: 10.0,
-          uom: "MT",
-          location: "Cedar",
-          rate: null,
-          amount: null,
-          delivary_location: null,
-          pickup_location: null,
-          created_at: "2025-01-28T08:48:04.588+05:30",
-          updated_at: "2025-01-28T08:48:04.588+05:30",
-          sub_section_id: null,
-          mor_inventory_id: 227,
-        },
-      ],
-    },
-    "DOOR WORK": {
-      "WOODEN DOOR FRAME": [
-        {
-          id: 134,
-          event_id: 11,
-          inventory_id: 62,
-          quantity: 10.0,
-          uom: "MT",
-          location: "Cedar",
-          rate: null,
-          amount: null,
-          delivary_location: null,
-          pickup_location: null,
-          created_at: "2025-01-28T08:48:04.588+05:30",
-          updated_at: "2025-01-28T08:48:04.588+05:30",
-          sub_section_id: null,
-          mor_inventory_id: 227,
-        },
-      ],
-    },
-  };
+  const [uomOptions, setUomOptions] = useState([]);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -148,10 +106,30 @@ export default function CreateRFQForm({
       }
     };
 
+    const fetchUoms = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        if (response.data && Array.isArray(response.data.unit_of_measures)) {
+          const uomOptions = response.data.unit_of_measures.map((uom) => ({
+            label: uom.name,
+            value: uom.value,
+          }));
+          setUomOptions(uomOptions);
+        } else {
+          console.error("Unexpected response structure:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching UOMs:", error);
+      }
+    };
+
     fetchMaterials();
     fetchSections();
     fetchSubSections();
     fetchLocations();
+    fetchUoms();
   }, []);
 
   useEffect(() => {
@@ -177,11 +155,13 @@ export default function CreateRFQForm({
                   inventory_type_id: material.inventory_type_id, // Add inventory_type_id
                   inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
                   subMaterialType,
+                  _destroy: false, // Ensure _destroy is false for existing data
                 }))
             ),
           };
         }
       );
+      // @ts-ignore
       setSections(updatedSections);
       setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
     }
@@ -208,9 +188,18 @@ export default function CreateRFQForm({
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
-    const updatedSections = [...sections];
-    updatedSections[sectionIndex].sectionData[rowIndex]._destroy = true;
-    setSections(updatedSections);
+    console.log("Removing row at index:", rowIndex, "from section:", sectionIndex);
+    setSections((prevSections) => {
+      const updatedSections = [...prevSections];
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        sectionData: updatedSections[sectionIndex].sectionData.map((row, idx) =>
+          idx === rowIndex ? { ...row, _destroy: true } : row
+        ),
+      };
+      console.log("Updated sections after removal:", updatedSections);
+      return updatedSections;
+    });
   };
 
   const handleAddRow = (sectionIndex) => {
@@ -218,12 +207,12 @@ export default function CreateRFQForm({
       id: null, // Set id to null for new rows
       descriptionOfItem: [],
       quantity: "",
-      unit: "",
+      unit: [],
       type: materials[0]?.type || "",
       location: [],
       rate: 0,
       amount: 0,
-      inventory_id: 0,
+      inventory_id: "",
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
@@ -256,7 +245,7 @@ export default function CreateRFQForm({
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
-      (material) => material.value === selected
+      (material) => material.id === selected
     );
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
@@ -264,14 +253,14 @@ export default function CreateRFQForm({
 
     if (selectedMaterial && selectedMaterial.uom) {
       updatedSections[sectionIndex].sectionData[rowIndex].unit =
-        selectedMaterial.uom;
+        selectedMaterial.uom.uom_short_name;
     } else {
       updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
     }
     updatedSections[sectionIndex].sectionData[rowIndex].type =
       selectedMaterial?.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.value || 0;
+      selectedMaterial?.id || "";
     setSections(updatedSections);
   };
 
@@ -438,11 +427,20 @@ export default function CreateRFQForm({
                     />
                   ),
                   unit: (cell, rowIndex) => (
-                    <input
-                      className="form-control"
-                      type="text"
-                      value={cell}
-                      readOnly
+                    <SelectBox
+                      options={uomOptions}
+                      onChange={(value) =>
+                        handleUnitChange(value, rowIndex, sectionIndex)
+                      }
+                      defaultValue={
+                        section?.sectionData[rowIndex]?._destroy
+                          ? ""
+                          : uomOptions?.find(
+                              (option) =>
+                                option?.value ===
+                                section?.sectionData[rowIndex]?.unit
+                            )?.value || ""
+                      }
                     />
                   ),
                   type: (cell, rowIndex) => (
