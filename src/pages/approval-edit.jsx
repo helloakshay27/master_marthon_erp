@@ -6,6 +6,7 @@ import { MultiSelector } from "../components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { useNavigate } from "react-router-dom";
 
 const ApprovalEdit = () => {
   const [filterOptions, setFilterOptions] = useState({
@@ -196,35 +197,6 @@ const ApprovalEdit = () => {
     fetchDropdownData();
   }, []); // Run once when the component mounts
 
-  // useEffect(() => {
-  //   if (selectedCompany && selectedCompany.value) {
-  //     const fetchSites = async (companyId) => {
-  //       try {
-  //         const response = await fetch(
-  //           `https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?company_id=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //         );
-  //         if (!response.ok) throw new Error("Failed to fetch sites");
-
-  //         const data = await response.json();
-  //         const formattedSites = data.sites.map(([name, id]) => ({
-  //           label: name,
-  //           value: id,
-  //         }));
-
-  //         setFilterOptions((prevState) => ({
-  //           ...prevState,
-  //           sites: formattedSites, // Update sites in filterOptions
-  //         }));
-  //       } catch (error) {
-  //         console.error("Error fetching sites:", error);
-  //         setFilterOptions((prevState) => ({ ...prevState, sites: [] }));
-  //       }
-  //     };
-
-  //     fetchSites(selectedCompany.value);
-  //   }
-  // }, [selectedCompany]); //
-
   useEffect(() => {
     const fetchUsers = async () => {
       if (!selectedDepartment?.value) return; // Ensure department is selected
@@ -251,140 +223,6 @@ const ApprovalEdit = () => {
 
     fetchUsers(); // Fetch users on mount & when department changes
   }, [selectedDepartment]);
-
-  // useEffect(() => {
-  //   const fetchApprovalData = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         `https://marathon.lockated.com/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
-  //       if (!response.ok) throw new Error("Failed to fetch approval data");
-
-  //       const data = await response.json();
-  //       console.log("Fetched Approval Data:", data);
-
-  //       // Set form data from API response
-  //       setFormData({
-  //         company_id: data.company_id || null,
-  //         site_id: data.site_id || null,
-  //         project_id: data.project_id || null,
-  //         department_id: data.department_id || null,
-  //         module_id: data.approval_type || null,
-  //         material_id: data.pms_inventory_type_id || null,
-  //         invoice_approval_levels: data.invoice_approval_levels || [],
-  //       });
-
-  //       // Ensure `companies` list is loaded before setting values
-  //       if (!companies.length) return;
-
-  //       const companyOption = companies.find((c) => c.id === data.company_id);
-  //       if (companyOption) {
-  //         setSelectedCompany({
-  //           value: companyOption.id,
-  //           label: companyOption.name,
-  //         });
-
-  //         // Fetch projects based on preselected company
-  //         setProjects(
-  //           companyOption.projects.map((prj) => ({
-  //             value: prj.id,
-  //             label: prj.name,
-  //           }))
-  //         );
-
-  //         // Find and set selected project
-  //         const projectOption = companyOption.projects.find(
-  //           (p) => p.id === data.project_id
-  //         );
-  //         setSelectedProject(
-  //           projectOption
-  //             ? { value: projectOption.id, label: projectOption.name }
-  //             : null
-  //         );
-  //         console.log;
-
-  //         if (projectOption) {
-  //           // Fetch sites (sub-projects) based on preselected project
-  //           setSiteOptions(
-  //             projectOption.pms_sites.map((site) => ({
-  //               value: site.id,
-  //               label: site.name,
-  //             }))
-  //           );
-
-  //           // Find and set selected sub-project (site)
-  //           const siteOption = projectOption.pms_sites.find(
-  //             (s) => s.id === data.site_id
-  //           );
-  //           setSelectedSite(
-  //             siteOption
-  //               ? { value: siteOption.id, label: siteOption.name }
-  //               : null
-  //           );
-  //         }
-  //       }
-
-  //       const departmentOption = filterOptions.departments.find(
-  //         (department) => department.value === data.department_id
-  //       );
-  //       setSelectedDepartment(departmentOption || null);
-
-  //       // Find the preselected module option
-  //       const moduleOption = filterOptions.modules.find(
-  //         (mod) => mod.value === data.approval_type
-  //       );
-
-  //       // Determine if Material Type dropdown should be shown
-  //       const isMaterialOrderRequest =
-  //         moduleOption?.label?.toLowerCase() === "material order request";
-
-  //       setShowMaterialType(isMaterialOrderRequest); // Update visibility state
-
-  //       setSelectedModule(moduleOption || null);
-
-  //       // Find and set preselected material type
-  //       const materialTypeOption = filterOptions.material_types.find(
-  //         (mat) => mat.value === data.pms_inventory_type_id
-  //       );
-  //       setSelectedMaterialType(materialTypeOption || null);
-
-  //       const userMap = new Map(
-  //         departmentUsers?.length
-  //           ? departmentUsers.map((user) => [
-  //               user.value,
-  //               user.label || "Unknown User",
-  //             ])
-  //           : []
-  //       );
-
-  //       console.log("User Map:", userMap);
-
-  //       const approvalLevelsWithUserNames = Array.isArray(
-  //         data.invoice_approval_levels
-  //       )
-  //         ? data.invoice_approval_levels.map((level) => ({
-  //             id: level.id,
-  //             order: level.order || "",
-  //             name: level.name || "",
-  //             users: Array.isArray(level.escalate_to_users)
-  //               ? level.escalate_to_users.map((userId) => {
-  //                   const userName = userMap.get(userId) || "Unknown"; // Fetch full_name
-  //                   return { label: userName, value: userId };
-  //                 })
-  //               : [],
-  //           }))
-  //         : [];
-
-  //       setApprovalLevels(approvalLevelsWithUserNames);
-  //     } catch (error) {
-  //       console.error("Error fetching approval data:", error);
-  //     }
-  //   };
-
-  //   if (companies.length > 0) {
-  //     fetchApprovalData();
-  //   }
-  // }, [companies, id]);
 
   const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
   useEffect(() => {
@@ -495,7 +333,38 @@ const ApprovalEdit = () => {
     }
   }, [companies, id]);
 
-  // Process approval levels when departmentUsers are available
+  const fetchUsers = async (companyId, projectId, siteId, departmentId) => {
+    setDepartmentUsers([]); // Reset users if company or department is not selected
+    if (!companyId || !departmentId) {
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+          projectId || ""
+        }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
+          siteId || ""
+        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      if (response.data && Array.isArray(response.data)) {
+        const userOptions = response.data.map((user) => ({
+          value: user.id,
+          label: user.full_name,
+        }));
+
+        console.log("Fetched Users:", userOptions);
+        setDepartmentUsers(userOptions);
+      } else {
+        setDepartmentUsers([]); // Reset if no users found
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setDepartmentUsers([]);
+    }
+  };
+
   useEffect(() => {
     if (!departmentUsers.length || !approvalLevelsRaw.length) return;
 
@@ -556,20 +425,51 @@ const ApprovalEdit = () => {
       });
   }, []);
 
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption); // Set selected company
+  //   setSelectedProject(null); // Reset project selection
+  //   setSelectedSite(null); // Reset site selection
+  //   setSelectedWing(null); // Reset wing selection
+  //   setProjects([]); // Reset projects
+  //   setSiteOptions([]); // Reset site options
+  //   setWingsOptions([]); // Reset wings options
+
+  //   if (selectedOption) {
+  //     // Find the selected company from the list
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value, // Update formData with company_id
+  //       project_id: null, // Reset project_id when company changes
+  //       site_id: null, // Reset site_id when company changes
+  //     }));
+  //   }
+  // };
+
   const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
-    setSelectedWing(null); // Reset wing selection
-    setProjects([]); // Reset projects
-    setSiteOptions([]); // Reset site options
-    setWingsOptions([]); // Reset wings options
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setProjects([]);
+    setSiteOptions([]);
+    setWingsOptions([]);
+    setDepartmentUsers([]); // Reset users if company or department is not selected
 
     if (selectedOption) {
-      // Find the selected company from the list
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedOption.value
       );
+
       setProjects(
         selectedCompanyData?.projects.map((prj) => ({
           value: prj.id,
@@ -579,26 +479,54 @@ const ApprovalEdit = () => {
 
       setFormData((prevState) => ({
         ...prevState,
-        company_id: selectedOption.value, // Update formData with company_id
-        project_id: null, // Reset project_id when company changes
-        site_id: null, // Reset site_id when company changes
+        company_id: selectedOption.value,
+        project_id: null,
+        site_id: null,
       }));
+
+      fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
     }
   };
 
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
+  // const handleProjectChange = (selectedOption) => {
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null); // Reset site selection
+  //   setSelectedWing(null); // Reset wing selection
+  //   setSiteOptions([]); // Reset site options
+  //   setWingsOptions([]); // Reset wings options
 
-  // Handle project selection
+  //   if (selectedOption) {
+  //     // Find the selected project from the list of projects of the selected company
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedCompany.value
+  //     );
+  //     const selectedProjectData = selectedCompanyData?.projects.find(
+  //       (project) => project.id === selectedOption.value
+  //     );
+
+  //     // Set site options based on selected project
+  //     setSiteOptions(
+  //       selectedProjectData?.pms_sites.map((site) => ({
+  //         value: site.id,
+  //         label: site.name,
+  //       })) || []
+  //     );
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       project_id: selectedOption.value, // Update formData with project_id
+  //       site_id: null, // Reset site_id when project changes
+  //     }));
+  //   }
+  // };
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
-    setSelectedWing(null); // Reset wing selection
-    setSiteOptions([]); // Reset site options
-    setWingsOptions([]); // Reset wings options
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setSiteOptions([]);
+    setWingsOptions([]);
+    setDepartmentUsers([]); // Reset users if company or department is not selected
 
     if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
@@ -606,35 +534,58 @@ const ApprovalEdit = () => {
         (project) => project.id === selectedOption.value
       );
 
-      // Set site options based on selected project
       setSiteOptions(
         selectedProjectData?.pms_sites.map((site) => ({
           value: site.id,
           label: site.name,
         })) || []
       );
+
       setFormData((prevState) => ({
         ...prevState,
-        project_id: selectedOption.value, // Update formData with project_id
-        site_id: null, // Reset site_id when project changes
+        project_id: selectedOption.value,
+        site_id: null,
       }));
+
+      fetchUsers(
+        selectedCompany?.value,
+        selectedOption.value,
+        null,
+        selectedDepartment?.value
+      );
     }
   };
 
-  //   console.log("selected prj:",selectedProject)
-  //   console.log("selected sub prj...",siteOptions)
+  // const handleSiteChange = (selectedOption) => {
+  //   setSelectedSite(selectedOption);
+  //   setSelectedWing(null); // Reset wing selection
+  //   // setWingsOptions([]); // Reset wings options
 
-  // Handle site selection
+  //   if (selectedOption) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       site_id: selectedOption.value, // Update formData with site_id
+  //     }));
+  //   }
+  // };
+
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
-    setSelectedWing(null); // Reset wing selection
-    // setWingsOptions([]); // Reset wings options
+    setSelectedWing(null);
+    setDepartmentUsers([]); // Reset users if company or department is not selected
 
     if (selectedOption) {
       setFormData((prevState) => ({
         ...prevState,
-        site_id: selectedOption.value, // Update formData with site_id
+        site_id: selectedOption.value,
       }));
+
+      fetchUsers(
+        selectedCompany?.value,
+        selectedProject?.value,
+        selectedOption.value,
+        selectedDepartment?.value
+      );
     }
   };
 
@@ -643,38 +594,75 @@ const ApprovalEdit = () => {
     label: company.company_name,
   }));
 
+  // const handleDepartmentChange = async (selectedOption) => {
+  //   console.log("Selected Department:", selectedOption);
+
+  //   setSelectedDepartment(selectedOption);
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: selectedOption ? selectedOption.value : null,
+  //   }));
+
+  //   if (selectedOption) {
+  //     try {
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+
+  //       if (response.data && Array.isArray(response.data)) {
+  //         const userOptions = response.data.map((user) => ({
+  //           value: user.id,
+  //           label: user.full_name, // Ensure full_name is mapped correctly
+  //         }));
+
+  //         console.log("Fetched Users:", userOptions);
+  //         setDepartmentUsers(userOptions);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching users for department:", error);
+  //       setDepartmentUsers([]); // Reset users on error
+  //     }
+  //   } else {
+  //     setDepartmentUsers([]); // Reset users if no department selected
+  //   }
+  // };
+
   const handleDepartmentChange = async (selectedOption) => {
     console.log("Selected Department:", selectedOption);
 
     setSelectedDepartment(selectedOption);
+    setDepartmentUsers([]); // Reset users if company or department is not selected
     setFormData((prevState) => ({
       ...prevState,
       department_id: selectedOption ? selectedOption.value : null,
     }));
 
-    if (selectedOption) {
-      try {
-        const response = await axios.get(
-          `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-
-        if (response.data && Array.isArray(response.data)) {
-          const userOptions = response.data.map((user) => ({
-            value: user.id,
-            label: user.full_name, // Ensure full_name is mapped correctly
-          }));
-
-          console.log("Fetched Users:", userOptions);
-          setDepartmentUsers(userOptions);
-        }
-      } catch (error) {
-        console.error("Error fetching users for department:", error);
-        setDepartmentUsers([]); // Reset users on error
-      }
-    } else {
-      setDepartmentUsers([]); // Reset users if no department selected
-    }
+    fetchUsers(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      selectedOption?.value
+    );
   };
+
+  // useEffect(() => {
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedProject?.value,
+  //     selectedSite?.value,
+  //     selectedDepartment?.value
+  //   );
+  // }, [selectedCompany, selectedProject, selectedSite, selectedDepartment]);
+
+  useEffect(() => {
+    setDepartmentUsers([]); // Always reset before fetching
+    fetchUsers(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      selectedDepartment?.value
+    );
+  }, [selectedCompany, selectedProject, selectedSite, selectedDepartment]);
 
   useEffect(() => {
     if (selectedDepartment) {
@@ -709,6 +697,8 @@ const ApprovalEdit = () => {
       pms_supplier_id: selectedOption.value, // Map material_id to pms_supplier_id
     }));
   };
+
+  const navigate = useNavigate();
 
   const handleCreate = () => {
     setLoading(true);
@@ -801,6 +791,7 @@ const ApprovalEdit = () => {
       .then((response) => {
         console.log("Approval  updated Created:", response.data);
         alert("Approval update successfully!");
+        navigate("/approval-metrics"); // Redirect to Approval Metrics page
       })
       // .catch((error, response) => {
       //   console.error("Error creating invoice approval:", response);
@@ -1045,7 +1036,7 @@ const ApprovalEdit = () => {
                                   value={selectedDepartment} // ✅ Use selectedDepartment directly
                                   placeholder="Select Department"
                                   isClearable
-                                  isDisabled //
+                                  // isDisabled //
                                 />
                               </div>
 

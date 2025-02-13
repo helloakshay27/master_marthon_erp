@@ -182,17 +182,121 @@ const InvoiceApproval = () => {
       });
   }, []);
 
+  const [departmentUsers, setDepartmentUsers] = useState([]);
+  const fetchUsers = async (companyId, projectId, siteId, departmentId) => {
+    if (!companyId || !departmentId) {
+      setDepartmentUsers([]); // Reset users if company or department is not selected
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+          projectId || ""
+        }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
+          siteId || ""
+        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      if (response.data && Array.isArray(response.data)) {
+        const userOptions = response.data.map((user) => ({
+          value: user.id,
+          label: user.full_name,
+        }));
+        setDepartmentUsers(userOptions);
+      } else {
+        setDepartmentUsers([]); // Reset users if no valid data received
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setDepartmentUsers([]);
+    }
+  };
+
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption); // Set selected company
+  //   setSelectedProject(null); // Reset project selection
+  //   setSelectedSite(null); // Reset site selection
+  //   setSelectedWing(null); // Reset wing selection
+  //   setProjects([]); // Reset projects
+  //   setSiteOptions([]); // Reset site options
+  //   setWingsOptions([]); // Reset wings options
+
+  //   if (selectedOption) {
+  //     // Find the selected company from the list
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value, // Update formData with company_id
+  //       project_id: null, // Reset project_id when company changes
+  //       site_id: null, // Reset site_id when company changes
+  //     }));
+  //   }
+  // };
+
+  // const handleProjectChange = (selectedOption) => {
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null); // Reset site selection
+  //   setSelectedWing(null); // Reset wing selection
+  //   setSiteOptions([]); // Reset site options
+  //   setWingsOptions([]); // Reset wings options
+
+  //   if (selectedOption) {
+  //     // Find the selected project from the list of projects of the selected company
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedCompany.value
+  //     );
+  //     const selectedProjectData = selectedCompanyData?.projects.find(
+  //       (project) => project.id === selectedOption.value
+  //     );
+
+  //     // Set site options based on selected project
+  //     setSiteOptions(
+  //       selectedProjectData?.pms_sites.map((site) => ({
+  //         value: site.id,
+  //         label: site.name,
+  //       })) || []
+  //     );
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       project_id: selectedOption.value, // Update formData with project_id
+  //       site_id: null, // Reset site_id when project changes
+  //     }));
+  //   }
+  // };
+
+  // const handleSiteChange = (selectedOption) => {
+  //   setSelectedSite(selectedOption);
+  //   setSelectedWing(null); // Reset wing selection
+  //   // setWingsOptions([]); // Reset wings options
+
+  //   if (selectedOption) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       site_id: selectedOption.value, // Update formData with site_id
+  //     }));
+  //   }
+  // };
+
   const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
-    setSelectedWing(null); // Reset wing selection
-    setProjects([]); // Reset projects
-    setSiteOptions([]); // Reset site options
-    setWingsOptions([]); // Reset wings options
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setProjects([]);
+    setSiteOptions([]);
+    // setWingsOptions([]);
 
     if (selectedOption) {
-      // Find the selected company from the list
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedOption.value
       );
@@ -205,26 +309,23 @@ const InvoiceApproval = () => {
 
       setFormData((prevState) => ({
         ...prevState,
-        company_id: selectedOption.value, // Update formData with company_id
-        project_id: null, // Reset project_id when company changes
-        site_id: null, // Reset site_id when company changes
+        company_id: selectedOption.value,
+        project_id: null,
+        site_id: null,
       }));
+
+      fetchUsers(selectedOption.value, null, null, selectedDepartment?.value); // Fetch users based on company
     }
   };
 
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
-
-  // Handle project selection
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
-    setSelectedWing(null); // Reset wing selection
-    setSiteOptions([]); // Reset site options
-    setWingsOptions([]); // Reset wings options
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setSiteOptions([]);
+    // setWingsOptions([]);
 
     if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
@@ -232,35 +333,44 @@ const InvoiceApproval = () => {
         (project) => project.id === selectedOption.value
       );
 
-      // Set site options based on selected project
       setSiteOptions(
         selectedProjectData?.pms_sites.map((site) => ({
           value: site.id,
           label: site.name,
         })) || []
       );
+
       setFormData((prevState) => ({
         ...prevState,
-        project_id: selectedOption.value, // Update formData with project_id
-        site_id: null, // Reset site_id when project changes
+        project_id: selectedOption.value,
+        site_id: null,
       }));
+
+      fetchUsers(
+        selectedCompany?.value,
+        selectedOption.value,
+        null,
+        selectedDepartment?.value
+      ); // Fetch users based on project
     }
   };
 
-  //   console.log("selected prj:",selectedProject)
-  //   console.log("selected sub prj...",siteOptions)
-
-  // Handle site selection
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
-    setSelectedWing(null); // Reset wing selection
-    // setWingsOptions([]); // Reset wings options
+    setSelectedWing(null);
 
     if (selectedOption) {
       setFormData((prevState) => ({
         ...prevState,
-        site_id: selectedOption.value, // Update formData with site_id
+        site_id: selectedOption.value,
       }));
+
+      fetchUsers(
+        selectedCompany?.value,
+        selectedProject?.value,
+        selectedOption.value,
+        selectedDepartment?.value
+      ); // Fetch users based on site
     }
   };
 
@@ -269,47 +379,77 @@ const InvoiceApproval = () => {
     label: company.company_name,
   }));
 
-  const [departmentUsers, setDepartmentUsers] = useState([]);
-
   const handleDepartmentChange = async (selectedOption) => {
     if (!selectedOption) {
       setFormData((prevState) => ({
         ...prevState,
-        department_id: null, // Reset if no department selected
+        department_id: null,
       }));
-      setSelectedDepartment(null); //  dropdown value
+      setSelectedDepartment(null);
       setDepartmentUsers([]);
       return;
     }
 
-    const departmentId = selectedOption.value; //  Get selected department ID
-    console.log("Selected Department ID:", departmentId);
-
+    const departmentId = selectedOption.value;
     setFormData((prevState) => ({
       ...prevState,
       department_id: departmentId,
     }));
+    setSelectedDepartment(selectedOption);
 
-    setSelectedDepartment(selectedOption); // Ensure dropdown selection updates
-
-    try {
-      // Fetch users based on department ID
-      const response = await axios.get(
-        `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-
-      if (response.data && Array.isArray(response.data)) {
-        const userOptions = response.data.map((user) => ({
-          value: user.id,
-          label: user.full_name,
-        }));
-        setDepartmentUsers(userOptions);
-      }
-    } catch (error) {
-      console.error("Error fetching users for department:", error);
-      setDepartmentUsers([]);
-    }
+    fetchUsers(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      departmentId
+    ); // Fetch users based on department
   };
+
+  // const handleDepartmentChange = async (selectedOption) => {
+  //   if (!selectedOption) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       department_id: null, // Reset if no department selected
+  //     }));
+  //     setSelectedDepartment(null); //  dropdown value
+  //     setDepartmentUsers([]);
+  //     return;
+  //   }
+
+  //   const departmentId = selectedOption.value; //  Get selected department ID
+  //   console.log("Selected Department ID:", departmentId);
+
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: departmentId,
+  //   }));
+
+  //   setSelectedDepartment(selectedOption); // Ensure dropdown selection updates
+
+  //   const companyId = selectedCompany ? selectedCompany.value : "";
+  //   const projectId = selectedProject ? selectedProject.value : "";
+  //   const siteId = selectedSite ? selectedSite.value : "";
+
+  //   console.log("compny project subproject", companyId, projectId, siteId);
+
+  //   try {
+  //     // Fetch users based on department ID
+  //     const response = await axios.get(
+  //       `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${projectId}&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //     );
+
+  //     if (response.data && Array.isArray(response.data)) {
+  //       const userOptions = response.data.map((user) => ({
+  //         value: user.id,
+  //         label: user.full_name,
+  //       }));
+  //       setDepartmentUsers(userOptions);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching users for department:", error);
+  //     setDepartmentUsers([]);
+  //   }
+  // };
 
   // Ensure selectedDepartment is set from formData when component renders
   useEffect(() => {
@@ -321,24 +461,8 @@ const InvoiceApproval = () => {
     }
   }, [formData.department_id, modifiedFilterOptions.departments]);
 
-  // const handleModuleChange = (selectedOption) => {
-  //   if (!selectedOption) {
-  //     setSelectedModule(null);
-  //     setFormData((prevState) => ({ ...prevState, module_id: null }));
-  //     return;
-  //   }
-
-  //   console.log("Selected Module ID:", selectedOption.value);
-
-  //   setSelectedModule(selectedOption); // Store the full selected option
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     module_id: selectedOption.value, // Set module_id from selected value
-  //   }));
-  // };
-
-  // const [selectedModule, setSelectedModule] = useState(null);
   const [showMaterialType, setShowMaterialType] = useState(false);
+
   const handleModuleChange = (selectedOption) => {
     if (!selectedOption) {
       setSelectedModule(null);
