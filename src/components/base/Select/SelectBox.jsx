@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Select, { components } from "react-select";
 
 export default function SelectBox({
@@ -10,6 +10,15 @@ export default function SelectBox({
   className = "",
   isDisableFirstOption = false, // New prop
 }) {
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  useEffect(() => {
+    if (defaultValue) {
+      const defaultOption = options.find((option) => option.value === defaultValue);
+      setSelectedOption(defaultOption);
+    }
+  }, [defaultValue, options]);
+
   const customStyles = {
     control: (base, state) => ({
       ...base,
@@ -60,17 +69,18 @@ export default function SelectBox({
       }))
     : options;
 
-  // Handle default value
-  const defaultOption = defaultValue
-    ? options.find((option) => option.value === defaultValue)
-    : null;
+  const handleChange = (selectedOption) => {
+    setSelectedOption(selectedOption);
+    onChange(selectedOption?.value);
+  };
+
   return (
     <div className={`${className}`} style={style}>
       {label && <label>{label}</label>}
       <Select
         options={formattedOptions}
-        value={defaultOption}
-        onChange={(selectedOption) => onChange(selectedOption?.value)}
+        value={selectedOption}
+        onChange={handleChange}
         isOptionDisabled={(option) => option.isDisabled}
         styles={customStyles}
         menuPortalTarget={document.body}
