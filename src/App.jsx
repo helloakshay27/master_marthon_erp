@@ -165,7 +165,7 @@ function App() {
               element={<EstimationDetailsWings />}
             />
             <Route
-              path="/estimation-details-sub-project"
+              path="/estimation-details-sub-project/:id"
               element={<EstimationDetailsSubProject />}
             />
             <Route
@@ -181,7 +181,7 @@ function App() {
               element={<EstimationCreation />}
             />
             <Route
-              path="/estimation-details-project"
+              path="/estimation-details-project/:id"
               element={<EstimationDetailsProject />}
             />
             <Route

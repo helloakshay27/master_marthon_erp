@@ -23,6 +23,7 @@ const BOQDetailsPageMaster = () => {
   const [status, setStatus] = useState(boqDetails?.status); // Assuming boqDetails.status is initially available
   const [remark, setRemark] = useState('');
   const [initialStatus, setInitialStatus] = useState('');
+  const [loading2, setLoading2] = useState(false);  // State for loading indicator
 
   console.log('id', id)
   // console.log(boqDetails.status," status....")
@@ -61,22 +62,24 @@ const BOQDetailsPageMaster = () => {
   const closeAssocoatedModal = () => setShowAssocoatedModal(false);
 
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`https://marathon.lockated.com/boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+
+      // Assuming the API returns data based on the id (you may need to adjust based on your response)
+      setBoqDetails(response.data);
+      setStatus(response.data.status || '');
+      setInitialStatus(response.data.status || '');
+      setLoading(false);
+    } catch (error) {
+      setError('An error occurred while fetching the data');
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Fetch the data when the component mounts or when 'id' changes
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`https://marathon.lockated.com/boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
 
-        // Assuming the API returns data based on the id (you may need to adjust based on your response)
-        setBoqDetails(response.data);
-        setStatus(response.data.status || '');
-        setInitialStatus(response.data.status || '');
-        setLoading(false);
-      } catch (error) {
-        setError('An error occurred while fetching the data');
-        setLoading(false);
-      }
-    };
 
     fetchData();
   }, [id]);  // Dependency array ensures fetch is triggered when 'id' changes
@@ -129,6 +132,7 @@ const BOQDetailsPageMaster = () => {
     };
 
     console.log("detail status change", payload);
+    setLoading2(true);
 
     try {
       const response = await axios.patch(
@@ -139,11 +143,15 @@ const BOQDetailsPageMaster = () => {
             'Content-Type': 'application/json', // Set the content type header
           },
         }
+
       );
+      await fetchData();
+
 
       if (response.status === 200) {
         console.log('Status updated successfully:', response.data);
-        alert('Status updated successfully');
+        setRemark("")
+        // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
       } else {
         console.log('Error updating status:', response.data);
@@ -152,6 +160,8 @@ const BOQDetailsPageMaster = () => {
     } catch (error) {
       console.error('Request failed:', error);
       // Handle network or other errors (e.g., show an error message)
+    } finally {
+      setLoading2(false);
     }
   };
 
@@ -227,30 +237,30 @@ const BOQDetailsPageMaster = () => {
       {/* <div className="website-content overflow-auto"> */}
       <div className="website-content">
         <div className="module-data-section p-2">
-          <a href="" style={{color:'black'}}>
+          <a href="" style={{ color: 'black' }}>
             Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
           </a>
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
-<div className="d-flex justify-content-end m-4">
-          <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="#6c757d"
-                        className="bi bi-pencil-square me-2"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                        />
-                      </svg>
-                    </Link>
+          <div className="d-flex justify-content-end m-4">
+            <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="#6c757d"
+                className="bi bi-pencil-square me-2"
+                viewBox="0 0 16 16"
+              >
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                <path
+                  fillRule="evenodd"
+                  d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                />
+              </svg>
+            </Link>
 
-                    </div>
+          </div>
           <CollapsibleCard title="BOQ Details">
 
             <div className="row px-3 mt-2">
@@ -380,7 +390,18 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {boqDetails.uom}</span>
+                    <span className="me-3">
+                      {/* {boqDetails.uom}||
+                      {
+                        boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
+                          <span key={index}>{boqSubItem.umo}</span> // Wrap each 'umo' value in a valid element
+                        ))
+                      } */}
+
+                      {boqDetails?.uom || boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
+                        <span key={index}>{boqSubItem.umo}</span>
+                      ))}
+                    </span>
                   </label>
                 </div>
               </div>
@@ -402,7 +423,12 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.quantity} </span>
+                    <span className="me-3">
+                      {/* {boqDetails.quantity} */}
+                      {boqDetails?.quantity || boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
+                        <span key={index}>{boqSubItem.cost_quantity}</span>
+                      ))}
+                    </span>
                   </label>
                 </div>
               </div>
@@ -473,114 +499,156 @@ const BOQDetailsPageMaster = () => {
             <div className="m-0 p-0">
 
 
-            <div
-              className="card-body mt-0 pt-0"
-              style={{ display: "block" }}
-            >
+              <div
+                className="card-body mt-0 pt-0"
+                style={{ display: "block" }}
+              >
 
-              <CollapsibleCard title="Materials">
+                <CollapsibleCard title="Materials">
 
-                <div
-                  className="card-body mt-0 pt-0"
-                  style={{ display: "block" }}
-                >
-                  <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Material Type</th>
-                          <th rowSpan={2}>Material</th>
-                          <th rowSpan={2}>Material Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour </th>
-                          <th rowSpan={2}>Brand </th>
-                          <th rowSpan={2}>UOM</th>
-                          {/* <th rowSpan={2}>Cost QTY</th> */}
-                          <th colSpan={2}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>
-                            Total Estimated Qty Wastage
-                          </th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetails.materials.map((material, index) => (
-                          <tr key={index}>
-                            <td>{material.material_type}</td>
-                            <td>{material.material_name}</td>
-                            <td>{material.material_sub_type}</td>
-                            <td>{material.generic_info}</td>
-                            <td>{material.color}</td>
-                            <td>{material.brand}</td>
-                            <td>{material.uom}</td>
-                            {/* <td></td> */}
-                            <td>{material.co_efficient_factor}</td>
-                            <td >{material.estimated_quantity}</td>
-                            <td>{material.wastage}</td>
-                            <td>{material.estimated_quantity_wastage}</td>
+                  <div
+                    className="card-body mt-0 pt-0"
+                    style={{ display: "block" }}
+                  >
+                    <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th rowSpan={2}>Material Type</th>
+                            <th rowSpan={2}>Material</th>
+                            <th rowSpan={2}>Material Sub-Type</th>
+                            <th rowSpan={2}>Generic Specification</th>
+                            <th rowSpan={2}>Colour </th>
+                            <th rowSpan={2}>Brand </th>
+                            <th rowSpan={2}>UOM</th>
+                            {/* <th rowSpan={2}>Cost QTY</th> */}
+                            <th colSpan={2}>Cost</th>
+                            <th rowSpan={2}>Wastage</th>
+                            <th rowSpan={2}>
+                              Total Estimated Qty Wastage
+                            </th>
                           </tr>
-                        ))}
-
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-
-              </CollapsibleCard>
-
-              <CollapsibleCard title="Assets">
-                <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
-                  <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Asset Type</th>
-                          <th rowSpan={2}>Asset</th>
-                          <th rowSpan={2}>Asset Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          {/* <th rowSpan={2}>Cost QTY</th> */}
-                          <th colSpan={2}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetails.assets.map((asset, index) => (
-                          <tr key={index}>
-                            <td>{asset.asset_type}</td>
-                            <td>{asset.asset_name}</td>
-                            <td>{asset.asset_sub_type}</td>
-                            <td>{asset.asset_specification}</td>
-                            <td>{asset.color}</td>
-                            <td>{asset.brand}</td>
-                            <td>{asset.uom}</td>
-                            {/* <td></td> */}
-                            <td>{asset.co_efficient_factor}</td>
-                            <td>{asset.estimated_quantity}</td>
-                            <td>{asset.wastage}</td>
-                            <td>{asset.estimated_quantity_wastage}</td>
+                          <tr>
+                            <th>Co-Efficient Factor</th>
+                            <th>Estimated Qty</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {boqDetails.materials.map((material, index) => (
+                            <tr key={index}>
+                              <td>{material.material_type}</td>
+                              <td>{material.material_name}</td>
+                              <td>{material.material_sub_type}</td>
+                              <td>{material.generic_info}</td>
+                              <td>{material.color}</td>
+                              <td>{material.brand}</td>
+                              <td>{material.uom}</td>
+                              {/* <td></td> */}
+                              <td>{material.co_efficient_factor}</td>
+                              <td >{material.estimated_quantity}</td>
+                              <td>{material.wastage}</td>
+                              <td>{material.estimated_quantity_wastage}</td>
+                            </tr>
+                          ))}
+                          {
+                            boqDetails?.boq_sub_items?.map((boqSubItem) => (
+                              boqSubItem?.materials?.map((material) => (
+                                <tr key={material.id}>
+                                  <td>{material.material_type}</td>
+                                  <td>{material.material_name}</td>
+                                  <td>{material.material_sub_type}</td>
+                                  <td>{material.generic_info}</td>
+                                  <td>{material.color}</td>
+                                  <td>{material.brand}</td>
+                                  <td>{material.uom}</td>
+                                  <td>{material.co_efficient_factor}</td>
+                                  <td>{material.estimated_quantity}</td>
+                                  <td>{material.wastage}</td>
+                                  <td>{material.estimated_quantity_wastage}</td>
+                                </tr>
+                              ))
+                            ))
+                          }
+
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              </CollapsibleCard>
 
 
-              {/* <CollapsibleCard title="Assests">
+                </CollapsibleCard>
+
+                <CollapsibleCard title="Assets">
+                  <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
+                    <div className="tbl-container mx-3 mt-1" style={{ height: '200px' }}>
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th rowSpan={2}>Asset Type</th>
+                            <th rowSpan={2}>Asset</th>
+                            <th rowSpan={2}>Asset Sub-Type</th>
+                            <th rowSpan={2}>Generic Specification</th>
+                            <th rowSpan={2}>Colour</th>
+                            <th rowSpan={2}>Brand</th>
+                            <th rowSpan={2}>UOM</th>
+                            {/* <th rowSpan={2}>Cost QTY</th> */}
+                            <th colSpan={2}>Cost</th>
+                            <th rowSpan={2}>Wastage</th>
+                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                          </tr>
+                          <tr>
+                            <th>Co-Efficient Factor</th>
+                            <th>Estimated Qty</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {boqDetails.assets.map((asset, index) => (
+                            <tr key={index}>
+                              <td>{asset.asset_type}</td>
+                              <td>{asset.asset_name}</td>
+                              <td>{asset.asset_sub_type}</td>
+                              <td>{asset.asset_specification}</td>
+                              <td>{asset.color}</td>
+                              <td>{asset.brand}</td>
+                              <td>{asset.uom}</td>
+                              {/* <td></td> */}
+                              <td>{asset.co_efficient_factor}</td>
+                              <td>{asset.estimated_quantity}</td>
+                              <td>{asset.wastage}</td>
+                              <td>{asset.estimated_quantity_wastage}</td>
+                            </tr>
+                          ))}
+
+                          {
+                            boqDetails?.boq_sub_items?.map((boqSubItem) => (
+                              boqSubItem?.assets?.map((asset) => (
+
+
+                                <tr key={asset.id}>
+                                  <td>{asset.asset_type}</td>
+                                  <td>{asset.asset_name}</td>
+                                  <td>{asset.asset_sub_type}</td>
+                                  <td>{asset.generic_info}</td>
+                                  <td>{asset.color}</td>
+                                  <td>{asset.brand}</td>
+                                  <td>{asset.uom}</td>
+                                  {/* <td>{asset.asset_quantity}</td> */}
+                                  <td>{asset.co_efficient_factor}</td>
+                                  <td colSpan={2}>{asset.estimated_quantity}</td>
+                                  <td>{asset.wastage}</td>
+                                  <td>{asset.estimated_quantity_wastage}</td>
+                                </tr>
+                              ))
+                            ))
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </CollapsibleCard>
+
+
+                {/* <CollapsibleCard title="Assests">
 
                     <div
                       className="card-body mt-0 pt-0"
@@ -617,7 +685,7 @@ const BOQDetailsPageMaster = () => {
 
                   </CollapsibleCard> */}
 
-            </div>
+              </div>
 
             </div>
 
@@ -760,6 +828,21 @@ const BOQDetailsPageMaster = () => {
               </div>
             </div>
             <div className="d-flex justify-content-center">
+              {loading2 && (
+                <div className="loader-container">
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>Submitting Status...</p>
+                </div>
+              )}
               <button className="purple-btn2" onClick={handleSubmit}>Submit</button>
               <button className="purple-btn1" onClick={handleCancel}>Cancel</button>
             </div>
@@ -827,9 +910,9 @@ const BOQDetailsPageMaster = () => {
             </div>
           </div>
           {/* </div> */}
-        {/* </div> */}
+          {/* </div> */}
 
-      </div>
+        </div>
       </div>
 
 

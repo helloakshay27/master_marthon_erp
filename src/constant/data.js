@@ -273,18 +273,12 @@ export const auditLogColumns = [
 export const auditLogData = [
   {
     srno: 1,
-    user: "Pratham Shastri",
-    date: "15-02-2024",
-    status: "Verified",
-    remark: "Verified & Processed",
+    user: "",
+    date: "",
+    status: "",
+    remark: "",
   },
-  {
-    srno: 2,
-    user: "Ananya Roy",
-    date: "16-02-2024",
-    status: "Pending",
-    remark: "Awaiting Review",
-  },
+ 
 ];
 
 export const participantsTabColumns = [

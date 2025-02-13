@@ -177,7 +177,7 @@ const BOQList = () => {
 
   // Handle Go button click
   const [loading, setLoading] = useState(false);
-   const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
   const handleGoClick = () => {
     // if (!selectedProject || !selectedSite || !selectedWing) {
     //   alert("Please select Project, Site, and Wing");
@@ -191,25 +191,25 @@ const BOQList = () => {
     } else {
       // setLoading(true);
 
-    const projectId = selectedProject ? selectedProject.value : "";
-    const siteId = selectedSite ? selectedSite.value : "";
-    const wingId = selectedWing ? selectedWing.value : "";
+      const projectId = selectedProject ? selectedProject.value : "";
+      const siteId = selectedSite ? selectedSite.value : "";
+      const wingId = selectedWing ? selectedWing.value : "";
 
-    setLoading(true); // Set loading to true before making the request
+      setLoading(true); // Set loading to true before making the request
 
-    axios
-      .get(
-        `https://marathon.lockated.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((response) => {
-        setBoqList(response.data); // Set the fetched data to state
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      })
-      .finally(() => {
-        setLoading(false); // Stop loading when request completes
-      });
+      axios
+        .get(
+          `https://marathon.lockated.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          setBoqList(response.data); // Set the fetched data to state
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading when request completes
+        });
 
     }
   };
@@ -368,8 +368,8 @@ const BOQList = () => {
 
 
   // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    // e.preventDefault();
 
     if (!fromStatus || !toStatus) {
       alert("Please select both 'From Status' and 'To Status'.");
@@ -464,14 +464,14 @@ const BOQList = () => {
       value: 'approved',
     },
   ];
-  
+
 
 
   return (
     <>
       <div className="website-content">
         <div className="module-data-section p-4">
-          <a href="" style={{color:'black'}}>Home &gt; Engineering  &gt; BOQ List</a>
+          <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
           {/* <h5 className="mt-4">BOQ</h5> */}
           <div className="d-flex justify-content-end mt-4">
             {/* <button className="purple-btn2" onClick={handleClick}>
@@ -505,7 +505,7 @@ const BOQList = () => {
 
 
           <div className="card mt-2 There is no selected portion. The entire code file is provided. If you could specify the portion of the code you would like me to improve, I can help you with that.mb-5 ">
-            <CollapsibleCard title="Quick Filter"  isInitiallyCollapsed={true}>
+            <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
               <div className="card-body mt-0 pt-0">
                 <div className="row">
                   <div className="col-md-3">
@@ -518,8 +518,8 @@ const BOQList = () => {
                         placeholder={`Select Project`} // Dynamic placeholder
                       />
                       {errors.project && (
-                          <div className="error-message">{errors.project}</div>
-                        )}
+                        <div className="error-message">{errors.project}</div>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -728,18 +728,18 @@ const BOQList = () => {
                       </select> */}
                       {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
 
-                       <SingleSelector
-                                          options={options}
-                                          value={options.value}
+                      <SingleSelector
+                        options={options}
+                        value={options.value}
                         onChange={handleStatusChange}
-                                          // onChange={handleStatusChange}
-                                          // options.find(option => option.value === status)
-                                          // value={filteredOptions.find(option => option.value === status)}
-                                          // value={options.find(option => option.value === status)}
-                                          // value={selectedSite}
-                                          placeholder={`Select Status`} // Dynamic placeholder
-                                          classNamePrefix="react-select"
-                                        />
+                        // onChange={handleStatusChange}
+                        // options.find(option => option.value === status)
+                        // value={filteredOptions.find(option => option.value === status)}
+                        // value={options.find(option => option.value === status)}
+                        // value={selectedSite}
+                        placeholder={`Select Status`} // Dynamic placeholder
+                        classNamePrefix="react-select"
+                      />
                     </div>
                     <div className="form-group mt-3">
                       <label>To Status</label>
@@ -756,17 +756,17 @@ const BOQList = () => {
                       </select> */}
 
                       <SingleSelector
-                                          options={options}
-                                          value={options.value}
+                        options={options}
+                        value={options.value}
                         onChange={handleToStatusChange}
-                                          // onChange={handleStatusChange}
-                                          // options.find(option => option.value === status)
-                                          // value={filteredOptions.find(option => option.value === status)}
-                                          // value={options.find(option => option.value === status)}
-                                          // value={selectedSite}
-                                          placeholder={`Select Status`} // Dynamic placeholder
-                                          classNamePrefix="react-select"
-                                        />
+                        // onChange={handleStatusChange}
+                        // options.find(option => option.value === status)
+                        // value={filteredOptions.find(option => option.value === status)}
+                        // value={options.find(option => option.value === status)}
+                        // value={selectedSite}
+                        placeholder={`Select Status`} // Dynamic placeholder
+                        classNamePrefix="react-select"
+                      />
                     </div>
                   </div>
                   <div className="col-md-4">
@@ -811,6 +811,19 @@ const BOQList = () => {
               <span> Create BOQ</span>
             </button>
             </a>
+              <button className="purple-btn2" onClick={handleClick}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="white"
+                  className="bi bi-plus"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                </svg>
+                <span> Create BOQ</span>
+              </button>
             </div>
             <div className="mx-3">
               <div className="tbl-container mt-1">
@@ -846,11 +859,11 @@ const BOQList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {boqList && boqList.projects && boqList.projects.map((project,index) => (
+                    {boqList && boqList.projects && boqList.projects.map((project, index) => (
                       <React.Fragment key={project.id}>
 
                         <tr>
-                          <td>{index+1}</td>
+                          <td>{index + 1}</td>
                           <td>
                             {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                           </td>
@@ -931,7 +944,7 @@ const BOQList = () => {
                         {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
                           <React.Fragment key={subProject.id}>
                             <tr>
-                            <td></td>
+                              <td></td>
                               <td>
                                 {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                               </td>
@@ -947,29 +960,29 @@ const BOQList = () => {
                                     (
 
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                         {/* Square */}
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        {/* Square */}
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
                                         {/* Circle */}
                                         {/* <circle cx="12" cy="12" r="9" /> */}
                                         {/* Minus Icon (for when toggled) */}
                                         <line x1="8" y1="12" x2="16" y2="12" />
                                       </svg>
-                                    //   <svg
-                                    //   xmlns="http://www.w3.org/2000/svg"
-                                    //   width="16"
-                                    //   height="16"
-                                    //   fill="black"
-                                    //   className="bi bi-caret-up"
-                                    //   viewBox="0 0 16 16"
-                                    // >
-                                    //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                      //   <svg
+                                      //   xmlns="http://www.w3.org/2000/svg"
+                                      //   width="16"
+                                      //   height="16"
+                                      //   fill="black"
+                                      //   className="bi bi-caret-up"
+                                      //   viewBox="0 0 16 16"
+                                      // >
+                                      //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
 
-                                    // </svg>
+                                      // </svg>
                                     ) : (
 
                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
                                         {/* Square */}
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
                                         {/* Circle */}
                                         {/* <circle cx="12" cy="12" r="9" /> */}
                                         {/* Plus Icon */}
@@ -977,16 +990,16 @@ const BOQList = () => {
                                         <line x1="8" y1="12" x2="16" y2="12" />
                                       </svg>
 
-                                    //   <svg
-                                    //   xmlns="http://www.w3.org/2000/svg"
-                                    //   width="16"
-                                    //   height="16"
-                                    //   fill="black"
-                                    //   className="bi bi-caret-up"
-                                    //   viewBox="0 0 16 16"
-                                    // >
-                                    //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                    // </svg>
+                                      //   <svg
+                                      //   xmlns="http://www.w3.org/2000/svg"
+                                      //   width="16"
+                                      //   height="16"
+                                      //   fill="black"
+                                      //   className="bi bi-caret-up"
+                                      //   viewBox="0 0 16 16"
+                                      // >
+                                      //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                      // </svg>
                                     )
                                   }
                                 </button>
@@ -1023,7 +1036,7 @@ const BOQList = () => {
                               subProject.categories.map((category) => (
                                 <React.Fragment key={category.id}>
                                   <tr>
-                                  <td></td>
+                                    <td></td>
                                     <td>
                                       {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                     </td>
@@ -1092,7 +1105,7 @@ const BOQList = () => {
                                     category.sub_categories_2.map((subCategory) => (
                                       <React.Fragment key={subCategory.id}>
                                         <tr>
-                                        <td></td>
+                                          <td></td>
                                           <td>
                                             {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                           </td>
@@ -1143,7 +1156,7 @@ const BOQList = () => {
                                           subCategory.boq_details.map((boqDetail2) => (
                                             <React.Fragment key={boqDetail2.id}>
                                               <tr>
-                                              <td></td>
+                                                <td></td>
                                                 <td>
                                                   {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                   <input
@@ -1184,7 +1197,7 @@ const BOQList = () => {
                                                 <td className="text-start">
 
                                                   <Link to={`/boq-details-page-master/${boqDetail2.id}`}>
-                                                  <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail2.id}</span>
+                                                    <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail2.id}</span>
                                                   </Link>
                                                 </td>
                                                 <td className="text-start"></td>
@@ -1202,7 +1215,7 @@ const BOQList = () => {
                                               </tr>
 
                                               {/* Render Materials Table for BOQ Detail in Sub-Category  */}
-                                              {openBoqDetailId === boqDetail2.id && boqDetail2.materials && boqDetail2.materials.length > 0 && (
+                                              {openBoqDetailId === boqDetail2.id && (boqDetail2?.materials || boqDetail2?.boq_sub_items?.materials) && (
                                                 <React.Fragment>
                                                   <tr>
                                                     <td colSpan={13}>
@@ -1231,7 +1244,8 @@ const BOQList = () => {
                                                                   </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                  {boqDetail2.materials.map((material) => (
+                                                                  {boqDetail2?.materials?.map((material) => (
+
                                                                     <tr key={material.id}>
                                                                       <td>{material.material_type}</td>
                                                                       <td>{material.material_name}</td>
@@ -1247,6 +1261,27 @@ const BOQList = () => {
                                                                       <td>{material.estimated_quantity_wastage}</td>
                                                                     </tr>
                                                                   ))}
+
+
+                                                                  {
+                                                                    boqDetail2?.boq_sub_items?.map((boqSubItem) => (
+                                                                      boqSubItem?.materials?.map((material) => (
+                                                                        <tr key={material.id}>
+                                                                          <td>{material.material_type}</td>
+                                                                          <td>{material.material_name}</td>
+                                                                          <td>{material.material_sub_type}</td>
+                                                                          <td>{material.generic_info}</td>
+                                                                          <td>{material.color}</td>
+                                                                          <td>{material.brand}</td>
+                                                                          <td>{material.uom}</td>
+                                                                          <td>{material.co_efficient_factor}</td>
+                                                                          <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                          <td>{material.wastage}</td>
+                                                                          <td>{material.estimated_quantity_wastage}</td>
+                                                                        </tr>
+                                                                      ))
+                                                                    ))
+                                                                  }
                                                                 </tbody>
                                                               </table>
                                                             </div>
@@ -1294,6 +1329,29 @@ const BOQList = () => {
                                                                       <td>{asset.estimated_quantity_wastage}</td>
                                                                     </tr>
                                                                   ))}
+
+                                                                  {
+                                                                    boqDetail2?.boq_sub_items?.map((boqSubItem) => (
+                                                                      boqSubItem?.assets?.map((asset) => (
+
+
+                                                                        <tr key={asset.id}>
+                                                                          <td>{asset.asset_type}</td>
+                                                                          <td>{asset.asset_name}</td>
+                                                                          <td>{asset.asset_sub_type}</td>
+                                                                          <td>{asset.generic_info}</td>
+                                                                          <td>{asset.color}</td>
+                                                                          <td>{asset.brand}</td>
+                                                                          <td>{asset.uom}</td>
+                                                                          {/* <td>{asset.asset_quantity}</td> */}
+                                                                          <td>{asset.co_efficient_factor}</td>
+                                                                          <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                          <td>{asset.wastage}</td>
+                                                                          <td>{asset.estimated_quantity_wastage}</td>
+                                                                        </tr>
+                                                                      ))
+                                                                    ))
+                                                                  }
                                                                 </tbody>
                                                               </table>
                                                             </div>
@@ -1319,7 +1377,7 @@ const BOQList = () => {
                                           subCategory.sub_categories_3.map((subCategory3) => (
                                             <React.Fragment key={subCategory3.id}>
                                               <tr>
-                                              <td></td>
+                                                <td></td>
                                                 <td>
                                                   {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                 </td>
@@ -1361,7 +1419,7 @@ const BOQList = () => {
                                                 subCategory3.boq_details.map((boqDetail3) => (
                                                   <React.Fragment key={boqDetail3.id}>
                                                     <tr>
-                                                    <td></td>
+                                                      <td></td>
                                                       <td>
                                                         {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                         <input
@@ -1392,7 +1450,7 @@ const BOQList = () => {
                                                       </td>
                                                       <td className="text-start" >
                                                         <Link to={`/boq-details-page-master/${boqDetail3.id}`}>
-                                                          <span style={{ color: ' #8b0203', textDecoration: 'underline'}}>{boqDetail3.id}</span>
+                                                          <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail3.id}</span>
                                                         </Link>
                                                       </td>
                                                       <td className="text-start"></td>
@@ -1410,7 +1468,7 @@ const BOQList = () => {
                                                     </tr>
 
                                                     {/* Render Materials Table for BOQ Detail in Sub-Category 3 */}
-                                                    {openBoqDetailId1 === boqDetail3.id && boqDetail3.materials && boqDetail3.materials.length > 0 && (
+                                                    {openBoqDetailId1 === boqDetail3.id && (boqDetail3.materials || boqDetail3?.boq_sub_items?.materials) && (
                                                       <React.Fragment>
                                                         <tr>
                                                           <td colSpan={13}>
@@ -1455,6 +1513,25 @@ const BOQList = () => {
                                                                             <td>{material.estimated_quantity_wastage}</td>
                                                                           </tr>
                                                                         ))}
+                                                                        {
+                                                                          boqDetail3?.boq_sub_items?.map((boqSubItem) => (
+                                                                            boqSubItem?.materials?.map((material) => (
+                                                                              <tr key={material.id}>
+                                                                                <td>{material.material_type}</td>
+                                                                                <td>{material.material_name}</td>
+                                                                                <td>{material.material_sub_type}</td>
+                                                                                <td>{material.generic_info}</td>
+                                                                                <td>{material.color}</td>
+                                                                                <td>{material.brand}</td>
+                                                                                <td>{material.uom}</td>
+                                                                                <td>{material.co_efficient_factor}</td>
+                                                                                <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                <td>{material.wastage}</td>
+                                                                                <td>{material.estimated_quantity_wastage}</td>
+                                                                              </tr>
+                                                                            ))
+                                                                          ))
+                                                                        }
                                                                       </tbody>
                                                                     </table>
                                                                   </div>
@@ -1502,6 +1579,29 @@ const BOQList = () => {
                                                                             <td>{asset.estimated_quantity_wastage}</td>
                                                                           </tr>
                                                                         ))}
+
+                                                                        {
+                                                                          boqDetail3?.boq_sub_items?.map((boqSubItem) => (
+                                                                            boqSubItem?.assets?.map((asset) => (
+
+
+                                                                              <tr key={asset.id}>
+                                                                                <td>{asset.asset_type}</td>
+                                                                                <td>{asset.asset_name}</td>
+                                                                                <td>{asset.asset_sub_type}</td>
+                                                                                <td>{asset.generic_info}</td>
+                                                                                <td>{asset.color}</td>
+                                                                                <td>{asset.brand}</td>
+                                                                                <td>{asset.uom}</td>
+                                                                                {/* <td>{asset.asset_quantity}</td> */}
+                                                                                <td>{asset.co_efficient_factor}</td>
+                                                                                <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                <td>{asset.wastage}</td>
+                                                                                <td>{asset.estimated_quantity_wastage}</td>
+                                                                              </tr>
+                                                                            ))
+                                                                          ))
+                                                                        }
                                                                       </tbody>
                                                                     </table>
                                                                   </div>
@@ -1521,7 +1621,7 @@ const BOQList = () => {
                                                       subCategory3.sub_categories_4.map((subCategory4) => (
                                                         <React.Fragment key={subCategory4.id}>
                                                           <tr>
-                                                          <td></td>
+                                                            <td></td>
                                                             <td>
                                                               {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                             </td>
@@ -1563,7 +1663,7 @@ const BOQList = () => {
                                                             subCategory4.boq_details.map((boqDetail4) => (
                                                               <React.Fragment key={boqDetail4.id}>
                                                                 <tr>
-                                                                <td></td>
+                                                                  <td></td>
                                                                   <td>
                                                                     {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                     <input
@@ -1594,7 +1694,7 @@ const BOQList = () => {
                                                                   </td>
                                                                   <td className="text-start">
                                                                     <Link to={`/boq-details-page-master/${boqDetail4.id}`}>
-                                                                    <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail4.id} </span>
+                                                                      <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail4.id} </span>
                                                                     </Link>
                                                                   </td>
                                                                   <td className="text-start"></td>
@@ -1612,7 +1712,7 @@ const BOQList = () => {
                                                                 </tr>
 
                                                                 {/* Render Materials Table for BOQ Detail in Sub-Category 4 */}
-                                                                {openBoqDetailId2 === boqDetail4.id && boqDetail4.materials && boqDetail4.materials.length > 0 && (
+                                                                {openBoqDetailId2 === boqDetail4.id && (boqDetail4.materials || boqDetail4?.boq_sub_items?.materials) && (
                                                                   <React.Fragment>
                                                                     <tr>
                                                                       <td colSpan={12}>
@@ -1657,6 +1757,26 @@ const BOQList = () => {
                                                                                         <td>{material.estimated_quantity_wastage}</td>
                                                                                       </tr>
                                                                                     ))}
+
+                                                                                    {
+                                                                                      boqDetail4?.boq_sub_items?.map((boqSubItem) => (
+                                                                                        boqSubItem?.materials?.map((material) => (
+                                                                                          <tr key={material.id}>
+                                                                                            <td>{material.material_type}</td>
+                                                                                            <td>{material.material_name}</td>
+                                                                                            <td>{material.material_sub_type}</td>
+                                                                                            <td>{material.generic_info}</td>
+                                                                                            <td>{material.color}</td>
+                                                                                            <td>{material.brand}</td>
+                                                                                            <td>{material.uom}</td>
+                                                                                            <td>{material.co_efficient_factor}</td>
+                                                                                            <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                            <td>{material.wastage}</td>
+                                                                                            <td>{material.estimated_quantity_wastage}</td>
+                                                                                          </tr>
+                                                                                        ))
+                                                                                      ))
+                                                                                    }
                                                                                   </tbody>
                                                                                 </table>
                                                                               </div>
@@ -1704,6 +1824,29 @@ const BOQList = () => {
                                                                                         <td>{asset.estimated_quantity_wastage}</td>
                                                                                       </tr>
                                                                                     ))}
+
+                                                                                    {
+                                                                                      boqDetail4?.boq_sub_items?.map((boqSubItem) => (
+                                                                                        boqSubItem?.assets?.map((asset) => (
+
+
+                                                                                          <tr key={asset.id}>
+                                                                                            <td>{asset.asset_type}</td>
+                                                                                            <td>{asset.asset_name}</td>
+                                                                                            <td>{asset.asset_sub_type}</td>
+                                                                                            <td>{asset.generic_info}</td>
+                                                                                            <td>{asset.color}</td>
+                                                                                            <td>{asset.brand}</td>
+                                                                                            <td>{asset.uom}</td>
+                                                                                            {/* <td>{asset.asset_quantity}</td> */}
+                                                                                            <td>{asset.co_efficient_factor}</td>
+                                                                                            <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                            <td>{asset.wastage}</td>
+                                                                                            <td>{asset.estimated_quantity_wastage}</td>
+                                                                                          </tr>
+                                                                                        ))
+                                                                                      ))
+                                                                                    }
                                                                                   </tbody>
                                                                                 </table>
                                                                               </div>
@@ -1721,7 +1864,7 @@ const BOQList = () => {
                                                                   subCategory4.sub_categories_5.map((subCategory5) => (
                                                                     <React.Fragment key={subCategory5.id}>
                                                                       <tr>
-                                                                      <td></td>
+                                                                        <td></td>
                                                                         <td>
                                                                           {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                         </td>
@@ -1764,7 +1907,7 @@ const BOQList = () => {
                                                                         subCategory5.boq_details.map((boqDetail5) => (
                                                                           <React.Fragment key={boqDetail5.id}>
                                                                             <tr>
-                                                                            <td></td>
+                                                                              <td></td>
                                                                               <td>
                                                                                 {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                                                 <input
@@ -1795,7 +1938,7 @@ const BOQList = () => {
                                                                               </td>
                                                                               <td className="text-start">
                                                                                 <Link to={`/boq-details-page-master/${boqDetail5.id}`}>
-                                                                                <span style={{ color: ' #8b0203', textDecoration: 'underline'}}> {boqDetail5.id}</span>
+                                                                                  <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail5.id}</span>
                                                                                 </Link>
                                                                               </td>
                                                                               <td className="text-start"></td>
@@ -1813,7 +1956,7 @@ const BOQList = () => {
                                                                             </tr>
 
                                                                             {/* Render Materials Table for BOQ Detail in Sub-Category 5 */}
-                                                                            {openBoqDetailId3 === boqDetail5.id && boqDetail5.materials && boqDetail5.materials.length > 0 && (
+                                                                            {openBoqDetailId3 === boqDetail5.id && (boqDetail5.materials || boqDetail5?.boq_sub_items?.materials) && (
                                                                               <React.Fragment>
                                                                                 <tr>
                                                                                   <td colSpan={13}>
@@ -1858,6 +2001,26 @@ const BOQList = () => {
                                                                                                     <td>{material.estimated_quantity_wastage}</td>
                                                                                                   </tr>
                                                                                                 ))}
+
+                                                                                                {
+                                                                                                  boqDetail5?.boq_sub_items?.map((boqSubItem) => (
+                                                                                                    boqSubItem?.materials?.map((material) => (
+                                                                                                      <tr key={material.id}>
+                                                                                                        <td>{material.material_type}</td>
+                                                                                                        <td>{material.material_name}</td>
+                                                                                                        <td>{material.material_sub_type}</td>
+                                                                                                        <td>{material.generic_info}</td>
+                                                                                                        <td>{material.color}</td>
+                                                                                                        <td>{material.brand}</td>
+                                                                                                        <td>{material.uom}</td>
+                                                                                                        <td>{material.co_efficient_factor}</td>
+                                                                                                        <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                                        <td>{material.wastage}</td>
+                                                                                                        <td>{material.estimated_quantity_wastage}</td>
+                                                                                                      </tr>
+                                                                                                    ))
+                                                                                                  ))
+                                                                                                }
                                                                                               </tbody>
                                                                                             </table>
                                                                                           </div>
@@ -1905,6 +2068,29 @@ const BOQList = () => {
                                                                                                     <td>{asset.estimated_quantity_wastage}</td>
                                                                                                   </tr>
                                                                                                 ))}
+
+                                                                                                {
+                                                                                                  boqDetail5?.boq_sub_items?.map((boqSubItem) => (
+                                                                                                    boqSubItem?.assets?.map((asset) => (
+
+
+                                                                                                      <tr key={asset.id}>
+                                                                                                        <td>{asset.asset_type}</td>
+                                                                                                        <td>{asset.asset_name}</td>
+                                                                                                        <td>{asset.asset_sub_type}</td>
+                                                                                                        <td>{asset.generic_info}</td>
+                                                                                                        <td>{asset.color}</td>
+                                                                                                        <td>{asset.brand}</td>
+                                                                                                        <td>{asset.uom}</td>
+                                                                                                        {/* <td>{asset.asset_quantity}</td> */}
+                                                                                                        <td>{asset.co_efficient_factor}</td>
+                                                                                                        <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                                        <td>{asset.wastage}</td>
+                                                                                                        <td>{asset.estimated_quantity_wastage}</td>
+                                                                                                      </tr>
+                                                                                                    ))
+                                                                                                  ))
+                                                                                                }
                                                                                               </tbody>
                                                                                             </table>
                                                                                           </div>

@@ -365,39 +365,39 @@ function Members() {
               </ul>
             </div>
             <div className="m-3">
-              <h3>BOQ Pages & Estimation Pages </h3>
+              <h3> Estimation Pages </h3>
               <ul>
-                <li>
+                {/* <li>
                   <Link to="/create-BOQ">Create BOQ</Link>
-                </li>
+                </li> */}
                 {/* <li>
                  <Link to="/boq-list">BOQ-List</Link>
                </li> */}
-                <li>
+                {/* <li>
                   <Link to="/view-BOQ">BOQ List</Link>
-                </li>
-                <li>
+                </li> */}
+                {/* <li>
                   <Link to="/boq-approval-list">BOQ Approval List</Link>
-                </li>
-                <li>
+                </li> */}
+                {/* <li>
                   <Link to="/boq-details-page-master">
                     BOQ Details Page Master
                   </Link>
-                </li>
+                </li> */}
                 {/* <li>
                  <Link to="/boq-approval-details">BOQ Approval Details</Link>
                </li> */}
 
-                <li>
+                {/* <li>
                   <Link to="/boq-edit">BOQ Edit</Link>
-                </li>
+                </li> */}
 
-                <li>
+                {/* <li>
                   <Link to="/create-rate">Create Rate</Link>
                 </li>
                 <li>
                   <Link to="/view-rate">View Rate</Link>
-                </li>
+                </li> */}
 
                 <li>
                   <Link to="/estimation-creation">Estimation creation</Link>
