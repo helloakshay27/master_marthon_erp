@@ -407,7 +407,7 @@ export default function CreateRFQForm({
                   { label: "Material Name", key: "descriptionOfItem" },
                   { label: "Quantity", key: "quantity" },
                   { label: "UOM", key: "unit" },
-                  { label: "Type", key: "type" },
+                  // { label: "Type", key: "type" },
                   { label: "Location", key: "location" },
                   { label: "Rate", key: "rate" },
                   { label: "Amount", key: "amount" },
