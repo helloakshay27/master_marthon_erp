@@ -755,38 +755,58 @@ export default function EditEvent() {
     setFilteredTableData(tableData);
   }, [tableData]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-
-    if (e.target.value === "") {
+  const handleInputChange = (e) => {
+    const query = e.target.value;
+    setSearchTerm(query);
+  
+    if (query) {
+      fetchSuggestions(query);
+    } else {
       setSuggestions([]);
       setIsSuggestionsVisible(false);
-    } else {
-      const filteredSuggestions = tableData.filter((vendor) =>
-        vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
-      );
-      setSuggestions(filteredSuggestions);
-
-      setIsSuggestionsVisible(true);
     }
   };
-
+  
   const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion.name);
+    setSearchTerm(suggestion.name); // Assuming `name` is the property you want
     setIsSuggestionsVisible(false);
-    fetchData(1, suggestion.name, selectedCity);
+    // setFilteredTableData([suggestion]); // Set the table data to only the selected suggestion
+    fetchData(1, suggestion.first_name, "");
   };
-
-  const handleSearchClick = () => {
-    if (searchTerm.trim() === "") {
-      setFilteredTableData(tableData);
+  
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setIsSuggestionsVisible(false);
+    fetchData(1, searchTerm, selectedCity);
+  };
+  
+  const handleResetSearch = async () => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      fetchData();
     } else {
-      const filteredSuggestions = tableData.filter((vendor) =>
-        vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredTableData(filteredSuggestions);
+      setSearchTerm("");
     }
-    setIsSuggestionsVisible(true);
+  };
+  
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      handleResetSearch();
+    }
+  }, [searchTerm]);
+  
+  const fetchSuggestions = async (query) => {
+    try {
+      const response = await fetch(
+        `https://marathon.lockated.com/rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}`
+      );
+      const data = await response.json();
+      setSuggestions(data.vendors || []);
+      console.log("Suggestions:", data.vendors);
+      
+      setIsSuggestionsVisible(true);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
   };
 
   useEffect(() => {}, [eventType, awardType]);
@@ -1182,7 +1202,7 @@ export default function EditEvent() {
                         className="tbl-search form-control"
                         placeholder="Search Vendors"
                         value={searchTerm}
-                        onChange={handleSearchChange}
+                        onChange={handleInputChange}
                         onFocus={() => setIsSuggestionsVisible(true)}
                         onBlur={() =>
                           setTimeout(() => setIsSuggestionsVisible(false), 200)
@@ -1192,7 +1212,7 @@ export default function EditEvent() {
                         <button
                           type="button"
                           className="btn btn-md btn-default"
-                          onClick={handleSearchClick}
+                          onClick={handleSearchSubmit}
                         >
                           <SearchIcon />
                         </button>
@@ -1200,15 +1220,16 @@ export default function EditEvent() {
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul
                           className="suggestions-list position-absolute bg-white border rounded w-100"
-                          style={{ zIndex: 1000, top: "100%" }}
+                          style={{ zIndex: 1000, top: "100%"}}
                         >
                           {suggestions.map((suggestion) => (
                             <li
                               key={suggestion.id}
                               onClick={() => handleSuggestionClick(suggestion)}
-                              className="p-2 cursor-pointer"
+                              style={{ cursor: "pointer" }}
+                              className="p-2 w-100"
                             >
-                              {suggestion.name}
+                              {suggestion.full_name}
                             </li>
                           ))}
                         </ul>
