@@ -36,6 +36,7 @@ const EstimationDetailsSubProject = () => {
 
     const { subProjectId } = useParams();
     const [subProjectDetails, setSubProjectDetails] = useState(null)
+    console.log("sub detail:",subProjectDetails)
     // const [subProjectDetails, setSubProjectDetails] = useState(
     //     {
     //         "rera_area": "",
@@ -235,14 +236,15 @@ const EstimationDetailsSubProject = () => {
                 const response = await fetch(`https://marathon.lockated.com/estimation_details.json?object_id=${subProjectId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setSubProjectDetails(data);
+                console.log("data sub prj:",data)
             } catch (error) {
                 console.error('Error fetching project details:', error);
             }
         };
 
-        if (subProjectId) {
+       
             fetchProjectDetails();
-        }
+        
     }, [subProjectId]);
 
 

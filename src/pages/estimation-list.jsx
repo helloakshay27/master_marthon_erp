@@ -170,7 +170,7 @@ const EstimationList = () => {
                         {/* <QuickFilter /> */}
                         {/* <EstimationQuickFilter/> */}
 
-                        <CollapsibleCard title="Quick Filter">
+                        <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                             {/* <div className="card-body pt-0 mt-0">
                 <div className="row my-2 align-items-end">
                   {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
@@ -355,7 +355,7 @@ const EstimationList = () => {
                                     </div>
                                     <div className="col-md-4">
                                         <button className="purple-btn2 m-0 me-5">
-                                            <a style={{ color: "white" }} href="./erp-material-order-request-create.html">
+                                            <a style={{ color: "white" }} href="/estimation-creation">
                                                 <span style={{ color: "white" }} className="material-symbols-outlined align-text-top me-2">add</span>
                                                 <span style={{ color: "white" }}> Create</span>
                                             </a>

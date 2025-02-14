@@ -28,6 +28,7 @@ const EstimationDetailsProject = () => {
     const handleSettingClose = () => setSettingShow(false);
     const handleSettingModalShow = () => setSettingShow(true);
     const [projectDetails, setProjectDetails] = useState(null)
+    console.log("project data ", projectDetails)
     // const [projectDetails, setProjectDetails] = useState(
     //     {
     //         "rera_area": "",
@@ -233,14 +234,15 @@ const EstimationDetailsProject = () => {
                 const response = await fetch(`https://marathon.lockated.com/estimation_details.json?object_id=${projectId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setProjectDetails(data);
+                console.log("data:",data)
             } catch (error) {
                 console.error('Error fetching project details:', error);
             }
         };
 
-        if (projectId) {
+     
             fetchProjectDetails();
-        }
+       
     }, [projectId]);
 
     // State to track expanded rows

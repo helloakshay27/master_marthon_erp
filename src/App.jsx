@@ -90,6 +90,22 @@ function App() {
               path="/boq-details-page-master/:id"
               element={<BOQDetailsPageMaster />}
             />
+
+            {/* estimation */}
+             <Route path="/estimation-list" element={<EstimationList />} />
+             <Route
+              path="/estimation-details-project/:id"
+              element={<EstimationDetailsProject />}
+            />
+             <Route
+              path="/estimation-details-sub-project/:id"
+              element={<EstimationDetailsSubProject />}
+            />
+              <Route
+              path="/estimation-creation"
+              element={<EstimationCreation />}
+            />
+
           <Route
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
@@ -159,15 +175,12 @@ function App() {
             />
             <Route path="/create-rate" element={<CreateRate />} />
             <Route path="/view-rate" element={<ViewRate />} />
-            <Route path="/estimation-list" element={<EstimationList />} />
+           
             <Route
               path="/estimation-details-wings"
               element={<EstimationDetailsWings />}
             />
-            <Route
-              path="/estimation-details-sub-project/:id"
-              element={<EstimationDetailsSubProject />}
-            />
+           
             <Route
               path="/estimation-comparision"
               element={<EstimationComparision />}
@@ -176,14 +189,8 @@ function App() {
               path="/estimation-approval-details"
               element={<EstimationApprovalDetails />}
             />
-            <Route
-              path="/estimation-creation"
-              element={<EstimationCreation />}
-            />
-            <Route
-              path="/estimation-details-project/:id"
-              element={<EstimationDetailsProject />}
-            />
+          
+            
             <Route
               path="/estimation-approvol-list"
               element={<EstimationApprovolList />}
