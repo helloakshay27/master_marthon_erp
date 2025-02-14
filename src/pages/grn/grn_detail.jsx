@@ -13,7 +13,7 @@ const GoodReceiveNoteDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [statuses, setStatuses] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
@@ -123,6 +123,7 @@ const GoodReceiveNoteDetails = () => {
         status: loadStatus,
       },
     };
+    setLoading(true);
 
     console.log(JSON.stringify(payload));
 
@@ -145,6 +146,10 @@ const GoodReceiveNoteDetails = () => {
     } catch (error) {
       toast.error("Failed to update status. Please try another status.");
     }
+    finally {
+      setLoading(false);
+    }
+
   };
 
   if (loading) return <p>Loading...</p>;
@@ -851,8 +856,8 @@ const GoodReceiveNoteDetails = () => {
                       disabled={data?.disabled}
 
                     >
-                      Update
-                    </button>
+        {loading ? <span className="spinner-border spinner-border-sm"></span> : "Update"}
+        </button>
                   </div>
                   <div className="col-md-2">
                     <button
