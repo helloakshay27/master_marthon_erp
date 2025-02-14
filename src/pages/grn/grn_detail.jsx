@@ -141,6 +141,7 @@ const GoodReceiveNoteDetails = () => {
 
       if (!response.ok) throw new Error("Failed to update status.");
       await response.json();
+
       toast.success("Status updated successfully!");
       window.location.reload();
     } catch (error) {
@@ -152,8 +153,7 @@ const GoodReceiveNoteDetails = () => {
 
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
+
 
   return (
     <>
@@ -849,15 +849,34 @@ const GoodReceiveNoteDetails = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
-                    <button
-                      onClick={handleUpdateStatus}
-                      className="purple-btn2 w-100"
-                      disabled={data?.disabled}
 
-                    >
-        {loading ? <span className="spinner-border spinner-border-sm"></span> : "Update"}
-        </button>
+                  {/* </div> */}
+
+                  <div className="col-md-2">
+                    <div >
+                      {loading && (
+                        <div className="loader-container">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                          </div>
+                          <p>Submitting ...</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleUpdateStatus}
+                        className="purple-btn2 w-100"
+                        disabled={data?.disabled}
+                      >
+                        Update
+                      </button>
+                    </div>
                   </div>
                   <div className="col-md-2">
                     <button
@@ -969,11 +988,14 @@ const GoodReceiveNoteDetails = () => {
                                 <td>
                                   <span
                                     className="px-2 py-1 rounded text-white"
-                                    style={{ backgroundColor: "green" }}
+                                    style={{
+                                      backgroundColor: log.status === "Pending" ? "red" : "green"
+                                    }}
                                   >
                                     {log.status}
                                   </span>
                                 </td>
+
                                 <td>
                                   <p>{log.remark}</p>
                                 </td>
