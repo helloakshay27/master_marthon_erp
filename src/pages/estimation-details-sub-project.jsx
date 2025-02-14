@@ -237,8 +237,10 @@ console.log("id sub:",id)
                 const data = await response.json();
                 setSubProjectDetails(data);
                 console.log("data sub prj:",data)
+                setLoading(false);
             } catch (error) {
                 console.error('Error fetching project details:', error);
+                setLoading(false);
             }
         };
 
@@ -356,6 +358,18 @@ console.log("id sub:",id)
     const toggleSubCategory5 = (id) => {
         setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
     };
+
+     const [loading, setLoading] = useState(true);  // State for loading indicator
+      const [error, setError] = useState(null);  // State for handling errors
+    // Loading, error, and data display logic
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    // return <div>{error}</div>;
+    return <div>Something went wrong</div>;
+  }
 
 
     return (
