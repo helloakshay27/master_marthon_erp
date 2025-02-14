@@ -262,6 +262,8 @@ export default function EditEvent() {
   }, []);
 
   const handleEventConfigurationSubmit = (config) => {
+    console.log("config", config);
+    
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
     setSelectedStrategy(config.event_configuration);
@@ -599,17 +601,10 @@ export default function EditEvent() {
   };
 
   const validateForm = () => {
+    console.log(eventType, awardType, dynamicExtensionConfigurations, eventDetails?.event_type_detail?.delivery_date, eventDetails?.event_type_detail?.award_scheme, eventDetails?.event_type_detail?.event_type, eventDetails?.event_type_detail?.event_configuration, eventDetails?.event_materials, eventDetails?.event_vendors, eventDetails?.resource_term_conditions, eventDetails?.attachments);
+    
     if (!eventName) {
       toast.error("Event name is required");
-      scrollToTop();
-      return false;
-    }
-    if (
-      !eventType ||
-      !awardType ||
-      !dynamicExtensionConfigurations.delivery_date
-    ) {
-      toast.error("Please select event type details");
       scrollToTop();
       return false;
     }
@@ -669,9 +664,9 @@ export default function EditEvent() {
             scheduleData?.evaluation_time,
         },
         event_type_detail_attributes: {
-          event_type: eventType,
-          award_scheme: awardType,
-          event_configuration: selectedStrategy,
+          event_type: eventType ? eventType : eventDetails?.event_type_detail?.event_type,
+          award_scheme: awardType ? awardType : eventDetails?.event_type_detail?.award_scheme,
+          event_configuration: selectedStrategy ? selectedStrategy : eventDetails?.event_type_detail?.event_configuration,
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type || "",
           triggered_time_extension_on_last:
@@ -684,7 +679,7 @@ export default function EditEvent() {
           extend_time_min: 10,
           time_extension_change:
             dynamicExtensionConfigurations.time_extension_on_change_in || "",
-          delivery_date: dynamicExtensionConfigurations.delivery_date || "",
+          delivery_date: dynamicExtensionConfigurations.delivery_date || eventDetails?.event_type_detail?.delivery_date,
         },
         event_materials_attributes: materialFormData.map((material) => ({
           id: material.id || null, // Set id to null for new rows
@@ -727,7 +722,6 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData :---", eventData);
 
     try {
       const data = await updateEvent(id, eventData);
