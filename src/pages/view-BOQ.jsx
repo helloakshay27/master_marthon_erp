@@ -796,7 +796,7 @@ const BOQList = () => {
             {/* boq list table is here  start */}
             <div className="d-flex justify-content-end me-2">
               <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
-              <a herf="/create-BOQ">
+              {/* <a herf="/create-BOQ">
               <button className="purple-btn2" >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -810,7 +810,7 @@ const BOQList = () => {
               </svg>
               <span> Create BOQ</span>
             </button>
-            </a>
+            </a> */}
               <button className="purple-btn2" onClick={handleClick}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
