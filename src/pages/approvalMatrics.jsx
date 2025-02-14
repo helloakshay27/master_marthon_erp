@@ -72,8 +72,9 @@ const ApprovalMatrics = () => {
     const fetchApprovals = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
+          `https://marathon.lockated.com/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
         );
+
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }
