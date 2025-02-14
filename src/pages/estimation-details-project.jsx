@@ -23,7 +23,7 @@ import { useParams } from 'react-router-dom';
 
 
 const EstimationDetailsProject = () => {
-    const { projectId } = useParams();
+    const { id } = useParams();
     const [settingShow, setSettingShow] = useState(false);
     const handleSettingClose = () => setSettingShow(false);
     const handleSettingModalShow = () => setSettingShow(true);
@@ -226,12 +226,12 @@ const EstimationDetailsProject = () => {
     const handleClose = () => setShow(false);
     const myArray = ["Sr.no	", "Category level", "WBS Code", "Type", "Category", 'Budget', 'Order Draft Value (WO/PO)', 'Order Submit Value (WO/PO)', 'Order Approved Value (WO/PO)', 'Miscellaneous Expenses Certified', 'Miscellaneous Expenses Paid', "Balance Budget", "% Balance", "Debit Note WO/PO", "Abstract & GRN Total Value", "Abstract & GRN Certified", "Material Issued", "Material Consumed", "Stock at Site (Inventory)", "Abstract & GRN - Pending", "% Completion", "Total Bills Value (WO/PO)", "Total Bills Paid Value (WO/PO)", "Bill Balance Value", "Total Advance Paid (WO/PO)", "Total Advance Adjusted (WO/PO)", "Total Outstanding Advance (WO/PO)", "Balance yet to be Paid"];
 
-
+console.log("project id:",id)
     useEffect(() => {
         // Fetch project details from API based on projectId
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`https://marathon.lockated.com/estimation_details.json?object_id=${projectId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+                const response = await fetch(`https://marathon.lockated.com/estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setProjectDetails(data);
                 console.log("data:",data)
@@ -243,7 +243,7 @@ const EstimationDetailsProject = () => {
      
             fetchProjectDetails();
        
-    }, [projectId]);
+    }, [id]);
 
     // State to track expanded rows
     const [expandedRows, setExpandedRows] = useState([]);
