@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is included
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { baseURL1 } from "../../confi/apiDomain";
+import { baseURL } from "../../confi/apiDomain";
 import Select from "react-select"; // Importing the react-select component
 import FormattedDate from "../../components/FormattedDate";
 
@@ -68,7 +68,7 @@ const GoodReceiveNoteDetails = () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get("token");
-        const apiUrl = `${baseURL1}/good_receive_notes/${id}.json?token=${token}`;
+        const apiUrl = `${baseURL}/good_receive_notes/${id}.json?token=${token}`;
 
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error("Failed to fetch details.");
@@ -99,7 +99,7 @@ const GoodReceiveNoteDetails = () => {
     };
 
     fetchStatus();
-  }, [id, baseURL1]);
+  }, [id, baseURL]);
 
   const handleStatusChange = (selectedOption) => {
     if (data?.disabled) {
@@ -130,7 +130,7 @@ const GoodReceiveNoteDetails = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL1}/good_receive_notes/${id}/update_status.json?token=${token}`,
+        `${baseURL}/good_receive_notes/${id}/update_status.json?token=${token}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
