@@ -10,6 +10,7 @@ import {
   SelectBox,
   Table,
 } from "../components";
+import { baseURL } from "../confi/apiDomain"
 
 import { citiesList, participantsTabColumns } from "../constant/data";
 import { useNavigate } from "react-router-dom";
@@ -269,7 +270,7 @@ export default function CreateEvent() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
 
@@ -526,7 +527,7 @@ export default function CreateEvent() {
 
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {
@@ -611,7 +612,7 @@ export default function CreateEvent() {
   const fetchTermsAndConditions = async () => {
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1"
+        `${baseURL}rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
       );
       const data = await response.json();
       const termsList = data.list.map((term) => ({

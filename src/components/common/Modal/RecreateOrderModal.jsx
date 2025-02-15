@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { useParams } from "react-router-dom";
+import { baseURL } from "../../../confi/apiDomain";
 
 const RecreateOrderModal = ({ show, handleClose }) => {
   const durations = [
@@ -48,7 +49,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
         const result = await response.json();
         console.log("API Response Structure", result); // Inspect the API response structure
@@ -144,7 +145,7 @@ const RecreateOrderModal = ({ show, handleClose }) => {
 
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {

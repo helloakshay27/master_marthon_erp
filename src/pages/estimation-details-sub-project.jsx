@@ -21,6 +21,7 @@ import {
 import { auditLogColumns, auditLogData } from "../constant/data";
 import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 import { useParams } from 'react-router-dom';
+import { baseURL } from "../confi/apiDomain";
 
 const EstimationDetailsSubProject = () => {
     const [settingShow, setSettingShow] = useState(false);
@@ -233,7 +234,7 @@ console.log("id sub:",id)
         // Fetch project details from API based on projectId
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`https://marathon.lockated.com/estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+                const response = await fetch(`${baseURL}estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setSubProjectDetails(data);
                 console.log("data sub prj:",data)

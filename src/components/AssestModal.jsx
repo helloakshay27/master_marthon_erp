@@ -3,6 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import CustomPagination from "./CustomPagination";
 import axios from "axios";
 import MultiSelector from "./base/Select/MultiSelector";
+import { baseURL } from "../confi/apiDomain";
 
 const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
     // const [selectedMaterials, setSelectedMaterials] = useState([]);
@@ -136,7 +137,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
   
      // Fetching inventory types data from API on component mount
      useEffect(() => {
-      axios.get('https://marathon.lockated.com/pms/inventory_types.json?q[category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+      axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
         .then(response => {
           // Map the fetched data to the format required by react-select
           const options = response.data.map(inventory => ({
@@ -156,7 +157,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
       if (selectedInventory) {
         const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
   
-        axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             // Map the sub-types to options for the select dropdown
             const options = response.data.map(subType => ({
@@ -192,7 +193,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
         if (selectedInventory) {
           const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
     
-          axios.get(`https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then(response => {
               // Map the sub-types to options for the select dropdown
               const options = response.data.map(subType => ({
@@ -238,7 +239,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
      
       // const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
       // const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
-      const apiUrl = `https://marathon.lockated.com/pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&q[material_category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      const apiUrl = `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&q[material_category_eq]=asset&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
   
       axios.get(apiUrl)
         .then(response => {

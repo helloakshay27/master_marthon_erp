@@ -11,6 +11,7 @@ import { useParams, useLocation } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
 DataTable.use(DT);
+import { baseURL } from "../confi/apiDomain";
 
 import {
   LayoutModal,
@@ -138,7 +139,7 @@ export default function VendorListPage() {
       const token = urlParams.get("token");
 
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/events/advance_filter_options",
+        `${baseURL}/rfq/events/advance_filter_options`,
         {
           params: {
             token: token,
@@ -205,13 +206,11 @@ export default function VendorListPage() {
         }),
       };
 
-      const liveEventsUrl =
-        "https://marathon.lockated.com/rfq/events/live_events";
-      const pastEventsUrl =
-        "https://marathon.lockated.com/rfq/events/past_events";
-      const allEventsUrl = "https://marathon.lockated.com/rfq/events";
+      const liveEventsUrl = `${baseURL}/rfq/events/live_events`;
+      const pastEventsUrl = `${baseURL}/rfq/events/past_events`;
+      const allEventsUrl = `${baseURL}/rfq/events`;
 
-      const eoiUrl = "https://marathon.lockated.com/rfq/events/eois";
+      const eoiUrl = `${baseURL}/rfq/events/eois`;
 
       const [liveResponse, historyResponse, allResponse, eoiResponse] =
         await Promise.all([
@@ -406,7 +405,7 @@ export default function VendorListPage() {
     setError("");
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/rfq/events?token=${token}&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchQuery}`
+        `${baseURL}/rfq/events?token=${token}&q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]=${searchQuery}`
       );
 
       // const { live_events, history_events, all_events } = response.data;
@@ -494,7 +493,7 @@ export default function VendorListPage() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/events/event_vendors_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411&page=1"
+        `${baseURL}/rfq/events/event_vendors_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411&page=1`
       );
 
       const vendorData = response.data.list;

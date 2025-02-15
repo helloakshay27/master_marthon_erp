@@ -5,6 +5,7 @@ import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
 import { useEffect, useState } from "react";
 import React from "react";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function CreateRFQForm({
   data,
@@ -25,30 +26,104 @@ export default function CreateRFQForm({
   const [locationOptions, setLocationOptions] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
 
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (response.data && Array.isArray(response.data.materials)) {
-          const materialOptions = response.data.materials.map((material) => ({
-            value: material.id,
-            label: material.name,
-          }));
-          setMaterials(materialOptions);
-        } else {
-          console.error("Unexpected response structure:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching materials:", error);
+  const fetchMaterials = async (inventoryTypeId) => {
+    try {
+      const url = inventoryTypeId
+        ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
+        : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      console.log(url, inventoryTypeId);
+      
+        const response = await axios.get(url);
+      if (response.data && Array.isArray(response.data.materials)) {
+        const materialOptions = response.data.materials.map((material) => ({
+          value: material.id,
+          label: material.name,
+          uom: material.uom,
+        }));
+        setMaterials(materialOptions);
+        console.log("materials :----",materials);
+        
+      } else {
+        console.error("Unexpected response structure:", response.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching materials:", error);
+    }
+  };
+
+  const fetchSubSections = async (inventoryTypeId) => {
+    try {
+      const url = inventoryTypeId
+        ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
+        : `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      const response = await axios.get(url);
+      if (response.data && Array.isArray(response.data.inventory_sub_types)) {
+        setSubSectionOptions(
+          response.data.inventory_sub_types.map((subSection) => ({
+            label: subSection.name,
+            value: subSection.value,
+          }))
+        );
+        console.log("subSectionOptions :----",subSectionOptions);
+        
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching sub-sections:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (existingData) {
+      const updatedSections = Object.entries(existingData).map(
+        ([materialType, subMaterials]) => {
+          const materialsArray = Object.values(subMaterials).flat();
+          console.log("materialsArray:----",materialsArray);
+          
+          const inventoryTypeId = materialsArray[0]?.inventory_type_id;
+          const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
+          
+          fetchMaterials(inventoryTypeId); 
+          fetchSubSections(inventorySubTypeId); 
+          return {
+            materialType,
+            sectionData: materialsArray.map((material) => ({
+              id: material.id,
+              descriptionOfItem:
+                material.inventory_name || material.descriptionOfItem,
+              inventory_id: material.inventory_id,
+              quantity: material.quantity,
+              unit: material.uom,
+              location: material.location,
+              rate: material.rate,
+              amount: material.amount,
+              sub_section_id: material.sub_section_id,
+              section_id: material.inventory_type_id || material.section_id,
+              inventory_type_id: material.inventory_type_id, 
+              inventory_sub_type_id: material.inventory_sub_type_id, 
+              subMaterialType: material.inventory_sub_type, // Correctly map subMaterialType
+              _destroy: false, 
+            })),
+          };
+        }
+      );
+      // @ts-ignore
+      setSections(updatedSections);
+      setData(updatedSections.flatMap((section) => section.sectionData)); 
+    } else {
+      fetchMaterials(); 
+      fetchSubSections(); // Fetch sub-sections without inventory_type_id
+    }
+  }, [existingData]);
+
+  useEffect(() => {
+    console.log("Existing data:", existingData);
 
     const fetchSections = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data && Array.isArray(response.data.inventory_types)) {
@@ -66,30 +141,10 @@ export default function CreateRFQForm({
       }
     };
 
-    const fetchSubSections = async () => {
-      try {
-        const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (response.data && Array.isArray(response.data.inventory_sub_types)) {
-          setSubSectionOptions(
-            response.data.inventory_sub_types.map((subSection) => ({
-              label: subSection.name,
-              value: subSection.value,
-            }))
-          );
-        } else {
-          console.error("Unexpected response structure:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching sub-sections:", error);
-      }
-    };
-
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         if (response.data && Array.isArray(response.data.locations_list)) {
           setLocationOptions(
@@ -109,7 +164,7 @@ export default function CreateRFQForm({
     const fetchUoms = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         if (response.data && Array.isArray(response.data.unit_of_measures)) {
           const uomOptions = response.data.unit_of_measures.map((uom) => ({
@@ -125,47 +180,12 @@ export default function CreateRFQForm({
       }
     };
 
-    fetchMaterials();
     fetchSections();
     fetchSubSections();
     fetchLocations();
     fetchUoms();
+    fetchMaterials();
   }, []);
-
-  useEffect(() => {
-    if (existingData) {
-      const updatedSections = Object.entries(existingData).map(
-        ([materialType, subMaterials]) => {
-          return {
-            materialType,
-            sectionData: Object.entries(subMaterials).flatMap(
-              ([subMaterialType, materials]) =>
-                materials.map((material) => ({
-                  id: material.id,
-                  descriptionOfItem:
-                    material.inventory_name || material.descriptionOfItem,
-                  inventory_id: material.inventory_id,
-                  quantity: material.quantity,
-                  unit: material.uom,
-                  location: material.location,
-                  rate: material.rate,
-                  amount: material.amount,
-                  sub_section_id: material.sub_section_id, // Correctly map sub_section_id
-                  section_id: material.inventory_type_id || material.section_id,
-                  inventory_type_id: material.inventory_type_id, // Add inventory_type_id
-                  inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
-                  subMaterialType,
-                  _destroy: false, // Ensure _destroy is false for existing data
-                }))
-            ),
-          };
-        }
-      );
-      // @ts-ignore
-      setSections(updatedSections);
-      setData(updatedSections.flatMap((section) => section.sectionData)); // Ensure data is set immediately
-    }
-  }, [existingData]);
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
@@ -332,7 +352,7 @@ export default function CreateRFQForm({
                   <div className="flex-grow-1">
                     <SelectBox
                       label={"Select Material Type"}
-                      options={sectionOptions}
+                      options={sectionOptions} 
                       defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material Type"

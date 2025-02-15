@@ -5,6 +5,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
+import { baseURL } from "../confi/apiDomain";
 
 export default function EoiDeatailPage() {
   //user overview
@@ -47,7 +48,7 @@ export default function EoiDeatailPage() {
       const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Your token
 
       // Construct the URL for the PUT API request
-      const url = `https://marathon.lockated.com/rfq/events/${eventId}/expression_of_interests/${eoiId}?token=${token}&q[vendor_id_in]=${vendorId}`;
+      const url = `${baseURL}rfq/events/${eventId}/expression_of_interests/${eoiId}?token=${token}&q[vendor_id_in]=${vendorId}`;
 
       // Define the payload to send in the request (if required by the API)
       const payload = {
@@ -87,7 +88,7 @@ export default function EoiDeatailPage() {
       const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Your token
 
       // Construct the URL for the PUT API request
-      const url = `https://marathon.lockated.com/rfq/events/${eventId}/expression_of_interests/${eoiId}?token=${token}&q[vendor_id_in]=${vendorId}`;
+      const url = `${baseURL}rfq/events/${eventId}/expression_of_interests/${eoiId}?token=${token}&q[vendor_id_in]=${vendorId}`;
 
       // Define the payload to send in the request (if required by the API)
       const payload = {
@@ -129,7 +130,7 @@ export default function EoiDeatailPage() {
       try {
         // Fetch data directly without headers
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         // Transform the API response into the required table data format
@@ -264,7 +265,7 @@ export default function EoiDeatailPage() {
     const fetchTerms = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         console.log("API Response terms and condition:", response.data); //
         // setTerms(response.data.terms_and_conditions || []);
@@ -915,7 +916,7 @@ export default function EoiDeatailPage() {
                                             </td> */}
                                             <td className="text-start">
                                               <a
-                                                href={`https://marathon.lockated.com/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                                                 download={attachment.filename}
                                               >
                                                 <svg

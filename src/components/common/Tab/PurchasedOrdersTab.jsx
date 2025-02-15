@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Table from "../../base/Table/Table";
 import { purchaseOrderColumns } from "../../../constant/data";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function PurchasedOrdersTab() {
     const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -18,7 +19,7 @@ export default function PurchasedOrdersTab() {
       setPurchaseOrdersLoading(true);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         console.log("Purchase Orders:", response.data);
 

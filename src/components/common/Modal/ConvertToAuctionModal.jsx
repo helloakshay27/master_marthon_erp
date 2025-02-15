@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
+import { baseURL } from "../../../confi/apiDomain";
 
 const ConvertToAuctionModal = ({ show, handleClose }) => {
   const [useRFQQuotes, setUseRFQQuotes] = useState(false);
@@ -15,7 +16,7 @@ const ConvertToAuctionModal = ({ show, handleClose }) => {
   const handleSave = async () => {
     setLoading(true);
 
-    const apiUrl = `https://marathon.lockated.com/rfq/events/${eventId}/convert_to_auction?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}rfq/events/${eventId}/convert_to_auction?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     const payload = {
       include_bid: useRFQQuotes ? "true" : "false",

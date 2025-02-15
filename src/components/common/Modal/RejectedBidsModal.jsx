@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { useParams } from "react-router-dom";
+import { baseURL } from "../../../confi/apiDomain";
 
 const RejectedBidsModal = ({ show, handleClose }) => {
   const [rejectedBids, setRejectedBids] = useState([]);
@@ -24,7 +25,7 @@ const RejectedBidsModal = ({ show, handleClose }) => {
   const fetchRejectedBids = async () => {
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${eventId}/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`
+        `${baseURL}rfq/events/${eventId}/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`
       );
       const data = await response.json();
 

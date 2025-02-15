@@ -16,6 +16,7 @@ import DropArrowIcon from "../../common/Icon/DropArrowIcon";
 import ShortTable from "../../base/Table/ShortTable";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function AllocationTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -83,7 +84,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -103,7 +104,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchSelectedData = async () => {
       // try {
       //   const response = await fetch(
-      //     `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/allocations?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      //     `${baseURL}rfq/events/${eventId}/event_vendors/allocations?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       //   );
       //   if (!response.ok) {
       //     throw new Error(`HTTP error! status: ${response.status}`);
@@ -171,7 +172,7 @@ export default function AllocationTab({ isCounterOffer }) {
       setError(null);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBidCounterData(response.data);
       } catch (err) {
@@ -234,7 +235,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
     try {
       const response = await axios.post(
-        `https://marathon.lockated.com/rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           bid_id: bid_id,
           bid_material_id: id,
@@ -376,7 +377,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
     try {
       const response = await axios.post(
-        `https://marathon.lockated.com/rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         jsonBody
       );
       toast.success("PO created successfully");
@@ -400,7 +401,7 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchParticipationSummary = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -420,7 +421,7 @@ export default function AllocationTab({ isCounterOffer }) {
   //     setPurchaseOrdersLoading(true);
   //     try {
   //       const response = await axios.get(
-  //         `https://marathon.lockated.com/rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${pmsIdVal}`
+  //         `${baseURL}rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${pmsIdVal}`
   //       );
   //       console.log("Purchase Orders:", response.data);
         

@@ -1,6 +1,7 @@
 import React,{useEffect,useState} from "react";
 import ScatterChart from "../Chart/ScatterChart";
 import axios from "axios";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function AnalyticsTab({ eventId }) {
 
@@ -25,7 +26,7 @@ export default function AnalyticsTab({ eventId }) {
 
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_analytics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `${baseURL}rfq/events/${eventId}/event_analytics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
 
         if (!response.ok) {
@@ -53,7 +54,7 @@ export default function AnalyticsTab({ eventId }) {
 
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_materials_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `${baseURL}rfq/events/${eventId}/event_materials_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

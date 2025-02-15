@@ -8,6 +8,7 @@ import { QuickFilter } from "../components";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { SingleValue } from "react-select/animated";
+import { baseURL } from "../confi/apiDomain";
 
 const ApprovalMatrics = () => {
   const [approvals, setApprovals] = useState([]);
@@ -72,7 +73,7 @@ const ApprovalMatrics = () => {
     const fetchApprovals = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
+          `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
         );
 
         if (!response.ok) {
@@ -109,14 +110,14 @@ const ApprovalMatrics = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        ("https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414");
+        `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
           fetch(
-            "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e0784141`
           ),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
@@ -180,7 +181,7 @@ const ApprovalMatrics = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -303,7 +304,7 @@ const ApprovalMatrics = () => {
     console.log(" Type Value:", filters.company);
     console.log("Query Params Before Fetch:", queryParams.toString());
 
-    const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     try {
       const response = await fetch(apiUrl);
@@ -349,7 +350,7 @@ const ApprovalMatrics = () => {
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&page_size=${pageSize}`
+        `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&page_size=${pageSize}`
       );
       if (!response.ok) throw new Error("Failed to fetch initial data");
 

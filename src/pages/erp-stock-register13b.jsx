@@ -13,7 +13,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
-import { baseURL1 } from "../confi/apiDomain"; // Import baseURL using named import
+import { baseURL } from "../confi/apiDomain"; // Import baseURL using named import
 import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
 import $ from "jquery";
@@ -49,7 +49,7 @@ const ErpStockRegister13B = () => {
     const token = urlParams.get('token');
 
         const response = await fetch(
-          `${baseURL1}/pms/inventories/stock_data.json?token=${token}`
+          `${baseURL}/pms/inventories/stock_data.json?token=${token}`
         ); // Replace with your API endpoint
 
         if (!response.ok) {
