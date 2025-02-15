@@ -6,6 +6,7 @@ import { MultiSelector } from "../components";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 const InvoiceApproval = () => {
   const [filterOptions, setFilterOptions] = useState({
@@ -113,10 +114,10 @@ const InvoiceApproval = () => {
         // );
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
           fetch(
-            "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
@@ -172,7 +173,7 @@ const InvoiceApproval = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -191,7 +192,7 @@ const InvoiceApproval = () => {
 
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+        `${baseURL}/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
         }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
           siteId || ""
@@ -557,7 +558,7 @@ const InvoiceApproval = () => {
     // API call to create the invoice approval
     axios
       .post(
-        "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       )
       .then((response) => {
@@ -587,186 +588,186 @@ const InvoiceApproval = () => {
       });
   };
 
-  const handleSaveAndCreate = () => {
-    setLoading(true);
-    const errors = [];
+  // const handleSaveAndCreate = () => {
+  //   setLoading(true);
+  //   const errors = [];
 
-    if (!formData.company_id) errors.push("Company is required.");
-    if (!formData.department_id) errors.push("Department is required.");
-    if (!formData.module_id) errors.push("Module is required.");
+  //   if (!formData.company_id) errors.push("Company is required.");
+  //   if (!formData.department_id) errors.push("Department is required.");
+  //   if (!formData.module_id) errors.push("Module is required.");
 
-    // 🔹 Validate Approval Levels
-    if (approvalLevels.length === 0) {
-      errors.push("At least one Approval Level is required.");
-    } else {
-      approvalLevels.forEach((level, index) => {
-        if (!level.name)
-          errors.push(`Approval Level ${index + 1}: Name is required.`);
-        if (!level.order)
-          errors.push(`Approval Level ${index + 1}: Order is required.`);
-        if (!level.users || level.users.length === 0)
-          errors.push(
-            `Approval Level ${index + 1}: At least one user is required.`
-          );
-      });
-    }
+  //   // 🔹 Validate Approval Levels
+  //   if (approvalLevels.length === 0) {
+  //     errors.push("At least one Approval Level is required.");
+  //   } else {
+  //     approvalLevels.forEach((level, index) => {
+  //       if (!level.name)
+  //         errors.push(`Approval Level ${index + 1}: Name is required.`);
+  //       if (!level.order)
+  //         errors.push(`Approval Level ${index + 1}: Order is required.`);
+  //       if (!level.users || level.users.length === 0)
+  //         errors.push(
+  //           `Approval Level ${index + 1}: At least one user is required.`
+  //         );
+  //     });
+  //   }
 
-    // 🔹 Show validation errors
-    if (errors.length > 0) {
-      setLoading(false);
-      alert("plz fill required fields"); // Display all errors in an alert
-      return; // Stop function execution
-    }
+  //   // 🔹 Show validation errors
+  //   if (errors.length > 0) {
+  //     setLoading(false);
+  //     alert("plz fill required fields"); // Display all errors in an alert
+  //     return; // Stop function execution
+  //   }
 
-    // 🔹 Construct Payload
-    const payload = {
-      approval_type: formData.module_id,
-      company_id: formData.company_id,
-      project_id: formData.project_id,
-      department_id: formData.department_id,
-      site_id: formData.site_id,
-      snag_checklist_id: formData.template_id,
-      pms_inventory_type_id: formData.pms_supplier_id,
-      invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-        name: level.name,
-        order: level.order,
-        active: true,
-        escalate_to_users: level.users.map((user) => user.value),
-      })),
-    };
+  //   // 🔹 Construct Payload
+  //   const payload = {
+  //     approval_type: formData.module_id,
+  //     company_id: formData.company_id,
+  //     project_id: formData.project_id,
+  //     department_id: formData.department_id,
+  //     site_id: formData.site_id,
+  //     snag_checklist_id: formData.template_id,
+  //     pms_inventory_type_id: formData.pms_supplier_id,
+  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+  //       name: level.name,
+  //       order: level.order,
+  //       active: true,
+  //       escalate_to_users: level.users.map((user) => user.value),
+  //     })),
+  //   };
 
-    // 🔹 API Call
-    axios
-      .post(
-        "https://marathon.lockated.com/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-        payload
-      )
-      .then((response) => {
-        console.log("Approval Created:", response.data);
-        alert("Approval created successfully!");
+  //   // 🔹 API Call
+  //   axios
+  //     .post(
+  //       `${baseURL}/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e0784141`,
+  //       payload
+  //     )
+  //     .then((response) => {
+  //       console.log("Approval Created:", response.data);
+  //       alert("Approval created successfully!");
 
-        // Reset form selections
-        setSelectedCompany(null);
-        setSelectedProject(null);
-        setSelectedSite(null);
-        setSelectedDepartment(null);
-        setSelectedModule(null);
-        setSelectedMaterialType(null);
+  //       // Reset form selections
+  //       setSelectedCompany(null);
+  //       setSelectedProject(null);
+  //       setSelectedSite(null);
+  //       setSelectedDepartment(null);
+  //       setSelectedModule(null);
+  //       setSelectedMaterialType(null);
 
-        // Reset form data
-        setFormData((prevState) => ({
-          ...prevState,
-          department_id: null,
-          module_id: null,
-          pms_supplier_id: null,
-        }));
+  //       // Reset form data
+  //       setFormData((prevState) => ({
+  //         ...prevState,
+  //         department_id: null,
+  //         module_id: null,
+  //         pms_supplier_id: null,
+  //       }));
 
-        // Reset dropdowns
-        setFilterOptions((prevOptions) => ({
-          ...prevOptions,
-          departments: prevOptions.departments.map((dept) => ({
-            ...dept,
-            selected: false,
-          })),
-          modules: prevOptions.modules.map((mod) => ({
-            ...mod,
-            selected: false,
-          })),
-          material_types: prevOptions.material_types.map((mat) => ({
-            ...mat,
-            selected: false,
-          })),
-        }));
+  //       // Reset dropdowns
+  //       setFilterOptions((prevOptions) => ({
+  //         ...prevOptions,
+  //         departments: prevOptions.departments.map((dept) => ({
+  //           ...dept,
+  //           selected: false,
+  //         })),
+  //         modules: prevOptions.modules.map((mod) => ({
+  //           ...mod,
+  //           selected: false,
+  //         })),
+  //         material_types: prevOptions.material_types.map((mat) => ({
+  //           ...mat,
+  //           selected: false,
+  //         })),
+  //       }));
 
-        setApprovalLevels([{ order: "", name: "", users: [] }]);
+  //       setApprovalLevels([{ order: "", name: "", users: [] }]);
 
-        // Fetch updated dropdown data
-        fetchDropdownData();
-      })
-      .catch((error) => {
-        console.error("Error creating invoice approval:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  //       // Fetch updated dropdown data
+  //       fetchDropdownData();
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error creating invoice approval:", error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
 
-  const fetchDropdownData = async () => {
-    try {
-      const [dropdownResponse, materialTypeResponse] = await Promise.all([
-        fetch(
-          "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        ),
-        fetch(
-          "https://marathon.lockated.com/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        ),
-      ]);
+  // const fetchDropdownData = async () => {
+  //   try {
+  //     const [dropdownResponse, materialTypeResponse] = await Promise.all([
+  //       fetch(
+  //         `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       ),
+  //       fetch(
+  //         `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       ),
+  //     ]);
 
-      if (!dropdownResponse.ok || !materialTypeResponse.ok) {
-        throw new Error("Failed to fetch dropdown data or material types");
-      }
+  //     if (!dropdownResponse.ok || !materialTypeResponse.ok) {
+  //       throw new Error("Failed to fetch dropdown data or material types");
+  //     }
 
-      const dropdownData = await dropdownResponse.json();
-      const materialTypesData = await materialTypeResponse.json();
+  //     const dropdownData = await dropdownResponse.json();
+  //     const materialTypesData = await materialTypeResponse.json();
 
-      console.log("Material Types:", materialTypesData);
+  //     console.log("Material Types:", materialTypesData);
 
-      // Ensure material_types is populated
-      const materialTypes = materialTypesData.material_types || [];
+  //     // Ensure material_types is populated
+  //     const materialTypes = materialTypesData.material_types || [];
 
-      setFilterOptions({
-        companies: [
-          { label: "Select Company", value: "" },
-          ...dropdownData.companies.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-        ],
-        sites: [
-          { label: "Select Site", value: "" },
-          ...dropdownData.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id,
-          })),
-        ],
-        departments: [
-          { label: "Select Department", value: "" },
-          ...dropdownData.departments.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-        ],
-        modules: [
-          { label: "Select Module", value: "" },
-          ...(dropdownData.approval_types
-            ? Object.entries(dropdownData.approval_types).map(
-                ([key, value]) => ({
-                  label: key.replace(/_/g, " "), // Format label
-                  value: value,
-                })
-              )
-            : []),
-        ],
-        material_types: [
-          { label: "Select Material Type", value: "" }, // Ensure reset state first
-          ...materialTypes.map((material) => ({
-            label: material.name,
-            value: material.id,
-          })),
-        ],
-        users: [
-          { label: "Select User", value: "" },
-          ...dropdownData.users.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-        ],
-      });
-    } catch (error) {
-      console.error("Error fetching dropdown data:", error);
-    }
-  };
+  //     setFilterOptions({
+  //       companies: [
+  //         { label: "Select Company", value: "" },
+  //         ...dropdownData.companies.map(([name, id]) => ({
+  //           label: name,
+  //           value: id,
+  //         })),
+  //       ],
+  //       sites: [
+  //         { label: "Select Site", value: "" },
+  //         ...dropdownData.sites.map(([name, id, company_id]) => ({
+  //           label: name,
+  //           value: id,
+  //           company_id,
+  //         })),
+  //       ],
+  //       departments: [
+  //         { label: "Select Department", value: "" },
+  //         ...dropdownData.departments.map(([name, id]) => ({
+  //           label: name,
+  //           value: id,
+  //         })),
+  //       ],
+  //       modules: [
+  //         { label: "Select Module", value: "" },
+  //         ...(dropdownData.approval_types
+  //           ? Object.entries(dropdownData.approval_types).map(
+  //               ([key, value]) => ({
+  //                 label: key.replace(/_/g, " "), // Format label
+  //                 value: value,
+  //               })
+  //             )
+  //           : []),
+  //       ],
+  //       material_types: [
+  //         { label: "Select Material Type", value: "" }, // Ensure reset state first
+  //         ...materialTypes.map((material) => ({
+  //           label: material.name,
+  //           value: material.id,
+  //         })),
+  //       ],
+  //       users: [
+  //         { label: "Select User", value: "" },
+  //         ...dropdownData.users.map(([name, id]) => ({
+  //           label: name,
+  //           value: id,
+  //         })),
+  //       ],
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching dropdown data:", error);
+  //   }
+  // };
 
   return (
     <div>
@@ -1028,21 +1029,21 @@ const InvoiceApproval = () => {
                         <button
                           // name="subaction"
                           // type="submit"
-                          className=" purple-btn1 submit-btn"
+                          className=" purple-btn2 submit-btn"
                           // value="save"
                           // fdprocessedid="4ksxs"
                           onClick={() => handleCreate()}
                         >
                           Create
                         </button>
-                        <button
+                        {/* <button
                           name="subaction"
                           type="submit"
                           className=" purple-btn2 submit-btn"
                           onClick={handleSaveAndCreate}
                         >
                           Save And Create New{" "}
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </div>

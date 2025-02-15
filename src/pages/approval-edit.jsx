@@ -121,10 +121,10 @@ const ApprovalEdit = () => {
       try {
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            `${baseURL}pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
           fetch(
-            `${baseURL}pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
         ]);
 
@@ -204,7 +204,7 @@ const ApprovalEdit = () => {
 
       try {
         const response = await axios.get(
-          `${baseURL}users.json?q[department_id_eq]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/users.json?q[department_id_eq]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data && Array.isArray(response.data)) {
@@ -230,7 +230,7 @@ const ApprovalEdit = () => {
     const fetchApprovalData = async () => {
       try {
         const response = await fetch(
-          `${baseURL}pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (!response.ok) throw new Error("Failed to fetch approval data");
@@ -342,7 +342,7 @@ const ApprovalEdit = () => {
 
     try {
       const response = await axios.get(
-        `${baseURL}users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+        `${baseURL}/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
         }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
           siteId || ""
@@ -416,7 +416,7 @@ const ApprovalEdit = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -607,7 +607,7 @@ const ApprovalEdit = () => {
   //   if (selectedOption) {
   //     try {
   //       const response = await axios.get(
-  //         `${baseURL}users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
   //       );
 
   //       if (response.data && Array.isArray(response.data)) {
@@ -786,7 +786,7 @@ const ApprovalEdit = () => {
     // Send API request if no duplicates found
     axios
       .patch(
-        `${baseURL}pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       )
       .then((response) => {
