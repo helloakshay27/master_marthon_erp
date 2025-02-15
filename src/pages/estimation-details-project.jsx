@@ -20,6 +20,7 @@ import {
 import { auditLogColumns, auditLogData } from "../constant/data";
 import CopyBudgetModal from "../components/common/Modal/CopyBudgetModal";
 import { useParams } from 'react-router-dom';
+import { baseURL } from "../confi/apiDomain";
 
 
 const EstimationDetailsProject = () => {
@@ -231,7 +232,7 @@ console.log("project id:",id)
         // Fetch project details from API based on projectId
         const fetchProjectDetails = async () => {
             try {
-                const response = await fetch(`https://newerp.marathonrealty.com/estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+                const response = await fetch(`${baseURL}estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setProjectDetails(data);
                 console.log("data:",data)

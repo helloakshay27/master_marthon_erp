@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { BulkAction } from "../components";
 import axios from "axios";
 import { Link } from 'react-router-dom'
+import { baseURL } from "../confi/apiDomain";
 
 
 
@@ -99,7 +100,7 @@ const BOQList = () => {
   // Fetch projects on mount
   useEffect(() => {
     // Replace this with your actual API URL
-    axios.get('https://newerp.marathonrealty.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+    axios.get(`${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then(response => {
         setProjects(response.data.projects);
       })
@@ -160,7 +161,7 @@ const BOQList = () => {
   // Fetch data from the API when the component mounts
   useEffect(() => {
     axios
-      .get(`https://newerp.marathonrealty.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
 
@@ -199,7 +200,7 @@ const BOQList = () => {
 
       axios
         .get(
-          `https://newerp.marathonrealty.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
@@ -388,7 +389,7 @@ const BOQList = () => {
     // Send data to API using axios
     axios
       .patch(
-        `https://newerp.marathonrealty.com/boq_details/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}boq_details/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         data
       )
       .then((response) => {
@@ -410,7 +411,7 @@ const BOQList = () => {
       setLoading(true); // Show loading state while fetching
       axios
         .get(
-          `https://newerp.marathonrealty.com/boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state

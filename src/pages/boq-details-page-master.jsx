@@ -13,6 +13,7 @@ import {
   LayoutModal,
   Table,
 } from "../components"
+import { baseURL } from "../confi/apiDomain";
 
 const BOQDetailsPageMaster = () => {
   const { id } = useParams()
@@ -64,7 +65,7 @@ const BOQDetailsPageMaster = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://newerp.marathonrealty.com/boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+      const response = await axios.get(`${baseURL}boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
 
       // Assuming the API returns data based on the id (you may need to adjust based on your response)
       setBoqDetails(response.data);
@@ -136,7 +137,7 @@ const BOQDetailsPageMaster = () => {
 
     try {
       const response = await axios.patch(
-        `https://newerp.marathonrealty.com/boq_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}boq_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload,  // The request body containing status and remarks
         {
           headers: {
@@ -688,6 +689,7 @@ const BOQDetailsPageMaster = () => {
               </div>
 
             </div>
+            
 
             {/* 
                 <div className="row mt-3 px-2 mx-3 ">

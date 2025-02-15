@@ -9,6 +9,7 @@ import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
 import SingleSelector from './base/Select/SingleSelector';
 import axios from 'axios';
+import { baseURL } from '../confi/apiDomain';
 
 
 const BOQSubItemTable = ({
@@ -163,7 +164,7 @@ const BOQSubItemTable = ({
     // Fetch sub-types for materials
     materials.forEach((material, index) => {
       if (material.inventory_type_id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(subType => ({
               value: subType.id,
@@ -185,7 +186,7 @@ const BOQSubItemTable = ({
     Assets.forEach((asset, index) => {
       if (asset.inventory_type_id) {
         console.log('aseets inventory id', asset.inventory_type_id)
-        axios.get(`https://newerp.marathonrealty.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(subType => ({
               value: subType.id,
@@ -237,7 +238,7 @@ const BOQSubItemTable = ({
     // Fetch generic specifications only for materials that have a valid material_id
     materials.forEach((material, index) => {
       if (material.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(specification => ({
               value: specification.id,
@@ -258,7 +259,7 @@ const BOQSubItemTable = ({
     // Fetch generic specifications for assets
     Assets.forEach((asset, index) => {
       if (asset.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(specification => ({
               value: specification.id,
@@ -306,7 +307,7 @@ const BOQSubItemTable = ({
     // Fetch colors only for materials that have a valid material_id
     materials.forEach((material, index) => {
       if (material.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(color => ({
               value: color.id,
@@ -327,7 +328,7 @@ const BOQSubItemTable = ({
     // Fetch colors for assets
     Assets.forEach((asset, index) => {
       if (asset.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(color => ({
               value: color.id,
@@ -374,7 +375,7 @@ const BOQSubItemTable = ({
     // Fetch brands only for materials that have a valid material_id
     materials.forEach((material, index) => {
       if (material.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(brand => ({
               value: brand.id,
@@ -395,7 +396,7 @@ const BOQSubItemTable = ({
     // Fetch inventory brands for assets
     Assets.forEach((asset, index) => {
       if (asset.id) {
-        axios.get(`https://newerp.marathonrealty.com/pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(brand => ({
               value: brand.id,
@@ -439,7 +440,7 @@ const BOQSubItemTable = ({
 
   // Fetching the unit of measures data on component mount
   useEffect(() => {
-    axios.get('https://newerp.marathonrealty.com/unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+    axios.get(`${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then(response => {
         // Mapping the response to the format required by react-select
         const options = response.data.map(unit => ({
