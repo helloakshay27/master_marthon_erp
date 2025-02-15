@@ -67,6 +67,7 @@ import EditEvent from "./pages/edit-event";
 import ApprovalMatrics from "./pages/approvalMatrics";
 import InvoiceApproval from "./pages/invoice-approval";
 import ApprovalEdit from "./pages/approval-edit";
+import UnassignedMor from "./pages/unassigned-mor";
 
 function App() {
   return (
@@ -78,34 +79,29 @@ function App() {
           <Route path="/edit-approvals" element={<EditApprovals />} />
           <Route path="/add-approvals" element={<AddApprovals />} />
           <Route path="/create-BOQ" element={<CreateBOQ />} />
-            {/* <Route path='/boq-list' element={<BOQList />} /> */}
-            <Route path="/view-BOQ" element={<BOQList />} />
-            <Route path="/boq-approval-list" element={<BOQApprovalList />} />
-            <Route path="/boq-edit" element={<BOQEdit />} />
-            {/* <Route
+          {/* <Route path='/boq-list' element={<BOQList />} /> */}
+          <Route path="/view-BOQ" element={<BOQList />} />
+          <Route path="/boq-approval-list" element={<BOQApprovalList />} />
+          <Route path="/boq-edit" element={<BOQEdit />} />
+          {/* <Route
               path="/boq-details-page-master"
               element={<BOQDetailsPageMaster />}
             /> */}
-             <Route
-              path="/boq-details-page-master/:id"
-              element={<BOQDetailsPageMaster />}
-            />
-
-            {/* estimation */}
-             <Route path="/estimation-list" element={<EstimationList />} />
-             <Route
-              path="/estimation-details-project/:id"
-              element={<EstimationDetailsProject />}
-            />
-             <Route
-              path="/estimation-details-sub-project/:id"
-              element={<EstimationDetailsSubProject />}
-            />
-              <Route
-              path="/estimation-creation"
-              element={<EstimationCreation />}
-            />
-
+          <Route
+            path="/boq-details-page-master/:id"
+            element={<BOQDetailsPageMaster />}
+          />
+          {/* estimation */}
+          <Route path="/estimation-list" element={<EstimationList />} />
+          <Route
+            path="/estimation-details-project/:id"
+            element={<EstimationDetailsProject />}
+          />
+          <Route
+            path="/estimation-details-sub-project/:id"
+            element={<EstimationDetailsSubProject />}
+          />
+          <Route path="/estimation-creation" element={<EstimationCreation />} />
           <Route
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
@@ -167,7 +163,7 @@ function App() {
               element={<ErpRfqDetailPriceTrends4h />}
             />
             <Route path="/create-rfq" element={<CreateRfq />} />
-            
+
             <Route path="/boq-edit" element={<BOQEdit />} />
             <Route
               path="/boq-approval-details"
@@ -175,12 +171,12 @@ function App() {
             />
             <Route path="/create-rate" element={<CreateRate />} />
             <Route path="/view-rate" element={<ViewRate />} />
-           
+
             <Route
               path="/estimation-details-wings"
               element={<EstimationDetailsWings />}
             />
-           
+
             <Route
               path="/estimation-comparision"
               element={<EstimationComparision />}
@@ -189,8 +185,7 @@ function App() {
               path="/estimation-approval-details"
               element={<EstimationApprovalDetails />}
             />
-          
-            
+
             <Route
               path="/estimation-approvol-list"
               element={<EstimationApprovolList />}
@@ -281,7 +276,7 @@ function App() {
               path="/boq-details-page-master/:id"
               element={<BOQDetailsPageMaster />}
             />
-           
+
             <Route
               path="/boq-approval-details"
               element={<BOQApprovalDetails />}
@@ -378,6 +373,7 @@ function App() {
           <Route path="/approval-materics" element={<ApprovalMatrics />} />
           <Route path="/invoice_approval" element={<InvoiceApproval />} />
           <Route path="/approval_edit/:id" element={<ApprovalEdit />} />
+          <Route path="/unassigned-mor" element={<UnassignedMor />} />
         </Routes>
       </div>
     </BrowserRouter>
