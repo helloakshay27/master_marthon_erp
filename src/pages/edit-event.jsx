@@ -17,6 +17,7 @@ import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseURL } from "../confi/apiDomain";
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
@@ -243,7 +244,7 @@ export default function EditEvent() {
   const fetchTermsAndConditions = async () => {
     try {
       const response = await fetch(
-        "https://marathon.lockated.com/rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1"
+        `${baseURL}rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
       );
       const data = await response.json();
       const termsList = data.list.map((term) => ({
@@ -310,7 +311,7 @@ export default function EditEvent() {
   const fetchEventData = async () => {
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       const data = await response.json();
@@ -334,7 +335,7 @@ export default function EditEvent() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
 
@@ -561,7 +562,7 @@ export default function EditEvent() {
     fetch(url, options).then((res) => res.json());
 
   const updateEvent = async (id, eventData) => {
-    const url = `https://marathon.lockated.com/rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const url = `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
     const options = {
       method: "PUT",
       headers: {
@@ -797,7 +798,7 @@ export default function EditEvent() {
   const fetchSuggestions = async (query) => {
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}`
       );
       const data = await response.json();
       setSuggestions(data.vendors || []);

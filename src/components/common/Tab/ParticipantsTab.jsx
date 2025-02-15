@@ -8,6 +8,7 @@ import PopupBox from "../../base/Popup/Popup";
 import SelectBox from "../../base/Select/SelectBox";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function ParticipantsTab({ data, id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
@@ -77,7 +78,7 @@ export default function ParticipantsTab({ data, id }) {
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}`,
+        `${baseURL}rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}`,
         {
           method: "POST",
         }
@@ -153,7 +154,7 @@ export default function ParticipantsTab({ data, id }) {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
 
@@ -229,7 +230,7 @@ export default function ParticipantsTab({ data, id }) {
     setIsSaving(true);
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
-    const url = `https://marathon.lockated.com/rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+    const url = `${baseURL}rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
       ","
     )}]`;
 

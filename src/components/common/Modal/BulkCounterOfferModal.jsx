@@ -4,6 +4,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import ShortTable from "../../base/Table/ShortTable";
 import { productTableColumns } from "../../../constant/data";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function BulkCounterOfferModal({
   show,
@@ -60,7 +61,7 @@ export default function BulkCounterOfferModal({
     };
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {

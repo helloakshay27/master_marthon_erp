@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { useParams } from "react-router-dom";
+import { baseURL } from "../../../confi/apiDomain";
 
 const AddEvaluationTimeModal = ({ show, handleClose }) => {
   const [selectedOption, setSelectedOption] = useState(
@@ -94,7 +95,7 @@ const AddEvaluationTimeModal = ({ show, handleClose }) => {
 
       // API Call
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${eventId}/edit_evaluation_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `${baseURL}rfq/events/${eventId}/edit_evaluation_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

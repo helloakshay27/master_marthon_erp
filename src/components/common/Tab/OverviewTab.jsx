@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { EnvelopeIcon, ParticipantsIcon, ShowIcon, Table } from "../..";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function OverviewTab({
   handleParticipants,
@@ -85,7 +86,7 @@ export default function OverviewTab({
     const fetchParticipationSummary = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -332,7 +333,7 @@ export default function OverviewTab({
                               </td>
                               <td className="text-start">
                                 <a
-                                  href={`https://marathon.lockated.com/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                  href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                                   download={attachment.filename}
                                 >
                                   <svg

@@ -5,6 +5,7 @@ import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
 import { useEffect, useState } from "react";
 import React from "react";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function CreateRFQForm({
   data,
@@ -28,8 +29,8 @@ export default function CreateRFQForm({
   const fetchMaterials = async (inventoryTypeId) => {
     try {
       const url = inventoryTypeId
-        ? `https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        : `https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
+        : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       console.log(url, inventoryTypeId);
       
         const response = await axios.get(url);
@@ -53,8 +54,8 @@ export default function CreateRFQForm({
   const fetchSubSections = async (inventoryTypeId) => {
     try {
       const url = inventoryTypeId
-        ? `https://marathon.lockated.com/rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        : `https://marathon.lockated.com/rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
+        : `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       const response = await axios.get(url);
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
         setSubSectionOptions(
@@ -122,7 +123,7 @@ export default function CreateRFQForm({
     const fetchSections = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data && Array.isArray(response.data.inventory_types)) {
@@ -143,7 +144,7 @@ export default function CreateRFQForm({
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         if (response.data && Array.isArray(response.data.locations_list)) {
           setLocationOptions(
@@ -163,7 +164,7 @@ export default function CreateRFQForm({
     const fetchUoms = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         if (response.data && Array.isArray(response.data.unit_of_measures)) {
           const uomOptions = response.data.unit_of_measures.map((uom) => ({

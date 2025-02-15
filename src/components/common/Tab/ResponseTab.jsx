@@ -12,6 +12,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { da } from "date-fns/locale";
 import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
+import { baseURL } from "../../../confi/apiDomain";
 
 export default function ResponseTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -65,7 +66,7 @@ export default function ResponseTab({ isCounterOffer }) {
       let data;
       if (isCurrent) {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -92,7 +93,7 @@ export default function ResponseTab({ isCounterOffer }) {
       } else {
         // Use revision data
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
+          `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
         );
         data = response.data;
         const updatedEventVendors = eventVendors.map((vendor) => {
@@ -159,7 +160,7 @@ export default function ResponseTab({ isCounterOffer }) {
     const fetchRemarks = async () => {
       try {
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
 
         if (!response.ok) {
@@ -185,7 +186,7 @@ export default function ResponseTab({ isCounterOffer }) {
       setError(null);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBidCounterData(response.data);
 
@@ -205,7 +206,7 @@ export default function ResponseTab({ isCounterOffer }) {
     const fetchParticipationSummary = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
         
