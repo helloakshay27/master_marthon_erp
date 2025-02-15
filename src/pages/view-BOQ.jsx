@@ -99,7 +99,7 @@ const BOQList = () => {
   // Fetch projects on mount
   useEffect(() => {
     // Replace this with your actual API URL
-    axios.get('https://marathon.lockated.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+    axios.get('https://newerp.marathonrealty.com/pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
       .then(response => {
         setProjects(response.data.projects);
       })
@@ -160,7 +160,7 @@ const BOQList = () => {
   // Fetch data from the API when the component mounts
   useEffect(() => {
     axios
-      .get(`https://marathon.lockated.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`https://newerp.marathonrealty.com/boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
 
@@ -199,7 +199,7 @@ const BOQList = () => {
 
       axios
         .get(
-          `https://marathon.lockated.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://newerp.marathonrealty.com/boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
@@ -388,7 +388,7 @@ const BOQList = () => {
     // Send data to API using axios
     axios
       .patch(
-        `https://marathon.lockated.com/boq_details/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `https://newerp.marathonrealty.com/boq_details/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         data
       )
       .then((response) => {
@@ -410,7 +410,7 @@ const BOQList = () => {
       setLoading(true); // Show loading state while fetching
       axios
         .get(
-          `https://marathon.lockated.com/boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://newerp.marathonrealty.com/boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state

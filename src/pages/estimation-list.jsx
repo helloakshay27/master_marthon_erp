@@ -59,7 +59,7 @@ const EstimationList = () => {
 
     // Fetch company data on component mount
     useEffect(() => {
-        axios.get('https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+        axios.get('https://newerp.marathonrealty.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
             .then(response => {
                 setCompanies(response.data.companies);
                 setData(response.data);  // Set the data from the API to state
