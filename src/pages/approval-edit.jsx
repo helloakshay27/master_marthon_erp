@@ -83,21 +83,36 @@ const ApprovalEdit = () => {
       { id: "", order: "", name: "", users: [] }, // Add a new empty level
     ]);
   };
+  // const handleRemoveLevel = (index) => {
+  //   const updatedLevels = approvalLevels.filter((_, i) => i !== index);
+  //   setApprovalLevels(updatedLevels);
+  // };
 
   const handleRemoveLevel = (index) => {
-    const updatedLevels = approvalLevels.filter((_, i) => i !== index);
-    setApprovalLevels(updatedLevels);
+    setApprovalLevels((prevLevels) =>
+      prevLevels.map((level, i) =>
+        i === index ? { ...level, _destroy: true } : level
+      )
+    );
   };
 
-  const handleInputChange = (index, field, value) => {
-    console.log(`Updating ${field} at index ${index}:`, value);
-    const updatedLevels = approvalLevels.map((level, i) =>
-      i === index ? { ...level, [field]: value } : level
-    );
-    setApprovalLevels(updatedLevels);
-  };
+  // const handleInputChange = (index, field, value) => {
+  //   console.log(`Updating ${field} at index ${index}:`, value);
+  //   const updatedLevels = approvalLevels.map((level, i) =>
+  //     i === index ? { ...level, [field]: value } : level
+  //   );
+  //   setApprovalLevels(updatedLevels);
+  // };
 
   // console.log("Selected Users:", level.users);
+
+  const handleInputChange = (index, field, value) => {
+    setApprovalLevels((prevLevels) =>
+      prevLevels.map((level, i) =>
+        i === index ? { ...level, [field]: value } : level
+      )
+    );
+  };
 
   const userOptions =
     filterOptions.users && filterOptions.users.length > 0
@@ -777,6 +792,7 @@ const ApprovalEdit = () => {
         name: level.name,
         order: level.order,
         active: true,
+        _destroy: level._destroy || false, // Only send delete key for approval levels
         escalate_to_users: level.users?.map((user) => user.value) || [],
       })),
     };
@@ -792,6 +808,7 @@ const ApprovalEdit = () => {
       .then((response) => {
         console.log("Approval  updated Created:", response.data);
         alert("Approval update successfully!");
+
         setTimeout(() => {
           navigate("/approval-materics"); // Change route as per your app
         }, 500); // Redirect to Approval Metrics page
@@ -1108,90 +1125,88 @@ const ApprovalEdit = () => {
                             <h3 className="card-title">Approval Levels</h3>
                           </div>
 
-                          {approvalLevels.map((level, index) => (
-                            <div
-                              key={index}
-                              className="px-4"
-                              style={{
-                                display: "flex",
-                                columnGap: 20,
-                                alignItems: "center",
-                              }}
-                            >
-                              <fieldset className="border">
-                                <legend className="float-none">
-                                  Order{" "}
-                                  <span style={{ color: "#f69380" }}>*</span>
-                                </legend>
-                                <input
-                                  className="form-group order"
-                                  placeholder="Enter Order"
-                                  value={level.order}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      index,
-                                      "order",
-                                      e.target.value
-                                    )
-                                  }
-                                  required
-                                />
-                              </fieldset>
-                              <fieldset className="border ms-4">
-                                <legend className="float-none">
-                                  Name of Level{" "}
-                                  <span style={{ color: "#f69380" }}>*</span>
-                                </legend>
-                                <input
-                                  className="form-group name"
-                                  placeholder="Enter Name of Level"
-                                  value={level.name}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      index,
-                                      "name",
-                                      e.target.value
-                                    )
-                                  }
-                                  required
-                                  type="text"
-                                />
-                              </fieldset>
-                              <fieldset
-                                className="user-list ms-3 mb-3"
-                                style={{ width: "30%" }} //
+                          {approvalLevels
+                            .filter((level) => !level._destroy)
+                            .map((level, index) => (
+                              <div
+                                key={index}
+                                className="px-4"
+                                style={{
+                                  display: "flex",
+                                  columnGap: 20,
+                                  alignItems: "center",
+                                }}
                               >
-                                <legend className="float-none mb-2">
-                                  Users{" "}
-                                  <span style={{ color: "#f69380" }}>*</span>
-                                </legend>
-                                {/* <MultiSelector
-                                  options={departmentUsers}
-                                  value={level.users}
-                                  onChange={(selected) =>
-                                    handleInputChange(index, "users", selected)
-                                  }
-                                  placeholder="Select Users"
-                                /> */}
+                                <fieldset className="border">
+                                  <legend className="float-none">
+                                    Order{" "}
+                                    <span style={{ color: "#f69380" }}>*</span>
+                                  </legend>
+                                  <input
+                                    className="form-group order"
+                                    placeholder="Enter Order"
+                                    value={level.order}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        index,
+                                        "order",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                  />
+                                </fieldset>
+                                <fieldset className="border ms-4">
+                                  <legend className="float-none">
+                                    Name of Level{" "}
+                                    <span style={{ color: "#f69380" }}>*</span>
+                                  </legend>
+                                  <input
+                                    className="form-group name"
+                                    placeholder="Enter Name of Level"
+                                    value={level.name}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        index,
+                                        "name",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                    type="text"
+                                  />
+                                </fieldset>
+                                <fieldset
+                                  className="user-list ms-3 mb-3"
+                                  style={{ width: "30%" }} //
+                                >
+                                  <legend className="float-none mb-2">
+                                    Users{" "}
+                                    <span style={{ color: "#f69380" }}>*</span>
+                                  </legend>
 
-                                <MultiSelector
-                                  options={departmentUsers} // Available options
-                                  value={level.users} // Preselected users
-                                  onChange={(selected) =>
-                                    handleInputChange(index, "users", selected)
-                                  }
-                                  placeholder="Select Users"
-                                />
-                              </fieldset>
-                              <button
-                                className="remove-item ms-4 mb-3 px-2 rounded purple-btn1"
-                                style={{ padding: "1px 3px" }}
-                                onClick={() => handleRemoveLevel(index)}
-                              >
-                                x
-                              </button>
-                            </div>
-                          ))}
+                                  <MultiSelector
+                                    options={departmentUsers} // Available options
+                                    value={level.users} // Preselected users
+                                    onChange={(selected) =>
+                                      handleInputChange(
+                                        index,
+                                        "users",
+                                        selected
+                                      )
+                                    }
+                                    placeholder="Select Users"
+                                  />
+                                </fieldset>
+                                <button
+                                  className="remove-item ms-4 mb-3 px-2 rounded purple-btn1"
+                                  style={{ padding: "1px 3px" }}
+                                  onClick={() => handleRemoveLevel(index)}
+                                >
+                                  x
+                                </button>
+                              </div>
+                            ))}
                           <div className="ms-3 mt-2">
                             <button
                               className=" purple-btn1 submit-btn"

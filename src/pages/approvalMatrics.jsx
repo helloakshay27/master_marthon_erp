@@ -60,12 +60,19 @@ const ApprovalMatrics = () => {
   const modifiedFilterOptions = {
     departments: [
       { label: "Select Department", value: "" },
-      ...filterOptions.departments,
+      ...(filterOptions.departments || []), // Safeguard against undefined or null departments
     ],
-    modules: [{ label: "Select Module", value: "" }, ...filterOptions.modules],
+    subprojects: [
+      { label: "Select Subproject", value: "" },
+      ...(filterOptions.subprojects || []), // Safeguard against undefined or null subprojects
+    ],
+    modules: [
+      { label: "Select Module", value: "" },
+      ...(filterOptions.modules || []), // Safeguard against undefined or null modules
+    ],
     material_types: [
       { label: "Select Material Type", value: "" },
-      ...filterOptions.material_types, // Map your material types here
+      ...(filterOptions.material_types || []), // Safeguard against undefined or null material_types
     ],
   };
 
@@ -110,14 +117,15 @@ const ApprovalMatrics = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-
+        // const response = await fetch(
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        // );
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
             `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
           fetch(
-            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e0784141`
+            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           ),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
@@ -137,15 +145,6 @@ const ApprovalMatrics = () => {
         const materialTypes = materialTypesData.material_types || [];
         console.log("modifuiees", modifiedFilterOptions); // Check if material_types is correctly set
         setFilterOptions({
-          companies: dropdownData.companies.map(([name, id]) => ({
-            label: name,
-            value: id,
-          })),
-          sites: dropdownData.sites.map(([name, id, company_id]) => ({
-            label: name,
-            value: id,
-            company_id,
-          })),
           departments: dropdownData.departments.map(([name, id]) => ({
             label: name,
             value: id,
@@ -158,8 +157,9 @@ const ApprovalMatrics = () => {
                 })
               )
             : [],
+
           material_types: [
-            // { label: "Select Material Type", value: "" },
+            { label: "Select Material Type", value: "" },
             ...materialTypesData.map((material) => ({
               label: material.name,
               value: material.id,
@@ -214,10 +214,6 @@ const ApprovalMatrics = () => {
     }
   };
 
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
-
-  // Handle project selection
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
     setSelectedSite(null); // Reset site selection
@@ -266,6 +262,7 @@ const ApprovalMatrics = () => {
     site: null,
     project: null,
     department: null,
+    modules: null,
 
     materialtypes: null,
   });
@@ -543,7 +540,7 @@ const ApprovalMatrics = () => {
                     <div className="col-md-3 mt-3">
                       <label htmlFor="created-by-select">Module</label>
 
-                      <SingleSelector
+                      {/* <SingleSelector
                         id="created-by-select"
                         options={modifiedFilterOptions.modules}
                         value={
@@ -553,6 +550,23 @@ const ApprovalMatrics = () => {
                               )
                             : null
                         }
+                        onChange={(selectedOption) =>
+                          handleFilterChange("modules", selectedOption?.value)
+                        }
+                        isClearable
+                        placeholder="Select Module"
+                      /> */}
+
+                      <SingleSelector
+                        id="created-by-select"
+                        options={modifiedFilterOptions.modules || []} // Ensure it's not undefined
+                        // value={
+                        //   filters.modules
+                        //     ? modifiedFilterOptions.modules.find(
+                        //         (m) => m.value === filters.modules
+                        //       )
+                        //     : null
+                        // }
                         onChange={(selectedOption) =>
                           handleFilterChange("modules", selectedOption?.value)
                         }
