@@ -504,15 +504,67 @@ const ApprovalEdit = () => {
     }
   };
 
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setSiteOptions([]);
+    setWingsOptions([]);
+    setDepartmentUsers([]);
+
+    const selectedCompanyData = companies.find(
+      (company) => company.id === selectedCompany?.value
+    );
+    const selectedProjectData = selectedCompanyData?.projects.find(
+      (project) => project.id === selectedOption?.value
+    );
+
+    setSiteOptions(
+      selectedProjectData?.pms_sites.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
+
+    setFormData((prevState) => ({
+      ...prevState,
+      project_id: selectedOption ? selectedOption.value : null, // Ensure null when removed
+      site_id: null,
+    }));
+
+    fetchUsers(
+      selectedCompany?.value,
+      selectedOption ? selectedOption.value : null, // Ensure null when removed
+      null,
+      selectedDepartment?.value
+    );
+  };
+
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+
+    setFormData((prevState) => ({
+      ...prevState,
+      site_id: selectedOption ? selectedOption.value : null, // Ensure null when removed
+    }));
+
+    fetchUsers(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedOption ? selectedOption.value : null,
+      selectedDepartment?.value
+    );
+  };
+
   // const handleProjectChange = (selectedOption) => {
   //   setSelectedProject(selectedOption);
-  //   setSelectedSite(null); // Reset site selection
-  //   setSelectedWing(null); // Reset wing selection
-  //   setSiteOptions([]); // Reset site options
-  //   setWingsOptions([]); // Reset wings options
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setSiteOptions([]);
+  //   setWingsOptions([]);
+  //   setDepartmentUsers([]); // Reset users if company or department is not selected
 
   //   if (selectedOption) {
-  //     // Find the selected project from the list of projects of the selected company
   //     const selectedCompanyData = companies.find(
   //       (company) => company.id === selectedCompany.value
   //     );
@@ -520,90 +572,47 @@ const ApprovalEdit = () => {
   //       (project) => project.id === selectedOption.value
   //     );
 
-  //     // Set site options based on selected project
   //     setSiteOptions(
   //       selectedProjectData?.pms_sites.map((site) => ({
   //         value: site.id,
   //         label: site.name,
   //       })) || []
   //     );
+
   //     setFormData((prevState) => ({
   //       ...prevState,
-  //       project_id: selectedOption.value, // Update formData with project_id
-  //       site_id: null, // Reset site_id when project changes
+  //       project_id: selectedOption.value,
+  //       site_id: null,
   //     }));
+
+  //     fetchUsers(
+  //       selectedCompany?.value,
+  //       selectedOption.value,
+  //       null,
+  //       selectedDepartment?.value
+  //     );
   //   }
   // };
-  const handleProjectChange = (selectedOption) => {
-    setSelectedProject(selectedOption);
-    setSelectedSite(null);
-    setSelectedWing(null);
-    setSiteOptions([]);
-    setWingsOptions([]);
-    setDepartmentUsers([]); // Reset users if company or department is not selected
-
-    if (selectedOption) {
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects.find(
-        (project) => project.id === selectedOption.value
-      );
-
-      setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
-
-      setFormData((prevState) => ({
-        ...prevState,
-        project_id: selectedOption.value,
-        site_id: null,
-      }));
-
-      fetchUsers(
-        selectedCompany?.value,
-        selectedOption.value,
-        null,
-        selectedDepartment?.value
-      );
-    }
-  };
 
   // const handleSiteChange = (selectedOption) => {
   //   setSelectedSite(selectedOption);
-  //   setSelectedWing(null); // Reset wing selection
-  //   // setWingsOptions([]); // Reset wings options
+  //   setSelectedWing(null);
+  //   setDepartmentUsers([]); // Reset users if company or department is not selected
 
   //   if (selectedOption) {
   //     setFormData((prevState) => ({
   //       ...prevState,
-  //       site_id: selectedOption.value, // Update formData with site_id
+  //       site_id: selectedOption.value,
   //     }));
+
+  //     fetchUsers(
+  //       selectedCompany?.value,
+  //       selectedProject?.value,
+  //       selectedOption.value,
+  //       selectedDepartment?.value
+  //     );
   //   }
   // };
-
-  const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption);
-    setSelectedWing(null);
-    setDepartmentUsers([]); // Reset users if company or department is not selected
-
-    if (selectedOption) {
-      setFormData((prevState) => ({
-        ...prevState,
-        site_id: selectedOption.value,
-      }));
-
-      fetchUsers(
-        selectedCompany?.value,
-        selectedProject?.value,
-        selectedOption.value,
-        selectedDepartment?.value
-      );
-    }
-  };
 
   const companyOptions = companies.map((company) => ({
     value: company.id,
@@ -686,31 +695,65 @@ const ApprovalEdit = () => {
     }
   }, [selectedDepartment]);
 
+  // const handleModuleChange = (selectedOption) => {
+  //   console.log("Selected Module ID:", selectedOption.value);
+  //   setSelectedModule(selectedOption);
+
+  //   // Check if selected module is "Material Order Request"
+  //   const isMaterialOrderRequest =
+  //     selectedOption.label.toLowerCase() === "material order request";
+
+  //   setShowMaterialType(isMaterialOrderRequest); // Update visibility
+
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     module_id: selectedOption.value,
+  //   }));
+  // };
+
+  // const handleMaterialTypeChange = (selectedOption) => {
+  //   console.log(
+  //     "Selected Material Type (PMS Supplier ID):",
+  //     selectedOption.value
+  //   );
+  //   setSelectedMaterialType(selectedOption);
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     pms_supplier_id: selectedOption.value, // Map material_id to pms_supplier_id
+  //   }));
+  // };
+
   const handleModuleChange = (selectedOption) => {
-    console.log("Selected Module ID:", selectedOption.value);
+    console.log("Selected Module:", selectedOption);
+
+    // Set selected module (or null if cleared)
     setSelectedModule(selectedOption);
 
     // Check if selected module is "Material Order Request"
     const isMaterialOrderRequest =
-      selectedOption.label.toLowerCase() === "material order request";
+      selectedOption?.label?.toLowerCase() === "material order request";
 
-    setShowMaterialType(isMaterialOrderRequest); // Update visibility
+    setShowMaterialType(isMaterialOrderRequest); // Show Material Type only when needed
 
     setFormData((prevData) => ({
       ...prevData,
-      module_id: selectedOption.value,
+      module_id: selectedOption ? selectedOption.value : null, // Set to null if cleared
     }));
+
+    if (!isMaterialOrderRequest) {
+      setSelectedMaterialType(null); // Reset Material Type if Module is cleared
+    }
   };
 
   const handleMaterialTypeChange = (selectedOption) => {
-    console.log(
-      "Selected Material Type (PMS Supplier ID):",
-      selectedOption.value
-    );
+    console.log("Selected Material Type:", selectedOption);
+
+    // Set selected material type (or null if cleared)
     setSelectedMaterialType(selectedOption);
+
     setFormData((prevData) => ({
       ...prevData,
-      pms_supplier_id: selectedOption.value, // Map material_id to pms_supplier_id
+      pms_supplier_id: selectedOption ? selectedOption.value : null, // Set to null if cleared
     }));
   };
 
@@ -779,8 +822,8 @@ const ApprovalEdit = () => {
     const payload = {
       approval_type: formData.module_id,
       company_id: formData.company_id,
-      project_id: formData.project_id,
-      site_id: formData.site_id,
+      project_id: formData.project_id || null,
+      site_id: formData.site_id || null,
       department_id: formData.department_id,
       snag_checklist_id: formData.template_id,
       sub_category_id: formData.sub_category_id,
@@ -1053,7 +1096,7 @@ const ApprovalEdit = () => {
                                   id="status-select"
                                   options={filterOptions.departments}
                                   onChange={handleDepartmentChange}
-                                  value={selectedDepartment} // ✅ Use selectedDepartment directly
+                                  value={selectedDepartment} //  Use selectedDepartment directly
                                   placeholder="Select Department"
                                   isClearable
                                   // isDisabled //
