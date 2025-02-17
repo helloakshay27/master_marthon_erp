@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
+import { toast } from 'react-toastify';
 // @ts-ignore
 import format from "date-fns/format";
 
@@ -59,7 +60,10 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
 
   const handleEndDateChange = (e) => {
     const selectedDate = e.target.value;
-    if (selectedDate <= formattedDeliveryDate) {
+    const currentTime = new Date();
+    currentTime.setMinutes(currentTime.getMinutes() + 30);
+    const minEndDate = currentTime.toISOString().split("T")[0];
+    if (selectedDate >= minEndDate && selectedDate <= formattedDeliveryDate) {
       setEndDate(selectedDate);
     }
   };
@@ -70,6 +74,12 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
       setIsLater(true);
     } else {
       setIsLater(false);
+      const currentTime = new Date();
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+      setLaterDate(currentTime.toISOString().split("T")[0]);
+      setLaterTime(currentTime.toTimeString().split(" ")[0].substring(0, 5));
+      setEndDate("");
+      setEndTime("");
     }
   };
 
@@ -91,15 +101,15 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     }
   };
 
-  const handleEndTimeChange = (value) => {
-    const selectedValue = value;
-    if (selectedValue === "Fixed Time") {
-      setIsCustomEndTimeSelected(false);
-      setIsFixedEndTime(true);
-      setEndTimeDuration("");
+  const handleEndTimeChange = (e) => {
+    const selectedTime = e.target.value;
+    const currentTime = new Date();
+    currentTime.setMinutes(currentTime.getMinutes() + 30);
+    const minEndTime = currentTime.toTimeString().split(" ")[0].substring(0, 5);
+    if (endDate === currentTime.toISOString().split("T")[0] && selectedTime < minEndTime) {
+      toast.warning("End time must be at least 30 minutes after the current time.");
     } else {
-      setIsFixedEndTime(false);
-      setEndTimeDuration("30 mins");
+      setEndTime(selectedTime);
     }
   };
 
@@ -165,11 +175,11 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
           Start Time <span style={{ color: "red" }}>*</span>
         </p>
         <div className="row">
-          <div className="col-md-4">
+          <div className="col-md-12">
             <SelectBox
               label={""}
               options={[
-                { value: "Start Now", label: "Start Now" },
+                { value: "Start Now", label: "Start Now In 30 Mins" },
                 { value: "Schedule for later", label: "Schedule for later" },
               ]}
               defaultValue={isLater ? "Schedule for later" : "Start Now"}
@@ -177,7 +187,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
             />
           </div>
           {isLater && (
-            <>
+            <div className="row mt-3">
               <div className="col-md-4">
                 <input
                   type="date"
@@ -194,10 +204,10 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
                   onChange={(e) => setLaterTime(e.target.value)}
                 />
               </div>
-            </>
+            </div>
           )}
         </div>
-        <p className="mt-2">
+        <p className="mt-4">
           End Time <span style={{ color: "red" }}>*</span>
         </p>
         <div className="row">
@@ -216,14 +226,14 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
               type="time"
               className="form-control"
               value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
+              onChange={handleEndTimeChange}
             />
           </div>
         </div>
         <p className="my-2" style={{ color: "var(--light-grey)" }}>
           Event will end at {formattedEndTime}
         </p>
-        <p className="mt-2">
+        <p className="mt-4">
           Evaluation time <span style={{ color: "red" }}>*</span>
         </p>
         <div className="d-flex gap-2 mt-2">

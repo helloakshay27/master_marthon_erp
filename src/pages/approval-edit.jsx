@@ -60,7 +60,7 @@ const ApprovalEdit = () => {
 
   const [formData, setFormData] = useState({
     company_id: null,
-    department_id: null,
+    department_id: [],
     site_id: null,
     // category_id: null,
     // sub_category_id: null,
@@ -71,11 +71,11 @@ const ApprovalEdit = () => {
     invoice_approval_levels: [],
   });
 
-  console.log("Selected Company ID:", formData.company_id);
-  console.log("selected site:", formData.project_id);
-  console.log("selected deparment:", formData.department_id);
-  console.log("selected module:", formData.module_id);
-  console.log("selected materila", formData.material_id);
+  // console.log("Selected Company ID:", formData.company_id);
+  // console.log("selected site:", formData.project_id);
+  // console.log("selected deparment:", formData.department_id);
+  // console.log("selected module:", formData.module_id);
+  // console.log("selected materila", formData.material_id);
 
   const handleAddLevel = () => {
     setApprovalLevels([
@@ -83,10 +83,6 @@ const ApprovalEdit = () => {
       { id: "", order: "", name: "", users: [] }, // Add a new empty level
     ]);
   };
-  // const handleRemoveLevel = (index) => {
-  //   const updatedLevels = approvalLevels.filter((_, i) => i !== index);
-  //   setApprovalLevels(updatedLevels);
-  // };
 
   const handleRemoveLevel = (index) => {
     setApprovalLevels((prevLevels) =>
@@ -95,16 +91,6 @@ const ApprovalEdit = () => {
       )
     );
   };
-
-  // const handleInputChange = (index, field, value) => {
-  //   console.log(`Updating ${field} at index ${index}:`, value);
-  //   const updatedLevels = approvalLevels.map((level, i) =>
-  //     i === index ? { ...level, [field]: value } : level
-  //   );
-  //   setApprovalLevels(updatedLevels);
-  // };
-
-  // console.log("Selected Users:", level.users);
 
   const handleInputChange = (index, field, value) => {
     setApprovalLevels((prevLevels) =>
@@ -151,7 +137,7 @@ const ApprovalEdit = () => {
 
         const materialTypesData = await materialTypeResponse.json();
 
-        console.log("materialsss", materialTypesData);
+        // console.log("materialsss", materialTypesData);
 
         // Safeguard to check if material_types exists
         const materialTypes = materialTypesData.material_types || [];
@@ -228,7 +214,7 @@ const ApprovalEdit = () => {
             label: user.full_name, // Ensure full_name is mapped correctly
           }));
 
-          console.log("Fetched Users:", userOptions);
+          // console.log("Fetched Users:", userOptions);
           setDepartmentUsers(userOptions);
         }
       } catch (error) {
@@ -241,6 +227,8 @@ const ApprovalEdit = () => {
   }, [selectedDepartment]);
 
   const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
+  const [departmentIds, setDepartmentIds] = useState([]);
+
   useEffect(() => {
     const fetchApprovalData = async () => {
       try {
@@ -253,18 +241,25 @@ const ApprovalEdit = () => {
         const data = await response.json();
         console.log("Fetched Approval Data:", data);
 
-        // Set form data from API response
+        // Ensure department_id is always an array
+        const fetchedDepartmentIds = Array.isArray(data.department_id)
+          ? data.department_id
+          : data.department_id
+          ? [data.department_id]
+          : [];
+
+        setDepartmentIds(fetchedDepartmentIds); // Update s
+
         setFormData({
           company_id: data.company_id || null,
           site_id: data.site_id || null,
           project_id: data.project_id || null,
-          department_id: data.department_id || null,
+          department_id: fetchedDepartmentIds, // Store multiple department IDs
           module_id: data.approval_type || null,
           material_id: data.pms_inventory_type_id || null,
           invoice_approval_levels: data.invoice_approval_levels || [],
         });
 
-        // Ensure `companies` list is loaded before setting values
         if (!companies.length) return;
 
         const companyOption = companies.find((c) => c.id === data.company_id);
@@ -274,7 +269,6 @@ const ApprovalEdit = () => {
             label: companyOption.name,
           });
 
-          // Fetch projects based on preselected company
           setProjects(
             companyOption.projects.map((prj) => ({
               value: prj.id,
@@ -282,7 +276,6 @@ const ApprovalEdit = () => {
             }))
           );
 
-          // Find and set selected project
           const projectOption = companyOption.projects.find(
             (p) => p.id === data.project_id
           );
@@ -293,7 +286,6 @@ const ApprovalEdit = () => {
           );
 
           if (projectOption) {
-            // Fetch sites (sub-projects) based on preselected project
             setSiteOptions(
               projectOption.pms_sites.map((site) => ({
                 value: site.id,
@@ -301,7 +293,6 @@ const ApprovalEdit = () => {
               }))
             );
 
-            // Find and set selected sub-project (site)
             const siteOption = projectOption.pms_sites.find(
               (s) => s.id === data.site_id
             );
@@ -313,31 +304,38 @@ const ApprovalEdit = () => {
           }
         }
 
-        const departmentOption = filterOptions.departments.find(
-          (department) => department.value === data.department_id
-        );
-        setSelectedDepartment(departmentOption || null);
+        // Find and set multiple selected departments
+        // const selectedDepartments = filterOptions.departments.filter((dept) =>
+        //   departmentIds.includes(dept.value)
+        // );
+        // setSelectedDepartment(selectedDepartments);
 
-        // Find the preselected module option
+        const selectedDepartments = filterOptions.departments.filter((dept) =>
+          fetchedDepartmentIds.includes(dept.value)
+        );
+        setSelectedDepartment(selectedDepartments);
+
+        // Fetch users for selected departments
+        fetchUsers(
+          data.company_id,
+          data.project_id,
+          data.site_id,
+          departmentIds
+        );
+
         const moduleOption = filterOptions.modules.find(
           (mod) => mod.value === data.approval_type
         );
-
-        // Determine if Material Type dropdown should be shown
         const isMaterialOrderRequest =
           moduleOption?.label?.toLowerCase() === "material order request";
-
-        setShowMaterialType(isMaterialOrderRequest); // Update visibility state
-
+        setShowMaterialType(isMaterialOrderRequest);
         setSelectedModule(moduleOption || null);
 
-        // Find and set preselected material type
         const materialTypeOption = filterOptions.material_types.find(
           (mat) => mat.value === data.pms_inventory_type_id
         );
         setSelectedMaterialType(materialTypeOption || null);
 
-        // Store raw approval levels for later processing when users are available
         setApprovalLevelsRaw(data.invoice_approval_levels || []);
       } catch (error) {
         console.error("Error fetching approval data:", error);
@@ -349,32 +347,34 @@ const ApprovalEdit = () => {
     }
   }, [companies, id]);
 
-  const fetchUsers = async (companyId, projectId, siteId, departmentId) => {
-    setDepartmentUsers([]); // Reset users if company or department is not selected
-    if (!companyId || !departmentId) {
+  const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
+    setDepartmentUsers([]); // Reset users before fetching
+
+    if (!companyId || !departmentIds.length) {
       return;
     }
 
     try {
-      const response = await axios.get(
-        `${baseURL}/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
-          projectId || ""
-        }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
-          siteId || ""
-        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      const userRequests = departmentIds.map((deptId) =>
+        axios.get(
+          `${baseURL}/users.json?q[department_id_eq]=${deptId}&q[user_sites_pms_site_project_id_eq]=${
+            projectId || ""
+          }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
+            siteId || ""
+          }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
       );
 
-      if (response.data && Array.isArray(response.data)) {
-        const userOptions = response.data.map((user) => ({
+      const responses = await Promise.all(userRequests);
+      const allUsers = responses
+        .flatMap((res) => (Array.isArray(res.data) ? res.data : []))
+        .map((user) => ({
           value: user.id,
           label: user.full_name,
         }));
 
-        console.log("Fetched Users:", userOptions);
-        setDepartmentUsers(userOptions);
-      } else {
-        setDepartmentUsers([]); // Reset if no users found
-      }
+      // console.log("Fetched Users:", allUsers);
+      setDepartmentUsers(allUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       setDepartmentUsers([]);
@@ -440,36 +440,6 @@ const ApprovalEdit = () => {
         console.error("Error fetching company data:", error);
       });
   }, []);
-
-  // const handleCompanyChange = (selectedOption) => {
-  //   setSelectedCompany(selectedOption); // Set selected company
-  //   setSelectedProject(null); // Reset project selection
-  //   setSelectedSite(null); // Reset site selection
-  //   setSelectedWing(null); // Reset wing selection
-  //   setProjects([]); // Reset projects
-  //   setSiteOptions([]); // Reset site options
-  //   setWingsOptions([]); // Reset wings options
-
-  //   if (selectedOption) {
-  //     // Find the selected company from the list
-  //     const selectedCompanyData = companies.find(
-  //       (company) => company.id === selectedOption.value
-  //     );
-  //     setProjects(
-  //       selectedCompanyData?.projects.map((prj) => ({
-  //         value: prj.id,
-  //         label: prj.name,
-  //       }))
-  //     );
-
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       company_id: selectedOption.value, // Update formData with company_id
-  //       project_id: null, // Reset project_id when company changes
-  //       site_id: null, // Reset site_id when company changes
-  //     }));
-  //   }
-  // };
 
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption);
@@ -556,128 +526,41 @@ const ApprovalEdit = () => {
     );
   };
 
-  // const handleProjectChange = (selectedOption) => {
-  //   setSelectedProject(selectedOption);
-  //   setSelectedSite(null);
-  //   setSelectedWing(null);
-  //   setSiteOptions([]);
-  //   setWingsOptions([]);
-  //   setDepartmentUsers([]); // Reset users if company or department is not selected
-
-  //   if (selectedOption) {
-  //     const selectedCompanyData = companies.find(
-  //       (company) => company.id === selectedCompany.value
-  //     );
-  //     const selectedProjectData = selectedCompanyData?.projects.find(
-  //       (project) => project.id === selectedOption.value
-  //     );
-
-  //     setSiteOptions(
-  //       selectedProjectData?.pms_sites.map((site) => ({
-  //         value: site.id,
-  //         label: site.name,
-  //       })) || []
-  //     );
-
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       project_id: selectedOption.value,
-  //       site_id: null,
-  //     }));
-
-  //     fetchUsers(
-  //       selectedCompany?.value,
-  //       selectedOption.value,
-  //       null,
-  //       selectedDepartment?.value
-  //     );
-  //   }
-  // };
-
-  // const handleSiteChange = (selectedOption) => {
-  //   setSelectedSite(selectedOption);
-  //   setSelectedWing(null);
-  //   setDepartmentUsers([]); // Reset users if company or department is not selected
-
-  //   if (selectedOption) {
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       site_id: selectedOption.value,
-  //     }));
-
-  //     fetchUsers(
-  //       selectedCompany?.value,
-  //       selectedProject?.value,
-  //       selectedOption.value,
-  //       selectedDepartment?.value
-  //     );
-  //   }
-  // };
-
   const companyOptions = companies.map((company) => ({
     value: company.id,
     label: company.company_name,
   }));
 
-  // const handleDepartmentChange = async (selectedOption) => {
-  //   console.log("Selected Department:", selectedOption);
+  const handleDepartmentChange = async (selectedOptions) => {
+    // console.log("Selected Departments:", selectedOptions);
 
-  //   setSelectedDepartment(selectedOption);
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     department_id: selectedOption ? selectedOption.value : null,
-  //   }));
+    setSelectedDepartment(selectedOptions);
 
-  //   if (selectedOption) {
-  //     try {
-  //       const response = await axios.get(
-  //         `https://marathon.lockated.com/users.json?q[department_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       );
+    const selectedDepartmentIds = selectedOptions
+      ? selectedOptions.map((dept) => dept.value)
+      : [];
 
-  //       if (response.data && Array.isArray(response.data)) {
-  //         const userOptions = response.data.map((user) => ({
-  //           value: user.id,
-  //           label: user.full_name, // Ensure full_name is mapped correctly
-  //         }));
-
-  //         console.log("Fetched Users:", userOptions);
-  //         setDepartmentUsers(userOptions);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching users for department:", error);
-  //       setDepartmentUsers([]); // Reset users on error
-  //     }
-  //   } else {
-  //     setDepartmentUsers([]); // Reset users if no department selected
-  //   }
-  // };
-
-  const handleDepartmentChange = async (selectedOption) => {
-    console.log("Selected Department:", selectedOption);
-
-    setSelectedDepartment(selectedOption);
-    setDepartmentUsers([]); // Reset users if company or department is not selected
     setFormData((prevState) => ({
       ...prevState,
-      department_id: selectedOption ? selectedOption.value : null,
+      department_id: selectedDepartmentIds,
     }));
 
     fetchUsers(
       selectedCompany?.value,
       selectedProject?.value,
       selectedSite?.value,
-      selectedOption?.value
+      selectedDepartmentIds
     );
   };
 
-  // useEffect(() => {
-  //   fetchUsers(
-  //     selectedCompany?.value,
-  //     selectedProject?.value,
-  //     selectedSite?.value,
-  //     selectedDepartment?.value
-  //   );
-  // }, [selectedCompany, selectedProject, selectedSite, selectedDepartment]);
+  useEffect(() => {
+    if (filterOptions.departments.length > 0) {
+      const selectedDepartments = filterOptions.departments.filter((dept) =>
+        departmentIds.includes(dept.value)
+      );
+      setSelectedDepartment(selectedDepartments);
+    }
+  }, [filterOptions.departments, departmentIds]);
 
   useEffect(() => {
     setDepartmentUsers([]); // Always reset before fetching
@@ -695,36 +578,8 @@ const ApprovalEdit = () => {
     }
   }, [selectedDepartment]);
 
-  // const handleModuleChange = (selectedOption) => {
-  //   console.log("Selected Module ID:", selectedOption.value);
-  //   setSelectedModule(selectedOption);
-
-  //   // Check if selected module is "Material Order Request"
-  //   const isMaterialOrderRequest =
-  //     selectedOption.label.toLowerCase() === "material order request";
-
-  //   setShowMaterialType(isMaterialOrderRequest); // Update visibility
-
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     module_id: selectedOption.value,
-  //   }));
-  // };
-
-  // const handleMaterialTypeChange = (selectedOption) => {
-  //   console.log(
-  //     "Selected Material Type (PMS Supplier ID):",
-  //     selectedOption.value
-  //   );
-  //   setSelectedMaterialType(selectedOption);
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     pms_supplier_id: selectedOption.value, // Map material_id to pms_supplier_id
-  //   }));
-  // };
-
   const handleModuleChange = (selectedOption) => {
-    console.log("Selected Module:", selectedOption);
+    // console.log("Selected Module:", selectedOption);
 
     // Set selected module (or null if cleared)
     setSelectedModule(selectedOption);
@@ -746,7 +601,7 @@ const ApprovalEdit = () => {
   };
 
   const handleMaterialTypeChange = (selectedOption) => {
-    console.log("Selected Material Type:", selectedOption);
+    // console.log("Selected Material Type:", selectedOption);
 
     // Set selected material type (or null if cleared)
     setSelectedMaterialType(selectedOption);
@@ -781,7 +636,7 @@ const ApprovalEdit = () => {
 
     // Iterate over the approvalLevels array
     approvalLevels.forEach((level, index) => {
-      console.log(`Checking Level ${index + 1}:`, level.order);
+      // console.log(`Checking Level ${index + 1}:`, level.order);
 
       // Skip levels with invalid orders
       if (level.order === undefined || level.order === null) {
@@ -824,7 +679,7 @@ const ApprovalEdit = () => {
       company_id: formData.company_id,
       project_id: formData.project_id || null,
       site_id: formData.site_id || null,
-      department_id: formData.department_id,
+      // department_id: formData.department_id,
       snag_checklist_id: formData.template_id,
       sub_category_id: formData.sub_category_id,
       category_order: 1,
@@ -1015,7 +870,7 @@ const ApprovalEdit = () => {
 
                               {/* Event Number */}
                               <div className="col-md-3 mb-2">
-                                <label htmlFor="site-select">Site</label>
+                                <label htmlFor="site-select">Project</label>
                                 {/* <select
                                   id="site-select"
                                   className="form-control"
@@ -1092,7 +947,7 @@ const ApprovalEdit = () => {
                                     </option>
                                   ))}
                                 </select> */}
-                                <SingleSelector
+                                <MultiSelector
                                   id="status-select"
                                   options={filterOptions.departments}
                                   onChange={handleDepartmentChange}

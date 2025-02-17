@@ -519,7 +519,7 @@ const ApprovalMatrics = () => {
                     </div>
 
                     {/* Status */}
-                    <div className="col-md-3">
+                    {/* <div className="col-md-3">
                       <label htmlFor="status-select">Department</label>
 
                       <SingleSelector
@@ -534,7 +534,7 @@ const ApprovalMatrics = () => {
                         placeholder="Select Department"
                         isClearable
                       />
-                    </div>
+                    </div> */}
 
                     {/* Created By */}
                     <div className="col-md-3 mt-3">
