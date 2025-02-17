@@ -791,6 +791,7 @@ input[type="checkbox"] {
 .span-collection .btn-group {
   border-left: 1px solid gray;
 }
+/* css  */
 
 .tbl-container table {
   width: max-content;
@@ -18606,6 +18607,45 @@ ul.pagination.justify-content-center {
 
 
 
+
+
+
+
+
+/*# sourceMappingURL=mor.css-ed871f49aadae569d66f8e115a43114d30eed9833a2ddcbeef011041744e80a7.map */
+
+
+/* Ensure the table container allows dropdowns to be visible */
+ /* .tbl-container {
+  /* position: relative; */
+  /* overflow: visible !important; */
+  /* width:100% */
+/* } */ */
+
+/* Basic table styling */
+/* .tbl-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+   position: relative;
+} */
+
+/* th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}  */
+
+/* Fix the dropdown menu inside table */
+/* .custom-select .react-select__menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+} */
+
+/* Ensure dropdown appears properly */
+.custom-select .react-select__control {
+  /* min-width:200px; */
+}
 
 
 /*# sourceMappingURL=mor.css-ed871f49aadae569d66f8e115a43114d30eed9833a2ddcbeef011041744e80a7.map */

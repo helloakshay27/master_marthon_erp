@@ -635,7 +635,7 @@ const BOQSubItemTable = ({
   // Use effect to sync the qty values with boqSubItems
   useEffect(() => {
     // Collect all qty values from boqSubItems
-    const qtyArray = boqSubItems.map((item) => item.qty);
+    const qtyArray = boqSubItems.map((item) => item.cost_quantity);
     setBoqQuantity(qtyArray); // Update the state with the qty values
   }, [boqSubItems]); // Re-run the effect when boqSubItems change
 
@@ -712,7 +712,14 @@ const BOQSubItemTable = ({
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="mb-5" id="table1">
+                  <table
+                  //  className="mb-5" 
+                   id="table1"
+                  
+                  className={`  ${
+                    materials.length === 0 ? 'w-100' : ''
+                  }`} 
+                  >
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>
@@ -911,7 +918,13 @@ const BOQSubItemTable = ({
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
                 <div className="tbl-container mx-3 mt-1">
-                  <table className="mb-5" id="table3">
+                  <table
+                  //  className="mb-5"
+                    id="table3"
+                    className={`  ${
+                      Assets.length === 0 ? 'w-100' : ''
+                    }`} 
+                    >
                     <thead style={{ zIndex: "0" }}>
                       <tr>
                         <th rowSpan={2}>

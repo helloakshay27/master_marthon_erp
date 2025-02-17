@@ -21,6 +21,9 @@ const UnassignedMor = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedMORs, setSelectedMORs] = useState([]); //  Track selected MORs
+  const [operators, setOperators] = useState([]); //  Store operators for "Assigned To" dropdown
+  const [selectedOperator, setSelectedOperator] = useState(null); //
 
   useEffect(() => {
     axios
@@ -33,7 +36,54 @@ const UnassignedMor = () => {
       .catch((error) => {
         console.error("Error fetching company data:", error);
       });
+
+    axios
+      .get(
+        `${baseURL}/get_all_operators.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setOperators(
+          response.data.operators.map((op) => ({
+            value: op.id,
+            label: op.name,
+          }))
+        );
+      })
+      .catch((error) => console.error("Error fetching operators:", error));
   }, []);
+
+  const handleMORSelection = (morId) => {
+    setSelectedMORs((prevSelected) =>
+      prevSelected.includes(morId)
+        ? prevSelected.filter((id) => id !== morId)
+        : [...prevSelected, morId]
+    );
+  };
+
+  const handleUpdate = async () => {
+    if (selectedMORs.length === 0 || !selectedOperator) {
+      alert("Please select at least one MOR and an operator.");
+      return;
+    }
+
+    const confirmUpdate = window.confirm(
+      "Do you want to update the selected MORs?"
+    );
+    if (!confirmUpdate) return;
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/material_order_requests/update_operator.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        { mor_ids: selectedMORs, operator_id: selectedOperator.value }
+      );
+      alert("MORs updated successfully!");
+      setSelectedMORs([]);
+      setSelectedOperator(null);
+    } catch (error) {
+      console.error("Error updating MORs:", error);
+      alert("Failed to update MORs.");
+    }
+  };
 
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
@@ -106,6 +156,30 @@ const UnassignedMor = () => {
     total_pages: 10, // Update dynamically based on data
     total_count: 100, // Example data count
   });
+
+  const [morList, setMorList] = useState([]); // State for storing table data
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch Unassigned MOR List
+  useEffect(() => {
+    const fetchMORList = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://newerp.marathonrealty.com//material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setMorList(response.data || []); // Store data in state
+      } catch (err) {
+        console.error("Error fetching MOR list:", err);
+        setError("Failed to load MOR data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMORList();
+  }, []);
 
   const pageSize = 10;
 
@@ -328,9 +402,9 @@ const UnassignedMor = () => {
                         Assigned To
                       </label>
                       <Select
-                        options={siteOptions}
-                        onChange={handleSiteChange}
-                        value={selectedSite}
+                        options={operators}
+                        onChange={setSelectedOperator}
+                        value={selectedOperator}
                         placeholder="Select Sub-project"
                       />
                     </div>
@@ -376,44 +450,47 @@ const UnassignedMor = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td>1</td>
-                        <td>Marathon</td>
-                        <td>Neo Vally</td>
-                        <td>Neo Valley Building</td>
-                        <td>MOR947</td>
-                        <td>dd/mm/yy</td>
-                        <td>dd/mm/yy</td>
-                        <td>Very Urgent</td>
-                        <td />
-                        <td>Flooring Tiles</td>
-                        <td>Sumeet</td>
-                        <td>Plain IVORY Tiles 300 x 300 mm</td>
-                        <td>Box</td>
-                        <td>1000</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td>1</td>
-                        <td>Marathon</td>
-                        <td>Neo Vally</td>
-                        <td>Neo Valley Building</td>
-                        <td>MOR947</td>
-                        <td>dd/mm/yy</td>
-                        <td>dd/mm/yy</td>
-                        <td>Very Urgent</td>
-                        <td />
-                        <td>Flooring Tiles</td>
-                        <td>Sumeet</td>
-                        <td>Plain IVORY Tiles 300 x 300 mm</td>
-                        <td>Box</td>
-                        <td>1000</td>
-                      </tr>
+                      {loading ? (
+                        <tr>
+                          <td colSpan="15" className="text-center">
+                            Loading...
+                          </td>
+                        </tr>
+                      ) : error ? (
+                        <tr>
+                          <td colSpan="15" className="text-center text-danger">
+                            {error}
+                          </td>
+                        </tr>
+                      ) : morList.length > 0 ? (
+                        morList.map((mor, index) => (
+                          <tr key={mor.id}>
+                            <td>
+                              <input type="checkbox" />
+                            </td>
+                            <td>{index + 1}</td>
+                            <td>{mor.company_name}</td>
+                            <td>{mor.project_name}</td>
+                            <td>{mor.sub_project_name}</td>
+                            <td>{mor.mor_no}</td>
+                            <td>{mor.approved_date || "N/A"}</td>
+                            <td>{mor.scheduled_date || "N/A"}</td>
+                            <td>{mor.priority || "Normal"}</td>
+                            <td>{mor.ageing}</td>
+                            <td>{mor.sub_type || "N/A"}</td>
+                            <td>{mor.assigned_to || "Unassigned"}</td>
+                            <td>{mor.material || "N/A"}</td>
+                            <td>{mor.uom || "N/A"}</td>
+                            <td>{mor.pending_qty || 0}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="15" className="text-center">
+                            No records found.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
