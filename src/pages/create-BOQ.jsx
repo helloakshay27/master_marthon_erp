@@ -17,6 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { baseURL } from "../confi/apiDomain";
+import Select from "react-select";
 
 const CreateBOQ = () => {
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
@@ -31,6 +32,12 @@ const CreateBOQ = () => {
   // });
 
   const [errors, setErrors] = useState({});
+  const options = [
+    { value: "option1", label: "Option 1" },
+    { value: "option2", label: "Option 2" },
+    { value: "option3", label: "Option 3" },
+  ];
+  
 
 
 
@@ -1472,6 +1479,7 @@ const CreateBOQ = () => {
           <div className="tab-content1 active" id="total-content">
             <ToastContainer />
             {/* Total Content Here */}
+
             <div className="card mt-5 pb-4">
               <CollapsibleCard title="Create Boq">
                 <div className="card-body mt-0 pt-0">
@@ -1694,7 +1702,13 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="tbl-container mx-3 mt-1">
-                          <table className="mb-5">
+                        
+                          <table 
+                          // className="mb-5" 
+                          className={`  ${
+                            materials.length === 0 ? 'w-100' : ''
+                          }`} 
+                          >
                             <thead>
                               <tr>
                                 <th rowSpan={2}>
@@ -1904,7 +1918,12 @@ const CreateBOQ = () => {
 
                       <div className="card-body mt-0 pt-0">
                         <div className="tbl-container mx-3 mt-1">
-                          <table className="mb-5">
+                          <table 
+                          // className="mb-5"
+                           className={`  ${
+                            Assets.length === 0 ? 'w-100' : ''
+                          }`} 
+                          >
                             <thead >
                               <tr>
                                 <th rowSpan={2}>
@@ -2245,7 +2264,7 @@ const CreateBOQ = () => {
                                           min="0"
                                           placeholder="Enter Quantity"
                                           className="form-control"
-                                          onChange={(e) => handleInputChange2(index, "qty", parseFloat(e.target.value))}
+                                          onChange={(e) => handleInputChange2(index, " cost_quantity", parseFloat(e.target.value))}
                                         />
                                       </td>
 
