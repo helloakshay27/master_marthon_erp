@@ -184,22 +184,27 @@ const InvoiceApproval = () => {
   }, []);
 
   const [departmentUsers, setDepartmentUsers] = useState([]);
-  // const fetchUsers = async (companyId, projectId, siteId, departmentId) => {
-  //   if (!companyId || !departmentId) {
+
+  // const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
+  //   if (!companyId || !departmentIds || departmentIds.length === 0) {
   //     setDepartmentUsers([]); // Reset users if company or department is not selected
   //     return;
   //   }
 
   //   try {
+  //     const departmentQuery = departmentIds.join(","); // Convert array to comma-separated string
+
   //     const response = await axios.get(
-  //       `${baseURL}/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+  //       `https://marathon.lockated.com/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_id_eq]=${
   //         projectId || ""
   //       }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
   //         siteId || ""
   //       }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
   //     );
-  //     if (response.data && Array.isArray(response.data)) {
 
+  //     console.log(response.data, "multiselected users");
+
+  //     if (response.data && Array.isArray(response.data)) {
   //       const userOptions = response.data.map((user) => ({
   //         value: user.id,
   //         label: user.full_name,
@@ -214,68 +219,183 @@ const InvoiceApproval = () => {
   //   }
   // };
 
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+  //   // setWingsOptions([]);
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //     }));
+
+  //     fetchUsers(selectedOption.value, null, null, selectedDepartment?.value); // Fetch users based on company
+  //   }
+  // };
+
+  // const handleProjectChange = (selectedOption) => {
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setSiteOptions([]);
+  //   // setWingsOptions([]);
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedCompany.value
+  //     );
+  //     const selectedProjectData = selectedCompanyData?.projects.find(
+  //       (project) => project.id === selectedOption.value
+  //     );
+
+  //     setSiteOptions(
+  //       selectedProjectData?.pms_sites.map((site) => ({
+  //         value: site.id,
+  //         label: site.name,
+  //       })) || []
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       project_id: selectedOption.value,
+  //       site_id: null,
+  //     }));
+
+  //     fetchUsers(
+  //       selectedCompany?.value,
+  //       selectedOption.value,
+  //       null,
+  //       selectedDepartment?.value
+  //     ); // Fetch users based on project
+  //   }
+  // };
+
+  // const handleProjectChange = (selectedOption) => {
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setSiteOptions([]);
+  //   setWingsOptions([]);
+  //   setDepartmentUsers([]); // Clear department users
+  //   setSelectedUsers([]); // Reset selected users when project changes
+
+  //   const selectedCompanyData = companies.find(
+  //     (company) => company.id === selectedCompany?.value
+  //   );
+  //   const selectedProjectData = selectedCompanyData?.projects.find(
+  //     (project) => project.id === selectedOption?.value
+  //   );
+
+  //   setSiteOptions(
+  //     selectedProjectData?.pms_sites.map((site) => ({
+  //       value: site.id,
+  //       label: site.name,
+  //     })) || []
+  //   );
+
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     project_id: selectedOption ? selectedOption.value : null, // Ensure null when removed
+  //     site_id: null,
+  //     users: [], // Reset users in form data
+  //   }));
+
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedOption ? selectedOption.value : null, // Ensure null when removed
+  //     null,
+  //     selectedDepartment?.map((dept) => dept.value) // Ensure departmentIds are passed correctly
+  //   );
+  // };
+
+  // const handleProjectChange = (selectedOption) => {
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setSiteOptions([]);
+  //   setWingsOptions([]);
+  //   setDepartmentUsers([]); // Clear department users
+  //   setSelectedUsers([]); // Reset selected users when project changes
+
+  //   const selectedCompanyData = companies.find(
+  //     (company) => company.id === selectedCompany?.value
+  //   );
+  //   const selectedProjectData = selectedCompanyData?.projects.find(
+  //     (project) => project.id === selectedOption?.value
+  //   );
+
+  //   // Update site options based on the new project
+  //   setSiteOptions(
+  //     selectedProjectData?.pms_sites.map((site) => ({
+  //       value: site.id,
+  //       label: site.name,
+  //     })) || []
+  //   );
+
+  //   // Update formData for the new project
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     project_id: selectedOption ? selectedOption.value : null, // Ensure null when removed
+  //     site_id: null,
+  //     users: [], // Reset users in form data
+  //   }));
+
+  //   // Fetch users based on the selected project and selected departments
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedOption ? selectedOption.value : null, // Ensure null when removed
+  //     null,
+  //     selectedDepartment?.map((dept) => dept.value) // Pass selected departments
+  //   );
+  // };
+
   const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
     if (!companyId || !departmentIds || departmentIds.length === 0) {
-      setDepartmentUsers([]); // Reset users if company or department is not selected
+      setDepartmentUsers([]); // Reset users if no company or departments are selected
       return;
     }
 
     try {
-      const departmentQuery = departmentIds.join(","); // Convert array to comma-separated string
+      const departmentQuery = departmentIds.join(","); // Convert array of department IDs to a comma-separated string
 
+      // Fetch users based on company and selected departments
       const response = await axios.get(
-        `https://marathon.lockated.com/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_id_eq]=${
+        `${baseURL}/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
-        }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
-          siteId || ""
-        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        }&token=your-api-token`
       );
 
-      console.log(response.data, "multiselected users");
-
       if (response.data && Array.isArray(response.data)) {
-        const userOptions = response.data.map((user) => ({
+        const newUsers = response.data.map((user) => ({
           value: user.id,
           label: user.full_name,
         }));
-        setDepartmentUsers(userOptions);
+
+        // Set the department users (this will be used in the dropdown)
+        setDepartmentUsers(newUsers);
       } else {
-        setDepartmentUsers([]); // Reset users if no valid data received
+        setDepartmentUsers([]); // Reset users if no valid data is received
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      setDepartmentUsers([]);
-    }
-  };
-
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption);
-    setSelectedProject(null);
-    setSelectedSite(null);
-    setSelectedWing(null);
-    setProjects([]);
-    setSiteOptions([]);
-    // setWingsOptions([]);
-
-    if (selectedOption) {
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedOption.value
-      );
-      setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
-          value: prj.id,
-          label: prj.name,
-        }))
-      );
-
-      setFormData((prevState) => ({
-        ...prevState,
-        company_id: selectedOption.value,
-        project_id: null,
-        site_id: null,
-      }));
-
-      fetchUsers(selectedOption.value, null, null, selectedDepartment?.value); // Fetch users based on company
+      setDepartmentUsers([]); // Reset users on error
     }
   };
 
@@ -284,36 +404,42 @@ const InvoiceApproval = () => {
     setSelectedSite(null);
     setSelectedWing(null);
     setSiteOptions([]);
-    // setWingsOptions([]);
+    setWingsOptions([]);
 
-    if (selectedOption) {
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects.find(
-        (project) => project.id === selectedOption.value
-      );
+    // Clear previously fetched users and reset selected users when the project changes
+    setSelectedUsers([]);
+    setDepartmentUsers([]);
 
-      setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
+    const selectedCompanyData = companies.find(
+      (company) => company.id === selectedCompany?.value
+    );
+    const selectedProjectData = selectedCompanyData?.projects.find(
+      (project) => project.id === selectedOption?.value
+    );
 
-      setFormData((prevState) => ({
-        ...prevState,
-        project_id: selectedOption.value,
-        site_id: null,
-      }));
+    // Update site options based on the new project
+    setSiteOptions(
+      selectedProjectData?.pms_sites.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
 
-      fetchUsers(
-        selectedCompany?.value,
-        selectedOption.value,
-        null,
-        selectedDepartment?.value
-      ); // Fetch users based on project
-    }
+    // Update form data for the new project
+    setFormData((prevState) => ({
+      ...prevState,
+      project_id: selectedOption ? selectedOption.value : null,
+      site_id: null,
+      users: [], // Reset users in form data to be populated with new project and department data
+    }));
+
+    // Fetch users based on the selected departments, even after project change
+    fetchUsers(
+      selectedCompany?.value,
+      selectedOption ? selectedOption.value : null, // Pass the new project ID
+      null, // We are not filtering by site at this stage
+      selectedDepartment?.map((dept) => dept.value) // Pass the selected departments to fetch users
+    );
   };
 
   const handleSiteChange = (selectedOption) => {
@@ -339,6 +465,32 @@ const InvoiceApproval = () => {
     value: company.id,
     label: company.company_name,
   }));
+
+  // const handleDepartmentChange = async (selectedOptions) => {
+  //   if (!selectedOptions || selectedOptions.length === 0) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       department_id: [],
+  //     }));
+  //     setSelectedDepartment([]);
+  //     setDepartmentUsers([]);
+  //     return;
+  //   }
+
+  //   const departmentIds = selectedOptions.map((option) => option.value); // Extract multiple department IDs
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: departmentIds,
+  //   }));
+  //   setSelectedDepartment(selectedOptions);
+
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedProject?.value,
+  //     selectedSite?.value,
+  //     departmentIds
+  //   ); // Fetch users based on multiple departments
+  // };
 
   // const handleDepartmentChange = async (selectedOption) => {
   //   if (!selectedOption) {
@@ -368,32 +520,6 @@ const InvoiceApproval = () => {
 
   // Ensure selectedDepartment is set from formData when component renders
 
-  const handleDepartmentChange = async (selectedOptions) => {
-    if (!selectedOptions || selectedOptions.length === 0) {
-      setFormData((prevState) => ({
-        ...prevState,
-        department_id: [],
-      }));
-      setSelectedDepartment([]);
-      setDepartmentUsers([]);
-      return;
-    }
-
-    const departmentIds = selectedOptions.map((option) => option.value); // Extract multiple department IDs
-    setFormData((prevState) => ({
-      ...prevState,
-      department_id: departmentIds,
-    }));
-    setSelectedDepartment(selectedOptions);
-
-    fetchUsers(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      departmentIds
-    ); // Fetch users based on multiple departments
-  };
-
   // useEffect(() => {
   //   if (formData.department_id) {
   //     const selected = modifiedFilterOptions.departments.find(
@@ -402,6 +528,159 @@ const InvoiceApproval = () => {
   //     setSelectedDepartment(selected || null);
   //   }
   // }, [formData.department_id, modifiedFilterOptions.departments]);
+
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+
+  //   setSelectedUsers([]); // Clear selected users
+  //   setDepartmentUsers([]); // Clear department users
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //       users: [], // Reset users in form data
+  //     }));
+
+  //     fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
+  //   }
+  // };
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setProjects([]);
+    setSiteOptions([]);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+
+      setFormData((prevState) => ({
+        ...prevState,
+        company_id: selectedOption.value,
+        project_id: null,
+        site_id: null,
+      }));
+
+      // Clear selected users but keep selected departments
+      setSelectedUsers([]); // Reset selected users
+      fetchUsers(
+        selectedOption.value,
+        null,
+        null,
+        selectedDepartment.map((dept) => dept.value)
+      ); // Fetch new users based on selected departments
+    }
+  };
+
+  // const handleDepartmentChange = async (selectedOptions) => {
+  //   if (!selectedOptions || selectedOptions.length === 0) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       department_id: [],
+  //       users: [], // Reset users in form data
+  //     }));
+  //     setSelectedDepartment([]);
+  //     setDepartmentUsers([]);
+  //     setSelectedUsers([]); // Clear selected users
+  //     return;
+  //   }
+
+  //   const departmentIds = selectedOptions.map((option) => option.value);
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: departmentIds,
+  //   }));
+  //   setSelectedDepartment(selectedOptions);
+  //   setSelectedUsers([]); // Clear selected users
+  //   setDepartmentUsers([]); // Clear department users
+
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedProject?.value,
+  //     selectedSite?.value,
+  //     departmentIds
+  //   );
+  // };
+
+  const handleDepartmentChange = async (selectedOptions) => {
+    if (!selectedOptions || selectedOptions.length === 0) {
+      setFormData((prevState) => ({
+        ...prevState,
+        department_id: [],
+        users: [],
+      }));
+      setSelectedDepartment([]);
+      setDepartmentUsers([]);
+      setSelectedUsers([]);
+      return;
+    }
+
+    const departmentIds = selectedOptions.map((option) => option.value);
+    setFormData((prevState) => ({
+      ...prevState,
+      department_id: departmentIds,
+    }));
+    setSelectedDepartment(selectedOptions);
+
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/users.json?q[department_id_in]=${departmentIds.join(
+          ","
+        )}`
+      );
+
+      if (response.data && Array.isArray(response.data)) {
+        const newUsers = response.data.map((user) => ({
+          value: user.id,
+          label: user.full_name,
+        }));
+
+        // Merge old and new users, keeping unique users only
+        setDepartmentUsers(newUsers);
+
+        setSelectedUsers((prevUsers) => {
+          // Keep only users that exist in the new selection
+          const updatedUsers = prevUsers.filter((user) =>
+            newUsers.some((newUser) => newUser.value === user.value)
+          );
+          return updatedUsers;
+        });
+      } else {
+        setDepartmentUsers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setDepartmentUsers([]);
+    }
+  };
 
   useEffect(() => {
     if (formData.department_id && modifiedFilterOptions.departments?.length) {
@@ -943,12 +1222,22 @@ const InvoiceApproval = () => {
                                 <legend className="float-none mb-2">
                                   Users <span style={{ color: "red" }}>*</span>
                                 </legend>
-                                <MultiSelector
+                                {/* <MultiSelector
                                   options={departmentUsers} // Use dynamically fetched users
                                   value={level.users}
                                   onChange={(selected) =>
                                     handleInputChange(index, "users", selected)
                                   }
+                                  placeholder="Select Users"
+                                /> */}
+
+                                <MultiSelector
+                                  options={departmentUsers} // Dynamically fetched users from multiple departments
+                                  value={selectedUsers} // Persist selected users
+                                  onChange={(selected) => {
+                                    setSelectedUsers(selected); // Update state when users are selected
+                                    handleInputChange(index, "users", selected);
+                                  }}
                                   placeholder="Select Users"
                                 />
                               </fieldset>

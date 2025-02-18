@@ -9,9 +9,11 @@ import {
   DownloadIcon,
   FilterIcon,
   SearchIcon,
+  SelectBox,
   SettingIcon,
   StarIcon,
 } from "../components";
+import FormatDate from "../components/FormatDate";
 
 const UnassignedMor = () => {
   const [companies, setCompanies] = useState([]);
@@ -24,6 +26,8 @@ const UnassignedMor = () => {
   const [selectedMORs, setSelectedMORs] = useState([]); //  Track selected MORs
   const [operators, setOperators] = useState([]); //  Store operators for "Assigned To" dropdown
   const [selectedOperator, setSelectedOperator] = useState(null); //
+  // const [selectedOperator, setSelectedOperator] = useState(null);
+  const [selectedSubProject, setSelectedSubProject] = useState(null); // Separate state
 
   useEffect(() => {
     axios
@@ -39,46 +43,49 @@ const UnassignedMor = () => {
 
     axios
       .get(
-        `${baseURL}/get_all_operators.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `https://marathon.lockated.com/users/site_users.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
+        console.log(response.data, "Response Users");
+
+        const operatorsData = response.data || []; // Handle undefined case
+
         setOperators(
-          response.data.operators.map((op) => ({
-            value: op.id,
-            label: op.name,
+          operatorsData.map((op) => ({
+            value: op.id, // Ensure ID is correctly assigned
+            label: op.full_name, // Ensure full_name is correct
           }))
         );
       })
       .catch((error) => console.error("Error fetching operators:", error));
   }, []);
 
-  const handleMORSelection = (morId) => {
-    setSelectedMORs((prevSelected) =>
-      prevSelected.includes(morId)
-        ? prevSelected.filter((id) => id !== morId)
-        : [...prevSelected, morId]
-    );
-  };
-
   const handleUpdate = async () => {
-    if (selectedMORs.length === 0 || !selectedOperator) {
+    if (
+      selectedMORs.length === 0 ||
+      !selectedOperator ||
+      !selectedOperator.value
+    ) {
       alert("Please select at least one MOR and an operator.");
       return;
     }
 
-    const confirmUpdate = window.confirm(
-      "Do you want to update the selected MORs?"
-    );
-    if (!confirmUpdate) return;
+    const payload = {
+      mor_ids: selectedMORs, // Array of selected MOR IDs
+      operator_id: selectedOperator.value, // Ensure this is defined
+    };
+
+    console.log("Payload:", payload); // Debug before sending request
 
     try {
       const response = await axios.post(
         `${baseURL}/material_order_requests/update_operator.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        { mor_ids: selectedMORs, operator_id: selectedOperator.value }
+        payload
       );
+
       alert("MORs updated successfully!");
-      setSelectedMORs([]);
-      setSelectedOperator(null);
+      setSelectedMORs([]); // Reset selection
+      setSelectedOperator(null); // Reset operator
     } catch (error) {
       console.error("Error updating MORs:", error);
       alert("Failed to update MORs.");
@@ -151,25 +158,39 @@ const UnassignedMor = () => {
     label: company.company_name,
   }));
 
-  const [pagination, setPagination] = useState({
-    current_page: 1,
-    total_pages: 10, // Update dynamically based on data
-    total_count: 100, // Example data count
-  });
+  // const [pagination, setPagination] = useState({
+  //   current_page: 1,
+  //   total_pages: 10, // Update dynamically based on data
+  //   total_count: 100, // Example data count
+  // });
 
   const [morList, setMorList] = useState([]); // State for storing table data
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch Unassigned MOR List
+  const [pagination, setPagination] = useState({
+    total_entries: 0,
+    total_pages: 0,
+    current_page: 1,
+  });
+
+  // const [morList, setMorList] = useState([]); // To store MOR data
+
   useEffect(() => {
     const fetchMORList = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `https://newerp.marathonrealty.com//material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}`
         );
-        setMorList(response.data || []); // Store data in state
+        const data = response.data;
+        setMorList(data.material_order_requests || []);
+        setPagination({
+          ...pagination,
+          total_entries: data.total_entries,
+          total_pages: data.total_pages,
+        });
       } catch (err) {
         console.error("Error fetching MOR list:", err);
         setError("Failed to load MOR data.");
@@ -179,7 +200,7 @@ const UnassignedMor = () => {
     };
 
     fetchMORList();
-  }, []);
+  }, [pagination.current_page]); // Fetch on current page change
 
   const pageSize = 10;
 
@@ -202,6 +223,27 @@ const UnassignedMor = () => {
     return pages;
   };
 
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleMORSelection = (morId) => {
+    setSelectedMORs((prevSelected) =>
+      prevSelected.includes(morId)
+        ? prevSelected.filter((id) => id !== morId)
+        : [...prevSelected, morId]
+    );
+  };
+
+  // Handle "Select All" functionality
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedMORs([]); // Deselect all
+    } else {
+      const allIds = morList.map((mor) => mor.id);
+      setSelectedMORs(allIds); // Select all MOR IDs
+    }
+    setSelectAll(!selectAll);
+  };
+
   return (
     <div>
       <div className="main-content">
@@ -220,7 +262,9 @@ const UnassignedMor = () => {
                       data-tab="total"
                     >
                       <h4 className="content-box-title">Unassigned MOR's</h4>
-                      <p className="content-box-sub">300</p>
+                      <p className="content-box-sub">
+                        {pagination.total_entries}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -230,19 +274,9 @@ const UnassignedMor = () => {
             <div className="card mt-3 pb-4" style={{ overflow: "hidden" }}>
               <CollapsibleCard title="Quick Filter">
                 <div>
-                  {/* {error && (
-                        <div className="alert alert-danger">{error}</div>
-                      )}
-                      {loading && (
-                        <div
-                          className="spinner-border text-primary"
-                          role="status"
-                        ></div>
-                      )} */}
-
                   <div className="row my-2 align-items-end">
                     {/* Event Title */}
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-title-select">Company</label>
 
                       <SingleSelector
@@ -255,7 +289,7 @@ const UnassignedMor = () => {
                     </div>
 
                     {/* Event Number */}
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-no-select">Project</label>
 
                       <SingleSelector
@@ -266,7 +300,7 @@ const UnassignedMor = () => {
                       />
                     </div>
 
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-no-select"> Sub Project</label>
                       <SingleSelector
                         options={siteOptions}
@@ -277,50 +311,24 @@ const UnassignedMor = () => {
                     </div>
 
                     {/* Status */}
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="status-select">Assigned to</label>
 
                       <SingleSelector
                         id="status-select"
-                        // options={modifiedFilterOptions.departments}
-                        // onChange={(selectedOption) =>
-                        //   handleFilterChange(
-                        //     "department",
-                        //     selectedOption?.value
-                        //   )
-                        // }
-                        placeholder="Select Department"
+                        options={operators}
+                        // onChange={setSelectedOperator}
+                        // value={selectedOperator}
+                        onChange={setSelectedSubProject} // Separate handler
+                        value={selectedSubProject} // Separate state
+                        placeholder="Select Sub-project"
                         isClearable
                       />
                     </div>
 
-                    {/* Created By */}
-                    <div className="col-md-3 mt-3">
-                      <label htmlFor="created-by-select">Last Created</label>
-
-                      <SingleSelector
-                        id="created-by-select"
-                        // options={modifiedFilterOptions.modules}
-                        // value={
-                        //   filters.modules
-                        //     ? modifiedFilterOptions.modules.find(
-                        //         (m) => m.value === filters.modules
-                        //       )
-                        //     : null
-                        // }
-                        // onChange={(selectedOption) =>
-                        //   handleFilterChange("modules", selectedOption?.value)
-                        // }
-                        isClearable
-                        placeholder="Select Module"
-                      />
-                    </div>
-                    {/* {filters.modules === "material_order_request" && ( */}
-
-                    {/* )} */}
                     <button
                       type="submit"
-                      className="col-md-1 purple-btn2 ms-2 mt-4"
+                      className="col-md-1 purple-btn2 ms-4 mt-5"
                       // onClick={handleFilterSubmit}
                     >
                       Go{" "}
@@ -337,32 +345,27 @@ const UnassignedMor = () => {
                 </div>
               </CollapsibleCard>
 
-              <div className="d-flex mt-2 align-items-end px-3">
-                <div className="col-md-6">
-                  <form>
-                    <div className="input-group">
-                      <input
-                        type="search"
-                        id="searchInput"
-                        className="form-control tbl-search"
-                        placeholder="Type your keywords here"
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="btn btn-md btn-default"
-                        >
-                          <SearchIcon />
-                        </button>
-                      </div>
+              <div className="d-flex mt-3 align-items-end px-3">
+                <div className="col-md-6 mt-3">
+                  <div className="input-group">
+                    <input
+                      type="search"
+                      id="searchInput"
+                      className="form-control tbl-search"
+                      placeholder="Type your keywords here"
+                    />
+                    <div className="input-group-append">
+                      <button type="button" className="btn btn-md btn-default">
+                        <SearchIcon />
+                      </button>
                     </div>
-                  </form>
+                  </div>
                 </div>
-                <div className="col-md-7 ">
+                <div className="col-md-6 ">
                   <div className="row justify-content-end align-items-end">
-                    <div className="col-md-4 me-2">
+                    <div className="col-md-3 me-2">
                       <div className="row justify-content-end px-3">
-                        <div className="col-md-3">
+                        {/* <div className="col-md-3">
                           <button
                             className="btn btn-md"
                             data-bs-toggle="modal"
@@ -370,13 +373,13 @@ const UnassignedMor = () => {
                           >
                             <FilterIcon />
                           </button>
-                        </div>
-                        <div className="col-md-3">
+                        </div> */}
+                        {/* <div className="col-md-3">
                           <button type="submit" className="btn btn-md">
                             <StarIcon />
                           </button>
-                        </div>
-                        <div className="col-md-3">
+                        </div> */}
+                        {/* <div className="col-md-3">
                           <button
                             id="downloadButton"
                             type="submit"
@@ -384,8 +387,8 @@ const UnassignedMor = () => {
                           >
                             <DownloadIcon />
                           </button>
-                        </div>
-                        <div className="col-md-3">
+                        </div> */}
+                        {/* <div className="col-md-3">
                           <button
                             type="submit"
                             className="btn btn-md"
@@ -394,24 +397,41 @@ const UnassignedMor = () => {
                           >
                             <SettingIcon />
                           </button>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
-                    <div className="col-md-3 d-flex align-items-center">
+                    <div className="col-md-5 d-flex align-items-center">
                       <label htmlFor="" className="me-3 mt-2 text-nowrap ">
                         Assigned To
                       </label>
-                      <Select
+                      <SingleSelector
                         options={operators}
                         onChange={setSelectedOperator}
+                        // Separate handler
                         value={selectedOperator}
-                        placeholder="Select Sub-project"
+                        placeholder="Select Operator"
+                        // styles={{
+                        //   control: (provided) => ({
+                        //     ...provided,
+                        //     fontSize: "12px", // Reduce font size of selected value
+                        //     minHeight: "30px", // Reduce height if needed
+                        //   }),
+                        //   singleValue: (provided) => ({
+                        //     ...provided,
+                        //     fontSize: "12px", // Reduce font size of the selected option
+                        //   }),
+                        //   menu: (provided) => ({
+                        //     ...provided,
+                        //     fontSize: "14px", // Keep dropdown options readable
+                        //   }),
+                        // }}
                       />
                     </div>
-                    <div className="col-md-4">
+                    <div className="col-md-3">
                       <button
-                        className="purple-btn2 mt-3 ms-1"
-                        style={{ height: "30px", minWidth: "60px" }} // Match height & width
+                        className="purple-btn2 mt-3 "
+                        style={{ height: "30px", minWidth: "40x" }} // Match height & width
+                        onClick={handleUpdate} // Call handleUpdate on click
                       >
                         Update
                       </button>
@@ -431,7 +451,11 @@ const UnassignedMor = () => {
                     <thead>
                       <tr>
                         <th>
-                          <input type="checkbox" />
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={handleSelectAll}
+                          />
                         </th>
                         <th>Sr.No.</th>
                         <th>Company</th>
@@ -439,7 +463,7 @@ const UnassignedMor = () => {
                         <th>Sub-Project</th>
                         <th>MOR No.</th>
                         <th>Approved Date</th>
-                        <th>Sch. Date</th>
+                        <th>Scheduled Date</th>
                         <th>Priority</th>
                         <th>Ageing</th>
                         <th>Sub-Type</th>
@@ -466,22 +490,36 @@ const UnassignedMor = () => {
                         morList.map((mor, index) => (
                           <tr key={mor.id}>
                             <td>
-                              <input type="checkbox" />
+                              <input
+                                type="checkbox"
+                                checked={selectedMORs.includes(mor.id)}
+                                onChange={() => handleMORSelection(mor.id)}
+                              />
                             </td>
-                            <td>{index + 1}</td>
-                            <td>{mor.company_name}</td>
-                            <td>{mor.project_name}</td>
-                            <td>{mor.sub_project_name}</td>
-                            <td>{mor.mor_no}</td>
-                            <td>{mor.approved_date || "N/A"}</td>
-                            <td>{mor.scheduled_date || "N/A"}</td>
+                            {/* <td>{index + 1}</td> */}
+                            <td>
+                              {(pagination.current_page - 1) * pageSize +
+                                index +
+                                1}
+                            </td>{" "}
+                            {/* Adjust index based on page */}
+                            <td>{mor.company}</td>
+                            <td>{mor.project}</td>
+                            <td>{mor.sub_project}</td>
+                            <td>{mor.mor_number}</td>
+                            <td>
+                              <FormatDate timestamp={mor.created_at} />
+                            </td>
+                            <td>
+                              <FormatDate timestamp={mor.updated_at} />
+                            </td>
                             <td>{mor.priority || "Normal"}</td>
                             <td>{mor.ageing}</td>
-                            <td>{mor.sub_type || "N/A"}</td>
+                            <td>{mor.material_sub_type || "N/A"}</td>
                             <td>{mor.assigned_to || "Unassigned"}</td>
                             <td>{mor.material || "N/A"}</td>
                             <td>{mor.uom || "N/A"}</td>
-                            <td>{mor.pending_qty || 0}</td>
+                            <td>{mor.qty || 0}</td>
                           </tr>
                         ))
                       ) : (
@@ -528,13 +566,6 @@ const UnassignedMor = () => {
                     </button>
                   </li>
 
-                  {/* Ellipsis before first page numbers if needed */}
-                  {pagination.current_page > 5 && (
-                    <li className="page-item disabled">
-                      <span className="page-link">...</span>
-                    </li>
-                  )}
-
                   {/* Dynamic Page Numbers */}
                   {getPageNumbers().map((pageNumber) => (
                     <li
@@ -551,13 +582,6 @@ const UnassignedMor = () => {
                       </button>
                     </li>
                   ))}
-
-                  {/* Ellipsis after last page numbers if needed */}
-                  {pagination.current_page + 4 < pagination.total_pages && (
-                    <li className="page-item disabled">
-                      <span className="page-link">...</span>
-                    </li>
-                  )}
 
                   {/* Next Button */}
                   <li
@@ -606,14 +630,14 @@ const UnassignedMor = () => {
                     Showing{" "}
                     {Math.min(
                       (pagination.current_page - 1) * pageSize + 1 || 1,
-                      pagination.total_count
+                      pagination.total_entries
                     )}{" "}
                     to{" "}
                     {Math.min(
                       pagination.current_page * pageSize,
-                      pagination.total_count
+                      pagination.total_entries
                     )}{" "}
-                    of {pagination.total_count} entries
+                    of {pagination.total_entries} entries
                   </p>
                 </div>
               </div>
