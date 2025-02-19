@@ -68,6 +68,7 @@ import ApprovalMatrics from "./pages/approvalMatrics";
 import InvoiceApproval from "./pages/invoice-approval";
 import ApprovalEdit from "./pages/approval-edit";
 import UnassignedMor from "./pages/unassigned-mor";
+import SubProject from "./pages/sub-project";
 
 function App() {
   return (
@@ -374,6 +375,9 @@ function App() {
           <Route path="/invoice_approval" element={<InvoiceApproval />} />
           <Route path="/approval_edit/:id" element={<ApprovalEdit />} />
           <Route path="/unassigned-mor" element={<UnassignedMor />} />
+          sub-mor
+          <Route path="/sub-mor" element={<SubProject />} />
+          sub-mor
         </Routes>
       </div>
     </BrowserRouter>

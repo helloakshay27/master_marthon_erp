@@ -413,7 +413,7 @@ const UnassignedMor = () => {
         <div className="website-content " style={{ overflowY: "auto" }}>
           <div className="module-data-section p-4">
             <a href="">
-              Home &gt; Purchase &gt; Procurement &gt; MOR Management
+              Home &gt; Purchase &gt; Procurement &gt; Unassigned MOR
             </a>
             <h5 className="mt-4">Unassigned MOR</h5>
             <div className="material-boxes mt-3 separteinto5">
@@ -612,7 +612,7 @@ const UnassignedMor = () => {
                         </div> */}
                       </div>
                     </div>
-                    <div className="col-md-5 d-flex align-items-center">
+                    <div className="col-md-5 d-flex align-items-center mb-1">
                       <label htmlFor="" className="me-3 mt-2 text-nowrap ">
                         Assigned To
                       </label>
@@ -642,7 +642,11 @@ const UnassignedMor = () => {
                     <div className="col-md-3">
                       <button
                         className="purple-btn2 mt-3 "
-                        style={{ height: "30px", minWidth: "40x" }} // Match height & width
+                        style={{
+                          height: "35px",
+                          minWidth: "40x",
+                          marginTop: "5px",
+                        }} // Match height & width
                         onClick={handleUpdate} // Call handleUpdate on click
                       >
                         Update
@@ -682,7 +686,7 @@ const UnassignedMor = () => {
                         <th>Assigned to</th>
                         <th>Material</th>
                         <th>UOM</th>
-                        <th>Pending Qty</th>
+                        <th> MOR Qty</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -280,6 +280,9 @@ function Members() {
                 <li>
                   <Link to="/unassigned-mor">Unassigned Mor</Link>
                 </li>
+                <li>
+                  <Link to="/sub-mor">sub project Mor</Link>
+                </li>
               </ul>
             </div>
             <div className="m-3">
