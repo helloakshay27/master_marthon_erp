@@ -379,7 +379,7 @@ const InvoiceApproval = () => {
       const response = await axios.get(
         `${baseURL}/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
-        }&token=your-api-token`
+        }&&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       if (response.data && Array.isArray(response.data)) {
@@ -461,10 +461,121 @@ const InvoiceApproval = () => {
     }
   };
 
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setProjects([]);
+    setSiteOptions([]);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+
+      setFormData((prevState) => ({
+        ...prevState,
+        company_id: selectedOption.value,
+        project_id: null,
+        site_id: null,
+      }));
+
+      // Clear selected users but keep selected departments
+      setSelectedUsers([]); // Reset selected users
+      fetchUsers(
+        selectedOption.value,
+        null,
+        null,
+        selectedDepartment.map((dept) => dept.value)
+      ); // Fetch new users based on selected departments
+    }
+  };
+
+  const handleDepartmentChange = async (selectedOptions) => {
+    if (!selectedOptions || selectedOptions.length === 0) {
+      setFormData((prevState) => ({
+        ...prevState,
+        department_id: [],
+        users: [],
+      }));
+      setSelectedDepartment([]);
+      setDepartmentUsers([]);
+      setSelectedUsers([]);
+      return;
+    }
+
+    const departmentIds = selectedOptions.map((option) => option.value);
+    setFormData((prevState) => ({
+      ...prevState,
+      department_id: departmentIds,
+    }));
+    setSelectedDepartment(selectedOptions);
+
+    // Ensure we are passing companyId if it exists
+    const companyId = selectedCompany?.value || null;
+
+    fetchUsers(
+      companyId,
+      selectedProject?.value || null,
+      selectedSite?.value || null,
+      departmentIds
+    );
+  };
+
+  useEffect(() => {
+    if (formData.department_id && modifiedFilterOptions.departments?.length) {
+      const selected = modifiedFilterOptions.departments.filter((option) =>
+        formData.department_id.includes(option.value)
+      );
+
+      // Only update state if the selection has changed
+      if (JSON.stringify(selected) !== JSON.stringify(selectedDepartment)) {
+        setSelectedDepartment(selected);
+      }
+    }
+  }, [formData.department_id, modifiedFilterOptions.departments]);
+
   const companyOptions = companies.map((company) => ({
     value: company.id,
     label: company.company_name,
   }));
+
+  // const handleDepartmentChange = async (selectedOptions) => {
+  //   if (!selectedOptions || selectedOptions.length === 0) {
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       department_id: [],
+  //       users: [], // Reset users in form data
+  //     }));
+  //     setSelectedDepartment([]);
+  //     setDepartmentUsers([]);
+  //     setSelectedUsers([]); // Clear selected users
+  //     return;
+  //   }
+
+  //   const departmentIds = selectedOptions.map((option) => option.value);
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     department_id: departmentIds,
+  //   }));
+  //   setSelectedDepartment(selectedOptions);
+  //   setSelectedUsers([]); // Clear selected users
+  //   setDepartmentUsers([]); // Clear department users
+
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedProject?.value,
+  //     selectedSite?.value,
+  //     departmentIds
+  //   );
+  // };
 
   // const handleDepartmentChange = async (selectedOptions) => {
   //   if (!selectedOptions || selectedOptions.length === 0) {
@@ -562,138 +673,6 @@ const InvoiceApproval = () => {
   //     fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
   //   }
   // };
-
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption);
-    setSelectedProject(null);
-    setSelectedSite(null);
-    setSelectedWing(null);
-    setProjects([]);
-    setSiteOptions([]);
-
-    if (selectedOption) {
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedOption.value
-      );
-      setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
-          value: prj.id,
-          label: prj.name,
-        }))
-      );
-
-      setFormData((prevState) => ({
-        ...prevState,
-        company_id: selectedOption.value,
-        project_id: null,
-        site_id: null,
-      }));
-
-      // Clear selected users but keep selected departments
-      setSelectedUsers([]); // Reset selected users
-      fetchUsers(
-        selectedOption.value,
-        null,
-        null,
-        selectedDepartment.map((dept) => dept.value)
-      ); // Fetch new users based on selected departments
-    }
-  };
-
-  // const handleDepartmentChange = async (selectedOptions) => {
-  //   if (!selectedOptions || selectedOptions.length === 0) {
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       department_id: [],
-  //       users: [], // Reset users in form data
-  //     }));
-  //     setSelectedDepartment([]);
-  //     setDepartmentUsers([]);
-  //     setSelectedUsers([]); // Clear selected users
-  //     return;
-  //   }
-
-  //   const departmentIds = selectedOptions.map((option) => option.value);
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     department_id: departmentIds,
-  //   }));
-  //   setSelectedDepartment(selectedOptions);
-  //   setSelectedUsers([]); // Clear selected users
-  //   setDepartmentUsers([]); // Clear department users
-
-  //   fetchUsers(
-  //     selectedCompany?.value,
-  //     selectedProject?.value,
-  //     selectedSite?.value,
-  //     departmentIds
-  //   );
-  // };
-
-  const handleDepartmentChange = async (selectedOptions) => {
-    if (!selectedOptions || selectedOptions.length === 0) {
-      setFormData((prevState) => ({
-        ...prevState,
-        department_id: [],
-        users: [],
-      }));
-      setSelectedDepartment([]);
-      setDepartmentUsers([]);
-      setSelectedUsers([]);
-      return;
-    }
-
-    const departmentIds = selectedOptions.map((option) => option.value);
-    setFormData((prevState) => ({
-      ...prevState,
-      department_id: departmentIds,
-    }));
-    setSelectedDepartment(selectedOptions);
-
-    try {
-      const response = await axios.get(
-        `https://marathon.lockated.com/users.json?q[department_id_in]=${departmentIds.join(
-          ","
-        )}`
-      );
-
-      if (response.data && Array.isArray(response.data)) {
-        const newUsers = response.data.map((user) => ({
-          value: user.id,
-          label: user.full_name,
-        }));
-
-        // Merge old and new users, keeping unique users only
-        setDepartmentUsers(newUsers);
-
-        setSelectedUsers((prevUsers) => {
-          // Keep only users that exist in the new selection
-          const updatedUsers = prevUsers.filter((user) =>
-            newUsers.some((newUser) => newUser.value === user.value)
-          );
-          return updatedUsers;
-        });
-      } else {
-        setDepartmentUsers([]);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setDepartmentUsers([]);
-    }
-  };
-
-  useEffect(() => {
-    if (formData.department_id && modifiedFilterOptions.departments?.length) {
-      const selected = modifiedFilterOptions.departments.filter((option) =>
-        formData.department_id.includes(option.value)
-      );
-
-      // Only update state if the selection has changed
-      if (JSON.stringify(selected) !== JSON.stringify(selectedDepartment)) {
-        setSelectedDepartment(selected);
-      }
-    }
-  }, [formData.department_id, modifiedFilterOptions.departments]);
 
   const [showMaterialType, setShowMaterialType] = useState(false);
 

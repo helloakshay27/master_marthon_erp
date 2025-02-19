@@ -177,30 +177,193 @@ const UnassignedMor = () => {
 
   // const [morList, setMorList] = useState([]); // To store MOR data
 
+  const fetchMORList = async (page = pagination.current_page) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}`
+      );
+      const data = response.data;
+
+      setMorList(data.material_order_requests || []);
+      setPagination((prev) => ({
+        ...prev,
+        total_entries: data.total_entries,
+        total_pages: data.total_pages,
+      }));
+    } catch (err) {
+      console.error("Error fetching MOR list:", err);
+      setError("Failed to load MOR data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMORList = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}`
-        );
-        const data = response.data;
-        setMorList(data.material_order_requests || []);
-        setPagination({
-          ...pagination,
-          total_entries: data.total_entries,
-          total_pages: data.total_pages,
-        });
-      } catch (err) {
-        console.error("Error fetching MOR list:", err);
-        setError("Failed to load MOR data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    // const fetchMORList = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const response = await axios.get(
+    //       `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}`
+    //     );
+    //     const data = response.data;
+    //     setMorList(data.material_order_requests || []);
+    //     setPagination({
+    //       ...pagination,
+    //       total_entries: data.total_entries,
+    //       total_pages: data.total_pages,
+    //     });
+    //   } catch (err) {
+    //     console.error("Error fetching MOR list:", err);
+    //     setError("Failed to load MOR data.");
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
 
     fetchMORList();
   }, [pagination.current_page]); // Fetch on current page change
+  const [filters, setFilters] = useState({
+    company: null,
+    project: null,
+    site: null,
+  });
+
+  // const handleFilterChange = (field, value) => {
+  //   setFilters((prevFilters) => ({
+  //     ...prevFilters,
+  //     [field]: value, // Dynamically update the correct filter field
+  //   }));
+  // };
+
+  const handleFilterChange = (field, value) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [field]: value,
+    }));
+
+    if (field === "company") {
+      // Reset project and sub-project when company changes
+      setFilters((prev) => ({ ...prev, project: null, site: null }));
+      setSiteOptions([]); // Reset sub-projects
+
+      const selectedCompanyData = companies.find(
+        (company) => company.id === value
+      );
+
+      if (selectedCompanyData) {
+        const filteredProjects = selectedCompanyData.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }));
+        setProjects(filteredProjects);
+      } else {
+        setProjects([]); // No projects available
+      }
+    }
+
+    if (field === "project") {
+      // Reset sub-project when project changes
+      setFilters((prev) => ({ ...prev, site: null }));
+
+      const selectedCompanyData = companies.find(
+        (company) => company.id === filters.company
+      );
+      if (selectedCompanyData) {
+        const selectedProjectData = selectedCompanyData.projects.find(
+          (prj) => prj.id === value
+        );
+
+        if (selectedProjectData) {
+          const filteredSites = selectedProjectData.pms_sites.map((site) => ({
+            value: site.id,
+            label: site.name,
+          }));
+          setSiteOptions(filteredSites);
+        } else {
+          setSiteOptions([]); // No sub-projects available
+        }
+      }
+    }
+  };
+
+  // Function to fetch filtered MOR List
+  const fetchFilteredMORList = async () => {
+    let queryParams = new URLSearchParams();
+
+    if (filters.company)
+      queryParams.append("q[company_id_eq]", filters.company);
+    if (filters.project)
+      queryParams.append("q[project_id_eq]", filters.project);
+    if (filters.site) queryParams.append("q[pms_site_id_eq]", filters.site);
+    if (selectedOperator)
+      queryParams.append("q[operator_id_eq]", selectedOperator);
+
+    const apiUrl = `${baseURL}/material_order_requests/unassigned_mor_list.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    try {
+      const response = await axios.get(apiUrl);
+      setMorList(response.data.material_order_requests || []);
+      setPagination({
+        ...pagination,
+        total_entries: response.data.total_entries || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching filtered MOR data:", error);
+    }
+  };
+
+  // Handle filter submit (Go Button)
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    fetchFilteredMORList();
+  };
+
+  // Handle reset filters (Reset Button)
+  // const handleResetFilters = async () => {
+  //   setFilters({
+  //     company: null,
+  //     project: null,
+  //     site: null,
+  //   });
+
+  //   setSelectedCompany(null);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+
+  //   try {
+  //     const response = await axios.get(
+  //       `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414page=${pagination.current_page}`
+  //     );
+  //     setMorList(response.data.material_order_requests || []);
+  //     setPagination({
+  //       total_entries: response.data.total_entries || 0,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error resetting filters:", error);
+  //   }
+  // };
+  const handleResetFilters = async () => {
+    setFilters({
+      company: null,
+      project: null,
+      site: null,
+    });
+
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedOperator(null); // ✅ Reset operator selection
+
+    // Reset pagination to the first page
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1, // Reset to first page
+    }));
+
+    // Fetch updated data
+    await fetchMORList(1); // Pass page 1 explicitly
+  };
 
   const pageSize = 10;
 
@@ -279,11 +442,26 @@ const UnassignedMor = () => {
                     <div className="col-md-2">
                       <label htmlFor="event-title-select">Company</label>
 
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={companyOptions}
                         onChange={handleCompanyChange}
                         value={selectedCompany}
                         placeholder={`Select Company`} // Dynamic placeholder
+                        isSearchable={true}
+                      /> */}
+                      <SingleSelector
+                        options={companyOptions}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("company", selectedOption?.value)
+                        }
+                        value={
+                          filters.company
+                            ? companyOptions.find(
+                                (opt) => opt.value === filters.company
+                              )
+                            : null
+                        }
+                        placeholder="Select Company"
                         isSearchable={true}
                       />
                     </div>
@@ -292,21 +470,49 @@ const UnassignedMor = () => {
                     <div className="col-md-2">
                       <label htmlFor="event-no-select">Project</label>
 
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={projects}
                         onChange={handleProjectChange}
                         value={selectedProject}
                         placeholder={`Select Project`} // Dynamic placeholder
+                      /> */}
+                      <SingleSelector
+                        options={projects}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("project", selectedOption?.value)
+                        }
+                        value={
+                          filters.project
+                            ? projects.find(
+                                (opt) => opt.value === filters.project
+                              )
+                            : null
+                        }
+                        placeholder="Select Project"
                       />
                     </div>
 
                     <div className="col-md-2">
                       <label htmlFor="event-no-select"> Sub Project</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={siteOptions}
                         onChange={handleSiteChange}
                         value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
+                      /> */}
+                      <SingleSelector
+                        options={siteOptions}
+                        onChange={(selectedOption) =>
+                          handleFilterChange("site", selectedOption?.value)
+                        }
+                        value={
+                          filters.site
+                            ? siteOptions.find(
+                                (opt) => opt.value === filters.site
+                              )
+                            : null
+                        }
+                        placeholder="Select Sub-project"
                       />
                     </div>
 
@@ -319,8 +525,14 @@ const UnassignedMor = () => {
                         options={operators}
                         // onChange={setSelectedOperator}
                         // value={selectedOperator}
-                        onChange={setSelectedSubProject} // Separate handler
-                        value={selectedSubProject} // Separate state
+                        onChange={(selectedOption) =>
+                          setSelectedOperator(selectedOption?.value)
+                        } // Update state
+                        value={
+                          operators.find(
+                            (opt) => opt.value === selectedOperator
+                          ) || null
+                        }
                         placeholder="Select Sub-project"
                         isClearable
                       />
@@ -329,14 +541,14 @@ const UnassignedMor = () => {
                     <button
                       type="submit"
                       className="col-md-1 purple-btn2 ms-4 mt-5"
-                      // onClick={handleFilterSubmit}
+                      onClick={handleFilterSubmit}
                     >
                       Go{" "}
                     </button>
 
                     <button
                       className="col-md-1 purple-btn2 ms-2 mt-4"
-                      // onClick={handleResetFilters}
+                      onClick={handleResetFilters}
                     >
                       Reset
                     </button>
