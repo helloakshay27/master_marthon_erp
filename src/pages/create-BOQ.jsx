@@ -2169,11 +2169,12 @@ const CreateBOQ = () => {
                                                 width="24"
                                                 height="24"
                                                 viewBox="0 0 24 24"
-                                                fill="none"
+                                                // fill="none"
                                                 stroke="black"
                                                 strokeWidth="1"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
+                                                 fill=" #e0e0e0"
                                               >
                                                 {/* Square */}
                                                 <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
@@ -2186,11 +2187,12 @@ const CreateBOQ = () => {
                                                 width="24"
                                                 height="24"
                                                 viewBox="0 0 24 24"
-                                                fill="none"
+                                                // fill="none"
                                                 stroke="black"
                                                 strokeWidth="1"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
+                                                 fill=" #e0e0e0"
                                               >
                                                 {/* Square */}
                                                 <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
@@ -2264,7 +2266,7 @@ const CreateBOQ = () => {
                                           min="0"
                                           placeholder="Enter Quantity"
                                           className="form-control"
-                                          onChange={(e) => handleInputChange2(index, " cost_quantity", parseFloat(e.target.value))}
+                                          onChange={(e) => handleInputChange2(index, "cost_quantity", parseFloat(e.target.value))}
                                         />
                                       </td>
 
@@ -2316,7 +2318,10 @@ const CreateBOQ = () => {
                                             handleSelectRowAsset={handleSelectRowAssets2}
                                             predefinedMaterialsData={updatePredefinedMaterialsData}
                                             predefinedAssetsData={updatePredefinedAssetsData}
-                                            boqSubItems={boqSubItems}
+                                            // boqSubItems={boqSubItems}
+                                            boqSubItems={boqSubItems.filter(item => item.id === el.id)}  // Only pass the latest boqSubItems based on el.id
+                                            // handleInputChange2={handleInputChange2}
+                                            setBoqSubItems={setBoqSubItems}
                                           />
 
                                           {/* <MaterialModal

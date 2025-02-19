@@ -627,7 +627,7 @@ const BOQSubItemTable = ({
 
   const handleCostQtyChange = (id, value) => {
     // This will call the parent's handleInputChange2 method
-    handleInputChange2(id, "cost_quantity", value);
+    handleInputChange2(id, cost_quantity, value);
   };
 
   const [boqQuantity, setBoqQuantity] = useState("");
@@ -639,7 +639,7 @@ const BOQSubItemTable = ({
     setBoqQuantity(qtyArray); // Update the state with the qty values
   }, [boqSubItems]); // Re-run the effect when boqSubItems change
 
-  
+  console.log("boq sub items......" ,boqSubItems)
 
   console.log(" cost........qty", boqQuantity)
 
