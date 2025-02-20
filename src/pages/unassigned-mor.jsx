@@ -29,6 +29,8 @@ const UnassignedMor = () => {
   // const [selectedOperator, setSelectedOperator] = useState(null);
   const [selectedSubProject, setSelectedSubProject] = useState(null); // Separate state
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     axios
       .get(
@@ -43,7 +45,7 @@ const UnassignedMor = () => {
 
     axios
       .get(
-        `https://marathon.lockated.com/users/site_users.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/users/site_users.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         console.log(response.data, "Response Users");
@@ -114,10 +116,6 @@ const UnassignedMor = () => {
     }
   };
 
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
-
-  // Handle project selection
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
     setSelectedSite(null); // Reset site selection
@@ -158,12 +156,6 @@ const UnassignedMor = () => {
     label: company.company_name,
   }));
 
-  // const [pagination, setPagination] = useState({
-  //   current_page: 1,
-  //   total_pages: 10, // Update dynamically based on data
-  //   total_count: 100, // Example data count
-  // });
-
   const [morList, setMorList] = useState([]); // State for storing table data
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -180,6 +172,10 @@ const UnassignedMor = () => {
   const fetchMORList = async (page = pagination.current_page) => {
     setLoading(true);
     try {
+      let queryParams = new URLSearchParams();
+      queryParams.append("page", page);
+      if (searchTerm) queryParams.append("q[name_cont]", searchTerm);
+
       const response = await axios.get(
         `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}`
       );
@@ -200,27 +196,6 @@ const UnassignedMor = () => {
   };
 
   useEffect(() => {
-    // const fetchMORList = async () => {
-    //   setLoading(true);
-    //   try {
-    //     const response = await axios.get(
-    //       `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}`
-    //     );
-    //     const data = response.data;
-    //     setMorList(data.material_order_requests || []);
-    //     setPagination({
-    //       ...pagination,
-    //       total_entries: data.total_entries,
-    //       total_pages: data.total_pages,
-    //     });
-    //   } catch (err) {
-    //     console.error("Error fetching MOR list:", err);
-    //     setError("Failed to load MOR data.");
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
     fetchMORList();
   }, [pagination.current_page]); // Fetch on current page change
   const [filters, setFilters] = useState({
@@ -228,13 +203,6 @@ const UnassignedMor = () => {
     project: null,
     site: null,
   });
-
-  // const handleFilterChange = (field, value) => {
-  //   setFilters((prevFilters) => ({
-  //     ...prevFilters,
-  //     [field]: value, // Dynamically update the correct filter field
-  //   }));
-  // };
 
   const handleFilterChange = (field, value) => {
     setFilters((prevFilters) => ({
@@ -319,30 +287,14 @@ const UnassignedMor = () => {
     fetchFilteredMORList();
   };
 
-  // Handle reset filters (Reset Button)
-  // const handleResetFilters = async () => {
-  //   setFilters({
-  //     company: null,
-  //     project: null,
-  //     site: null,
-  //   });
+  const handleSearch = () => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1, // Reset to first page for new search
+    }));
+    fetchMORList(1);
+  };
 
-  //   setSelectedCompany(null);
-  //   setSelectedProject(null);
-  //   setSelectedSite(null);
-
-  //   try {
-  //     const response = await axios.get(
-  //       `${baseURL}/material_order_requests/unassigned_mor_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414page=${pagination.current_page}`
-  //     );
-  //     setMorList(response.data.material_order_requests || []);
-  //     setPagination({
-  //       total_entries: response.data.total_entries || 0,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error resetting filters:", error);
-  //   }
-  // };
   const handleResetFilters = async () => {
     setFilters({
       company: null,
@@ -559,7 +511,7 @@ const UnassignedMor = () => {
 
               <div className="d-flex mt-3 align-items-end px-3">
                 <div className="col-md-6 mt-3">
-                  <div className="input-group">
+                  {/* <div className="input-group">
                     <input
                       type="search"
                       id="searchInput"
@@ -568,6 +520,26 @@ const UnassignedMor = () => {
                     />
                     <div className="input-group-append">
                       <button type="button" className="btn btn-md btn-default">
+                        <SearchIcon />
+                      </button>
+                    </div>
+                  </div> */}
+
+                  <div className="input-group">
+                    <input
+                      type="search"
+                      id="searchInput"
+                      className="form-control tbl-search"
+                      placeholder="Type your keywords here"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <div className="input-group-append">
+                      <button
+                        type="button"
+                        className="btn btn-md btn-default"
+                        onClick={() => handleSearch()}
+                      >
                         <SearchIcon />
                       </button>
                     </div>
