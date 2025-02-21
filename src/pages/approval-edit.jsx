@@ -71,18 +71,63 @@ const ApprovalEdit = () => {
     invoice_approval_levels: [],
   });
 
-  // console.log("Selected Company ID:", formData.company_id);
-  // console.log("selected site:", formData.project_id);
-  // console.log("selected deparment:", formData.department_id);
-  // console.log("selected module:", formData.module_id);
-  // console.log("selected materila", formData.material_id);
-
   const handleAddLevel = () => {
     setApprovalLevels([
       ...approvalLevels,
-      { id: "", order: "", name: "", users: [] }, // Add a new empty level
+      { id: "", order: "", name: "", users: [], type: "users" }, // Default new level to "users"
     ]);
   };
+
+  const [userGroups, setUserGroups] = useState([]);
+
+  const handleSelectionTypeChange = (index, type) => {
+    setApprovalLevels((prevLevels) =>
+      prevLevels.map((level, i) =>
+        i === index
+          ? {
+              ...level,
+              type,
+              users: type === "users" ? [] : null, // Reset users if switching to group
+              group: type === "groups" ? { label: "", value: "" } : null, // Ensure a proper object for group selection
+            }
+          : level
+      )
+    );
+  };
+
+  const fetchUserGroups = async (companyId) => {
+    if (!companyId) {
+      setUserGroups([]); // Clear if no company is selected
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      // Extract and format user groups
+      const groups = response.data.user_groups.map((group) => ({
+        label: group.name, // Display group name in dropdown
+        value: group.id, // Store group ID as value
+      }));
+
+      setUserGroups(groups);
+    } catch (error) {
+      console.error("Error fetching user groups:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!formData.company_id) {
+      setApprovalLevels((prevLevels) =>
+        prevLevels.map((level) => ({
+          ...level,
+          group: null, // ✅ Ensure reset when no company is selected
+        }))
+      );
+    }
+  }, [formData.company_id]);
 
   const handleRemoveLevel = (index) => {
     setApprovalLevels((prevLevels) =>
@@ -116,6 +161,42 @@ const ApprovalEdit = () => {
     sub_category_id: null,
     approval_type: "",
   });
+
+  const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
+    setDepartmentUsers([]); // ✅ Reset users before fetching
+
+    if (!companyId) {
+      return; // ✅ Prevent unnecessary API calls
+    }
+
+    try {
+      let url = `${baseURL}/users.json?q[user_sites_pms_site_project_company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+      if (projectId) {
+        url += `&q[user_sites_pms_site_project_id_eq]=${projectId}`;
+      }
+
+      if (siteId) {
+        url += `&q[user_sites_pms_site_id_eq]=${siteId}`;
+      }
+
+      if (departmentIds && departmentIds.length > 0) {
+        url += `&q[department_id_eq]=${departmentIds.join(",")}`; // Fetch only for selected departments
+      }
+
+      const response = await axios.get(url);
+
+      const allUsers = response.data.map((user) => ({
+        value: user.id,
+        label: user.full_name,
+      }));
+
+      setDepartmentUsers(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setDepartmentUsers([]);
+    }
+  };
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -248,13 +329,13 @@ const ApprovalEdit = () => {
           ? [data.department_id]
           : [];
 
-        setDepartmentIds(fetchedDepartmentIds); // Update s
+        setDepartmentIds(fetchedDepartmentIds);
 
         setFormData({
           company_id: data.company_id || null,
           site_id: data.site_id || null,
           project_id: data.project_id || null,
-          department_id: fetchedDepartmentIds, // Store multiple department IDs
+          department_id: fetchedDepartmentIds,
           module_id: data.approval_type || null,
           material_id: data.pms_inventory_type_id || null,
           invoice_approval_levels: data.invoice_approval_levels || [],
@@ -304,12 +385,6 @@ const ApprovalEdit = () => {
           }
         }
 
-        // Find and set multiple selected departments
-        // const selectedDepartments = filterOptions.departments.filter((dept) =>
-        //   departmentIds.includes(dept.value)
-        // );
-        // setSelectedDepartment(selectedDepartments);
-
         const selectedDepartments = filterOptions.departments.filter((dept) =>
           fetchedDepartmentIds.includes(dept.value)
         );
@@ -336,7 +411,37 @@ const ApprovalEdit = () => {
         );
         setSelectedMaterialType(materialTypeOption || null);
 
-        setApprovalLevelsRaw(data.invoice_approval_levels || []);
+        // **Handle Preselected User Groups & Users**
+        const updatedApprovalLevels = (data.invoice_approval_levels || []).map(
+          (level) => {
+            if (level.group_id) {
+              // If group_id exists, preselect "groups"
+              return {
+                ...level,
+                type: "groups",
+                users: null, // Reset users
+                group: {
+                  value: level.group_id,
+                  label: level.group_name,
+                },
+              };
+            } else if (level.users && level.users.length > 0) {
+              // If users exist, preselect "users"
+              return {
+                ...level,
+                type: "users",
+                users: level.users.map((user) => ({
+                  value: user.id,
+                  label: user.name,
+                })),
+                group: null, // Reset group
+              };
+            }
+            return level;
+          }
+        );
+
+        setApprovalLevelsRaw(updatedApprovalLevels);
       } catch (error) {
         console.error("Error fetching approval data:", error);
       }
@@ -346,40 +451,6 @@ const ApprovalEdit = () => {
       fetchApprovalData();
     }
   }, [companies, id]);
-
-  const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
-    setDepartmentUsers([]); // Reset users before fetching
-
-    if (!companyId || !departmentIds.length) {
-      return;
-    }
-
-    try {
-      const userRequests = departmentIds.map((deptId) =>
-        axios.get(
-          `${baseURL}/users.json?q[department_id_eq]=${deptId}&q[user_sites_pms_site_project_id_eq]=${
-            projectId || ""
-          }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
-            siteId || ""
-          }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        )
-      );
-
-      const responses = await Promise.all(userRequests);
-      const allUsers = responses
-        .flatMap((res) => (Array.isArray(res.data) ? res.data : []))
-        .map((user) => ({
-          value: user.id,
-          label: user.full_name,
-        }));
-
-      // console.log("Fetched Users:", allUsers);
-      setDepartmentUsers(allUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setDepartmentUsers([]);
-    }
-  };
 
   useEffect(() => {
     if (!departmentUsers.length || !approvalLevelsRaw.length) return;
@@ -394,23 +465,29 @@ const ApprovalEdit = () => {
       id: level.id,
       order: level.order || "",
       name: level.name || "",
-      users: Array.isArray(level.escalate_to_users)
-        ? level.escalate_to_users.map((userId) => {
-            const userName = userMap.get(userId) || "Unknown";
-            return { label: userName, value: userId };
-          })
-        : [],
+      type: level.group_id ? "groups" : "users", // Check if group exists
+      users:
+        level.escalate_to_users?.map((userId) => {
+          const userName = userMap.get(userId) || "Unknown";
+          return { label: userName, value: userId };
+        }) || [],
+      user_group: level.group_id
+        ? { value: level.group_id, label: level.group_name }
+        : null,
     }));
 
     setApprovalLevels(approvalLevelsWithUserNames);
   }, [departmentUsers, approvalLevelsRaw]);
 
   useEffect(() => {
-    if (departmentUsers.length > 0 && formData.invoice_approval_levels) {
-      // Map stored user IDs to departmentUsers list
+    if (formData.invoice_approval_levels.length > 0) {
       const updatedApprovalLevels = formData.invoice_approval_levels.map(
         (level) => ({
-          ...level,
+          id: level.id,
+          order: level.order || "",
+          name: level.name || "",
+          type: level.group_id ? "groups" : "users",
+
           users: level.escalate_to_users
             ?.map((userId) => {
               const userOption = departmentUsers.find(
@@ -420,13 +497,24 @@ const ApprovalEdit = () => {
                 ? { value: userOption.value, label: userOption.label }
                 : null;
             })
-            .filter(Boolean), // Remove any null values
+            .filter(Boolean),
+
+          // ✅ Correctly preselect the group using group_id & group_name
+          group: level.group_id
+            ? userGroups.find((group) => group.value === level.group_id) || {
+                value: level.group_id,
+                label: level.group_name || "Unknown Group",
+              }
+            : null,
         })
       );
 
+      console.log("Updated Approval Levels:", updatedApprovalLevels);
       setApprovalLevels(updatedApprovalLevels);
     }
-  }, [departmentUsers, formData.invoice_approval_levels]); // Run when users or approval levels update
+  }, [departmentUsers, userGroups, formData.invoice_approval_levels]);
+
+  // Run when users or approval levels update
 
   useEffect(() => {
     axios
@@ -441,6 +529,54 @@ const ApprovalEdit = () => {
       });
   }, []);
 
+  useEffect(() => {
+    setUserGroups([]); // Reset user groups immediately when the company changes
+
+    if (selectedCompany) {
+      fetchUserGroups(selectedCompany.value);
+    }
+  }, [selectedCompany]);
+
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+  //   setWingsOptions([]);
+  //   setDepartmentUsers([]); // Reset users if company or department is not selected
+  //   setUserGroups([]);
+
+  //   setApprovalLevels((prevLevels) =>
+  //     prevLevels.map((level) => ({ ...level, group: null }))
+  //   );
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //     }));
+
+  //     fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
+
+  //     fetchUserGroups(selectedOption.value); //
+  //   }
+  // };
+
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption);
     setSelectedProject(null);
@@ -449,7 +585,13 @@ const ApprovalEdit = () => {
     setProjects([]);
     setSiteOptions([]);
     setWingsOptions([]);
-    setDepartmentUsers([]); // Reset users if company or department is not selected
+    setDepartmentUsers([]);
+    setUserGroups([]); // ✅ Reset user groups before fetching new ones
+
+    // ✅ Clear selected user group in approval levels
+    setApprovalLevels((prevLevels) =>
+      prevLevels.map((level) => ({ ...level, group: null }))
+    );
 
     if (selectedOption) {
       const selectedCompanyData = companies.find(
@@ -471,8 +613,60 @@ const ApprovalEdit = () => {
       }));
 
       fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
+
+      // ✅ Delay fetching user groups slightly to ensure reset takes effect
+      setTimeout(() => {
+        fetchUserGroups(selectedOption.value);
+      }, 0);
     }
   };
+
+  const handleDepartmentChange = async (selectedOptions) => {
+    // console.log("Selected Departments:", selectedOptions);
+
+    setSelectedDepartment(selectedOptions);
+
+    const selectedDepartmentIds = selectedOptions
+      ? selectedOptions.map((dept) => dept.value)
+      : [];
+
+    setFormData((prevState) => ({
+      ...prevState,
+      department_id: selectedDepartmentIds,
+    }));
+
+    fetchUsers(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      selectedDepartmentIds
+    );
+  };
+
+  useEffect(() => {
+    if (filterOptions.departments.length > 0) {
+      const selectedDepartments = filterOptions.departments.filter((dept) =>
+        departmentIds.includes(dept.value)
+      );
+      setSelectedDepartment(selectedDepartments);
+    }
+  }, [filterOptions.departments, departmentIds]);
+
+  // useEffect(() => {
+  //   setDepartmentUsers([]); // Always reset before fetching
+  //   fetchUsers(
+  //     selectedCompany?.value,
+  //     selectedProject?.value,
+  //     selectedSite?.value,
+  //     selectedDepartment?.value
+  //   );
+  // }, [selectedCompany, selectedProject, selectedSite, selectedDepartment]);
+
+  useEffect(() => {
+    if (selectedDepartment) {
+      handleDepartmentChange(selectedDepartment);
+    }
+  }, [selectedDepartment]);
 
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
@@ -531,53 +725,6 @@ const ApprovalEdit = () => {
     label: company.company_name,
   }));
 
-  const handleDepartmentChange = async (selectedOptions) => {
-    // console.log("Selected Departments:", selectedOptions);
-
-    setSelectedDepartment(selectedOptions);
-
-    const selectedDepartmentIds = selectedOptions
-      ? selectedOptions.map((dept) => dept.value)
-      : [];
-
-    setFormData((prevState) => ({
-      ...prevState,
-      department_id: selectedDepartmentIds,
-    }));
-
-    fetchUsers(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      selectedDepartmentIds
-    );
-  };
-
-  useEffect(() => {
-    if (filterOptions.departments.length > 0) {
-      const selectedDepartments = filterOptions.departments.filter((dept) =>
-        departmentIds.includes(dept.value)
-      );
-      setSelectedDepartment(selectedDepartments);
-    }
-  }, [filterOptions.departments, departmentIds]);
-
-  useEffect(() => {
-    setDepartmentUsers([]); // Always reset before fetching
-    fetchUsers(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      selectedDepartment?.value
-    );
-  }, [selectedCompany, selectedProject, selectedSite, selectedDepartment]);
-
-  useEffect(() => {
-    if (selectedDepartment) {
-      handleDepartmentChange(selectedDepartment);
-    }
-  }, [selectedDepartment]);
-
   const handleModuleChange = (selectedOption) => {
     // console.log("Selected Module:", selectedOption);
 
@@ -623,7 +770,7 @@ const ApprovalEdit = () => {
     const errors = [];
 
     if (!formData.company_id) errors.push("Company is required.");
-    if (!formData.department_id) errors.push("Department is required.");
+    // if (!formData.department_id) errors.push("Department is required.");
     if (!formData.module_id) errors.push("Module is required.");
     if (approvalLevels.length === 0)
       errors.push("At least one Approval Level is required.");
@@ -691,7 +838,11 @@ const ApprovalEdit = () => {
         order: level.order,
         active: true,
         _destroy: level._destroy || false, // Only send delete key for approval levels
-        escalate_to_users: level.users?.map((user) => user.value) || [],
+        escalate_to_users:
+          level.type === "users"
+            ? level.users?.map((user) => user.value) || []
+            : [],
+        user_group_id: level.type === "groups" ? level.group?.value : null,
       })),
     };
 
@@ -810,30 +961,6 @@ const ApprovalEdit = () => {
                                   <span style={{ color: "red" }}>*</span>
                                 </label>
 
-                                {/* <select
-                                  id="company-select"
-                                  className="form-control"
-                                  value={
-                                    selectedCompany ? selectedCompany.value : ""
-                                  }
-                                  onChange={(e) =>
-                                    handleCompanyChange({
-                                      value: e.target.value,
-                                      label:
-                                        e.target.options[e.target.selectedIndex]
-                                          .text,
-                                    })
-                                  }
-                                >
-                                  {filterOptions.companies.map((option) => (
-                                    <option
-                                      key={option.value}
-                                      value={option.value}
-                                    >
-                                      {option.label}
-                                    </option>
-                                  ))}
-                                </select> */}
                                 <SingleSelector
                                   options={companyOptions}
                                   onChange={handleCompanyChange}
@@ -1023,7 +1150,7 @@ const ApprovalEdit = () => {
                             <h3 className="card-title">Approval Levels</h3>
                           </div>
 
-                          {approvalLevels
+                          {/* {approvalLevels
                             .filter((level) => !level._destroy)
                             .map((level, index) => (
                               <div
@@ -1108,6 +1235,160 @@ const ApprovalEdit = () => {
                           <div className="ms-3 mt-2">
                             <button
                               className=" purple-btn1 submit-btn"
+                              onClick={handleAddLevel}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div> */}
+
+                          {approvalLevels
+                            .filter((level) => !level._destroy)
+                            .map((level, index) => (
+                              <div
+                                key={index}
+                                className="px-4"
+                                style={{
+                                  display: "flex",
+                                  columnGap: 20,
+                                  alignItems: "center",
+                                }}
+                              >
+                                {/* Order Input */}
+                                <fieldset className="border">
+                                  <legend className="float-none">
+                                    Order{" "}
+                                    <span style={{ color: "red" }}>*</span>
+                                  </legend>
+                                  <input
+                                    className="form-group order"
+                                    placeholder="Enter Order"
+                                    value={level.order}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        index,
+                                        "order",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                  />
+                                </fieldset>
+
+                                {/* Name Input */}
+                                <fieldset className="border ms-4">
+                                  <legend className="float-none">
+                                    Name of Level{" "}
+                                    <span style={{ color: "red" }}>*</span>
+                                  </legend>
+                                  <input
+                                    className="form-group name"
+                                    placeholder="Enter Name of Level"
+                                    value={level.name}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        index,
+                                        "name",
+                                        e.target.value
+                                      )
+                                    }
+                                    required
+                                    type="text"
+                                  />
+                                </fieldset>
+
+                                {/* Radio Buttons for Selection */}
+                                <div className="ms-3">
+                                  <label>
+                                    <input
+                                      type="radio"
+                                      name={`selectionType-${index}`}
+                                      value="users"
+                                      checked={level.type === "users"}
+                                      onChange={() =>
+                                        handleSelectionTypeChange(
+                                          index,
+                                          "users"
+                                        )
+                                      }
+                                    />{" "}
+                                    Users
+                                  </label>
+                                  <label className="ms-3">
+                                    <input
+                                      type="radio"
+                                      name={`selectionType-${index}`}
+                                      value="groups"
+                                      checked={level.type === "groups"}
+                                      onChange={() =>
+                                        handleSelectionTypeChange(
+                                          index,
+                                          "groups"
+                                        )
+                                      }
+                                    />{" "}
+                                    User Groups
+                                  </label>
+                                </div>
+
+                                {/* Selector for Users or User Groups */}
+                                <fieldset
+                                  className="user-list ms-3 mb-3"
+                                  style={{ width: "15%" }}
+                                >
+                                  <legend className="float-none mb-2">
+                                    {level.type === "users"
+                                      ? "Users"
+                                      : "User Groups"}{" "}
+                                    <span style={{ color: "red" }}>*</span>
+                                  </legend>
+
+                                  {level.type === "users" ? (
+                                    // MultiSelector for Users
+                                    <MultiSelector
+                                      options={departmentUsers}
+                                      value={level.users || []} // Ensure users are always an array
+                                      onChange={(selected) =>
+                                        handleInputChange(
+                                          index,
+                                          "users",
+                                          selected
+                                        )
+                                      }
+                                      placeholder="Select Users"
+                                    />
+                                  ) : (
+                                    // SingleSelector for User Groups
+                                    <SingleSelector
+                                      options={userGroups}
+                                      value={level.group || null} // Ensure the group is an object
+                                      onChange={(selected) =>
+                                        handleInputChange(
+                                          index,
+                                          "group",
+                                          selected
+                                        )
+                                      }
+                                      placeholder="Select User Group"
+                                    />
+                                  )}
+                                </fieldset>
+
+                                {/* Remove Button */}
+                                <button
+                                  className="remove-item ms-4 mb-3 px-2 rounded purple-btn1"
+                                  style={{ padding: "1px 3px" }}
+                                  onClick={() => handleRemoveLevel(index)}
+                                >
+                                  x
+                                </button>
+                              </div>
+                            ))}
+
+                          {/* Add New Level Button */}
+                          <div className="ms-3 mt-2">
+                            <button
+                              className="purple-btn1 submit-btn"
                               onClick={handleAddLevel}
                             >
                               +
