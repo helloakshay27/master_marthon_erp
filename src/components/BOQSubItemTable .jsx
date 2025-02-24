@@ -738,7 +738,7 @@ const BOQSubItemTable = ({
           <CollapsibleCard title="Material">
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
-                <div className="tbl-container mx-3 mt-1">
+                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                   <table
                   //  className="mb-5" 
                    id="table1"
@@ -954,7 +954,7 @@ const BOQSubItemTable = ({
           <CollapsibleCard title="Assests">
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
-                <div className="tbl-container mx-3 mt-1">
+                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                   <table
                   //  className="mb-5"
                     id="table3"

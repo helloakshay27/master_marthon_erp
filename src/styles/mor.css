@@ -18616,34 +18616,34 @@ ul.pagination.justify-content-center {
 
 
 /* Ensure the table container allows dropdowns to be visible */
- .tbl-container {
+ .tbl-container-SpecificBOQ {
   position: relative;
   overflow: visible !important;
   /* width:100% */
  } 
 
 /* Basic table styling */
-.tbl-container table {
-  /* width: 100%; */
+/* .tbl-container table {
+  width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
    position: relative;
-}
+} */
 
-th, td {
+/* th, td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
-} 
+}  */
 
 /* Fix the dropdown menu inside table */
-.custom-select .react-select__menu {
+/* .custom-select .react-select__menu {
   z-index: 9999 !important;
   position: absolute !important;
-}
+} */
 
 /* Ensure dropdown appears properly */
-.custom-select .react-select__control {
+/* .custom-select .react-select__control {
   min-width:100px;
 }
-
+ */
