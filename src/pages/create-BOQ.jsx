@@ -1701,7 +1701,7 @@ const CreateBOQ = () => {
                   <CollapsibleCard title="Material">
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
-                        <div className="tbl-container mx-3 mt-1">
+                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                         
                           <table 
                           // className="mb-5" 
@@ -1917,7 +1917,7 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
 
                       <div className="card-body mt-0 pt-0">
-                        <div className="tbl-container mx-3 mt-1">
+                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                           <table 
                           // className="mb-5"
                            className={`  ${
@@ -2125,7 +2125,7 @@ const CreateBOQ = () => {
 
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                          <div className="tbl-container mx-3 mt-1">
+                          <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                             <table className="table table-bordered">
                               <thead style={{ zIndex: "1" }}>
                                 <tr>

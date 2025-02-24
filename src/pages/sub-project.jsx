@@ -229,10 +229,10 @@ const SubProject = () => {
               <table className="w-100">
                 <thead>
                   <tr className="text-start">
-                    <th>Sr No.</th>
+                    <th style={{ width: "5%" }}>Sr No.</th>
                     <th>Group Name</th>
                     <th>Company</th>
-                    <th>Action</th>
+                    <th style={{ width: "8%" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
