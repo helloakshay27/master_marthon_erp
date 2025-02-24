@@ -310,13 +310,15 @@ const AddUsersModal = ({
       size="md"
       footerButtons={[
         { label: "Save", onClick: handleSave },
-        { label: "Cancel", onClick: onClose },
+        { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
       ]}
     >
       <Form>
         {/* Company Dropdown */}
         <Form.Group className="mb-3">
-          <Form.Label>Company</Form.Label>
+          <Form.Label>
+            Company <span className="text-danger">*</span>
+          </Form.Label>
           <SingleSelector
             options={companies}
             value={selectedCompany}
@@ -339,7 +341,10 @@ const AddUsersModal = ({
 
         {/* Group Name Input */}
         <Form.Group className="mb-3">
-          <Form.Label>Group Name</Form.Label>
+          <Form.Label>
+            Group Name
+            <span className="text-danger ms-2">*</span>
+          </Form.Label>
           <Form.Control
             type="text"
             placeholder="Enter Group Name"
