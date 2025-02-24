@@ -1,11 +1,10 @@
-import axios from "axios";
-import { mumbaiLocations, product, unitMeasure } from "../../../constant/data";
-import MultiSelector from "../../base/Select/MultiSelector";
+import React, { useState, useEffect } from "react";
 import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
-import { useEffect, useState } from "react";
-import React from "react";
 import { baseURL } from "../../../confi/apiDomain";
+import ShortTable from "../../base/Table/ShortTable";
+import axios from "axios";
+import { set } from "date-fns";
 
 export default function CreateRFQForm({
   data,
@@ -13,6 +12,10 @@ export default function CreateRFQForm({
   isService,
   existingData,
   deliveryData,
+  isCreate,
+  updateSelectedTemplate, // Rename this prop
+  updateBidTemplateFields, // Rename this prop
+  updateAdditionalFields, // Rename this prop
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -25,6 +28,42 @@ export default function CreateRFQForm({
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [templateOptions, setTemplateOptions] = useState([]);
+  const [additionalFields, setAdditionalFields] = useState([]);
+  const [bidTemplateFields, setBidTemplateFields] = useState([]);
+
+  const mapBidTemplateFields = (fields) => {
+    return fields.map((field) => ({
+      label: field.field_name,
+      value: "", // Initialize with empty value or any default value
+    }));
+  };
+
+  const handleTemplateChange = async (event) => {
+    setSelectedTemplate(event);
+    updateSelectedTemplate(event); // Update the parent component's state
+    console.log("selectedTemplate", selectedTemplate, event);
+
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/event_templates/${event}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      if (response.data) {
+        const templateData = response.data;
+        console.log("Template Data:", templateData);
+        updateAdditionalFields(templateData.bid_material_template_fields || []);
+        updateBidTemplateFields(mapBidTemplateFields(templateData.bid_template_fields || []));
+        setBidTemplateFields(mapBidTemplateFields(templateData.bid_template_fields || []));
+        setAdditionalFields(templateData.bid_material_template_fields || []);
+        
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching template details:", error);
+    }
+  };
 
   const fetchMaterials = async (inventoryTypeId) => {
     try {
@@ -32,8 +71,8 @@ export default function CreateRFQForm({
         ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
         : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       console.log(url, inventoryTypeId);
-      
-        const response = await axios.get(url);
+
+      const response = await axios.get(url);
       if (response.data && Array.isArray(response.data.materials)) {
         const materialOptions = response.data.materials.map((material) => ({
           value: material.id,
@@ -41,8 +80,7 @@ export default function CreateRFQForm({
           uom: material.uom,
         }));
         setMaterials(materialOptions);
-        console.log("materials :----",materials);
-        
+        console.log("materials :----", materials);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -64,8 +102,7 @@ export default function CreateRFQForm({
             value: subSection.value,
           }))
         );
-        console.log("subSectionOptions :----",subSectionOptions);
-        
+        console.log("subSectionOptions :----", subSectionOptions);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -74,18 +111,39 @@ export default function CreateRFQForm({
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        "https://marathon.lockated.com/rfq/event_templates/template_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      if (response.data && Array.isArray(response.data.event_templates)) {
+        const templateOptions = response.data.event_templates.map(
+          (template) => ({
+            value: template.id,
+            label: template.name || `Template ${template.id}`,
+          })
+        );
+        setTemplateOptions(templateOptions);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+    }
+  };
+
   useEffect(() => {
     if (existingData) {
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
-          console.log("materialsArray:----",materialsArray);
-          
+          console.log("materialsArray:----", materialsArray);
+
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
-          
-          fetchMaterials(inventoryTypeId); 
-          fetchSubSections(inventorySubTypeId); 
+
+          fetchMaterials(inventoryTypeId);
+          fetchSubSections(inventorySubTypeId);
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
@@ -100,19 +158,19 @@ export default function CreateRFQForm({
               amount: material.amount,
               sub_section_id: material.sub_section_id,
               section_id: material.inventory_type_id || material.section_id,
-              inventory_type_id: material.inventory_type_id, 
-              inventory_sub_type_id: material.inventory_sub_type_id, 
+              inventory_type_id: material.inventory_type_id,
+              inventory_sub_type_id: material.inventory_sub_type_id,
               subMaterialType: material.inventory_sub_type, // Correctly map subMaterialType
-              _destroy: false, 
+              _destroy: false,
             })),
           };
         }
       );
       // @ts-ignore
       setSections(updatedSections);
-      setData(updatedSections.flatMap((section) => section.sectionData)); 
+      setData(updatedSections.flatMap((section) => section.sectionData));
     } else {
-      fetchMaterials(); 
+      fetchMaterials();
       fetchSubSections(); // Fetch sub-sections without inventory_type_id
     }
   }, [existingData]);
@@ -185,6 +243,7 @@ export default function CreateRFQForm({
     fetchLocations();
     fetchUoms();
     fetchMaterials();
+    fetchTemplates(); // Fetch templates
   }, []);
 
   useEffect(() => {
@@ -208,7 +267,12 @@ export default function CreateRFQForm({
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
-    console.log("Removing row at index:", rowIndex, "from section:", sectionIndex);
+    console.log(
+      "Removing row at index:",
+      rowIndex,
+      "from section:",
+      sectionIndex
+    );
     setSections((prevSections) => {
       const updatedSections = [...prevSections];
       updatedSections[sectionIndex] = {
@@ -258,23 +322,17 @@ export default function CreateRFQForm({
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
-    const selectedMaterial = materials.find(
-      (material) => material.value === selected
-    );
-
-    updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
-      selected;
-
+    const selectedMaterial = materials.find((material) => material.value === selected);
+  
+    updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem = selected;
+  
     if (selectedMaterial && selectedMaterial.uom) {
-      updatedSections[sectionIndex].sectionData[rowIndex].unit =
-        selectedMaterial.uom.uom_short_name;
+      updatedSections[sectionIndex].sectionData[rowIndex].unit = selectedMaterial.uom.uom_short_name;
     } else {
       updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
     }
-    updatedSections[sectionIndex].sectionData[rowIndex].type =
-      selectedMaterial?.type || "N/A";
-    updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.value || "";
+    updatedSections[sectionIndex].sectionData[rowIndex].type = selectedMaterial?.type || "N/A";
+    updatedSections[sectionIndex].sectionData[rowIndex].inventory_id = selectedMaterial?.value || "";
     setSections(updatedSections);
   };
 
@@ -336,6 +394,29 @@ export default function CreateRFQForm({
     { label: "Expected Quantity", key: "expected_quantity" },
   ];
 
+  const renderTableColumns = () => {
+    const defaultColumns = [
+      { label: "Sr no.", key: "srNo" },
+      { label: "Material Name", key: "descriptionOfItem" },
+      { label: "Quantity", key: "quantity" },
+      { label: "UOM", key: "unit" },
+      { label: "Type", key: "type" },
+      { label: "Location", key: "location" },
+      { label: "Rate", key: "rate" },
+      { label: "Amount", key: "amount" },
+      { label: "Actions", key: "actions" },
+    ];
+
+    const additionalColumns = additionalFields
+      .filter((field) => field.field_name !== "Sr no.")
+      .map((field) => ({
+        label: field.field_name,
+        key: field.field_name,
+      }));
+
+    return [...defaultColumns, ...additionalColumns];
+  };
+
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -347,12 +428,22 @@ export default function CreateRFQForm({
         <div className="px-3 py-3">
           {sections.map((section, sectionIndex) => (
             <div key={section.sectionId} className="card p-4 mb-4">
-              <div className="row">
+              <div className="col-md-3">
+                {isCreate && (
+                  <SelectBox
+                    label={"Select Template"}
+                    options={templateOptions}
+                    onChange={handleTemplateChange}
+                    defaultValue={""}
+                  />
+                )}
+              </div>
+              <div className="row mt-4">
                 <div className="col-md-8 col-sm-12 d-flex gap-3">
                   <div className="flex-grow-1">
                     <SelectBox
                       label={"Select Material Type"}
-                      options={sectionOptions} 
+                      options={sectionOptions}
                       defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material Type"
@@ -385,6 +476,15 @@ export default function CreateRFQForm({
                   </div>
                 </div>
                 <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
+                  {(selectedTemplate === "BOQ Marathon" ||
+                    selectedTemplate === "BOQ Projects") && (
+                    <button className="purple-btn2" onClick={() => {}}>
+                      <span className="material-symbols-outlined align-text-top">
+                        add{" "}
+                      </span>
+                      <span>Add Columns</span>
+                    </button>
+                  )}
                   <button
                     className="purple-btn2"
                     onClick={() => handleAddRow(sectionIndex)}
@@ -394,6 +494,7 @@ export default function CreateRFQForm({
                     </span>
                     <span>Add Row</span>
                   </button>
+
                   {sectionIndex > 0 && (
                     <button
                       className="purple-btn2"
@@ -405,17 +506,8 @@ export default function CreateRFQForm({
                 </div>
               </div>
               <Table
-                columns={[
-                  { label: "Sr no.", key: "srno" },
-                  { label: "Material Name", key: "descriptionOfItem" },
-                  { label: "Quantity", key: "quantity" },
-                  { label: "UOM", key: "unit" },
-                  // { label: "Type", key: "type" },
-                  { label: "Location", key: "location" },
-                  { label: "Rate", key: "rate" },
-                  { label: "Amount", key: "amount" },
-                  { label: "Actions", key: "actions" },
-                ]}
+                columns={renderTableColumns()}
+                isMinWidth={true}
                 data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
@@ -513,12 +605,7 @@ export default function CreateRFQForm({
                       type="number"
                       value={cell}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "rate",
-                          sectionIndex
-                        )
+                        handleInputChange(e.target.value, rowIndex, "rate", sectionIndex)
                       }
                       placeholder="Enter Rate"
                     />
@@ -529,12 +616,7 @@ export default function CreateRFQForm({
                       type="number"
                       value={""}
                       onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "amount",
-                          sectionIndex
-                        )
+                        handleInputChange(e.target.value, rowIndex, "amount", sectionIndex)
                       }
                       placeholder="Enter Amount"
                       disabled
@@ -548,12 +630,36 @@ export default function CreateRFQForm({
                       Remove
                     </button>
                   ),
+                  ...additionalFields.reduce((acc, field) => {
+                    acc[field.field_name] = (cell, rowIndex) => (
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={cell}
+                        onChange={(e) =>
+                          handleInputChange(
+                            e.target.value,
+                            rowIndex,
+                            field.field_name,
+                            sectionIndex
+                          )
+                        }
+                        readOnly={field.is_read_only}
+                        required={field.is_required}
+                      />
+                    );
+                    return acc;
+                  }, {}),
                 }}
                 onRowSelect={undefined}
                 handleCheckboxChange={undefined}
                 resetSelectedRows={undefined}
                 onResetComplete={undefined}
               />
+
+              <div className="d-flex justify-content-end">
+                <ShortTable data={bidTemplateFields} editable={false} />
+              </div>
             </div>
           ))}
           {deliveryData?.length > 0 && (

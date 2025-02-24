@@ -27,6 +27,7 @@ export default function Table({
   onColumnClick,
   enableOverflowScroll = false,
   enableHoverEffect = false, // Add new prop
+  isMinWidth = false, // Add new prop
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -297,6 +298,7 @@ export default function Table({
                       overflow: enableOverflowScroll ? "hidden" : "visible",
                       textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
                       width: col.key === "srNo" ? "100px !important" : "auto", // Set width for srNo column
+                      minWidth: isMinWidth && col.key !== "srNo" ? "300px" : "auto", // Set minimum width if minWidth prop is true
                     }}
                   >
                     {cellContent}

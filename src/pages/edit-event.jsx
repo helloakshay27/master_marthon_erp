@@ -932,12 +932,13 @@ export default function EditEvent() {
                 </div>
               </div>
               <CreateRFQForm
-                data={materialFormData}
-                setData={setMaterialFormData}
-                isService={isService}
-                existingData={eventDetails?.grouped_event_materials}
-                deliveryData={eventDetails?.delivery_schedules}
-              />
+              data={materialFormData}
+              setData={setMaterialFormData}
+              isService={isService}
+              existingData={eventDetails?.grouped_event_materials}
+              deliveryData={eventDetails?.delivery_schedules}
+              isCreate={false}
+            />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}

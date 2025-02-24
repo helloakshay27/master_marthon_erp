@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO } from "date-fns";
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -10,7 +10,7 @@ import {
   SelectBox,
   Table,
 } from "../components";
-import { baseURL } from "../confi/apiDomain"
+import { baseURL } from "../confi/apiDomain";
 
 import { citiesList, participantsTabColumns } from "../constant/data";
 import { useNavigate } from "react-router-dom";
@@ -152,36 +152,36 @@ export default function CreateEvent() {
   const handleSaveSchedule = (data) => {
     setScheduleData(data);
     handleEventScheduleModalClose();
-  
-    const timeZone = 'Asia/Kolkata'; // Replace with your desired timezone
-  
+
+    const timeZone = "Asia/Kolkata"; // Replace with your desired timezone
+
     const formatDateTime = (dateTime) => {
       const date = new Date(dateTime);
-      return new Intl.DateTimeFormat('en-GB', {
+      return new Intl.DateTimeFormat("en-GB", {
         timeZone,
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: true,
       }).format(date);
     };
-  
+
     const adjustTimeZone = (dateTime) => {
       const date = new Date(dateTime);
       date.setHours(date.getHours() - 5);
       date.setMinutes(date.getMinutes() - 30);
       return date;
     };
-  
+
     const startDateTime = formatDateTime(data.start_time);
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
-  
+
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
     console.log("scheduleText", scheduleText, data.end_time_duration);
-  }; 
+  };
 
   const handleVendorTypeModalShow = () => {
     setVendorModal(true);
@@ -438,6 +438,10 @@ export default function CreateEvent() {
     }
   };
 
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [bidTemplateFields, setBidTemplateFields] = useState([]);
+  const [additionalFields, setAdditionalFields] = useState([]);
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -462,7 +466,6 @@ export default function CreateEvent() {
     }
 
     setSubmitted(true);
-    
 
     const eventData = {
       event: {
@@ -522,6 +525,25 @@ export default function CreateEvent() {
           condition: textarea.value,
         })),
         attachments: documentRows.map((row) => row.upload),
+        applied_event_template: {
+          event_template_id: selectedTemplate,
+          applied_bid_template_fields_attributes: bidTemplateFields.map(
+            (field) => ({
+              field_name: field.label,
+              is_required: field.is_required,
+              is_read_only: field.is_read_only,
+              field_owner: field.field_owner,
+            })
+          ),
+          applied_bid_material_template_fields_attributes: additionalFields
+            .filter((field) => field.field_name !== "Sr no.")
+            .map((field) => ({
+              field_name: field.field_name,
+              is_required: field.is_required,
+              is_read_only: field.is_read_only,
+              field_owner: field.field_owner,
+            })),
+        },
       },
     };
 
@@ -630,6 +652,27 @@ export default function CreateEvent() {
     fetchTermsAndConditions();
   }, []);
 
+  const [savingsSummaryModal, setSavingsSummaryModal] = useState(false);
+  const [savingsSummary, setSavingsSummary] = useState("");
+  const [localMeasureSavings, setLocalMeasureSavings] = useState("gross_total");
+  const [selectedSavingsColumn, setSelectedSavingsColumn] = useState("total");
+
+  const handleSavingsSummaryModalShow = () => {
+    const inventoryIds = materialFormData.map((material) => material.inventory_id).join(",");
+    const savingType = selectedSavingsColumn === "quantity" ? "material_cost" : "material_total";
+    const url = `${baseURL}rfq/events/saving_modal?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&inventory_ids=${inventoryIds}&saving_type=${savingType}`;
+    // Fetch or navigate to the URL as needed
+    setSavingsSummaryModal(true);
+  };
+
+  const handleSavingsColumnChange = (selectedOption) => {
+    setSelectedSavingsColumn(selectedOption.value);
+  };
+
+  const handleSavingsSummaryModalClose = () => {
+    setSavingsSummaryModal(false);
+  };
+
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -724,13 +767,37 @@ export default function CreateEvent() {
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
                 </div>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Savings Summary<span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    placeholder="Enter Savings Summary"
+                    readOnly
+                    value={savingsSummary}
+                    onClick={handleSavingsSummaryModalShow}
+                  />
+                </div>
               </div>
               <CreateRFQForm
                 data={materialFormData}
                 setData={setMaterialFormData}
                 isService={isService}
                 deliveryData={[]}
+                isCreate={true}
+                updateSelectedTemplate={setSelectedTemplate}
+                updateBidTemplateFields={setBidTemplateFields}
+                updateAdditionalFields={setAdditionalFields}
               />
+              {console.log(
+                "selectedTemplate",
+                selectedTemplate,
+                bidTemplateFields,
+                additionalFields
+              )}
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}
@@ -758,7 +825,7 @@ export default function CreateEvent() {
                   <table className="w-100">
                     <thead>
                       <tr>
-                      <th style={{ width: "100px" }}>Sr No.</th> 
+                        <th style={{ width: "100px" }}>Sr No.</th>
                         <th>Vendor Name</th>
                         <th>Mob No.</th>
                         <th>Status</th>
@@ -1366,6 +1433,208 @@ export default function CreateEvent() {
               trafficType={isTrafficSelected}
               handleTrafficChange={handleTrafficChange}
             />{" "}
+            <DynamicModalBox
+              title="Saving Summary"
+              size="lg"
+              show={savingsSummaryModal}
+              onHide={handleSavingsSummaryModalClose}
+              modalType={true}
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleSavingsSummaryModalClose,
+                  props: {
+                    className: "purple-btn1",
+                  },
+                },
+                {
+                  label: "Save",
+                  onClick: handleSavingsSummaryModalClose,
+                  props: {
+                    className: "purple-btn2",
+                  },
+                },
+              ]}
+              children={
+                <>
+                  <div className="ant-col ant-form-item-label">
+                    <label title="How do you want to measure savings?">
+                      How do you want to measure savings?{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+
+                  <div className="ant-col ant-form-item-control-wrapper">
+                    <div className="ant-form-item-control">
+                      <span className="ant-form-item-children">
+                        <div style={{ maxWidth: 700 }}>
+                          <div
+                            className="pro-radio-tabs"
+                            style={{ gridTemplateColumns: "1fr 1fr" }}
+                          >
+                            <div
+                              className={`pro-radio-tabs__tab ${
+                                localMeasureSavings === "gross_total"
+                                  ? "pro-radio-tabs__tab__selected"
+                                  : ""
+                              }`}
+                              role="radio"
+                              aria-checked={
+                                localMeasureSavings === "gross_total"
+                              }
+                              onClick={() =>
+                                setLocalMeasureSavings("gross_total")
+                              }
+                              tabIndex={-1}
+                            >
+                              <div className="pro-radio-tabs__check-icon">
+                                <label
+                                  className={`ant-radio-wrapper ${
+                                    localMeasureSavings === "gross_total"
+                                      ? "ant-radio-wrapper-checked"
+                                      : ""
+                                  }`}
+                                >
+                                  <span
+                                    className={`ant-radio ${
+                                      localMeasureSavings === "gross_total"
+                                        ? "ant-radio-checked"
+                                        : ""
+                                    }`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      className="ant-radio-input"
+                                      value="gross_total"
+                                      checked={
+                                        localMeasureSavings === "gross_total"
+                                      }
+                                      onChange={() =>
+                                        setLocalMeasureSavings("gross_total")
+                                      }
+                                      tabIndex={-1}
+                                    />
+                                    <div className="ant-radio-inner"></div>
+                                  </span>
+                                </label>
+                              </div>
+                              <p className="pro-text pro-body pro-text--normal">
+                                Gross Total
+                              </p>
+                            </div>
+                            <div
+                              className={`pro-radio-tabs__tab ${
+                                localMeasureSavings === "line_item"
+                                  ? "pro-radio-tabs__tab__selected"
+                                  : ""
+                              }`}
+                              role="radio"
+                              aria-checked={localMeasureSavings === "line_item"}
+                              onClick={() =>
+                                setLocalMeasureSavings("line_item")
+                              }
+                              tabIndex={0}
+                            >
+                              <div className="pro-radio-tabs__check-icon">
+                                <label
+                                  className={`ant-radio-wrapper ${
+                                    localMeasureSavings === "line_item"
+                                      ? "ant-radio-wrapper-checked"
+                                      : ""
+                                  }`}
+                                >
+                                  <span
+                                    className={`ant-radio ${
+                                      localMeasureSavings === "line_item"
+                                        ? "ant-radio-checked"
+                                        : ""
+                                    }`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      className="ant-radio-input"
+                                      value="line_item"
+                                      checked={
+                                        localMeasureSavings === "line_item"
+                                      }
+                                      onChange={() =>
+                                        setLocalMeasureSavings("line_item")
+                                      }
+                                      tabIndex={-1}
+                                    />
+                                    <div className="ant-radio-inner"></div>
+                                  </span>
+                                </label>
+                              </div>
+                              <p className="pro-text pro-body pro-text--normal">
+                                Line Item
+                              </p>
+                            </div>
+                          </div>
+                          {localMeasureSavings === "gross_total" && (
+                            <div className="col-12 mt-4">
+                              <div className="form-group">
+                                <label className="po-fontBold">
+                                  Enter Reference Amount for Gross Total{" "}
+                                  <span style={{ color: "red" }}>*</span>{" "}
+                                </label>{" "}
+                              </div>
+                              <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
+                                <div className="w-50">
+                                  <p>Gross Total :</p>
+                                </div>
+                                <div className="d-flex align-items-center justify-content-start w-50">
+                                  <input
+                                    type="text"
+                                    className="form-control w-75"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {localMeasureSavings === "line_item" && (
+                            <div className="col-12 mt-4">
+                              <SelectBox
+                                label={"Choose column to calculate savings on"}
+                                options={[
+                                  { label: "Quantity", value: "quantity" },
+                                  { label: "Total", value: "total" },
+                                ]}
+                                onChange={handleSavingsColumnChange}
+                              />
+
+                              <div className="col-12 mt-4">
+                                <div className="form-group">
+                                  <label className="po-fontBold">
+                                    Enter Reference Amount for Product(s)
+                                    <span style={{ color: "red" }}>*</span>
+                                  </label>
+                                </div>
+
+                                <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
+                                  <div className="">
+                                    <p>1.5sqmm Black Wire</p>
+                                    <span>Variant 1</span>
+                                  </div>
+                                  <div className="d-flex align-items-center">
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                    />{" "}
+                                    <p>/Metre</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </>
+              }
+            />
           </div>
         </div>
         <ToastContainer />
