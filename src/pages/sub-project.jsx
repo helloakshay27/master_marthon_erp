@@ -167,8 +167,8 @@ const SubProject = () => {
     <div>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
-          <a href="">Setup &gt; Purchase Setup &gt; Sub Project List</a>
-          <h5 className="mt-4">Sub Project List</h5>
+          <a href="">Setup &gt; Purchase Setup &gt; User Group list</a>
+          <h5 className="mt-4">User Group list</h5>
 
           <div className="d-flex justify-content-end">
             <button

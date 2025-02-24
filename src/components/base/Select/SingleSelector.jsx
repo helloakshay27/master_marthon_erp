@@ -61,8 +61,8 @@ export default function SingleSelector({
       value={value} // Currently selected value
       onChange={onChange} // Callback for when value changes
       placeholder={placeholder} // Placeholder text
-      // className="basic-single-select" // Custom class
-      // classNamePrefix="select"
+      className="basic-single-select" // Custom class
+      classNamePrefix="select"
       styles={customStyles}
       isDisabled={isDisabled}
       isSearchable={true} // Enable the search bar
@@ -71,9 +71,9 @@ export default function SingleSelector({
       // menuPlacement="top" // Make dropdown appear above the input field
       // menuPosition="fixed" 
 
-      className="basic-single-select custom-select"
+      // className="basic-single-select custom-select"
       // classNamePrefix="select"
-      classNamePrefix="react-select"
+      // classNamePrefix="react-select"
 
 
     />
