@@ -78,14 +78,53 @@ export default function VendorDetails() {
   const currentBid = ` Current bid ${currentIndex + 1}`;
   // const nextBid = currentIndex < bids.length - 1 ? currentIndex+2:"No bid";
 
-  const [freightData, setFreightData] = useState([
-    { label: "Freight Charge", value: { firstBid: "", counterBid: "" } },
-    { label: "GST on Freight", value: { firstBid: "", counterBid: "" } },
-    { label: "Realised Freight", value: { firstBid: "", counterBid: "" } },
-    { label: "Warranty Clause *", value: { firstBid: "", counterBid: "" } },
-    { label: "Payment Terms *", value: { firstBid: "", counterBid: "" } },
-    { label: "Loading / Unloading *", value: { firstBid: "", counterBid: "" } },
-  ]);
+  const [freightData, setFreightData] = useState([]);
+  const [additionalColumns, setAdditionalColumns] = useState([]);
+
+  useEffect(() => {
+    const fetchFreightData = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/163/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        const data = response.data.applied_bid_template_fields.map(
+          (field) => ({
+            label: field.field_name,
+            value: "",
+            isRequired: field.is_required,
+            isReadOnly: field.is_read_only,
+            fieldOwner: field.field_owner,
+          })
+        );
+        setFreightData(data);
+      } catch (error) {
+        console.error("Error fetching freight data:", error);
+      }
+    };
+
+    fetchFreightData();
+  }, []);
+
+  useEffect(() => {
+    const fetchAdditionalColumns = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/163/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        const columns = response.data.applied_bid_material_template_fields.map(
+          (field) => ({
+            label: field.field_name,
+            key: field.field_name.toLowerCase().replace(/\s+/g, "_"),
+          })
+        );
+        setAdditionalColumns(columns);
+      } catch (error) {
+        console.error("Error fetching additional columns:", error);
+      }
+    };
+
+    fetchAdditionalColumns();
+  }, []);
 
   const [vendorId, setVendorId] = useState(() => {
     // Retrieve the vendorId from sessionStorage or default to an empty string
@@ -1337,7 +1376,6 @@ export default function VendorDetails() {
   //         id: item.term_condition.id,
   //         condition: item.term_condition.condition,
   //       }));
-
   //       setTerms(extractedTerms || []);
   //     } catch (error) {
   //       console.error("Error fetching terms and conditions:", error);
@@ -1656,10 +1694,7 @@ export default function VendorDetails() {
             label: "Freight Charge",
             value: `₹${latestBid.freight_charge_amount}`,
           },
-          {
-            label: "GST on Freight",
-            value: `${latestBid.gst_on_freight}%`,
-          },
+          { label: "GST on Freight", value: `${latestBid.gst_on_freight}%` },
           {
             label: "Realised Freight",
             value: `₹${latestBid.realised_freight_charge_amount}`,
@@ -1668,10 +1703,7 @@ export default function VendorDetails() {
             label: "Warranty Clause",
             value: latestBid.warranty_clause || "N/A",
           },
-          {
-            label: "Payment Terms",
-            value: latestBid.payment_terms || "N/A",
-          },
+          { label: "Payment Terms", value: latestBid.payment_terms || "N/A" },
           {
             label: "Loading/Unloading Clause",
             value: latestBid.loading_unloading_clause || "N/A",
@@ -3146,26 +3178,27 @@ export default function VendorDetails() {
                             // },
 
                             { label: "Delivery Location", key: "location" },
-                            { label: "Creator Attachment", key: "attachment" },
-                            {
-                              label: "Quantity Available *",
-                              key: "quantityAvail",
-                            },
+                            // { label: "Creator Attachment", key: "attachment" },
+                            // {
+                            //   label: "Quantity Available *",
+                            //   key: "quantityAvail",
+                            // },
                             { label: "Price *", key: "price" },
-                            { label: "Discount *", key: "discount" },
-                            {
-                              label: "Realised Discount",
-                              key: "realisedDiscount",
-                            },
-                            { label: "GST *", key: "gst" },
-                            { label: "Realised GST", key: "realisedGst" },
-                            { label: "Landed Amount", key: "landedAmount" },
-                            {
-                              label: "Participant Attachment",
-                              key: "attachment",
-                            },
-                            { label: "Vendor Remark", key: "vendorRemark" },
-                            { label: "Total", key: "total" },
+                            // { label: "Discount *", key: "discount" },
+                            // {
+                            //   label: "Realised Discount",
+                            //   key: "realisedDiscount",
+                            // },
+                            // { label: "GST *", key: "gst" },
+                            // { label: "Realised GST", key: "realisedGst" },
+                            // { label: "Landed Amount", key: "landedAmount" },
+                            // {
+                            //   label: "Participant Attachment",
+                            //   key: "attachment",
+                            // },
+                            // { label: "Vendor Remark", key: "vendorRemark" },
+                            // { label: "Total", key: "total" },
+                            ...additionalColumns, // Append additional columns here
                           ]}
                           data={data}
                           customRender={{
@@ -3356,608 +3389,627 @@ export default function VendorDetails() {
                               />
                             ),
 
-                            discount: (cell, rowIndex) => {
-                              const previousDiscount =
-                                previousData[rowIndex]?.discount || cell;
-                              const updatedDiscount =
-                                updatedData[rowIndex]?.discount ||
-                                previousDiscount;
-                              const showArrow =
-                                counterData &&
-                                previousDiscount !== updatedDiscount;
+                            // discount: (cell, rowIndex) => {
+                            //   const previousDiscount =
+                            //     previousData[rowIndex]?.discount || cell;
+                            //   const updatedDiscount =
+                            //     updatedData[rowIndex]?.discount ||
+                            //     previousDiscount;
+                            //   const showArrow =
+                            //     counterData &&
+                            //     previousDiscount !== updatedDiscount;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    {previousDiscount}%
-                                  </span>
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         {previousDiscount}%
+                            //       </span>
 
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
+                            //           marginEnd: "",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    {updatedDiscount}%
-                                  </span>
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         {updatedDiscount}%
+                            //       </span>
 
-                                  {/* <span>→{updatedDiscount}</span> */}
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedDiscount}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousDiscount}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "discount"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //       {/* <span>→{updatedDiscount}</span> */}
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedDiscount}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousDiscount}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "discount"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            gst: (cell, rowIndex) => {
-                              const previousGst =
-                                previousData[rowIndex]?.gst || cell;
-                              const updatedGst =
-                                updatedData[rowIndex]?.gst || previousGst;
-                              const showArrow =
-                                counterData && previousGst !== updatedGst;
+                            // gst: (cell, rowIndex) => {
+                            //   const previousGst =
+                            //     previousData[rowIndex]?.gst || cell;
+                            //   const updatedGst =
+                            //     updatedData[rowIndex]?.gst || previousGst;
+                            //   const showArrow =
+                            //     counterData && previousGst !== updatedGst;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    {previousGst}%
-                                  </span>
-                                  {/* <span style={{ marginRight: "5px" }}>→</span>
-                                  <span>{updatedGst}</span> */}
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         {previousGst}%
+                            //       </span>
+                            //       {/* <span style={{ marginRight: "5px" }}>→</span>
+                            //       <span>{updatedGst}</span> */}
 
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
+                            //           marginEnd: "",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    {updatedGst}%
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedGst}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousGst}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "gst"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         {updatedGst}%
+                            //       </span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedGst}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousGst}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "gst"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            quantityAvail: (cell, rowIndex) => {
-                              const previousQuantity =
-                                previousData[rowIndex]?.quantityAvail || cell;
-                              const updatedQuantity =
-                                updatedData[rowIndex]?.quantityAvail ||
-                                previousQuantity;
-                              const showArrow =
-                                counterData &&
-                                previousQuantity !== updatedQuantity;
+                            // quantityAvail: (cell, rowIndex) => {
+                            //   const previousQuantity =
+                            //     previousData[rowIndex]?.quantityAvail || cell;
+                            //   const updatedQuantity =
+                            //     updatedData[rowIndex]?.quantityAvail ||
+                            //     previousQuantity;
+                            //   const showArrow =
+                            //     counterData &&
+                            //     previousQuantity !== updatedQuantity;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    {previousQuantity}
-                                  </span>
-                                  {/* <span style={{ marginRight: "5px" }}>→</span>
-                                  <span>{updatedGst}</span> */}
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         {previousQuantity}
+                            //       </span>
+                            //       {/* <span style={{ marginRight: "5px" }}>→</span>
+                            //       <span>{updatedGst}</span> */}
 
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
+                            //           marginEnd: "",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    {updatedQuantity}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedQuantity}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousQuantity}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "quantityAvail"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         {updatedQuantity}
+                            //       </span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedQuantity}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousQuantity}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "quantityAvail"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            landedAmount: (cell, rowIndex) => {
-                              const previousLandedAmount =
-                                previousData[rowIndex]?.landedAmount || cell;
-                              const updatedLandedAmount =
-                                updatedData[rowIndex]?.landedAmount ||
-                                previousLandedAmount;
-                              const showArrow =
-                                counterData &&
-                                previousLandedAmount !== updatedLandedAmount;
+                            // landedAmount: (cell, rowIndex) => {
+                            //   const previousLandedAmount =
+                            //     previousData[rowIndex]?.landedAmount || cell;
+                            //   const updatedLandedAmount =
+                            //     updatedData[rowIndex]?.landedAmount ||
+                            //     previousLandedAmount;
+                            //   const showArrow =
+                            //     counterData &&
+                            //     previousLandedAmount !== updatedLandedAmount;
 
-                              return showArrow ? (
-                                <div
-                                  className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                    }}
-                                  >
-                                    {previousLandedAmount}
-                                  </span>
-                                  <span style={{ marginRight: "5px" }}>→</span>
-                                  <span>{updatedLandedAmount}</span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedLandedAmount}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousLandedAmount}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "landedAmount"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //   return showArrow ? (
+                            //     <div
+                            //       className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //         }}
+                            //       >
+                            //         {previousLandedAmount}
+                            //       </span>
+                            //       <span style={{ marginRight: "5px" }}>→</span>
+                            //       <span>{updatedLandedAmount}</span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedLandedAmount}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousLandedAmount}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "landedAmount"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            realisedDiscount: (cell, rowIndex) => {
-                              const previousRealisedDiscount =
-                                previousData[rowIndex]?.realisedDiscount ||
-                                cell;
-                              const updatedRealisedDiscount =
-                                updatedData[rowIndex]?.realisedDiscount ||
-                                previousRealisedDiscount;
-                              const showArrow =
-                                counterData &&
-                                previousRealisedDiscount !==
-                                  updatedRealisedDiscount;
+                            // realisedDiscount: (cell, rowIndex) => {
+                            //   const previousRealisedDiscount =
+                            //     previousData[rowIndex]?.realisedDiscount ||
+                            //     cell;
+                            //   const updatedRealisedDiscount =
+                            //     updatedData[rowIndex]?.realisedDiscount ||
+                            //     previousRealisedDiscount;
+                            //   const showArrow =
+                            //     counterData &&
+                            //     previousRealisedDiscount !==
+                            //       updatedRealisedDiscount;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousRealisedDiscount}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         ₹{previousRealisedDiscount}
+                            //       </span>
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
+                            //           marginEnd: "",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedRealisedDiscount}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedRealisedDiscount}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousRealisedDiscount}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "realisedDiscount"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         ₹{updatedRealisedDiscount}
+                            //       </span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedRealisedDiscount}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousRealisedDiscount}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "realisedDiscount"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            realisedGst: (cell, rowIndex) => {
-                              const previousRealisedGst =
-                                previousData[rowIndex]?.realisedGst || cell;
-                              const updatedRealisedGst =
-                                updatedData[rowIndex]?.realisedGst ||
-                                previousRealisedGst;
-                              const showArrow =
-                                counterData &&
-                                previousRealisedGst !== updatedRealisedGst;
+                            // realisedGst: (cell, rowIndex) => {
+                            //   const previousRealisedGst =
+                            //     previousData[rowIndex]?.realisedGst || cell;
+                            //   const updatedRealisedGst =
+                            //     updatedData[rowIndex]?.realisedGst ||
+                            //     previousRealisedGst;
+                            //   const showArrow =
+                            //     counterData &&
+                            //     previousRealisedGst !== updatedRealisedGst;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousRealisedGst}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         ₹{previousRealisedGst}
+                            //       </span>
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
+                            //           marginEnd: "",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedRealisedGst}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedRealisedGst}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousRealisedGst}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "realisedGst"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         ₹{updatedRealisedGst}
+                            //       </span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedRealisedGst}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousRealisedGst}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "realisedGst"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            total: (cell, rowIndex) => {
-                              const previousTotal =
-                                previousData[rowIndex]?.total || cell;
-                              const updatedTotal =
-                                updatedData[rowIndex]?.total || previousTotal;
-                              const showArrow =
-                                counterData && previousTotal !== updatedTotal;
+                            // total: (cell, rowIndex) => {
+                            //   const previousTotal =
+                            //     previousData[rowIndex]?.total || cell;
+                            //   const updatedTotal =
+                            //     updatedData[rowIndex]?.total || previousTotal;
+                            //   const showArrow =
+                            //     counterData && previousTotal !== updatedTotal;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    maxWidth: "120%",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousTotal}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
+                            //   return showArrow ? (
+                            //     <div
+                            //       // className="form-control"
+                            //       style={{
+                            //         display: "flex",
+                            //         alignItems: "center",
+                            //         maxWidth: "120%",
+                            //       }}
+                            //     >
+                            //       <span
+                            //         style={{
+                            //           textDecoration: "line-through",
+                            //           marginRight: "5px",
+                            //           color: "gray",
+                            //         }}
+                            //       >
+                            //         ₹{previousTotal}
+                            //       </span>
+                            //       <span className="me-2">
+                            //         {" "}
+                            //         <svg
+                            //           className="me-2"
+                            //           viewBox="64 64 896 896"
+                            //           focusable="false"
+                            //           class=""
+                            //           data-icon="arrow-right"
+                            //           width="1em"
+                            //           height="1em"
+                            //           fill="currentColor"
+                            //           aria-hidden="true"
+                            //         >
+                            //           <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                            //         </svg>
+                            //       </span>
+                            //       <span
+                            //         style={{
+                            //           backgroundColor: "#b45253", // Yellow background
+                            //           padding: "4px 10px", // Add padding to resemble a badge
+                            //           borderRadius: "5px",
 
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                            //           // color:"#7c2d12",
+                            //           lineHeight: "1",
+                            //           color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedTotal}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedTotal}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousTotal}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "total"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
+                            //           // Rounded edges for the badge
+                            //           // Make text bold
+                            //         }}
+                            //       >
+                            //         ₹{updatedTotal}
+                            //       </span>
+                            //     </div>
+                            //   ) : counterData ? (
+                            //     <span>{updatedTotal}</span>
+                            //   ) : (
+                            //     <input
+                            //       className="form-control"
+                            //       type="number"
+                            //       value={previousTotal}
+                            //       onChange={(e) =>
+                            //         handleInputChange(
+                            //           e.target.value,
+                            //           rowIndex,
+                            //           "total"
+                            //         )
+                            //       }
+                            //       style={otherColumnsStyle}
+                            //       disabled={isBid}
+                            //     />
+                            //   );
+                            // },
 
-                            vendorRemark: (cell, rowIndex) => (
-                              <textarea
-                                className="form-control"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e.target.value,
-                                    rowIndex,
-                                    "vendorRemark"
-                                  )
-                                }
-                                placeholder="Enter Vendor Remark"
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
+                            // vendorRemark: (cell, rowIndex) => (
+                            //   <textarea
+                            //     className="form-control"
+                            //     value={cell}
+                            //     onChange={(e) =>
+                            //       handleInputChange(
+                            //         e.target.value,
+                            //         rowIndex,
+                            //         "vendorRemark"
+                            //       )
+                            //     }
+                            //     placeholder="Enter Vendor Remark"
+                            //     style={otherColumnsStyle}
+                            //     disabled={isBid}
+                            //   />
+                            // ),
 
-                            bestAmount: (cell, rowIndex) => {
-                              const quantity =
-                                parseFloat(data[rowIndex].quantityAvail) || 0;
-                              const rate = parseFloat(data[rowIndex].rate) || 0;
-                              const totalAmount = quantity * rate;
+                            // bestAmount: (cell, rowIndex) => {
+                            //   const quantity =
+                            //     parseFloat(data[rowIndex].quantityAvail) || 0;
+                            //   const rate = parseFloat(data[rowIndex].rate) || 0;
+                            //   const totalAmount = quantity * rate;
 
-                              return (
+                            //   return (
+                            //     <input
+                            //       className="form-control"
+                            //       type="text"
+                            //       value={totalAmount.toFixed(2)}
+                            //       readOnly
+                            //       style={otherColumnsStyle}
+                            //     />
+                            //   );
+                            // },
+                            // attachment: (cell, rowIndex) => (
+                            //   <input
+                            //     className="form-control"
+                            //     type="file"
+                            //     onChange={(e) => {
+                            //       const file = e.target.files[0];
+                            //       if (file) {
+                            //         const updatedData = [...data];
+                            //         updatedData[rowIndex].attachment = file;
+                            //         setData(updatedData);
+                            //       }
+                            //     }}
+                            //     style={otherColumnsStyle}
+                            //     disabled={isBid}
+                            //   />
+                            // ),
+                            // amount: (_, rowIndex) => {
+                            //   const quantity =
+                            //     parseFloat(data[rowIndex].quantityAvail) || 0;
+                            //   const rate = parseFloat(data[rowIndex].rate) || 0;
+                            //   const totalAmount = quantity * rate;
+
+                            //   return (
+                            //     <input
+                            //       className="form-control"
+                            //       type="text"
+                            //       value={totalAmount.toFixed(2)}
+                            //       readOnlyn
+                            //       style={otherColumsStyle}
+                            //     />
+                            //   );
+                            // },
+                            ...additionalColumns.reduce((acc, col) => {
+                              acc[col.key] = (cell, rowIndex) => (
                                 <input
                                   className="form-control"
                                   type="text"
-                                  value={totalAmount.toFixed(2)}
-                                  readOnly
-                                  style={otherColumnsStyle}
-                                />
-                              );
-                            },
-                            attachment: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="file"
-                                onChange={(e) => {
-                                  const file = e.target.files[0];
-                                  if (file) {
-                                    const updatedData = [...data];
-                                    updatedData[rowIndex].attachment = file;
-                                    setData(updatedData);
+                                  value={cell || ""}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e.target.value,
+                                      rowIndex,
+                                      col.key
+                                    )
                                   }
-                                }}
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
-                            amount: (_, rowIndex) => {
-                              const quantity =
-                                parseFloat(data[rowIndex].quantityAvail) || 0;
-                              const rate = parseFloat(data[rowIndex].rate) || 0;
-                              const totalAmount = quantity * rate;
-
-                              return (
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={totalAmount.toFixed(2)}
-                                  readOnlyn
-                                  style={otherColumsStyle}
+                                  style={otherColumnsStyle}
+                                  disabled={isBid}
                                 />
                               );
-                            },
+                              return acc;
+                            }, {}),
                           }}
                         />
                       </div>

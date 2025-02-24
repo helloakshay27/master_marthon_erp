@@ -50,6 +50,7 @@ export default function CreateTemplate() {
     isRequired: false,
     isReadOnly: false,
     fieldOwner: "",
+    fieldType: "string",
   });
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -58,6 +59,7 @@ export default function CreateTemplate() {
     isRequired: false,
     isReadOnly: false,
     fieldOwner: "",
+    fieldType: "string",
   });
 
   const [showShortTableEditModal, setShowShortTableEditModal] = useState(false);
@@ -111,6 +113,7 @@ export default function CreateTemplate() {
       isReadOnly: column.isReadOnly || false,
       fieldOwner: column.fieldOwner || "",
       key: column.key,
+      fieldType: column.fieldType || "string",
     });
     setShowEditModal(true);
   };
@@ -118,7 +121,7 @@ export default function CreateTemplate() {
   const handleEditModalSubmit = () => {
     const updatedColumns = columns.map((col) =>
       col.key === editColumn.key
-        ? { ...col, label: editColumn.fieldName, isRequired: editColumn.isRequired, isReadOnly: editColumn.isReadOnly, fieldOwner: editColumn.fieldOwner }
+        ? { ...col, label: editColumn.fieldName, isRequired: editColumn.isRequired, isReadOnly: editColumn.isReadOnly, fieldOwner: editColumn.fieldOwner, fieldType: editColumn.fieldType }
         : col
     );
     setColumns(updatedColumns);
@@ -157,6 +160,7 @@ export default function CreateTemplate() {
         is_required: row.isRequired || false,
         is_read_only: row.isReadOnly || false,
         field_owner: row.fieldOwner || "admin",
+        field_type: row.fieldType || "string", 
         extra_fields: {},
       }));
 
@@ -167,6 +171,7 @@ export default function CreateTemplate() {
           is_required: col.isRequired || false,
           is_read_only: col.isReadOnly || false,
           field_owner: col.fieldOwner || "user",
+          field_type: col.fieldType || "string",
           extra_fields: {},
         }));
 
@@ -378,6 +383,19 @@ export default function CreateTemplate() {
                   }
                 />
               </div>
+              <div className="form-group mt-3">
+                <SelectBox
+                  label={"Field Type"}
+                  options={[
+                    { value: "string", label: "String" },
+                    { value: "integer", label: "Integer" },
+                  ]}
+                  defaultValue="string"
+                  onChange={(value) =>
+                    setNewColumn({ ...newColumn, fieldType: value })
+                  }
+                />
+              </div>
             </DynamicModalBox>
             <DynamicModalBox
               show={showEditModal}
@@ -438,6 +456,19 @@ export default function CreateTemplate() {
                   defaultValue={editColumn.fieldOwner}
                   onChange={(value) =>
                     setEditColumn({ ...editColumn, fieldOwner: value })
+                  }
+                />
+              </div>
+              <div className="form-group mt-3">
+                <SelectBox
+                  label={"Field Type"}
+                  options={[
+                    { value: "string", label: "String" },
+                    { value: "integer", label: "Integer" },
+                  ]}
+                  defaultValue={editColumn.fieldType}
+                  onChange={(value) =>
+                    setEditColumn({ ...editColumn, fieldType: value })
                   }
                 />
               </div>
