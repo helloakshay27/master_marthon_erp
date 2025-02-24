@@ -105,7 +105,7 @@ const InvoiceApproval = () => {
 
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       // Extract and format user groups
@@ -294,7 +294,7 @@ const InvoiceApproval = () => {
       const response = await axios.get(
         `${baseURL}/users.json?${departmentQuery}q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
-        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        }&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       if (response.data && Array.isArray(response.data)) {
