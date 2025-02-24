@@ -58,7 +58,8 @@ export default function SingleSelector({
   return (
     <Select
       options={options} // Options for dropdown
-      value={value} // Currently selected value
+      // value={value} // Currently selected value
+      value={options.find((opt) => opt.value === value?.value) || null}
       onChange={onChange} // Callback for when value changes
       placeholder={placeholder} // Placeholder text
       className="basic-single-select" // Custom class
@@ -69,13 +70,11 @@ export default function SingleSelector({
       isClearable={true} // Enable the clear (cancel) functionality for the selected value
       closeMenuOnSelect={true} // Optionally close the menu when a selection is made
       // menuPlacement="top" // Make dropdown appear above the input field
-      // menuPosition="fixed" 
+      // menuPosition="fixed"
 
       // className="basic-single-select custom-select"
       // classNamePrefix="select"
       // classNamePrefix="react-select"
-
-
     />
   );
 }

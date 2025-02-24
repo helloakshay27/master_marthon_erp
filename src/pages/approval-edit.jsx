@@ -118,15 +118,32 @@ const ApprovalEdit = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (!formData.company_id) {
+  //     setApprovalLevels((prevLevels) =>
+  //       prevLevels.map((level) => ({
+  //         ...level,
+  //         group: null, // ✅ Ensure reset when no company is selected
+  //       }))
+  //     );
+  //   }
+  // }, [formData.company_id]);
+
   useEffect(() => {
     if (!formData.company_id) {
+      setUserGroups([]); // ✅ Reset user groups
       setApprovalLevels((prevLevels) =>
         prevLevels.map((level) => ({
           ...level,
-          group: null, // ✅ Ensure reset when no company is selected
+          group: null, // ✅ Reset selected user group
+          users: [], // ✅ Reset users list
+          type: "users", // ✅ Default to users
         }))
       );
+      return;
     }
+
+    fetchUserGroups(formData.company_id); // Fetch user groups for the new company
   }, [formData.company_id]);
 
   const handleRemoveLevel = (index) => {
@@ -577,6 +594,50 @@ const ApprovalEdit = () => {
   //   }
   // };
 
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+  //   setWingsOptions([]);
+  //   setDepartmentUsers([]);
+  //   setUserGroups([]); // ✅ Reset user groups before fetching new ones
+
+  //   // ✅ Clear selected user group in approval levels
+  //   setApprovalLevels((prevLevels) =>
+  //     prevLevels.map((level) => ({ ...level, group: null }))
+  //   );
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //     }));
+
+  //     fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
+
+  //     // ✅ Delay fetching user groups slightly to ensure reset takes effect
+  //     setTimeout(() => {
+  //       fetchUserGroups(selectedOption.value);
+  //     }, 0);
+  //   }
+  // };
+
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption);
     setSelectedProject(null);
@@ -585,12 +646,16 @@ const ApprovalEdit = () => {
     setProjects([]);
     setSiteOptions([]);
     setWingsOptions([]);
-    setDepartmentUsers([]);
+    setDepartmentUsers([]); // ✅ Reset users completely
     setUserGroups([]); // ✅ Reset user groups before fetching new ones
 
-    // ✅ Clear selected user group in approval levels
+    // ✅ Reset selected users and groups in approval levels
     setApprovalLevels((prevLevels) =>
-      prevLevels.map((level) => ({ ...level, group: null }))
+      prevLevels.map((level) => ({
+        ...level,
+        users: [], // Clear selected users
+        group: null, // Clear selected user groups
+      }))
     );
 
     if (selectedOption) {
@@ -612,9 +677,10 @@ const ApprovalEdit = () => {
         site_id: null,
       }));
 
-      fetchUsers(selectedOption.value, null, null, selectedDepartment?.value);
+      // ✅ Ensure users are fetched only from the newly selected company
+      fetchUsers(selectedOption.value, null, null, []);
 
-      // ✅ Delay fetching user groups slightly to ensure reset takes effect
+      // ✅ Fetch user groups after resetting
       setTimeout(() => {
         fetchUserGroups(selectedOption.value);
       }, 0);
@@ -1359,9 +1425,27 @@ const ApprovalEdit = () => {
                                     />
                                   ) : (
                                     // SingleSelector for User Groups
+                                    // <SingleSelector
+                                    //   options={userGroups}
+                                    //   value={level.group || null} // Ensure the group is an object
+                                    //   onChange={(selected) =>
+                                    //     handleInputChange(
+                                    //       index,
+                                    //       "group",
+                                    //       selected
+                                    //     )
+                                    //   }
+                                    //   placeholder="Select User Group"
+                                    // />
                                     <SingleSelector
+                                      key={formData.company_id} // ✅ Forces re-render when company changes
                                       options={userGroups}
-                                      value={level.group || null} // Ensure the group is an object
+                                      value={
+                                        userGroups.find(
+                                          (group) =>
+                                            group.value === level.group?.value
+                                        ) || null
+                                      } // ✅ Ensure valid value
                                       onChange={(selected) =>
                                         handleInputChange(
                                           index,
