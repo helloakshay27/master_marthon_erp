@@ -1701,17 +1701,17 @@ const CreateBOQ = () => {
                   <CollapsibleCard title="Material">
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
-                        <div className="tbl-container mx-3 mt-1">
+                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                         
                           <table 
                           // className="mb-5" 
                           className={`  ${
-                            materials.length === 0 ? 'w-100' : ''
+                            materials.length === 0 ? 'w-100' : 'w-100'
                           }`} 
                           >
                             <thead>
                               <tr>
-                                <th rowSpan={2}>
+                                <th rowSpan={2} style={{width:"20px"}}>
                                   <div className="d-flex justify-content-center">
                                     <input
                                       type="checkbox"
@@ -1737,16 +1737,16 @@ const CreateBOQ = () => {
                                     </svg>
                                   </div>
                                 </th>
-                                <th rowSpan={2}>Material Type</th>
-                                <th rowSpan={2}>Material </th>
-                                <th rowSpan={2}>Material Sub-Type</th>
-                                <th rowSpan={2}>Generic Specification</th>
-                                <th rowSpan={2}>Colour</th>
-                                <th rowSpan={2}>Brand</th>
-                                <th rowSpan={2}>UOM</th>
-                                <th className="text-center" colSpan={2}>Cost</th>
-                                <th rowSpan={2}>Wastage%</th>
-                                <th rowSpan={2}>
+                                <th rowSpan={2} style={{width:"20px"}}>Material Type</th>
+                                <th rowSpan={2} style={{width:"20px"}}>Material </th>
+                                <th rowSpan={2} style={{width:"210px"}}>Material Sub-Type</th>
+                                <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Colour</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Brand</th>
+                                <th rowSpan={2} style={{width:"170px"}}>UOM</th>
+                                <th className="text-center" colSpan={2} >Cost</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
+                                <th rowSpan={2} style={{width:"170px"}}>
                                   Total Estimated Quantity Wastage
                                 </th>
 
@@ -1754,8 +1754,8 @@ const CreateBOQ = () => {
                               </tr>
 
                               <tr>
-                                <th rowSpan={1}>Co-efficient Factor</th>
-                                <th rowSpan={1}>Estimated Qty</th>
+                                <th rowSpan={1} style={{width:"170px"}}>Co-efficient Factor</th>
+                                <th rowSpan={1} style={{width:"170px"}}>Estimated Qty</th>
                               </tr>
 
                               <tr>
@@ -1917,16 +1917,16 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
 
                       <div className="card-body mt-0 pt-0">
-                        <div className="tbl-container mx-3 mt-1">
+                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                           <table 
                           // className="mb-5"
                            className={`  ${
-                            Assets.length === 0 ? 'w-100' : ''
+                            Assets.length === 0 ? 'w-100' : 'w-100'
                           }`} 
                           >
                             <thead >
                               <tr>
-                                <th rowSpan={2}>
+                                <th rowSpan={2} style={{width:"20px"}}>
                                   <div className="d-flex justify-content-center">
                                     <input className="" type="checkbox"
                                       onChange={(e) => {
@@ -1952,24 +1952,24 @@ const CreateBOQ = () => {
                                     </svg>
                                   </div>
                                 </th>
-                                <th rowSpan={2}>Assest Type</th>
+                                <th rowSpan={2} style={{width:"20px"}}>Assest Type</th>
 
-                                <th rowSpan={2}>Assest</th>
-                                <th rowSpan={2}>Assest Sub-Type</th>
-                                <th rowSpan={2}>Generic Specification</th>
-                                <th rowSpan={2}>Colour</th>
-                                <th rowSpan={2}>Brand</th>
-                                <th rowSpan={2}>UOM</th>
+                                <th rowSpan={2} style={{width:"20px"}}>Assest</th>
+                                <th rowSpan={2} style={{width:"210px"}}>Assest Sub-Type</th>
+                                <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Colour</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Brand</th>
+                                <th rowSpan={2} style={{width:"170px"}}>UOM</th>
                                 <th className="text-center" colSpan={2}>Cost</th>
-                                <th rowSpan={2}>Wastage%</th>
-                                <th rowSpan={2}>
+                                <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
+                                <th rowSpan={2} style={{width:"170px"}}>
                                   Total Estimated Quantity Wastage
                                 </th>
 
                               </tr>
                               <tr>
-                                <th>Co-efficient Factor</th>
-                                <th rowSpan={2}>Estimated Qty</th>
+                                <th style={{width:"170px"}}>Co-efficient Factor</th>
+                                <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2125,7 +2125,7 @@ const CreateBOQ = () => {
 
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                          <div className="tbl-container mx-3 mt-1">
+                          <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                             <table className="table table-bordered">
                               <thead style={{ zIndex: "1" }}>
                                 <tr>
@@ -2169,11 +2169,12 @@ const CreateBOQ = () => {
                                                 width="24"
                                                 height="24"
                                                 viewBox="0 0 24 24"
-                                                fill="none"
+                                                // fill="none"
                                                 stroke="black"
                                                 strokeWidth="1"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
+                                                 fill=" #e0e0e0"
                                               >
                                                 {/* Square */}
                                                 <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
@@ -2186,11 +2187,12 @@ const CreateBOQ = () => {
                                                 width="24"
                                                 height="24"
                                                 viewBox="0 0 24 24"
-                                                fill="none"
+                                                // fill="none"
                                                 stroke="black"
                                                 strokeWidth="1"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
+                                                 fill=" #e0e0e0"
                                               >
                                                 {/* Square */}
                                                 <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
@@ -2264,7 +2266,7 @@ const CreateBOQ = () => {
                                           min="0"
                                           placeholder="Enter Quantity"
                                           className="form-control"
-                                          onChange={(e) => handleInputChange2(index, " cost_quantity", parseFloat(e.target.value))}
+                                          onChange={(e) => handleInputChange2(index, "cost_quantity", parseFloat(e.target.value))}
                                         />
                                       </td>
 
@@ -2316,7 +2318,9 @@ const CreateBOQ = () => {
                                             handleSelectRowAsset={handleSelectRowAssets2}
                                             predefinedMaterialsData={updatePredefinedMaterialsData}
                                             predefinedAssetsData={updatePredefinedAssetsData}
-                                            boqSubItems={boqSubItems}
+                                            // boqSubItems={boqSubItems}
+                                            boqSubItems={boqSubItems.filter(item => item.id === el.id)}  // Only pass the latest boqSubItems based on el.id
+                                            // handleInputChange2={handleInputChange2}
                                           />
 
                                           {/* <MaterialModal

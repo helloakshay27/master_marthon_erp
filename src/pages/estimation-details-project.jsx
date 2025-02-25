@@ -227,7 +227,7 @@ const EstimationDetailsProject = () => {
     const handleClose = () => setShow(false);
     const myArray = ["Sr.no	", "Category level", "WBS Code", "Type", "Category", 'Budget', 'Order Draft Value (WO/PO)', 'Order Submit Value (WO/PO)', 'Order Approved Value (WO/PO)', 'Miscellaneous Expenses Certified', 'Miscellaneous Expenses Paid', "Balance Budget", "% Balance", "Debit Note WO/PO", "Abstract & GRN Total Value", "Abstract & GRN Certified", "Material Issued", "Material Consumed", "Stock at Site (Inventory)", "Abstract & GRN - Pending", "% Completion", "Total Bills Value (WO/PO)", "Total Bills Paid Value (WO/PO)", "Bill Balance Value", "Total Advance Paid (WO/PO)", "Total Advance Adjusted (WO/PO)", "Total Outstanding Advance (WO/PO)", "Balance yet to be Paid"];
 
-console.log("project id:",id)
+    console.log("project id:", id)
     useEffect(() => {
         // Fetch project details from API based on projectId
         const fetchProjectDetails = async () => {
@@ -235,7 +235,7 @@ console.log("project id:",id)
                 const response = await fetch(`${baseURL}estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
                 setProjectDetails(data);
-                console.log("data:",data)
+                console.log("data:", data)
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching project details:', error);
@@ -243,9 +243,9 @@ console.log("project id:",id)
             }
         };
 
-     
-            fetchProjectDetails();
-       
+
+        fetchProjectDetails();
+
     }, [id]);
 
     // State to track expanded rows
@@ -370,17 +370,17 @@ console.log("project id:",id)
         setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
     };
 
-     const [loading, setLoading] = useState(true);  // State for loading indicator
-      const [error, setError] = useState(null);  // State for handling errors
+    const [loading, setLoading] = useState(true);  // State for loading indicator
+    const [error, setError] = useState(null);  // State for handling errors
     // Loading, error, and data display logic
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
-  if (error) {
-    // return <div>{error}</div>;
-    return <div>Something went wrong</div>;
-  }
+    if (error) {
+        // return <div>{error}</div>;
+        return <div>Something went wrong</div>;
+    }
 
     return (
         <>
@@ -869,7 +869,9 @@ console.log("project id:",id)
                                                                     subCategory.sub_categories_3.map((subCategory3) => (
                                                                         <React.Fragment key={subCategory3.id}>
                                                                             <tr className="sub-category-lvl3">
-
+                                                                                {console.log("sub3", subCategory3)}
+                                                                                {console.log("sub4", subCategory3.sub_categories_4)}
+                                                                                {console.log("sub3id:", openSubCategory3Id)}
                                                                                 <td>
                                                                                     <button
                                                                                         className="btn btn-link p-0"
@@ -948,34 +950,118 @@ console.log("project id:",id)
 
                                                                             {/* Render BOQ Details for Sub-Category 3 */}
                                                                             {openSubCategory3Id === subCategory3.id && subCategory3.material_type_details && (
-                                                                                subCategory3.material_type_details.map((boqDetail3) => (
-                                                                                    <React.Fragment key={boqDetail3.id}>
+                                                                                subCategory3.material_type_details.map((boqDetail2) => (
+                                                                                    <React.Fragment key={boqDetail2.id}>
                                                                                         <tr className="labour">
 
-                                                                                            <td >
+
+                                                                                            <td>
                                                                                                 <button
                                                                                                     className="btn btn-link p-0"
-                                                                                                    onClick={() => toggleBoqDetail1(boqDetail3.id)}
+                                                                                                    onClick={() => toggleBoqDetail1(boqDetail2.id)}
                                                                                                     aria-label="Toggle BOQ detail visibility"
                                                                                                 >
-                                                                                                    {/* {openBoqDetailId1 === boqDetail3.id ? (
-                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+
+                                                                                                </button>
+
+                                                                                            </td>
+
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td>{boqDetail2.name}</td>
+                                                                                            <td>{boqDetail2.budget}</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                            <td>-</td>
+                                                                                        </tr>
+
+                                                                                    </React.Fragment>
+                                                                                ))
+                                                                            )}
+
+
+
+
+                                                                            {/* Render Level 4 for each BOQ level 3 */}
+                                                                            {openSubCategory3Id === subCategory3.id && subCategory3.sub_categories_4 && subCategory3.sub_categories_4.length > 0 && (
+                                                                                subCategory3.sub_categories_4.map((subCategory4) => (
+                                                                                    <React.Fragment key={subCategory4.id}>
+                                                                                        <tr className="sub-category-lvl4">
+                                                                                            {/* {console.log("sub3",subCategory3)}
+                                                                                                                  {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                                  {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                            <td>
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => toggleSubCategory4(subCategory4.id)}
+                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                >
+                                                                                                    {openSubCategory4Id === subCategory4.id ? (
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            {/* Minus Icon */}
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
                                                                                                         </svg>
                                                                                                     ) : (
-                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            {/* Plus Icon */}
+                                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
                                                                                                         </svg>
-                                                                                                    )} */}
+                                                                                                    )}
                                                                                                 </button>
 
                                                                                             </td>
                                                                                             <td></td>
+                                                                                            <td>Sub-Category Level 4</td>
                                                                                             <td></td>
                                                                                             <td></td>
-                                                                                            <td></td>
-                                                                                            <td>{boqDetail3.name}</td>
-                                                                                            <td>{boqDetail3.budget}</td>
+                                                                                            <td>{subCategory4.name}</td>
+                                                                                            <td>{subCategory4.budget}</td>
                                                                                             <td>-</td>
                                                                                             <td>-</td>
                                                                                             <td>-</td>
@@ -1001,20 +1087,73 @@ console.log("project id:",id)
 
                                                                                         </tr>
 
+                                                                                        {/* Render BOQ Details for Sub-Category 4 */}
+                                                                                        {openSubCategory4Id === subCategory4.id && subCategory4.material_type_details && (
+                                                                                            subCategory4.material_type_details.map((boqDetail2) => (
+                                                                                                <React.Fragment key={boqDetail2.id}>
+                                                                                                    <tr className="labour">
 
-                                                                                        {/* Render Level 4 for each BOQ level 3 */}
-                                                                                        {openSubCategory3Id === subCategory3.id && subCategory3.sub_categories_4 && subCategory3.sub_categories_4.length > 0 && (
-                                                                                            subCategory3.sub_categories_4.map((subCategory4) => (
-                                                                                                <React.Fragment key={subCategory4.id}>
-                                                                                                    <tr className="sub-category-lvl4">
 
-                                                                                                        <td >
+                                                                                                        <td>
                                                                                                             <button
                                                                                                                 className="btn btn-link p-0"
-                                                                                                                onClick={() => toggleSubCategory4(subCategory4.id)}
-                                                                                                                aria-label="Toggle sub-category 4 visibility"
+                                                                                                                onClick={() => toggleBoqDetail1(boqDetail2.id)}
+                                                                                                                aria-label="Toggle BOQ detail visibility"
                                                                                                             >
-                                                                                                                {openSubCategory4Id === subCategory4.id ? (
+
+                                                                                                            </button>
+
+                                                                                                        </td>
+
+                                                                                                        <td></td>
+                                                                                                        <td></td>
+                                                                                                        <td></td>
+                                                                                                        <td></td>
+                                                                                                        <td>{boqDetail2.name}</td>
+                                                                                                        <td>{boqDetail2.budget}</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                        <td>-</td>
+                                                                                                    </tr>
+
+                                                                                                </React.Fragment>
+                                                                                            ))
+                                                                                        )}
+                                                                                        {/*  */}
+                                                                                        {/* Render Level 5 for each BOQ level 4*/}
+                                                                                        {openSubCategory4Id === subCategory4.id && subCategory4.sub_categories_5 && subCategory4.sub_categories_5.length > 0 && (
+                                                                                            subCategory4.sub_categories_5.map((subCategory5) => (
+                                                                                                <React.Fragment key={subCategory5.id}>
+                                                                                                    <tr className="sub-category-lvl5">
+                                                                                                        {console.log("sub5", subCategory5)}
+                                                                                                        {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                                  {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                        <td>
+                                                                                                            <button
+                                                                                                                className="btn btn-link p-0"
+                                                                                                                onClick={() => toggleSubCategory5(subCategory5.id)}
+                                                                                                                aria-label="Toggle sub-category 3 visibility"
+                                                                                                            >
+                                                                                                                {openSubCategory5Id === subCategory5.id ? (
                                                                                                                     <svg
                                                                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                                                                         width="24"
@@ -1054,11 +1193,11 @@ console.log("project id:",id)
 
                                                                                                         </td>
                                                                                                         <td></td>
-                                                                                                        <td>Sub-Category Level 4</td>
+                                                                                                        <td>Sub-Category Level 5</td>
                                                                                                         <td></td>
                                                                                                         <td></td>
-                                                                                                        <td>{subCategory4.name}</td>
-                                                                                                        <td>{subCategory4.budget}</td>
+                                                                                                        <td>{subCategory5.name}</td>
+                                                                                                        <td>{subCategory5.budget}</td>
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>
@@ -1081,190 +1220,73 @@ console.log("project id:",id)
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>
+
                                                                                                     </tr>
 
-                                                                                                    {/* Render BOQ Details for Sub-Category 4 */}
-                                                                                                    {openSubCategory4Id === subCategory4.id && subCategory4.material_type_details && (
-                                                                                                        subCategory4.material_type_details.map((boqDetail4) => (
-                                                                                                            <React.Fragment key={boqDetail4.id}>
+                                                                                                    {/* Render BOQ Details for Sub-Category 3 */}
+                                                                                                    {openSubCategory5Id === subCategory5.id && subCategory5.material_type_details && (
+                                                                                                        subCategory5.material_type_details.map((boqDetail2) => (
+                                                                                                            <React.Fragment key={boqDetail2.id}>
                                                                                                                 <tr className="labour">
 
 
                                                                                                                     <td>
                                                                                                                         <button
                                                                                                                             className="btn btn-link p-0"
-                                                                                                                            onClick={() => toggleBoqDetail2(boqDetail4.id)}
+                                                                                                                            onClick={() => toggleBoqDetail1(boqDetail2.id)}
                                                                                                                             aria-label="Toggle BOQ detail visibility"
                                                                                                                         >
-                                                                                                                            {/* {openBoqDetailId2 === boqDetail4.id ? (
-                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                    <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                                                                                </svg>
-                                                                                                                            ) : (
-                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                                                                                </svg>
-                                                                                                                            )} */}
+
                                                                                                                         </button>
 
                                                                                                                     </td>
-                                                                                                                    <td></td>
-                                                                                                                    <td></td>
-                                                                                                                    <td></td>
-                                                                                                                    <td></td>
-                                                                                                                    <td>{boqDetail4.name}</td>
-                                                                                                                    <td>{boqDetail4.budget}</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
-                                                                                                                    <td>-</td>
 
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>{boqDetail2.name}</td>
+                                                                                                                    <td>{boqDetail2.budget}</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
+                                                                                                                    <td>-</td>
                                                                                                                 </tr>
 
-                                                                                                                {/* Render Level 5 for each BOQ level 4 */}
-
-                                                                                                                {openSubCategory4Id === subCategory4.id && subCategory4.sub_categories_5 && subCategory4.sub_categories_5.length > 0 && (
-                                                                                                                    subCategory4.sub_categories_5.map((subCategory5) => (
-                                                                                                                        <React.Fragment key={subCategory5.id}>
-                                                                                                                            <tr className="sub-category-lvl5">
-
-                                                                                                                                <td>
-                                                                                                                                    <button
-                                                                                                                                        className="btn btn-link p-0"
-                                                                                                                                        onClick={() => toggleSubCategory5(subCategory5.id)}
-                                                                                                                                        aria-label="Toggle sub-category 5 visibility"
-                                                                                                                                    >
-                                                                                                                                        {openSubCategory5Id === subCategory5.id ? (
-                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                                <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                                                                                            </svg>
-                                                                                                                                        ) : (
-                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                                <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                                                                                            </svg>
-                                                                                                                                        )}
-                                                                                                                                    </button>
-
-                                                                                                                                </td>
-                                                                                                                                <td></td>
-                                                                                                                                <td>Sub-Category Level 4</td>
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td>{subCategory4.name}</td>
-                                                                                                                                <td>{subCategory4.budget}</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                                <td>-</td>
-                                                                                                                            </tr>
-
-                                                                                                                            {/* Render BOQ Details for Sub-Category 5 */}
-
-                                                                                                                            {openSubCategory5Id === subCategory5.id && subCategory5.material_type_details && (
-                                                                                                                                subCategory5.material_type_details.map((boqDetail5) => (
-                                                                                                                                    <React.Fragment key={boqDetail5.id}>
-                                                                                                                                        <tr className="labour">
-
-                                                                                                                                            <td>
-                                                                                                                                                <button
-                                                                                                                                                    className="btn btn-link p-0"
-                                                                                                                                                    onClick={() => toggleBoqDetail3(boqDetail5.id)}
-                                                                                                                                                    aria-label="Toggle BOQ detail visibility"
-                                                                                                                                                >
-                                                                                                                                                    {/* {openBoqDetailId3 === boqDetail5.id ? (
-                                                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                                                                                                        </svg>
-                                                                                                                                                    ) : (
-                                                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                                                                                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                                                                                                        </svg>
-                                                                                                                                                    )} */}
-                                                                                                                                                </button>
-
-                                                                                                                                            </td>
-                                                                                                                                            <td></td>
-                                                                                                                                            <td></td>
-                                                                                                                                            <td></td>
-                                                                                                                                            <td></td>
-                                                                                                                                            <td>{boqDetail5.name}</td>
-                                                                                                                                            <td>{boqDetail5.budget}</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-                                                                                                                                            <td>-</td>
-
-                                                                                                                                        </tr>
-                                                                                                                                    </React.Fragment>
-                                                                                                                                ))
-                                                                                                                            )}
-                                                                                                                        </React.Fragment>
-                                                                                                                    ))
-                                                                                                                )}
                                                                                                             </React.Fragment>
                                                                                                         ))
                                                                                                     )}
-
                                                                                                 </React.Fragment>
                                                                                             ))
                                                                                         )}
+
+
                                                                                     </React.Fragment>
                                                                                 ))
                                                                             )}
+
+
+
+
+
                                                                         </React.Fragment>
                                                                     ))
                                                                 )}

@@ -64,11 +64,31 @@ const BOQSubItemTable = ({
     );
   };
 
+  // console.log("materials data for  delete in boq sub........:",materials)
   const handleDeleteAllMaterial = () => {
-    setMaterials((prev) =>
-      prev.filter((material) => !selectedMaterials.includes(material.name))
-    );
+    // setMaterials((prev) =>
+    //   prev.filter((material) => !selectedMaterials.includes(material.id))
+    // );
+    // setSelectedMaterials([]); // Reset selected materials
+
+
+    // setMaterials((prev) =>
+    //   prev.filter((material) => !selectedMaterials.includes(material.id))
+    // );
+    // setSelectedMaterials([]); // Reset selected materials
+
+
+    setMaterials((prev) => {
+      if (!Array.isArray(prev)) {
+        console.error("Expected 'prev' to be an array, but got:", prev);
+        return []; // Fallback to empty array if prev is not an array
+      }
+      return prev.filter((material) => !selectedMaterials.includes(material.id));
+    });
     setSelectedMaterials([]); // Reset selected materials
+  
+
+    
   };
 
   // Handle input change in specific row
@@ -87,11 +107,18 @@ const BOQSubItemTable = ({
   };
 
   // Handle material selection for checkbox
-  const handleSelectRowMaterial = (index) => {
-    const updatedMaterials = [...materials];
-    updatedMaterials[index].selected = !updatedMaterials[index].selected;
-    setMaterials(updatedMaterials);
-    onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
+  const handleSelectRowMaterial = (materialName) => {
+    // const updatedMaterials = [...materials];
+    // updatedMaterials[index].selected = !updatedMaterials[index].selected;
+    // setMaterials(updatedMaterials);
+    // onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
+
+
+    setSelectedMaterials((prev) =>
+      prev.includes(materialName)
+        ? prev.filter((name) => name !== materialName) // Unselect the material
+        : [...prev, materialName] // Select the material
+    );
   };
 
 
@@ -627,7 +654,7 @@ const BOQSubItemTable = ({
 
   const handleCostQtyChange = (id, value) => {
     // This will call the parent's handleInputChange2 method
-    handleInputChange2(id, "cost_quantity", value);
+    handleInputChange2(id, cost_quantity, value);
   };
 
   const [boqQuantity, setBoqQuantity] = useState("");
@@ -639,7 +666,7 @@ const BOQSubItemTable = ({
     setBoqQuantity(qtyArray); // Update the state with the qty values
   }, [boqSubItems]); // Re-run the effect when boqSubItems change
 
-  
+  console.log("boq sub items......" ,boqSubItems)
 
   console.log(" cost........qty", boqQuantity)
 
@@ -707,26 +734,35 @@ const BOQSubItemTable = ({
   return (
     <>
       <div className="collapse show">
-        <div className="" style={{ width: "77vw", maxWidth: "100%" }}>
+        <div className="w-100" >
           <CollapsibleCard title="Material">
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
-                <div className="tbl-container mx-3 mt-1">
+                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                   <table
                   //  className="mb-5" 
                    id="table1"
                   
                   className={`  ${
-                    materials.length === 0 ? 'w-100' : ''
+                    materials.length === 0 ? 'w-100' : 'w-100'
                   }`} 
                   >
                     <thead style={{ zIndex: "0" }}>
-                      <tr>
-                        <th rowSpan={2}>
+                      <tr >
+                        <th rowSpan={2} style={{width:"10px"}}>
                           <input type="checkbox"
+                            // onChange={(e) => {
+                            //   if (e.target.checked) {
+                            //     setSelectedMaterials(materials.map((m) => m.name)); // Select all
+                            //   } else {
+                            //     setSelectedMaterials([]); // Deselect all
+                            //   }
+                            // }}
+                            // checked={selectedMaterials.length === materials.length}
+
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedMaterials(materials.map((m) => m.name)); // Select all
+                                setSelectedMaterials(materials.map((m) => m.id)); // Select all
                               } else {
                                 setSelectedMaterials([]); // Deselect all
                               }
@@ -734,21 +770,21 @@ const BOQSubItemTable = ({
                             checked={selectedMaterials.length === materials.length}
                           />
                         </th>
-                        <th rowSpan={2}>Material Type</th>
-                        <th rowSpan={2}>Material</th>
-                        <th rowSpan={2}>Material Sub-Type</th>
-                        <th rowSpan={2}>Generic Specification</th>
-                        <th rowSpan={2}>Colour </th>
-                        <th rowSpan={2}>Brand </th>
-                        <th rowSpan={2}>UOM</th>
+                        <th rowSpan={2} style={{width:"10px"}}>Material Type</th>
+                        <th rowSpan={2} style={{width:"10px"}}>Material</th>
+                        <th rowSpan={2} style={{width:"210px"}}>Material Sub-Type</th>
+                        <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Colour </th>
+                        <th rowSpan={2} style={{width:"170px"}}>Brand </th>
+                        <th rowSpan={2} style={{width:"170px"}}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2}>Wastage%</th>
-                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th>Co-Efficient Factor</th>
-                        <th rowSpan={2}>Estimated Qty</th>
+                        <th style={{width:"170px"}}>Co-Efficient Factor</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -760,8 +796,8 @@ const BOQSubItemTable = ({
                               <input
                                 className="ms-5"
                                 type="checkbox"
-                                checked={selectedMaterials.includes(material.name)} // Check if material is selected
-                                onChange={() => handleSelectRowMaterial(material.name)} // Toggle selection
+                                checked={selectedMaterials.includes(material.id)} // Check if material is selected
+                                onChange={() => handleSelectRowMaterial(material.id)} // Toggle selection
                               />
                             </td>
                             <td>
@@ -846,7 +882,7 @@ const BOQSubItemTable = ({
                               <input
                                 className="form-control"
                                 type="number"
-
+                                disabled
                                 placeholder="Estimated Qty"
 
                                 value={estimatedQuantities[index] || ''}
@@ -867,6 +903,7 @@ const BOQSubItemTable = ({
                               <input
                                 type="number"
                                 className="form-control"
+                                disabled
                                 placeholder="Total Estimated Qty"
                                 value={totalEstimatedQtyWastages[index] || ''}
                               // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
@@ -917,17 +954,17 @@ const BOQSubItemTable = ({
           <CollapsibleCard title="Assests">
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
-                <div className="tbl-container mx-3 mt-1">
+                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                   <table
                   //  className="mb-5"
                     id="table3"
                     className={`  ${
-                      Assets.length === 0 ? 'w-100' : ''
+                      Assets.length === 0 ? 'w-100' : 'w-100'
                     }`} 
                     >
                     <thead style={{ zIndex: "0" }}>
                       <tr>
-                        <th rowSpan={2}>
+                        <th rowSpan={2} style={{width:"10px"}}>
                           <input type="checkbox"
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -939,22 +976,22 @@ const BOQSubItemTable = ({
                             checked={selectedAssets.length === Assets.length}
                           />
                         </th>
-                        <th rowSpan={2}>Assest Type</th>
+                        <th rowSpan={2} style={{width:"10px"}}>Assest Type</th>
 
-                        <th rowSpan={2}>Assest</th>
-                        <th rowSpan={2}>Assest Sub-Type</th>
-                        <th rowSpan={2}>Generic Specification</th>
-                        <th rowSpan={2}>Colour </th>
-                        <th rowSpan={2}>Brand </th>
-                        <th rowSpan={2}>UOM</th>
+                        <th rowSpan={2} style={{width:"10px"}}>Assest</th>
+                        <th rowSpan={2} style={{width:"210px"}}>Assest Sub-Type</th>
+                        <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Colour </th>
+                        <th rowSpan={2} style={{width:"170px"}}>Brand </th>
+                        <th rowSpan={2} style={{width:"170px"}}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2}>Wastage%</th>
-                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th>Co-Efficient Factor</th>
-                        <th rowSpan={2}>Estimated Qty</th>
+                        <th style={{width:"170px"}}>Co-Efficient Factor</th>
+                        <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -71,8 +71,15 @@ const ApprovalMatrics = () => {
       ...(filterOptions.modules || []), // Safeguard against undefined or null modules
     ],
     material_types: [
-      { label: "Select Material Type", value: "" },
-      ...(filterOptions.material_types || []), // Safeguard against undefined or null material_types
+      // Only add default if it's not already present
+      ...(filterOptions.material_types?.some(
+        (opt) => opt.label === "Select Material Type"
+      )
+        ? filterOptions.material_types
+        : [
+            { label: "Select Material Type", value: "" },
+            ...(filterOptions.material_types || []),
+          ]),
     ],
   };
 
@@ -278,30 +285,31 @@ const ApprovalMatrics = () => {
     e.preventDefault();
 
     let queryParams = new URLSearchParams();
-    console.log("kjasjc", filters);
-
-    if (filters.company) queryParams.append("company_id", filters.company);
-
-    if (filters.project) queryParams.append("project_id", filters.project);
-
-    if (filters.site) queryParams.append("site_id", filters.site);
-
-    if (filters.department)
-      queryParams.append("department_id", filters.department);
-
-    if (filters.modules) queryParams.append("module_id", filters.modules);
-
-    if (filters.materialtypes) {
-      queryParams.append("pms_inventory_type_id", filters.materialtypes);
-      console.log("hhhh", queryParams.toString());
-    }
-
     console.log("Filters:", filters);
-    console.log("Material Type Value:", filters.materialtypes);
-    console.log(" Type Value:", filters.company);
-    console.log("Query Params Before Fetch:", queryParams.toString());
 
+    // Construct query parameters following the API format
+    if (filters.company)
+      queryParams.append("q[company_id_eq]", filters.company);
+    if (filters.project)
+      queryParams.append("q[project_id_eq]", filters.project);
+    if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
+    if (filters.department)
+      queryParams.append("q[department_id_eq]", filters.department);
+    if (filters.modules) queryParams.append("q[module_id_eq]", filters.modules);
+    if (filters.materialtypes)
+      queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
+
+    // Ensure `approval_type` is correctly formatted
+    queryParams.append("q[approval_type_eq]", "material_order_request");
+
+    // Add pagination parameters (always fetch from page 1 when applying filters)
+    queryParams.append("page", 1);
+    queryParams.append("page_size", 8); // Adjust page size as needed
+
+    // API URL with query params
     const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    console.log("API URL:", apiUrl); // Debugging
 
     try {
       const response = await fetch(apiUrl);
@@ -309,15 +317,14 @@ const ApprovalMatrics = () => {
 
       const data = await response.json();
       setApprovals(data.invoice_approvals || []);
-      // setTotalRecords(data.total_records || 0);
+
+      // Update pagination state
       setPagination((prev) => ({
         ...prev,
         total_count: data.total_records || 0,
-        total_pages: Math.ceil((data.total_records || 0) / pageSize), // Ensure pages are calculated
+        total_pages: Math.ceil((data.total_records || 0) / 8), // Ensure correct page count
         current_page: 1, // Reset to page 1 when filtering
       }));
-
-      // setTotalPages(data.total_pages || 0);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
     }
@@ -519,7 +526,7 @@ const ApprovalMatrics = () => {
                     </div>
 
                     {/* Status */}
-                    <div className="col-md-3">
+                    {/* <div className="col-md-3">
                       <label htmlFor="status-select">Department</label>
 
                       <SingleSelector
@@ -534,7 +541,7 @@ const ApprovalMatrics = () => {
                         placeholder="Select Department"
                         isClearable
                       />
-                    </div>
+                    </div> */}
 
                     {/* Created By */}
                     <div className="col-md-3 mt-3">

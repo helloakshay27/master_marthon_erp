@@ -18616,11 +18616,11 @@ ul.pagination.justify-content-center {
 
 
 /* Ensure the table container allows dropdowns to be visible */
- /* .tbl-container {
-  /* position: relative; */
-  /* overflow: visible !important; */
+ .tbl-container-SpecificBOQ {
+  position: relative;
+  overflow: visible !important;
   /* width:100% */
-/* } */ */
+ } 
 
 /* Basic table styling */
 /* .tbl-container table {
@@ -18643,9 +18643,7 @@ ul.pagination.justify-content-center {
 } */
 
 /* Ensure dropdown appears properly */
-.custom-select .react-select__control {
-  /* min-width:200px; */
+/* .custom-select .react-select__control {
+  min-width:100px;
 }
-
-
-/*# sourceMappingURL=mor.css-ed871f49aadae569d66f8e115a43114d30eed9833a2ddcbeef011041744e80a7.map */
+ */

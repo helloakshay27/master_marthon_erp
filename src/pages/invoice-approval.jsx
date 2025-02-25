@@ -41,31 +41,86 @@ const InvoiceApproval = () => {
   const [selectedMaterialType, setSelectedMaterialType] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
 
+  // const modifiedFilterOptions = {
+  //   departments: [
+  //     { label: "Select Department", value: "" },
+  //     ...(filterOptions.departments || []), // Safeguard against undefined or null departments
+  //   ],
+  //   subprojects: [
+  //     { label: "Select Subproject", value: "" },
+  //     ...(filterOptions.subprojects || []), // Safeguard against undefined or null subprojects
+  //   ],
+  //   modules: [
+  //     { label: "Select Module", value: "" },
+  //     ...(filterOptions.modules || []), // Safeguard against undefined or null modules
+  //   ],
+  //   material_types: [
+  //     { label: "Select Material Type", value: "" },
+  //     ...(filterOptions.material_types || []), // Safeguard against undefined or null material_types
+  //   ],
+  // };
+
   const modifiedFilterOptions = {
-    departments: [
-      { label: "Select Department", value: "" },
-      ...(filterOptions.departments || []), // Safeguard against undefined or null departments
-    ],
-    subprojects: [
-      { label: "Select Subproject", value: "" },
-      ...(filterOptions.subprojects || []), // Safeguard against undefined or null subprojects
-    ],
-    modules: [
-      { label: "Select Module", value: "" },
-      ...(filterOptions.modules || []), // Safeguard against undefined or null modules
-    ],
-    material_types: [
-      { label: "Select Material Type", value: "" },
-      ...(filterOptions.material_types || []), // Safeguard against undefined or null material_types
-    ],
+    departments: (filterOptions.departments || []).map((dept) => ({
+      label: dept.label,
+      value: dept.value,
+    })), // Ensuring "Select Department" is not part of options
+    subprojects: (filterOptions.subprojects || []).map((sp) => ({
+      label: sp.label,
+      value: sp.value,
+    })),
+    modules: (filterOptions.modules || []).map((mod) => ({
+      label: mod.label,
+      value: mod.value,
+    })),
+    material_types: (filterOptions.material_types || []).map((mat) => ({
+      label: mat.label,
+      value: mat.value,
+    })),
   };
 
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const [approvalLevels, setApprovalLevels] = useState([
-    { order: "", name: "", users: [] },
+    { order: "", name: "", users: [], type: "users" },
   ]);
 
+  const [selectedType, setSelectedType] = useState("users");
+
+  const [userGroups, setUserGroups] = useState([]);
+  // User groups list
+
+  const handleSelectionTypeChange = (index, type) => {
+    const updatedLevels = approvalLevels.map(
+      (level, i) => (i === index ? { ...level, type, users: [] } : level) // Reset users when type changes
+    );
+    setApprovalLevels(updatedLevels);
+  };
+
+  const fetchUserGroups = async (companyId) => {
+    if (!companyId) {
+      setUserGroups([]); // Clear if no company is selected
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      // Extract and format user groups
+      setUserGroups(
+        response.data.user_groups.map((group) => ({
+          label: group.name, // Display group name in dropdown
+          value: group.id, // Store group ID as value
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching user groups:", error);
+    }
+  };
+
+  // Track selected type (Users or User Groups)
   const [formData, setFormData] = useState({
     company_id: null,
     project_id: null,
@@ -81,7 +136,7 @@ const InvoiceApproval = () => {
   const handleAddLevel = () => {
     setApprovalLevels([
       ...approvalLevels,
-      { order: "", name: "", users: [] }, // Add a new empty level
+      { order: "", name: "", users: [], type: "users" }, // Add a new empty level,
     ]);
   };
 
@@ -184,47 +239,89 @@ const InvoiceApproval = () => {
   }, []);
 
   const [departmentUsers, setDepartmentUsers] = useState([]);
-  const fetchUsers = async (companyId, projectId, siteId, departmentId) => {
-    if (!companyId || !departmentId) {
-      setDepartmentUsers([]); // Reset users if company or department is not selected
+
+  // const fetchUsers = async (companyId, projectId, siteId, departmentIds) => {
+  //   if (!companyId || !departmentIds || departmentIds.length === 0) {
+  //     setDepartmentUsers([]); // Reset users if no company or departments are selected
+  //     return;
+  //   }
+
+  //   try {
+  //     const departmentQuery = departmentIds.join(","); // Convert array of department IDs to a comma-separated string
+
+  //     // Fetch users based on company and selected departments
+  //     const response = await axios.get(
+  //       `${baseURL}/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
+  //         projectId || ""
+  //       }&&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //     );
+
+  //     if (response.data && Array.isArray(response.data)) {
+  //       const newUsers = response.data.map((user) => ({
+  //         value: user.id,
+  //         label: user.full_name,
+  //       }));
+
+  //       // Set the department users (this will be used in the dropdown)
+  //       setDepartmentUsers(newUsers);
+  //     } else {
+  //       setDepartmentUsers([]); // Reset users if no valid data is received
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching users:", error);
+  //     setDepartmentUsers([]); // Reset users on error
+  //   }
+  // };
+
+  const fetchUsers = async (
+    companyId,
+    projectId,
+    siteId,
+    departmentIds = []
+  ) => {
+    if (!companyId) {
+      setDepartmentUsers([]);
       return;
     }
 
     try {
+      // If departmentIds is empty, remove the filter from API call
+      const departmentQuery =
+        departmentIds.length > 0
+          ? `q[department_id_in]=${departmentIds.join(",")}&`
+          : "";
+
       const response = await axios.get(
-        `${baseURL}/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_id_eq]=${
+        `${baseURL}/users.json?${departmentQuery}q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
           projectId || ""
-        }&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_id_eq]=${
-          siteId || ""
-        }&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        }&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       if (response.data && Array.isArray(response.data)) {
-        const userOptions = response.data.map((user) => ({
+        const newUsers = response.data.map((user) => ({
           value: user.id,
           label: user.full_name,
         }));
-        setDepartmentUsers(userOptions);
+
+        setDepartmentUsers(newUsers); // Set users dropdown
       } else {
-        setDepartmentUsers([]); // Reset users if no valid data received
+        setDepartmentUsers([]); // Reset users if no valid data
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      setDepartmentUsers([]);
+      setDepartmentUsers([]); // Reset on error
     }
   };
 
   // const handleCompanyChange = (selectedOption) => {
-  //   setSelectedCompany(selectedOption); // Set selected company
-  //   setSelectedProject(null); // Reset project selection
-  //   setSelectedSite(null); // Reset site selection
-  //   setSelectedWing(null); // Reset wing selection
-  //   setProjects([]); // Reset projects
-  //   setSiteOptions([]); // Reset site options
-  //   setWingsOptions([]); // Reset wings options
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
 
   //   if (selectedOption) {
-  //     // Find the selected company from the list
   //     const selectedCompanyData = companies.find(
   //       (company) => company.id === selectedOption.value
   //     );
@@ -237,54 +334,21 @@ const InvoiceApproval = () => {
 
   //     setFormData((prevState) => ({
   //       ...prevState,
-  //       company_id: selectedOption.value, // Update formData with company_id
-  //       project_id: null, // Reset project_id when company changes
-  //       site_id: null, // Reset site_id when company changes
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
   //     }));
-  //   }
-  // };
 
-  // const handleProjectChange = (selectedOption) => {
-  //   setSelectedProject(selectedOption);
-  //   setSelectedSite(null); // Reset site selection
-  //   setSelectedWing(null); // Reset wing selection
-  //   setSiteOptions([]); // Reset site options
-  //   setWingsOptions([]); // Reset wings options
+  //     // Clear selected users but fetch new users even if no department is selected
+  //     setSelectedUsers([]);
 
-  //   if (selectedOption) {
-  //     // Find the selected project from the list of projects of the selected company
-  //     const selectedCompanyData = companies.find(
-  //       (company) => company.id === selectedCompany.value
+  //     // Fetch users based on the selected company
+  //     fetchUsers(
+  //       selectedOption.value,
+  //       null,
+  //       null,
+  //       selectedDepartment?.map((dept) => dept.value) || []
   //     );
-  //     const selectedProjectData = selectedCompanyData?.projects.find(
-  //       (project) => project.id === selectedOption.value
-  //     );
-
-  //     // Set site options based on selected project
-  //     setSiteOptions(
-  //       selectedProjectData?.pms_sites.map((site) => ({
-  //         value: site.id,
-  //         label: site.name,
-  //       })) || []
-  //     );
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       project_id: selectedOption.value, // Update formData with project_id
-  //       site_id: null, // Reset site_id when project changes
-  //     }));
-  //   }
-  // };
-
-  // const handleSiteChange = (selectedOption) => {
-  //   setSelectedSite(selectedOption);
-  //   setSelectedWing(null); // Reset wing selection
-  //   // setWingsOptions([]); // Reset wings options
-
-  //   if (selectedOption) {
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       site_id: selectedOption.value, // Update formData with site_id
-  //     }));
   //   }
   // };
 
@@ -295,7 +359,6 @@ const InvoiceApproval = () => {
     setSelectedWing(null);
     setProjects([]);
     setSiteOptions([]);
-    // setWingsOptions([]);
 
     if (selectedOption) {
       const selectedCompanyData = companies.find(
@@ -315,7 +378,28 @@ const InvoiceApproval = () => {
         site_id: null,
       }));
 
-      fetchUsers(selectedOption.value, null, null, selectedDepartment?.value); // Fetch users based on company
+      // Clear selected users and user groups
+      setSelectedUsers([]);
+      setDepartmentUsers([]); // Reset users list
+      setUserGroups([]); // Reset user groups list
+
+      // Clear users inside approval levels
+      setApprovalLevels((prevLevels) =>
+        prevLevels.map((level) => ({
+          ...level,
+          users: [],
+        }))
+      );
+
+      // Fetch new users and user groups based on selected company
+      fetchUsers(
+        selectedOption.value,
+        null,
+        null,
+        selectedDepartment?.map((dept) => dept.value) || []
+      );
+
+      fetchUserGroups(selectedOption.value); // Ensure user groups are refreshed
     }
   };
 
@@ -324,36 +408,42 @@ const InvoiceApproval = () => {
     setSelectedSite(null);
     setSelectedWing(null);
     setSiteOptions([]);
-    // setWingsOptions([]);
+    setWingsOptions([]);
 
-    if (selectedOption) {
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects.find(
-        (project) => project.id === selectedOption.value
-      );
+    // Clear previously fetched users and reset selected users when the project changes
+    setSelectedUsers([]);
+    setDepartmentUsers([]);
 
-      setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
+    const selectedCompanyData = companies.find(
+      (company) => company.id === selectedCompany?.value
+    );
+    const selectedProjectData = selectedCompanyData?.projects.find(
+      (project) => project.id === selectedOption?.value
+    );
 
-      setFormData((prevState) => ({
-        ...prevState,
-        project_id: selectedOption.value,
-        site_id: null,
-      }));
+    // Update site options based on the new project
+    setSiteOptions(
+      selectedProjectData?.pms_sites.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
 
-      fetchUsers(
-        selectedCompany?.value,
-        selectedOption.value,
-        null,
-        selectedDepartment?.value
-      ); // Fetch users based on project
-    }
+    // Update form data for the new project
+    setFormData((prevState) => ({
+      ...prevState,
+      project_id: selectedOption ? selectedOption.value : null,
+      site_id: null,
+      users: [], // Reset users in form data to be populated with new project and department data
+    }));
+
+    // Fetch users based on the selected departments, even after project change
+    fetchUsers(
+      selectedCompany?.value,
+      selectedOption ? selectedOption.value : null, // Pass the new project ID
+      null, // We are not filtering by site at this stage
+      selectedDepartment?.map((dept) => dept.value) // Pass the selected departments to fetch users
+    );
   };
 
   const handleSiteChange = (selectedOption) => {
@@ -375,92 +465,91 @@ const InvoiceApproval = () => {
     }
   };
 
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //     }));
+
+  //     // Clear selected users but keep selected departments
+  //     setSelectedUsers([]); // Reset selected users
+  //     fetchUsers(
+  //       selectedOption.value,
+  //       null,
+  //       null,
+  //       selectedDepartment.map((dept) => dept.value)
+  //     ); // Fetch new users based on selected departments
+  //   }
+  // };
+
+  const handleDepartmentChange = async (selectedOptions) => {
+    if (!selectedOptions || selectedOptions.length === 0) {
+      setFormData((prevState) => ({
+        ...prevState,
+        department_id: [],
+        users: [],
+      }));
+      setSelectedDepartment([]);
+      setDepartmentUsers([]);
+      setSelectedUsers([]);
+      return;
+    }
+
+    const departmentIds = selectedOptions.map((option) => option.value);
+    setFormData((prevState) => ({
+      ...prevState,
+      department_id: departmentIds,
+    }));
+    setSelectedDepartment(selectedOptions);
+
+    // Ensure we are passing companyId if it exists
+    const companyId = selectedCompany?.value || null;
+
+    fetchUsers(
+      companyId,
+      selectedProject?.value || null,
+      selectedSite?.value || null,
+      departmentIds
+    );
+  };
+
+  useEffect(() => {
+    if (formData.department_id && modifiedFilterOptions.departments?.length) {
+      const selected = modifiedFilterOptions.departments.filter((option) =>
+        formData.department_id.includes(option.value)
+      );
+
+      // Only update state if the selection has changed
+      if (JSON.stringify(selected) !== JSON.stringify(selectedDepartment)) {
+        setSelectedDepartment(selected);
+      }
+    }
+  }, [formData.department_id, modifiedFilterOptions.departments]);
+
   const companyOptions = companies.map((company) => ({
     value: company.id,
     label: company.company_name,
   }));
-
-  const handleDepartmentChange = async (selectedOption) => {
-    if (!selectedOption) {
-      setFormData((prevState) => ({
-        ...prevState,
-        department_id: null,
-      }));
-      setSelectedDepartment(null);
-      setDepartmentUsers([]);
-      return;
-    }
-
-    const departmentId = selectedOption.value;
-    setFormData((prevState) => ({
-      ...prevState,
-      department_id: departmentId,
-    }));
-    setSelectedDepartment(selectedOption);
-
-    fetchUsers(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      departmentId
-    ); // Fetch users based on department
-  };
-
-  // const handleDepartmentChange = async (selectedOption) => {
-  //   if (!selectedOption) {
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       department_id: null, // Reset if no department selected
-  //     }));
-  //     setSelectedDepartment(null); //  dropdown value
-  //     setDepartmentUsers([]);
-  //     return;
-  //   }
-
-  //   const departmentId = selectedOption.value; //  Get selected department ID
-  //   console.log("Selected Department ID:", departmentId);
-
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     department_id: departmentId,
-  //   }));
-
-  //   setSelectedDepartment(selectedOption); // Ensure dropdown selection updates
-
-  //   const companyId = selectedCompany ? selectedCompany.value : "";
-  //   const projectId = selectedProject ? selectedProject.value : "";
-  //   const siteId = selectedSite ? selectedSite.value : "";
-
-  //   console.log("compny project subproject", companyId, projectId, siteId);
-
-  //   try {
-  //     // Fetch users based on department ID
-  //     const response = await axios.get(
-  //       `https://marathon.lockated.com/users.json?q[department_id_eq]=${departmentId}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${projectId}&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //     );
-
-  //     if (response.data && Array.isArray(response.data)) {
-  //       const userOptions = response.data.map((user) => ({
-  //         value: user.id,
-  //         label: user.full_name,
-  //       }));
-  //       setDepartmentUsers(userOptions);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching users for department:", error);
-  //     setDepartmentUsers([]);
-  //   }
-  // };
-
-  // Ensure selectedDepartment is set from formData when component renders
-  useEffect(() => {
-    if (formData.department_id) {
-      const selected = modifiedFilterOptions.departments.find(
-        (option) => option.value === formData.department_id
-      );
-      setSelectedDepartment(selected || null);
-    }
-  }, [formData.department_id, modifiedFilterOptions.departments]);
 
   const [showMaterialType, setShowMaterialType] = useState(false);
 
@@ -525,7 +614,7 @@ const InvoiceApproval = () => {
     const errors = [];
 
     if (!formData.company_id) errors.push("Company is required.");
-    if (!formData.department_id) errors.push("Department is required.");
+    // if (!formData.department_id) errors.push("Department is required.");
     if (!formData.module_id) errors.push("Module is required.");
     if (approvalLevels.length === 0)
       errors.push("At least one Approval Level is required.");
@@ -542,13 +631,32 @@ const InvoiceApproval = () => {
       company_id: formData.company_id, // Dynamic company_id from formData
       project_id: formData.project_id,
       site_id: formData.site_id, // Static or dynamic if needed
-      department_id: formData.department_id, // Dynamic department_id from formData
+      // department_id: null, // Dynamic department_id from formData
       pms_inventory_type_id: formData.pms_supplier_id,
+      // invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+      //   name: level.name,
+      //   order: level.order,
+      //   active: true, // Assuming that all levels
+      //   escalate_to_users:
+      //     level.type === "users" ? level.users.map((user) => user.value) : [],
+      //   user_group_id:
+      //     level.type === "groups"
+      //       ? level.users.map((group) => group.value)[0]
+      //       : null,
+      // })),
+
       invoice_approval_levels_attributes: approvalLevels.map((level) => ({
         name: level.name,
         order: level.order,
-        active: true, // Assuming that all levels are active; adjust as necessary
-        escalate_to_users: level.users.map((user) => user.value), // Mapping user IDs to escalate_to_users
+        active: true, // Assuming all levels are active by default
+        escalate_to_users:
+          level.type === "users" && Array.isArray(level.users)
+            ? level.users.map((user) => user.value)
+            : [], // Ensure it's an array or empty
+        user_group_id:
+          level.type === "groups" && level.users
+            ? level.users.value || null
+            : null, // Handle single value case
       })),
     };
 
@@ -587,187 +695,6 @@ const InvoiceApproval = () => {
         setLoading(false);
       });
   };
-
-  // const handleSaveAndCreate = () => {
-  //   setLoading(true);
-  //   const errors = [];
-
-  //   if (!formData.company_id) errors.push("Company is required.");
-  //   if (!formData.department_id) errors.push("Department is required.");
-  //   if (!formData.module_id) errors.push("Module is required.");
-
-  //   // 🔹 Validate Approval Levels
-  //   if (approvalLevels.length === 0) {
-  //     errors.push("At least one Approval Level is required.");
-  //   } else {
-  //     approvalLevels.forEach((level, index) => {
-  //       if (!level.name)
-  //         errors.push(`Approval Level ${index + 1}: Name is required.`);
-  //       if (!level.order)
-  //         errors.push(`Approval Level ${index + 1}: Order is required.`);
-  //       if (!level.users || level.users.length === 0)
-  //         errors.push(
-  //           `Approval Level ${index + 1}: At least one user is required.`
-  //         );
-  //     });
-  //   }
-
-  //   // 🔹 Show validation errors
-  //   if (errors.length > 0) {
-  //     setLoading(false);
-  //     alert("plz fill required fields"); // Display all errors in an alert
-  //     return; // Stop function execution
-  //   }
-
-  //   // 🔹 Construct Payload
-  //   const payload = {
-  //     approval_type: formData.module_id,
-  //     company_id: formData.company_id,
-  //     project_id: formData.project_id,
-  //     department_id: formData.department_id,
-  //     site_id: formData.site_id,
-  //     snag_checklist_id: formData.template_id,
-  //     pms_inventory_type_id: formData.pms_supplier_id,
-  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-  //       name: level.name,
-  //       order: level.order,
-  //       active: true,
-  //       escalate_to_users: level.users.map((user) => user.value),
-  //     })),
-  //   };
-
-  //   // 🔹 API Call
-  //   axios
-  //     .post(
-  //       `${baseURL}/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e0784141`,
-  //       payload
-  //     )
-  //     .then((response) => {
-  //       console.log("Approval Created:", response.data);
-  //       alert("Approval created successfully!");
-
-  //       // Reset form selections
-  //       setSelectedCompany(null);
-  //       setSelectedProject(null);
-  //       setSelectedSite(null);
-  //       setSelectedDepartment(null);
-  //       setSelectedModule(null);
-  //       setSelectedMaterialType(null);
-
-  //       // Reset form data
-  //       setFormData((prevState) => ({
-  //         ...prevState,
-  //         department_id: null,
-  //         module_id: null,
-  //         pms_supplier_id: null,
-  //       }));
-
-  //       // Reset dropdowns
-  //       setFilterOptions((prevOptions) => ({
-  //         ...prevOptions,
-  //         departments: prevOptions.departments.map((dept) => ({
-  //           ...dept,
-  //           selected: false,
-  //         })),
-  //         modules: prevOptions.modules.map((mod) => ({
-  //           ...mod,
-  //           selected: false,
-  //         })),
-  //         material_types: prevOptions.material_types.map((mat) => ({
-  //           ...mat,
-  //           selected: false,
-  //         })),
-  //       }));
-
-  //       setApprovalLevels([{ order: "", name: "", users: [] }]);
-
-  //       // Fetch updated dropdown data
-  //       fetchDropdownData();
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error creating invoice approval:", error);
-  //     })
-  //     .finally(() => {
-  //       setLoading(false);
-  //     });
-  // };
-
-  // const fetchDropdownData = async () => {
-  //   try {
-  //     const [dropdownResponse, materialTypeResponse] = await Promise.all([
-  //       fetch(
-  //         `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       ),
-  //       fetch(
-  //         `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //       ),
-  //     ]);
-
-  //     if (!dropdownResponse.ok || !materialTypeResponse.ok) {
-  //       throw new Error("Failed to fetch dropdown data or material types");
-  //     }
-
-  //     const dropdownData = await dropdownResponse.json();
-  //     const materialTypesData = await materialTypeResponse.json();
-
-  //     console.log("Material Types:", materialTypesData);
-
-  //     // Ensure material_types is populated
-  //     const materialTypes = materialTypesData.material_types || [];
-
-  //     setFilterOptions({
-  //       companies: [
-  //         { label: "Select Company", value: "" },
-  //         ...dropdownData.companies.map(([name, id]) => ({
-  //           label: name,
-  //           value: id,
-  //         })),
-  //       ],
-  //       sites: [
-  //         { label: "Select Site", value: "" },
-  //         ...dropdownData.sites.map(([name, id, company_id]) => ({
-  //           label: name,
-  //           value: id,
-  //           company_id,
-  //         })),
-  //       ],
-  //       departments: [
-  //         { label: "Select Department", value: "" },
-  //         ...dropdownData.departments.map(([name, id]) => ({
-  //           label: name,
-  //           value: id,
-  //         })),
-  //       ],
-  //       modules: [
-  //         { label: "Select Module", value: "" },
-  //         ...(dropdownData.approval_types
-  //           ? Object.entries(dropdownData.approval_types).map(
-  //               ([key, value]) => ({
-  //                 label: key.replace(/_/g, " "), // Format label
-  //                 value: value,
-  //               })
-  //             )
-  //           : []),
-  //       ],
-  //       material_types: [
-  //         { label: "Select Material Type", value: "" }, // Ensure reset state first
-  //         ...materialTypes.map((material) => ({
-  //           label: material.name,
-  //           value: material.id,
-  //         })),
-  //       ],
-  //       users: [
-  //         { label: "Select User", value: "" },
-  //         ...dropdownData.users.map(([name, id]) => ({
-  //           label: name,
-  //           value: id,
-  //         })),
-  //       ],
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching dropdown data:", error);
-  //   }
-  // };
 
   return (
     <div>
@@ -875,12 +802,22 @@ const InvoiceApproval = () => {
                                   isClearable
                                 /> */}
 
-                                <SingleSelector
+                                {/* <SingleSelector
                                   id="status-select"
                                   options={modifiedFilterOptions.departments}
                                   onChange={handleDepartmentChange}
                                   value={selectedDepartment} //
                                   placeholder="Select Department"
+                                  isClearable
+                                /> */}
+
+                                <MultiSelector
+                                  id="status-select"
+                                  options={modifiedFilterOptions.departments}
+                                  onChange={handleDepartmentChange}
+                                  value={selectedDepartment}
+                                  placeholder="Select Departments"
+                                  isMulti // Enable multi-selection
                                   isClearable
                                 />
                               </div>
@@ -924,7 +861,7 @@ const InvoiceApproval = () => {
                             <h3 className="card-title">Approval Levels</h3>
                           </div>
 
-                          {approvalLevels.map((level, index) => (
+                          {/* {approvalLevels.map((level, index) => (
                             <div
                               key={index}
                               className="px-4"
@@ -979,12 +916,15 @@ const InvoiceApproval = () => {
                                 <legend className="float-none mb-2">
                                   Users <span style={{ color: "red" }}>*</span>
                                 </legend>
+                             
+
                                 <MultiSelector
-                                  options={departmentUsers} // Use dynamically fetched users
-                                  value={level.users}
-                                  onChange={(selected) =>
-                                    handleInputChange(index, "users", selected)
-                                  }
+                                  options={departmentUsers} 
+                                  value={selectedUsers} // 
+                                  onChange={(selected) => {
+                                    setSelectedUsers(selected); // Update state when users are selected
+                                    handleInputChange(index, "users", selected);
+                                  }}
                                   placeholder="Select Users"
                                 />
                               </fieldset>
@@ -996,19 +936,178 @@ const InvoiceApproval = () => {
                                 x
                               </button>
                             </div>
+                          ))} */}
+
+                          {approvalLevels.map((level, index) => (
+                            <div
+                              key={index}
+                              className="px-4"
+                              style={{
+                                display: "flex",
+                                columnGap: 20,
+                                alignItems: "center",
+                              }}
+                            >
+                              <fieldset className="border">
+                                <legend className="float-none">
+                                  Order <span style={{ color: "red" }}>*</span>
+                                </legend>
+                                <input
+                                  className="form-group order"
+                                  placeholder="Enter Order"
+                                  value={level.order}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      index,
+                                      "order",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                />
+                              </fieldset>
+
+                              <fieldset className="border ms-4">
+                                <legend className="float-none">
+                                  Name of Level{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </legend>
+                                <input
+                                  className="form-group name"
+                                  placeholder="Enter Name of Level"
+                                  value={level.name}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      index,
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  type="text"
+                                />
+                              </fieldset>
+
+                              {/* Radio Buttons for Selection */}
+                              <div className="ms-3">
+                                <label>
+                                  <input
+                                    type="radio"
+                                    name={`selectionType-${index}`}
+                                    value="users"
+                                    checked={level.type === "users"}
+                                    onChange={() =>
+                                      handleSelectionTypeChange(index, "users")
+                                    }
+                                  />{" "}
+                                  Users
+                                </label>
+                                <label className="ms-3">
+                                  <input
+                                    type="radio"
+                                    name={`selectionType-${index}`}
+                                    value="groups"
+                                    checked={level.type === "groups"}
+                                    onChange={() =>
+                                      handleSelectionTypeChange(index, "groups")
+                                    }
+                                  />{" "}
+                                  User Groups
+                                </label>
+                              </div>
+
+                              {/* MultiSelector based on selection */}
+                              {/* <fieldset
+                                className="user-list ms-3 mb-3"
+                                style={{ width: "15%" }}
+                              >
+                                <legend className="float-none mb-2">
+                                  {level.type === "users"
+                                    ? "Users"
+                                    : "User Groups"}{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </legend>
+
+                                <MultiSelector
+                                  options={
+                                    level.type === "users"
+                                      ? departmentUsers
+                                      : userGroups
+                                  }
+                                  value={level.users} // Now stores users per level
+                                  onChange={(selected) =>
+                                    handleInputChange(index, "users", selected)
+                                  }
+                                  placeholder={
+                                    level.type === "users"
+                                      ? "Select Users"
+                                      : "Select User Groups"
+                                  }
+                                />
+                              </fieldset> */}
+
+                              <fieldset
+                                className="user-list ms-3 mb-3"
+                                style={{ width: "15%" }}
+                              >
+                                <legend className="float-none mb-2">
+                                  {level.type === "users"
+                                    ? "Users"
+                                    : "User Groups"}{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </legend>
+
+                                {level.type === "users" ? (
+                                  // MultiSelector for Users
+                                  <MultiSelector
+                                    options={departmentUsers}
+                                    value={level.users} // Array for multiple users
+                                    onChange={(selected) =>
+                                      handleInputChange(
+                                        index,
+                                        "users",
+                                        selected
+                                      )
+                                    }
+                                    placeholder="Select Users"
+                                  />
+                                ) : (
+                                  // SingleSelector for User Groups
+                                  <SingleSelector
+                                    options={userGroups}
+                                    value={level.users} // Single value for user groups
+                                    onChange={(selected) =>
+                                      handleInputChange(
+                                        index,
+                                        "users",
+                                        selected
+                                      )
+                                    }
+                                    placeholder="Select User Group"
+                                  />
+                                )}
+                              </fieldset>
+
+                              <button
+                                className="remove-item ms-4 mb-3 px-2 rounded purple-btn1"
+                                style={{ padding: "1px 3px" }}
+                                onClick={() => handleRemoveLevel(index)}
+                              >
+                                x
+                              </button>
+                            </div>
                           ))}
+
                           <div className="ms-3 mt-2">
                             <button
-                              className=" purple-btn1 submit-btn"
+                              className="purple-btn1 submit-btn"
                               onClick={handleAddLevel}
                             >
                               +
                             </button>
                           </div>
                         </div>
-                        <div></div>
                       </div>
-
                       {/* </div> */}
                       <div style={{ textAlign: "center" }}>
                         {loading && (

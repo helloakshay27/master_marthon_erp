@@ -734,7 +734,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                 ):(
 
                  
-  <div className="tbl-container mt-1">
+  <div className="tbl-container mt-1 mx-3">
     <table className="w-100">
       <thead>
         <tr>
@@ -758,14 +758,14 @@ console.log(boqDetails.assets);   // Should contain an array of assets
           boqDetails.boq_sub_items.map((boqDetail2, index) => (
             <React.Fragment key={boqDetail2.id}>
               <tr>
-                <td>{index + 1}</td>
+                <td className="text-start">{index + 1}</td>
 
 
-                <td style={{ paddingLeft: '80px' }}>
+                <td  className="text-start">
                   <button
                     className="btn btn-link p-0"
                     onClick={() => toggleBoqDetail(boqDetail2.id)}
-                    aria-label="Toggle BOQ detail visibility"
+                    
                   >
                     {openBoqDetailId === boqDetail2.id ? (
                       <svg
@@ -811,10 +811,10 @@ console.log(boqDetails.assets);   // Should contain an array of assets
 
                 {boqDetail2.name}
                 </td>
-                <td className="text-start"></td>
-                <td className="text-start"></td>
-                <td className="text-start"></td>
-                <td className="text-start"></td>
+                <td className="text-start">{boqDetail2.description}</td>
+                <td className="text-start">{boqDetail2.notes}</td>
+                <td className="text-start">{boqDetail2.remarks}</td>
+                <td className="text-start">{boqDetail2.uom}</td>
                 <td className="text-start">
                 {boqDetail2.cost_quantity}
                 </td>
@@ -828,7 +828,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                   <tr>
                     <td colSpan={13}>
                       <div>
-                        <CollapsibleCard title="Material Type">
+                        <CollapsibleCard title="Materials">
                           <div className="card-body mt-0 pt-0">
                             <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
                               <table className="w-100">
@@ -877,7 +877,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                           </div>
                         </CollapsibleCard>
 
-                        <CollapsibleCard title="Asset Type">
+                        <CollapsibleCard title="Assets">
                           <div className="card-body mt-0 pt-0">
                             <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
                               <table className="w-100">
