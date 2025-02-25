@@ -4,26 +4,26 @@ import { Modal } from "react-bootstrap";
 function DynamicModalBox({
   show,
   onHide,
-  size = 'md' ,
+  size = "md",
   title = "",
   children,
   centered = true,
   backdrop = true,
   keyboard = true,
   footerButtons = [],
-  modalType = null
+  modalType = null,
 }) {
   return (
-      <Modal
-        centered={centered}
-        // @ts-ignore
-        size={size}
-        show={show}
-        onHide={onHide}
-        backdrop={backdrop}
-        keyboard={keyboard}
-        className={modalType ? "setting-modal" : "modal-centered-custom"}
-      >
+    <Modal
+      centered={centered}
+      // @ts-ignore
+      size={size}
+      show={show}
+      onHide={onHide}
+      backdrop={backdrop}
+      keyboard={keyboard}
+      className={modalType ? "setting-modal" : "modal-centered-custom"}
+    >
       <Modal.Header>
         <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
           <h5 className="modal-title text-center w-100" id="modalTitle">
@@ -44,7 +44,8 @@ function DynamicModalBox({
           {footerButtons.map((btn, index) => (
             <button
               key={index}
-              className="purple-btn2"
+              // className="purple-btn2"
+              className={btn.className || "purple-btn2"}
               onClick={btn.onClick}
               {...btn.props}
             >
