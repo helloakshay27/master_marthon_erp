@@ -281,6 +281,55 @@ const ApprovalMatrics = () => {
     }));
   };
 
+  // const handleFilterSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   let queryParams = new URLSearchParams();
+  //   console.log("Filters:", filters);
+
+  //   // Construct query parameters following the API format
+  //   if (filters.company)
+  //     queryParams.append("q[company_id_eq]", filters.company);
+  //   if (filters.project)
+  //     queryParams.append("q[project_id_eq]", filters.project);
+  //   if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
+  //   if (filters.department)
+  //     queryParams.append("q[department_id_eq]", filters.department);
+  //   if (filters.modules) queryParams.append("q[module_id_eq]", filters.modules);
+  //   if (filters.materialtypes)
+  //     queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
+
+  //   // Ensure `approval_type` is correctly formatted
+  //   queryParams.append("q[approval_type_eq]", "material_order_request");
+
+  //   // Add pagination parameters (always fetch from page 1 when applying filters)
+  //   queryParams.append("page", 1);
+  //   queryParams.append("page_size", 8); // Adjust page size as needed
+
+  //   // API URL with query params
+  //   const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+  //   console.log("API URL:", apiUrl); // Debugging
+
+  //   try {
+  //     const response = await fetch(apiUrl);
+  //     if (!response.ok) throw new Error("Failed to fetch filtered data");
+
+  //     const data = await response.json();
+  //     setApprovals(data.invoice_approvals || []);
+
+  //     // Update pagination state
+  //     setPagination((prev) => ({
+  //       ...prev,
+  //       total_count: data.total_records || 0,
+  //       total_pages: Math.ceil((data.total_records || 0) / 8), // Ensure correct page count
+  //       current_page: 1, // Reset to page 1 when filtering
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error fetching filtered data:", error);
+  //   }
+  // };
+
   const handleFilterSubmit = async (e) => {
     e.preventDefault();
 
@@ -295,12 +344,15 @@ const ApprovalMatrics = () => {
     if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
     if (filters.department)
       queryParams.append("q[department_id_eq]", filters.department);
-    if (filters.modules) queryParams.append("q[module_id_eq]", filters.modules);
     if (filters.materialtypes)
       queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
 
-    // Ensure `approval_type` is correctly formatted
-    queryParams.append("q[approval_type_eq]", "material_order_request");
+    // Use 'approval_type_eq' instead of 'module_id_eq'
+    if (filters.modules) {
+      queryParams.append("q[approval_type_eq]", filters.modules);
+    } else {
+      queryParams.append("q[approval_type_eq]", "material_order_request");
+    }
 
     // Add pagination parameters (always fetch from page 1 when applying filters)
     queryParams.append("page", 1);
@@ -444,7 +496,7 @@ const ApprovalMatrics = () => {
                   <span className="material-symbols-outlined"> add </span>
                   <span>Add</span>
                 </button>
-                <button
+                {/* <button
                   className="purple-btn2"
                   fdprocessedid="xn3e6n"
                   data-bs-toggle="modal"
@@ -467,7 +519,7 @@ const ApprovalMatrics = () => {
                   href="/pms/admin/invoice_approvals/export.xlsx"
                 >
                   Export to Excel
-                </a>
+                </a> */}
               </div>
             </div>
             <div className="card mt-4 pb-4">
@@ -547,33 +599,12 @@ const ApprovalMatrics = () => {
                     <div className="col-md-3 mt-3">
                       <label htmlFor="created-by-select">Module</label>
 
-                      {/* <SingleSelector
-                        id="created-by-select"
-                        options={modifiedFilterOptions.modules}
-                        value={
-                          filters.modules
-                            ? modifiedFilterOptions.modules.find(
-                                (m) => m.value === filters.modules
-                              )
-                            : null
-                        }
-                        onChange={(selectedOption) =>
-                          handleFilterChange("modules", selectedOption?.value)
-                        }
-                        isClearable
-                        placeholder="Select Module"
-                      /> */}
-
                       <SingleSelector
                         id="created-by-select"
                         options={modifiedFilterOptions.modules || []} // Ensure it's not undefined
-                        // value={
-                        //   filters.modules
-                        //     ? modifiedFilterOptions.modules.find(
-                        //         (m) => m.value === filters.modules
-                        //       )
-                        //     : null
-                        // }
+                        value={modifiedFilterOptions.modules?.find(
+                          (option) => option.value === filters.modules
+                        )} // Set selected val
                         onChange={(selectedOption) =>
                           handleFilterChange("modules", selectedOption?.value)
                         }
@@ -591,6 +622,9 @@ const ApprovalMatrics = () => {
                         <SingleSelector
                           id="material-type-select"
                           options={modifiedFilterOptions.material_types}
+                          value={modifiedFilterOptions.material_types?.find(
+                            (option) => option.value === filters.materialtypes
+                          )} // Set selected value
                           onChange={(selectedOption) =>
                             handleFilterChange(
                               "materialtypes",
