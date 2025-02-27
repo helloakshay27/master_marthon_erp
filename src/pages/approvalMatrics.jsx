@@ -444,7 +444,7 @@ const ApprovalMatrics = () => {
                   <span className="material-symbols-outlined"> add </span>
                   <span>Add</span>
                 </button>
-                <button
+                {/* <button
                   className="purple-btn2"
                   fdprocessedid="xn3e6n"
                   data-bs-toggle="modal"
@@ -467,7 +467,7 @@ const ApprovalMatrics = () => {
                   href="/pms/admin/invoice_approvals/export.xlsx"
                 >
                   Export to Excel
-                </a>
+                </a> */}
               </div>
             </div>
             <div className="card mt-4 pb-4">
@@ -547,33 +547,12 @@ const ApprovalMatrics = () => {
                     <div className="col-md-3 mt-3">
                       <label htmlFor="created-by-select">Module</label>
 
-                      {/* <SingleSelector
-                        id="created-by-select"
-                        options={modifiedFilterOptions.modules}
-                        value={
-                          filters.modules
-                            ? modifiedFilterOptions.modules.find(
-                                (m) => m.value === filters.modules
-                              )
-                            : null
-                        }
-                        onChange={(selectedOption) =>
-                          handleFilterChange("modules", selectedOption?.value)
-                        }
-                        isClearable
-                        placeholder="Select Module"
-                      /> */}
-
                       <SingleSelector
                         id="created-by-select"
                         options={modifiedFilterOptions.modules || []} // Ensure it's not undefined
-                        // value={
-                        //   filters.modules
-                        //     ? modifiedFilterOptions.modules.find(
-                        //         (m) => m.value === filters.modules
-                        //       )
-                        //     : null
-                        // }
+                        value={modifiedFilterOptions.modules?.find(
+                          (option) => option.value === filters.modules
+                        )} // Set selected val
                         onChange={(selectedOption) =>
                           handleFilterChange("modules", selectedOption?.value)
                         }
@@ -591,6 +570,9 @@ const ApprovalMatrics = () => {
                         <SingleSelector
                           id="material-type-select"
                           options={modifiedFilterOptions.material_types}
+                          value={modifiedFilterOptions.material_types?.find(
+                            (option) => option.value === filters.materialtypes
+                          )} // Set selected value
                           onChange={(selectedOption) =>
                             handleFilterChange(
                               "materialtypes",
