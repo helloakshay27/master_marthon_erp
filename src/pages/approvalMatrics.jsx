@@ -359,7 +359,7 @@ const ApprovalMatrics = () => {
     queryParams.append("page_size", 8); // Adjust page size as needed
 
     // API URL with query params
-    const apiUrl = `https://marathon.lockated.com/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
     console.log("API URL:", apiUrl); // Debugging
 
