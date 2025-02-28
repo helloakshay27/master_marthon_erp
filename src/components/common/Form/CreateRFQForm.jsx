@@ -76,14 +76,15 @@ export default function CreateRFQForm({
       if (response.data) {
         const templateData = response.data;
         console.log("Template Data:", templateData);
-        updateAdditionalFields(templateData.bid_material_template_fields || []);
+        const updatedAdditionalFields = templateData.bid_material_template_fields || [];
+        updateAdditionalFields(updatedAdditionalFields);
         updateBidTemplateFields(
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );
         setBidTemplateFields(
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );
-        setAdditionalFields(templateData.bid_material_template_fields || []);
+        setAdditionalFields(updatedAdditionalFields);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -448,6 +449,7 @@ export default function CreateRFQForm({
     );
 
     setAdditionalFields(updatedFields);
+    updateAdditionalFields(updatedFields); // Update the parent component's state
     console.log("Updated additional fields:", updatedFields, editField);
 
     setShowEditModal(false);
@@ -467,9 +469,11 @@ export default function CreateRFQForm({
   };
 
   const handleDeleteAdditionalField = (field) => {
-    setAdditionalFields(
-      additionalFields.filter((f) => f.field_name !== field.field_name)
+    const updatedFields = additionalFields.filter(
+      (f) => f.field_name !== field.field_name
     );
+    setAdditionalFields(updatedFields);
+    updateAdditionalFields(updatedFields); 
   };
 
   const handleShortTableChange = (updatedData) => {
@@ -500,6 +504,7 @@ export default function CreateRFQForm({
     );
 
     setBidTemplateFields(updatedFields);
+    updateBidTemplateFields(updatedFields);
     setShowShortTableEditModal(false);
   };
 
@@ -515,7 +520,9 @@ export default function CreateRFQForm({
       field_owner: newField.fieldOwner,
       field_type: newField.fieldType,
     };
-    setAdditionalFields([...additionalFields, newFieldData]);
+    const updatedAdditionalFields = [...additionalFields, newFieldData];
+    setAdditionalFields(updatedAdditionalFields);
+    updateAdditionalFields(updatedAdditionalFields); 
     setShowAddColumnModal(false);
   };
 
