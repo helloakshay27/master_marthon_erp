@@ -61,6 +61,7 @@ export default function CreateEvent() {
   const [selectedStrategy, setSelectedStrategy] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
+   const [eventStatus, setEventStatus] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   // @ts-ignore
@@ -471,7 +472,7 @@ export default function CreateEvent() {
       event: {
         event_title: eventName,
         created_on: createdOn,
-        status: "pending",
+        status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
           start_time: scheduleData.start_time,
@@ -658,8 +659,11 @@ export default function CreateEvent() {
   const [selectedSavingsColumn, setSelectedSavingsColumn] = useState("total");
 
   const handleSavingsSummaryModalShow = () => {
-    const inventoryIds = materialFormData.map((material) => material.inventory_id).join(",");
-    const savingType = selectedSavingsColumn === "quantity" ? "material_cost" : "material_total";
+    const inventoryIds = materialFormData
+      .map((material) => material.inventory_id)
+      .join(",");
+    const savingType =
+      selectedSavingsColumn === "quantity" ? "material_cost" : "material_total";
     const url = `${baseURL}rfq/events/saving_modal?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&inventory_ids=${inventoryIds}&saving_type=${savingType}`;
     // Fetch or navigate to the URL as needed
     setSavingsSummaryModal(true);
@@ -671,6 +675,10 @@ export default function CreateEvent() {
 
   const handleSavingsSummaryModalClose = () => {
     setSavingsSummaryModal(false);
+  };
+
+  const handleStatusChange = (selectedOption) => {
+    setEventStatus(selectedOption);
   };
 
   return (
@@ -769,6 +777,23 @@ export default function CreateEvent() {
                 </div>
                 <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
+                    <label className="po-fontBold">Event Status</label>
+                  </div>
+                  <SelectBox
+                    options={[
+                      { label: "Submitted", value: "submitted" },
+                      { label: "Approved", value: "approved" },
+                      { label: "Published", value: "published" },
+                      { label: "Expired", value: "expired" },
+                      { label: "Closed", value: "closed" },
+                      { label: "Pending", value: "pending" },
+                    ]}
+                    onChange={handleStatusChange}
+                    defaultValue={eventStatus}
+                  />
+                </div>
+                <div className="col-md-4 col-sm-6 mt-2">
+                  <div className="form-group">
                     <label className="po-fontBold">
                       Savings Summary<span style={{ color: "red" }}>*</span>
                     </label>
@@ -787,7 +812,6 @@ export default function CreateEvent() {
                 setData={setMaterialFormData}
                 isService={isService}
                 deliveryData={[]}
-                isCreate={true}
                 updateSelectedTemplate={setSelectedTemplate}
                 updateBidTemplateFields={setBidTemplateFields}
                 updateAdditionalFields={setAdditionalFields}
@@ -1592,7 +1616,7 @@ export default function CreateEvent() {
                               </div>
                             </div>
                           )}
-
+                          <input type="checkbox" /> history
                           {localMeasureSavings === "line_item" && (
                             <div className="col-12 mt-4">
                               <SelectBox

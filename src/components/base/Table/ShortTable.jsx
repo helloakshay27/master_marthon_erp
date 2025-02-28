@@ -62,7 +62,7 @@ export default function ShortTable({
       {...rest}
     >
       <tbody>
-        {data.map((row, index) => (
+        {data?.map((row, index) => (
           <tr
             key={index}
             style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
@@ -79,6 +79,12 @@ export default function ShortTable({
             <td style={{ padding: "12px", color: "#777" }}>
               {editable ? (
                 <>
+                  {/* <input
+                    className="form-control"
+                    type="text"
+                    value={row.value}
+                    onChange={(e) => handleInputChange(index, e.target.value)}
+                  /> */}
                   <button
                     className="purple-btn2 ms-2 rounded-circle p-0"
                     style={{
@@ -87,7 +93,7 @@ export default function ShortTable({
                       width: "25px",
                       height: "25px",
                     }}
-                    onClick={() => onInputClick(index)}
+                    onClick={() => onInputClick(row)}
                   >
                     <i className="bi bi-pencil" style={{ border: 0 }}></i>
                   </button>

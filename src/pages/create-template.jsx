@@ -128,9 +128,7 @@ export default function CreateTemplate() {
     setShowEditModal(false);
   };
 
-  const handleShortTableChange = (index) => {
-    const updatedData = [...shortTableData];
-    updatedData.splice(index, 1);
+  const handleShortTableChange = (updatedData) => {
     setShortTableData(updatedData);
   };
 
@@ -144,10 +142,11 @@ export default function CreateTemplate() {
     });
     setShowShortTableEditModal(true);
   };
+  console.log("shortTableData :---",shortTableData, editShortTableRow)
 
   const handleShortTableEditModalSubmit = () => {
     const updatedShortTableData = shortTableData.map((row) =>
-      row.label === editShortTableRow.label ? editShortTableRow : row
+      row.label === editShortTableRow.label ? { ...editShortTableRow, label: editShortTableRow.fieldName, value: editShortTableRow.value } : row
     );
     setShortTableData(updatedShortTableData);
     setShowShortTableEditModal(false);

@@ -37,6 +37,9 @@ export default function EditEvent() {
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [bidTemplateFields, setBidTemplateFields] = useState([]);
+  const [additionalFields, setAdditionalFields] = useState([]);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -264,7 +267,7 @@ export default function EditEvent() {
 
   const handleEventConfigurationSubmit = (config) => {
     console.log("config", config);
-    
+
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
     setSelectedStrategy(config.event_configuration);
@@ -306,7 +309,7 @@ export default function EditEvent() {
   // @ts-ignore
   // const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [eventStatus, setEventStatus] = useState("pending"); // Add state for event status
+  const [eventStatus, setEventStatus] = useState("pending");
 
   const fetchEventData = async () => {
     try {
@@ -602,8 +605,20 @@ export default function EditEvent() {
   };
 
   const validateForm = () => {
-    console.log(eventType, awardType, dynamicExtensionConfigurations, eventDetails?.event_type_detail?.delivery_date, eventDetails?.event_type_detail?.award_scheme, eventDetails?.event_type_detail?.event_type, eventDetails?.event_type_detail?.event_configuration, eventDetails?.event_materials, eventDetails?.event_vendors, eventDetails?.resource_term_conditions, eventDetails?.attachments);
-    
+    console.log(
+      eventType,
+      awardType,
+      dynamicExtensionConfigurations,
+      eventDetails?.event_type_detail?.delivery_date,
+      eventDetails?.event_type_detail?.award_scheme,
+      eventDetails?.event_type_detail?.event_type,
+      eventDetails?.event_type_detail?.event_configuration,
+      eventDetails?.event_materials,
+      eventDetails?.event_vendors,
+      eventDetails?.resource_term_conditions,
+      eventDetails?.attachments
+    );
+
     if (!eventName) {
       toast.error("Event name is required");
       scrollToTop();
@@ -665,9 +680,15 @@ export default function EditEvent() {
             scheduleData?.evaluation_time,
         },
         event_type_detail_attributes: {
-          event_type: eventType ? eventType : eventDetails?.event_type_detail?.event_type,
-          award_scheme: awardType ? awardType : eventDetails?.event_type_detail?.award_scheme,
-          event_configuration: selectedStrategy ? selectedStrategy : eventDetails?.event_type_detail?.event_configuration,
+          event_type: eventType
+            ? eventType
+            : eventDetails?.event_type_detail?.event_type,
+          award_scheme: awardType
+            ? awardType
+            : eventDetails?.event_type_detail?.award_scheme,
+          event_configuration: selectedStrategy
+            ? selectedStrategy
+            : eventDetails?.event_type_detail?.event_configuration,
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type || "",
           triggered_time_extension_on_last:
@@ -680,7 +701,9 @@ export default function EditEvent() {
           extend_time_min: 10,
           time_extension_change:
             dynamicExtensionConfigurations.time_extension_on_change_in || "",
-          delivery_date: dynamicExtensionConfigurations.delivery_date || eventDetails?.event_type_detail?.delivery_date,
+          delivery_date:
+            dynamicExtensionConfigurations.delivery_date ||
+            eventDetails?.event_type_detail?.delivery_date,
         },
         event_materials_attributes: materialFormData.map((material) => ({
           id: material.id || null, // Set id to null for new rows
@@ -723,7 +746,6 @@ export default function EditEvent() {
       },
     };
 
-
     try {
       const data = await updateEvent(id, eventData);
       toast.success("Event updated successfully!", {
@@ -759,7 +781,7 @@ export default function EditEvent() {
   const handleInputChange = (e) => {
     const query = e.target.value;
     setSearchTerm(query);
-  
+
     if (query) {
       fetchSuggestions(query);
     } else {
@@ -767,20 +789,20 @@ export default function EditEvent() {
       setIsSuggestionsVisible(false);
     }
   };
-  
+
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.name); // Assuming `name` is the property you want
     setIsSuggestionsVisible(false);
     // setFilteredTableData([suggestion]); // Set the table data to only the selected suggestion
     fetchData(1, suggestion.first_name, "");
   };
-  
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setIsSuggestionsVisible(false);
     fetchData(1, searchTerm, selectedCity);
   };
-  
+
   const handleResetSearch = async () => {
     if (!searchTerm || searchTerm.trim() === "") {
       fetchData();
@@ -788,13 +810,13 @@ export default function EditEvent() {
       setSearchTerm("");
     }
   };
-  
+
   useEffect(() => {
     if (!searchTerm || searchTerm.trim() === "") {
       handleResetSearch();
     }
   }, [searchTerm]);
-  
+
   const fetchSuggestions = async (query) => {
     try {
       const response = await fetch(
@@ -803,7 +825,7 @@ export default function EditEvent() {
       const data = await response.json();
       setSuggestions(data.vendors || []);
       console.log("Suggestions:", data.vendors);
-      
+
       setIsSuggestionsVisible(true);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
@@ -932,13 +954,15 @@ export default function EditEvent() {
                 </div>
               </div>
               <CreateRFQForm
-              data={materialFormData}
-              setData={setMaterialFormData}
-              isService={isService}
-              existingData={eventDetails?.grouped_event_materials}
-              deliveryData={eventDetails?.delivery_schedules}
-              isCreate={false}
-            />
+                data={materialFormData}
+                setData={setMaterialFormData}
+                isService={isService}
+                existingData={eventDetails?.grouped_event_materials}
+                deliveryData={eventDetails?.delivery_schedules}
+                updateSelectedTemplate={setSelectedTemplate}
+                updateBidTemplateFields={setBidTemplateFields}
+                updateAdditionalFields={setAdditionalFields}
+              />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}
@@ -1222,7 +1246,7 @@ export default function EditEvent() {
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul
                           className="suggestions-list position-absolute bg-white border rounded w-100"
-                          style={{ zIndex: 1000, top: "100%"}}
+                          style={{ zIndex: 1000, top: "100%" }}
                         >
                           {suggestions.map((suggestion) => (
                             <li
