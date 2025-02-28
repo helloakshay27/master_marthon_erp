@@ -22,6 +22,7 @@ const AddUsersModal = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 8;
+  const [loading, setLoading] = useState(false);
 
   // Fetch Companies
   useEffect(() => {
@@ -46,57 +47,6 @@ const AddUsersModal = ({
     }
   }, [show]);
 
-  // const handleSave = async () => {
-  //   if (!groupName.trim()) {
-  //     alert("Please enter a group name.");
-  //     return;
-  //   }
-
-  //   if (!selectedCompany) {
-  //     alert("Please select a company.");
-  //     return;
-  //   }
-
-  //   if (selectedUsers.length === 0) {
-  //     alert("Please select at least one user.");
-  //     return;
-  //   }
-
-  //   const payload = {
-  //     name: groupName.trim(),
-  //     company_id: selectedCompany.value,
-  //     user_ids: selectedUsers.map((user) => user.id), // Ensure we send only user IDs
-  //   };
-
-  //   try {
-  //     const response = await axios.post(
-  //       "https://marathon.lockated.com/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-  //       payload
-  //     );
-
-  //     console.log("✅ Full API Response:", response.data);
-
-  //     alert("✅ Group created successfully!");
-
-  //     // Reset all fields after successful save
-  //     resetForm();
-  //     onSave({ selectedCompany, selectedDepartments, selectedUsers }); // ✅ Notify parent
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("❌ Full Error Response:", error.response?.data || error);
-
-  //     const errorMessage = error.response?.data; // Extract error message
-
-  //     if (errorMessage === "Name has already been taken") {
-  //       alert(
-  //         "⚠️ Group name is already taken! Please choose a different name."
-  //       );
-  //     } else {
-  //       alert("❌ Failed to create group. Please try again.");
-  //     }
-  //   }
-  // };
-
   const handleSave = async () => {
     if (!groupName.trim()) {
       alert("Please enter a group name.");
@@ -116,35 +66,48 @@ const AddUsersModal = ({
     const payload = {
       name: groupName.trim(),
       company_id: selectedCompany.value,
-      user_ids: selectedUsers.map((user) => user.id), // ✅ Send only user IDs
+      user_ids: selectedUsers.map((user) => user.id), //  Send only user IDs
     };
 
     try {
+      setLoading(true); // Start loader
       let response;
       if (selectedGroup) {
-        // ✅ Update existing user group (PATCH request)
+        //  Update existing user group (PATCH request)
         response = await axios.patch(
           `${baseURL}/user_groups/${selectedGroup.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-          { user_ids: payload.user_ids } // ✅ Only updating user IDs
+          { user_ids: payload.user_ids } //  Only updating user IDs
         );
 
-        alert("✅ Group updated successfully!");
+        alert(" Group updated successfully!");
       } else {
-        // ✅ Create new user group (POST request)
+        //  Create new user group (POST request)
         response = await axios.post(
           `${baseURL}/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
           payload
         );
 
-        alert("✅ Group created successfully!");
+        alert(" Group created successfully!");
       }
 
-      console.log("✅ Full API Response:", response.data);
+      console.log(" Full API Response:", response.data);
 
-      // Reset form & notify parent
-      resetForm();
-      onSave({ selectedCompany, selectedDepartments, selectedUsers });
+      // const updatedGroups = await axios.get(
+      //   `${baseURL}/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      // );
+
+      // onSave(updatedGroups.data); // Pass updated groups list to parent component
+
+      // // Reset form & notify parent
+      // resetForm();
+      // onSave({ selectedCompany, selectedDepartments, selectedUsers });
+      // fetchUserGroups();
+      // onSave(updatedGroups.data);
+      onSave();
       onClose();
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("❌ Full Error Response:", error.response?.data || error);
 
@@ -157,6 +120,9 @@ const AddUsersModal = ({
       } else {
         alert("❌ Failed to save group. Please try again.");
       }
+      setLoading(false);
+    } finally {
+      setLoading(false); // Stop loader
     }
   };
 
@@ -164,8 +130,8 @@ const AddUsersModal = ({
     setGroupName("");
     setSelectedCompany(null);
     setSelectedDepartments([]);
-    setUsers([]); // ✅ Clears fetched users
-    setSelectedUsers([]); // ✅ Clears selected users
+    setUsers([]); //  Clears fetched users
+    setSelectedUsers([]); //  Clears selected users
     setSearchTerm("");
     setCurrentPage(1);
   };
@@ -192,7 +158,7 @@ const AddUsersModal = ({
             name: user.full_name,
           }));
 
-          // ✅ Ensure preselected users remain selected
+          //  Ensure preselected users remain selected
           setUsers(fetchedUsers);
           setSelectedUsers((prevSelected) =>
             prevSelected.length > 0
@@ -308,8 +274,29 @@ const AddUsersModal = ({
       onHide={onClose}
       title="Add Users"
       size="md"
+      // footerButtons={[
+      //   { label: "Save", onClick: handleSave },
+      //   { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
+      // ]}
+
       footerButtons={[
-        { label: "Save", onClick: handleSave },
+        {
+          label: loading ? (
+            <div className="loader-container">
+              <div className="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+              <p>Submitting ...</p>
+            </div>
+          ) : (
+            "Save"
+          ),
+          onClick: handleSave,
+          disabled: loading, // Disable button while loading
+        },
         { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
       ]}
     >

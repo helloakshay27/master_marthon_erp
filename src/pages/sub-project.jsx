@@ -59,7 +59,17 @@ const SubProject = () => {
 
   const pageSize = 5; // Items per page
 
-  useEffect(() => {
+  const [userGroups, setUserGroups] = useState([]);
+
+  // Fetch groups when modal saves
+  // const handleSaveGroup = (updatedGroups) => {
+  //   setUserGroups(updatedGroups); // Update the list
+  // };
+
+  const handleSaveGroup = async () => {
+    await fetchUserGroups(); // Fetch updated data after saving
+  };
+  const fetchUserGroups = () => {
     axios
       .get(
         `${baseURL}/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -78,7 +88,17 @@ const SubProject = () => {
         }
       })
       .catch((error) => console.error("Error fetching table data:", error));
-  }, []);
+  };
+
+  // useEffect(() => {
+  //   fetchUserGroups();
+  // }, []);
+
+  useEffect(() => {
+    if (!showModal) {
+      fetchUserGroups(); // Refresh the data when modal closes
+    }
+  }, [showModal]);
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -189,6 +209,7 @@ const SubProject = () => {
                 setSelectedCompany(null);
                 setSelectedDepartments([]);
                 setUsers([]);
+                fetchUserGroups(); // Fetch updated data when modal closes
               }}
               selectedGroup={selectedGroup}
               companies={companies}
@@ -198,7 +219,12 @@ const SubProject = () => {
               setSelectedCompany={setSelectedCompany}
               selectedDepartments={selectedDepartments}
               setSelectedDepartments={setSelectedDepartments}
-              onSave={handleSaveUsers}
+              // onSave={handleSaveUsers}
+              // onSave={handleSaveGroup} //
+
+              onSave={() => {
+                fetchUserGroups(); // Refresh data after save
+              }}
             />
           </div>
 
