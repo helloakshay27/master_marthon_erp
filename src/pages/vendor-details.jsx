@@ -80,6 +80,7 @@ export default function VendorDetails() {
 
   const [freightData, setFreightData] = useState([]);
   const [additionalColumns, setAdditionalColumns] = useState([]);
+  const [bidTemplate, setBidTemplate] = useState([]);
 
   useEffect(() => {
     const fetchFreightData = async () => {
@@ -117,7 +118,19 @@ export default function VendorDetails() {
             key: field.field_name.toLowerCase().replace(/\s+/g, "_"),
           })
         );
+
+        const formattedData = response.data.applied_bid_template_fields.map(item => ({
+          label: item.field_name,
+          value: "",
+          isRequired: item.is_required,
+          isReadOnly: item.is_read_only,
+          fieldOwner: item.field_owner,
+        }));
+
         setAdditionalColumns(columns);
+        setBidTemplate(formattedData);
+        console.log("response", response.data);
+        
       } catch (error) {
         console.error("Error fetching additional columns:", error);
       }
@@ -2196,6 +2209,7 @@ export default function VendorDetails() {
                           // readOnly={isReadOnly} //// Flag to enable input fields
                           // onValueChange={handleFreightDataChange} // Callback for changes
                         />
+
                       </div>
 
                       <div className="d-flex justify-content-end mt-2 mx-2">
@@ -4014,8 +4028,9 @@ export default function VendorDetails() {
                         />
                       </div>
                       <div className=" d-flex justify-content-end">
+                        {console.log(freightData,bidTemplate)}
                         <ShortDataTable
-                          data={freightData}
+                          data={bidTemplate}                          
                           editable={true} // Flag to enable input fields
                           // onValueChange={(updatedData) =>
                           //   setFreightData(updatedData)
