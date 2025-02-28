@@ -12,6 +12,7 @@ const AddUsersModal = ({
   selectedGroup,
   departments,
   onSave,
+  mode = "edit",
 }) => {
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -279,26 +280,61 @@ const AddUsersModal = ({
       //   { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
       // ]}
 
-      footerButtons={[
-        {
-          label: loading ? (
-            <div className="loader-container">
-              <div className="lds-ring">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <p>Submitting ...</p>
-            </div>
-          ) : (
-            "Save"
-          ),
-          onClick: handleSave,
-          disabled: loading, // Disable button while loading
-        },
-        { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
-      ]}
+      // footerButtons={[
+      //   {
+      //     label: loading ? (
+      //       <div className="loader-container">
+      //         <div className="lds-ring">
+      //           <div></div>
+      //           <div></div>
+      //           <div></div>
+      //           <div></div>
+      //         </div>
+      //         <p>Submitting ...</p>
+      //       </div>
+      //     ) : (
+      //       "Save"
+      //     ),
+      //     onClick: handleSave,
+      //     // disabled: loading, // Disable button while loading
+      //     disabled: readOnly || loading, // Disable if readOnly is true
+      //   },
+      //   { label: "Cancel", onClick: onClose, className: "purple-btn1 ms-4" },
+      // ]}
+      footerButtons={
+        mode === "view"
+          ? [
+              {
+                label: "Close",
+                onClick: onClose,
+                className: "purple-btn1 ms-4",
+              },
+            ]
+          : [
+              {
+                label: loading ? (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Submitting ...</p>
+                  </div>
+                ) : (
+                  "Save"
+                ),
+                onClick: handleSave,
+                disabled: loading, // Disable while loading
+              },
+              {
+                label: "Cancel",
+                onClick: onClose,
+                className: "purple-btn1 ms-4",
+              },
+            ]
+      }
     >
       <Form>
         {/* Company Dropdown */}
@@ -312,6 +348,7 @@ const AddUsersModal = ({
             onChange={setSelectedCompany}
             placeholder="Select Company"
             isDisabled={!!selectedGroup} // ✅
+            // Disable if readOnly is true
           />
         </Form.Group>
 
@@ -323,6 +360,9 @@ const AddUsersModal = ({
             value={selectedDepartments}
             onChange={setSelectedDepartments}
             placeholder="Select Departments"
+            // isDisabled={readOnly || !!selectedGroup} // Disable if readOnly is true
+
+            isDisabled={mode === "view"} // Disable if in view mode
           />
         </Form.Group>
 
@@ -337,7 +377,9 @@ const AddUsersModal = ({
             placeholder="Enter Group Name"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            disabled={!!selectedGroup} // ✅ Disable if editingDisable if editing
+            // disabled={!!selectedGroup} // ✅ Disable if editingDisable if editing
+
+            disabled={mode === "view" || !!selectedGroup}
           />
         </Form.Group>
 
@@ -350,7 +392,7 @@ const AddUsersModal = ({
               </Form.Label>
 
               {/* Always show "Select All" button for both new & edit modes */}
-              <Button
+              {/* <Button
                 variant="outline"
                 className="purple-btn2"
                 size="sm"
@@ -359,11 +401,22 @@ const AddUsersModal = ({
                 {selectedUsers.length === filteredUsers.length
                   ? "Unselect All"
                   : "Select All"}
+              </Button> */}
+              <Button
+                variant="outline"
+                className="purple-btn2"
+                size="sm"
+                onClick={() => mode !== "view" && handleSelectAllUsers()}
+                disabled={mode === "view"} // Disable in view mode
+              >
+                {selectedUsers.length === filteredUsers.length
+                  ? "Unselect All"
+                  : "Select All"}
               </Button>
             </div>
 
             {/* Search Bar */}
-            <Form.Control
+            {/* <Form.Control
               type="text"
               placeholder="Search users..."
               className="mb-2 mt-2"
@@ -372,16 +425,33 @@ const AddUsersModal = ({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
+            /> */}
+            <Form.Control
+              type="text"
+              placeholder="Search users..."
+              className="mb-2 mt-2"
+              value={searchTerm}
+              onChange={(e) => mode !== "view" && setSearchTerm(e.target.value)}
+              disabled={mode === "view"} // Disable in view mode
             />
 
             {/* User List */}
             {currentUsers.map((user) => (
+              // <Form.Check
+              //   key={user.id}
+              //   type="checkbox"
+              //   label={user.name}
+              //   checked={selectedUsers.some((u) => u.id === user.id)}
+              //   onChange={() => handleUserSelection(user)}
+
+              // />
               <Form.Check
                 key={user.id}
                 type="checkbox"
                 label={user.name}
                 checked={selectedUsers.some((u) => u.id === user.id)}
-                onChange={() => handleUserSelection(user)}
+                onChange={() => mode !== "view" && handleUserSelection(user)} // Prevent changes in view mode
+                disabled={mode === "view"} // Disable in view mode
               />
             ))}
 
