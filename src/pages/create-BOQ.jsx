@@ -500,6 +500,7 @@ const CreateBOQ = () => {
 
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [selectedUnitSubRow, setSelectedUnitSubRow] = useState([]);
   const [selectedUnit2, setSelectedUnit2] = useState([]);
   const [selectedUnit3, setSelectedUnit3] = useState([]);
 
@@ -907,7 +908,7 @@ const CreateBOQ = () => {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
         const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(assetWastages[index]) || 0;
-        return estimatedQty * (wastagePercentage / 100); // Adding wastage percentage
+        return estimatedQty * (1+wastagePercentage / 100); // Adding wastage percentage
       });
       setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
@@ -969,8 +970,8 @@ const CreateBOQ = () => {
   console.log("material data table 1", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
-    asset_id: asset.id,
-    asset_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
+    material_id: asset.id,
+    material_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
     generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
     colour_id: selectedColors[index] ? selectedColors[index].value : '',
     brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
@@ -997,11 +998,28 @@ const CreateBOQ = () => {
     setBoqSubItems(updatedBoq);
   };
 
-  const handleUnitChangeForRow = (index, selectedOption) => {
+  const handleUnitChangeForRow = (index, selectedOption,prevSelectedUnits) => {
     // Ensure to update the correct row's uom_id
     const updatedBoq = [...boqSubItems];
     updatedBoq[index].uom_id = selectedOption ? selectedOption.value : null;  // If no selection, set to null
     setBoqSubItems(updatedBoq);
+    // setSelectedUnit(selectedOption)
+    setSelectedUnitSubRow((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
+      return newSelectedUnits;
+    });
+
+
+     // Ensure to update the correct row's uom_id in boqSubItems
+    //  const updatedBoq = [...boqSubItems];
+    //  updatedBoq[index].uom_id = selectedOption ? selectedOption.value : null;  // If no selection, set to null
+    //  setBoqSubItems(updatedBoq);
+ 
+     // Update the selectedUnit array for the specific index
+    //  const updatedSelectedUnit = [...selectedUnit];
+    //  updatedSelectedUnit[index] = selectedOption ? selectedOption.value : null;
+    //  setSelectedUnit(updatedSelectedUnit);
   };
 
 
@@ -2249,8 +2267,8 @@ const CreateBOQ = () => {
                                       <td style={{ width: '200px' }}>
                                         <SingleSelector
                                           onChange={(selectedOption) => handleUnitChangeForRow(index, selectedOption)}  // Update the row's UOM
-                                          value={unitOfMeasures.find(option => option.value === unitOfMeasures.uom_id)}
-                                          // value={selectedUnit[index]}
+                                          // value={unitOfMeasures.find(option => option.value === unitOfMeasures.uom_id)}
+                                          value={selectedUnitSubRow[index]}
                                           options={unitOfMeasures}  // Providing the options to the select component
                                           placeholder={`Select UOM`} // Dynamic placeholder
                                         />

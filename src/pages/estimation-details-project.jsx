@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
-import ExpandableTable from "../components/ExpandableTable";
-import axios from "axios"
+import calculateBudget from "../utils/calculateBudget";
 
 import {
     LayoutModal,
@@ -234,6 +233,7 @@ const EstimationDetailsProject = () => {
             try {
                 const response = await fetch(`${baseURL}estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
                 const data = await response.json();
+                data.categories.forEach(category => calculateBudget(category)); // Calculate the budget totals
                 setProjectDetails(data);
                 console.log("data:", data)
                 setLoading(false);
@@ -562,6 +562,9 @@ const EstimationDetailsProject = () => {
                                                 <th className="text-center" colSpan={2}>
                                                     Budget Balance
                                                 </th>
+                                                <th className="text-center" colSpan={2}>
+                                                    Overdue Balance
+                                                </th>
                                                 <th className="text-center" colSpan={1}>
                                                     Debit
                                                 </th>
@@ -592,6 +595,8 @@ const EstimationDetailsProject = () => {
                                                 <th className="text-start">Miscellaneous Expenses Paid</th>
                                                 <th className="text-start">Balance Budget</th>
                                                 <th className="text-start">% Balance</th>
+                                                <th className="text-start">Balance Overdue</th>
+                                                <th className="text-start">% Overdue</th>
                                                 <th className="text-start">Debit Note WO/PO</th>
                                                 <th className="text-start">Abstract & GRN Total Value</th>
                                                 <th className="text-start">Abstract & GRN Certified</th>
@@ -618,6 +623,8 @@ const EstimationDetailsProject = () => {
                                                 <th className="text-center">D</th>
                                                 <th className="text-center">E</th>
                                                 <th className="text-center">F</th>
+                                                <th className="text-center">G = A-B-E</th>
+                                                <th className="text-center">H</th>
                                                 <th className="text-center">G = A-B-E</th>
                                                 <th className="text-center">H</th>
                                                 <th className="text-center">I</th>
@@ -1198,6 +1205,7 @@ const EstimationDetailsProject = () => {
                                                                                                         <td></td>
                                                                                                         <td>{subCategory5.name}</td>
                                                                                                         <td>{subCategory5.budget}</td>
+                                                                                                        <td>-</td>
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>
                                                                                                         <td>-</td>

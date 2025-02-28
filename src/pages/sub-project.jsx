@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { SearchIcon } from "../components";
+import { SearchIcon, ShowIcon } from "../components";
 import AddUsersModal from "../components/common/Modal/AddUserModel";
 import { baseURL } from "../confi/apiDomain";
 
@@ -59,7 +59,17 @@ const SubProject = () => {
 
   const pageSize = 5; // Items per page
 
-  useEffect(() => {
+  const [userGroups, setUserGroups] = useState([]);
+
+  // Fetch groups when modal saves
+  // const handleSaveGroup = (updatedGroups) => {
+  //   setUserGroups(updatedGroups); // Update the list
+  // };
+
+  const handleSaveGroup = async () => {
+    await fetchUserGroups(); // Fetch updated data after saving
+  };
+  const fetchUserGroups = () => {
     axios
       .get(
         `${baseURL}/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -78,7 +88,17 @@ const SubProject = () => {
         }
       })
       .catch((error) => console.error("Error fetching table data:", error));
-  }, []);
+  };
+
+  // useEffect(() => {
+  //   fetchUserGroups();
+  // }, []);
+
+  useEffect(() => {
+    if (!showModal) {
+      fetchUserGroups(); // Refresh the data when modal closes
+    }
+  }, [showModal]);
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -156,10 +176,35 @@ const SubProject = () => {
     console.log("Saved Users:", selectedUsers);
   };
 
+  const [mode, setMode] = useState("edit");
+
   const handleEdit = (group) => {
     setSelectedGroup(group);
     setShowModal(true);
+    setMode("edit"); // Set mode to edit
   };
+
+  const handleView = (group) => {
+    setSelectedGroup(group);
+    setShowModal(true);
+    setMode("view"); // Set mode to view (read-only)
+  };
+
+  const handleAdd = () => {
+    setSelectedGroup(null);
+    setMode("add"); // Set mode to 'add'
+    setShowModal(true);
+  };
+
+  // const handleEdit = (group) => {
+  //   setSelectedGroup(group);
+  //   setShowModal(true);
+  // };
+
+  // const handleView = (group) => {
+  //   setSelectedGroup(group);
+  //   setShowModal(true);
+  // };
 
   // **Filter & Paginate Data**
 
@@ -173,10 +218,11 @@ const SubProject = () => {
           <div className="d-flex justify-content-end">
             <button
               className="purple-btn2"
-              onClick={() => {
-                setSelectedGroup(null);
-                setShowModal(true);
-              }}
+              // onClick={() => {
+              //   setSelectedGroup(null);
+              //   setShowModal(true);
+              // }}
+              onClick={handleAdd}
             >
               + Add Users
             </button>
@@ -189,6 +235,7 @@ const SubProject = () => {
                 setSelectedCompany(null);
                 setSelectedDepartments([]);
                 setUsers([]);
+                fetchUserGroups(); // Fetch updated data when modal closes
               }}
               selectedGroup={selectedGroup}
               companies={companies}
@@ -198,7 +245,15 @@ const SubProject = () => {
               setSelectedCompany={setSelectedCompany}
               selectedDepartments={selectedDepartments}
               setSelectedDepartments={setSelectedDepartments}
-              onSave={handleSaveUsers}
+              // onSave={handleSaveUsers}
+              // onSave={handleSaveGroup} //
+
+              onSave={() => {
+                fetchUserGroups(); // Refresh data after save
+              }}
+              // readOnly={selectedGroup !== null} // Modal is read-only when viewing a group
+
+              mode={mode} // Use dynamic mode
             />
           </div>
 
@@ -232,7 +287,7 @@ const SubProject = () => {
                     <th style={{ width: "5%" }}>Sr No.</th>
                     <th>Group Name</th>
                     <th>Company</th>
-                    <th style={{ width: "8%" }}>Action</th>
+                    <th style={{ width: "5%" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,12 +298,40 @@ const SubProject = () => {
                       </td>
                       <td>{item.name}</td>
                       <td>{item.company}</td>
-                      <td>
+                      {/* <td>
                         <span
                           className="material-symbols-outlined"
                           onClick={() => handleEdit(item)}
                         >
                           Edit
+                        </span>
+                      </td> */}
+
+                      <td
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <ShowIcon
+                          onClick={() => handleView(item)}
+                          style={{
+                            cursor: "pointer",
+                            width: "20px",
+                            height: "20px",
+                          }}
+                        />
+                        <span
+                          className="material-symbols-outlined"
+                          onClick={() => handleEdit(item)}
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "20px", // Same size as ShowIcon
+                            // color: "#0d6efd", // Optional: Match icon color
+                          }}
+                        >
+                          edit
                         </span>
                       </td>
                     </tr>
