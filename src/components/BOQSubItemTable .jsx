@@ -493,7 +493,7 @@ const BOQSubItemTable = ({
     });
   };
   const handleUnitChange3 = (index, selectedOption) => {
-    setSelectedUnit2((prevSelectedUnits) => {
+    setSelectedUnit3((prevSelectedUnits) => {
       const newSelectedUnits = [...prevSelectedUnits];
       newSelectedUnits[index] = selectedOption;  // Update UOM for the specific material
       return newSelectedUnits;
@@ -618,8 +618,8 @@ const BOQSubItemTable = ({
   useEffect(() => {
     // Assuming you have a function to fetch or get the data
     const predefinedAssets2 = Assets.map((asset, index) => ({
-      asset_id: asset.id,
-      asset_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
+      material_id: asset.id,
+      material_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
       generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
       colour_id: selectedColors[index] ? selectedColors[index].value : '',
       brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
@@ -640,7 +640,7 @@ const BOQSubItemTable = ({
     selectedGenericSpecifications,
     selectedColors,
     selectedInventoryBrands,
-    selectedUnit2,
+    selectedUnit3,
     assetCoefficientFactors,
     assetEstimatedQuantities,
     assetWastages,
@@ -699,7 +699,9 @@ const BOQSubItemTable = ({
   useEffect(() => {
     calculateEstimatedQuantities();
     calculateTotalEstimatedQtyWastages();
-  }, [boqQuantity, coefficientFactors, wastages]);
+    calculateAssetEstimatedQuantities();
+    calculateAssetTotalEstimatedQtyWastages();
+  }, [boqQuantity, coefficientFactors, wastages, assetCoefficientFactors, assetWastages]);
 
 
   // Calculate Asset Estimated Quantities
@@ -714,22 +716,35 @@ const BOQSubItemTable = ({
   };
   
   // Calculate Asset Total Estimated Quantity with Wastages
+  // const calculateAssetTotalEstimatedQtyWastages = () => {
+  //   if (boqQuantity && assetEstimatedQuantities.length > 0 ) {
+  //     const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
+  //       const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
+  //       const wastagePercentage = parseFloat(assetWastages[index]) || 0;
+  //       return estimatedQty * (1+wastagePercentage / 100); // Adding wastage percentage
+  //     });
+  //     setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
+  //   }
+  // };
+
+
   const calculateAssetTotalEstimatedQtyWastages = () => {
-    if (boqQuantity && assetEstimatedQuantities.length > 0 ) {
+    if (boqQuantity && assetEstimatedQuantities.length > 0) {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
         const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(assetWastages[index]) || 0;
-        return estimatedQty * (1+wastagePercentage / 100); // Adding wastage percentage
+        return Math.floor(estimatedQty * (1 + wastagePercentage / 100)); // Remove decimal places
       });
       setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
   
+  
   // Effect to recalculate asset quantities when dependencies change
-  useEffect(() => {
-    calculateAssetEstimatedQuantities();
-    calculateAssetTotalEstimatedQtyWastages();
-  }, [boqQuantity, assetCoefficientFactors, assetWastages]);
+  // useEffect(() => {
+  //   calculateAssetEstimatedQuantities();
+  //   calculateAssetTotalEstimatedQtyWastages();
+  // }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   return (
     <>
@@ -1091,7 +1106,7 @@ const BOQSubItemTable = ({
                                 type="number"
 
                                 placeholder="Estimated Qty"
-
+                                  disabled
                                 value={assetEstimatedQuantities[index] || ''}
                                 onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
 
@@ -1111,6 +1126,7 @@ const BOQSubItemTable = ({
                                 type="number"
                                 className="form-control"
                                 placeholder="Total Estimated Qty"
+                                disabled
                                 value={assetTotalEstimatedQtyWastages[index] || ''}
                                 onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
                               />

@@ -709,9 +709,9 @@ console.log(boqDetails.assets);   // Should contain an array of assets
            {boqDetails.assets.map((asset, index) => (
              <tr key={index}>
               <td>{index+1}</td>
-               <td>{asset.asset_type}</td>
-               <td>{asset.asset_name}</td>
-               <td>{asset.asset_sub_type}</td>
+               <td>{asset.material_type}</td>
+               <td>{asset.material_name}</td>
+               <td>{asset.material_sub_type}</td>
                <td>{asset.asset_specification}</td>
                <td>{asset.color}</td>
                <td>{asset.brand}</td>
@@ -905,9 +905,9 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                                   {boqDetail2.assets.map((asset, index) => (
                                     <tr key={asset.id}>
                                       <td>{index + 1}</td>
-                                      <td>{asset.asset_type}</td>
-                                      <td>{asset.asset_name}</td>
-                                      <td>{asset.asset_sub_type}</td>
+                                      <td>{asset.material_type}</td>
+                                      <td>{asset.material_name}</td>
+                                      <td>{asset.material_sub_type}</td>
                                       <td>{asset.generic_info}</td>
                                       <td>{asset.color}</td>
                                       <td>{asset.brand}</td>

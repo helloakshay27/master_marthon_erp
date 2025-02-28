@@ -21,6 +21,7 @@ const BOQList = () => {
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
   const [boqList, setBoqList] = useState(null); // State to store the fetched data
+  const [loading2, setLoading2] = useState(true);
 
 
 
@@ -165,6 +166,7 @@ const BOQList = () => {
       .get(`${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
+        setLoading2(false);
         if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
           setBoqDetailsSub(false); // Set to true if uom is not null
         }
@@ -172,6 +174,7 @@ const BOQList = () => {
       })
       .catch((error) => {
         console.log('error', error)
+        setLoading2(false);
 
       });
 
@@ -506,7 +509,16 @@ const BOQList = () => {
 
   return (
     <>
-      <div className="website-content">
+
+{loading2 ? (
+        <div className="loading-container">
+          <div className="spinner"></div> {/* Spinner element */}
+          <p style={{ fontSize:"20px",fontWeight:"400px"}}>Loading...</p>
+        </div>
+      ) : (
+
+
+        <div className="website-content">
         <div className="module-data-section p-4">
           <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
           {/* <h5 className="mt-4">BOQ</h5> */}
@@ -767,7 +779,8 @@ const BOQList = () => {
 
                       <SingleSelector
                         options={options}
-                        value={options.value}
+                        // value={options.value}
+                        value={options.find(option => option.value === fromStatus)} 
                         onChange={handleStatusChange}
                         // onChange={handleStatusChange}
                         // options.find(option => option.value === status)
@@ -777,6 +790,7 @@ const BOQList = () => {
                         placeholder={`Select Status`} // Dynamic placeholder
                         classNamePrefix="react-select"
                       />
+                      {console.log("options:", options.value)}
                     </div>
                     <div className="form-group mt-3">
                       <label>To Status</label>
@@ -794,8 +808,9 @@ const BOQList = () => {
 
                       <SingleSelector
                         options={options}
-                        value={options.value}
+                        // value={options.value}
                         onChange={handleToStatusChange}
+                        value={options.find(option => option.value === toStatus)}
                         // onChange={handleStatusChange}
                         // options.find(option => option.value === status)
                         // value={filteredOptions.find(option => option.value === status)}
@@ -1348,9 +1363,9 @@ const BOQList = () => {
                                                                                         {boqSubItem.assets?.map((asset, index) => (
                                                                                           <tr key={asset.id}>
                                                                                             <td>{index + 1}</td>
-                                                                                            <td>{asset.asset_type}</td>
-                                                                                            <td>{asset.asset_name}</td>
-                                                                                            <td>{asset.asset_sub_type}</td>
+                                                                                            <td>{asset.material_type}</td>
+                                                                                            <td>{asset.material_name}</td>
+                                                                                            <td>{asset.material_sub_type}</td>
                                                                                             <td>{asset.generic_info}</td>
                                                                                             <td>{asset.color}</td>
                                                                                             <td>{asset.brand}</td>
@@ -1452,9 +1467,9 @@ const BOQList = () => {
                                                                       {boqDetail2?.assets?.map((asset, index) => (
                                                                         <tr key={asset.id}>
                                                                           <td>{index + 1}</td>
-                                                                          <td>{asset.asset_type}</td>
-                                                                          <td>{asset.asset_name}</td>
-                                                                          <td>{asset.asset_sub_type}</td>
+                                                                          <td>{asset.material_type}</td>
+                                                                          <td>{asset.material_name}</td>
+                                                                          <td>{asset.material_sub_type}</td>
                                                                           <td>{asset.generic_info}</td>
                                                                           <td>{asset.color}</td>
                                                                           <td>{asset.brand}</td>
@@ -1722,9 +1737,9 @@ const BOQList = () => {
                                           {boqSubItem.assets?.map((asset, index) => (
                                             <tr key={asset.id}>
                                               <td>{index + 1}</td>
-                                              <td>{asset.asset_type}</td>
-                                              <td>{asset.asset_name}</td>
-                                              <td>{asset.asset_sub_type}</td>
+                                              <td>{asset.material_type}</td>
+                                              <td>{asset.material_name}</td>
+                                              <td>{asset.material_sub_type}</td>
                                               <td>{asset.generic_info}</td>
                                               <td>{asset.color}</td>
                                               <td>{asset.brand}</td>
@@ -1826,9 +1841,9 @@ const BOQList = () => {
                         {boqDetail3?.assets?.map((asset, index) => (
                           <tr key={asset.id}>
                             <td>{index + 1}</td>
-                            <td>{asset.asset_type}</td>
-                            <td>{asset.asset_name}</td>
-                            <td>{asset.asset_sub_type}</td>
+                            <td>{asset.material_type}</td>
+                            <td>{asset.material_name}</td>
+                            <td>{asset.material_sub_type}</td>
                             <td>{asset.generic_info}</td>
                             <td>{asset.color}</td>
                             <td>{asset.brand}</td>
@@ -2093,9 +2108,9 @@ const BOQList = () => {
                                           {boqSubItem.assets?.map((asset, index) => (
                                             <tr key={asset.id}>
                                               <td>{index + 1}</td>
-                                              <td>{asset.asset_type}</td>
-                                              <td>{asset.asset_name}</td>
-                                              <td>{asset.asset_sub_type}</td>
+                                              <td>{asset.material_type}</td>
+                                              <td>{asset.material_name}</td>
+                                              <td>{asset.material_sub_type}</td>
                                               <td>{asset.generic_info}</td>
                                               <td>{asset.color}</td>
                                               <td>{asset.brand}</td>
@@ -2197,9 +2212,9 @@ const BOQList = () => {
                         {boqDetail4?.assets?.map((asset, index) => (
                           <tr key={asset.id}>
                             <td>{index + 1}</td>
-                            <td>{asset.asset_type}</td>
-                            <td>{asset.asset_name}</td>
-                            <td>{asset.asset_sub_type}</td>
+                            <td>{asset.material_type}</td>
+                            <td>{asset.material_name}</td>
+                            <td>{asset.material_sub_type}</td>
                             <td>{asset.generic_info}</td>
                             <td>{asset.color}</td>
                             <td>{asset.brand}</td>
@@ -2465,9 +2480,9 @@ const BOQList = () => {
                                           {boqSubItem.assets?.map((asset, index) => (
                                             <tr key={asset.id}>
                                               <td>{index + 1}</td>
-                                              <td>{asset.asset_type}</td>
-                                              <td>{asset.asset_name}</td>
-                                              <td>{asset.asset_sub_type}</td>
+                                              <td>{asset.material_type}</td>
+                                              <td>{asset.material_name}</td>
+                                              <td>{asset.material_sub_type}</td>
                                               <td>{asset.generic_info}</td>
                                               <td>{asset.color}</td>
                                               <td>{asset.brand}</td>
@@ -2569,9 +2584,9 @@ const BOQList = () => {
                         {boqDetail5?.assets?.map((asset, index) => (
                           <tr key={asset.id}>
                             <td>{index + 1}</td>
-                            <td>{asset.asset_type}</td>
-                            <td>{asset.asset_name}</td>
-                            <td>{asset.asset_sub_type}</td>
+                            <td>{asset.material_type}</td>
+                            <td>{asset.material_name}</td>
+                            <td>{asset.material_sub_type}</td>
                             <td>{asset.generic_info}</td>
                             <td>{asset.color}</td>
                             <td>{asset.brand}</td>
@@ -2648,6 +2663,8 @@ const BOQList = () => {
         </div>
       </div>
 
+      )}
+      
       {/* copy modal */}
       {/* <Modal
         size="m"
