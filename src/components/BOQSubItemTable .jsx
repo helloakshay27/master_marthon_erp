@@ -46,9 +46,9 @@ const BOQSubItemTable = ({
   const openLabourModal = () => setLabourShowModal(true);
   const closeLabourModal = () => setLabourShowModal(false);
 
-  console.log('assets for boq sub:', Assets)
-  // console.log(' costQuantity: ', boqCostQty)
-  console.log(' boq sub item  in sub table : ', boqSubItems)
+  // console.log('assets for boq sub:', Assets)
+  // // console.log(' costQuantity: ', boqCostQty)
+  // console.log(' boq sub item  in sub table : ', boqSubItems)
 
   //Material modal and table data handle add or delete
 
@@ -80,7 +80,7 @@ const BOQSubItemTable = ({
 
     setMaterials((prev) => {
       if (!Array.isArray(prev)) {
-        console.error("Expected 'prev' to be an array, but got:", prev);
+        // console.error("Expected 'prev' to be an array, but got:", prev);
         return []; // Fallback to empty array if prev is not an array
       }
       return prev.filter((material) => !selectedMaterials.includes(material.id));
@@ -204,7 +204,7 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching inventory sub-types for material:', error);
+            // console.error('Error fetching inventory sub-types for material:', error);
           });
       }
     });
@@ -212,7 +212,7 @@ const BOQSubItemTable = ({
     // Fetch sub-types for assets
     Assets.forEach((asset, index) => {
       if (asset.inventory_type_id) {
-        console.log('aseets inventory id', asset.inventory_type_id)
+        // console.log('aseets inventory id', asset.inventory_type_id)
         axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(subType => ({
@@ -226,12 +226,12 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching inventory sub-types for asset:', error);
+            // console.error('Error fetching inventory sub-types for asset:', error);
           });
       }
     });
 
-  }, [materials, Assets]); // Trigger this effect whenever the materials or assets arrays change
+  }, []); // Trigger this effect whenever the materials or assets arrays change
 
 
   // Handler for inventory sub-type selection change
@@ -260,50 +260,55 @@ const BOQSubItemTable = ({
   const [assetGenericSpecifications, setAssetGenericSpecifications] = useState([]);  // State to hold the fetched generic specifications for assets
   const [selectedAssetGenericSpecifications, setSelectedAssetGenericSpecifications] = useState([]);  // Holds the selected generic specifications for each asset
 
-  // Fetch generic specifications when materials array changes or material_id changes
   useEffect(() => {
-    // Fetch generic specifications only for materials that have a valid material_id
-    materials.forEach((material, index) => {
+    // Fetch generic specifications for materials
+    materials.forEach((material) => {
       if (material.id) {
-        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios
+          .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(specification => ({
               value: specification.id,
               label: specification.generic_info
             }));
+  
             setGenericSpecifications(prevSpecifications => {
-              const newSpecifications = [...prevSpecifications];
-              newSpecifications[index] = options;  // Update generic specifications for this specific material
-              return newSpecifications;
+              // ✅ Update only if the data has changed
+              if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+                return { ...prevSpecifications, [material.id]: options };
+              }
+              return prevSpecifications; // No update needed
             });
           })
-          .catch(error => {
-            console.error('Error fetching generic specifications:', error);
-          });
+          // .catch(error => console.error('Error fetching generic specifications:', error));
       }
     });
-
+  
     // Fetch generic specifications for assets
-    Assets.forEach((asset, index) => {
+    Assets.forEach((asset) => {
       if (asset.id) {
-        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios
+          .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
           .then(response => {
             const options = response.data.map(specification => ({
               value: specification.id,
               label: specification.generic_info
             }));
+  
             setAssetGenericSpecifications(prevSpecifications => {
-              const newSpecifications = [...prevSpecifications];
-              newSpecifications[index] = options;  // Update generic specifications for this specific asset
-              return newSpecifications;
+              // ✅ Update only if the data has changed
+              if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+                return { ...prevSpecifications, [asset.id]: options };
+              }
+              return prevSpecifications; // No update needed
             });
           })
-          .catch(error => {
-            console.error('Error fetching generic specifications for asset:', error);
-          });
+          // .catch(error => console.error('Error fetching generic specifications for asset:', error));
       }
     });
-  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+  }, []); // Runs only when materials or Assets change
+  
+  
 
   // Handler for generic specification selection change
   const handleGenericSpecificationChange = (index, selectedOption) => {
@@ -347,7 +352,7 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching colors:', error);
+            // console.error('Error fetching colors:', error);
           });
       }
     });
@@ -368,11 +373,11 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching colors for asset:', error);
+            // console.error('Error fetching colors for asset:', error);
           });
       }
     });
-  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+  }, []);  // Trigger this effect whenever the materials array changes
 
   // Handler for color selection change
   const handleColorChange = (index, selectedOption) => {
@@ -415,7 +420,7 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching inventory brands:', error);
+            // console.error('Error fetching inventory brands:', error);
           });
       }
     });
@@ -436,11 +441,11 @@ const BOQSubItemTable = ({
             });
           })
           .catch(error => {
-            console.error('Error fetching inventory brands for asset:', error);
+            // console.error('Error fetching inventory brands for asset:', error);
           });
       }
     });
-  }, [materials, Assets]);  // Trigger this effect whenever the materials array changes
+  }, []);  // Trigger this effect whenever the materials array changes
 
   // Handler for brand selection change
   const handleBrandChange = (index, selectedOption) => {
@@ -477,7 +482,7 @@ const BOQSubItemTable = ({
         setUnitOfMeasures(options);  // Save the formatted options to state
       })
       .catch(error => {
-        console.error('Error fetching unit of measures:', error);
+        // console.error('Error fetching unit of measures:', error);
       });
   }, []);
 
@@ -630,7 +635,7 @@ const BOQSubItemTable = ({
       estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
       cost_qty: parseFloat(assetCostQTY[index]) || 0,
     }));
-    console.log("assets data :", predefinedAssets2)
+    // console.log("assets data :", predefinedAssets2)
 
     // Once the data is ready, send it to the parent component
     predefinedAssetsData(predefinedAssets2);
@@ -666,9 +671,9 @@ const BOQSubItemTable = ({
     setBoqQuantity(qtyArray); // Update the state with the qty values
   }, [boqSubItems]); // Re-run the effect when boqSubItems change
 
-  console.log("boq sub items......" ,boqSubItems)
+  // console.log("boq sub items......" ,boqSubItems)
 
-  console.log(" cost........qty", boqQuantity)
+  // console.log(" cost........qty", boqQuantity)
 
   
 

@@ -58,6 +58,16 @@ const ApprovalEdit = () => {
     { id: "", order: "", name: "", users: [] },
   ]);
 
+  const [companyId, setCompanyId] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [siteId, setSiteId] = useState("");
+  const [departmentIds, setDepartmentIds] = useState([]);
+
+  useEffect(() => {
+    fetchUsers(companyId, projectId, siteId, departmentIds);
+
+  }, [companyId, projectId, siteId, departmentIds]); // ✅ Re-fetch data when any state changes
+
   const [formData, setFormData] = useState({
     company_id: null,
     department_id: [],
@@ -325,7 +335,6 @@ const ApprovalEdit = () => {
   }, [selectedDepartment]);
 
   const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
-  const [departmentIds, setDepartmentIds] = useState([]);
 
   useEffect(() => {
     const fetchApprovalData = async () => {
