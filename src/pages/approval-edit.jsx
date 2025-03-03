@@ -208,7 +208,7 @@ const ApprovalEdit = () => {
       }
 
       if (departmentIds && departmentIds.length > 0) {
-        url += `&q[department_id_eq]=${departmentIds.join(",")}`; // Fetch only for selected departments
+        url += `&q[department_id_in]=${departmentIds.join(",")}`; // Fetch only for selected departments
       }
 
       const response = await axios.get(url);
@@ -313,7 +313,7 @@ const ApprovalEdit = () => {
 
       try {
         const response = await axios.get(
-          `${baseURL}/users.json?q[department_id_eq]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/users.json?q[department_id_in]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data && Array.isArray(response.data)) {
