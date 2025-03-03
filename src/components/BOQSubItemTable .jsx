@@ -187,51 +187,104 @@ const BOQSubItemTable = ({
   // }, [materials]);  // Trigger this effect whenever the materials array changes
 
 
+  // useEffect(() => {
+  //   // Fetch sub-types for materials
+  //   materials.forEach((material, index) => {
+  //     if (material.inventory_type_id) {
+  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(subType => ({
+  //             value: subType.id,
+  //             label: subType.name
+  //           }));
+  //           setInventorySubTypes(prevSubTypes => {
+  //             const newSubTypes = [...prevSubTypes];
+  //             newSubTypes[index] = options;  // Update sub-types for this specific material
+  //             return newSubTypes;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching inventory sub-types for material:', error);
+  //         });
+  //     }
+  //   });
+
+  //   // Fetch sub-types for assets
+  //   Assets.forEach((asset, index) => {
+  //     if (asset.inventory_type_id) {
+  //       // console.log('aseets inventory id', asset.inventory_type_id)
+  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(subType => ({
+  //             value: subType.id,
+  //             label: subType.name
+  //           }));
+  //           setAssetSubTypes(prevSubTypes => {
+  //             const newSubTypes = [...prevSubTypes];
+  //             newSubTypes[index] = options;  // Update sub-types for this specific asset
+  //             return newSubTypes;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching inventory sub-types for asset:', error);
+  //         });
+  //     }
+  //   });
+
+  // }, []); // Trigger this effect whenever the materials or assets arrays change
+
+
   useEffect(() => {
-    // Fetch sub-types for materials
     materials.forEach((material, index) => {
       if (material.inventory_type_id) {
-        axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(subType => ({
+        axios
+          .get(
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          )
+          .then((response) => {
+            const options = response.data.map((subType) => ({
               value: subType.id,
-              label: subType.name
+              label: subType.name,
             }));
-            setInventorySubTypes(prevSubTypes => {
+            setInventorySubTypes((prevSubTypes) => {
               const newSubTypes = [...prevSubTypes];
-              newSubTypes[index] = options;  // Update sub-types for this specific material
+              newSubTypes[index] = options; // Update sub-types for this specific material
               return newSubTypes;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching inventory sub-types for material:', error);
           });
       }
     });
+  }, [materials, baseURL]); // Runs when materials change
 
-    // Fetch sub-types for assets
+ 
+   // Fetch sub-types for assets
+   useEffect(() => {
     Assets.forEach((asset, index) => {
       if (asset.inventory_type_id) {
-        // console.log('aseets inventory id', asset.inventory_type_id)
-        axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(subType => ({
+        axios
+          .get(
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          )
+          .then((response) => {
+            const options = response.data.map((subType) => ({
               value: subType.id,
-              label: subType.name
+              label: subType.name,
             }));
-            setAssetSubTypes(prevSubTypes => {
+            setAssetSubTypes((prevSubTypes) => {
               const newSubTypes = [...prevSubTypes];
-              newSubTypes[index] = options;  // Update sub-types for this specific asset
+              newSubTypes[index] = options; // Update sub-types for this specific asset
               return newSubTypes;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching inventory sub-types for asset:', error);
           });
       }
     });
-
-  }, []); // Trigger this effect whenever the materials or assets arrays change
+  }, [Assets, baseURL]); // Runs when assets change
 
 
   // Handler for inventory sub-type selection change
@@ -260,20 +313,68 @@ const BOQSubItemTable = ({
   const [assetGenericSpecifications, setAssetGenericSpecifications] = useState([]);  // State to hold the fetched generic specifications for assets
   const [selectedAssetGenericSpecifications, setSelectedAssetGenericSpecifications] = useState([]);  // Holds the selected generic specifications for each asset
 
+  // useEffect(() => {
+  //   // Fetch generic specifications for materials
+  //   materials.forEach((material) => {
+  //     if (material.id) {
+  //       axios
+  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(specification => ({
+  //             value: specification.id,
+  //             label: specification.generic_info
+  //           }));
+  
+  //           setGenericSpecifications(prevSpecifications => {
+  //             // ✅ Update only if the data has changed
+  //             if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+  //               return { ...prevSpecifications, [material.id]: options };
+  //             }
+  //             return prevSpecifications; // No update needed
+  //           });
+  //         })
+  //         // .catch(error => console.error('Error fetching generic specifications:', error));
+  //     }
+  //   });
+  
+  //   // Fetch generic specifications for assets
+  //   Assets.forEach((asset) => {
+  //     if (asset.id) {
+  //       axios
+  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(specification => ({
+  //             value: specification.id,
+  //             label: specification.generic_info
+  //           }));
+  
+  //           setAssetGenericSpecifications(prevSpecifications => {
+  //             // ✅ Update only if the data has changed
+  //             if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+  //               return { ...prevSpecifications, [asset.id]: options };
+  //             }
+  //             return prevSpecifications; // No update needed
+  //           });
+  //         })
+  //         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
+  //     }
+  //   });
+  // }, []); // Runs only when materials or Assets change
+  
+  
   useEffect(() => {
-    // Fetch generic specifications for materials
     materials.forEach((material) => {
       if (material.id) {
         axios
           .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(specification => ({
+          .then((response) => {
+            const options = response.data.map((specification) => ({
               value: specification.id,
-              label: specification.generic_info
+              label: specification.generic_info,
             }));
-  
-            setGenericSpecifications(prevSpecifications => {
-              // ✅ Update only if the data has changed
+
+            setGenericSpecifications((prevSpecifications) => {
+              // Update only if the data has changed
               if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
                 return { ...prevSpecifications, [material.id]: options };
               }
@@ -283,20 +384,23 @@ const BOQSubItemTable = ({
           // .catch(error => console.error('Error fetching generic specifications:', error));
       }
     });
-  
-    // Fetch generic specifications for assets
+  }, [materials, baseURL]); // Runs only when materials change
+
+
+   // Fetch generic specifications for assets
+   useEffect(() => {
     Assets.forEach((asset) => {
       if (asset.id) {
         axios
           .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(specification => ({
+          .then((response) => {
+            const options = response.data.map((specification) => ({
               value: specification.id,
-              label: specification.generic_info
+              label: specification.generic_info,
             }));
-  
-            setAssetGenericSpecifications(prevSpecifications => {
-              // ✅ Update only if the data has changed
+
+            setAssetGenericSpecifications((prevSpecifications) => {
+              // Update only if the data has changed
               if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
                 return { ...prevSpecifications, [asset.id]: options };
               }
@@ -306,9 +410,8 @@ const BOQSubItemTable = ({
           // .catch(error => console.error('Error fetching generic specifications for asset:', error));
       }
     });
-  }, []); // Runs only when materials or Assets change
-  
-  
+  }, [Assets, baseURL]); // Runs only when Assets change
+
 
   // Handler for generic specification selection change
   const handleGenericSpecificationChange = (index, selectedOption) => {
@@ -335,49 +438,97 @@ const BOQSubItemTable = ({
   const [assetColors, setAssetColors] = useState([]);  // State to hold the fetched colors for assets
   const [selectedAssetColors, setSelectedAssetColors] = useState([]);  // Holds the selected color for each asset
   // Fetch colors when materials array changes or material_id changes
+  // useEffect(() => {
+  //   // Fetch colors only for materials that have a valid material_id
+  //   materials.forEach((material, index) => {
+  //     if (material.id) {
+  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(color => ({
+  //             value: color.id,
+  //             label: color.colour
+  //           }));
+  //           setColors(prevColors => {
+  //             const newColors = [...prevColors];
+  //             newColors[index] = options;  // Update colors for this specific material
+  //             return newColors;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching colors:', error);
+  //         });
+  //     }
+  //   });
+
+  //   // Fetch colors for assets
+  //   Assets.forEach((asset, index) => {
+  //     if (asset.id) {
+  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(color => ({
+  //             value: color.id,
+  //             label: color.colour
+  //           }));
+  //           setAssetColors(prevColors => {
+  //             const newColors = [...prevColors];
+  //             newColors[index] = options;  // Update colors for this specific asset
+  //             return newColors;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching colors for asset:', error);
+  //         });
+  //     }
+  //   });
+  // }, []);  // Trigger this effect whenever the materials array changes
+
+
   useEffect(() => {
-    // Fetch colors only for materials that have a valid material_id
     materials.forEach((material, index) => {
       if (material.id) {
-        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(color => ({
+        axios
+          .get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then((response) => {
+            const options = response.data.map((color) => ({
               value: color.id,
-              label: color.colour
+              label: color.colour,
             }));
-            setColors(prevColors => {
+            setColors((prevColors) => {
               const newColors = [...prevColors];
-              newColors[index] = options;  // Update colors for this specific material
+              newColors[index] = options; // Update colors for this specific material
               return newColors;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching colors:', error);
           });
       }
     });
+  }, [materials, baseURL]); // Runs when `materials` or `baseURL` changes
 
-    // Fetch colors for assets
+  // Fetch colors for assets
+  useEffect(() => {
     Assets.forEach((asset, index) => {
       if (asset.id) {
-        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(color => ({
+        axios
+          .get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then((response) => {
+            const options = response.data.map((color) => ({
               value: color.id,
-              label: color.colour
+              label: color.colour,
             }));
-            setAssetColors(prevColors => {
+            setAssetColors((prevColors) => {
               const newColors = [...prevColors];
-              newColors[index] = options;  // Update colors for this specific asset
+              newColors[index] = options; // Update colors for this specific asset
               return newColors;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching colors for asset:', error);
           });
       }
     });
-  }, []);  // Trigger this effect whenever the materials array changes
+  }, [Assets, baseURL]); // Runs when `Assets` or `baseURL` changes
 
   // Handler for color selection change
   const handleColorChange = (index, selectedOption) => {
@@ -403,49 +554,97 @@ const BOQSubItemTable = ({
   const [assetInventoryBrands, setAssetInventoryBrands] = useState([]);  // State to hold the fetched inventory brands for assets
   const [selectedAssetInventoryBrands, setSelectedAssetInventoryBrands] = useState([]);  // Holds the selected brands for each asset
   // Fetch inventory brands when materials array changes or material_id changes
+  // useEffect(() => {
+  //   // Fetch brands only for materials that have a valid material_id
+  //   materials.forEach((material, index) => {
+  //     if (material.id) {
+  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(brand => ({
+  //             value: brand.id,
+  //             label: brand.brand_name
+  //           }));
+  //           setInventoryBrands(prevBrands => {
+  //             const newBrands = [...prevBrands];
+  //             newBrands[index] = options;  // Update brands for this specific material
+  //             return newBrands;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching inventory brands:', error);
+  //         });
+  //     }
+  //   });
+
+  //   // Fetch inventory brands for assets
+  //   Assets.forEach((asset, index) => {
+  //     if (asset.id) {
+  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then(response => {
+  //           const options = response.data.map(brand => ({
+  //             value: brand.id,
+  //             label: brand.brand_name
+  //           }));
+  //           setAssetInventoryBrands(prevBrands => {
+  //             const newBrands = [...prevBrands];
+  //             newBrands[index] = options;  // Update brands for this specific asset
+  //             return newBrands;
+  //           });
+  //         })
+  //         .catch(error => {
+  //           // console.error('Error fetching inventory brands for asset:', error);
+  //         });
+  //     }
+  //   });
+  // }, []);  // Trigger this effect whenever the materials array changes
+
+
   useEffect(() => {
-    // Fetch brands only for materials that have a valid material_id
     materials.forEach((material, index) => {
       if (material.id) {
-        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(brand => ({
+        axios
+          .get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then((response) => {
+            const options = response.data.map((brand) => ({
               value: brand.id,
-              label: brand.brand_name
+              label: brand.brand_name,
             }));
-            setInventoryBrands(prevBrands => {
+            setInventoryBrands((prevBrands) => {
               const newBrands = [...prevBrands];
-              newBrands[index] = options;  // Update brands for this specific material
+              newBrands[index] = options; // Update brands for this specific material
               return newBrands;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching inventory brands:', error);
           });
       }
     });
+  }, [materials, baseURL]); // Runs when materials or baseURL change
 
-    // Fetch inventory brands for assets
+  // Fetch inventory brands for assets
+  useEffect(() => {
     Assets.forEach((asset, index) => {
       if (asset.id) {
-        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-          .then(response => {
-            const options = response.data.map(brand => ({
+        axios
+          .get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then((response) => {
+            const options = response.data.map((brand) => ({
               value: brand.id,
-              label: brand.brand_name
+              label: brand.brand_name,
             }));
-            setAssetInventoryBrands(prevBrands => {
+            setAssetInventoryBrands((prevBrands) => {
               const newBrands = [...prevBrands];
-              newBrands[index] = options;  // Update brands for this specific asset
+              newBrands[index] = options; // Update brands for this specific asset
               return newBrands;
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // console.error('Error fetching inventory brands for asset:', error);
           });
       }
     });
-  }, []);  // Trigger this effect whenever the materials array changes
+  }, [Assets, baseURL]); // Runs when assets or baseURL change
 
   // Handler for brand selection change
   const handleBrandChange = (index, selectedOption) => {
