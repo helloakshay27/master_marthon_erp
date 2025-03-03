@@ -261,16 +261,15 @@ const GoodReceiveNoteDetails = () => {
                 <div className="col-md-9">
                   <h5 style={{ fontWeight: "bold" }}>GRN Details</h5>
                 </div>
-                <div className="col-md-2 nav-item">
-                  <button
-                    className="purple-btn2"
-                    onClick={openModal}
-
-                  >
-                    <span>Approval Logs</span>
-                  </button>
-                </div>
+                {data?.approval_logs?.length > 0 && (
+                  <div className="col-md-2 nav-item">
+                    <button className="purple-btn2" onClick={openModal}>
+                      <span>Approval Logs</span>
+                    </button>
+                  </div>
+                )}
               </div>
+
 
               <div
                 className="tab-pane fade show active"
