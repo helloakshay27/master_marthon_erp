@@ -596,7 +596,7 @@ const EstimationDetailsProject = () => {
                 <span className="reference-label Over-Budget">Over Budget</span>
               </div>
               <div>
-                <div>
+                {/* <div>
                   <button class="btn">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -645,7 +645,7 @@ const EstimationDetailsProject = () => {
                     </svg>
                     Copy Budget
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -1155,7 +1155,7 @@ const EstimationDetailsProject = () => {
                                             <td></td>
                                             <td></td>
                                             <td>{subCategory3.name}</td>
-                                            <td>{subCategory3.budget}</td>
+                                            <td>{parseFloat(subCategory3.budget).toFixed(2)}</td>
                                             <td>
                                               {subCategory3.order_draft_value}
                                             </td>
@@ -1171,7 +1171,7 @@ const EstimationDetailsProject = () => {
                                             </td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>{subCategory3.balance_bugdet}</td>
+                                            <td>{parseFloat(subCategory3.balance_bugdet).toFixed(2)}</td>
                                             <td>-</td>
                                             <td>{subCategory3.overdue_budget}</td>
                                             <td>-</td>
@@ -1220,7 +1220,7 @@ const EstimationDetailsProject = () => {
                                                     <td></td>
                                                     <td></td>
                                                     <td>{boqDetail2.name}</td>
-                                                    <td>{boqDetail2.budget}</td>
+                                                    <td>{parseFloat(boqDetail2.budget).toFixed(2)}</td>
                                                     <td>
                                                       {
                                                         boqDetail2.order_draft_value
@@ -1238,7 +1238,7 @@ const EstimationDetailsProject = () => {
                                                     </td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>{boqDetail2.balance_bugdet}</td>
+                                                    <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                                     <td>-</td>
                                                     <td>{boqDetail2.overdue_budget}</td>
                                                     <td>-</td>
@@ -1735,14 +1735,14 @@ const EstimationDetailsProject = () => {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end mx-3">
+            {/* <div className="d-flex justify-content-end mx-3">
               <button className="purple-btn2">Bulk Upload</button>
               <button className="purple-btn2">Download Template</button>
               <button className="purple-btn2">Print</button>
               <button className="purple-btn2">Download</button>
               <button className="purple-btn2">Import</button>
               <button className="purple-btn2">Modify</button>
-            </div>
+            </div> */}
             <div className="row mt-4 px-2">
               <div className="col-md-12">
                 <div className="form-group mx-3">
