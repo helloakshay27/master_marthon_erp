@@ -64,11 +64,11 @@ const calculateOrderValues = (category) => {
             return sum + (material.balance_bugdet || 0);
         }, 0);
     }
-    category.order_draft_value = category.order_draft_value > 0 ? parseFloat(category.order_draft_value).toFixed(2)  : 0;
-    category.order_submitted_value = category.order_submitted_value > 0 ? parseFloat(category.order_submitted_value).toFixed(2) : 0;
-    category.order_approved_value = category.order_approved_value > 0 ? parseFloat(category.order_approved_value).toFixed(2) : 0;
-    category.overdue_budget = category.overdue_budget > 0 ? parseFloat(category.overdue_budget).toFixed(2) : 0;
-    category.balance_bugdet = category.balance_bugdet > 0 ? parseFloat(category.balance_bugdet).toFixed(2) : 0;
+    category.order_draft_value = category.order_draft_value > 0 ? parseFloat(category.order_draft_value).toFixed(2) : "0";
+    category.order_submitted_value = category.order_submitted_value > 0 ? parseFloat(category.order_submitted_value).toFixed(2) : "0";
+    category.order_approved_value = category.order_approved_value > 0 ? parseFloat(category.order_approved_value).toFixed(2) : "0";
+    category.overdue_budget = category.overdue_budget > 0 ? parseFloat(category.overdue_budget).toFixed(2) : "0";
+    category.balance_bugdet = category.balance_bugdet > 0 ? parseFloat(category.balance_bugdet).toFixed(2) : "0";
     return category;
 };
 

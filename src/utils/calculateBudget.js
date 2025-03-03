@@ -16,5 +16,5 @@ export default function calculateBudget(category) {
             return sum + material.budget;
         }, 0);
     }
-    return category.budget > 0 ? parseFloat(category.budget).toFixed(2) : 0;
+    return category.budget > 0 ? parseFloat(category.budget).toFixed(2) : "0";
 }
