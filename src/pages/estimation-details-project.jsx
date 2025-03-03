@@ -260,7 +260,7 @@ const EstimationDetailsProject = () => {
     const fetchProjectDetails = async () => {
       try {
         const response = await fetch(
-          `${baseURL}estimation_details.json?object_id=${id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}estimation_details.json?object_id=${id}&object_type=project&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = await response.json();
         data.categories?.forEach((category) => {
