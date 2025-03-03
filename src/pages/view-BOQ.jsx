@@ -513,10 +513,9 @@ const BOQList = () => {
 {loading2 ? (
         <div className="loading-container">
           <div className="spinner"></div> {/* Spinner element */}
-          <p style={{ fontSize:"20px",fontWeight:"400px"}}>Loading...</p>
+          <p style={{ fontSize:"18px",fontWeight:"400px"}}>Loading...</p>
         </div>
       ) : (
-
 
         <div className="website-content">
         <div className="module-data-section p-4">

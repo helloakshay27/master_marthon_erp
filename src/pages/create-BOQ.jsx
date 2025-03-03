@@ -32,11 +32,11 @@ const CreateBOQ = () => {
   // });
 
   const [errors, setErrors] = useState({});
-  const options = [
-    { value: "option1", label: "Option 1" },
-    { value: "option2", label: "Option 2" },
-    { value: "option3", label: "Option 3" },
-  ];
+  // const options = [
+  //   { value: "option1", label: "Option 1" },
+  //   { value: "option2", label: "Option 2" },
+  //   { value: "option3", label: "Option 3" },
+  // ];
   
 
 
@@ -61,9 +61,9 @@ const CreateBOQ = () => {
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: '' }]);
   const [count, setcount] = useState([]);
   const [counter, setcounter] = useState(0);
-  useEffect(() => {
-    console.log(count);
-  }, [count])
+  // useEffect(() => {
+  //   console.log(count);
+  // }, [count])
 
   // bootstrap modal
   const toggleRow = (rowIndex) => {
@@ -132,7 +132,7 @@ const CreateBOQ = () => {
     ]);
   };
 
-  console.log("materials", materials)
+  // console.log("materials", materials)
 
   const handleDeleteRow = (materialToDelete) => {
     setMaterials((prev) =>
@@ -194,7 +194,7 @@ const CreateBOQ = () => {
   //   ]);
   // };
 
-  console.log("materials", materials2)
+  // console.log("materials sub ", materials2)
 
   const handleDeleteRow2 = (materialToDelete) => {
     setMaterials2((prev) =>
@@ -840,18 +840,18 @@ const CreateBOQ = () => {
   const [predefinedMaterialsData, setPredefinedMaterialsData] = useState([])
   const [predefinedAssetsData, setPredefinedAssetsData] = useState([]);
 
-  console.log("parent comp predef2", predefinedMaterialsData)
+  // console.log("parent comp predef2", predefinedMaterialsData)
   const updatePredefinedMaterialsData = (data) => {
-    console.log('Received Data in Parent:', data);
+    // console.log('Received Data in Parent:', data);
     setPredefinedMaterialsData(data); // Update the state with the received data
 
   };
   const updatePredefinedAssetsData = (data) => {
-    console.log('Received Data in Parent (Assets):', data);
+    // console.log('Received Data in Parent (Assets):', data);
     setPredefinedAssetsData(data); // Update the state with the received data
   };
 
-  console.log('assets data from sub', predefinedAssetsData)
+  // console.log('assets data from sub', predefinedAssetsData)
 
 
   useEffect(() => {
@@ -877,7 +877,7 @@ const CreateBOQ = () => {
     }
   ]);
 
-  console.log("material Input:", materialsInputes)
+  // console.log("material Input:", materialsInputes)
 
 
 
@@ -967,7 +967,7 @@ const CreateBOQ = () => {
     }))
 
 
-  console.log("material data table 1", predefinedMaterials)
+  // console.log("material data table 1", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -985,7 +985,7 @@ const CreateBOQ = () => {
 
 
 
-  console.log("asset data table", predefinedAssets);
+  // console.log("asset data table", predefinedAssets);
 
 
   //boq sub item t data
@@ -1024,7 +1024,7 @@ const CreateBOQ = () => {
 
 
 
-  console.log("sub item boq row :", boqSubItems)
+  // console.log("sub item boq row :", boqSubItems)
 
 
   const addRowToTable1 = () => {
@@ -1111,8 +1111,8 @@ const CreateBOQ = () => {
   }
     ;
 
-  console.log("predefine data 2", predefinedMaterialsData)
-  console.log('boq sub payload', payloadData2)
+  // console.log("predefine data 2", predefinedMaterialsData)
+  // console.log('boq sub payload', payloadData2)
 
 
   // Handle input changes
@@ -1326,7 +1326,7 @@ const CreateBOQ = () => {
           }
         };
 
-        console.log("boq data payload 1 ", payloadData)
+        // console.log("boq data payload 1 ", payloadData)
 
 
         // Axios POST request
@@ -1362,7 +1362,7 @@ const CreateBOQ = () => {
   // Handle submit for BOQ SubItem
   const handleSubmitBOQSubItem = async () => {
     // Logic for handling submission when BOQ SubItem is selected
-    console.log('BOQ SubItem submitted');
+    // console.log('BOQ SubItem submitted');
 
     let validationErrors = {};
     // Validate required fields
@@ -1428,7 +1428,7 @@ const CreateBOQ = () => {
 
         }
 
-        console.log("boq data payload 2 for sub item:", payloadData2)
+        // console.log("boq data payload 2 for sub item:", payloadData2)
 
 
         // Axios POST request
@@ -1467,7 +1467,7 @@ const CreateBOQ = () => {
     } else if (showBOQSubItem) {
       handleSubmitBOQSubItem();
     } else {
-      console.log('No option selected');
+      // console.log('No option selected');
       toast.error('Please select Material/Asset or BOQ Sub-Item.', { position: "top-right" });
     }
   };
