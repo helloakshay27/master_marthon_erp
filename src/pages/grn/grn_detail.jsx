@@ -624,7 +624,7 @@ const GoodReceiveNoteDetails = () => {
                               <tr>
                                 <th className="fw-bold">Delivery Date</th>
                                 <th className="fw-bold">Delivery Qty</th>
-                                <th className="fw-bold">Batch No.</th>
+                                <th className="fw-bold"><Quantity></Quantity></th>
                               </tr>
                             </thead>
                             <tbody>
