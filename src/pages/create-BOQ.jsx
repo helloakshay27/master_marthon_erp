@@ -690,14 +690,43 @@ const CreateBOQ = () => {
   //             value: specification.id,
   //             label: specification.generic_info
   //           }));
-  
-  //           setGenericSpecifications(prevSpecifications => {
-  //             // ✅ Update only if the data has changed
-  //             if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-  //               return { ...prevSpecifications, [material.id]: options };
-  //             }
-  //             return prevSpecifications; // No update needed
+
+  //           console.log("gen options:",options)
+  //           // setGenericSpecifications((prevSpecifications,index) => {
+  //           //   const newSpecifications = [...prevSpecifications];
+  //           //   newSpecifications[index] = options;  // Update specifications for the material at the current index
+  //           //   return newSpecifications;
+  //           // });
+
+  //           setGenericSpecifications((prevSpecifications) => {
+  //             // Avoid index-based issues. We want to push the new options.
+  //             return [...prevSpecifications, options];
   //           });
+  
+  //           // setGenericSpecifications((prevSpecifications) => {
+  //           //   //  Update only if the data has changed
+  //           //   // if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+  //           //   //   return { ...prevSpecifications, [material.id]: options };
+            
+  //           //   // }
+  //           //   // const newColors = [...prevSpecifications];
+  //           //   // newColors[index] = options; // Update colors for this specific material
+  //           //   // return newColors;
+  //           //   // return { ...prevSpecifications,  options };  ; // No update needed
+  //           //   // const newSpecifications = prevSpecifications || {};
+
+  //           //   // if (!newSpecifications[material.id] || JSON.stringify(newSpecifications[material.id]) !== JSON.stringify(options)) {
+  //           //   //   return { ...newSpecifications, [material.id]: options };
+  //           //   // }
+  
+  //           //   // return newSpecifications; // No update needed
+
+
+  //           //   setGenericSpecifications((prevSpecifications) => {
+  //           //     return [...prevSpecifications ];
+  //           //   });
+  //           // });
+  //           // });
   //         })
   //         // .catch(error => console.error('Error fetching generic specifications:', error));
   //     }
@@ -713,19 +742,33 @@ const CreateBOQ = () => {
   //             value: specification.id,
   //             label: specification.generic_info
   //           }));
-  
-  //           setAssetGenericSpecifications(prevSpecifications => {
-  //             // ✅ Update only if the data has changed
-  //             if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-  //               return { ...prevSpecifications, [asset.id]: options };
-  //             }
-  //             return prevSpecifications; // No update needed
+  //           console.log("gen options:",options)
+
+  //           setGenericSpecifications((prevSpecifications) => {
+  //             // Avoid index-based issues. We want to push the new options.
+  //             return [...prevSpecifications, options];
   //           });
+  
+           
+  
+  //           // setAssetGenericSpecifications(prevSpecifications => {
+  //           //   // ✅ Update only if the data has changed
+  //           //   if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+  //           //     return { ...prevSpecifications, [asset.id]: options };
+  //           //   }
+
+  //           //   const newColors = [...prevSpecifications];
+  //           //   newColors[index] = options; // Update colors for this specific material
+  //           //   return newColors;
+  //           //   // return prevSpecifications; // No update needed
+  //           // });
   //         })
   //         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
   //     }
   //   });
-  // }, []); // Runs only when materials or Assets change
+  // }, [materials,Assets,baseURL]); // Runs only when materials or Assets change
+
+  // console.log("gen specification",genericSpecifications)
 
 
    // Fetch generic specifications for materials
@@ -740,12 +783,17 @@ const CreateBOQ = () => {
               label: specification.generic_info,
             }));
 
+            // setGenericSpecifications((prevSpecifications) => {
+            //   // Update only if the data has changed
+            //   if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+            //     return { ...prevSpecifications, [material.id]: options };
+            //   }
+            //   return prevSpecifications; // No update needed
+            // });
+
             setGenericSpecifications((prevSpecifications) => {
-              // Update only if the data has changed
-              if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-                return { ...prevSpecifications, [material.id]: options };
-              }
-              return prevSpecifications; // No update needed
+              // Avoid index-based issues. We want to push the new options.
+              return [...prevSpecifications, options];
             });
           })
           .catch((error) => {
@@ -767,12 +815,17 @@ const CreateBOQ = () => {
               label: specification.generic_info,
             }));
 
+            // setAssetGenericSpecifications((prevSpecifications) => {
+            //   // Update only if the data has changed
+            //   if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+            //     return { ...prevSpecifications, [asset.id]: options };
+            //   }
+            //   return prevSpecifications; // No update needed
+            // });
+
             setAssetGenericSpecifications((prevSpecifications) => {
-              // Update only if the data has changed
-              if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-                return { ...prevSpecifications, [asset.id]: options };
-              }
-              return prevSpecifications; // No update needed
+              // Avoid index-based issues. We want to push the new options.
+              return [...prevSpecifications, options];
             });
           })
           .catch((error) => {
@@ -781,6 +834,68 @@ const CreateBOQ = () => {
       }
     });
   }, [Assets, baseURL]); // Runs when assets or baseURL changes
+
+
+  // Fetch generic specifications for materials
+  // useEffect(() => {
+  //   materials.forEach((material) => {
+  //     if (material.id) {
+  //       console.log("gen material id:",material.id)
+  //       axios
+  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then((response) => {
+  //           const options = response.data.map((specification) => ({
+  //             value: specification.id,
+  //             label: specification.generic_info,
+  //           }));
+
+  //           console.log("options:",options)
+
+  //           setGenericSpecifications((prevSpecifications) => {
+  //             // Update only if the data has changed
+  //             if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+  //               return { ...prevSpecifications, [material.id]: options };
+  //             }
+  //             return prevSpecifications; // No update needed
+
+  //             // const newSpecifications = [...prevSpecifications];
+  //             // newSpecifications[index] = options; // Update colors for this specific material
+  //             // return newSpecifications;
+  //           });
+  //         })
+  //         // .catch((error) => console.error('Error fetching generic specifications for material:', error));
+  //     }
+  //   });
+  // }, [materials, baseURL]); // Runs when materials or baseURL changes
+
+  // Fetch generic specifications for assets
+  // useEffect(() => {
+  //   Assets.forEach((asset) => {
+  //     if (asset.id) {
+  //       axios
+  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+  //         .then((response) => {
+  //           const options = response.data.map((specification) => ({
+  //             value: specification.id,
+  //             label: specification.generic_info,
+  //           }));
+
+  //           setAssetGenericSpecifications((prevSpecifications) => {
+  //             // Update only if the data has changed
+  //             // if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+  //             //   return { ...prevSpecifications, [asset.id]: options };
+  //             // }
+
+  //             const newSpecifications = [...prevSpecifications];
+  //             newSpecifications[index] = options; // Update colors for this specific material
+  //             return newSpecifications;
+  //             // return prevSpecifications; // No update needed
+  //           });
+  //         })
+  //         // .catch((error) => console.error('Error fetching generic specifications for asset:', error));
+  //     }
+  //   });
+  // }, [Assets, baseURL]); // Runs when assets or baseURL changes
   
 
   // Handler for generic specification selection change
@@ -2029,11 +2144,13 @@ const CreateBOQ = () => {
 
                                     <td>
                                       <SingleSelector
-                                        options={genericSpecifications[index] || []}  // Get the generic specifications for the specific material
+                                        options={genericSpecifications[index] || []}  // Get the generic specifications for the specific material                         
                                         onChange={(selectedOption) => handleGenericSpecificationChange(index, selectedOption)}
                                         value={selectedGenericSpecifications[index]}  // Display the selected generic specification for this material
                                         placeholder={`Select  Specification`} // Dynamic placeholder
                                       />
+
+                                      { console.log("gen op:",genericSpecifications)}
                                     </td>
                                     <td>
                                       <SingleSelector
@@ -2042,6 +2159,8 @@ const CreateBOQ = () => {
                                         value={selectedColors[index]}  // Display the selected color for this material
                                         placeholder={`Select Colour`} // Dynamic placeholder
                                       />
+
+                                      {console.log("color:",colors)}
                                     </td>
                                     <td>
                                       <SingleSelector

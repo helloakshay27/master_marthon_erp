@@ -373,12 +373,17 @@ const BOQSubItemTable = ({
               label: specification.generic_info,
             }));
 
+            // setGenericSpecifications((prevSpecifications) => {
+            //   // Update only if the data has changed
+            //   if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
+            //     return { ...prevSpecifications, [material.id]: options };
+            //   }
+            //   return prevSpecifications; // No update needed
+            // });
+
             setGenericSpecifications((prevSpecifications) => {
-              // Update only if the data has changed
-              if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-                return { ...prevSpecifications, [material.id]: options };
-              }
-              return prevSpecifications; // No update needed
+              // Avoid index-based issues. We want to push the new options.
+              return [...prevSpecifications, options];
             });
           })
           // .catch(error => console.error('Error fetching generic specifications:', error));
@@ -399,12 +404,17 @@ const BOQSubItemTable = ({
               label: specification.generic_info,
             }));
 
+            // setAssetGenericSpecifications((prevSpecifications) => {
+            //   // Update only if the data has changed
+            //   if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
+            //     return { ...prevSpecifications, [asset.id]: options };
+            //   }
+            //   return prevSpecifications; // No update needed
+            // });
+
             setAssetGenericSpecifications((prevSpecifications) => {
-              // Update only if the data has changed
-              if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-                return { ...prevSpecifications, [asset.id]: options };
-              }
-              return prevSpecifications; // No update needed
+              // Avoid index-based issues. We want to push the new options.
+              return [...prevSpecifications, options];
             });
           })
           // .catch(error => console.error('Error fetching generic specifications for asset:', error));

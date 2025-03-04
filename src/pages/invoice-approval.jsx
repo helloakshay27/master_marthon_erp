@@ -883,7 +883,7 @@ const InvoiceApproval = () => {
                               <div className="col-md-3">
                                 <label htmlFor="status-select">
                                   Department{" "}
-                                  <span style={{ color: "red" }}>*</span>
+                                  {/* <span style={{ color: "red" }}>*</span> */}
                                 </label>
                                 {/* <SingleSelector
                                   id="status-select"
