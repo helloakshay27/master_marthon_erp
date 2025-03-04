@@ -853,19 +853,17 @@ const GoodReceiveNoteDetails = () => {
                   <div className="col-md-2">
                     <div >
                       {loading && (
-                        <div className="loader-container">
-                          <div className="lds-ring">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                        <div id="full-screen-loader" className="full-screen-loader">
+                          <div className="loader-container">
+                            <img
+                              src="https://newerp.marathonrealty.com/assets/loader.gif"
+                              alt="Loading..."
+                              width={50}
+                            />
+                            <h5>Please wait</h5>
                           </div>
-                          <p>Submitting ...</p>
                         </div>
+
                       )}
                       <button
                         onClick={handleUpdateStatus}
