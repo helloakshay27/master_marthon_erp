@@ -539,8 +539,7 @@ const GoodReceiveNoteDetails = () => {
                           <tbody>
                             <tr key={item.id || item.mor_inventory?.id}>
                               <td>
-                                {item.mor_inventory?.inventory
-                                  ?.material_description || "-"}
+                                {item.mor_inventory?.material_name || "-"}
                               </td>
                               <td>
                                 {item.mor_inventory?.inventory?.is_qc
