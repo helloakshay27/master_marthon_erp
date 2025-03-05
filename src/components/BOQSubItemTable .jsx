@@ -1012,7 +1012,7 @@ const BOQSubItemTable = ({
                         <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th style={{width:"170px"}}>Co-Efficient Factor</th>
+                        <th style={{width:"170px"}}>Co-Efficient Factor <span>*</span></th>
                         <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                       </tr>
                     </thead>
@@ -1219,7 +1219,7 @@ const BOQSubItemTable = ({
                         <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th style={{width:"170px"}}>Co-Efficient Factor</th>
+                        <th style={{width:"170px"}}>Co-Efficient Factor <span>*</span></th>
                         <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                       </tr>
                     </thead>

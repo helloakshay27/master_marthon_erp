@@ -1435,7 +1435,7 @@ const CreateBOQ = () => {
     ;
 
   // console.log("predefine data 2", predefinedMaterialsData)
-  // console.log('boq sub payload', payloadData2)
+  console.log('boq sub payload', payloadData2)
 
 
   // Handle input changes
@@ -1580,6 +1580,31 @@ const CreateBOQ = () => {
     if (!selectedUnit) validationErrors.unit = 'UOM is required.';
     if (!boqQuantity) validationErrors.boqQuantity = 'BOQ Quantity is required.';
 
+    // If predefinedMaterials is empty, show a toast error
+    if (predefinedMaterials.length === 0 || predefinedAssets.length === 0) {
+      toast.error("Select at least one material or asset.");
+    }
+
+    const invalidCoefficient = materials.some((material, index) => {
+      // Get the coefficient factor for this material
+      const coefficientFactor = coefficientFactors[index];
+  
+      // Check if the coefficient factor is invalid (NaN or empty)
+      return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+    });
+
+     // Validate coefficient factors for assets
+  const invalidAssetCoefficient = Assets.some((asset, index) => {
+    const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
+    return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+  });
+  
+    // If any coefficient factor is invalid, show a toast and stop
+    if (invalidCoefficient ||invalidAssetCoefficient) {
+      toast.error("Co-efficient factor cannot be empty or invalid for any material or asset.");
+      return; // Exit function if validation fails
+    }
+
 
     // Show toast messages for each missing field
     //  if (!selectedProject) toast.error("Project is required.");
@@ -1692,10 +1717,40 @@ const CreateBOQ = () => {
     if (!selectedProject) validationErrors.project = 'Project is required.';
     if (!itemName) validationErrors.itemName = 'Item Name is required.';
 
+    if (boqSubItems.length === 0) {
+      toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
+      return; // Exit function if boqSubItems is empty
+    }
+
+         // Iterate over each boqSubItem to validate
+  for (let i = 0; i < boqSubItems.length; i++) {
+    const boqSubItem = boqSubItems[i];
+
+    // Validate name
+    if (!boqSubItem.name || boqSubItem.name.trim() === "") {
+      toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+      return; // Exit function if validation fails
+    }
+
+    // Validate cost_quantity
+    if (boqSubItem.cost_quantity <= 0) {
+      toast.error(`Cost quantity is required for BoQ Sub Item ${i + 1}.`);
+      return; // Exit function if validation fails
+    }
+
+    // Validate that at least one material or asset is selected
+    if (boqSubItem.materials.length === 0 && boqSubItem.assets.length === 0) {
+      toast.error(`At least one material or asset must be selected for BoQ Sub Item ${i + 1}.`);
+      return; // Exit function if validation fails
+    }
+  }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setLoading(true);
+
+  
 
 
       try {
@@ -2095,7 +2150,7 @@ const CreateBOQ = () => {
                               </tr>
 
                               <tr>
-                                <th rowSpan={1} style={{width:"170px"}}>Co-efficient Factor</th>
+                                <th rowSpan={1} style={{width:"170px"}}>Co-efficient Factor <span>*</span></th>
                                 <th rowSpan={1} style={{width:"170px"}}>Estimated Qty</th>
                               </tr>
 
@@ -2313,7 +2368,7 @@ const CreateBOQ = () => {
 
                               </tr>
                               <tr>
-                                <th style={{width:"170px"}}>Co-efficient Factor</th>
+                                <th style={{width:"170px"}}>Co-efficient Factor <span>*</span></th>
                                 <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
                               </tr>
                             </thead>
@@ -2478,7 +2533,7 @@ const CreateBOQ = () => {
                                     <input type="checkbox" />
                                   </th>
                                   <th rowSpan={2}>Expand</th>
-                                  <th rowSpan={2}>Sub Item Name</th>
+                                  <th rowSpan={2}>Sub Item Name <span>*</span></th>
                                   <th rowSpan={2}>Description</th>
                                   <th rowSpan={2}>Notes</th>
                                   <th rowSpan={2}>Remarks</th>
@@ -2487,7 +2542,7 @@ const CreateBOQ = () => {
                                   <th rowSpan={2}>Document</th>
                                 </tr>
                                 <tr>
-                                  <th colSpan={3}>Quantity</th>
+                                  <th colSpan={3}>Quantity <span>*</span></th>
 
                                 </tr>
                               </thead>
