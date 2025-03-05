@@ -858,9 +858,9 @@ const EstimationDetailsProject = () => {
                               <td>-</td>
                               <td>-</td>
                               <td>{category.balance_bugdet}</td>
-                              <td>-</td>
+                              <td>{category.balance_per}</td>
                               <td>{category.overdue_budget}</td>
-                              <td>-</td>
+                              <td>{category.overdue_per}</td>
                               <td>-</td>
                               <td>-</td>
                               <td>-</td>
@@ -974,9 +974,9 @@ const EstimationDetailsProject = () => {
                                     <td>-</td>
                                     <td>-</td>
                                     <td>{subCategory.balance_bugdet}</td>
-                                    <td>-</td>
+                                    <td>{subCategory.balance_per}</td>
                                     <td>{subCategory.overdue_budget}</td>
-                                    <td>-</td>
+                                    <td>{subCategory.overdue_per}</td>
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
@@ -1032,9 +1032,9 @@ const EstimationDetailsProject = () => {
                                             <td>-</td>
                                             <td>-</td>
                                             <td>{boqDetail2.balance_bugdet}</td>
-                                            <td>-</td>
+                                            <td>{boqDetail2.balance_per}</td>
                                             <td>{boqDetail2.overdue_budget}</td>
-                                            <td>-</td>
+                                            <td>{boqDetail2.overdue_per}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -1172,9 +1172,9 @@ const EstimationDetailsProject = () => {
                                             <td>-</td>
                                             <td>-</td>
                                             <td>{parseFloat(subCategory3.balance_bugdet).toFixed(2)}</td>
-                                            <td>-</td>
+                                            <td>{subCategory3.balance_per}</td>
                                             <td>{subCategory3.overdue_budget}</td>
-                                            <td>-</td>
+                                            <td>{subCategory3.overdue_per}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -1239,9 +1239,9 @@ const EstimationDetailsProject = () => {
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
-                                                    <td>-</td>
+                                                    <td>{boqDetail2.balance_per}</td>
                                                     <td>{boqDetail2.overdue_budget}</td>
-                                                    <td>-</td>
+                                                    <td>{boqDetail2.overdue_per}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
@@ -1383,10 +1383,9 @@ const EstimationDetailsProject = () => {
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>{subCategory4.balance_bugdet}</td>
-                                                    <td>-</td>
+                                                    <td>{subCategory4.balance_per}</td>
                                                     <td>{subCategory4.overdue_budget}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
+                                                    <td>{subCategory4.overdue_per}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
@@ -1455,9 +1454,9 @@ const EstimationDetailsProject = () => {
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>{boqDetail2.balance_bugdet}</td>
-                                                            <td>-</td>
+                                                            <td>{boqDetail2.balance_per}</td>
                                                             <td>{boqDetail2.overdue_budget}</td>
-                                                            <td>-</td>
+                                                            <td>{boqDetail2.overdue_per}</td>
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>-</td>
@@ -1611,9 +1610,9 @@ const EstimationDetailsProject = () => {
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>{subCategory5.balance_bugdet}</td>
-                                                            <td>-</td>
+                                                            <td>{subCategory5.balance_per}</td>
                                                             <td>{subCategory5.overdue_budget}</td>
-                                                            <td>-</td>
+                                                            <td>{subCategory5.overdue_per}</td>
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>-</td>
@@ -1688,9 +1687,9 @@ const EstimationDetailsProject = () => {
                                                                     <td>-</td>
                                                                     <td>-</td>
                                                                     <td>{boqDetail2.balance_bugdet}</td>
-                                                                    <td>-</td>
+                                                                    <td>{boqDetail2.balance_per}</td>
                                                                     <td>{boqDetail2.overdue_budget}</td>
-                                                                    <td>-</td>
+                                                                    <td>{boqDetail2.overdue_per}</td>
                                                                     <td>-</td>
                                                                     <td>-</td>
                                                                     <td>-</td>
