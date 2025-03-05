@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO } from "date-fns";
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -10,7 +10,7 @@ import {
   SelectBox,
   Table,
 } from "../components";
-import { baseURL } from "../confi/apiDomain"
+import { baseURL } from "../confi/apiDomain";
 
 import { citiesList, participantsTabColumns } from "../constant/data";
 import { useNavigate } from "react-router-dom";
@@ -152,36 +152,36 @@ export default function CreateEvent() {
   const handleSaveSchedule = (data) => {
     setScheduleData(data);
     handleEventScheduleModalClose();
-  
-    const timeZone = 'Asia/Kolkata'; // Replace with your desired timezone
-  
+
+    const timeZone = "Asia/Kolkata"; // Replace with your desired timezone
+
     const formatDateTime = (dateTime) => {
       const date = new Date(dateTime);
-      return new Intl.DateTimeFormat('en-GB', {
+      return new Intl.DateTimeFormat("en-GB", {
         timeZone,
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: true,
       }).format(date);
     };
-  
+
     const adjustTimeZone = (dateTime) => {
       const date = new Date(dateTime);
       date.setHours(date.getHours() - 5);
       date.setMinutes(date.getMinutes() - 30);
       return date;
     };
-  
+
     const startDateTime = formatDateTime(data.start_time);
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
-  
+
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
     console.log("scheduleText", scheduleText, data.end_time_duration);
-  }; 
+  };
 
   const handleVendorTypeModalShow = () => {
     setVendorModal(true);
@@ -357,7 +357,10 @@ export default function CreateEvent() {
   };
 
   const handleRemoveTextarea = (id) => {
-    setTextareas(textareas.filter((textarea) => textarea.id !== id));
+    const updatedTextareas = textareas.filter((textarea) => textarea.id !== id)
+    console.log("updatedTextareas",updatedTextareas);
+    
+    setTextareas([...updatedTextareas]);
   };
 
   const handleTextareaChange = (id, value) => {
@@ -378,7 +381,7 @@ export default function CreateEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                id: selectedCondition.value,
+                id: textarea.id,
                 value: selectedCondition.condition,
               }
             : textarea
@@ -395,10 +398,10 @@ export default function CreateEvent() {
 
   const handleRemoveDocumentRow = (index) => {
     if (documentRows.length > 1) {
-      documentRowsRef.current = documentRowsRef.current.filter(
-        (_, i) => i !== index
-      );
-      setDocumentRows([...documentRowsRef.current]);
+      const updatedRows = documentRows.filter((_, i) => i !== index);
+      documentRowsRef.current = updatedRows;
+      console.log("updatedRows", updatedRows);
+      setDocumentRows([...updatedRows]);
     }
   };
 
@@ -462,7 +465,6 @@ export default function CreateEvent() {
     }
 
     setSubmitted(true);
-    
 
     const eventData = {
       event: {
@@ -758,7 +760,7 @@ export default function CreateEvent() {
                   <table className="w-100">
                     <thead>
                       <tr>
-                      <th style={{ width: "100px" }}>Sr No.</th> 
+                        <th style={{ width: "100px" }}>Sr No.</th>
                         <th>Vendor Name</th>
                         <th>Mob No.</th>
                         <th>Status</th>
@@ -836,14 +838,16 @@ export default function CreateEvent() {
                   resetSelectedRows={undefined}
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
-                    ...row,
                     upload: (
                       <input
                         type="file"
                         onChange={(e) =>
                           handleFileChange(index, e.target.files[0])
                         }
-                        ref={fileInputRef}
+                        key={row?.srNo}
+                        defaultValue={
+                          row?.upload?.filename ? row.upload.filename : ""
+                        }
                         multiple
                         accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
                       />
@@ -900,7 +904,7 @@ export default function CreateEvent() {
                             }
                             defaultValue={termsOptions.find(
                               (option) => option.condition === textarea.value
-                            )}
+                            )?.value}
                           />
                         </td>
                         <td>
