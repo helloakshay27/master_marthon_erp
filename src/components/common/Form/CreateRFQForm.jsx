@@ -32,8 +32,8 @@ export default function CreateRFQForm({
         ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
         : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       console.log(url, inventoryTypeId);
-      
-        const response = await axios.get(url);
+
+      const response = await axios.get(url);
       if (response.data && Array.isArray(response.data.materials)) {
         const materialOptions = response.data.materials.map((material) => ({
           value: material.id,
@@ -41,8 +41,7 @@ export default function CreateRFQForm({
           uom: material.uom,
         }));
         setMaterials(materialOptions);
-        console.log("materials :----",materials);
-        
+        console.log("materials :----", materials);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -64,8 +63,7 @@ export default function CreateRFQForm({
             value: subSection.value,
           }))
         );
-        console.log("subSectionOptions :----",subSectionOptions);
-        
+        console.log("subSectionOptions :----", subSectionOptions);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -79,13 +77,13 @@ export default function CreateRFQForm({
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
-          console.log("materialsArray:----",materialsArray);
-          
+          console.log("materialsArray:----", materialsArray);
+
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
-          
-          fetchMaterials(inventoryTypeId); 
-          fetchSubSections(inventorySubTypeId); 
+
+          fetchMaterials(inventoryTypeId);
+          fetchSubSections(inventorySubTypeId);
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
@@ -100,19 +98,19 @@ export default function CreateRFQForm({
               amount: material.amount,
               sub_section_id: material.sub_section_id,
               section_id: material.inventory_type_id || material.section_id,
-              inventory_type_id: material.inventory_type_id, 
-              inventory_sub_type_id: material.inventory_sub_type_id, 
+              inventory_type_id: material.inventory_type_id,
+              inventory_sub_type_id: material.inventory_sub_type_id,
               subMaterialType: material.inventory_sub_type, // Correctly map subMaterialType
-              _destroy: false, 
+              _destroy: false,
             })),
           };
         }
       );
       // @ts-ignore
       setSections(updatedSections);
-      setData(updatedSections.flatMap((section) => section.sectionData)); 
+      setData(updatedSections.flatMap((section) => section.sectionData));
     } else {
-      fetchMaterials(); 
+      fetchMaterials();
       fetchSubSections(); // Fetch sub-sections without inventory_type_id
     }
   }, [existingData]);
@@ -208,18 +206,9 @@ export default function CreateRFQForm({
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
-    console.log("Removing row at index:", rowIndex, "from section:", sectionIndex);
-    setSections((prevSections) => {
-      const updatedSections = [...prevSections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        sectionData: updatedSections[sectionIndex].sectionData.map((row, idx) =>
-          idx === rowIndex ? { ...row, _destroy: true } : row
-        ),
-      };
-      console.log("Updated sections after removal:", updatedSections);
-      return updatedSections;
-    });
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex].sectionData.splice(rowIndex, 1);
+    setSections(updatedSections);
   };
 
   const handleAddRow = (sectionIndex) => {
@@ -352,7 +341,7 @@ export default function CreateRFQForm({
                   <div className="flex-grow-1">
                     <SelectBox
                       label={"Select Material Type"}
-                      options={sectionOptions} 
+                      options={sectionOptions}
                       defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material Type"
@@ -420,6 +409,7 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
+                   <>
                     <SelectBox
                       options={materials}
                       onChange={(value) =>
@@ -439,6 +429,8 @@ export default function CreateRFQForm({
                             )?.value || ""
                       }
                     />
+                    {/* {console.log(cell,"this is cell",rowIndex)} */}
+                   </>
                   ),
                   unit: (cell, rowIndex) => (
                     <SelectBox

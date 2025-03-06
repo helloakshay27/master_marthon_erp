@@ -217,7 +217,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   };
 
   return (
-    <Modal centered size="lg" show={show} onHide={handleClose}>
+    <Modal centered size="lg" show={show} onHide={handleClose} style={{ zIndex: '999999' }}>
       <Modal.Header closeButton>
         <h5>Add Material</h5>
       </Modal.Header>
