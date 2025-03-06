@@ -964,21 +964,21 @@ const BOQSubItemTable = ({
     <>
       <div className="collapse show">
         <div className="w-100" >
+        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
           <CollapsibleCard title="Material">
             <div className="card   mx-3 mt-2">
               <div className="card-body mt-0 pt-0" >
-                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
+
+              <div className=" my-4">
+              <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+               
                   <table
-                  //  className="mb-5" 
-                   id="table1"
-                  
-                  className={`  ${
-                    materials.length === 0 ? 'w-100' : 'w-100'
-                  }`} 
+                   className="tbl-container"
+                   style={{ minWidth: "1200px", borderCollapse: "collapse" }}
                   >
                     <thead style={{ zIndex: "0" }}>
                       <tr >
-                        <th rowSpan={2} style={{width:"10px"}}>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                           <input type="checkbox"
                             // onChange={(e) => {
                             //   if (e.target.checked) {
@@ -999,21 +999,21 @@ const BOQSubItemTable = ({
                             checked={selectedMaterials.length === materials.length}
                           />
                         </th>
-                        <th rowSpan={2} style={{width:"10px"}}>Material Type</th>
-                        <th rowSpan={2} style={{width:"10px"}}>Material</th>
-                        <th rowSpan={2} style={{width:"210px"}}>Material Sub-Type</th>
-                        <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Colour </th>
-                        <th rowSpan={2} style={{width:"170px"}}>Brand </th>
-                        <th rowSpan={2} style={{width:"170px"}}>UOM</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Sub-Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Generic Specification</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Colour </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Brand </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Wastage%</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th style={{width:"170px"}}>Co-Efficient Factor <span>*</span></th>
-                        <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
+                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Co-Efficient Factor <span>*</span></th>
+                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Estimated Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1150,6 +1150,7 @@ const BOQSubItemTable = ({
                     </tbody>
                   </table>
                 </div>
+                </div>
                 <div className="row mt-3 mx-3">
                   <p>
                     <button
@@ -1174,6 +1175,7 @@ const BOQSubItemTable = ({
               </div>
             </div>
           </CollapsibleCard>
+          </div>
           <MaterialModal
             show={showModal}
             handleClose={handleCloseModal}
@@ -1183,17 +1185,18 @@ const BOQSubItemTable = ({
           <CollapsibleCard title="Assests">
             <div className="card  mx-3 mt-2">
               <div className="card-body mt-0 pt-0" style={{ display: "block" }}>
-                <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
+
+              <div className=" my-4">
+              <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                {/* <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1"> */}
                   <table
                   //  className="mb-5"
-                    id="table3"
-                    className={`  ${
-                      Assets.length === 0 ? 'w-100' : 'w-100'
-                    }`} 
+                  className="tbl-container"
+                  style={{ minWidth: "1200px", borderCollapse: "collapse" }}
                     >
                     <thead style={{ zIndex: "0" }}>
                       <tr>
-                        <th rowSpan={2} style={{width:"10px"}}>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                           <input type="checkbox"
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -1205,22 +1208,22 @@ const BOQSubItemTable = ({
                             checked={selectedAssets.length === Assets.length}
                           />
                         </th>
-                        <th rowSpan={2} style={{width:"10px"}}>Assest Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Assest Type</th>
 
-                        <th rowSpan={2} style={{width:"10px"}}>Assest</th>
-                        <th rowSpan={2} style={{width:"210px"}}>Assest Sub-Type</th>
-                        <th rowSpan={2} style={{width:"180px"}}>Generic Specification</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Colour </th>
-                        <th rowSpan={2} style={{width:"170px"}}>Brand </th>
-                        <th rowSpan={2} style={{width:"170px"}}>UOM</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Assest</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Assest Sub-Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Generic Specification</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Colour </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Brand </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>UOM</th>
                         {/* <th rowSpan={2}>Cost QTY</th> */}
                         <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Wastage%</th>
-                        <th rowSpan={2} style={{width:"170px"}}>Total Estimated Qty Wastage</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Wastage%</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Total Estimated Qty Wastage</th>
                       </tr>
                       <tr>
-                        <th style={{width:"170px"}}>Co-Efficient Factor <span>*</span></th>
-                        <th rowSpan={2} style={{width:"170px"}}>Estimated Qty</th>
+                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Co-Efficient Factor <span>*</span></th>
+                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Estimated Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1356,6 +1359,7 @@ const BOQSubItemTable = ({
                       )}
                     </tbody>
                   </table>
+                </div>
                 </div>
                 <div className="row mt-3 mx-3">
                   <p>
