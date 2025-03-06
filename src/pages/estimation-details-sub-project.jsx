@@ -853,9 +853,9 @@ const EstimationDetailsSubProject = () => {
                               <td>{category.order_approved_value}</td>
                               <td>-</td>
                               <td>-</td>
-                              <td>{category.balance_bugdet % 1 !== 0 && category.balance_bugdet !== undefined ? category.balance_bugdet.toFixed(2) : category.balance_bugdet}</td>
+                              <td>{category.balance_bugdet}</td>
                               <td>{category.balance_per % 1 !== 0 && category.balance_per !== undefined ? category.balance_per.toFixed(2) : category.balance_per}</td>
-                              <td>{category.overdue_budget % 1 !== 0 && category.overdue_budget !== undefined ? category.overdue_budget.toFixed(2) : category.overdue_budget}</td>
+                              <td>{category.overdue_budget}</td>
                               <td>{category.overdue_per % 1 !== 0 && category.overdue_per !== undefined ? category.overdue_per.toFixed(2) : category.overdue_per}</td>
                               <td>-</td>
                               <td>-</td>
@@ -968,9 +968,10 @@ const EstimationDetailsSubProject = () => {
                                     <td>{subCategory.order_submitted_value}</td>
                                     <td>{subCategory.order_approved_value}</td>
                                     <td>-</td>
-                                    <td>{subCategory.balance_bugdet % 1 !== 0 && subCategory.balance_bugdet !== undefined ? subCategory.balance_bugdet.toFixed(2) : subCategory.balance_bugdet}</td>
+                                    <td>-</td>
+                                    <td>{subCategory.balance_bugdet}</td>
                                     <td>{subCategory.balance_per % 1 !== 0 && subCategory.balance_per !== undefined ? subCategory.balance_per.toFixed(2) : subCategory.balance_per}</td>
-                                    <td>{subCategory.overdue_budget % 1 !== 0 && subCategory.overdue_budget !== undefined ? subCategory.overdue_budget.toFixed(2) : subCategory.overdue_budget}</td>
+                                    <td>{subCategory.overdue_budget}</td>
                                     <td>{subCategory.overdue_per % 1 !== 0 && subCategory.overdue_per !== undefined ? subCategory.overdue_per.toFixed(2) : subCategory.overdue_per}</td>
                                     <td>-</td>
                                     <td>-</td>
@@ -1026,9 +1027,9 @@ const EstimationDetailsSubProject = () => {
                                             </td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>{boqDetail2.balance_bugdet % 1 !== 0 && boqDetail2.balance_bugdet !== undefined ? boqDetail2.balance_bugdet.toFixed(2) : boqDetail2.balance_bugdet}</td>
+                                            <td>{boqDetail2.balance_bugdet}</td>
                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
-                                            <td>{boqDetail2.overdue_budget% 1 !== 0 && boqDetail2.overdue_budget !== undefined ? boqDetail2.overdue_budget.toFixed(2) : boqDetail2.overdue_budget}</td>
+                                            <td>{boqDetail2.overdue_budget}</td>
                                             <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -1169,9 +1170,9 @@ const EstimationDetailsSubProject = () => {
                                             </td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>{subCategory3.balance_bugdet % 1 !== 0 && subCategory3.balance_bugdet !== undefined ? subCategory3.balance_bugdet.toFixed(2) : subCategory3.balance_bugdet}</td>
+                                            <td>{parseFloat(subCategory3.balance_bugdet).toFixed(2)}</td>
                                             <td>{subCategory3.balance_per % 1 !== 0 && subCategory3.balance_per !== undefined ? subCategory3.balance_per.toFixed(2) : subCategory3.balance_per}</td>
-                                            <td>{subCategory3.overdue_budget % 1 !== 0 && subCategory3.overdue_budget !== undefined ? subCategory3.overdue_budget.toFixed(2) : subCategory3.overdue_budget}</td>
+                                            <td>{subCategory3.overdue_budget}</td>
                                             <td>{subCategory3.overdue_per % 1 !== 0 && subCategory3.overdue_per !== undefined ? subCategory3.overdue_per.toFixed(2) : subCategory3.overdue_per}</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -1237,9 +1238,9 @@ const EstimationDetailsSubProject = () => {
                                                     </td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>{boqDetail2.balance_bugdet % 1 !== 0 && boqDetail2.balance_bugdet !== undefined ? boqDetail2.balance_bugdet.toFixed(2) : boqDetail2.balance_bugdet}</td>
+                                                    <td>{boqDetail2.balance_bugdet}</td>
                                                     <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
-                                                    <td>{boqDetail2.overdue_budget% 1 !== 0 && boqDetail2.overdue_budget !== undefined ? boqDetail2.overdue_budget.toFixed(2) : boqDetail2.overdue_budget}</td>
+                                                    <td>{boqDetail2.overdue_budget}</td>
                                                     <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                     <td>-</td>
                                                     <td>-</td>
@@ -1383,9 +1384,9 @@ const EstimationDetailsSubProject = () => {
                                                     </td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>{subCategory4.balance_bugdet % 1 !== 0 && subCategory4.balance_bugdet !== undefined ? subCategory4.balance_bugdet.toFixed(2) : subCategory4.balance_bugdet}</td>
+                                                    <td>{subCategory4.balance_bugdet}</td>
                                                     <td>{subCategory4.balance_per % 1 !== 0 && subCategory4.balance_per !== undefined ? subCategory4.balance_per.toFixed(2) : subCategory4.balance_per}</td>
-                                                    <td>{subCategory4.overdue_budget % 1 !== 0 && subCategory4.overdue_budget !== undefined ? subCategory4.overdue_budget.toFixed(2) : subCategory4.overdue_budget}</td>
+                                                    <td>{subCategory4.overdue_budget}</td>
                                                     <td>{subCategory4.overdue_per % 1 !== 0 && subCategory4.overdue_per !== undefined ? subCategory4.overdue_per.toFixed(2) : subCategory4.overdue_per}</td>
                                                     <td>-</td>
                                                     <td>-</td>
@@ -1457,9 +1458,9 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td>-</td>
                                                             <td>-</td>
-                                                            <td>{boqDetail2.balance_bugdet % 1 !== 0 && boqDetail2.balance_bugdet !== undefined ? boqDetail2.balance_bugdet.toFixed(2) : boqDetail2.balance_bugdet}</td>
+                                                            <td>{boqDetail2.balance_bugdet}</td>
                                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
-                                                            <td>{boqDetail2.overdue_budget% 1 !== 0 && boqDetail2.overdue_budget !== undefined ? boqDetail2.overdue_budget.toFixed(2) : boqDetail2.overdue_budget}</td>
+                                                            <td>{boqDetail2.overdue_budget}</td>
                                                             <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                             <td>-</td>
                                                             <td>-</td>
@@ -1614,9 +1615,9 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td>-</td>
                                                             <td>-</td>
-                                                            <td>{subCategory5.balance_bugdet % 1 !== 0 && subCategory5.balance_bugdet !== undefined ? subCategory5.balance_bugdet.toFixed(2) : subCategory5.balance_bugdet}</td>
+                                                            <td>{subCategory5.balance_bugdet}</td>
                                                             <td>{subCategory5.balance_per % 1 !== 0 && subCategory5.balance_per !== undefined ? subCategory5.balance_per.toFixed(2) : subCategory5.balance_per}</td>
-                                                            <td>{subCategory5.overdue_budget % 1 !== 0 && subCategory5.overdue_budget !== undefined ? subCategory5.overdue_budget.toFixed(2) : subCategory5.overdue_budget}</td>
+                                                            <td>{subCategory5.overdue_budget}</td>
                                                             <td>{subCategory5.overdue_per % 1 !== 0 && subCategory5.overdue_per !== undefined ? subCategory5.overdue_per.toFixed(2) : subCategory5.overdue_per}</td>
                                                             <td>-</td>
                                                             <td>-</td>
@@ -1695,7 +1696,7 @@ const EstimationDetailsSubProject = () => {
                                                                     <td>-</td>
                                                                     <td>{boqDetail2.balance_bugdet % 1 !== 0 && boqDetail2.balance_bugdet !== undefined ? boqDetail2.balance_bugdet.toFixed(2) : boqDetail2.balance_bugdet}</td>
                                                                     <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
-                                                                    <td>{boqDetail2.overdue_budget% 1 !== 0 && boqDetail2.overdue_budget !== undefined ? boqDetail2.overdue_budget.toFixed(2) : boqDetail2.overdue_budget}</td>
+                                                                    <td>{boqDetail2.overdue_budget}</td>
                                                                     <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                                     <td>-</td>
                                                                     <td>-</td>
