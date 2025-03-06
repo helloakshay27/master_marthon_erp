@@ -847,7 +847,7 @@ const EstimationDetailsSubProject = () => {
                               <td></td>
                               <td></td>
                               <td>{category.name}</td>
-                              <td>{category.budget}</td>
+                              <td>{parseFloat(category.budget).toFixed(2)}</td>
                               <td>{category.order_draft_value}</td>
                               <td>{category.order_submitted_value}</td>
                               <td>{category.order_approved_value}</td>
@@ -963,7 +963,7 @@ const EstimationDetailsSubProject = () => {
                                     <td></td>
                                     <td></td>
                                     <td>{subCategory.name}</td>
-                                    <td>{subCategory.budget}</td>
+                                    <td>{parseFloat(subCategory.budget).toFixed(2)}</td>
                                     <td>{subCategory.order_draft_value}</td>
                                     <td>{subCategory.order_submitted_value}</td>
                                     <td>{subCategory.order_approved_value}</td>
@@ -1011,7 +1011,7 @@ const EstimationDetailsSubProject = () => {
                                             <td></td>
                                             <td></td>
                                             <td>{boqDetail2.name}</td>
-                                            <td>{boqDetail2.budget}</td>
+                                            <td>{parseFloat(boqDetail2.budget).toFixed(2)}</td>
                                             {console.log(
                                               "boqDetail2",
                                               boqDetail2
@@ -1027,7 +1027,7 @@ const EstimationDetailsSubProject = () => {
                                             </td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>{boqDetail2.balance_bugdet}</td>
+                                            <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                             <td>{boqDetail2.overdue_budget}</td>
                                             <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
@@ -1154,7 +1154,7 @@ const EstimationDetailsSubProject = () => {
                                             <td></td>
                                             <td></td>
                                             <td>{subCategory3.name}</td>
-                                            <td>{subCategory3.budget}</td>
+                                            <td>{parseFloat(subCategory3.budget).toFixed(2)}</td>
                                             <td>
                                               {subCategory3.order_draft_value}
                                             </td>
@@ -1220,7 +1220,7 @@ const EstimationDetailsSubProject = () => {
                                                     <td></td>
                                                     <td></td>
                                                     <td>{boqDetail2.name}</td>
-                                                    <td>{boqDetail2.budget}</td>
+                                                    <td>{parseFloat(boqDetail2.budget).toFixed(2)}</td>
                                                     <td>
                                                       {
                                                         boqDetail2.order_draft_value
@@ -1238,7 +1238,7 @@ const EstimationDetailsSubProject = () => {
                                                     </td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>{boqDetail2.balance_bugdet}</td>
+                                                    <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                                     <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                                     <td>{boqDetail2.overdue_budget}</td>
                                                     <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
@@ -1365,7 +1365,7 @@ const EstimationDetailsSubProject = () => {
                                                     <td></td>
                                                     <td>{subCategory4.name}</td>
                                                     <td>
-                                                      {subCategory4.budget}
+                                                      {parseFloat(subCategory4.budget).toFixed(2)}
                                                     </td>
                                                     <td>
                                                       {
@@ -1438,7 +1438,7 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td>
                                                               {
-                                                                boqDetail2.budget
+                                                                parseFloat(boqDetail2.budget).toFixed(2)
                                                               }
                                                             </td>
                                                             <td>
@@ -1458,7 +1458,7 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td>-</td>
                                                             <td>-</td>
-                                                            <td>{boqDetail2.balance_bugdet}</td>
+                                                            <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                                             <td>{boqDetail2.overdue_budget}</td>
                                                             <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
@@ -1595,7 +1595,7 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td>
                                                               {
-                                                                subCategory5.budget
+                                                                parseFloat(subCategory5.budget).toFixed(2)
                                                               }
                                                             </td>
                                                             <td>
@@ -1674,7 +1674,7 @@ const EstimationDetailsSubProject = () => {
                                                                     </td>
                                                                     <td>
                                                                       {
-                                                                        boqDetail2.budget
+                                                                        parseFloat(boqDetail2.budget).toFixed(2)
                                                                       }
                                                                     </td>
                                                                     <td>

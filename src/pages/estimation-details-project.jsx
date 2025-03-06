@@ -851,7 +851,7 @@ const EstimationDetailsProject = () => {
                               <td></td>
                               <td></td>
                               <td>{category.name}</td>
-                              <td>{category.budget}</td>
+                              <td>{parseFloat(category.budget).toFixed(2)}</td>
                               <td>{category.order_draft_value}</td>
                               <td>{category.order_submitted_value}</td>
                               <td>{category.order_approved_value}</td>
@@ -977,7 +977,7 @@ const EstimationDetailsProject = () => {
                                     <td></td>
                                     <td></td>
                                     <td>{subCategory.name}</td>
-                                    <td>{subCategory.budget}</td>
+                                    <td>{parseFloat(subCategory.budget).toFixed(2)}</td>
                                     <td>{subCategory.order_draft_value}</td>
                                     <td>{subCategory.order_submitted_value}</td>
                                     <td>{subCategory.order_approved_value}</td>
@@ -1035,7 +1035,7 @@ const EstimationDetailsProject = () => {
                                             <td></td>
                                             <td></td>
                                             <td>{boqDetail2.name}</td>
-                                            <td>{boqDetail2.budget}</td>
+                                            <td>{parseFloat(boqDetail2.budget).toFixed(2)}</td>
                                             {console.log(
                                               "boqDetail2",
                                               boqDetail2
@@ -1192,7 +1192,7 @@ const EstimationDetailsProject = () => {
                                             <td>{subCategory3.name}</td>
                                             <td>
                                               {parseFloat(
-                                                subCategory3.budget
+                                                parseFloat(subCategory3.budget).toFixed(2)
                                               ).toFixed(2)}
                                             </td>
                                             <td>
@@ -1249,7 +1249,6 @@ const EstimationDetailsProject = () => {
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>-</td>
                                           </tr>
 
                                           {/* Render BOQ Details for Sub-Category 3 */}
@@ -1281,7 +1280,7 @@ const EstimationDetailsProject = () => {
                                                     <td>{boqDetail2.name}</td>
                                                     <td>
                                                       {parseFloat(
-                                                        boqDetail2.budget
+                                                        parseFloat(boqDetail2.budget).toFixed(2)
                                                       ).toFixed(2)}
                                                     </td>
                                                     <td>
@@ -1450,7 +1449,7 @@ const EstimationDetailsProject = () => {
                                                     <td></td>
                                                     <td>{subCategory4.name}</td>
                                                     <td>
-                                                      {subCategory4.budget}
+                                                      {parseFloat(subCategory4.budget).toFixed(2)}
                                                     </td>
                                                     <td>
                                                       {
@@ -1544,7 +1543,7 @@ const EstimationDetailsProject = () => {
                                                             </td>
                                                             <td>
                                                               {
-                                                                boqDetail2.budget
+                                                                parseFloat(boqDetail2.budget).toFixed(2)
                                                               }
                                                             </td>
                                                             <td>
@@ -1726,7 +1725,7 @@ const EstimationDetailsProject = () => {
                                                             </td>
                                                             <td>
                                                               {
-                                                                subCategory5.budget
+                                                                parseFloat(subCategory5.budget).toFixed(2)
                                                               }
                                                             </td>
                                                             <td>
@@ -1827,7 +1826,7 @@ const EstimationDetailsProject = () => {
                                                                     </td>
                                                                     <td>
                                                                       {
-                                                                        boqDetail2.budget
+                                                                        parseFloat(boqDetail2.budget).toFixed(2)
                                                                       }
                                                                     </td>
                                                                     <td>
