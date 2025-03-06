@@ -1200,29 +1200,44 @@ const CreateBOQ = () => {
   const [predefinedAssetsData, setPredefinedAssetsData] = useState([]);
 
   // console.log("parent comp predef2", predefinedMaterialsData)
-  const updatePredefinedMaterialsData = (data) => {
-    // console.log('Received Data in Parent:', data);
-    setPredefinedMaterialsData(data); // Update the state with the received data
-  };
-  const updatePredefinedAssetsData = (data) => {
-    // console.log('Received Data in Parent (Assets):', data);
-    setPredefinedAssetsData(data); // Update the state with the received data
+  const updatePredefinedMaterialsData = (boqSubItemId, data) => {
+    setBoqSubItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === boqSubItemId ? { ...item, materials: data } : item
+      )
+    );
+
+
   };
 
-  // console.log('assets data from sub', predefinedAssetsData)
+  // Function to update predefined assets for a specific BOQ row
 
-  useEffect(() => {
-    if (predefinedMaterialsData.length || predefinedAssetsData.length > 0) {
-      // Update each boqSubItem with the materials from predefinedMaterialsData
-      setBoqSubItems((prevItems) =>
-        prevItems.map((item) => ({
-          ...item,
-          materials: predefinedMaterialsData, // Update materials for each row
-          assets: predefinedAssetsData, // Update assets for each row
-        }))
-      );
-    }
-  }, [predefinedMaterialsData, predefinedAssetsData]);
+
+
+
+  
+  
+  
+  
+ const updatePredefinedAssetsData = (boqSubItemId, data) => {
+    setBoqSubItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === boqSubItemId ? { ...item, assets: data } : item
+      )
+    );
+  };
+
+useEffect(() => {
+  setBoqSubItems((prevItems) =>
+    prevItems.map((item) => ({
+      ...item,
+      materials: Array.isArray(item.materials) ? item.materials : [], // Ensure materials is an array
+      assets: Array.isArray(item.assets) ? item.assets : [], // Ensure assets is an array
+    }))
+  );
+}, []);
+
+  
 
   const [materialsInputes, setMaterialsInputes] = useState([
     {
@@ -1390,37 +1405,36 @@ const CreateBOQ = () => {
   // console.log("sub item boq row :", boqSubItems)
 
   const addRowToTable1 = () => {
-    // console.log("pre data boq sub add :",predefinedMaterialsData)
-    // const newRow = { id: count.length + 1, value: '' };
-    // setcount([...count, newRow]);
-    // setcounter(counter + 1)
-    //sub item
-    // Generate a unique ID for the new row
-    const newId = count.length + 1; // or use a more sophisticated method like UUID if necessary
-
-    // Update the count (for row management in the table)
+    const newId = count.length + 1; // Generate a unique ID for the new row
+  
+    // Update the count
     const newCountRow = { id: newId, value: "" };
     setcount((prevCount) => [...prevCount, newCountRow]);
-
-    // Create the new row for boqSubItems
+  
+    // Create independent material copies
+   
+  
+    // Create new BOQ sub-item row
     const newBoqSubItem = {
-      id: newId, // Ensure the new sub-item has the same ID as the row in `count`
+      id: newId,
       name: "",
       description: "",
       notes: "",
       remarks: "",
       cost_quantity: 0,
       uom_id: null,
-      materials: [], // Assuming predefinedMaterialsData is available in scope
-      assets: [],
+      materials: [], // Assign fresh copies
+      assets: [] // Assign fresh copies
     };
-
-    // Update boqSubItems with the new sub-item row
+  
+    // Update boqSubItems with the new row
     setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-
-    // Update the counter if necessary (assuming this controls some UI element)
+  
+    // Increment the counter
     setcounter(counter + 1);
   };
+  
+
 
   const payloadData2 = {
     boq_detail: {
@@ -1440,51 +1454,51 @@ const CreateBOQ = () => {
         // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
         ...(selectedSubCategory
           ? [
-              {
-                category_id: selectedSubCategory?.value,
-                level: 2,
-                boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [], // Filter for level 2
-              },
-            ]
+            {
+              category_id: selectedSubCategory?.value,
+              level: 2,
+              boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [], // Filter for level 2
+            },
+          ]
           : []),
 
         // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
         ...(selectedSubCategoryLevel3
           ? [
-              {
-                category_id: selectedSubCategoryLevel3?.value,
-                level: 3,
-                boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [], // Filter for level 3
-              },
-            ]
+            {
+              category_id: selectedSubCategoryLevel3?.value,
+              level: 3,
+              boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [], // Filter for level 3
+            },
+          ]
           : []),
 
         // Only include materials for level 4 if it is selected
         ...(selectedSubCategoryLevel4
           ? [
-              {
-                category_id: selectedSubCategoryLevel4?.value,
-                level: 4,
-                boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [], // Filter for level 4
-              },
-            ]
+            {
+              category_id: selectedSubCategoryLevel4?.value,
+              level: 4,
+              boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [], // Filter for level 4
+            },
+          ]
           : []),
 
         // Only include materials for level 5 if it is selected
         ...(selectedSubCategoryLevel5
           ? [
-              {
-                category_id: selectedSubCategoryLevel5?.value,
-                level: 5,
-                boq_sub_items: boqSubItems || [], // Filter for level 5
-              },
-            ]
+            {
+              category_id: selectedSubCategoryLevel5?.value,
+              level: 5,
+              boq_sub_items: boqSubItems || [], // Filter for level 5
+            },
+          ]
           : []),
       ],
     },
   };
   // console.log("predefine data 2", predefinedMaterialsData)
-  console.log("boq sub payload", payloadData2);
+  // console.log("boq sub payload", payloadData2);
 
   // Handle input changes
   const handleInputChange = (field, value) => {
@@ -1689,61 +1703,61 @@ const CreateBOQ = () => {
               // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
               ...(selectedSubCategory
                 ? [
-                    {
-                      category_id: selectedSubCategory?.value,
-                      level: 2,
-                      materials: !selectedSubCategoryLevel3
-                        ? predefinedMaterials
-                        : [], // Filter for level 2
-                      assets: !selectedSubCategoryLevel3
-                        ? predefinedAssets
-                        : [],
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategory?.value,
+                    level: 2,
+                    materials: !selectedSubCategoryLevel3
+                      ? predefinedMaterials
+                      : [], // Filter for level 2
+                    assets: !selectedSubCategoryLevel3
+                      ? predefinedAssets
+                      : [],
+                  },
+                ]
                 : []),
 
               // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
               ...(selectedSubCategoryLevel3
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel3?.value,
-                      level: 3,
-                      materials: !selectedSubCategoryLevel4
-                        ? predefinedMaterials
-                        : [], // Filter for level 3
-                      assets: !selectedSubCategoryLevel4
-                        ? predefinedAssets
-                        : [],
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel3?.value,
+                    level: 3,
+                    materials: !selectedSubCategoryLevel4
+                      ? predefinedMaterials
+                      : [], // Filter for level 3
+                    assets: !selectedSubCategoryLevel4
+                      ? predefinedAssets
+                      : [],
+                  },
+                ]
                 : []),
 
               // Only include materials for level 4 if it is selected
               ...(selectedSubCategoryLevel4
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel4?.value,
-                      level: 4,
-                      materials: !selectedSubCategoryLevel5
-                        ? predefinedMaterials
-                        : [], // Filter for level 4
-                      assets: !selectedSubCategoryLevel5
-                        ? predefinedAssets
-                        : [],
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel4?.value,
+                    level: 4,
+                    materials: !selectedSubCategoryLevel5
+                      ? predefinedMaterials
+                      : [], // Filter for level 4
+                    assets: !selectedSubCategoryLevel5
+                      ? predefinedAssets
+                      : [],
+                  },
+                ]
                 : []),
 
               // Only include materials for level 5 if it is selected
               ...(selectedSubCategoryLevel5
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel5?.value,
-                      level: 5,
-                      materials: predefinedMaterials, // Filter for level 5
-                      assets: predefinedAssets || [],
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel5?.value,
+                    level: 5,
+                    materials: predefinedMaterials, // Filter for level 5
+                    assets: predefinedAssets || [],
+                  },
+                ]
                 : []),
             ],
           },
@@ -1815,8 +1829,7 @@ const CreateBOQ = () => {
       // Validate that at least one material or asset is selected
       if (boqSubItem.materials.length === 0 && boqSubItem.assets.length === 0) {
         toast.error(
-          `At least one material or asset must be selected for BoQ Sub Item ${
-            i + 1
+          `At least one material or asset must be selected for BoQ Sub Item ${i + 1
           }.`
         );
         return; // Exit function if validation fails
@@ -1849,51 +1862,51 @@ const CreateBOQ = () => {
               // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
               ...(selectedSubCategory
                 ? [
-                    {
-                      category_id: selectedSubCategory?.value,
-                      level: 2,
-                      boq_sub_items: !selectedSubCategoryLevel3
-                        ? boqSubItems
-                        : [], // Filter for level 2
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategory?.value,
+                    level: 2,
+                    boq_sub_items: !selectedSubCategoryLevel3
+                      ? boqSubItems
+                      : [], // Filter for level 2
+                  },
+                ]
                 : []),
 
               // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
               ...(selectedSubCategoryLevel3
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel3?.value,
-                      level: 3,
-                      boq_sub_items: !selectedSubCategoryLevel4
-                        ? boqSubItems
-                        : [], // Filter for level 3
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel3?.value,
+                    level: 3,
+                    boq_sub_items: !selectedSubCategoryLevel4
+                      ? boqSubItems
+                      : [], // Filter for level 3
+                  },
+                ]
                 : []),
 
               // Only include materials for level 4 if it is selected
               ...(selectedSubCategoryLevel4
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel4?.value,
-                      level: 4,
-                      boq_sub_items: !selectedSubCategoryLevel5
-                        ? boqSubItems
-                        : [], // Filter for level 4
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel4?.value,
+                    level: 4,
+                    boq_sub_items: !selectedSubCategoryLevel5
+                      ? boqSubItems
+                      : [], // Filter for level 4
+                  },
+                ]
                 : []),
 
               // Only include materials for level 5 if it is selected
               ...(selectedSubCategoryLevel5
                 ? [
-                    {
-                      category_id: selectedSubCategoryLevel5?.value,
-                      level: 5,
-                      boq_sub_items: boqSubItems || [], // Filter for level 5
-                    },
-                  ]
+                  {
+                    category_id: selectedSubCategoryLevel5?.value,
+                    level: 5,
+                    boq_sub_items: boqSubItems || [], // Filter for level 5
+                  },
+                ]
                 : []),
             ],
           },
@@ -2219,177 +2232,177 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className=" my-4">
-                        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-  <table
-    className="tbl-container"
-    style={{ minWidth: "1200px", borderCollapse: "collapse" }}
-  >
-    
-    <thead>
-                      <tr >
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                        <div className="d-flex justify-content-start">
-            <input
-              type="checkbox"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setSelectedMaterials(materials.map((m) => m.id)); // Select all
-                } else {
-                  setSelectedMaterials([]); // Deselect all
-                }
-              }}
-              checked={selectedMaterials.length === materials.length}
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={14}
-              height={14}
-              fill="currentColor"
-              className="bi bi-trash3-fill ms-2"
-              viewBox="0 0 16 16"
-              onClick={handleDeleteAll} // Delete selected rows on click
-            >
-              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-            </svg>
-          </div>
-                        </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Type</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Sub-Type</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Generic Specification</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Colour </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Brand </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>UOM</th>
-                        {/* <th rowSpan={2}>Cost QTY</th> */}
-                        <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Wastage%</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Total Estimated Qty Wastage</th>
-                      </tr>
-                      <tr>
-                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Co-Efficient Factor <span>*</span></th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Estimated Qty</th>
-                      </tr>
-                    </thead>
-    <tbody>
-      {materials.length > 0 ? (
-        materials.map((material, index) => (
-          <tr key={index}>
-            <td style={{ width: "300px" }}>
-              <input
-                className="ms-5"
-                type="checkbox"
-                checked={selectedMaterials.includes(material.id)}
-                onChange={() => handleSelectRow(material.id)}
-              />
-            </td>
-            <td style={{ width: "300px" }}>{material.inventory_type_name}</td>
-            <td style={{ width: "300px" }}>{material.name}</td>
-            <td style={{ width: "300px" }}>
-              <SingleSelector
-                options={inventorySubTypes[index] || []}
-                onChange={(selectedOption) =>
-                  handleSubTypeChange(index, selectedOption)
-                }
-                value={selectedSubTypes[index]}
-                placeholder={`Select Sub-Type`}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <SingleSelector
-                options={genericSpecifications[index] || []}
-                onChange={(selectedOption) =>
-                  handleGenericSpecificationChange(index, selectedOption)
-                }
-                value={selectedGenericSpecifications[index]}
-                placeholder={`Select Specification`}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <SingleSelector
-                options={colors[index] || []}
-                onChange={(selectedOption) =>
-                  handleColorChange(index, selectedOption)
-                }
-                value={selectedColors[index]}
-                placeholder={`Select Colour`}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <SingleSelector
-                options={inventoryBrands[index] || []}
-                onChange={(selectedOption) =>
-                  handleBrandChange(index, selectedOption)
-                }
-                value={selectedInventoryBrands[index]}
-                placeholder={`Select Brand`}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <SingleSelector
-                options={unitOfMeasures}
-                onChange={(selectedOption) =>
-                  handleUnitChange2(index, selectedOption)
-                }
-                value={selectedUnit2[index]}
-                placeholder={`Select UOM`}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <input
-                className="form-control"
-                type="number"
-                placeholder="Co-efficient Factor"
-                value={coefficientFactors[index] || ""}
-                onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "e" || e.key === "E") {
-                    e.preventDefault();
-                  }
-                }}
-                min="0"
-                onChange={(e) =>
-                  handleCoefficientFactorChange(index, e.target.value)
-                }
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <input
-                className="form-control"
-                type="number"
-                placeholder="Estimated Qty"
-                disabled
-                value={estimatedQuantities[index] || ""}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <input
-                className="form-control"
-                type="number"
-                placeholder="Wastage"
-                value={wastages[index] || ""}
-                onChange={(e) => handleWastageChange(index, e.target.value)}
-              />
-            </td>
-            <td style={{ width: "300px" }}>
-              <input
-                className="form-control"
-                type="number"
-                placeholder="Total Estimated Quantity Wastage"
-                disabled
-                value={totalEstimatedQtyWastages[index] || ""}
-              />
-            </td>
-          </tr>
-        ))
-      ) : (
-        <tr>
-          <td colSpan="12" className="text-center">
-            No materials added yet.
-          </td>
-        </tr>
-      )}
-    </tbody>
-  </table>
-</div>
+                          <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                            <table
+                              className="tbl-container"
+                              style={{  borderCollapse: "collapse" }}
+                            >
+                              <thead>
+                                <tr>
+                                  <th style={{ width: "300px" }} rowSpan={2}>
+                                    <div className="d-flex justify-content-center">
+                                      <input
+                                        type="checkbox"
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedMaterials(materials.map((m) => m.id)); // Select all
+                                          } else {
+                                            setSelectedMaterials([]); // Deselect all
+                                          }
+                                        }}
+                                        checked={selectedMaterials.length === materials.length}
+                                      />
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width={14}
+                                        height={14}
+                                        fill="currentColor"
+                                        className="bi bi-trash3-fill ms-2"
+                                        viewBox="0 0 16 16"
+                                        onClick={handleDeleteAll} // Delete selected rows on click
+                                      >
+                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                      </svg>
+                                    </div>
+                                  </th>
+                                  {[
+                                    "Material Type",
+                                    "Material",
+                                    "Material Sub-Type",
+                                    "Generic Specification",
+                                    "Colour",
+                                    "Brand",
+                                    "UOM",
+                                    "Cost",
+                                    "Wastage%",
+                                    "Total Estimated Quantity Wastage",
+                                  ].map((heading, index) => (
+                                    <th key={index} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                      {heading}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {materials.length > 0 ? (
+                                  materials.map((material, index) => (
+                                    <tr key={index}>
+                                      <td style={{ width: "300px" }}>
+                                        <input
+                                          className="ms-5"
+                                          type="checkbox"
+                                          checked={selectedMaterials.includes(material.id)}
+                                          onChange={() => handleSelectRow(material.id)}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>{material.inventory_type_name}</td>
+                                      <td style={{ width: "300px" }}>{material.name}</td>
+                                      <td style={{ width: "300px" }}>
+                                        <SingleSelector
+                                          options={inventorySubTypes[index] || []}
+                                          onChange={(selectedOption) =>
+                                            handleSubTypeChange(index, selectedOption)
+                                          }
+                                          value={selectedSubTypes[index]}
+                                          placeholder={`Select Sub-Type`}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <SingleSelector
+                                          options={genericSpecifications[index] || []}
+                                          onChange={(selectedOption) =>
+                                            handleGenericSpecificationChange(index, selectedOption)
+                                          }
+                                          value={selectedGenericSpecifications[index]}
+                                          placeholder={`Select Specification`}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <SingleSelector
+                                          options={colors[index] || []}
+                                          onChange={(selectedOption) =>
+                                            handleColorChange(index, selectedOption)
+                                          }
+                                          value={selectedColors[index]}
+                                          placeholder={`Select Colour`}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <SingleSelector
+                                          options={inventoryBrands[index] || []}
+                                          onChange={(selectedOption) =>
+                                            handleBrandChange(index, selectedOption)
+                                          }
+                                          value={selectedInventoryBrands[index]}
+                                          placeholder={`Select Brand`}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <SingleSelector
+                                          options={unitOfMeasures}
+                                          onChange={(selectedOption) =>
+                                            handleUnitChange2(index, selectedOption)
+                                          }
+                                          value={selectedUnit2[index]}
+                                          placeholder={`Select UOM`}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Co-efficient Factor"
+                                          value={coefficientFactors[index] || ""}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                              e.preventDefault();
+                                            }
+                                          }}
+                                          min="0"
+                                          onChange={(e) =>
+                                            handleCoefficientFactorChange(index, e.target.value)
+                                          }
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Estimated Qty"
+                                          disabled
+                                          value={estimatedQuantities[index] || ""}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Wastage"
+                                          value={wastages[index] || ""}
+                                          onChange={(e) => handleWastageChange(index, e.target.value)}
+                                        />
+                                      </td>
+                                      <td style={{ width: "300px" }}>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Total Estimated Quantity Wastage"
+                                          disabled
+                                          value={totalEstimatedQtyWastages[index] || ""}
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="12" className="text-center">
+                                      No materials added yet.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
 
                         </div>
 
@@ -2416,17 +2429,16 @@ const CreateBOQ = () => {
                   <CollapsibleCard title="Assests">
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
-
-                      <div className=" my-4">
-                        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
                           <table
-                           className="tbl-container"
-                           style={{ minWidth: "1200px", borderCollapse: "collapse" }}
+                            // className="mb-5"
+                            className={`  ${Assets.length === 0 ? "w-100" : "w-100"
+                              }`}
                           >
                             <thead>
                               <tr>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  <div className="d-flex justify-content-start">
+                                <th rowSpan={2} style={{ width: "20px" }}>
+                                  <div className="d-flex justify-content-center">
                                     <input
                                       className=""
                                       type="checkbox"
@@ -2457,43 +2469,43 @@ const CreateBOQ = () => {
                                     </svg>
                                   </div>
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "20px" }}>
                                   Assest Type
                                 </th>
 
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "20px" }}>
                                   Assest
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "210px" }}>
                                   Assest Sub-Type
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "180px" }}>
                                   Generic Specification
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   Colour
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   Brand
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   UOM
                                 </th>
                                 <th className="text-center" colSpan={2}>
                                   Cost
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   Wastage%
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   Total Estimated Quantity Wastage
                                 </th>
                               </tr>
                               <tr>
-                                <th style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th style={{ width: "170px" }}>
                                   Co-efficient Factor <span>*</span>
                                 </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                                <th rowSpan={2} style={{ width: "170px" }}>
                                   Estimated Qty
                                 </th>
                               </tr>
@@ -2544,7 +2556,7 @@ const CreateBOQ = () => {
                                         }
                                         value={
                                           selectedAssetGenericSpecifications[
-                                            index
+                                          index
                                           ]
                                         } // Display the selected generic specification for this material
                                         placeholder={`Select  Specification`} // Dynamic placeholder
@@ -2628,7 +2640,7 @@ const CreateBOQ = () => {
                                         value={
                                           assetEstimatedQuantities[index] || ""
                                         }
-                                        // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
+                                      // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
                                       />
                                     </td>
                                     <td>
@@ -2653,10 +2665,10 @@ const CreateBOQ = () => {
                                         disabled
                                         value={
                                           assetTotalEstimatedQtyWastages[
-                                            index
+                                          index
                                           ] || ""
                                         }
-                                        // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                      // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
                                       />
                                     </td>
                                   </tr>
@@ -2674,7 +2686,6 @@ const CreateBOQ = () => {
                               )}
                             </tbody>
                           </table>
-                        </div>
                         </div>
                         <div>
                           <button
@@ -2703,31 +2714,33 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                        <div className=" my-4">
-                        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                          
-                            <table  className="tbl-container"
-                           style={{ minWidth: "1200px", borderCollapse: "collapse" }}>
-                              <thead>
+                          <h1>boqSubItems</h1>
+
+                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
+
+
+                          <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
+                            <table className="table table-bordered">
+                              <thead style={{ zIndex: "1" }}>
                                 <tr>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>
+                                  <th rowSpan={2}>
                                     <input type="checkbox" />
                                   </th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Expand</th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>
+                                  <th rowSpan={2}>Expand</th>
+                                  <th rowSpan={2}>
                                     Sub Item Name <span>*</span>
                                   </th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Description</th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Notes</th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Remarks</th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>UOM</th>
-                                  <th colSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Cost  Quantity <span>*</span></th>
-                                  <th rowSpan={2} style={{width: "400px", whiteSpace: "nowrap"}}>Document</th>
+                                  <th rowSpan={2}>Description</th>
+                                  <th rowSpan={2}>Notes</th>
+                                  <th rowSpan={2}>Remarks</th>
+                                  <th rowSpan={2}>UOM</th>
+                                  <th colSpan={3}>Cost</th>
+                                  <th rowSpan={2}>Document</th>
                                 </tr>
                                 <tr>
-                                  {/* <th colSpan={3}>
+                                  <th colSpan={3}>
                                     Quantity <span>*</span>
-                                  </th> */}
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2878,7 +2891,7 @@ const CreateBOQ = () => {
                                           }
                                         />
                                       </td>
-                                      <td>
+                                      <td style={{ width: "200px" }}>
                                         <SingleSelector
                                           onChange={(selectedOption) =>
                                             handleUnitChangeForRow(
@@ -2892,7 +2905,7 @@ const CreateBOQ = () => {
                                           placeholder={`Select UOM`} // Dynamic placeholder
                                         />
                                       </td>
-                                      <td colSpan={2}>
+                                      <td colSpan={3}>
                                         <input
                                           type="number"
                                           value={expandedRows.qty}
@@ -2946,7 +2959,7 @@ const CreateBOQ = () => {
                                     </tr>
                                     {expandedRows.includes(el.id) && (
                                       <tr>
-                                        <td colSpan={10}>
+                                        <td colSpan={11}>
                                           {/* <BOQSubItemTable /> */}
                                           <BOQSubItemTable
                                             // materials={materials2}
@@ -2977,17 +2990,17 @@ const CreateBOQ = () => {
                                             handleSelectRowAsset={
                                               handleSelectRowAssets2
                                             }
-                                            predefinedMaterialsData={
-                                              updatePredefinedMaterialsData
-                                            }
-                                            predefinedAssetsData={
-                                              updatePredefinedAssetsData
-                                            }
+                                            predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
+
+                                            predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
+
                                             // boqSubItems={boqSubItems}
-                                            boqSubItems={boqSubItems.filter(
-                                              (item) => item.id === el.id
-                                            )} // Only pass the latest boqSubItems based on el.id
-                                            // handleInputChange2={handleInputChange2}
+                                            boqSubItemId={el.id}
+                                            boqSubItems={boqSubItems.filter((item) => item.id === el.id)} // Pass only the relevant item
+                                            setBoqSubItems={setBoqSubItems}
+
+                                            // Only pass the latest boqSubItems based on el.id
+                                          // handleInputChange2={handleInputChange2}
                                           />
 
                                           {/* <MaterialModal
@@ -3008,7 +3021,6 @@ const CreateBOQ = () => {
                                 ))}
                               </tbody>
                             </table>
-                          </div>
                           </div>
                           <div className="row mt-3 mx-3">
                             <p>

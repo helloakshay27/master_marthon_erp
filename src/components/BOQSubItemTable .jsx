@@ -13,6 +13,7 @@ import { baseURL } from '../confi/apiDomain';
 
 
 const BOQSubItemTable = ({
+  setBoqSubItems ,
   materials,
   setMaterials,
   labours,
@@ -31,6 +32,7 @@ const BOQSubItemTable = ({
   predefinedAssetsData,
   boqSubItems,
   handleInputChange2,
+  boqSubItemId
   // boqCostQty
 }) => {
   const [materialshowModal, setmaterialShowModal] = useState(false);
@@ -794,62 +796,75 @@ const BOQSubItemTable = ({
 
 
 
-  useEffect(() => {
-    // Assuming you have a function to fetch or get the data
-    const predefinedMaterials2 = materials.map((material, index) => ({
-      material_id: material.id,
-      material_sub_type_id: selectedSubTypes[index] ? selectedSubTypes[index].value : '',
-      generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
-      colour_id: selectedColors[index] ? selectedColors[index].value : '',
-      brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-      uom_id:  selectedUnit2[index]? selectedUnit2[index].value : '',
-      co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
-      estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
-      wastage: parseFloat(wastages[index]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0
-    }));
+useEffect(() => {
+  if (!boqSubItemId) return; // Ensure ID exists
 
-    // Once the data is ready, send it to the parent component
-    predefinedMaterialsData(predefinedMaterials2);
+  const predefinedMaterials2 = materials.map((material, index) => ({
+    material_id: material.id,
+    material_sub_type_id: selectedSubTypes[index]?.value || "",
+    generic_info_id: selectedGenericSpecifications[index]?.value || "",
+    colour_id: selectedColors[index]?.value || "",
+    brand_id: selectedInventoryBrands[index]?.value || "",
+    uom_id: selectedUnit2[index]?.value || "",
+    co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
+    estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
+    wastage: parseFloat(wastages[index]) || 0,
+    estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0,
+  }));
 
-  }, [
-    materials,
-    selectedSubTypes,
-    selectedGenericSpecifications,
-    selectedColors,
-    selectedInventoryBrands,
-    selectedUnit2,
-    coefficientFactors,
-    estimatedQuantities,
-    wastages,
-    totalEstimatedQtyWastages,
-    unitOfMeasures
-  ]);
+  // Update materials in parent state
+  setBoqSubItems((prevItems) =>
+    prevItems.map((item) =>
+      item.id === boqSubItemId ? { ...item, materials: predefinedMaterials2 } : item
+    )
+  );
+}, [
+  boqSubItemId,
+  materials,
+  setBoqSubItems,
+  selectedSubTypes,
+  selectedGenericSpecifications,
+  selectedColors,
+  selectedInventoryBrands,
+  selectedUnit2,
+  coefficientFactors,
+  estimatedQuantities,
+  wastages,
+  totalEstimatedQtyWastages,
+  predefinedMaterialsData
+]);
+
 
 
   //assets
 
   useEffect(() => {
-    // Assuming you have a function to fetch or get the data
+    if (!boqSubItemId) return; // Ensure ID exists
+  
     const predefinedAssets2 = Assets.map((asset, index) => ({
       material_id: asset.id,
-      material_sub_type_id: selectedSubTypesAssets[index] ? selectedSubTypesAssets[index].value : '',
-      generic_info_id: selectedGenericSpecifications[index] ? selectedGenericSpecifications[index].value : '',
-      colour_id: selectedColors[index] ? selectedColors[index].value : '',
-      brand_id: selectedInventoryBrands[index] ? selectedInventoryBrands[index].value : '',
-      uom_id: selectedUnit3[index]? selectedUnit3[index].value :'',
+      material_sub_type_id: selectedSubTypesAssets[index]?.value || '',
+      generic_info_id: selectedGenericSpecifications[index]?.value || '',
+      colour_id: selectedColors[index]?.value || '',
+      brand_id: selectedInventoryBrands[index]?.value || '',
+      uom_id: selectedUnit3[index]?.value || '',
       co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
       wastage: parseFloat(assetWastages[index]) || 0,
       estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
       cost_qty: parseFloat(assetCostQTY[index]) || 0,
     }));
-    // console.log("assets data :", predefinedAssets2)
-
-    // Once the data is ready, send it to the parent component
-    predefinedAssetsData(predefinedAssets2);
+  
+    // Update assets in parent state
+    setBoqSubItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === boqSubItemId ? { ...item, assets: predefinedAssets2 } : item
+      )
+    );
   }, [
+    boqSubItemId,
     Assets,
+    setBoqSubItems,
     selectedSubTypesAssets,
     selectedGenericSpecifications,
     selectedColors,
@@ -860,8 +875,8 @@ const BOQSubItemTable = ({
     assetWastages,
     assetTotalEstimatedQtyWastages,
     assetCostQTY,
-    unitOfMeasures,
   ]);
+  
 
 
   // 
@@ -974,7 +989,7 @@ const BOQSubItemTable = ({
                
                   <table
                    className="tbl-container"
-                   style={{ minWidth: "1200px", borderCollapse: "collapse" }}
+                   style={{  borderCollapse: "collapse" }}
                   >
                     <thead style={{ zIndex: "0" }}>
                       <tr >
