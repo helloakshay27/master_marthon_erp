@@ -2237,7 +2237,7 @@ useEffect(() => {
                               className="tbl-container"
                               style={{  borderCollapse: "collapse" }}
                             >
-                              <thead>
+                              {/* <thead>
                                 <tr>
                                   <th style={{ width: "300px" }} rowSpan={2}>
                                     <div className="d-flex justify-content-center">
@@ -2282,7 +2282,54 @@ useEffect(() => {
                                     </th>
                                   ))}
                                 </tr>
-                              </thead>
+                              </thead> */}
+
+                              <thead>
+                      <tr >
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
+                        <div className="d-flex justify-content-start">
+            <input
+              type="checkbox"
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setSelectedMaterials(materials.map((m) => m.id)); // Select all
+                } else {
+                  setSelectedMaterials([]); // Deselect all
+                }
+              }}
+              checked={selectedMaterials.length === materials.length}
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={14}
+              height={14}
+              fill="currentColor"
+              className="bi bi-trash3-fill ms-2"
+              viewBox="0 0 16 16"
+              onClick={handleDeleteAll} // Delete selected rows on click
+            >
+              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+            </svg>
+          </div>
+                        </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Sub-Type</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Generic Specification</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Colour </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Brand </th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>UOM</th>
+                        {/* <th rowSpan={2}>Cost QTY</th> */}
+                        <th className="text-center" colSpan={2}>Cost</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Wastage%</th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Total Estimated Qty Wastage</th>
+                      </tr>
+                      <tr>
+                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Co-Efficient Factor <span>*</span></th>
+                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Estimated Qty</th>
+                      </tr>
+                    </thead>
+
                               <tbody>
                                 {materials.length > 0 ? (
                                   materials.map((material, index) => (
@@ -2429,15 +2476,16 @@ useEffect(() => {
                   <CollapsibleCard title="Assests">
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
-                        <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
+                      <div className=" my-4">
+                      <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                        
                           <table
-                            // className="mb-5"
-                            className={`  ${Assets.length === 0 ? "w-100" : "w-100"
-                              }`}
+                            className="tbl-container"
+                            style={{  borderCollapse: "collapse" }}
                           >
                             <thead>
                               <tr>
-                                <th rowSpan={2} style={{ width: "20px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   <div className="d-flex justify-content-center">
                                     <input
                                       className=""
@@ -2469,43 +2517,43 @@ useEffect(() => {
                                     </svg>
                                   </div>
                                 </th>
-                                <th rowSpan={2} style={{ width: "20px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Assest Type
                                 </th>
 
-                                <th rowSpan={2} style={{ width: "20px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Assest
                                 </th>
-                                <th rowSpan={2} style={{ width: "210px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Assest Sub-Type
                                 </th>
-                                <th rowSpan={2} style={{ width: "180px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Generic Specification
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Colour
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Brand
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   UOM
                                 </th>
                                 <th className="text-center" colSpan={2}>
                                   Cost
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Wastage%
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Total Estimated Quantity Wastage
                                 </th>
                               </tr>
                               <tr>
-                                <th style={{ width: "170px" }}>
+                                <th style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Co-efficient Factor <span>*</span>
                                 </th>
-                                <th rowSpan={2} style={{ width: "170px" }}>
+                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
                                   Estimated Qty
                                 </th>
                               </tr>
@@ -2678,7 +2726,7 @@ useEffect(() => {
                                   <td
                                     colSpan="12"
                                     className="text-center"
-                                    style={{ paddingLeft: "500px" }}
+                                    // style={{ paddingLeft: "500px" }}
                                   >
                                     No asset added yet.
                                   </td>
@@ -2686,6 +2734,7 @@ useEffect(() => {
                               )}
                             </tbody>
                           </table>
+                        </div>
                         </div>
                         <div>
                           <button
@@ -2714,33 +2763,37 @@ useEffect(() => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                          <h1>boqSubItems</h1>
+                          {/* <h1>boqSubItems</h1>
 
-                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
+                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
-
-                          <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1">
-                            <table className="table table-bordered">
+                          <div className=" my-4">
+                          <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                          {/* <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1"> */}
+                            <table 
+                            className="tbl-container"
+                            style={{  borderCollapse: "collapse" }}
+                            >
                               <thead style={{ zIndex: "1" }}>
                                 <tr>
-                                  <th rowSpan={2}>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     <input type="checkbox" />
                                   </th>
-                                  <th rowSpan={2}>Expand</th>
-                                  <th rowSpan={2}>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Expand</th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>
                                     Sub Item Name <span>*</span>
                                   </th>
-                                  <th rowSpan={2}>Description</th>
-                                  <th rowSpan={2}>Notes</th>
-                                  <th rowSpan={2}>Remarks</th>
-                                  <th rowSpan={2}>UOM</th>
-                                  <th colSpan={3}>Cost</th>
-                                  <th rowSpan={2}>Document</th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Description</th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Notes</th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Remarks</th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>UOM</th>
+                                  <th colSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
+                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Document</th>
                                 </tr>
                                 <tr>
-                                  <th colSpan={3}>
+                                  {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
                                     Quantity <span>*</span>
-                                  </th>
+                                  </th> */}
                                 </tr>
                               </thead>
                               <tbody>
@@ -2891,7 +2944,7 @@ useEffect(() => {
                                           }
                                         />
                                       </td>
-                                      <td style={{ width: "200px" }}>
+                                      <td>
                                         <SingleSelector
                                           onChange={(selectedOption) =>
                                             handleUnitChangeForRow(
@@ -2905,7 +2958,7 @@ useEffect(() => {
                                           placeholder={`Select UOM`} // Dynamic placeholder
                                         />
                                       </td>
-                                      <td colSpan={3}>
+                                      <td colSpan={2}>
                                         <input
                                           type="number"
                                           value={expandedRows.qty}
@@ -3021,6 +3074,7 @@ useEffect(() => {
                                 ))}
                               </tbody>
                             </table>
+                          </div>
                           </div>
                           <div className="row mt-3 mx-3">
                             <p>

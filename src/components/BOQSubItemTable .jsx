@@ -1157,7 +1157,9 @@ useEffect(() => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="12" className="text-center" style={{ paddingLeft: "400px" }}>
+                          <td colSpan="12" className="text-center" 
+                          // style={{ paddingLeft: "400px" }}
+                          >
                             No materials added yet.
                           </td>
                         </tr>
@@ -1367,7 +1369,9 @@ useEffect(() => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="12" className="text-center" style={{ paddingLeft: "400px" }}>
+                          <td colSpan="12" className="text-center" 
+                          // style={{ paddingLeft: "400px" }}
+                          >
                             No asset added yet.
                           </td>
                         </tr>
