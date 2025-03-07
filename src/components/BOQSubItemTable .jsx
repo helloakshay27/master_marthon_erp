@@ -66,32 +66,16 @@ const BOQSubItemTable = ({
     );
   };
 
-  // console.log("materials data for  delete in boq sub........:",materials)
   const handleDeleteAllMaterial = () => {
-    // setMaterials((prev) =>
-    //   prev.filter((material) => !selectedMaterials.includes(material.id))
-    // );
-    // setSelectedMaterials([]); // Reset selected materials
-
-
-    // setMaterials((prev) =>
-    //   prev.filter((material) => !selectedMaterials.includes(material.id))
-    // );
-    // setSelectedMaterials([]); // Reset selected materials
-
-
     setMaterials((prev) => {
-      if (!Array.isArray(prev)) {
-        // console.error("Expected 'prev' to be an array, but got:", prev);
-        return []; // Fallback to empty array if prev is not an array
-      }
-      return prev.filter((material) => !selectedMaterials.includes(material.id));
+        const materialsArray = prev[1] || [];
+        const filteredMaterials = materialsArray.filter((material) => !selectedMaterials.includes(material.id));
+        console.log("filteredMaterials", filteredMaterials);
+        
+        return { ...prev, 1: filteredMaterials };
     });
-    setSelectedMaterials([]); // Reset selected materials
-  
-
-    
-  };
+    setSelectedMaterials([]);     
+};
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
