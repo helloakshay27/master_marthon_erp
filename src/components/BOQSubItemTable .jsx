@@ -133,17 +133,36 @@ const BOQSubItemTable = ({
   // };
 
   const handleDeleteAllAssets2 = () => {
-    setAssets((prev) =>
-      prev.filter((asset) => !selectedAssets.includes(asset.id))
-    );
-    setSelectedAssets([]); // Reset selected materials
+    // setAssets((prev) =>
+    //   prev.filter((asset) => !selectedAssets.includes(asset.id))
+    // );
+    // setSelectedAssets([]); // Reset selected materials
+
+    setAssets((prev) => {
+      if (!Array.isArray(prev)) {
+        console.error("Expected 'prev' to be an array, but got:", prev);
+        return []; // Fallback to an empty array if prev is not an array
+      }
+      return prev.filter((asset) => !selectedAssets.includes(asset.id));
+    });
+    setSelectedAssets([]); // Reset selected assets
+    
+    
   };
 
-  const handleSelectRowAssets2 = (index) => {
-    const updatedAssets = [...Assets];
-    updatedAssets[index].selected = !updatedAssets[index].selected;
-    setMaterials(updatedAssets);
-    onMaterialsChange(updatedAssets);
+  // const handleSelectRowAssets2 = (index) => {
+  //   const updatedAssets = [...Assets];
+  //   updatedAssets[index].selected = !updatedAssets[index].selected;
+  //   setMaterials(updatedAssets);
+  //   onMaterialsChange(updatedAssets);
+  // };
+  const handleSelectRowAssets2 = (assetType) => {
+    setSelectedAssets(
+      (prev) =>
+        prev.includes(assetType)
+          ? prev.filter((type) => type !== assetType) // Unselect the material
+          : [...prev, assetType] // Select the material
+    );
   };
 
   // for subproject material table
@@ -1391,14 +1410,25 @@ const BOQSubItemTable = ({
                           Assets.map((assets, index) => (
                             <tr key={index}>
                               <td>
-                                <input
+                                {/* <input
                                   className="ms-5"
                                   type="checkbox"
                                   checked={selectedAssets.includes(assets.id)} // Check if material is selected
                                   onChange={() =>
                                     handleSelectRowAssets2(assets.id)
-                                  } // Toggle selection
-                                />
+                                  } // Toggle selection */}
+                                {/* /> */}
+
+                                <input
+                                        className="ms-5"
+                                        type="checkbox"
+                                        checked={selectedAssets.includes(
+                                          assets.id
+                                        )} // Check if material is selected
+                                        onChange={() =>
+                                          handleSelectRowAssets2(assets.id)
+                                        } // Toggle selection
+                                        />
                               </td>
 
                               <td>{assets.inventory_type_name}</td>
