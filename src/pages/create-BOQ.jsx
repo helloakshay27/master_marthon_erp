@@ -122,10 +122,11 @@ const CreateBOQ = () => {
     setMaterials((prev) => [
       ...prev,
       ...newMaterials.filter(
-        (material) => !prev.some((m) => m.id === material.id)
+        (material) => prev.filter((m) => m.id === material.id) // Allow max 2 copies
       ),
     ]);
   };
+  
 
   // console.log("materials", materials)
 
@@ -162,21 +163,18 @@ const CreateBOQ = () => {
   const handleAddMaterials2 = (id, newMaterials) => {
     setMaterials2((prev) => {
       const updatedMaterials = { ...prev };
-
+  
       if (!updatedMaterials[id]) {
         updatedMaterials[id] = [];
       }
-
-      updatedMaterials[id] = [
-        ...updatedMaterials[id],
-        ...newMaterials.filter(
-          (material) => !updatedMaterials[id].some((m) => m.id === material.id)
-        ),
-      ];
-
+  
+      // Directly add new materials without filtering duplicates
+      updatedMaterials[id] = [...updatedMaterials[id], ...newMaterials];
+  
       return updatedMaterials;
     });
   };
+  
 
   // const handleAddMaterials2 = (newMaterials) => {
   //   setMaterials2((prev) => [
@@ -256,25 +254,21 @@ const CreateBOQ = () => {
   //     ),
   //   ]);
   // };
-
   const handleAddAssets2 = (id, newAssets) => {
     setAssets2((prev) => {
       const updatedAssets = { ...prev };
-
+  
       if (!updatedAssets[id]) {
         updatedAssets[id] = [];
       }
-
-      updatedAssets[id] = [
-        ...updatedAssets[id],
-        ...newAssets.filter(
-          (asset) => !updatedAssets[id].some((a) => a.id === asset.id)
-        ),
-      ];
-
+  
+      // Allow duplicates but prevent exact same object references
+      updatedAssets[id] = [...updatedAssets[id], ...newAssets];
+  
       return updatedAssets;
     });
   };
+  
 
   const handleDeleteAllAssets2 = () => {
     setAssets2((prev) =>
@@ -1215,11 +1209,11 @@ const CreateBOQ = () => {
 
 
 
-  
-  
-  
-  
- const updatePredefinedAssetsData = (boqSubItemId, data) => {
+
+
+
+
+  const updatePredefinedAssetsData = (boqSubItemId, data) => {
     setBoqSubItems((prevItems) =>
       prevItems.map((item) =>
         item.id === boqSubItemId ? { ...item, assets: data } : item
@@ -1227,17 +1221,17 @@ const CreateBOQ = () => {
     );
   };
 
-useEffect(() => {
-  setBoqSubItems((prevItems) =>
-    prevItems.map((item) => ({
-      ...item,
-      materials: Array.isArray(item.materials) ? item.materials : [], // Ensure materials is an array
-      assets: Array.isArray(item.assets) ? item.assets : [], // Ensure assets is an array
-    }))
-  );
-}, []);
+  useEffect(() => {
+    setBoqSubItems((prevItems) =>
+      prevItems.map((item) => ({
+        ...item,
+        materials: Array.isArray(item.materials) ? item.materials : [], // Ensure materials is an array
+        assets: Array.isArray(item.assets) ? item.assets : [], // Ensure assets is an array
+      }))
+    );
+  }, []);
 
-  
+
 
   const [materialsInputes, setMaterialsInputes] = useState([
     {
@@ -1406,14 +1400,14 @@ useEffect(() => {
 
   const addRowToTable1 = () => {
     const newId = count.length + 1; // Generate a unique ID for the new row
-  
+
     // Update the count
     const newCountRow = { id: newId, value: "" };
     setcount((prevCount) => [...prevCount, newCountRow]);
-  
+
     // Create independent material copies
-   
-  
+
+
     // Create new BOQ sub-item row
     const newBoqSubItem = {
       id: newId,
@@ -1426,14 +1420,14 @@ useEffect(() => {
       materials: [], // Assign fresh copies
       assets: [] // Assign fresh copies
     };
-  
+
     // Update boqSubItems with the new row
     setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-  
+
     // Increment the counter
     setcounter(counter + 1);
   };
-  
+
 
 
   const payloadData2 = {
@@ -2235,7 +2229,7 @@ useEffect(() => {
                           <div style={{ overflowX: "auto", maxWidth: "100%" }}>
                             <table
                               className="tbl-container"
-                              style={{  borderCollapse: "collapse" }}
+                              style={{ borderCollapse: "collapse" }}
                             >
                               {/* <thead>
                                 <tr>
@@ -2285,50 +2279,50 @@ useEffect(() => {
                               </thead> */}
 
                               <thead>
-                      <tr >
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                        <div className="d-flex justify-content-start">
-            <input
-              type="checkbox"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setSelectedMaterials(materials.map((m) => m.id)); // Select all
-                } else {
-                  setSelectedMaterials([]); // Deselect all
-                }
-              }}
-              checked={selectedMaterials.length === materials.length}
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={14}
-              height={14}
-              fill="currentColor"
-              className="bi bi-trash3-fill ms-2"
-              viewBox="0 0 16 16"
-              onClick={handleDeleteAll} // Delete selected rows on click
-            >
-              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-            </svg>
-          </div>
-                        </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Type</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Material Sub-Type</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Generic Specification</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Colour </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Brand </th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>UOM</th>
-                        {/* <th rowSpan={2}>Cost QTY</th> */}
-                        <th className="text-center" colSpan={2}>Cost</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Wastage%</th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Total Estimated Qty Wastage</th>
-                      </tr>
-                      <tr>
-                        <th style={{width: "300px", whiteSpace: "nowrap"}}>Co-Efficient Factor <span>*</span></th>
-                        <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>Estimated Qty</th>
-                      </tr>
-                    </thead>
+                                <tr >
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    <div className="d-flex justify-content-start">
+                                      <input
+                                        type="checkbox"
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedMaterials(materials.map((m) => m.id)); // Select all
+                                          } else {
+                                            setSelectedMaterials([]); // Deselect all
+                                          }
+                                        }}
+                                        checked={selectedMaterials.length === materials.length}
+                                      />
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width={14}
+                                        height={14}
+                                        fill="currentColor"
+                                        className="bi bi-trash3-fill ms-2"
+                                        viewBox="0 0 16 16"
+                                        onClick={handleDeleteAll} // Delete selected rows on click
+                                      >
+                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                      </svg>
+                                    </div>
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Type</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Colour </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Brand </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>UOM</th>
+                                  {/* <th rowSpan={2}>Cost QTY</th> */}
+                                  <th className="text-center" colSpan={2}>Cost</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Wastage%</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Total Estimated Qty Wastage</th>
+                                </tr>
+                                <tr>
+                                  <th style={{ width: "300px", whiteSpace: "nowrap" }}>Co-Efficient Factor <span>*</span></th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Estimated Qty</th>
+                                </tr>
+                              </thead>
 
                               <tbody>
                                 {materials.length > 0 ? (
@@ -2466,275 +2460,275 @@ useEffect(() => {
                       </div>
                     </div>
                   </CollapsibleCard>
-                  <MaterialModal
+                  {/* <MaterialModal
                     show={showModal}
                     handleClose={handleCloseModal}
                     handleAdd={handleAddMaterials}
-                  />
+                  /> */}
 
                   {/* //assets */}
                   <CollapsibleCard title="Assests">
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
-                      <div className=" my-4">
-                      <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                        
-                          <table
-                            className="tbl-container"
-                            style={{  borderCollapse: "collapse" }}
-                          >
-                            <thead>
-                              <tr>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  <div className="d-flex justify-content-center">
-                                    <input
-                                      className=""
-                                      type="checkbox"
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setSelectedAssets(
-                                            Assets.map((a) => a.id)
-                                          ); // Select all
-                                        } else {
-                                          setSelectedAssets([]); // Deselect all
-                                        }
-                                      }}
-                                      checked={
-                                        selectedAssets.length === Assets.length
-                                      }
-                                    />
+                        <div className=" my-4">
+                          <div style={{ overflowX: "auto", maxWidth: "100%" }}>
 
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width={14}
-                                      height={14}
-                                      fill="currentColor"
-                                      className="bi bi-trash3-fill ms-2"
-                                      viewBox="0 0 16 16"
-                                      onClick={handleDeleteAllAssets}
-                                    >
-                                      <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                    </svg>
-                                  </div>
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Assest Type
-                                </th>
-
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Assest
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Assest Sub-Type
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Generic Specification
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Colour
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Brand
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  UOM
-                                </th>
-                                <th className="text-center" colSpan={2}>
-                                  Cost
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Wastage%
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Total Estimated Quantity Wastage
-                                </th>
-                              </tr>
-                              <tr>
-                                <th style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Co-efficient Factor <span>*</span>
-                                </th>
-                                <th rowSpan={2} style={{width: "300px", whiteSpace: "nowrap"}}>
-                                  Estimated Qty
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Assets.length > 0 ? (
-                                Assets.map((assets, index) => (
-                                  <tr>
-                                    <td>
+                            <table
+                              className="tbl-container"
+                              style={{ borderCollapse: "collapse" }}
+                            >
+                              <thead>
+                                <tr>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    <div className="d-flex justify-content-center">
                                       <input
-                                        className="ms-5"
+                                        className=""
                                         type="checkbox"
-                                        checked={selectedAssets.includes(
-                                          assets.id
-                                        )} // Check if material is selected
-                                        onChange={() =>
-                                          handleSelectRowAssets(assets.id)
-                                        } // Toggle selection
-                                      />
-                                    </td>
-
-                                    <td>{assets.inventory_type_name}</td>
-                                    <td>{assets.name}</td>
-                                    <td>
-                                      <SingleSelector
-                                        options={assetSubTypes[index] || []} // Get the sub-types for the specific material
-                                        onChange={(selectedOption) =>
-                                          handleSubTypeChangeAssets(
-                                            index,
-                                            selectedOption
-                                          )
-                                        }
-                                        value={selectedSubTypesAssets[index]} // Display the selected sub-type for this material
-                                        placeholder={`Select Sub-Type`} // Dynamic placeholder
-                                      />
-                                    </td>
-                                    <td>
-                                      <SingleSelector
-                                        options={
-                                          assetGenericSpecifications[index] ||
-                                          []
-                                        } // Get the generic specifications for the specific material
-                                        onChange={(selectedOption) =>
-                                          handleGenericSpecificationChangeForAsset(
-                                            index,
-                                            selectedOption
-                                          )
-                                        }
-                                        value={
-                                          selectedAssetGenericSpecifications[
-                                          index
-                                          ]
-                                        } // Display the selected generic specification for this material
-                                        placeholder={`Select  Specification`} // Dynamic placeholder
-                                      />
-                                    </td>
-                                    <td>
-                                      <SingleSelector
-                                        options={assetColors[index] || []} // Get the colors for the specific material
-                                        onChange={(selectedOption) =>
-                                          handleAssetColorChange(
-                                            index,
-                                            selectedOption
-                                          )
-                                        }
-                                        value={selectedAssetColors[index]} // Display the selected color for this material
-                                        placeholder={`Select Colour`} // Dynamic placeholder
-                                      />
-                                    </td>
-                                    <td>
-                                      <SingleSelector
-                                        options={
-                                          assetInventoryBrands[index] || []
-                                        } // Get the brands for the specific material
-                                        onChange={(selectedOption) =>
-                                          handleAssetInventoryBrandChange(
-                                            index,
-                                            selectedOption
-                                          )
-                                        }
-                                        value={
-                                          selectedAssetInventoryBrands[index]
-                                        } // Display the selected brand for this material
-                                        placeholder={`Select Brand`} // Dynamic placeholder
-                                      />
-                                    </td>
-                                    <td>
-                                      <SingleSelector
-                                        options={unitOfMeasures} // Providing the options to the select component
-                                        onChange={(selectedOption) =>
-                                          handleUnitChange3(
-                                            index,
-                                            selectedOption
-                                          )
-                                        } // Setting the handler when an option is selected
-                                        value={selectedUnit3[index]}
-                                        placeholder={`Select UOM`} // Dynamic placeholder
-                                      />
-                                    </td>
-                                    <td>
-                                      <input
-                                        className="form-control"
-                                        type="number"
-                                        placeholder="Co-efficient Factor"
-                                        value={
-                                          assetCoefficientFactors[index] || ""
-                                        }
-                                        onKeyDown={(e) => {
-                                          if (
-                                            e.key === "-" ||
-                                            e.key === "e" ||
-                                            e.key === "E"
-                                          ) {
-                                            e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedAssets(
+                                              Assets.map((a) => a.id)
+                                            ); // Select all
+                                          } else {
+                                            setSelectedAssets([]); // Deselect all
                                           }
                                         }}
-                                        min="0"
-                                        onChange={(e) =>
-                                          handleAssetCoefficientFactorChange(
-                                            index,
-                                            e.target.value
-                                          )
+                                        checked={
+                                          selectedAssets.length === Assets.length
                                         }
                                       />
-                                    </td>
-                                    <td>
-                                      <input
-                                        className="form-control"
-                                        type="number"
-                                        placeholder="Estimated Qty"
-                                        disabled
-                                        value={
-                                          assetEstimatedQuantities[index] || ""
-                                        }
-                                      // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
-                                      />
-                                    </td>
-                                    <td>
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        placeholder="Wastage"
-                                        value={assetWastages[index] || ""}
-                                        onChange={(e) =>
-                                          handleAssetWastageChange(
-                                            index,
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td>
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        placeholder="Total Estimated Qty"
-                                        disabled
-                                        value={
-                                          assetTotalEstimatedQtyWastages[
-                                          index
-                                          ] || ""
-                                        }
-                                      // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
-                                      />
+
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width={14}
+                                        height={14}
+                                        fill="currentColor"
+                                        className="bi bi-trash3-fill ms-2"
+                                        viewBox="0 0 16 16"
+                                        onClick={handleDeleteAllAssets}
+                                      >
+                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                      </svg>
+                                    </div>
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Assest Type
+                                  </th>
+
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Assest
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Assest Sub-Type
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Generic Specification
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Colour
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Brand
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    UOM
+                                  </th>
+                                  <th className="text-center" colSpan={2}>
+                                    Cost
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Wastage%
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Total Estimated Quantity Wastage
+                                  </th>
+                                </tr>
+                                <tr>
+                                  <th style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Co-efficient Factor <span>*</span>
+                                  </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    Estimated Qty
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Assets.length > 0 ? (
+                                  Assets.map((assets, index) => (
+                                    <tr>
+                                      <td>
+                                        <input
+                                          className="ms-5"
+                                          type="checkbox"
+                                          checked={selectedAssets.includes(
+                                            assets.id
+                                          )} // Check if material is selected
+                                          onChange={() =>
+                                            handleSelectRowAssets(assets.id)
+                                          } // Toggle selection
+                                        />
+                                      </td>
+
+                                      <td>{assets.inventory_type_name}</td>
+                                      <td>{assets.name}</td>
+                                      <td>
+                                        <SingleSelector
+                                          options={assetSubTypes[index] || []} // Get the sub-types for the specific material
+                                          onChange={(selectedOption) =>
+                                            handleSubTypeChangeAssets(
+                                              index,
+                                              selectedOption
+                                            )
+                                          }
+                                          value={selectedSubTypesAssets[index]} // Display the selected sub-type for this material
+                                          placeholder={`Select Sub-Type`} // Dynamic placeholder
+                                        />
+                                      </td>
+                                      <td>
+                                        <SingleSelector
+                                          options={
+                                            assetGenericSpecifications[index] ||
+                                            []
+                                          } // Get the generic specifications for the specific material
+                                          onChange={(selectedOption) =>
+                                            handleGenericSpecificationChangeForAsset(
+                                              index,
+                                              selectedOption
+                                            )
+                                          }
+                                          value={
+                                            selectedAssetGenericSpecifications[
+                                            index
+                                            ]
+                                          } // Display the selected generic specification for this material
+                                          placeholder={`Select  Specification`} // Dynamic placeholder
+                                        />
+                                      </td>
+                                      <td>
+                                        <SingleSelector
+                                          options={assetColors[index] || []} // Get the colors for the specific material
+                                          onChange={(selectedOption) =>
+                                            handleAssetColorChange(
+                                              index,
+                                              selectedOption
+                                            )
+                                          }
+                                          value={selectedAssetColors[index]} // Display the selected color for this material
+                                          placeholder={`Select Colour`} // Dynamic placeholder
+                                        />
+                                      </td>
+                                      <td>
+                                        <SingleSelector
+                                          options={
+                                            assetInventoryBrands[index] || []
+                                          } // Get the brands for the specific material
+                                          onChange={(selectedOption) =>
+                                            handleAssetInventoryBrandChange(
+                                              index,
+                                              selectedOption
+                                            )
+                                          }
+                                          value={
+                                            selectedAssetInventoryBrands[index]
+                                          } // Display the selected brand for this material
+                                          placeholder={`Select Brand`} // Dynamic placeholder
+                                        />
+                                      </td>
+                                      <td>
+                                        <SingleSelector
+                                          options={unitOfMeasures} // Providing the options to the select component
+                                          onChange={(selectedOption) =>
+                                            handleUnitChange3(
+                                              index,
+                                              selectedOption
+                                            )
+                                          } // Setting the handler when an option is selected
+                                          value={selectedUnit3[index]}
+                                          placeholder={`Select UOM`} // Dynamic placeholder
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Co-efficient Factor"
+                                          value={
+                                            assetCoefficientFactors[index] || ""
+                                          }
+                                          onKeyDown={(e) => {
+                                            if (
+                                              e.key === "-" ||
+                                              e.key === "e" ||
+                                              e.key === "E"
+                                            ) {
+                                              e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                            }
+                                          }}
+                                          min="0"
+                                          onChange={(e) =>
+                                            handleAssetCoefficientFactorChange(
+                                              index,
+                                              e.target.value
+                                            )
+                                          }
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          className="form-control"
+                                          type="number"
+                                          placeholder="Estimated Qty"
+                                          disabled
+                                          value={
+                                            assetEstimatedQuantities[index] || ""
+                                          }
+                                        // onChange={(e) => handleAssetEstimatedQtyChange(index, e.target.value)}
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          placeholder="Wastage"
+                                          value={assetWastages[index] || ""}
+                                          onChange={(e) =>
+                                            handleAssetWastageChange(
+                                              index,
+                                              e.target.value
+                                            )
+                                          }
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          placeholder="Total Estimated Qty"
+                                          disabled
+                                          value={
+                                            assetTotalEstimatedQtyWastages[
+                                            index
+                                            ] || ""
+                                          }
+                                        // onChange={(e) => handleAssetTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td
+                                      colSpan="12"
+                                      className="text-center"
+                                    // style={{ paddingLeft: "500px" }}
+                                    >
+                                      No asset added yet.
                                     </td>
                                   </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td
-                                    colSpan="12"
-                                    className="text-center"
-                                    // style={{ paddingLeft: "500px" }}
-                                  >
-                                    No asset added yet.
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                         <div>
                           <button
@@ -2768,313 +2762,319 @@ useEffect(() => {
                           <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
                           <div className=" my-4">
-                          <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                          {/* <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1"> */}
-                            <table 
-                            className="tbl-container"
-                            style={{  borderCollapse: "collapse" }}
-                            >
-                              <thead style={{ zIndex: "1" }}>
-                                <tr>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
-                                    <input type="checkbox" />
-                                  </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Expand</th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>
-                                    Sub Item Name <span>*</span>
-                                  </th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Description</th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Notes</th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Remarks</th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>UOM</th>
-                                  <th colSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
-                                  <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Document</th>
-                                </tr>
-                                <tr>
-                                  {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
+                            <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                              {/* <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1"> */}
+                              <table
+                                className="tbl-container"
+                                style={{ borderCollapse: "collapse" }}
+                              >
+                                <thead style={{ zIndex: "1" }}>
+                                  <tr>
+                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                      <input type="checkbox" />
+                                    </th>
+                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Expand</th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>
+                                      Sub Item Name <span>*</span>
+                                    </th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Description</th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Notes</th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Remarks</th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>UOM</th>
+                                    <th colSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
+                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Document</th>
+                                  </tr>
+                                  <tr>
+                                    {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
                                     Quantity <span>*</span>
                                   </th> */}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {count.map((el, index) => (
-                                  <>
-                                    <tr>
-                                      <td>
-                                        <input type="checkbox" />
-                                      </td>
-
-                                      <td className="text-center">
-                                        <button
-                                          className="btn btn-link p-0"
-                                          onClick={() => toggleRow(el.id)}
-                                          aria-label="Toggle row visibility"
-                                        >
-                                          {expandedRows.includes(el.id) ? (
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="24"
-                                              height="24"
-                                              viewBox="0 0 24 24"
-                                              // fill="none"
-                                              stroke="black"
-                                              strokeWidth="1"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              fill=" #e0e0e0"
-                                            >
-                                              {/* Square */}
-                                              <rect
-                                                x="3"
-                                                y="3"
-                                                width="18"
-                                                height="20"
-                                                rx="1"
-                                                ry="1"
-                                              />
-                                              {/* Minus Icon */}
-                                              <line
-                                                x1="8"
-                                                y1="12"
-                                                x2="16"
-                                                y2="12"
-                                              />
-                                            </svg>
-                                          ) : (
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              width="24"
-                                              height="24"
-                                              viewBox="0 0 24 24"
-                                              // fill="none"
-                                              stroke="black"
-                                              strokeWidth="1"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              fill=" #e0e0e0"
-                                            >
-                                              {/* Square */}
-                                              <rect
-                                                x="3"
-                                                y="3"
-                                                width="18"
-                                                height="20"
-                                                rx="1"
-                                                ry="1"
-                                              />
-                                              {/* Plus Icon */}
-                                              <line
-                                                x1="12"
-                                                y1="8"
-                                                x2="12"
-                                                y2="16"
-                                              />
-                                              <line
-                                                x1="8"
-                                                y1="12"
-                                                x2="16"
-                                                y2="12"
-                                              />
-                                            </svg>
-                                          )}
-                                        </button>
-                                      </td>
-
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          // defaultValue="MS Fabrication"
-                                          placeholder="Enter Sub Item Name"
-                                          value={expandedRows.name}
-                                          onChange={(e) =>
-                                            handleInputChange2(
-                                              index,
-                                              "name",
-                                              e.target.value
-                                            )
-                                          }
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          // defaultValue="MS Fabrication_20010"
-                                          placeholder="Enter Description"
-                                          className="form-control"
-                                          value={expandedRows.description}
-                                          onChange={(e) =>
-                                            handleInputChange2(
-                                              index,
-                                              "description",
-                                              e.target.value
-                                            )
-                                          }
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          // defaultValue="MS Fabrication_20010"
-                                          placeholder="Enter Notes"
-                                          className="form-control"
-                                          value={expandedRows.notes}
-                                          onChange={(e) =>
-                                            handleInputChange2(
-                                              index,
-                                              "notes",
-                                              e.target.value
-                                            )
-                                          }
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          defaultValue=""
-                                          placeholder="Enter Remark"
-                                          value={expandedRows.remarks}
-                                          className="form-control"
-                                          onChange={(e) =>
-                                            handleInputChange2(
-                                              index,
-                                              "remarks",
-                                              e.target.value
-                                            )
-                                          }
-                                        />
-                                      </td>
-                                      <td>
-                                        <SingleSelector
-                                          onChange={(selectedOption) =>
-                                            handleUnitChangeForRow(
-                                              index,
-                                              selectedOption
-                                            )
-                                          } // Update the row's UOM
-                                          // value={unitOfMeasures.find(option => option.value === unitOfMeasures.uom_id)}
-                                          value={selectedUnitSubRow[index]}
-                                          options={unitOfMeasures} // Providing the options to the select component
-                                          placeholder={`Select UOM`} // Dynamic placeholder
-                                        />
-                                      </td>
-                                      <td colSpan={2}>
-                                        <input
-                                          type="number"
-                                          value={expandedRows.qty}
-                                          onKeyDown={(e) => {
-                                            if (
-                                              e.key === "-" ||
-                                              e.key === "e" ||
-                                              e.key === "E"
-                                            ) {
-                                              e.preventDefault(); // Prevent entering "-" or "e" or "E"
-                                            }
-                                          }}
-                                          min="0"
-                                          placeholder="Enter Quantity"
-                                          className="form-control"
-                                          onChange={(e) =>
-                                            handleInputChange2(
-                                              index,
-                                              "cost_quantity",
-                                              parseFloat(e.target.value)
-                                            )
-                                          }
-                                        />
-                                      </td>
-
-                                      <td>
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width={16}
-                                          height={16}
-                                          fill="currentColor"
-                                          className="bi bi-file-earmark-text"
-                                          viewBox="0 0 16 16"
-                                          onClick={handleIconClick} // Trigger file input on click
-                                        >
-                                          <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                                          <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                                        </svg>
-                                        {/* Hidden file input */}
-                                        <input
-                                          id="file-input"
-                                          type="file"
-                                          style={{ display: "none" }} // Hide the file input
-                                          onChange={handleFileChange} // Handle file change
-                                        />
-                                        {/* Display the selected file name */}
-                                        {file && (
-                                          <div>Selected File: {file.name}</div>
-                                        )}
-                                      </td>
-                                    </tr>
-                                    {expandedRows.includes(el.id) && (
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {count.map((el, index) => (
+                                    <>
                                       <tr>
-                                        <td colSpan={11}>
-                                          {/* <BOQSubItemTable /> */}
-                                          <BOQSubItemTable
-                                            // materials={materials2}
-                                            materials={materials2[el.id] || []}
-                                            handleAddMaterials={(
-                                              newMaterials
-                                            ) =>
-                                              handleAddMaterials2(
-                                                el.id,
-                                                newMaterials
+                                        <td>
+                                          <input type="checkbox" />
+                                        </td>
+
+                                        <td className="text-center">
+                                          <button
+                                            className="btn btn-link p-0"
+                                            onClick={() => toggleRow(el.id)}
+                                            aria-label="Toggle row visibility"
+                                          >
+                                            {expandedRows.includes(el.id) ? (
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                // fill="none"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                fill=" #e0e0e0"
+                                              >
+                                                {/* Square */}
+                                                <rect
+                                                  x="3"
+                                                  y="3"
+                                                  width="18"
+                                                  height="20"
+                                                  rx="1"
+                                                  ry="1"
+                                                />
+                                                {/* Minus Icon */}
+                                                <line
+                                                  x1="8"
+                                                  y1="12"
+                                                  x2="16"
+                                                  y2="12"
+                                                />
+                                              </svg>
+                                            ) : (
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                // fill="none"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                fill=" #e0e0e0"
+                                              >
+                                                {/* Square */}
+                                                <rect
+                                                  x="3"
+                                                  y="3"
+                                                  width="18"
+                                                  height="20"
+                                                  rx="1"
+                                                  ry="1"
+                                                />
+                                                {/* Plus Icon */}
+                                                <line
+                                                  x1="12"
+                                                  y1="8"
+                                                  x2="12"
+                                                  y2="16"
+                                                />
+                                                <line
+                                                  x1="8"
+                                                  y1="12"
+                                                  x2="16"
+                                                  y2="12"
+                                                />
+                                              </svg>
+                                            )}
+                                          </button>
+                                        </td>
+
+                                        <td>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            // defaultValue="MS Fabrication"
+                                            placeholder="Enter Sub Item Name"
+                                            value={expandedRows.name}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "name",
+                                                e.target.value
                                               )
                                             }
-                                            setMaterials={setMaterials2}
-                                            Assets={Assets2[el.id] || []}
-                                            setAssets={setAssets2}
-                                            // handleAddMaterials={handleAddMaterials2}
-                                            handleDeleteAll={handleDeleteAll2}
-                                            handleSelectRow={handleSelectRow2}
-                                            handleAddAssets={(newMaterials) =>
-                                              handleAddAssets2(
-                                                el.id,
-                                                newMaterials
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            // defaultValue="MS Fabrication_20010"
+                                            placeholder="Enter Description"
+                                            className="form-control"
+                                            value={expandedRows.description}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "description",
+                                                e.target.value
                                               )
                                             }
-                                            handleDeleteAllAssets={
-                                              handleDeleteAllAssets2
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            // defaultValue="MS Fabrication_20010"
+                                            placeholder="Enter Notes"
+                                            className="form-control"
+                                            value={expandedRows.notes}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "notes",
+                                                e.target.value
+                                              )
                                             }
-                                            handleSelectRowAsset={
-                                              handleSelectRowAssets2
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            defaultValue=""
+                                            placeholder="Enter Remark"
+                                            value={expandedRows.remarks}
+                                            className="form-control"
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "remarks",
+                                                e.target.value
+                                              )
                                             }
-                                            predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
+                                          />
+                                        </td>
+                                        <td>
+                                          <SingleSelector
+                                            onChange={(selectedOption) =>
+                                              handleUnitChangeForRow(
+                                                index,
+                                                selectedOption
+                                              )
+                                            } // Update the row's UOM
+                                            // value={unitOfMeasures.find(option => option.value === unitOfMeasures.uom_id)}
+                                            value={selectedUnitSubRow[index]}
+                                            options={unitOfMeasures} // Providing the options to the select component
+                                            placeholder={`Select UOM`} // Dynamic placeholder
+                                          />
+                                        </td>
+                                        <td colSpan={2}>
+                                          <input
+                                            type="number"
+                                            value={expandedRows.qty}
+                                            onKeyDown={(e) => {
+                                              if (
+                                                e.key === "-" ||
+                                                e.key === "e" ||
+                                                e.key === "E"
+                                              ) {
+                                                e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                                              }
+                                            }}
+                                            min="0"
+                                            placeholder="Enter Quantity"
+                                            className="form-control"
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "cost_quantity",
+                                                parseFloat(e.target.value)
+                                              )
+                                            }
+                                          />
+                                        </td>
 
-                                            predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
+                                        <td>
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width={16}
+                                            height={16}
+                                            fill="currentColor"
+                                            className="bi bi-file-earmark-text"
+                                            viewBox="0 0 16 16"
+                                            onClick={handleIconClick} // Trigger file input on click
+                                          >
+                                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                                          </svg>
+                                          {/* Hidden file input */}
+                                          <input
+                                            id="file-input"
+                                            type="file"
+                                            style={{ display: "none" }} // Hide the file input
+                                            onChange={handleFileChange} // Handle file change
+                                          />
+                                          {/* Display the selected file name */}
+                                          {file && (
+                                            <div>Selected File: {file.name}</div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                      {expandedRows.includes(el.id) && (
+                                        <tr>
 
-                                            // boqSubItems={boqSubItems}
-                                            boqSubItemId={el.id}
-                                            boqSubItems={boqSubItems.filter((item) => item.id === el.id)} // Pass only the relevant item
-                                            setBoqSubItems={setBoqSubItems}
+                                          <h1>predefinedMaterialsData</h1>
+
+                                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
+
+
+                                          <td colSpan={11}>
+                                            {/* <BOQSubItemTable /> */}
+                                            <BOQSubItemTable
+                                              // materials={materials2}
+                                              materials={materials2[el.id] || []}
+                                              handleAddMaterials={(
+                                                newMaterials
+                                              ) =>
+                                                handleAddMaterials2(
+                                                  el.id,
+                                                  newMaterials
+                                                )
+                                              }
+                                              setMaterials={setMaterials2}
+                                              Assets={Assets2[el.id] || []}
+                                              setAssets={setAssets2}
+                                              // handleAddMaterials={handleAddMaterials2}
+                                              handleDeleteAll={handleDeleteAll2}
+                                              handleSelectRow={handleSelectRow2}
+                                              handleAddAssets={(newMaterials) =>
+                                                handleAddAssets2(
+                                                  el.id,
+                                                  newMaterials
+                                                )
+                                              }
+                                              handleDeleteAllAssets={
+                                                handleDeleteAllAssets2
+                                              }
+                                              handleSelectRowAsset={
+                                                handleSelectRowAssets2
+                                              }
+                                              predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
+
+                                              predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
+
+                                              // boqSubItems={boqSubItems}
+                                              boqSubItemId={el.id}
+                                              boqSubItems={boqSubItems.filter((item) => item.id === el.id)} // Pass only the relevant item
+                                              setBoqSubItems={setBoqSubItems}
 
                                             // Only pass the latest boqSubItems based on el.id
-                                          // handleInputChange2={handleInputChange2}
-                                          />
+                                            // handleInputChange2={handleInputChange2}
+                                            />
 
-                                          {/* <MaterialModal
+                                            {/* <MaterialModal
                                             show={showModal2}
                                             handleClose={handleCloseModal2}
                                             handleAdd={handleAddMaterials2}
                                           /> */}
 
-                                          {/* <AssetModal
+                                            {/* <AssetModal
                                             showAssets={showModalAsset}
                                             handleCloseAssets={handleCloseModalAsset}
                                             handleAdd={handleAddAssets}
                                           /> */}
-                                        </td>
-                                      </tr>
-                                    )}
-                                  </>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                           <div className="row mt-3 mx-3">
                             <p>
