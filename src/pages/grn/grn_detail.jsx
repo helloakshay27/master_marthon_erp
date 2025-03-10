@@ -263,11 +263,17 @@ const GoodReceiveNoteDetails = () => {
                 </div>
                 {data?.approval_logs?.length > 0 && (
                   <div className="col-md-2 nav-item">
-                    <button className="purple-btn2" onClick={openModal}>
+                    <button
+                      className="purple-btn2"
+                      onClick={openModal}
+                      style={{ backgroundColor: data?.status === "approved" ? "green" : "", border: "none" }}
+                    >
                       <span>Approval Logs</span>
                     </button>
                   </div>
                 )}
+
+
               </div>
 
 
