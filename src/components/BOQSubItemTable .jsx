@@ -32,6 +32,8 @@ const BOQSubItemTable = ({
   boqSubItems,
   handleInputChange2,
   boqSubItemId,
+  setMaterialErrors, 
+  setAssetsErrors
   // boqCostQty
 }) => {
   const [materialshowModal, setmaterialShowModal] = useState(false);
@@ -821,8 +823,8 @@ const BOQSubItemTable = ({
     setAssetCostQTY(updatedAssetCostQTY);
   };
 
-  const [materialErrors, setMaterialErrors] = useState({}); // Store errors
-  const [assetsErrors, setAssetsErrors] = useState({}); // Store errors
+  const [localMaterialErrors, setLocalMaterialErrors] = useState({});
+  const [localAssetsErrors, setLocalAssetsErrors] = useState({});
 
 
   useEffect(() => {
@@ -860,8 +862,8 @@ const BOQSubItemTable = ({
       }
     });
 
-    setMaterialErrors(errors); // Update error state
-
+    setLocalMaterialErrors(errors);
+    setMaterialErrors(errors); // Pass errors to parent
     // Update materials in parent state if no duplicates found
     if (Object.keys(errors).length === 0) {
       setBoqSubItems((prevItems) =>
@@ -883,6 +885,7 @@ const BOQSubItemTable = ({
     estimatedQuantities,
     wastages,
     totalEstimatedQtyWastages,
+    localMaterialErrors
   ]);
 
 
@@ -928,6 +931,7 @@ const BOQSubItemTable = ({
     });
 
     setAssetsErrors(errors); // Update error state
+    setLocalAssetsErrors(errors);
 
     // Update materials in parent state if no duplicates found
     if (Object.keys(errors).length === 0) {
@@ -951,6 +955,7 @@ const BOQSubItemTable = ({
     assetWastages,
     assetTotalEstimatedQtyWastages,
     assetCostQTY,
+    localAssetsErrors
     
   ]);
 
@@ -1209,8 +1214,8 @@ const BOQSubItemTable = ({
                                     placeholder={`Select Specification`} // Dynamic placeholder
 
                                   />
-                                  {materialErrors[index]?.generic_info && (
-                                    <p style={{ color: "red" }}>{materialErrors[index].generic_info}</p>
+                                  {localMaterialErrors[index]?.generic_info && (
+                                    <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
                                   )}
                                 </td>
                                 <td>
@@ -1222,8 +1227,8 @@ const BOQSubItemTable = ({
                                     value={selectedColors[index]} // Display the selected color for this material
                                     placeholder={`Select Colour`} // Dynamic placeholder
                                   />
-                                  {materialErrors[index]?.colour && (
-                                    <p style={{ color: "red" }}>{materialErrors[index].colour}</p>
+                                  {localMaterialErrors[index]?.colour && (
+                                    <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
                                   )}
                                 </td>
                                 <td>
@@ -1235,8 +1240,8 @@ const BOQSubItemTable = ({
                                     value={selectedInventoryBrands[index]} // Display the selected brand for this material
                                     placeholder={`Select Brand`} // Dynamic placeholder
                                   />
-                                  {materialErrors[index]?.brand && (
-                                    <p style={{ color: "red" }}>{materialErrors[index].brand}</p>
+                                  {localMaterialErrors[index]?.brand && (
+                                    <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
                                   )}
                                 </td>
                                 <td>
@@ -1523,8 +1528,8 @@ const BOQSubItemTable = ({
                                   } // Display the selected generic specification for this material
                                   placeholder={`Select Specification`} // Dynamic placeholder
                                 />
-                                {assetsErrors[index]?.generic_info && (
-                                  <p style={{ color: "red" }}>{materialErrors[index].generic_info}</p>
+                                {localAssetsErrors[index]?.generic_info && (
+                                  <p style={{ color: "red" }}>{localAssetsErrors[index].generic_info}</p>
                                 )}
                               </td>
                               <td>
@@ -1539,8 +1544,8 @@ const BOQSubItemTable = ({
                                   value={selectedAssetColors[index]} // Display the selected color for this material
                                   placeholder={`Select Colour`} // Dynamic placeholder
                                 />
-                                {assetsErrors[index]?.colour && (
-                                  <p style={{ color: "red" }}>{materialErrors[index].colour}</p>
+                                {localAssetsErrors[index]?.colour && (
+                                  <p style={{ color: "red" }}>{localAssetsErrors[index].colour}</p>
                                 )}
                               </td>
                               <td>
@@ -1555,8 +1560,8 @@ const BOQSubItemTable = ({
                                   value={selectedAssetInventoryBrands[index]} // Display the selected brand for this material
                                   placeholder={`Select Brand`} // Dynamic placeholder
                                 />
-                                {assetsErrors[index]?.brand && (
-                                  <p style={{ color: "red" }}>{materialErrors[index].brand}</p>
+                                {localAssetsErrors[index]?.brand && (
+                                  <p style={{ color: "red" }}>{localAssetsErrors[index].brand}</p>
                                 )}
                               </td>
                               <td>
