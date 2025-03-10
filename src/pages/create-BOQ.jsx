@@ -24,6 +24,8 @@ const CreateBOQ = () => {
   const [showBOQSubItem, setShowBOQSubItem] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [materialErrors, setMaterialErrors] = useState({});
+  const [assetsErrors, setAssetsErrors] = useState({});
   // const [errors, setErrors] = useState({
   //   project: false,
   //   itemName: false,
@@ -126,7 +128,7 @@ const CreateBOQ = () => {
       ),
     ]);
   };
-  
+
 
   // console.log("materials", materials)
 
@@ -163,18 +165,18 @@ const CreateBOQ = () => {
   const handleAddMaterials2 = (id, newMaterials) => {
     setMaterials2((prev) => {
       const updatedMaterials = { ...prev };
-  
+
       if (!updatedMaterials[id]) {
         updatedMaterials[id] = [];
       }
-  
+
       // Directly add new materials without filtering duplicates
       updatedMaterials[id] = [...updatedMaterials[id], ...newMaterials];
-  
+
       return updatedMaterials;
     });
   };
-  
+
 
   // const handleAddMaterials2 = (newMaterials) => {
   //   setMaterials2((prev) => [
@@ -257,18 +259,18 @@ const CreateBOQ = () => {
   const handleAddAssets2 = (id, newAssets) => {
     setAssets2((prev) => {
       const updatedAssets = { ...prev };
-  
+
       if (!updatedAssets[id]) {
         updatedAssets[id] = [];
       }
-  
+
       // Allow duplicates but prevent exact same object references
       updatedAssets[id] = [...updatedAssets[id], ...newAssets];
-  
+
       return updatedAssets;
     });
   };
-  
+
 
   const handleDeleteAllAssets2 = () => {
     setAssets2((prev) =>
@@ -1789,55 +1791,50 @@ const CreateBOQ = () => {
 
   // Handle submit for BOQ SubItem
   const handleSubmitBOQSubItem = async () => {
-    // Logic for handling submission when BOQ SubItem is selected
-    // console.log('BOQ SubItem submitted');
-
     let validationErrors = {};
+  
     // Validate required fields
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
-
+  
     if (boqSubItems.length === 0) {
-      toast.error(
-        "BoQ Sub Items cannot be empty. Please add at least one sub item."
-      );
-      return; // Exit function if boqSubItems is empty
+      toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
+      return;
     }
-
+  
+    // Check for validation errors in materials and assets
+    if (Object.keys(materialErrors).length > 0 || Object.keys(assetsErrors).length > 0) {
+      toast.error("Please resolve duplicate materials or assets before submitting.");
+      return;
+  }
+  
+  
     // Iterate over each boqSubItem to validate
     for (let i = 0; i < boqSubItems.length; i++) {
       const boqSubItem = boqSubItems[i];
-
-      // Validate name
+  
       if (!boqSubItem.name || boqSubItem.name.trim() === "") {
         toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
-        return; // Exit function if validation fails
+        return;
       }
-
-      // Validate cost_quantity
+  
       if (boqSubItem.cost_quantity <= 0) {
         toast.error(`Cost quantity is required for BoQ Sub Item ${i + 1}.`);
-        return; // Exit function if validation fails
+        return;
       }
-
-      // Validate that at least one material or asset is selected
+  
       if (boqSubItem.materials.length === 0 && boqSubItem.assets.length === 0) {
-        toast.error(
-          `At least one material or asset must be selected for BoQ Sub Item ${i + 1
-          }.`
-        );
-        return; // Exit function if validation fails
+        toast.error(`At least one material or asset must be selected for BoQ Sub Item ${i + 1}.`);
+        return;
       }
     }
-
+  
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setLoading(true);
-
+  
       try {
-        // Prepare the payload data
-
         const payloadData2 = {
           boq_detail: {
             project_id: selectedProject ? selectedProject.value : null,
@@ -1846,96 +1843,46 @@ const CreateBOQ = () => {
             item_name: itemName,
             description: description,
             note: note,
-
+  
             sub_categories: [
-              // Always include main category (level 1)
-              {
-                category_id: selectedCategory?.value,
-                level: 1,
-              },
-              // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
+              { category_id: selectedCategory?.value, level: 1 },
               ...(selectedSubCategory
-                ? [
-                  {
-                    category_id: selectedSubCategory?.value,
-                    level: 2,
-                    boq_sub_items: !selectedSubCategoryLevel3
-                      ? boqSubItems
-                      : [], // Filter for level 2
-                  },
-                ]
+                ? [{ category_id: selectedSubCategory?.value, level: 2, boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] }]
                 : []),
-
-              // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
               ...(selectedSubCategoryLevel3
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel3?.value,
-                    level: 3,
-                    boq_sub_items: !selectedSubCategoryLevel4
-                      ? boqSubItems
-                      : [], // Filter for level 3
-                  },
-                ]
+                ? [{ category_id: selectedSubCategoryLevel3?.value, level: 3, boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [] }]
                 : []),
-
-              // Only include materials for level 4 if it is selected
               ...(selectedSubCategoryLevel4
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel4?.value,
-                    level: 4,
-                    boq_sub_items: !selectedSubCategoryLevel5
-                      ? boqSubItems
-                      : [], // Filter for level 4
-                  },
-                ]
+                ? [{ category_id: selectedSubCategoryLevel4?.value, level: 4, boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [] }]
                 : []),
-
-              // Only include materials for level 5 if it is selected
               ...(selectedSubCategoryLevel5
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel5?.value,
-                    level: 5,
-                    boq_sub_items: boqSubItems || [], // Filter for level 5
-                  },
-                ]
+                ? [{ category_id: selectedSubCategoryLevel5?.value, level: 5, boq_sub_items: boqSubItems || [] }]
                 : []),
             ],
           },
         };
-
-        // console.log("boq data payload 2 for sub item:", payloadData2)
-
-        // Axios POST request
+  
         const response = await axios.post(
           `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
           payloadData2
         );
-
-        // Handle successful response
+  
         if (response.data) {
-          navigate("/view-BOQ"); // Navigate to BOQ list on success
+          navigate("/view-BOQ");
         } else {
-          toast.error("Failed to create BOQ Sub Item.", {
-            position: "top-right",
-          });
+          toast.error("Failed to create BOQ Sub Item.", { position: "top-right" });
         }
-        // alert("BOQ Sub Items created successfully")
-        // navigate('/view-BOQ');
+  
         console.log("Data posted successfully:", response.data);
-        // You can also display a success message or perform other actions after a successful request
       } catch (error) {
-        // Handle error if the request fails
         console.error("Error posting data:", error);
         toast.error("Something went wrong.", { position: "top-right" });
-        // Optionally display an error message to the user
       } finally {
         setLoading(false);
       }
     }
   };
+  
 
   // Handle general submit
   const handleSubmit = () => {
@@ -3051,6 +2998,8 @@ const CreateBOQ = () => {
                                               boqSubItemId={el.id}
                                               boqSubItems={boqSubItems.filter((item) => item.id === el.id)} // Pass only the relevant item
                                               setBoqSubItems={setBoqSubItems}
+                                              setMaterialErrors={setMaterialErrors}
+                                              setAssetsErrors={setAssetsErrors}
 
                                             // Only pass the latest boqSubItems based on el.id
                                             // handleInputChange2={handleInputChange2}
