@@ -37,6 +37,7 @@ const BOQSubItemTable = ({
   const [materialshowModal, setmaterialShowModal] = useState(false);
   const [assetShowModal, setAssetShowModal] = useState(false);
   const [labourShowModal, setLabourShowModal] = useState(false);
+  const [errors, setErrors] = useState({}); // Store errors for input fields
 
   const openModal = () => setmaterialShowModal(true);
   const closeModal = () => setmaterialShowModal(false);
@@ -67,10 +68,10 @@ const BOQSubItemTable = ({
 
   const handleDeleteAllMaterial = () => {
     console.log("boqSubItemId", boqSubItemId);
-  
+
     setMaterials((prev) => {
       console.log("prev", typeof prev, prev);
-  
+
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
         acc[key] = materialsArray.filter(
@@ -78,9 +79,9 @@ const BOQSubItemTable = ({
         );
         return acc;
       }, {});
-  
+
       console.log("filteredMaterials", filteredMaterials);
-  
+
       return filteredMaterials;
     });
     setSelectedMaterials([]);
@@ -146,8 +147,8 @@ const BOQSubItemTable = ({
       return prev.filter((asset) => !selectedAssets.includes(asset.id));
     });
     setSelectedAssets([]); // Reset selected assets
-    
-    
+
+
   };
 
   // const handleSelectRowAssets2 = (index) => {
@@ -820,6 +821,10 @@ const BOQSubItemTable = ({
     setAssetCostQTY(updatedAssetCostQTY);
   };
 
+  const [materialErrors, setMaterialErrors] = useState({}); // Store errors
+  const [assetsErrors, setAssetsErrors] = useState({}); // Store errors
+
+
   useEffect(() => {
     if (!boqSubItemId) return; // Ensure ID exists
 
@@ -833,18 +838,38 @@ const BOQSubItemTable = ({
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
-      estimated_quantity_wastage:
-        parseFloat(totalEstimatedQtyWastages[index]) || 0,
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0,
     }));
+    const seenCombinations = new Map();
+    let errors = {};
 
-    // Update materials in parent state
-    setBoqSubItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === boqSubItemId
-          ? { ...item, materials: predefinedMaterials2 }
-          : item
-      )
-    );
+    predefinedMaterials2.forEach((material, index) => {
+      // Skip validation if all fields are empty
+      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+
+      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info is not allowed.",
+          colour: "Duplicate Colour is not allowed.",
+          brand: "Duplicate Brand is not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+
+    setMaterialErrors(errors); // Update error state
+
+    // Update materials in parent state if no duplicates found
+    if (Object.keys(errors).length === 0) {
+      setBoqSubItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === boqSubItemId ? { ...item, materials: predefinedMaterials2 } : item
+        )
+      );
+    }
   }, [
     boqSubItemId,
     materials,
@@ -858,8 +883,8 @@ const BOQSubItemTable = ({
     estimatedQuantities,
     wastages,
     totalEstimatedQtyWastages,
-    predefinedMaterialsData,
   ]);
+
 
   //assets
 
@@ -882,11 +907,36 @@ const BOQSubItemTable = ({
     }));
 
     // Update assets in parent state
-    setBoqSubItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === boqSubItemId ? { ...item, assets: predefinedAssets2 } : item
-      )
-    );
+    const seenCombinations = new Map();
+    let errors = {};
+
+    predefinedAssets2.forEach((material, index) => {
+      // Skip validation if all fields are empty
+      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+
+      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info is not allowed.",
+          colour: "Duplicate Colour is not allowed.",
+          brand: "Duplicate Brand is not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+
+    setAssetsErrors(errors); // Update error state
+
+    // Update materials in parent state if no duplicates found
+    if (Object.keys(errors).length === 0) {
+      setBoqSubItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === boqSubItemId ? { ...item, assets: predefinedAssets2 } : item
+        )
+      );
+    }
   }, [
     boqSubItemId,
     Assets,
@@ -901,6 +951,7 @@ const BOQSubItemTable = ({
     assetWastages,
     assetTotalEstimatedQtyWastages,
     assetCostQTY,
+    
   ]);
 
   //
@@ -1156,7 +1207,11 @@ const BOQSubItemTable = ({
                                     }
                                     value={selectedGenericSpecifications[index]} // Display the selected generic specification for this material
                                     placeholder={`Select Specification`} // Dynamic placeholder
+
                                   />
+                                  {materialErrors[index]?.generic_info && (
+                                    <p style={{ color: "red" }}>{materialErrors[index].generic_info}</p>
+                                  )}
                                 </td>
                                 <td>
                                   <SingleSelector
@@ -1167,6 +1222,9 @@ const BOQSubItemTable = ({
                                     value={selectedColors[index]} // Display the selected color for this material
                                     placeholder={`Select Colour`} // Dynamic placeholder
                                   />
+                                  {materialErrors[index]?.colour && (
+                                    <p style={{ color: "red" }}>{materialErrors[index].colour}</p>
+                                  )}
                                 </td>
                                 <td>
                                   <SingleSelector
@@ -1177,6 +1235,9 @@ const BOQSubItemTable = ({
                                     value={selectedInventoryBrands[index]} // Display the selected brand for this material
                                     placeholder={`Select Brand`} // Dynamic placeholder
                                   />
+                                  {materialErrors[index]?.brand && (
+                                    <p style={{ color: "red" }}>{materialErrors[index].brand}</p>
+                                  )}
                                 </td>
                                 <td>
                                   <SingleSelector
@@ -1233,7 +1294,7 @@ const BOQSubItemTable = ({
                                     disabled
                                     placeholder="Estimated Qty"
                                     value={estimatedQuantities[index] || ""}
-                                    // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                  // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                   />
                                 </td>
                                 <td>
@@ -1256,7 +1317,7 @@ const BOQSubItemTable = ({
                                     value={
                                       totalEstimatedQtyWastages[index] || ""
                                     }
-                                    // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                  // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                   />
                                 </td>
                               </tr>
@@ -1266,7 +1327,7 @@ const BOQSubItemTable = ({
                               <td
                                 colSpan="12"
                                 className="text-center"
-                                // style={{ paddingLeft: "400px" }}
+                              // style={{ paddingLeft: "400px" }}
                               >
                                 No materials added yet.
                               </td>
@@ -1420,15 +1481,15 @@ const BOQSubItemTable = ({
                                 {/* /> */}
 
                                 <input
-                                        className="ms-5"
-                                        type="checkbox"
-                                        checked={selectedAssets.includes(
-                                          assets.id
-                                        )} // Check if material is selected
-                                        onChange={() =>
-                                          handleSelectRowAssets2(assets.id)
-                                        } // Toggle selection
-                                        />
+                                  className="ms-5"
+                                  type="checkbox"
+                                  checked={selectedAssets.includes(
+                                    assets.id
+                                  )} // Check if material is selected
+                                  onChange={() =>
+                                    handleSelectRowAssets2(assets.id)
+                                  } // Toggle selection
+                                />
                               </td>
 
                               <td>{assets.inventory_type_name}</td>
@@ -1462,6 +1523,9 @@ const BOQSubItemTable = ({
                                   } // Display the selected generic specification for this material
                                   placeholder={`Select Specification`} // Dynamic placeholder
                                 />
+                                {assetsErrors[index]?.generic_info && (
+                                  <p style={{ color: "red" }}>{materialErrors[index].generic_info}</p>
+                                )}
                               </td>
                               <td>
                                 <SingleSelector
@@ -1475,6 +1539,9 @@ const BOQSubItemTable = ({
                                   value={selectedAssetColors[index]} // Display the selected color for this material
                                   placeholder={`Select Colour`} // Dynamic placeholder
                                 />
+                                {assetsErrors[index]?.colour && (
+                                  <p style={{ color: "red" }}>{materialErrors[index].colour}</p>
+                                )}
                               </td>
                               <td>
                                 <SingleSelector
@@ -1488,6 +1555,9 @@ const BOQSubItemTable = ({
                                   value={selectedAssetInventoryBrands[index]} // Display the selected brand for this material
                                   placeholder={`Select Brand`} // Dynamic placeholder
                                 />
+                                {assetsErrors[index]?.brand && (
+                                  <p style={{ color: "red" }}>{materialErrors[index].brand}</p>
+                                )}
                               </td>
                               <td>
                                 <SingleSelector
@@ -1590,7 +1660,7 @@ const BOQSubItemTable = ({
                             <td
                               colSpan="12"
                               className="text-center"
-                              // style={{ paddingLeft: "400px" }}
+                            // style={{ paddingLeft: "400px" }}
                             >
                               No asset added yet.
                             </td>
