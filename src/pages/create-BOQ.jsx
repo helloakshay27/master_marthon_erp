@@ -2954,9 +2954,7 @@ const CreateBOQ = () => {
                                       {expandedRows.includes(el.id) && (
                                         <tr>
 
-                                          <h1>predefinedMaterialsData</h1>
 
-                                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
 
 
                                           <td colSpan={11}>
