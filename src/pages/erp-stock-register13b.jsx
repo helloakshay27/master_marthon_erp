@@ -42,14 +42,14 @@ const ErpStockRegister13B = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      
+
       try {
 
         const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get('token');
+        const token = urlParams.get('token');
 
         const response = await fetch(
-          `${baseURL}/pms/inventories/stock_data.json?token=${token}`
+          `${baseURL}/mor_inventories/stock_data.json?token=${token}`
         ); // Replace with your API endpoint
 
         if (!response.ok) {
@@ -61,28 +61,31 @@ const ErpStockRegister13B = () => {
           const materialUrl = item.id && token
             ? `/stock_register_detail/${item.id}/?token=${token}`
             : "#"; // Fallback to "#" if id or token is missing
-  
+
           return {
             srNo: index + 1,
-            material: item.name || "-",
+            material: item.category || "-",
             materialUrl: materialUrl, // Safeguard added here
-            material_type: item.material_type || "-",
-            materialSubType: item.inventory_sub_type_id || "-",
-            materialDescription: item.material_description || "-",
-            specification: item.specification || "-",
+            material_name: item.material_name || "-",
+            // materialSubType: item.inventory_sub_type_id || "-",
+            // materialDescription: item.material_description || "-",
+            // specification: item.specification || "-",
             lastReceived: item.last_received_on || "-",
             total_received: item.total_received || "-",
             total_issued: item.total_issued || "-",
-            stockStatus: item.available_quantity || "-",
+            // stockStatus: item.available_quantity || "-",
             deadstockQty: item.deadstockQty || "-",
+            stock_as_on: item.stock_as_on || "-",
+            stockStatus: item.stock_details.status || "-",
+
+
             theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
             uom_name: item.uom_name || "-",
-            stock_details: item.stock_details.map((stock) => ({
+            stock_details: item?.stock_details.map((stock) => ({
               stockId: stock.id,
               createdAt: stock.created_at || "-",
               mor: stock.mor || "-",
               resourceNumber: stock.resource_number || "-",
-              status: stock.status || "-",
               receivedQty: stock.received_qty || "-",
               issuedQty: stock.issued_qty || "-",
               returnedQty: stock.returned_qty || "-",
@@ -108,6 +111,26 @@ const ErpStockRegister13B = () => {
   }, []); // Empty dependency array to run once on mount
 
 
+  const columns = [
+    { data: "srNo", title: "Sr. No." },
+    {
+      data: "material",
+      title: "Material / Asset",
+      render: (data, type, row) =>
+        `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
+    },
+    { data: "material_name", title: "Material" },
+
+    { data: "lastReceived", title: "Last Received On" },
+    { data: "total_received", title: "Total Received" },
+    { data: "total_issued", title: "Total Issued" },
+    { data: "stockStatus", title: "Stock Status" },
+    { data: "stock_as_on", title: "Stock As On" },
+
+    { data: "deadstockQty", title: "Deadstock Qty" },
+    { data: "theftMissing", title: "Theft / Missing" },
+    { data: "uom_name", title: "UOM" },
+  ];
 
 
   useEffect(() => {
@@ -126,27 +149,7 @@ const ErpStockRegister13B = () => {
   }, [searchTerm, data]);
 
 
-  
-  const columns = [
-    { data: "srNo", title: "Sr. No." },
-    {
-      data: "material",
-      title: "Material / Asset",
-      render: (data, type, row) =>
-        `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
-    },    
-    { data: "material_type", title: "Material Type" },
-    { data: "materialSubType", title: "Material Sub-type" },
-    { data: "materialDescription", title: "Material Description" },
-    { data: "specification", title: "Specification" },
-    { data: "lastReceived", title: "Last Received On" },
-    { data: "total_received", title: "Total Received" },
-    { data: "total_issued", title: "Total Issued" },
-    { data: "stockStatus", title: "Stock Status" },
-    { data: "deadstockQty", title: "Deadstock Qty" },
-    { data: "theftMissing", title: "Theft / Missing" },
-    { data: "uom_name", title: "UOM" },
-  ];
+
 
   if (loading) {
     return <div>Loading...</div>; // Show loading message while data loads
@@ -362,7 +365,7 @@ const ErpStockRegister13B = () => {
                       </div>
                       <div className="col-md-3">
                         <button
-                        onClick={downloadExcel}
+                          onClick={downloadExcel}
                           id="downloadButton"
                           type="submit"
                           className="btn btn-md"
@@ -417,9 +420,9 @@ const ErpStockRegister13B = () => {
             </div>
 
             <div
-              className="tbl-container m-3 px-1 mt-3"
-              style={{ width: "", maxHeight: "max-content",boxShadow:"unset" }}
-              >
+              className="tbl-container  px-1 mt-3"
+              style={{ width: "max-congent", maxHeight: "max-content", boxShadow: "unset" }}
+            >
               <DataTable
                 data={filteredData} // Use fetched and transformed data
                 columns={columns}
@@ -433,7 +436,7 @@ const ErpStockRegister13B = () => {
                   info: true
                 }}
               />
-            </div>          
+            </div>
           </div>
         </div>
       </div>
@@ -799,14 +802,14 @@ const ErpStockRegister13B = () => {
         </Modal.Header>
 
         <Modal.Body>
-        {columns.map((column,index) =>  (
+          {columns.map((column, index) => (
             <div
               className="row justify-content-between align-items-center mt-2"
               key={index}
             >
               <div className="col-md-6">
                 <button type="submit" className="btn btn-md">
-                  <svg  key={index}
+                  <svg key={index}
                     xmlns="http://www.w3.org/2000/svg"
                     width="22"
                     height="22"
@@ -825,7 +828,7 @@ const ErpStockRegister13B = () => {
               </div>
               <div className="col-md-4">
                 <div className="form-check form-switch mt-1">
-                  <input  key={index}
+                  <input key={index}
                     className="form-check-input"
                     type="checkbox"
                     role="switch"

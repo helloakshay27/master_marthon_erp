@@ -20,7 +20,7 @@ const ErpStockRegisterCreationDetail13C = () => {
       const token = urlParams.get("token");
 
       const response = await fetch(
-        `${baseURL}/pms/inventories/${id}.json?token=${token}`
+        `${baseURL}/mor_inventories/${id}.json?token=${token}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -57,7 +57,32 @@ const ErpStockRegisterCreationDetail13C = () => {
                       <div>
                         <h5>Material Details</h5>
                       </div>
-                      <div className="row mt-4">
+                      <div className="row mt-4">  
+                        
+                        <div className="col-lg-12 col-md-6 col-sm-12 row px-2 mt-1">
+                          <div className="col-3 ms-2">
+                            <label>Material </label>
+                          </div>
+                          <div className="col-8 ps-0">
+                            <label className="text">
+                              <span className="me-3">:</span>
+                              {data?.material_name}
+                            </label>
+                          </div>
+                        </div>
+
+                       
+                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                          <div className="col-6 ">
+                            <label>Material / Asset </label>
+                          </div>
+                          <div className="col-6">
+                            <label className="text">
+                              <span className="me-3">:</span>
+                              {data?.category}
+                            </label>
+                          </div>
+                        </div>
                         <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                           <div className="col-6 ">
                             <label>Store </label>
@@ -69,39 +94,8 @@ const ErpStockRegisterCreationDetail13C = () => {
                             </label>
                           </div>
                         </div>
-                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                          <div className="col-6 ">
-                            <label>Material Category </label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              {data?.category}
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Material Code </label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              {data?.material_code}
-                            </label>
-                          </div>
-                        </div>
-                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Material Type </label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              {data?.material_type}
-                            </label>
-                          </div>
-                        </div>
+                      
+                       
                         {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                           <div className="col-6 ">
                             <label>Material Sub-Type</label>
@@ -113,17 +107,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                             </label>
                           </div>
                         </div> */}
-                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Material </label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              {data?.name}
-                            </label>
-                          </div>
-                        </div>
+                      
                         {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                           <div className="col-6 ">
                             <label>Material Description </label>
@@ -152,7 +136,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3">:</span>
-                              {data?.uom_name}
+                              {data?.uom}
                             </label>
                           </div>
                         </div>
@@ -244,7 +228,9 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>UOM</th>
                                       <th>Received Qty</th>
                                       <th>Issued Qty</th>
-                                      <th>Requested Qty</th>
+                                      <th>Return Qty</th>
+                                      <th> Current Stock</th>
+
                                       <th>Remark</th>
                                     </tr>
                                   </thead>
@@ -268,7 +254,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     })}
                                     <tr>
                                       <td></td>
-                                      <td>Balanced Qty</td>
+                                      <td> <strong> Balanced Qty</strong></td>
                                       <td></td>
                                       <td></td>
                                       <td></td>
@@ -276,7 +262,9 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <td></td>
                                       <td></td>
                                       <td></td>
-                                      <td>{data?.stock_as_on}</td>{" "}
+                                      <td></td>
+
+                                      <td> <strong>{data?.stock_as_on}</strong> </td>{" "}
                                       {/* Display stock_as_on only once */}
                                       <td></td>
                                     </tr>

@@ -20,6 +20,7 @@
   color: var(--red);
 }
 
+
 .input-group-append .btn {
   border: 1px solid var(--red) !important;
   border-radius: 4px;
@@ -18683,3 +18684,7 @@ ul.pagination.justify-content-center {
   min-width:100px;
 }
  */
+ .tbl-container a {
+  color: var(--red) !important;
+    font-weight: 500 !important;
+}
