@@ -1319,7 +1319,8 @@ const CreateBOQ = () => {
     updatedAssetCostQTY[index] = value;
     setAssetCostQTY(updatedAssetCostQTY);
   };
-
+  const [localMaterialErrors, setLocalMaterialErrors] = useState({});
+  const [localAssetErrors, setLocalAssetErrors] = useState({});
   // Example predefined materials data (replace with actual data from your source)
   const predefinedMaterials = materials.map((material, index) => ({
     material_id: material.id,
@@ -1341,7 +1342,33 @@ const CreateBOQ = () => {
       parseFloat(totalEstimatedQtyWastages[index]) || 0,
   }));
 
-  // console.log("material data table 1", predefinedMaterials)
+  const validateDuplicateMaterials = () => {
+    const seenCombinations = new Map();
+    let errors = {};
+  
+    predefinedMaterials.forEach((material, index) => {
+      // Skip validation if ANY of the three required fields is empty
+      if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
+        return;
+      }
+  
+      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+  
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info is not allowed.",
+          colour: "Duplicate Colour is not allowed.",
+          brand: "Duplicate Brand is not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+  
+    setLocalMaterialErrors(Object.keys(errors).length > 0 ? { ...errors } : {});
+    return Object.keys(errors).length === 0;
+  };
+  
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -1363,6 +1390,49 @@ const CreateBOQ = () => {
       parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
     cost_qty: parseFloat(assetCostQTY[index]) || 0,
   }));
+  const validateDuplicateAssets = () => {
+    const seenCombinations = new Map();
+    let errors = {};
+  
+    predefinedAssets.forEach((asset, index) => {
+      // Skip validation if ANY of the three required fields is empty
+      if (!asset.generic_info_id || !asset.colour_id || !asset.brand_id) {
+        return;
+      }
+  
+      const key = `${asset.material_id}-${asset.generic_info_id}-${asset.colour_id}-${asset.brand_id}`;
+  
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info is not allowed.",
+          colour: "Duplicate Colour is not allowed.",
+          brand: "Duplicate Brand is not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+  
+    setLocalAssetErrors(Object.keys(errors).length > 0 ? { ...errors } : {});
+    return Object.keys(errors).length === 0;
+  };
+  
+
+  useEffect(() => {
+    validateDuplicateMaterials();
+  }, [predefinedMaterials , localMaterialErrors]); // ✅ Removed localMaterialErrors to prevent infinite loop
+  
+  useEffect(() => {
+    validateDuplicateAssets();
+  }, [predefinedAssets , localAssetErrors]); // ✅ Removed localAssetErrors to prevent infinite loop
+  
+
+
+  // console.log("material data table 1", predefinedMaterials)
+
+
+
+
 
   // console.log("asset data table", predefinedAssets);
 
@@ -1663,6 +1733,12 @@ const CreateBOQ = () => {
       return; // Exit function if validation fails
     }
 
+    if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
+      toast.error("Please resolve duplicate materials or assets before submitting.");
+      return;
+    }
+
+
     // Show toast messages for each missing field
     //  if (!selectedProject) toast.error("Project is required.");
     //  if (!itemName) toast.error("Item Name is required.");
@@ -1792,48 +1868,48 @@ const CreateBOQ = () => {
   // Handle submit for BOQ SubItem
   const handleSubmitBOQSubItem = async () => {
     let validationErrors = {};
-  
+
     // Validate required fields
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
-  
+
     if (boqSubItems.length === 0) {
       toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
       return;
     }
-  
+
     // Check for validation errors in materials and assets
     if (Object.keys(materialErrors).length > 0 || Object.keys(assetsErrors).length > 0) {
       toast.error("Please resolve duplicate materials or assets before submitting.");
       return;
-  }
-  
-  
+    }
+
+
     // Iterate over each boqSubItem to validate
     for (let i = 0; i < boqSubItems.length; i++) {
       const boqSubItem = boqSubItems[i];
-  
+
       if (!boqSubItem.name || boqSubItem.name.trim() === "") {
         toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
         return;
       }
-  
+
       if (boqSubItem.cost_quantity <= 0) {
         toast.error(`Cost quantity is required for BoQ Sub Item ${i + 1}.`);
         return;
       }
-  
+
       if (boqSubItem.materials.length === 0 && boqSubItem.assets.length === 0) {
         toast.error(`At least one material or asset must be selected for BoQ Sub Item ${i + 1}.`);
         return;
       }
     }
-  
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setLoading(true);
-  
+
       try {
         const payloadData2 = {
           boq_detail: {
@@ -1843,7 +1919,7 @@ const CreateBOQ = () => {
             item_name: itemName,
             description: description,
             note: note,
-  
+
             sub_categories: [
               { category_id: selectedCategory?.value, level: 1 },
               ...(selectedSubCategory
@@ -1861,18 +1937,18 @@ const CreateBOQ = () => {
             ],
           },
         };
-  
+
         const response = await axios.post(
           `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
           payloadData2
         );
-  
+
         if (response.data) {
           navigate("/view-BOQ");
         } else {
           toast.error("Failed to create BOQ Sub Item.", { position: "top-right" });
         }
-  
+
         console.log("Data posted successfully:", response.data);
       } catch (error) {
         console.error("Error posting data:", error);
@@ -1882,7 +1958,7 @@ const CreateBOQ = () => {
       }
     }
   };
-  
+
 
   // Handle general submit
   const handleSubmit = () => {
@@ -2174,6 +2250,15 @@ const CreateBOQ = () => {
                       <div className="card-body mt-0 pt-0">
                         <div className=" my-4">
                           <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                          {/* predefinedMaterials
+
+                          <h1>predefinedMaterialsData</h1>
+
+<pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre> */}
+
+{/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
+
+
                             <table
                               className="tbl-container"
                               style={{ borderCollapse: "collapse" }}
@@ -2304,7 +2389,11 @@ const CreateBOQ = () => {
                                           value={selectedGenericSpecifications[index]}
                                           placeholder={`Select Specification`}
                                         />
+                                        {localMaterialErrors[index]?.generic_info && (
+    <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+  )}
                                       </td>
+
                                       <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={colors[index] || []}
@@ -2314,7 +2403,11 @@ const CreateBOQ = () => {
                                           value={selectedColors[index]}
                                           placeholder={`Select Colour`}
                                         />
+                                       {localMaterialErrors[index]?.colour && (
+    <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+  )}
                                       </td>
+
                                       <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={inventoryBrands[index] || []}
@@ -2324,7 +2417,11 @@ const CreateBOQ = () => {
                                           value={selectedInventoryBrands[index]}
                                           placeholder={`Select Brand`}
                                         />
+                                      {localMaterialErrors[index]?.brand && (
+    <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+  )}
                                       </td>
+
                                       <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={unitOfMeasures}
@@ -2550,6 +2647,9 @@ const CreateBOQ = () => {
                                           } // Display the selected generic specification for this material
                                           placeholder={`Select  Specification`} // Dynamic placeholder
                                         />
+                                        {localAssetErrors[index]?.generic_info && (
+                                          <p style={{ color: "red" }}>{localAssetErrors[index].generic_info}</p>
+                                        )}
                                       </td>
                                       <td>
                                         <SingleSelector
@@ -2563,6 +2663,10 @@ const CreateBOQ = () => {
                                           value={selectedAssetColors[index]} // Display the selected color for this material
                                           placeholder={`Select Colour`} // Dynamic placeholder
                                         />
+                                        {localAssetErrors[index]?.color && (
+                                          <p style={{ color: "red" }}>{localAssetErrors[index].color}</p>
+                                        )}
+
                                       </td>
                                       <td>
                                         <SingleSelector
@@ -2580,6 +2684,9 @@ const CreateBOQ = () => {
                                           } // Display the selected brand for this material
                                           placeholder={`Select Brand`} // Dynamic placeholder
                                         />
+                                        {localAssetErrors[index]?.brand && (
+                                          <p style={{ color: "red" }}>{localAssetErrors[index].brand}</p>
+                                        )}
                                       </td>
                                       <td>
                                         <SingleSelector
