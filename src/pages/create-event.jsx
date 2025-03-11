@@ -358,7 +358,10 @@ export default function CreateEvent() {
   };
 
   const handleRemoveTextarea = (id) => {
-    setTextareas(textareas.filter((textarea) => textarea.id !== id));
+    const updatedTextareas = textareas.filter((textarea) => textarea.id !== id)
+    console.log("updatedTextareas",updatedTextareas);
+    
+    setTextareas([...updatedTextareas]);
   };
 
   const handleTextareaChange = (id, value) => {
@@ -379,7 +382,7 @@ export default function CreateEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                id: selectedCondition.value,
+                id: textarea.id,
                 value: selectedCondition.condition,
               }
             : textarea
@@ -396,10 +399,10 @@ export default function CreateEvent() {
 
   const handleRemoveDocumentRow = (index) => {
     if (documentRows.length > 1) {
-      documentRowsRef.current = documentRowsRef.current.filter(
-        (_, i) => i !== index
-      );
-      setDocumentRows([...documentRowsRef.current]);
+      const updatedRows = documentRows.filter((_, i) => i !== index);
+      documentRowsRef.current = updatedRows;
+      console.log("updatedRows", updatedRows);
+      setDocumentRows([...updatedRows]);
     }
   };
 
@@ -927,14 +930,16 @@ export default function CreateEvent() {
                   resetSelectedRows={undefined}
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
-                    ...row,
                     upload: (
                       <input
                         type="file"
                         onChange={(e) =>
                           handleFileChange(index, e.target.files[0])
                         }
-                        ref={fileInputRef}
+                        key={row?.srNo}
+                        defaultValue={
+                          row?.upload?.filename ? row.upload.filename : ""
+                        }
                         multiple
                         accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
                       />
@@ -991,7 +996,7 @@ export default function CreateEvent() {
                             }
                             defaultValue={termsOptions.find(
                               (option) => option.condition === textarea.value
-                            )}
+                            )?.value}
                           />
                         </td>
                         <td>

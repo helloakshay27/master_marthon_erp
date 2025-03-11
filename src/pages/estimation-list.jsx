@@ -341,7 +341,7 @@ const EstimationList = () => {
                                                 </button> */}
                                             </div>
                                             <div className="col-md-3">
-                                                <button
+                                                {/* <button
                                                     type="submit"
                                                     className="btn btn-md"
                                                     onClick={handleSettingModalShow}
@@ -350,17 +350,17 @@ const EstimationList = () => {
                                                         color={"#8B0203"}
                                                         style={{ width: "25px", height: "25px" }}
                                                     />
-                                                </button>
+                                                </button> */}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-md-4">
-                                        <button className="purple-btn2 m-0 me-5">
+                                        {/* <button className="purple-btn2 m-0 me-5">
                                             <a style={{ color: "white" }} href="/estimation-creation">
                                                 <span style={{ color: "white" }} className="material-symbols-outlined align-text-top me-2">add</span>
                                                 <span style={{ color: "white" }}> Create</span>
                                             </a>
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             </div>

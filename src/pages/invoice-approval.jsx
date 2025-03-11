@@ -273,10 +273,50 @@ const InvoiceApproval = () => {
   //   }
   // };
 
+  // const fetchUsers = async (
+  //   companyId,
+  //   projectId,
+  //   siteId,
+  //   departmentIds = []
+  // ) => {
+  //   if (!companyId) {
+  //     setDepartmentUsers([]);
+  //     return;
+  //   }
+
+  //   try {
+  //     // If departmentIds is empty, remove the filter from API call
+  //     const departmentQuery =
+  //       departmentIds.length > 0
+  //         ? `q[department_id_in]=${departmentIds.join(",")}&`
+  //         : "";
+
+  //     const response = await axios.get(
+  //       `${baseURL}/users.json?${departmentQuery}q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
+  //         projectId || ""
+  //       }&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //     );
+
+  //     if (response.data && Array.isArray(response.data)) {
+  //       const newUsers = response.data.map((user) => ({
+  //         value: user.id,
+  //         label: user.full_name,
+  //       }));
+
+  //       setDepartmentUsers(newUsers); // Set users dropdown
+  //     } else {
+  //       setDepartmentUsers([]); // Reset users if no valid data
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching users:", error);
+  //     setDepartmentUsers([]); // Reset on error
+  //   }
+  // };
+
   const fetchUsers = async (
     companyId,
-    projectId,
-    siteId,
+    projectId = null,
+    siteId = null,
     departmentIds = []
   ) => {
     if (!companyId) {
@@ -285,16 +325,22 @@ const InvoiceApproval = () => {
     }
 
     try {
-      // If departmentIds is empty, remove the filter from API call
-      const departmentQuery =
-        departmentIds.length > 0
-          ? `q[department_id_in]=${departmentIds.join(",")}&`
-          : "";
+      // Construct query parameters dynamically
+      let queryParams = new URLSearchParams();
+
+      queryParams.append(
+        "q[user_sites_pms_site_project_company_id_eq]",
+        companyId
+      );
+
+      if (projectId)
+        queryParams.append("q[user_sites_pms_site_project_id_eq]", projectId);
+      if (siteId) queryParams.append("q[user_sites_pms_site_id_eq]", siteId);
+      if (departmentIds.length > 0)
+        queryParams.append("q[department_id_in]", departmentIds.join(","));
 
       const response = await axios.get(
-        `${baseURL}/users.json?${departmentQuery}q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
-          projectId || ""
-        }&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/users.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       if (response.data && Array.isArray(response.data)) {
@@ -352,6 +398,57 @@ const InvoiceApproval = () => {
   //   }
   // };
 
+  // const handleCompanyChange = (selectedOption) => {
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setSelectedWing(null);
+  //   setProjects([]);
+  //   setSiteOptions([]);
+
+  //   if (selectedOption) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company.id === selectedOption.value
+  //     );
+  //     setProjects(
+  //       selectedCompanyData?.projects.map((prj) => ({
+  //         value: prj.id,
+  //         label: prj.name,
+  //       }))
+  //     );
+
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       company_id: selectedOption.value,
+  //       project_id: null,
+  //       site_id: null,
+  //     }));
+
+  //     // Clear selected users and user groups
+  //     setSelectedUsers([]);
+  //     setDepartmentUsers([]); // Reset users list
+  //     setUserGroups([]); // Reset user groups list
+
+  //     // Clear users inside approval levels
+  //     setApprovalLevels((prevLevels) =>
+  //       prevLevels.map((level) => ({
+  //         ...level,
+  //         users: [],
+  //       }))
+  //     );
+
+  //     // Fetch new users and user groups based on selected company
+  //     fetchUsers(
+  //       selectedOption.value,
+  //       null,
+  //       null,
+  //       selectedDepartment?.map((dept) => dept.value) || []
+  //     );
+
+  //     fetchUserGroups(selectedOption.value); // Ensure user groups are refreshed
+  //   }
+  // };
+
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption);
     setSelectedProject(null);
@@ -380,8 +477,8 @@ const InvoiceApproval = () => {
 
       // Clear selected users and user groups
       setSelectedUsers([]);
-      setDepartmentUsers([]); // Reset users list
-      setUserGroups([]); // Reset user groups list
+      setDepartmentUsers([]);
+      setUserGroups([]);
 
       // Clear users inside approval levels
       setApprovalLevels((prevLevels) =>
@@ -391,13 +488,8 @@ const InvoiceApproval = () => {
         }))
       );
 
-      // Fetch new users and user groups based on selected company
-      fetchUsers(
-        selectedOption.value,
-        null,
-        null,
-        selectedDepartment?.map((dept) => dept.value) || []
-      );
+      // Fetch new users only based on company ID
+      fetchUsers(selectedOption.value);
 
       fetchUserGroups(selectedOption.value); // Ensure user groups are refreshed
     }
@@ -791,7 +883,7 @@ const InvoiceApproval = () => {
                               <div className="col-md-3">
                                 <label htmlFor="status-select">
                                   Department{" "}
-                                  <span style={{ color: "red" }}>*</span>
+                                  {/* <span style={{ color: "red" }}>*</span> */}
                                 </label>
                                 {/* <SingleSelector
                                   id="status-select"

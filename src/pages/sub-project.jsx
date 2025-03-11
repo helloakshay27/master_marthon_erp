@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { SearchIcon } from "../components";
+import { SearchIcon, SelectBox, ShowIcon } from "../components";
 import AddUsersModal from "../components/common/Modal/AddUserModel";
 import { baseURL } from "../confi/apiDomain";
-
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector";
 const SubProject = () => {
   const [showModal, setShowModal] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
@@ -19,6 +20,8 @@ const SubProject = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Adjust as needed
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     axios
@@ -38,18 +41,30 @@ const SubProject = () => {
       .catch((error) => console.error("Error fetching departments:", error));
   }, []);
 
-  const filteredTableData = tableData.filter((row) =>
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+ 
+ 
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((res) => setCompanies(res.data))
+      .get(`${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then((res) => {
+        if (res.data?.companies) {
+          const companyOptions = res.data.companies.map((company) => ({
+            value: company.id,
+            label: company.company_name,
+          }));
+          setCompanies(companyOptions);
+        } else {
+          console.error("Unexpected company response format:", res.data);
+        }
+      })
       .catch((error) => console.error("Error fetching companies:", error));
   }, []);
+
+  useEffect(() => {
+    console.log("Selected Company:", selectedCompany);
+  }, [selectedCompany]);
+  
+
 
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -57,7 +72,7 @@ const SubProject = () => {
     total_count: 0,
   });
 
-  const pageSize = 5; // Items per page
+  const pageSize = 10; // Items per page
 
   const [userGroups, setUserGroups] = useState([]);
 
@@ -69,18 +84,28 @@ const SubProject = () => {
   const handleSaveGroup = async () => {
     await fetchUserGroups(); // Fetch updated data after saving
   };
-  const fetchUserGroups = () => {
+ 
+  
+
+ 
+  
+  const fetchUserGroups = (page = 1, companyId = null) => {
+    let url = `${baseURL}/user_groups.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+  
+    // Apply company filter if selected
+    if (companyId) {
+      url += `&q[company_id_eq]=${companyId}`;
+    }
+  
     axios
-      .get(
-        `${baseURL}/user_groups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(url)
       .then((res) => {
         if (res.data?.user_groups && Array.isArray(res.data.user_groups)) {
           setTableData(res.data.user_groups);
           setPagination({
-            current_page: 1,
-            total_pages: Math.ceil(res.data.user_groups.length / pageSize),
-            total_count: res.data.user_groups.length,
+            current_page: res.data.current_page,
+            total_pages: Math.ceil(res.data.total_entries / pageSize),
+            total_count: res.data.total_entries,
           });
         } else {
           console.error("Unexpected response format:", res.data);
@@ -89,10 +114,7 @@ const SubProject = () => {
       })
       .catch((error) => console.error("Error fetching table data:", error));
   };
-
-  // useEffect(() => {
-  //   fetchUserGroups();
-  // }, []);
+  
 
   useEffect(() => {
     if (!showModal) {
@@ -100,29 +122,42 @@ const SubProject = () => {
     }
   }, [showModal]);
 
-  useEffect(() => {
-    setPagination((prev) => ({
-      ...prev,
-      total_pages: Math.ceil(filteredTableData.length / pageSize),
-      total_count: filteredTableData.length,
-      current_page: 1, // Reset to first page after filtering
-    }));
-  }, [searchTerm, tableData]);
-
-  const paginatedData = filteredTableData.slice(
-    (pagination.current_page - 1) * pageSize,
-    pagination.current_page * pageSize
-  );
-
-  // **Pagination Handling**
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= pagination.total_pages) {
-      setPagination((prev) => ({
-        ...prev,
-        current_page: pageNumber,
-      }));
+  const handleFilterSubmit = () => {
+    if (selectedCompany) {
+      fetchUserGroups(1, selectedCompany.value); // Pass company ID & reset to page 1
     }
   };
+  
+  const handleResetFilters = () => {
+    setSelectedCompany(null);
+    setSearchTerm("");
+    fetchUserGroups(1, null); // Reset filter and fetch all data
+  };
+  
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Filter table data based on search term
+  const filteredTableData = tableData.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.company.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+ 
+  const paginatedData = tableData
+
+ 
+
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= pagination.total_pages) {
+      fetchUserGroups(pageNumber, selectedCompany ? selectedCompany.value : null);
+    }
+  };
+  
+  
 
   const getPageNumbers = () => {
     const total = pagination.total_pages;
@@ -176,10 +211,35 @@ const SubProject = () => {
     console.log("Saved Users:", selectedUsers);
   };
 
+  const [mode, setMode] = useState("edit");
+
   const handleEdit = (group) => {
     setSelectedGroup(group);
     setShowModal(true);
+    setMode("edit"); // Set mode to edit
   };
+
+  const handleView = (group) => {
+    setSelectedGroup(group);
+    setShowModal(true);
+    setMode("view"); // Set mode to view (read-only)
+  };
+
+  const handleAdd = () => {
+    setSelectedGroup(null);
+    setMode("add"); // Set mode to 'add'
+    setShowModal(true);
+  };
+
+  // const handleEdit = (group) => {
+  //   setSelectedGroup(group);
+  //   setShowModal(true);
+  // };
+
+  // const handleView = (group) => {
+  //   setSelectedGroup(group);
+  //   setShowModal(true);
+  // };
 
   // **Filter & Paginate Data**
 
@@ -193,10 +253,11 @@ const SubProject = () => {
           <div className="d-flex justify-content-end">
             <button
               className="purple-btn2"
-              onClick={() => {
-                setSelectedGroup(null);
-                setShowModal(true);
-              }}
+              // onClick={() => {
+              //   setSelectedGroup(null);
+              //   setShowModal(true);
+              // }}
+              onClick={handleAdd}
             >
               + Add Users
             </button>
@@ -225,11 +286,64 @@ const SubProject = () => {
               onSave={() => {
                 fetchUserGroups(); // Refresh data after save
               }}
+              // readOnly={selectedGroup !== null} // Modal is read-only when viewing a group
+
+              mode={mode} // Use dynamic mode
             />
           </div>
 
           {/* Search Bar */}
           <div className="card mt-3 pb-4">
+          <CollapsibleCard title="Quick Filter">
+                <div>
+                  {/* {error && (
+                        <div className="alert alert-danger">{error}</div>
+                      )}
+                      {loading && (
+                        <div
+                          className="spinner-border text-primary"
+                          role="status"
+                        ></div>
+                      )} */}
+
+                  <div className="row my-2 align-items-end">
+                    {/* Event Title */}
+                    <div className="col-md-3">
+                      <label htmlFor="event-title-select">Company</label>
+
+                      <SingleSelector
+  options={companies}
+  onChange={(selectedOption) => setSelectedCompany(selectedOption)}
+  value={selectedCompany} // Ensure this is correctly bound
+  placeholder="Select Company"
+  isSearchable={true}
+/>
+
+                    </div>
+
+                    {/* Event Number */}
+                    
+                  
+                    <button
+                      type="submit"
+                      className="col-md-1 purple-btn2 ms-2 mt-4"
+                      onClick={handleFilterSubmit}
+                    >
+                      Go{" "}
+                    </button>
+
+                    <button
+                      className="col-md-1 purple-btn2 ms-2 mt-4"
+                      onClick={handleResetFilters}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  {/* </form> */}
+                </div>
+              </CollapsibleCard>
+
+
             <div className="d-flex justify-content-end align-items-center px-3 py-2">
               <div className="col-md-4">
                 <div className="input-group">
@@ -238,8 +352,10 @@ const SubProject = () => {
                     className="form-control tbl-search"
                     placeholder="Type your keywords here"
                     spellCheck="false"
+                    // value={searchTerm}
+                    // onChange={(e) => setSearchTerm(e.target.value)}
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearch}
                   />
                   <div className="input-group-append">
                     <button type="button" className="btn btn-md btn-default">
@@ -258,34 +374,74 @@ const SubProject = () => {
                     <th style={{ width: "5%" }}>Sr No.</th>
                     <th>Group Name</th>
                     <th>Company</th>
-                    <th style={{ width: "8%" }}>Action</th>
+                    <th style={{ width: "5%" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((item, index) => (
+                  {/* {paginatedData.map((item, index) => ( */}
+                  {filteredTableData.length > 0 ? (
+                    filteredTableData.map((item, index) => (
+                    
                     <tr key={item.id}>
                       <td>
                         {(pagination.current_page - 1) * pageSize + index + 1}
                       </td>
                       <td>{item.name}</td>
                       <td>{item.company}</td>
-                      <td>
+                      {/* <td>
                         <span
                           className="material-symbols-outlined"
                           onClick={() => handleEdit(item)}
                         >
                           Edit
                         </span>
+                      </td> */}
+
+                      <td
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <ShowIcon
+                          onClick={() => handleView(item)}
+                          style={{
+                            cursor: "pointer",
+                            width: "20px",
+                            height: "20px",
+                          }}
+                        />
+                        <span
+                          className="material-symbols-outlined"
+                          onClick={() => handleEdit(item)}
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "20px", // Same size as ShowIcon
+                            // color: "#0d6efd", // Optional: Match icon color
+                          }}
+                        >
+                          edit
+                        </span>
                       </td>
                     </tr>
-                  ))}
-                  {filteredTableData.length === 0 && (
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center">
+                      No records found.
+                    </td>
+                  </tr>
+                )}
+
+                
+                  {/* {filteredTableData.length === 0 && (
                     <tr>
                       <td colSpan="4" className="text-center">
                         No records found.
                       </td>
                     </tr>
-                  )}
+                  )} */}
                 </tbody>
               </table>
             </div>
@@ -373,6 +529,11 @@ const SubProject = () => {
                   </button>
                 </li>
               </ul>
+              <div>
+    Showing {(pagination.current_page - 1) * pageSize + 1} to{" "}
+    {Math.min(pagination.current_page * pageSize, pagination.total_count)} of{" "}
+    {pagination.total_count} entries
+  </div>
             </div>
           </div>
         </div>

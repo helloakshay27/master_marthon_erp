@@ -58,6 +58,16 @@ const ApprovalEdit = () => {
     { id: "", order: "", name: "", users: [] },
   ]);
 
+  const [companyId, setCompanyId] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [siteId, setSiteId] = useState("");
+  const [departmentIds, setDepartmentIds] = useState([]);
+
+  useEffect(() => {
+    fetchUsers(companyId, projectId, siteId, departmentIds);
+
+  }, [companyId, projectId, siteId, departmentIds]); // ✅ Re-fetch data when any state changes
+
   const [formData, setFormData] = useState({
     company_id: null,
     department_id: [],
@@ -198,7 +208,7 @@ const ApprovalEdit = () => {
       }
 
       if (departmentIds && departmentIds.length > 0) {
-        url += `&q[department_id_eq]=${departmentIds.join(",")}`; // Fetch only for selected departments
+        url += `&q[department_id_in]=${departmentIds.join(",")}`; // Fetch only for selected departments
       }
 
       const response = await axios.get(url);
@@ -303,7 +313,7 @@ const ApprovalEdit = () => {
 
       try {
         const response = await axios.get(
-          `${baseURL}/users.json?q[department_id_eq]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/users.json?q[department_id_in]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data && Array.isArray(response.data)) {
@@ -325,7 +335,6 @@ const ApprovalEdit = () => {
   }, [selectedDepartment]);
 
   const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
-  const [departmentIds, setDepartmentIds] = useState([]);
 
   useEffect(() => {
     const fetchApprovalData = async () => {
@@ -415,19 +424,33 @@ const ApprovalEdit = () => {
           departmentIds
         );
 
-        const moduleOption = filterOptions.modules.find(
-          (mod) => mod.value === data.approval_type
-        );
-        const isMaterialOrderRequest =
-          moduleOption?.label?.toLowerCase() === "material order request";
-        setShowMaterialType(isMaterialOrderRequest);
-        setSelectedModule(moduleOption || null);
+        // const moduleOption = filterOptions.modules.find(
+        //   (mod) => mod.value === data.approval_type
+        // );
+        // const isMaterialOrderRequest =
+        //   moduleOption?.label?.toLowerCase() === "material order request";
+        // setShowMaterialType(isMaterialOrderRequest);
+        // setSelectedModule(moduleOption || null);
 
+        // const materialTypeOption = filterOptions.material_types.find(
+        //   (mat) => mat.value === data.pms_inventory_type_id
+        // );
+        // setSelectedMaterialType(materialTypeOption || null);
+        if (filterOptions.modules.length > 0) {
+          const moduleOption = filterOptions.modules.find(
+            (mod) => String(mod.value) === String(data.approval_type) // Ensures type consistency
+          );
+          setSelectedModule(moduleOption || null);
+          
+          const isMaterialOrderRequest =
+            moduleOption?.label?.toLowerCase() === "material order request";
+          setShowMaterialType(isMaterialOrderRequest);
+        }
+  
         const materialTypeOption = filterOptions.material_types.find(
           (mat) => mat.value === data.pms_inventory_type_id
         );
         setSelectedMaterialType(materialTypeOption || null);
-
         // **Handle Preselected User Groups & Users**
         const updatedApprovalLevels = (data.invoice_approval_levels || []).map(
           (level) => {
@@ -464,10 +487,14 @@ const ApprovalEdit = () => {
       }
     };
 
-    if (companies.length > 0) {
+    // if (companies.length > 0) {
+    //   fetchApprovalData();
+    // }
+
+    if (companies.length > 0 && filterOptions.modules.length > 0) {
       fetchApprovalData();
     }
-  }, [companies, id]);
+  }, [companies, id,filterOptions.modules]);
 
   useEffect(() => {
     if (!departmentUsers.length || !approvalLevelsRaw.length) return;
@@ -827,146 +854,274 @@ const ApprovalEdit = () => {
 
   const navigate = useNavigate();
 
+  // const handleCreate = () => {
+  //   setLoading(true);
+
+  //   const orderCounts = {}; // Store orders as keys
+  //   let hasDuplicateOrder = false;
+
+  //   const errors = [];
+
+  //   if (!formData.company_id) errors.push("Company is required.");
+  //   // if (!formData.department_id) errors.push("Department is required.");
+  //   if (!formData.module_id) errors.push("Module is required.");
+  //   if (approvalLevels.length === 0)
+  //     errors.push("At least one Approval Level is required.");
+
+  //   if (errors.length > 0) {
+  //     setLoading(false);
+  //     alert("plz fill all required fields"); // Show all errors in an alert
+  //     return; // Stop function execution
+  //   }
+
+  //   // Iterate over the approvalLevels array
+  //   approvalLevels.forEach((level, index) => {
+  //     // console.log(`Checking Level ${index + 1}:`, level.order);
+
+  //     // Skip levels with invalid orders
+  //     if (level.order === undefined || level.order === null) {
+  //       console.log(
+  //         `Skipping Level ${index + 1} as order is invalid:`,
+  //         level.order
+  //       );
+  //       return;
+  //     }
+
+  //     const orderKey = String(level.order); // Normalize the order to a string
+  //     console.log(`Normalized orderKey for Level ${index + 1}:`, orderKey);
+
+  //     // Check if the order already exists in orderCounts
+  //     if (orderCounts.hasOwnProperty(orderKey)) {
+  //       console.log(`Duplicate Found for Level ${index + 1}:`, orderKey);
+  //       hasDuplicateOrder = true;
+  //     } else {
+  //       console.log(
+  //         `No duplicate found for Level ${index + 1}. Adding orderKey:`,
+  //         orderKey
+  //       );
+  //     }
+
+  //     // Mark this orderKey as processed
+  //     orderCounts[orderKey] = true;
+  //   });
+
+  //   // If duplicate order found, show alert and stop further execution
+  //   if (hasDuplicateOrder) {
+  //     alert("Each approval level must have a unique order.");
+  //     setLoading(false);
+  //     return; // Stop function execution
+  //   }
+
+  //   // If no duplicate, prepare and send the payload (rest of the logic follows)
+
+  //   const payload = {
+  //     approval_type: formData.module_id,
+  //     company_id: formData.company_id,
+  //     project_id: formData.project_id || null,
+  //     site_id: formData.site_id || null,
+  //     // department_id: formData.department_id,
+  //     snag_checklist_id: formData.template_id,
+  //     sub_category_id: formData.sub_category_id,
+  //     category_order: 1,
+  //     category_id: formData.category_id,
+  //     pms_inventory_type_id: formData.pms_supplier_id,
+  //     invoice_approval_levels_attributes: approvalLevels.map((level) => ({
+  //       id: level.id,
+  //       name: level.name,
+  //       order: level.order,
+  //       active: true,
+  //       _destroy: level._destroy || false, // Only send delete key for approval levels
+  //       escalate_to_users:
+  //         level.type === "users"
+  //           ? level.users?.map((user) => user.value) || []
+  //           : [],
+  //       user_group_id: level.type === "groups" ? level.group?.value : null,
+  //     })),
+  //   };
+
+  //   console.log("Final Payload:", payload);
+
+  //   // Send API request if no duplicates found
+  //   axios
+  //     .patch(
+  //       `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       payload
+  //     )
+  //     .then((response) => {
+  //       console.log("Approval  updated Created:", response.data);
+  //       alert("Approval update successfully!");
+
+  //       setTimeout(() => {
+  //         navigate("/approval-materics"); // Change route as per your app
+  //       }, 500); // Redirect to Approval Metrics page
+  //     })
+  //     // .catch((error, response) => {
+  //     //   console.error("Error creating invoice approval:", response);
+  //     //   alert("Each approval level must have a unique order");
+  //     // });
+  //     .catch((error) => {
+  //       // Check if error.response exists (server responded with an error)
+  //       if (error.response) {
+  //         // Check if the response contains the specific error message
+  //         const errorMessage = error.response.data.errors;
+
+  //         // Check if the specific error about duplicate orders is in the error messages
+  //         if (
+  //           errorMessage &&
+  //           errorMessage.includes(
+  //             "Invoice approval levels order has already been taken"
+  //           )
+  //         ) {
+  //           alert("Each approval level must have a unique order");
+  //         } else {
+  //           // Handle any other errors that are returned
+  //           console.error("Error Response:", error.response);
+  //           alert("An error occurred while creating the approval.");
+  //         }
+  //       } else if (error.request) {
+  //         // The request was made but no response was received
+  //         console.error("Error Request:", error.request);
+  //         alert("No response received from the server.");
+  //       } else {
+  //         // Something happened while setting up the request
+  //         console.error("Error Message:", error.message);
+  //         alert(`Error: ${error.message}`);
+  //       }
+  //     })
+  //     .finally(() => {
+  //       // Set loading to false when the request finishes (success or failure)
+  //       setLoading(false);
+  //     }); //
+  // };
+
+
   const handleCreate = () => {
     setLoading(true);
-
-    const orderCounts = {}; // Store orders as keys
+  
+    const orderCounts = {}; // Track order values to check for duplicates
     let hasDuplicateOrder = false;
-
     const errors = [];
-
+  
+    // Validate form-level required fields
     if (!formData.company_id) errors.push("Company is required.");
-    // if (!formData.department_id) errors.push("Department is required.");
     if (!formData.module_id) errors.push("Module is required.");
-    if (approvalLevels.length === 0)
-      errors.push("At least one Approval Level is required.");
-
+    if (approvalLevels.length === 0) errors.push("At least one Approval Level is required.");
+  
+    // Filter out deleted levels
+    const validApprovalLevels = approvalLevels.filter((level) => !level._destroy);
+  
+    if (validApprovalLevels.length === 0) {
+      errors.push("At least one valid Approval Level is required.");
+    }
+  
+    // Validate each approval level: `name`, `order`, and `users`
+    validApprovalLevels.forEach((level, index) => {
+      if (!level.name || level.name.trim() === "") {
+        errors.push(`Approval Level ${index + 1}: Name is required.`);
+      }
+      if (level.order === undefined || level.order === null || level.order === "") {
+        errors.push(`Approval Level ${index + 1}: Order is required.`);
+      }
+      if (level.type === "users" && (!level.users || level.users.length === 0)) {
+        errors.push(`Approval Level ${index + 1}: At least one user is required.`);
+      }
+      if (level.type === "groups" && (!level.group || !level.group.value)) {
+        errors.push(`Approval Level ${index + 1}: At least one user group is required.`);
+      }
+    });
+  
+    // Stop execution if any errors exist
     if (errors.length > 0) {
       setLoading(false);
-      alert("plz fill all required fields"); // Show all errors in an alert
-      return; // Stop function execution
+      alert(errors.join("\n")); // Show all errors in a single alert
+      return;
     }
-
-    // Iterate over the approvalLevels array
-    approvalLevels.forEach((level, index) => {
-      // console.log(`Checking Level ${index + 1}:`, level.order);
-
-      // Skip levels with invalid orders
-      if (level.order === undefined || level.order === null) {
-        console.log(
-          `Skipping Level ${index + 1} as order is invalid:`,
-          level.order
-        );
-        return;
-      }
-
-      const orderKey = String(level.order); // Normalize the order to a string
-      console.log(`Normalized orderKey for Level ${index + 1}:`, orderKey);
-
-      // Check if the order already exists in orderCounts
+  
+    // Check for duplicate order values
+    validApprovalLevels.forEach((level) => {
+      const orderKey = String(level.order);
       if (orderCounts.hasOwnProperty(orderKey)) {
-        console.log(`Duplicate Found for Level ${index + 1}:`, orderKey);
         hasDuplicateOrder = true;
       } else {
-        console.log(
-          `No duplicate found for Level ${index + 1}. Adding orderKey:`,
-          orderKey
-        );
+        orderCounts[orderKey] = true;
       }
-
-      // Mark this orderKey as processed
-      orderCounts[orderKey] = true;
     });
-
-    // If duplicate order found, show alert and stop further execution
+  
     if (hasDuplicateOrder) {
       alert("Each approval level must have a unique order.");
       setLoading(false);
-      return; // Stop function execution
+      return;
     }
+  
+    // Construct the payload
+    const invoiceApprovalLevels = validApprovalLevels.map((level) => ({
+      id: level.id,
+      name: level.name,
+      order: level.order,
+      active: true,
+      _destroy: level._destroy || false,
+      escalate_to_users:
+        level.type === "users" ? level.users?.map((user) => user.value) || [] : [],
+      // user_group_id: level.type === "groups" ? level.group?.value : null,
+      user_group_id: level.type === "groups" && level.group ? level.group.value : null,
 
-    // If no duplicate, prepare and send the payload (rest of the logic follows)
-
+    }));
+  
+    // Final validation before sending the API request
+    if (invoiceApprovalLevels.length === 0) {
+      alert("Approval Levels are required. Please add at least one.");
+      setLoading(false);
+      return;
+    }
+  
     const payload = {
       approval_type: formData.module_id,
       company_id: formData.company_id,
       project_id: formData.project_id || null,
       site_id: formData.site_id || null,
-      // department_id: formData.department_id,
       snag_checklist_id: formData.template_id,
       sub_category_id: formData.sub_category_id,
       category_order: 1,
       category_id: formData.category_id,
       pms_inventory_type_id: formData.pms_supplier_id,
-      invoice_approval_levels_attributes: approvalLevels.map((level) => ({
-        id: level.id,
-        name: level.name,
-        order: level.order,
-        active: true,
-        _destroy: level._destroy || false, // Only send delete key for approval levels
-        escalate_to_users:
-          level.type === "users"
-            ? level.users?.map((user) => user.value) || []
-            : [],
-        user_group_id: level.type === "groups" ? level.group?.value : null,
-      })),
+      invoice_approval_levels_attributes: invoiceApprovalLevels,
     };
-
+  
     console.log("Final Payload:", payload);
-
-    // Send API request if no duplicates found
+  
+    // Send API request
     axios
-      .patch(
-        `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        payload
-      )
+      .patch(`${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
       .then((response) => {
-        console.log("Approval  updated Created:", response.data);
-        alert("Approval update successfully!");
-
+        console.log("Approval updated successfully:", response.data);
+        alert("Approval updated successfully!");
+  
         setTimeout(() => {
-          navigate("/approval-materics"); // Change route as per your app
-        }, 500); // Redirect to Approval Metrics page
+          navigate("/approval-materics");
+        }, 500);
       })
-      // .catch((error, response) => {
-      //   console.error("Error creating invoice approval:", response);
-      //   alert("Each approval level must have a unique order");
-      // });
       .catch((error) => {
-        // Check if error.response exists (server responded with an error)
         if (error.response) {
-          // Check if the response contains the specific error message
           const errorMessage = error.response.data.errors;
-
-          // Check if the specific error about duplicate orders is in the error messages
-          if (
-            errorMessage &&
-            errorMessage.includes(
-              "Invoice approval levels order has already been taken"
-            )
-          ) {
-            alert("Each approval level must have a unique order");
+          if (errorMessage && errorMessage.includes("Invoice approval levels order has already been taken")) {
+            alert("Each approval level must have a unique order.");
           } else {
-            // Handle any other errors that are returned
             console.error("Error Response:", error.response);
-            alert("An error occurred while creating the approval.");
+            alert("An error occurred while updating the approval.");
           }
         } else if (error.request) {
-          // The request was made but no response was received
           console.error("Error Request:", error.request);
           alert("No response received from the server.");
         } else {
-          // Something happened while setting up the request
           console.error("Error Message:", error.message);
           alert(`Error: ${error.message}`);
         }
       })
       .finally(() => {
-        // Set loading to false when the request finishes (success or failure)
         setLoading(false);
-      }); //
+      });
   };
-
+  
   return (
     <div>
       <div
@@ -1112,7 +1267,7 @@ const ApprovalEdit = () => {
                               <div className="col-md-3 mb-2">
                                 <label htmlFor="department-select">
                                   Department{" "}
-                                  <span style={{ color: "red" }}>*</span>
+                                  {/* <span style={{ color: "red" }}>*</span> */}
                                 </label>
                                 {/* <select
                                   id="department-select"
@@ -1400,7 +1555,7 @@ const ApprovalEdit = () => {
                                 {/* Selector for Users or User Groups */}
                                 <fieldset
                                   className="user-list ms-3 mb-3"
-                                  style={{ width: "15%" }}
+                                  style={{ width: "25%" }}
                                 >
                                   <legend className="float-none mb-2">
                                     {level.type === "users"

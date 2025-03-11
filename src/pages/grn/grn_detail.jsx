@@ -13,7 +13,7 @@ const GoodReceiveNoteDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [statuses, setStatuses] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
@@ -123,6 +123,7 @@ const GoodReceiveNoteDetails = () => {
         status: loadStatus,
       },
     };
+    setLoading(true);
 
     console.log(JSON.stringify(payload));
 
@@ -140,15 +141,19 @@ const GoodReceiveNoteDetails = () => {
 
       if (!response.ok) throw new Error("Failed to update status.");
       await response.json();
+
       toast.success("Status updated successfully!");
       window.location.reload();
     } catch (error) {
       toast.error("Failed to update status. Please try another status.");
     }
+    finally {
+      setLoading(false);
+    }
+
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
+
 
   return (
     <>
@@ -254,18 +259,23 @@ const GoodReceiveNoteDetails = () => {
 
               <div className="col-md-12 mb-3 row">
                 <div className="col-md-9">
-                  <h5 style={{fontWeight:"bold"}}>GRN Details</h5>
+                  <h5 style={{ fontWeight: "bold" }}>GRN Details</h5>
                 </div>
-                <div className="col-md-2 nav-item">
-                  <button
-                    className="purple-btn2"
-                    onClick={openModal}
+                {data?.approval_logs?.length > 0 && (
+                  <div className="col-md-2 nav-item">
+                    <button
+                      className="purple-btn2"
+                      onClick={openModal}
+                      style={{ backgroundColor: data?.status === "approved" ? "green" : "", border: "none" }}
+                    >
+                      <span>Approval Logs</span>
+                    </button>
+                  </div>
+                )}
 
-                  >
-                    <span>Approval Logs</span>
-                  </button>
-                </div>
+
               </div>
+
 
               <div
                 className="tab-pane fade show active"
@@ -535,8 +545,7 @@ const GoodReceiveNoteDetails = () => {
                           <tbody>
                             <tr key={item.id || item.mor_inventory?.id}>
                               <td>
-                                {item.mor_inventory?.inventory
-                                  ?.material_description || "-"}
+                                {item.mor_inventory?.material_name || "-"}
                               </td>
                               <td>
                                 {item.mor_inventory?.inventory?.is_qc
@@ -621,7 +630,7 @@ const GoodReceiveNoteDetails = () => {
                               <tr>
                                 <th className="fw-bold">Delivery Date</th>
                                 <th className="fw-bold">Delivery Qty</th>
-                                <th className="fw-bold">Batch No.</th>
+                                <th className="fw-bold">Quantity</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -844,15 +853,32 @@ const GoodReceiveNoteDetails = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
-                    <button
-                      onClick={handleUpdateStatus}
-                      className="purple-btn2 w-100"
-                      disabled={data?.disabled}
 
-                    >
-                      Update
-                    </button>
+                  {/* </div> */}
+
+                  <div className="col-md-2">
+                    <div >
+                      {loading && (
+                        <div id="full-screen-loader" className="full-screen-loader">
+                          <div className="loader-container">
+                            <img
+                              src="https://newerp.marathonrealty.com/assets/loader.gif"
+                              alt="Loading..."
+                              width={50}
+                            />
+                            <h5>Please wait</h5>
+                          </div>
+                        </div>
+
+                      )}
+                      <button
+                        onClick={handleUpdateStatus}
+                        className="purple-btn2 w-100"
+                        disabled={data?.disabled}
+                      >
+                        Update
+                      </button>
+                    </div>
                   </div>
                   <div className="col-md-2">
                     <button
@@ -934,41 +960,53 @@ const GoodReceiveNoteDetails = () => {
                 <div className="row mt-2 px-2">
                   <div className="col-12">
                     <div className="tbl-container me-2 mt-3">
-                      <table className="w-100" style={{ width: "100%" }}>
-                        <thead>
-                          <tr>
-                            <th style={{ width: "66px !important" }}>Sr.No.</th>
-                            <th>Approval Level</th>
-                            <th>Approved By</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Remark</th>
-                            <th>Users</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {approvalLogs.map((log) => (
-                            <tr key={log.id}>
-                              <td>{log.id}</td>
-                              <td>{log.approvalLevel}</td>
-                              <td>{log.approvedBy}</td>
-                              <td>{log.date}</td>
-                              <td>
-                                <span
-                                  className="px-2 py-1 rounded text-white"
-                                  style={{ backgroundColor: "green" }}
-                                >
-                                  {log.status}
-                                </span>
-                              </td>
-                              <td>
-                                <p>{log.remark}</p>
-                              </td>
-                              <td>{log.users}</td>
+                      {/* Check if approval_logs is empty or undefined */}
+                      {!data?.approval_logs || data.approval_logs.length === 0 ? (
+                        // Display a message if no logs are available
+                        <div className="text-center py-4">
+                          <p className="text-muted">No approval logs available.</p>
+                        </div>
+                      ) : (
+                        // Render the table if logs are available
+                        <table className="w-100" style={{ width: "100%" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: "66px !important" }}>Sr.No.</th>
+                              <th>Approval Level</th>
+                              <th>Approved By</th>
+                              <th>Date</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                              <th>Users</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {data.approval_logs.map((log, id) => (
+                              <tr key={id}>
+                                <td>{id + 1}</td>
+                                <td>{log.approval_level}</td>
+                                <td>{log.approved_by}</td>
+                                <td>{log.date}</td>
+                                <td>
+                                  <span
+                                    className="px-2 py-1 rounded text-white"
+                                    style={{
+                                      backgroundColor: log.status === "Pending" ? "red" : "green"
+                                    }}
+                                  >
+                                    {log.status}
+                                  </span>
+                                </td>
+
+                                <td>
+                                  <p>{log.remark}</p>
+                                </td>
+                                <td>{log.users}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
                     </div>
                   </div>
                 </div>

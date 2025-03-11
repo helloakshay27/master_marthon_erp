@@ -49,7 +49,7 @@ const ApprovalMatrics = () => {
     total_count: 0,
   });
 
-  const pageSize = 8;
+  const pageSize = 10;
 
   const navigate = useNavigate();
 
@@ -83,28 +83,94 @@ const ApprovalMatrics = () => {
     ],
   };
 
+  const [filters, setFilters] = useState({
+    company: null,
+    site: null,
+    project: null,
+    department: null,
+    modules: null,
+
+    materialtypes: null,
+  });
+
+  // useEffect(() => {
+  //   const fetchApprovals = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
+  //       );
+
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch data");
+  //       }
+  //       const data = await response.json();
+  //       console.log("uiah", response.data);
+  //       setApprovals(data.invoice_approvals || []);
+  //       // setTotalRecords(data.total_records || 0); // Set total records
+  //       // setTotalPages(data.total_pages || 0); // Set total pages
+  //       setPagination({
+  //         current_page: data.current_page || 1,
+  //         total_pages: data.total_pages || 1, // Ensure `total_pages` is always defined
+  //         total_count: data.total_records || 0,
+  //       });
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchApprovals();
+  // }, [pagination.current_page]);
+
+  // const handleEditClick = () => {
+  //   navigate("/approval_edit");
+  // };
+
   useEffect(() => {
     const fetchApprovals = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(
-          `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
-        );
+        let queryParams = new URLSearchParams();
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
+        // Preserve filters during pagination
+        if (filters.company)
+          queryParams.append("q[company_id_eq]", filters.company);
+        if (filters.department)
+          queryParams.append("q[department_id_eq]", filters.department);
+        if (filters.project)
+          queryParams.append("q[project_id_eq]", filters.project);
+        if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
+        if (filters.materialtypes)
+          queryParams.append(
+            "q[pms_inventory_type_id_eq]",
+            filters.materialtypes
+          );
+        if (filters.modules)
+          queryParams.append("q[approval_type_eq]", filters.modules);
+
+        // Include pagination params
+        queryParams.append("page", pagination.current_page);
+        queryParams.append("page_size", 10);
+
+        const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+        console.log("API URL (Pagination with Filters):", apiUrl);
+
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Failed to fetch data");
+
         const data = await response.json();
-        console.log("uiah", response.data);
         setApprovals(data.invoice_approvals || []);
-        // setTotalRecords(data.total_records || 0); // Set total records
-        // setTotalPages(data.total_pages || 0); // Set total pages
+
+        // Update pagination state based on API response
         setPagination({
           current_page: data.current_page || 1,
-          total_pages: data.total_pages || 1, // Ensure `total_pages` is always defined
-          total_count: data.total_records || 0,
+          total_pages: data.total_pages || 1,
+          total_count: data.total_records || 0, // Use total_records from API
         });
-      } catch (err) {
-        setError(err.message);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -112,10 +178,6 @@ const ApprovalMatrics = () => {
 
     fetchApprovals();
   }, [pagination.current_page]);
-
-  // const handleEditClick = () => {
-  //   navigate("/approval_edit");
-  // };
 
   const handleEditClick = (id) => {
     navigate(`/approval_edit/${id}`);
@@ -264,71 +326,12 @@ const ApprovalMatrics = () => {
     label: company.company_name,
   }));
 
-  const [filters, setFilters] = useState({
-    company: null,
-    site: null,
-    project: null,
-    department: null,
-    modules: null,
-
-    materialtypes: null,
-  });
-
   const handleFilterChange = (field, value) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
       [field]: value, // Dynamically update the correct filter field
     }));
   };
-
-  // const handleFilterSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   let queryParams = new URLSearchParams();
-  //   console.log("Filters:", filters);
-
-  //   // Construct query parameters following the API format
-  //   if (filters.company)
-  //     queryParams.append("q[company_id_eq]", filters.company);
-  //   if (filters.project)
-  //     queryParams.append("q[project_id_eq]", filters.project);
-  //   if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
-  //   if (filters.department)
-  //     queryParams.append("q[department_id_eq]", filters.department);
-  //   if (filters.modules) queryParams.append("q[module_id_eq]", filters.modules);
-  //   if (filters.materialtypes)
-  //     queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
-
-  //   // Ensure `approval_type` is correctly formatted
-  //   queryParams.append("q[approval_type_eq]", "material_order_request");
-
-  //   // Add pagination parameters (always fetch from page 1 when applying filters)
-  //   queryParams.append("page", 1);
-  //   queryParams.append("page_size", 8); // Adjust page size as needed
-
-  //   // API URL with query params
-  //   const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-
-  //   console.log("API URL:", apiUrl); // Debugging
-
-  //   try {
-  //     const response = await fetch(apiUrl);
-  //     if (!response.ok) throw new Error("Failed to fetch filtered data");
-
-  //     const data = await response.json();
-  //     setApprovals(data.invoice_approvals || []);
-
-  //     // Update pagination state
-  //     setPagination((prev) => ({
-  //       ...prev,
-  //       total_count: data.total_records || 0,
-  //       total_pages: Math.ceil((data.total_records || 0) / 8), // Ensure correct page count
-  //       current_page: 1, // Reset to page 1 when filtering
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error fetching filtered data:", error);
-  //   }
-  // };
 
   const handleFilterSubmit = async (e) => {
     e.preventDefault();
@@ -350,9 +353,10 @@ const ApprovalMatrics = () => {
     // Use 'approval_type_eq' instead of 'module_id_eq'
     if (filters.modules) {
       queryParams.append("q[approval_type_eq]", filters.modules);
-    } else {
-      queryParams.append("q[approval_type_eq]", "material_order_request");
     }
+    //  else {
+    //   queryParams.append("q[approval_type_eq]", "material_order_request");
+    // }
 
     // Add pagination parameters (always fetch from page 1 when applying filters)
     queryParams.append("page", 1);
@@ -471,9 +475,51 @@ const ApprovalMatrics = () => {
     );
   };
 
-  const handlePageChange = (page) => {
+  const handlePageChange = async (page) => {
     if (page < 1 || page > pagination.total_pages) return;
+
     setPagination((prev) => ({ ...prev, current_page: page }));
+
+    let queryParams = new URLSearchParams();
+
+    // Preserve filters
+    if (filters.company)
+      queryParams.append("q[company_id_eq]", filters.company);
+    if (filters.project)
+      queryParams.append("q[project_id_eq]", filters.project);
+    if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
+    if (filters.department)
+      queryParams.append("q[department_id_eq]", filters.department);
+    if (filters.materialtypes)
+      queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
+    if (filters.modules)
+      queryParams.append("q[approval_type_eq]", filters.modules);
+
+    // Update the page number
+    queryParams.append("page", page);
+    queryParams.append("page_size", 8);
+
+    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    console.log("API URL (Pagination):", apiUrl);
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("Failed to fetch page data");
+
+      const data = await response.json();
+      setApprovals(data.invoice_approvals || []);
+
+      // Update pagination info
+      setPagination((prev) => ({
+        ...prev,
+        total_count: data.total_records || 0,
+        total_pages: Math.ceil((data.total_records || 0) / 8),
+        current_page: page,
+      }));
+    } catch (error) {
+      console.error("Error fetching page data:", error);
+    }
   };
 
   return (

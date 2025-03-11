@@ -295,23 +295,9 @@ export default function CreateRFQForm({
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
-    console.log(
-      "Removing row at index:",
-      rowIndex,
-      "from section:",
-      sectionIndex
-    );
-    setSections((prevSections) => {
-      const updatedSections = [...prevSections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        sectionData: updatedSections[sectionIndex].sectionData.map((row, idx) =>
-          idx === rowIndex ? { ...row, _destroy: true } : row
-        ),
-      };
-      console.log("Updated sections after removal:", updatedSections);
-      return updatedSections;
-    });
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex].sectionData.splice(rowIndex, 1);
+    setSections(updatedSections);
   };
 
   const handleAddRow = (sectionIndex) => {
@@ -648,6 +634,7 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
+                   <>
                     <SelectBox
                       options={materials}
                       onChange={(value) =>
@@ -667,6 +654,8 @@ export default function CreateRFQForm({
                             )?.value || ""
                       }
                     />
+                    {/* {console.log(cell,"this is cell",rowIndex)} */}
+                   </>
                   ),
                   unit: (cell, rowIndex) => (
                     <SelectBox

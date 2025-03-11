@@ -59,11 +59,12 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   const handleCheckboxChange = (material) => {
     setSelectedMaterials((prev) =>
       prev.some((item) => item.id === material.id)
-        ? prev.filter((item) => item.id !== material.id) // Unselect
-        : [...prev, material] // Select
+        ? prev // Do nothing if already selected
+        : [...prev, material] // Add only if not already selected
     );
   };
-
+  
+  
   const handleSelectAll = (isChecked) => {
     setSelectedMaterials(isChecked ? [...inventoryTableData] : []); // Select or deselect all
   };
@@ -217,7 +218,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
   };
 
   return (
-    <Modal centered size="lg" show={show} onHide={handleClose}>
+    <Modal centered size="lg" show={show} onHide={handleClose} style={{ zIndex: '999999' }}>
       <Modal.Header closeButton>
         <h5>Add Material</h5>
       </Modal.Header>
