@@ -219,11 +219,9 @@ const CreateBOQ = () => {
   const handleCloseModalAsset = () => setShowModalAsset(false);
 
   const handleAddAssets = (newAsset) => {
-    setAssets((prev) => [
-      ...prev,
-      ...newAsset.filter((asset) => !prev.some((a) => a.id === asset.id)),
-    ]);
+    setAssets((prev) => [...prev, ...newAsset]); // No duplicate check, always adds new assets
   };
+  
 
   const handleDeleteAllAssets = () => {
     setAssets((prev) =>
