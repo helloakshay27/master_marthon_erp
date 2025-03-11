@@ -2339,7 +2339,7 @@ const CreateBOQ = () => {
 
                               <thead>
                                 <tr >
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
                                     <div className="d-flex justify-content-start">
                                       {/* <input
                                         type="checkbox"
@@ -2399,7 +2399,7 @@ const CreateBOQ = () => {
                                 {materials.length > 0 ? (
                                   materials.map((material, index) => (
                                     <tr key={index}>
-                                      <td style={{ width: "300px" }}>
+                                      <td style={{ width: "100px" }}>
                                         {/* <input
                                           className="ms-5"
                                           type="checkbox"
@@ -2569,8 +2569,8 @@ const CreateBOQ = () => {
                             >
                               <thead>
                                 <tr>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
-                                    <div className="d-flex justify-content-center">
+                                  <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                    <div className="d-flex justify-content-start">
                                       {/* <input
                                         className=""
                                         type="checkbox"
@@ -2891,19 +2891,19 @@ const CreateBOQ = () => {
                               >
                                 <thead style={{ zIndex: "1" }}>
                                   <tr>
-                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
                                       <input type="checkbox" />
                                     </th>
-                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Expand</th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>
+                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
                                       Sub Item Name <span>*</span>
                                     </th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Description</th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Notes</th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Remarks</th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>UOM</th>
-                                    <th colSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
-                                    <th rowSpan={2} style={{ width: "400px", whiteSpace: "nowrap" }}>Document</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Description</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Notes</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
+                                    <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
                                   </tr>
                                   <tr>
                                     {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
