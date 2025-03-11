@@ -68,26 +68,48 @@ const BOQSubItemTable = ({
     );
   };
 
+  // const handleDeleteAllMaterial = () => {
+  //   console.log("boqSubItemId", boqSubItemId);
+
+  //   setMaterials((prev) => {
+  //     console.log("prev", typeof prev, prev);
+
+  //     const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
+  //       const materialsArray = prev[key] || [];
+  //       acc[key] = materialsArray.filter(
+  //         (material) => !selectedMaterials.includes(material.id)
+  //       );
+  //       return acc;
+  //     }, {});
+
+  //     console.log("filteredMaterials", filteredMaterials);
+
+  //     return filteredMaterials;
+  //   });
+  //   setSelectedMaterials([]);
+  // };
+
+
   const handleDeleteAllMaterial = () => {
     console.log("boqSubItemId", boqSubItemId);
-
+  
     setMaterials((prev) => {
       console.log("prev", typeof prev, prev);
-
+  
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
-        acc[key] = materialsArray.filter(
-          (material) => !selectedMaterials.includes(material.id)
-        );
+        acc[key] = materialsArray.filter((_, index) => !selectedMaterials.includes(index)); // Use index
         return acc;
       }, {});
-
+  
       console.log("filteredMaterials", filteredMaterials);
-
+  
       return filteredMaterials;
     });
-    setSelectedMaterials([]);
+  
+    setSelectedMaterials([]); // Reset selection
   };
+  
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
@@ -105,19 +127,28 @@ const BOQSubItemTable = ({
   };
 
   // Handle material selection for checkbox
-  const handleSelectRowMaterial = (materialName) => {
-    // const updatedMaterials = [...materials];
-    // updatedMaterials[index].selected = !updatedMaterials[index].selected;
-    // setMaterials(updatedMaterials);
-    // onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
+  // const handleSelectRowMaterial = (materialName) => {
+  //   // const updatedMaterials = [...materials];
+  //   // updatedMaterials[index].selected = !updatedMaterials[index].selected;
+  //   // setMaterials(updatedMaterials);
+  //   // onMaterialsChange(updatedMaterials);  // Pass updated data to parent component
 
-    setSelectedMaterials(
-      (prev) =>
-        prev.includes(materialName)
-          ? prev.filter((name) => name !== materialName) // Unselect the material
-          : [...prev, materialName] // Select the material
+  //   setSelectedMaterials(
+  //     (prev) =>
+  //       prev.includes(materialName)
+  //         ? prev.filter((name) => name !== materialName) // Unselect the material
+  //         : [...prev, materialName] // Select the material
+  //   );
+  // };
+
+  const handleSelectRowMaterial = (materialIndex) => {
+    setSelectedMaterials((prev) =>
+      prev.includes(materialIndex)
+        ? prev.filter((index) => index !== materialIndex) // Unselect material
+        : [...prev, materialIndex] // Select material
     );
   };
+  
 
   //asset modal and table data handle add or delete
   const [showModalAsset, setShowModalAsset] = useState(false);
@@ -135,22 +166,56 @@ const BOQSubItemTable = ({
   //   ]);
   // };
 
+  // const handleDeleteAllAssets2 = () => {
+  //   // setAssets((prev) =>
+  //   //   prev.filter((asset) => !selectedAssets.includes(asset.id))
+  //   // );
+  //   // setSelectedAssets([]); // Reset selected materials
+
+  //   setAssets((prev) => {
+  //     if (!Array.isArray(prev)) {
+  //       console.error("Expected 'prev' to be an array, but got:", prev);
+  //       return []; // Fallback to an empty array if prev is not an array
+  //     }
+  //     return prev.filter((asset) => !selectedAssets.includes(asset.id));
+  //   });
+  //   setSelectedAssets([]); // Reset selected assets
+
+
+  // };
+
+
+  // const handleDeleteAllAssets2 = () => {
+  //   setAssets((prev) => {
+  //     if (!Array.isArray(prev)) {
+  //       console.error("Expected 'prev' to be an array, but got:", prev);
+  //       return []; // Fallback to an empty array if prev is not an array
+  //     }
+  
+  //     return prev.filter((_, index) => !selectedAssets.includes(index)); // Filter using index
+  //   });
+  
+  //   setSelectedAssets([]); // Reset selected assets
+  // };
+
   const handleDeleteAllAssets2 = () => {
-    // setAssets((prev) =>
-    //   prev.filter((asset) => !selectedAssets.includes(asset.id))
-    // );
-    // setSelectedAssets([]); // Reset selected materials
-
+    console.log("boqSubItemId", boqSubItemId);
+  
     setAssets((prev) => {
-      if (!Array.isArray(prev)) {
-        console.error("Expected 'prev' to be an array, but got:", prev);
-        return []; // Fallback to an empty array if prev is not an array
-      }
-      return prev.filter((asset) => !selectedAssets.includes(asset.id));
+      console.log("prev", typeof prev, prev);
+  
+      const filteredAssets = Object.keys(prev).reduce((acc, key) => {
+        const assetsArray = prev[key] || [];
+        acc[key] = assetsArray.filter((_, index) => !selectedAssets.includes(index)); // Use index
+        return acc;
+      }, {});
+  
+      console.log("filteredAssets", filteredAssets);
+  
+      return filteredAssets;
     });
-    setSelectedAssets([]); // Reset selected assets
-
-
+  
+    setSelectedAssets([]); // Reset selection
   };
 
   // const handleSelectRowAssets2 = (index) => {
@@ -159,12 +224,20 @@ const BOQSubItemTable = ({
   //   setMaterials(updatedAssets);
   //   onMaterialsChange(updatedAssets);
   // };
-  const handleSelectRowAssets2 = (assetType) => {
-    setSelectedAssets(
-      (prev) =>
-        prev.includes(assetType)
-          ? prev.filter((type) => type !== assetType) // Unselect the material
-          : [...prev, assetType] // Select the material
+  // const handleSelectRowAssets2 = (assetType) => {
+  //   setSelectedAssets(
+  //     (prev) =>
+  //       prev.includes(assetType)
+  //         ? prev.filter((type) => type !== assetType) // Unselect the material
+  //         : [...prev, assetType] // Select the material
+  //   );
+  // };
+
+  const handleSelectRowAssets2 = (assetIndex) => {
+    setSelectedAssets((prev) =>
+      prev.includes(assetIndex)
+        ? prev.filter((index) => index !== assetIndex) // Unselect asset
+        : [...prev, assetIndex] // Select asset
     );
   };
 
@@ -1076,7 +1149,7 @@ const BOQSubItemTable = ({
                               rowSpan={2}
                               style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
-                              <input
+                              {/* <input
                                 type="checkbox"
                                 // onChange={(e) => {
                                 //   if (e.target.checked) {
@@ -1099,7 +1172,19 @@ const BOQSubItemTable = ({
                                 checked={
                                   selectedMaterials.length === materials.length
                                 }
-                              />
+                              /> */}
+
+<input
+  type="checkbox"
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+    } else {
+      setSelectedMaterials([]); // Deselect all
+    }
+  }}
+  checked={selectedMaterials.length === materials.length && materials.length > 0}
+/>
                             </th>
                             <th
                               rowSpan={2}
@@ -1178,7 +1263,7 @@ const BOQSubItemTable = ({
                             materials.map((material, index) => (
                               <tr>
                                 <td>
-                                  <input
+                                  {/* <input
                                     className="ms-5"
                                     type="checkbox"
                                     checked={selectedMaterials.includes(
@@ -1187,7 +1272,15 @@ const BOQSubItemTable = ({
                                     onChange={() =>
                                       handleSelectRowMaterial(material.id)
                                     } // Toggle selection
-                                  />
+                                  /> */}
+
+<input
+    key={index}
+    className="ms-5"
+    type="checkbox"
+    checked={selectedMaterials.includes(index)} // Use index instead of material.id
+    onChange={() => handleSelectRowMaterial(index)} // Pass index instead of material.id
+  />
                                 </td>
                                 <td>{material.inventory_type_name}</td>
                                 <td>{material.name}</td>
@@ -1390,7 +1483,7 @@ const BOQSubItemTable = ({
                             rowSpan={2}
                             style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
-                            <input
+                            {/* <input
                               type="checkbox"
                               onChange={(e) => {
                                 if (e.target.checked) {
@@ -1400,7 +1493,19 @@ const BOQSubItemTable = ({
                                 }
                               }}
                               checked={selectedAssets.length === Assets.length}
-                            />
+                            /> */}
+
+<input
+  type="checkbox"
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
+    } else {
+      setSelectedAssets([]); // Deselect all
+    }
+  }}
+  checked={selectedAssets.length === Assets.length && Assets.length > 0}
+/>
                           </th>
                           <th
                             rowSpan={2}
@@ -1485,7 +1590,7 @@ const BOQSubItemTable = ({
                                   } // Toggle selection */}
                                 {/* /> */}
 
-                                <input
+                                {/* <input
                                   className="ms-5"
                                   type="checkbox"
                                   checked={selectedAssets.includes(
@@ -1494,7 +1599,15 @@ const BOQSubItemTable = ({
                                   onChange={() =>
                                     handleSelectRowAssets2(assets.id)
                                   } // Toggle selection
-                                />
+                                /> */}
+
+<input
+    key={index}
+    className="ms-5"
+    type="checkbox"
+    checked={selectedAssets.includes(index)} // Use index instead of asset.id
+    onChange={() => handleSelectRowAssets2(index)} // Pass index instead of asset.id
+  />
                               </td>
 
                               <td>{assets.inventory_type_name}</td>
