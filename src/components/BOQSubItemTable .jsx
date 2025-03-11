@@ -1056,7 +1056,7 @@ const BOQSubItemTable = ({
   const calculateEstimatedQuantities = () => {
     if (boqQuantity) {
       const newEstimatedQuantities = materials.map((material, index) => {
-        const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+        const coefficient = coefficientFactors[index] || 0; // Default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity = boqQuantity * coefficient
       });
       setEstimatedQuantities(newEstimatedQuantities); // Set the calculated estimated quantities
@@ -1093,7 +1093,7 @@ const BOQSubItemTable = ({
   const calculateAssetEstimatedQuantities = () => {
     if (boqQuantity && assetCoefficientFactors.length > 0) {
       const newAssetEstimatedQuantities = Assets.map((asset, index) => {
-        const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+        const coefficient = parseFloat(assetCoefficientFactors[index]) || 0; // default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
       });
       setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities

@@ -1290,7 +1290,7 @@ const CreateBOQ = () => {
   const calculateAssetEstimatedQuantities = () => {
     if (boqQuantity && assetCoefficientFactors.length > 0) {
       const newAssetEstimatedQuantities = Assets.map((asset, index) => {
-        const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+        const coefficient = parseFloat(assetCoefficientFactors[index]) || 0; // default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
       });
       setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
@@ -1691,7 +1691,7 @@ const CreateBOQ = () => {
   const calculateEstimatedQuantities = () => {
     if (boqQuantity) {
       const newEstimatedQuantities = materials.map((material, index) => {
-        const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+        const coefficient = coefficientFactors[index] || 0; // Default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity = boqQuantity * coefficient
       });
       setEstimatedQuantities(newEstimatedQuantities); // Set the calculated estimated quantities
@@ -2482,7 +2482,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Co-efficient Factor"
+                                          placeholder=" co-efficient Factor"
                                           value={coefficientFactors[index] || ""}
                                           onKeyDown={(e) => {
                                             if (e.key === "-" || e.key === "e" || e.key === "E") {
@@ -2499,7 +2499,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Estimated Qty"
+                                          placeholder="Estimated Quantity"
                                           disabled
                                           value={estimatedQuantities[index] || ""}
                                         />
@@ -2508,7 +2508,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Wastage"
+                                          placeholder="wastage"
                                           value={wastages[index] || ""}
                                           onChange={(e) => handleWastageChange(index, e.target.value)}
                                         />
@@ -2517,7 +2517,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Total Estimated Quantity Wastage"
+                                          placeholder="Total Estimated Qty Wastage"
                                           disabled
                                           value={totalEstimatedQtyWastages[index] || ""}
                                         />
