@@ -2407,11 +2407,11 @@ const CreateBOQ = () => {
                       </div>
                     </div>
                   </CollapsibleCard>
-                  {/* <MaterialModal
+                  <MaterialModal
                     show={showModal}
                     handleClose={handleCloseModal}
                     handleAdd={handleAddMaterials}
-                  /> */}
+                  />
 
                   {/* //assets */}
                   <CollapsibleCard title="Assests">
