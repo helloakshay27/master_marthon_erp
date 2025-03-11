@@ -138,19 +138,34 @@ const CreateBOQ = () => {
     );
   };
 
+  // const handleDeleteAll = () => {
+  //   setMaterials((prev) =>
+  //     prev.filter((material) => !selectedMaterials.includes(material.id))
+  //   );
+  //   setSelectedMaterials([]); // Reset selected materials
+  // };
+
   const handleDeleteAll = () => {
     setMaterials((prev) =>
-      prev.filter((material) => !selectedMaterials.includes(material.id))
+      prev.filter((_, index) => !selectedMaterials.includes(index)) // Filter using index
     );
-    setSelectedMaterials([]); // Reset selected materials
+    setSelectedMaterials([]); // Reset selection
   };
 
-  const handleSelectRow = (materialName) => {
-    setSelectedMaterials(
-      (prev) =>
-        prev.includes(materialName)
-          ? prev.filter((name) => name !== materialName) // Unselect the material
-          : [...prev, materialName] // Select the material
+  // const handleSelectRow = (materialName) => {
+  //   setSelectedMaterials(
+  //     (prev) =>
+  //       prev.includes(materialName)
+  //         ? prev.filter((name) => name !== materialName) // Unselect the material
+  //         : [...prev, materialName] // Select the material
+  //   );
+  // };
+
+  const handleSelectRow = (materialIndex) => {
+    setSelectedMaterials((prev) =>
+      prev.includes(materialIndex)
+        ? prev.filter((index) => index !== materialIndex) // Unselect
+        : [...prev, materialIndex] // Select
     );
   };
 
@@ -223,21 +238,35 @@ const CreateBOQ = () => {
   };
   
 
+  // const handleDeleteAllAssets = () => {
+  //   setAssets((prev) =>
+  //     prev.filter((asset) => !selectedAssets.includes(asset.id))
+  //   );
+  //   setSelectedAssets([]); // Reset selected materials
+  // };
+
   const handleDeleteAllAssets = () => {
-    setAssets((prev) =>
-      prev.filter((asset) => !selectedAssets.includes(asset.id))
-    );
-    setSelectedAssets([]); // Reset selected materials
+    setAssets((prev) => prev.filter((_, index) => !selectedAssets.includes(index))); // Filter using index
+    setSelectedAssets([]); // Reset selection
   };
 
-  const handleSelectRowAssets = (assetType) => {
-    setSelectedAssets(
-      (prev) =>
-        prev.includes(assetType)
-          ? prev.filter((type) => type !== assetType) // Unselect the material
-          : [...prev, assetType] // Select the material
+  // const handleSelectRowAssets = (assetType) => {
+  //   setSelectedAssets(
+  //     (prev) =>
+  //       prev.includes(assetType)
+  //         ? prev.filter((type) => type !== assetType) // Unselect the material
+  //         : [...prev, assetType] // Select the material
+  //   );
+  // };
+
+  const handleSelectRowAssets = (assetIndex) => {
+    setSelectedAssets((prev) =>
+      prev.includes(assetIndex)
+        ? prev.filter((index) => index !== assetIndex) // Unselect asset
+        : [...prev, assetIndex] // Select asset
     );
   };
+  
 
   //asset 2 modal and table data handle add or delete
   const [showModalAsset2, setShowModalAsset2] = useState(false);
@@ -1261,7 +1290,7 @@ const CreateBOQ = () => {
   const calculateAssetEstimatedQuantities = () => {
     if (boqQuantity && assetCoefficientFactors.length > 0) {
       const newAssetEstimatedQuantities = Assets.map((asset, index) => {
-        const coefficient = parseFloat(assetCoefficientFactors[index]) || 1; // default to 1 if no coefficient is set
+        const coefficient = parseFloat(assetCoefficientFactors[index]) || 0; // default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * coefficient; // simple calculation for estimated quantities
       });
       setAssetEstimatedQuantities(newAssetEstimatedQuantities); // Update the asset estimated quantities
@@ -1662,7 +1691,7 @@ const CreateBOQ = () => {
   const calculateEstimatedQuantities = () => {
     if (boqQuantity) {
       const newEstimatedQuantities = materials.map((material, index) => {
-        const coefficient = coefficientFactors[index] || 1; // Default to 1 if no coefficient is set
+        const coefficient = coefficientFactors[index] || 0; // Default to 1 if no coefficient is set
         return parseFloat(boqQuantity) * parseFloat(coefficient); // Estimate quantity = boqQuantity * coefficient
       });
       setEstimatedQuantities(newEstimatedQuantities); // Set the calculated estimated quantities
@@ -1884,7 +1913,7 @@ const CreateBOQ = () => {
 
 
     // Iterate over each boqSubItem to validate
-    for (let i = 0; i < boqSubItems.length; i++) {
+    for (let i = 0; i < count.length; i++) {
       const boqSubItem = boqSubItems[i];
 
       if (!boqSubItem.name || boqSubItem.name.trim() === "") {
@@ -2312,7 +2341,7 @@ const CreateBOQ = () => {
                                 <tr >
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     <div className="d-flex justify-content-start">
-                                      <input
+                                      {/* <input
                                         type="checkbox"
                                         onChange={(e) => {
                                           if (e.target.checked) {
@@ -2322,7 +2351,19 @@ const CreateBOQ = () => {
                                           }
                                         }}
                                         checked={selectedMaterials.length === materials.length}
-                                      />
+                                      /> */}
+
+<input
+  type="checkbox"
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+    } else {
+      setSelectedMaterials([]); // Deselect all
+    }
+  }}
+  checked={selectedMaterials.length === materials.length && materials.length > 0} 
+/>
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width={14}
@@ -2359,12 +2400,19 @@ const CreateBOQ = () => {
                                   materials.map((material, index) => (
                                     <tr key={index}>
                                       <td style={{ width: "300px" }}>
-                                        <input
+                                        {/* <input
                                           className="ms-5"
                                           type="checkbox"
                                           checked={selectedMaterials.includes(material.id)}
                                           onChange={() => handleSelectRow(material.id)}
-                                        />
+                                        /> */}
+
+<input
+  className="ms-5"
+  type="checkbox"
+  checked={selectedMaterials.includes(index)} // Use index instead of material.id
+  onChange={() => handleSelectRow(index)} // Pass index to function
+/>
                                       </td>
                                       <td style={{ width: "300px" }}>{material.inventory_type_name}</td>
                                       <td style={{ width: "300px" }}>{material.name}</td>
@@ -2434,7 +2482,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Co-efficient Factor"
+                                          placeholder=" co-efficient Factor"
                                           value={coefficientFactors[index] || ""}
                                           onKeyDown={(e) => {
                                             if (e.key === "-" || e.key === "e" || e.key === "E") {
@@ -2451,7 +2499,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Estimated Qty"
+                                          placeholder="Estimated Quantity"
                                           disabled
                                           value={estimatedQuantities[index] || ""}
                                         />
@@ -2460,7 +2508,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Wastage"
+                                          placeholder="wastage"
                                           value={wastages[index] || ""}
                                           onChange={(e) => handleWastageChange(index, e.target.value)}
                                         />
@@ -2469,7 +2517,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Total Estimated Quantity Wastage"
+                                          placeholder="Total Estimated Qty Wastage"
                                           disabled
                                           value={totalEstimatedQtyWastages[index] || ""}
                                         />
@@ -2523,7 +2571,7 @@ const CreateBOQ = () => {
                                 <tr>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     <div className="d-flex justify-content-center">
-                                      <input
+                                      {/* <input
                                         className=""
                                         type="checkbox"
                                         onChange={(e) => {
@@ -2538,7 +2586,20 @@ const CreateBOQ = () => {
                                         checked={
                                           selectedAssets.length === Assets.length
                                         }
-                                      />
+                                      /> */}
+
+<input
+  className=""
+  type="checkbox"
+  onChange={(e) => {
+    if (e.target.checked) {
+      setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
+    } else {
+      setSelectedAssets([]); // Deselect all
+    }
+  }}
+  checked={selectedAssets.length === Assets.length && Assets.length > 0}
+/>
 
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -2599,7 +2660,7 @@ const CreateBOQ = () => {
                                   Assets.map((assets, index) => (
                                     <tr>
                                       <td>
-                                        <input
+                                        {/* <input
                                           className="ms-5"
                                           type="checkbox"
                                           checked={selectedAssets.includes(
@@ -2608,7 +2669,15 @@ const CreateBOQ = () => {
                                           onChange={() =>
                                             handleSelectRowAssets(assets.id)
                                           } // Toggle selection
-                                        />
+                                        /> */}
+
+<input
+    key={index}
+    className="ms-5"
+    type="checkbox"
+    checked={selectedAssets.includes(index)} // Use index instead of asset.id
+    onChange={() => handleSelectRowAssets(index)} // Pass index instead of asset.id
+  />
                                       </td>
 
                                       <td>{assets.inventory_type_name}</td>
