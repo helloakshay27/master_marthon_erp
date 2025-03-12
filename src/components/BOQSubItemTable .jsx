@@ -32,24 +32,10 @@ const BOQSubItemTable = ({
   boqSubItems,
   handleInputChange2,
   boqSubItemId,
-  setMaterialErrors, 
-  setAssetsErrors
+  setMaterialErrors,
+  setAssetsErrors,
   // boqCostQty
 }) => {
-  const [materialshowModal, setmaterialShowModal] = useState(false);
-  const [assetShowModal, setAssetShowModal] = useState(false);
-  const [labourShowModal, setLabourShowModal] = useState(false);
-  const [errors, setErrors] = useState({}); // Store errors for input fields
-
-  const openModal = () => setmaterialShowModal(true);
-  const closeModal = () => setmaterialShowModal(false);
-
-  const openAssestModal = () => setAssetShowModal(true);
-  const closeAssestModal = () => setAssetShowModal(false);
-
-  const openLabourModal = () => setLabourShowModal(true);
-  const closeLabourModal = () => setLabourShowModal(false);
-
   // console.log('assets for boq sub:', Assets)
   // // console.log(' costQuantity: ', boqCostQty)
   // console.log(' boq sub item  in sub table : ', boqSubItems)
@@ -89,27 +75,34 @@ const BOQSubItemTable = ({
   //   setSelectedMaterials([]);
   // };
 
-
   const handleDeleteAllMaterial = () => {
-    console.log("boqSubItemId", boqSubItemId);
-  
+    // console.log("Selected Materials Before Deletion:", selectedMaterials);
+    
     setMaterials((prev) => {
-      console.log("prev", typeof prev, prev);
+      // console.log("Previous Materials:", prev);
   
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
-        acc[key] = materialsArray.filter((_, index) => !selectedMaterials.includes(index)); // Use index
+  
+        // console.log(`Processing Key: ${key}, Materials:`, materialsArray);
+  
+        acc[key] = materialsArray.filter((material, index) => {
+          const isSelected = selectedMaterials.some(selected => 
+            selected.rowIndex === index && selected.materialId === material.id
+          );
+  
+          return !isSelected;
+        });
+  
         return acc;
       }, {});
   
-      console.log("filteredMaterials", filteredMaterials);
   
       return filteredMaterials;
     });
   
-    setSelectedMaterials([]); // Reset selection
-  };
-  
+    setSelectedMaterials([]);
+  }; 
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
@@ -141,14 +134,26 @@ const BOQSubItemTable = ({
   //   );
   // };
 
-  const handleSelectRowMaterial = (materialIndex) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(materialIndex)
-        ? prev.filter((index) => index !== materialIndex) // Unselect material
-        : [...prev, materialIndex] // Select material
-    );
+  const handleSelectRowMaterial = (materialId, rowIndex) => {
+    setSelectedMaterials((prev) => {
+      const isSelected = prev.some(
+        (selected) =>
+          selected.materialId === materialId && selected.rowIndex === rowIndex
+      );
+
+      if (isSelected) {
+        return prev.filter(
+          (selected) =>
+            !(
+              selected.materialId === materialId &&
+              selected.rowIndex === rowIndex
+            )
+        );
+      } else {
+        return [...prev, { materialId, rowIndex }];
+      }
+    });
   };
-  
 
   //asset modal and table data handle add or delete
   const [showModalAsset, setShowModalAsset] = useState(false);
@@ -181,9 +186,7 @@ const BOQSubItemTable = ({
   //   });
   //   setSelectedAssets([]); // Reset selected assets
 
-
   // };
-
 
   // const handleDeleteAllAssets2 = () => {
   //   setAssets((prev) => {
@@ -191,30 +194,32 @@ const BOQSubItemTable = ({
   //       console.error("Expected 'prev' to be an array, but got:", prev);
   //       return []; // Fallback to an empty array if prev is not an array
   //     }
-  
+
   //     return prev.filter((_, index) => !selectedAssets.includes(index)); // Filter using index
   //   });
-  
+
   //   setSelectedAssets([]); // Reset selected assets
   // };
 
   const handleDeleteAllAssets2 = () => {
     console.log("boqSubItemId", boqSubItemId);
-  
+
     setAssets((prev) => {
       console.log("prev", typeof prev, prev);
-  
+
       const filteredAssets = Object.keys(prev).reduce((acc, key) => {
         const assetsArray = prev[key] || [];
-        acc[key] = assetsArray.filter((_, index) => !selectedAssets.includes(index)); // Use index
+        acc[key] = assetsArray.filter(
+          (_, index) => !selectedAssets.includes(index)
+        ); // Use index
         return acc;
       }, {});
-  
+
       console.log("filteredAssets", filteredAssets);
-  
+
       return filteredAssets;
     });
-  
+
     setSelectedAssets([]); // Reset selection
   };
 
@@ -234,10 +239,11 @@ const BOQSubItemTable = ({
   // };
 
   const handleSelectRowAssets2 = (assetIndex) => {
-    setSelectedAssets((prev) =>
-      prev.includes(assetIndex)
-        ? prev.filter((index) => index !== assetIndex) // Unselect asset
-        : [...prev, assetIndex] // Select asset
+    setSelectedAssets(
+      (prev) =>
+        prev.includes(assetIndex)
+          ? prev.filter((index) => index !== assetIndex) // Unselect asset
+          : [...prev, assetIndex] // Select asset
     );
   };
 
@@ -247,76 +253,8 @@ const BOQSubItemTable = ({
   const [selectedSubTypes, setSelectedSubTypes] = useState([]); // Holds the selected subtypes for each material
   const [assetSubTypes, setAssetSubTypes] = useState([]); // For assets
   const [selectedSubTypesAssets, setSelectedSubTypesAssets] = useState([]);
+
   // Fetch inventory sub-types when materials array changes or inventory type changes
-  // useEffect(() => {
-  //   // Fetch sub-types only for materials that have an inventory type
-  //   materials.forEach((material, index) => {
-  //     if (material.inventory_type_id) {
-  //       axios.get(`https://marathon.lockated.com/pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(subType => ({
-  //             value: subType.id,
-  //             label: subType.name
-  //           }));
-  //           setInventorySubTypes(prevSubTypes => {
-  //             const newSubTypes = [...prevSubTypes];
-  //             newSubTypes[index] = options;  // Update sub-types for this specific material
-  //             return newSubTypes;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching inventory sub-types:', error);
-  //         });
-  //     }
-  //   });
-  // }, [materials]);  // Trigger this effect whenever the materials array changes
-
-  // useEffect(() => {
-  //   // Fetch sub-types for materials
-  //   materials.forEach((material, index) => {
-  //     if (material.inventory_type_id) {
-  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(subType => ({
-  //             value: subType.id,
-  //             label: subType.name
-  //           }));
-  //           setInventorySubTypes(prevSubTypes => {
-  //             const newSubTypes = [...prevSubTypes];
-  //             newSubTypes[index] = options;  // Update sub-types for this specific material
-  //             return newSubTypes;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching inventory sub-types for material:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch sub-types for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.inventory_type_id) {
-  //       // console.log('aseets inventory id', asset.inventory_type_id)
-  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(subType => ({
-  //             value: subType.id,
-  //             label: subType.name
-  //           }));
-  //           setAssetSubTypes(prevSubTypes => {
-  //             const newSubTypes = [...prevSubTypes];
-  //             newSubTypes[index] = options;  // Update sub-types for this specific asset
-  //             return newSubTypes;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching inventory sub-types for asset:', error);
-  //         });
-  //     }
-  //   });
-
-  // }, []); // Trigger this effect whenever the materials or assets arrays change
-
   useEffect(() => {
     materials.forEach((material, index) => {
       if (material.inventory_type_id) {
@@ -396,54 +334,6 @@ const BOQSubItemTable = ({
     selectedAssetGenericSpecifications,
     setSelectedAssetGenericSpecifications,
   ] = useState([]); // Holds the selected generic specifications for each asset
-
-  // useEffect(() => {
-  //   // Fetch generic specifications for materials
-  //   materials.forEach((material) => {
-  //     if (material.id) {
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(specification => ({
-  //             value: specification.id,
-  //             label: specification.generic_info
-  //           }));
-
-  //           setGenericSpecifications(prevSpecifications => {
-  //             // ✅ Update only if the data has changed
-  //             if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-  //               return { ...prevSpecifications, [material.id]: options };
-  //             }
-  //             return prevSpecifications; // No update needed
-  //           });
-  //         })
-  //         // .catch(error => console.error('Error fetching generic specifications:', error));
-  //     }
-  //   });
-
-  //   // Fetch generic specifications for assets
-  //   Assets.forEach((asset) => {
-  //     if (asset.id) {
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(specification => ({
-  //             value: specification.id,
-  //             label: specification.generic_info
-  //           }));
-
-  //           setAssetGenericSpecifications(prevSpecifications => {
-  //             // ✅ Update only if the data has changed
-  //             if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-  //               return { ...prevSpecifications, [asset.id]: options };
-  //             }
-  //             return prevSpecifications; // No update needed
-  //           });
-  //         })
-  //         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
-  //     }
-  //   });
-  // }, []); // Runs only when materials or Assets change
 
   useEffect(() => {
     materials.forEach((material) => {
@@ -531,49 +421,6 @@ const BOQSubItemTable = ({
   const [assetColors, setAssetColors] = useState([]); // State to hold the fetched colors for assets
   const [selectedAssetColors, setSelectedAssetColors] = useState([]); // Holds the selected color for each asset
   // Fetch colors when materials array changes or material_id changes
-  // useEffect(() => {
-  //   // Fetch colors only for materials that have a valid material_id
-  //   materials.forEach((material, index) => {
-  //     if (material.id) {
-  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(color => ({
-  //             value: color.id,
-  //             label: color.colour
-  //           }));
-  //           setColors(prevColors => {
-  //             const newColors = [...prevColors];
-  //             newColors[index] = options;  // Update colors for this specific material
-  //             return newColors;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching colors:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch colors for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.id) {
-  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(color => ({
-  //             value: color.id,
-  //             label: color.colour
-  //           }));
-  //           setAssetColors(prevColors => {
-  //             const newColors = [...prevColors];
-  //             newColors[index] = options;  // Update colors for this specific asset
-  //             return newColors;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching colors for asset:', error);
-  //         });
-  //     }
-  //   });
-  // }, []);  // Trigger this effect whenever the materials array changes
 
   useEffect(() => {
     materials.forEach((material, index) => {
@@ -650,49 +497,6 @@ const BOQSubItemTable = ({
   const [selectedAssetInventoryBrands, setSelectedAssetInventoryBrands] =
     useState([]); // Holds the selected brands for each asset
   // Fetch inventory brands when materials array changes or material_id changes
-  // useEffect(() => {
-  //   // Fetch brands only for materials that have a valid material_id
-  //   materials.forEach((material, index) => {
-  //     if (material.id) {
-  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(brand => ({
-  //             value: brand.id,
-  //             label: brand.brand_name
-  //           }));
-  //           setInventoryBrands(prevBrands => {
-  //             const newBrands = [...prevBrands];
-  //             newBrands[index] = options;  // Update brands for this specific material
-  //             return newBrands;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching inventory brands:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch inventory brands for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.id) {
-  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(brand => ({
-  //             value: brand.id,
-  //             label: brand.brand_name
-  //           }));
-  //           setAssetInventoryBrands(prevBrands => {
-  //             const newBrands = [...prevBrands];
-  //             newBrands[index] = options;  // Update brands for this specific asset
-  //             return newBrands;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           // console.error('Error fetching inventory brands for asset:', error);
-  //         });
-  //     }
-  //   });
-  // }, []);  // Trigger this effect whenever the materials array changes
 
   useEffect(() => {
     materials.forEach((material, index) => {
@@ -899,7 +703,6 @@ const BOQSubItemTable = ({
   const [localMaterialErrors, setLocalMaterialErrors] = useState({});
   const [localAssetsErrors, setLocalAssetsErrors] = useState({});
 
-
   useEffect(() => {
     if (!boqSubItemId) return; // Ensure ID exists
 
@@ -913,14 +716,20 @@ const BOQSubItemTable = ({
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0,
+      estimated_quantity_wastage:
+        parseFloat(totalEstimatedQtyWastages[index]) || 0,
     }));
     const seenCombinations = new Map();
     let errors = {};
 
     predefinedMaterials2.forEach((material, index) => {
       // Skip validation if all fields are empty
-      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+      if (
+        !material.generic_info_id &&
+        !material.colour_id &&
+        !material.brand_id
+      )
+        return;
 
       const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
 
@@ -941,7 +750,9 @@ const BOQSubItemTable = ({
     if (Object.keys(errors).length === 0) {
       setBoqSubItems((prevItems) =>
         prevItems.map((item) =>
-          item.id === boqSubItemId ? { ...item, materials: predefinedMaterials2 } : item
+          item.id === boqSubItemId
+            ? { ...item, materials: predefinedMaterials2 }
+            : item
         )
       );
     }
@@ -958,9 +769,8 @@ const BOQSubItemTable = ({
     estimatedQuantities,
     wastages,
     totalEstimatedQtyWastages,
-    localMaterialErrors
+    localMaterialErrors,
   ]);
-
 
   //assets
 
@@ -988,7 +798,12 @@ const BOQSubItemTable = ({
 
     predefinedAssets2.forEach((material, index) => {
       // Skip validation if all fields are empty
-      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+      if (
+        !material.generic_info_id &&
+        !material.colour_id &&
+        !material.brand_id
+      )
+        return;
 
       const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
 
@@ -1010,7 +825,9 @@ const BOQSubItemTable = ({
     if (Object.keys(errors).length === 0) {
       setBoqSubItems((prevItems) =>
         prevItems.map((item) =>
-          item.id === boqSubItemId ? { ...item, assets: predefinedAssets2 } : item
+          item.id === boqSubItemId
+            ? { ...item, assets: predefinedAssets2 }
+            : item
         )
       );
     }
@@ -1028,8 +845,7 @@ const BOQSubItemTable = ({
     assetWastages,
     assetTotalEstimatedQtyWastages,
     assetCostQTY,
-    localAssetsErrors
-    
+    localAssetsErrors,
   ]);
 
   //
@@ -1100,18 +916,6 @@ const BOQSubItemTable = ({
     }
   };
 
-  // Calculate Asset Total Estimated Quantity with Wastages
-  // const calculateAssetTotalEstimatedQtyWastages = () => {
-  //   if (boqQuantity && assetEstimatedQuantities.length > 0 ) {
-  //     const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
-  //       const estimatedQty = parseFloat(assetEstimatedQuantities[index]) || 0;
-  //       const wastagePercentage = parseFloat(assetWastages[index]) || 0;
-  //       return estimatedQty * (1+wastagePercentage / 100); // Adding wastage percentage
-  //     });
-  //     setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
-  //   }
-  // };
-
   const calculateAssetTotalEstimatedQtyWastages = () => {
     if (boqQuantity && assetEstimatedQuantities.length > 0) {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
@@ -1122,12 +926,6 @@ const BOQSubItemTable = ({
       setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
-
-  // Effect to recalculate asset quantities when dependencies change
-  // useEffect(() => {
-  //   calculateAssetEstimatedQuantities();
-  //   calculateAssetTotalEstimatedQtyWastages();
-  // }, [boqQuantity, assetCoefficientFactors, assetWastages]);
 
   return (
     <>
@@ -1174,18 +972,44 @@ const BOQSubItemTable = ({
                                 }
                               /> */}
 
-<input
-  type="checkbox"
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
-    } else {
-      setSelectedMaterials([]); // Deselect all
-    }
-  }}
-  checked={selectedMaterials.length === materials.length && materials.length > 0}
-/>
+                              {/* <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedMaterials(
+                                      materials.map((_, index) => index)
+                                    ); // Select all using indexes
+                                  } else {
+                                    setSelectedMaterials([]); // Deselect all
+                                  }
+                                }}
+                                checked={
+                                  selectedMaterials.length ===
+                                    materials.length && materials.length > 0
+                                }
+                              /> */}
+                              <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const allSelected = materials.flatMap(
+                                      (m, index) => ({
+                                        materialId: m.id,
+                                        rowIndex: index,
+                                      })
+                                    );
+                                    setSelectedMaterials(allSelected);
+                                  } else {
+                                    setSelectedMaterials([]);
+                                  }
+                                }}
+                                checked={
+                                  selectedMaterials.length ===
+                                    materials.length && materials.length > 0
+                                }
+                              />
                             </th>
+
                             <th
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
@@ -1274,13 +1098,27 @@ const BOQSubItemTable = ({
                                     } // Toggle selection
                                   /> */}
 
-<input
-    key={index}
-    className="ms-5"
-    type="checkbox"
-    checked={selectedMaterials.includes(index)} // Use index instead of material.id
-    onChange={() => handleSelectRowMaterial(index)} // Pass index instead of material.id
-  />
+                                  {/* <input
+                                    type="checkbox"
+                                    checked={selectedMaterials.includes(index)} // Use index instead of material.id
+                                    onChange={() => handleSelectRowMaterial(index)} // Pass index instead of material.id
+                                    /> */}
+                                  <input
+                                    key={index}
+                                    className="ms-5"
+                                    type="checkbox"
+                                    checked={selectedMaterials.some(
+                                      (selected) =>
+                                        selected.materialId === material.id &&
+                                        selected.rowIndex === index
+                                    )}
+                                    onChange={() =>
+                                      handleSelectRowMaterial(
+                                        material.id,
+                                        index
+                                      )
+                                    }
+                                  />
                                 </td>
                                 <td>{material.inventory_type_name}</td>
                                 <td>{material.name}</td>
@@ -1305,10 +1143,11 @@ const BOQSubItemTable = ({
                                     }
                                     value={selectedGenericSpecifications[index]} // Display the selected generic specification for this material
                                     placeholder={`Select Specification`} // Dynamic placeholder
-
                                   />
                                   {localMaterialErrors[index]?.generic_info && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].generic_info}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1321,7 +1160,9 @@ const BOQSubItemTable = ({
                                     placeholder={`Select Colour`} // Dynamic placeholder
                                   />
                                   {localMaterialErrors[index]?.colour && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].colour}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1334,7 +1175,9 @@ const BOQSubItemTable = ({
                                     placeholder={`Select Brand`} // Dynamic placeholder
                                   />
                                   {localMaterialErrors[index]?.brand && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].brand}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1365,7 +1208,7 @@ const BOQSubItemTable = ({
                                   <input
                                     className="form-control"
                                     type="number"
-                                    placeholder="Co-efficient Factor"
+                                    placeholder="Please Enter Co-efficient Factor"
                                     value={coefficientFactors[index] || ""}
                                     onKeyDown={(e) => {
                                       if (
@@ -1392,14 +1235,14 @@ const BOQSubItemTable = ({
                                     disabled
                                     placeholder="Estimated Qty"
                                     value={estimatedQuantities[index] || ""}
-                                  // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                    // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                   />
                                 </td>
                                 <td>
                                   <input
                                     type="number"
                                     className="form-control"
-                                    placeholder="Wastage"
+                                    placeholder="Please Enter Wastage"
                                     value={wastages[index] || ""}
                                     onChange={(e) =>
                                       handleWastageChange(index, e.target.value)
@@ -1415,7 +1258,7 @@ const BOQSubItemTable = ({
                                     value={
                                       totalEstimatedQtyWastages[index] || ""
                                     }
-                                  // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                    // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                   />
                                 </td>
                               </tr>
@@ -1425,7 +1268,7 @@ const BOQSubItemTable = ({
                               <td
                                 colSpan="12"
                                 className="text-center"
-                              // style={{ paddingLeft: "400px" }}
+                                // style={{ paddingLeft: "400px" }}
                               >
                                 No materials added yet.
                               </td>
@@ -1449,7 +1292,6 @@ const BOQSubItemTable = ({
                       <button
                         style={{ color: "var(--red)" }}
                         className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myDeleteFunction('table1')"
                         onClick={handleDeleteAllMaterial}
                       >
                         Delete Material
@@ -1475,9 +1317,10 @@ const BOQSubItemTable = ({
                     <table
                       //  className="mb-5"
                       className="tbl-container"
-                      style={{ 
+                      style={{
                         // minWidth: "1200px",
-                         borderCollapse: "collapse" }}
+                        borderCollapse: "collapse",
+                      }}
                     >
                       <thead style={{ zIndex: "0" }}>
                         <tr>
@@ -1497,17 +1340,22 @@ const BOQSubItemTable = ({
                               checked={selectedAssets.length === Assets.length}
                             /> */}
 
-<input
-  type="checkbox"
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
-    } else {
-      setSelectedAssets([]); // Deselect all
-    }
-  }}
-  checked={selectedAssets.length === Assets.length && Assets.length > 0}
-/>
+                            <input
+                              type="checkbox"
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAssets(
+                                    Assets.map((_, index) => index)
+                                  ); // Select all using indexes
+                                } else {
+                                  setSelectedAssets([]); // Deselect all
+                                }
+                              }}
+                              checked={
+                                selectedAssets.length === Assets.length &&
+                                Assets.length > 0
+                              }
+                            />
                           </th>
                           <th
                             rowSpan={2}
@@ -1603,13 +1451,13 @@ const BOQSubItemTable = ({
                                   } // Toggle selection
                                 /> */}
 
-<input
-    key={index}
-    className="ms-5"
-    type="checkbox"
-    checked={selectedAssets.includes(index)} // Use index instead of asset.id
-    onChange={() => handleSelectRowAssets2(index)} // Pass index instead of asset.id
-  />
+                                <input
+                                  key={index}
+                                  className="ms-5"
+                                  type="checkbox"
+                                  checked={selectedAssets.includes(index)} // Use index instead of asset.id
+                                  onChange={() => handleSelectRowAssets2(index)} // Pass index instead of asset.id
+                                />
                               </td>
 
                               <td>{assets.inventory_type_name}</td>
@@ -1644,7 +1492,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Specification`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.generic_info && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].generic_info}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].generic_info}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1660,7 +1510,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Colour`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.colour && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].colour}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].colour}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1676,7 +1528,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Brand`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.brand && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].brand}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].brand}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1707,7 +1561,7 @@ const BOQSubItemTable = ({
                                 <input
                                   className="form-control"
                                   type="number"
-                                  placeholder="Co-efficient Factor"
+                                  placeholder="Please Enter Co-efficient Factor"
                                   value={assetCoefficientFactors[index] || ""}
                                   onKeyDown={(e) => {
                                     if (
@@ -1746,7 +1600,7 @@ const BOQSubItemTable = ({
                                 <input
                                   type="number"
                                   className="form-control"
-                                  placeholder="Wastage"
+                                  placeholder="Please Enter Wastage"
                                   value={assetWastages[index] || ""}
                                   onChange={(e) =>
                                     handleAssetWastageChange(
@@ -1780,7 +1634,7 @@ const BOQSubItemTable = ({
                             <td
                               colSpan="12"
                               className="text-center"
-                            // style={{ paddingLeft: "400px" }}
+                              // style={{ paddingLeft: "400px" }}
                             >
                               No asset added yet.
                             </td>

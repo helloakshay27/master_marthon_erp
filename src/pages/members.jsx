@@ -283,6 +283,16 @@ function Members() {
                 <li>
                   <Link to="/sub-mor">sub project Mor</Link>
                 </li>
+                <li>
+                  <Link to="/material-rejction-slip-create">
+                    Material Rejection Create
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/material-rejction-slip">
+                    Material Rejection Slip
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="m-3">
@@ -457,9 +467,7 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/create-template">
-                    create_template
-                  </Link>
+                  <Link to="/create-template">create_template</Link>
                 </li>
                 <li>
                   <Link to="/erp-rfq-detail-price-trends4h">

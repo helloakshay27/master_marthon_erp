@@ -2482,7 +2482,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder=" co-efficient Factor"
+                                          placeholder="Please Enter co-efficient Factor"
                                           value={coefficientFactors[index] || ""}
                                           onKeyDown={(e) => {
                                             if (e.key === "-" || e.key === "e" || e.key === "E") {
@@ -2508,7 +2508,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="wastage"
+                                          placeholder="Please Enter wastage"
                                           value={wastages[index] || ""}
                                           onChange={(e) => handleWastageChange(index, e.target.value)}
                                         />
@@ -2772,7 +2772,7 @@ const CreateBOQ = () => {
                                         <input
                                           className="form-control"
                                           type="number"
-                                          placeholder="Co-efficient Factor"
+                                          placeholder="Please Enter Co-efficient Factor"
                                           value={
                                             assetCoefficientFactors[index] || ""
                                           }
@@ -2810,7 +2810,7 @@ const CreateBOQ = () => {
                                         <input
                                           type="number"
                                           className="form-control"
-                                          placeholder="Wastage"
+                                          placeholder="Please Enter Wastage"
                                           value={assetWastages[index] || ""}
                                           onChange={(e) =>
                                             handleAssetWastageChange(
@@ -2878,9 +2878,9 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                          {/* <h1>boqSubItems</h1>
+                          <h1>boqSubItems</h1>
 
-                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
+                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> 
 
                           <div className=" my-4">
                             <div style={{ overflowX: "auto", maxWidth: "100%" }}>
