@@ -33,10 +33,9 @@ const BOQSubItemTable = ({
   handleInputChange2,
   boqSubItemId,
   setMaterialErrors,
-  setAssetsErrors
+  setAssetsErrors,
   // boqCostQty
 }) => {
-
   // console.log('assets for boq sub:', Assets)
   // // console.log(' costQuantity: ', boqCostQty)
   // console.log(' boq sub item  in sub table : ', boqSubItems)
@@ -76,27 +75,34 @@ const BOQSubItemTable = ({
   //   setSelectedMaterials([]);
   // };
 
-
   const handleDeleteAllMaterial = () => {
-    console.log("boqSubItemId", boqSubItemId);
-
+    // console.log("Selected Materials Before Deletion:", selectedMaterials);
+    
     setMaterials((prev) => {
-      console.log("prev", typeof prev, prev);
-
+      // console.log("Previous Materials:", prev);
+  
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
-        acc[key] = materialsArray.filter((_, index) => !selectedMaterials.includes(index)); // Use index
+  
+        // console.log(`Processing Key: ${key}, Materials:`, materialsArray);
+  
+        acc[key] = materialsArray.filter((material, index) => {
+          const isSelected = selectedMaterials.some(selected => 
+            selected.rowIndex === index && selected.materialId === material.id
+          );
+  
+          return !isSelected;
+        });
+  
         return acc;
       }, {});
-
-      console.log("filteredMaterials", filteredMaterials);
-
+  
+  
       return filteredMaterials;
     });
-
-    setSelectedMaterials([]); // Reset selection
-  };
-
+  
+    setSelectedMaterials([]);
+  }; 
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
@@ -128,14 +134,26 @@ const BOQSubItemTable = ({
   //   );
   // };
 
-  const handleSelectRowMaterial = (materialIndex) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(materialIndex)
-        ? prev.filter((index) => index !== materialIndex) // Unselect material
-        : [...prev, materialIndex] // Select material
-    );
-  };
+  const handleSelectRowMaterial = (materialId, rowIndex) => {
+    setSelectedMaterials((prev) => {
+      const isSelected = prev.some(
+        (selected) =>
+          selected.materialId === materialId && selected.rowIndex === rowIndex
+      );
 
+      if (isSelected) {
+        return prev.filter(
+          (selected) =>
+            !(
+              selected.materialId === materialId &&
+              selected.rowIndex === rowIndex
+            )
+        );
+      } else {
+        return [...prev, { materialId, rowIndex }];
+      }
+    });
+  };
 
   //asset modal and table data handle add or delete
   const [showModalAsset, setShowModalAsset] = useState(false);
@@ -168,9 +186,7 @@ const BOQSubItemTable = ({
   //   });
   //   setSelectedAssets([]); // Reset selected assets
 
-
   // };
-
 
   // const handleDeleteAllAssets2 = () => {
   //   setAssets((prev) => {
@@ -193,7 +209,9 @@ const BOQSubItemTable = ({
 
       const filteredAssets = Object.keys(prev).reduce((acc, key) => {
         const assetsArray = prev[key] || [];
-        acc[key] = assetsArray.filter((_, index) => !selectedAssets.includes(index)); // Use index
+        acc[key] = assetsArray.filter(
+          (_, index) => !selectedAssets.includes(index)
+        ); // Use index
         return acc;
       }, {});
 
@@ -221,10 +239,11 @@ const BOQSubItemTable = ({
   // };
 
   const handleSelectRowAssets2 = (assetIndex) => {
-    setSelectedAssets((prev) =>
-      prev.includes(assetIndex)
-        ? prev.filter((index) => index !== assetIndex) // Unselect asset
-        : [...prev, assetIndex] // Select asset
+    setSelectedAssets(
+      (prev) =>
+        prev.includes(assetIndex)
+          ? prev.filter((index) => index !== assetIndex) // Unselect asset
+          : [...prev, assetIndex] // Select asset
     );
   };
 
@@ -315,7 +334,6 @@ const BOQSubItemTable = ({
     selectedAssetGenericSpecifications,
     setSelectedAssetGenericSpecifications,
   ] = useState([]); // Holds the selected generic specifications for each asset
-
 
   useEffect(() => {
     materials.forEach((material) => {
@@ -685,7 +703,6 @@ const BOQSubItemTable = ({
   const [localMaterialErrors, setLocalMaterialErrors] = useState({});
   const [localAssetsErrors, setLocalAssetsErrors] = useState({});
 
-
   useEffect(() => {
     if (!boqSubItemId) return; // Ensure ID exists
 
@@ -699,14 +716,20 @@ const BOQSubItemTable = ({
       co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
       estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
       wastage: parseFloat(wastages[index]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[index]) || 0,
+      estimated_quantity_wastage:
+        parseFloat(totalEstimatedQtyWastages[index]) || 0,
     }));
     const seenCombinations = new Map();
     let errors = {};
 
     predefinedMaterials2.forEach((material, index) => {
       // Skip validation if all fields are empty
-      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+      if (
+        !material.generic_info_id &&
+        !material.colour_id &&
+        !material.brand_id
+      )
+        return;
 
       const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
 
@@ -727,7 +750,9 @@ const BOQSubItemTable = ({
     if (Object.keys(errors).length === 0) {
       setBoqSubItems((prevItems) =>
         prevItems.map((item) =>
-          item.id === boqSubItemId ? { ...item, materials: predefinedMaterials2 } : item
+          item.id === boqSubItemId
+            ? { ...item, materials: predefinedMaterials2 }
+            : item
         )
       );
     }
@@ -744,9 +769,8 @@ const BOQSubItemTable = ({
     estimatedQuantities,
     wastages,
     totalEstimatedQtyWastages,
-    localMaterialErrors
+    localMaterialErrors,
   ]);
-
 
   //assets
 
@@ -774,7 +798,12 @@ const BOQSubItemTable = ({
 
     predefinedAssets2.forEach((material, index) => {
       // Skip validation if all fields are empty
-      if (!material.generic_info_id && !material.colour_id && !material.brand_id) return;
+      if (
+        !material.generic_info_id &&
+        !material.colour_id &&
+        !material.brand_id
+      )
+        return;
 
       const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
 
@@ -796,7 +825,9 @@ const BOQSubItemTable = ({
     if (Object.keys(errors).length === 0) {
       setBoqSubItems((prevItems) =>
         prevItems.map((item) =>
-          item.id === boqSubItemId ? { ...item, assets: predefinedAssets2 } : item
+          item.id === boqSubItemId
+            ? { ...item, assets: predefinedAssets2 }
+            : item
         )
       );
     }
@@ -814,8 +845,7 @@ const BOQSubItemTable = ({
     assetWastages,
     assetTotalEstimatedQtyWastages,
     assetCostQTY,
-    localAssetsErrors
-
+    localAssetsErrors,
   ]);
 
   //
@@ -886,8 +916,6 @@ const BOQSubItemTable = ({
     }
   };
 
-
-
   const calculateAssetTotalEstimatedQtyWastages = () => {
     if (boqQuantity && assetEstimatedQuantities.length > 0) {
       const newAssetTotalEstimatedQtyWastages = Assets.map((asset, index) => {
@@ -898,7 +926,6 @@ const BOQSubItemTable = ({
       setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
-
 
   return (
     <>
@@ -945,18 +972,44 @@ const BOQSubItemTable = ({
                                 }
                               /> */}
 
-                              <input
+                              {/* <input
                                 type="checkbox"
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                    setSelectedMaterials(
+                                      materials.map((_, index) => index)
+                                    ); // Select all using indexes
                                   } else {
                                     setSelectedMaterials([]); // Deselect all
                                   }
                                 }}
-                                checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                checked={
+                                  selectedMaterials.length ===
+                                    materials.length && materials.length > 0
+                                }
+                              /> */}
+                              <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const allSelected = materials.flatMap(
+                                      (m, index) => ({
+                                        materialId: m.id,
+                                        rowIndex: index,
+                                      })
+                                    );
+                                    setSelectedMaterials(allSelected);
+                                  } else {
+                                    setSelectedMaterials([]);
+                                  }
+                                }}
+                                checked={
+                                  selectedMaterials.length ===
+                                    materials.length && materials.length > 0
+                                }
                               />
                             </th>
+
                             <th
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
@@ -1045,12 +1098,26 @@ const BOQSubItemTable = ({
                                     } // Toggle selection
                                   /> */}
 
+                                  {/* <input
+                                    type="checkbox"
+                                    checked={selectedMaterials.includes(index)} // Use index instead of material.id
+                                    onChange={() => handleSelectRowMaterial(index)} // Pass index instead of material.id
+                                    /> */}
                                   <input
                                     key={index}
                                     className="ms-5"
                                     type="checkbox"
-                                    checked={selectedMaterials.includes(index)} // Use index instead of material.id
-                                    onChange={() => handleSelectRowMaterial(index)} // Pass index instead of material.id
+                                    checked={selectedMaterials.some(
+                                      (selected) =>
+                                        selected.materialId === material.id &&
+                                        selected.rowIndex === index
+                                    )}
+                                    onChange={() =>
+                                      handleSelectRowMaterial(
+                                        material.id,
+                                        index
+                                      )
+                                    }
                                   />
                                 </td>
                                 <td>{material.inventory_type_name}</td>
@@ -1076,10 +1143,11 @@ const BOQSubItemTable = ({
                                     }
                                     value={selectedGenericSpecifications[index]} // Display the selected generic specification for this material
                                     placeholder={`Select Specification`} // Dynamic placeholder
-
                                   />
                                   {localMaterialErrors[index]?.generic_info && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].generic_info}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1092,7 +1160,9 @@ const BOQSubItemTable = ({
                                     placeholder={`Select Colour`} // Dynamic placeholder
                                   />
                                   {localMaterialErrors[index]?.colour && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].colour}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1105,7 +1175,9 @@ const BOQSubItemTable = ({
                                     placeholder={`Select Brand`} // Dynamic placeholder
                                   />
                                   {localMaterialErrors[index]?.brand && (
-                                    <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+                                    <p style={{ color: "red" }}>
+                                      {localMaterialErrors[index].brand}
+                                    </p>
                                   )}
                                 </td>
                                 <td>
@@ -1163,7 +1235,7 @@ const BOQSubItemTable = ({
                                     disabled
                                     placeholder="Estimated Qty"
                                     value={estimatedQuantities[index] || ""}
-                                  // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                    // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                   />
                                 </td>
                                 <td>
@@ -1186,7 +1258,7 @@ const BOQSubItemTable = ({
                                     value={
                                       totalEstimatedQtyWastages[index] || ""
                                     }
-                                  // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                    // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                   />
                                 </td>
                               </tr>
@@ -1196,7 +1268,7 @@ const BOQSubItemTable = ({
                               <td
                                 colSpan="12"
                                 className="text-center"
-                              // style={{ paddingLeft: "400px" }}
+                                // style={{ paddingLeft: "400px" }}
                               >
                                 No materials added yet.
                               </td>
@@ -1220,7 +1292,6 @@ const BOQSubItemTable = ({
                       <button
                         style={{ color: "var(--red)" }}
                         className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myDeleteFunction('table1')"
                         onClick={handleDeleteAllMaterial}
                       >
                         Delete Material
@@ -1248,7 +1319,7 @@ const BOQSubItemTable = ({
                       className="tbl-container"
                       style={{
                         // minWidth: "1200px",
-                        borderCollapse: "collapse"
+                        borderCollapse: "collapse",
                       }}
                     >
                       <thead style={{ zIndex: "0" }}>
@@ -1273,12 +1344,17 @@ const BOQSubItemTable = ({
                               type="checkbox"
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
+                                  setSelectedAssets(
+                                    Assets.map((_, index) => index)
+                                  ); // Select all using indexes
                                 } else {
                                   setSelectedAssets([]); // Deselect all
                                 }
                               }}
-                              checked={selectedAssets.length === Assets.length && Assets.length > 0}
+                              checked={
+                                selectedAssets.length === Assets.length &&
+                                Assets.length > 0
+                              }
                             />
                           </th>
                           <th
@@ -1416,7 +1492,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Specification`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.generic_info && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].generic_info}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].generic_info}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1432,7 +1510,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Colour`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.colour && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].colour}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].colour}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1448,7 +1528,9 @@ const BOQSubItemTable = ({
                                   placeholder={`Select Brand`} // Dynamic placeholder
                                 />
                                 {localAssetsErrors[index]?.brand && (
-                                  <p style={{ color: "red" }}>{localAssetsErrors[index].brand}</p>
+                                  <p style={{ color: "red" }}>
+                                    {localAssetsErrors[index].brand}
+                                  </p>
                                 )}
                               </td>
                               <td>
@@ -1552,7 +1634,7 @@ const BOQSubItemTable = ({
                             <td
                               colSpan="12"
                               className="text-center"
-                            // style={{ paddingLeft: "400px" }}
+                              // style={{ paddingLeft: "400px" }}
                             >
                               No asset added yet.
                             </td>
