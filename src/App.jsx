@@ -70,6 +70,8 @@ import ApprovalEdit from "./pages/approval-edit";
 import UnassignedMor from "./pages/unassigned-mor";
 import SubProject from "./pages/sub-project";
 import CreateTemplate from "./pages/create-template";
+import MaterialRejctionSlipCreate from "./pages/material-rejction-slip-create";
+import MaterialRejctionSlip from "./pages/material-rejction-slip";
 
 function App() {
   return (
@@ -380,6 +382,14 @@ function App() {
           sub-mor
           <Route path="/sub-mor" element={<SubProject />} />
           sub-mor
+          <Route
+            path="/material-rejction-slip-create"
+            element={<MaterialRejctionSlipCreate />}
+          />
+          <Route
+            path="/material-rejction-slip"
+            element={<MaterialRejctionSlip />}
+          />
         </Routes>
       </div>
     </BrowserRouter>
