@@ -1,11 +1,10 @@
-import axios from "axios";
-import { mumbaiLocations, product, unitMeasure } from "../../../constant/data";
-import MultiSelector from "../../base/Select/MultiSelector";
+import React, { useState, useEffect } from "react";
 import SelectBox from "../../base/Select/SelectBox";
 import Table from "../../base/Table/Table";
-import { useEffect, useState } from "react";
-import React from "react";
 import { baseURL } from "../../../confi/apiDomain";
+import ShortTable from "../../base/Table/ShortTable";
+import axios from "axios";
+import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 
 export default function CreateRFQForm({
   data,
@@ -13,6 +12,9 @@ export default function CreateRFQForm({
   isService,
   existingData,
   deliveryData,
+  updateSelectedTemplate, // Rename this prop
+  updateBidTemplateFields, // Rename this prop
+  updateAdditionalFields, // Rename this prop
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -25,6 +27,71 @@ export default function CreateRFQForm({
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [templateOptions, setTemplateOptions] = useState([]);
+  const [additionalFields, setAdditionalFields] = useState([]);
+  const [bidTemplateFields, setBidTemplateFields] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showShortTableEditModal, setShowShortTableEditModal] = useState(false);
+  const [editField, setEditField] = useState({
+    fieldName: "",
+    isRequired: false,
+    isReadOnly: false,
+    fieldOwner: "",
+    fieldType: "string",
+  });
+  const [editShortTableRow, setEditShortTableRow] = useState({
+    label: "",
+    value: "",
+    fieldName: "",
+    isRequired: false,
+    isReadOnly: false,
+    fieldOwner: "",
+  });
+  const [showAddColumnModal, setShowAddColumnModal] = useState(false);
+  const [newField, setNewField] = useState({
+    fieldName: "",
+    isRequired: false,
+    isReadOnly: false,
+    fieldOwner: "",
+    fieldType: "string",
+  });
+
+  const mapBidTemplateFields = (fields) => {
+    return fields.map((field) => ({
+      label: field.field_name,
+      value: "", // Initialize with empty value or any default value
+    }));
+  };
+
+  const handleTemplateChange = async (event) => {
+    setSelectedTemplate(event);
+    updateSelectedTemplate(event); // Update the parent component's state
+    console.log("selectedTemplate", selectedTemplate, event);
+
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/event_templates/${event}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      if (response.data) {
+        const templateData = response.data;
+        console.log("Template Data:", templateData);
+        const updatedAdditionalFields = templateData.bid_material_template_fields || [];
+        updateAdditionalFields(updatedAdditionalFields);
+        updateBidTemplateFields(
+          mapBidTemplateFields(templateData.bid_template_fields || [])
+        );
+        setBidTemplateFields(
+          mapBidTemplateFields(templateData.bid_template_fields || [])
+        );
+        setAdditionalFields(updatedAdditionalFields);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching template details:", error);
+    }
+  };
 
   const fetchMaterials = async (inventoryTypeId) => {
     try {
@@ -69,6 +136,27 @@ export default function CreateRFQForm({
       }
     } catch (error) {
       console.error("Error fetching sub-sections:", error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        "https://marathon.lockated.com/rfq/event_templates/template_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      if (response.data && Array.isArray(response.data.event_templates)) {
+        const templateOptions = response.data.event_templates.map(
+          (template) => ({
+            value: template.id,
+            label: template.name || `Template ${template.id}`,
+          })
+        );
+        setTemplateOptions(templateOptions);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching templates:", error);
     }
   };
 
@@ -183,6 +271,7 @@ export default function CreateRFQForm({
     fetchLocations();
     fetchUoms();
     fetchMaterials();
+    fetchTemplates(); // Fetch templates
   }, []);
 
   useEffect(() => {
@@ -243,6 +332,7 @@ export default function CreateRFQForm({
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
     setSections(updatedSections);
+    setData(updatedSections.flatMap((section) => section.sectionData));
   };
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
@@ -318,12 +408,139 @@ export default function CreateRFQForm({
     setSections(updatedSections);
   };
 
+  const handleEditAdditionalField = (field) => {
+    setEditField({
+      fieldName: field.field_name,
+      isRequired: field.is_required || false,
+      isReadOnly: field.is_read_only || false,
+      fieldOwner: field.field_owner || "",
+      fieldType: field.field_type || "string",
+      originalFieldName: field.field_name,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditModalSubmit = () => {
+    const updatedFields = additionalFields.map((field) =>
+      field.field_name === editField.originalFieldName
+        ? {
+            ...field,
+            field_name: editField.fieldName,
+            is_required: editField.isRequired,
+            is_read_only: editField.isReadOnly,
+            field_owner: editField.fieldOwner,
+            field_type: editField.fieldType,
+          }
+        : field
+    );
+
+    setAdditionalFields(updatedFields);
+    updateAdditionalFields(updatedFields); // Update the parent component's state
+    console.log("Updated additional fields:", updatedFields, editField);
+
+    setShowEditModal(false);
+    setSections((prevSections) => {
+      return prevSections.map((section) => ({
+        ...section,
+        sectionData: section.sectionData.map((row) => {
+          const updatedRow = { ...row };
+          if (row[editField.originalFieldName] !== undefined) {
+            updatedRow[editField.fieldName] = row[editField.originalFieldName];
+            delete updatedRow[editField.originalFieldName];
+          }
+          return updatedRow;
+        }),
+      }));
+    });
+  };
+
+  const handleDeleteAdditionalField = (field) => {
+    const updatedFields = additionalFields.filter(
+      (f) => f.field_name !== field.field_name
+    );
+    setAdditionalFields(updatedFields);
+    updateAdditionalFields(updatedFields); 
+  };
+
+  const handleShortTableChange = (updatedData) => {
+    setBidTemplateFields(Array.isArray(updatedData) ? updatedData : []);
+  };
+  const handleEditShortTableRow = (row) => {
+    setEditShortTableRow({
+      ...row,
+      fieldName: row.label,
+      isRequired: row.isRequired || false,
+      isReadOnly: row.isReadOnly || false,
+      fieldOwner: row.fieldOwner || "",
+    });
+    setShowShortTableEditModal(true);
+  };
+
+  const handleShortTableEditModalSubmit = () => {
+    const updatedFields = bidTemplateFields.map((field) =>
+      field.label === editShortTableRow.label
+        ? {
+            ...field,
+            label: editShortTableRow.fieldName,
+            isRequired: editShortTableRow.isRequired,
+            isReadOnly: editShortTableRow.isReadOnly,
+            fieldOwner: editShortTableRow.fieldOwner,
+          }
+        : field
+    );
+
+    setBidTemplateFields(updatedFields);
+    updateBidTemplateFields(updatedFields);
+    setShowShortTableEditModal(false);
+  };
+
+  const handleAddColumn = () => {
+    setShowAddColumnModal(true);
+  };
+
+  const handleAddColumnSubmit = () => {
+    const newFieldData = {
+      field_name: newField.fieldName,
+      is_required: newField.isRequired,
+      is_read_only: newField.isReadOnly,
+      field_owner: newField.fieldOwner,
+      field_type: newField.fieldType,
+    };
+    const updatedAdditionalFields = [...additionalFields, newFieldData];
+    setAdditionalFields(updatedAdditionalFields);
+    updateAdditionalFields(updatedAdditionalFields); 
+    setShowAddColumnModal(false);
+  };
+
   const deliveryColumns = [
     { label: "Material Name", key: "material_formatted_name" },
     { label: "MOR Number", key: "mor_number" },
     { label: "Expected Date", key: "expected_date" },
     { label: "Expected Quantity", key: "expected_quantity" },
   ];
+
+  const renderTableColumns = () => {
+    const defaultColumns = [
+      { label: "Sr no.", key: "srNo" },
+      { label: "Material Name", key: "descriptionOfItem" },
+      { label: "Quantity", key: "quantity" },
+      { label: "UOM", key: "unit" },
+      { label: "Type", key: "type" },
+      { label: "Location", key: "location" },
+      { label: "Rate", key: "rate" },
+      { label: "Amount", key: "amount" },
+      { label: "Actions", key: "actions" },
+    ];
+
+    const additionalColumns = additionalFields
+      .filter((field) => field.field_name !== "Sr no.")
+      .map((field) => ({
+        label: field.field_name,
+        key: field.field_name,
+      }));
+
+    return [...defaultColumns, ...additionalColumns];
+  };
 
   return (
     <div className="row px-3">
@@ -333,10 +550,26 @@ export default function CreateRFQForm({
             {`Select ${isService ? "Services" : "Materials"}`}{" "}
           </h3>
         </div>
+        <div className="d-flex justify-content-between px-3 py-3">
+          <div className="col-md-3">
+            <SelectBox
+              label={"Select Template"}
+              options={templateOptions}
+              onChange={handleTemplateChange}
+              defaultValue={""}
+            />
+          </div>
+          <button className="purple-btn2" onClick={handleAddColumn}>
+            <span className="material-symbols-outlined align-text-top">
+              add{" "}
+            </span>
+            <span>Add Columns</span>
+          </button>
+        </div>
         <div className="px-3 py-3">
           {sections.map((section, sectionIndex) => (
             <div key={section.sectionId} className="card p-4 mb-4">
-              <div className="row">
+              <div className="row mt-4">
                 <div className="col-md-8 col-sm-12 d-flex gap-3">
                   <div className="flex-grow-1">
                     <SelectBox
@@ -383,6 +616,7 @@ export default function CreateRFQForm({
                     </span>
                     <span>Add Row</span>
                   </button>
+
                   {sectionIndex > 0 && (
                     <button
                       className="purple-btn2"
@@ -394,17 +628,8 @@ export default function CreateRFQForm({
                 </div>
               </div>
               <Table
-                columns={[
-                  { label: "Sr no.", key: "srno" },
-                  { label: "Material Name", key: "descriptionOfItem" },
-                  { label: "Quantity", key: "quantity" },
-                  { label: "UOM", key: "unit" },
-                  // { label: "Type", key: "type" },
-                  { label: "Location", key: "location" },
-                  { label: "Rate", key: "rate" },
-                  { label: "Amount", key: "amount" },
-                  { label: "Actions", key: "actions" },
-                ]}
+                columns={renderTableColumns()}
+                isMinWidth={true}
                 data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
@@ -540,12 +765,69 @@ export default function CreateRFQForm({
                       Remove
                     </button>
                   ),
+                  ...additionalFields.reduce((acc, field) => {
+                    acc[field.field_name] = (cell, rowIndex) => (
+                      <div className="d-flex align-items-center">
+                        {/* <input
+                          className="form-control"
+                          type="text"
+                          value={cell}
+                          onChange={(e) =>
+                            handleInputChange(
+                              e.target.value,
+                              rowIndex,
+                              field.field_name,
+                              sectionIndex
+                            )
+                          }
+                          readOnly={field.is_read_only}
+                          required={field.is_required}
+                        /> */}
+                        <button
+                          className="purple-btn2 ms-2 rounded-circle p-0"
+                          style={{
+                            border: "none",
+                            color: "white",
+                            width: "25px",
+                            height: "25px",
+                          }}
+                          onClick={() => handleEditAdditionalField(field)}
+                        >
+                          <i className="bi bi-pencil" style={{ border: 0 }}></i>
+                        </button>
+                        <button
+                          className="purple-btn2 ms-2 rounded-circle p-0"
+                          style={{
+                            border: "none",
+                            color: "white",
+                            width: "25px",
+                            height: "25px",
+                          }}
+                          onClick={() => handleDeleteAdditionalField(field)}
+                        >
+                          <i className="bi bi-trash" style={{ border: 0 }}></i>
+                        </button>
+                      </div>
+                    );
+                    return acc;
+                  }, {}),
                 }}
                 onRowSelect={undefined}
                 handleCheckboxChange={undefined}
                 resetSelectedRows={undefined}
                 onResetComplete={undefined}
               />
+
+              <div className="d-flex justify-content-end">
+                <ShortTable
+                  data={
+                    Array.isArray(bidTemplateFields) ? bidTemplateFields : []
+                  }
+                  editable={true}
+                  onValueChange={handleShortTableChange}
+                  onInputClick={handleEditShortTableRow}
+                />
+              </div>
             </div>
           ))}
           {deliveryData?.length > 0 && (
@@ -559,6 +841,232 @@ export default function CreateRFQForm({
           </button>
         </div>
       </div>
+      <DynamicModalBox
+        show={showEditModal}
+        onHide={() => setShowEditModal(false)}
+        title="Edit Field"
+        footerButtons={[
+          {
+            label: "Cancel",
+            onClick: () => setShowEditModal(false),
+          },
+          {
+            label: "Save Changes",
+            onClick: handleEditModalSubmit,
+          },
+        ]}
+      >
+        <div className="form-group mt-3">
+          <label>Field Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={editField.fieldName}
+            onChange={(e) => {
+              setEditField({ ...editField, fieldName: e.target.value });
+              console.log("inputVal", e.target.value);
+            }}
+            placeholder="Enter Field Name"
+          />
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={editField.isRequired}
+            onChange={(e) =>
+              setEditField({ ...editField, isRequired: e.target.checked })
+            }
+          />
+          <label className="form-check-label">Is Required</label>
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={editField.isReadOnly}
+            onChange={(e) =>
+              setEditField({ ...editField, isReadOnly: e.target.checked })
+            }
+          />
+          <label className="form-check-label">Is Read Only</label>
+        </div>
+        <div className="form-group mt-3">
+          <SelectBox
+            label={"Field Owner"}
+            options={[
+              { value: "Admin", label: "Admin" },
+              { value: "User", label: "User" },
+            ]}
+            defaultValue={editField.fieldOwner}
+            onChange={(value) =>
+              setEditField({ ...editField, fieldOwner: value })
+            }
+          />
+        </div>
+        <div className="form-group mt-3">
+          <SelectBox
+            label={"Field Type"}
+            options={[
+              { value: "string", label: "String" },
+              { value: "integer", label: "Integer" },
+            ]}
+            defaultValue={editField.fieldType}
+            onChange={(value) =>
+              setEditField({ ...editField, fieldType: value })
+            }
+          />
+        </div>
+      </DynamicModalBox>
+      <DynamicModalBox
+        show={showShortTableEditModal}
+        onHide={() => setShowShortTableEditModal(false)}
+        title="Edit Short Table Row"
+        footerButtons={[
+          {
+            label: "Cancel",
+            onClick: () => setShowShortTableEditModal(false),
+          },
+          {
+            label: "Save Changes",
+            onClick: handleShortTableEditModalSubmit,
+          },
+        ]}
+      >
+        <div className="form-group mt-3">
+          <label>Field Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={editShortTableRow.fieldName}
+            onChange={(e) =>
+              setEditShortTableRow({
+                ...editShortTableRow,
+                fieldName: e.target.value,
+              })
+            }
+            placeholder="Enter Field Name"
+          />
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={editShortTableRow.isRequired}
+            onChange={(e) =>
+              setEditShortTableRow({
+                ...editShortTableRow,
+                isRequired: e.target.checked,
+              })
+            }
+          />
+          <label className="form-check-label">Is Required</label>
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={editShortTableRow.isReadOnly}
+            onChange={(e) =>
+              setEditShortTableRow({
+                ...editShortTableRow,
+                isReadOnly: e.target.checked,
+              })
+            }
+          />
+          <label className="form-check-label">Is Read Only</label>
+        </div>
+        <div className="form-group mt-3">
+          <SelectBox
+            label={"Field Owner"}
+            options={[
+              { value: "Admin", label: "Admin" },
+              { value: "User", label: "User" },
+            ]}
+            defaultValue={editShortTableRow.fieldOwner}
+            onChange={(value) =>
+              setEditShortTableRow({
+                ...editShortTableRow,
+                fieldOwner: value,
+              })
+            }
+          />
+        </div>
+      </DynamicModalBox>
+      <DynamicModalBox
+        show={showAddColumnModal}
+        onHide={() => setShowAddColumnModal(false)}
+        title="Add New Column"
+        footerButtons={[
+          {
+            label: "Cancel",
+            onClick: () => setShowAddColumnModal(false),
+          },
+          {
+            label: "Add Column",
+            onClick: handleAddColumnSubmit,
+          },
+        ]}
+      >
+        <div className="form-group mt-3">
+          <label>Field Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={newField.fieldName}
+            onChange={(e) =>
+              setNewField({ ...newField, fieldName: e.target.value })
+            }
+            placeholder="Enter Field Name"
+          />
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={newField.isRequired}
+            onChange={(e) =>
+              setNewField({ ...newField, isRequired: e.target.checked })
+            }
+          />
+          <label className="form-check-label">Is Required</label>
+        </div>
+        <div className="form-group mt-3 d-flex align-items-base">
+          <input
+            type="checkbox"
+            className="form-check-input me-1"
+            checked={newField.isReadOnly}
+            onChange={(e) =>
+              setNewField({ ...newField, isReadOnly: e.target.checked })
+            }
+          />
+          <label className="form-check-label">Is Read Only</label>
+        </div>
+        <div className="form-group mt-3">
+          <SelectBox
+            label={"Field Owner"}
+            options={[
+              { value: "Admin", label: "Admin" },
+              { value: "User", label: "User" },
+            ]}
+            defaultValue={newField.fieldOwner}
+            onChange={(value) =>
+              setNewField({ ...newField, fieldOwner: value })
+            }
+          />
+        </div>
+        <div className="form-group mt-3">
+          <SelectBox
+            label={"Field Type"}
+            options={[
+              { value: "string", label: "String" },
+              { value: "integer", label: "Integer" },
+            ]}
+            defaultValue={newField.fieldType}
+            onChange={(value) => setNewField({ ...newField, fieldType: value })}
+          />
+        </div>
+      </DynamicModalBox>
     </div>
   );
 }

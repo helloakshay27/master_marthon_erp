@@ -457,6 +457,11 @@ function Members() {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/create-template">
+                    create_template
+                  </Link>
+                </li>
+                <li>
                   <Link to="/erp-rfq-detail-price-trends4h">
                     event_details_price
                   </Link>

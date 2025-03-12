@@ -1147,7 +1147,7 @@ const BOQSubItemTable = ({
                           <tr>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "100px", whiteSpace: "nowrap" }}
                             >
                               {/* <input
                                 type="checkbox"
@@ -1188,43 +1188,43 @@ const BOQSubItemTable = ({
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Material Type
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Material
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Material Sub-Type
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Generic Specification
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Colour{" "}
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Brand{" "}
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               UOM
                             </th>
@@ -1234,25 +1234,25 @@ const BOQSubItemTable = ({
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Wastage%
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Total Estimated Qty Wastage
                             </th>
                           </tr>
                           <tr>
                             <th
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Co-Efficient Factor <span>*</span>
                             </th>
                             <th
-                              style={{ width: "300px", whiteSpace: "nowrap" }}
+                              style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
                               Estimated Qty
                             </th>
@@ -1475,13 +1475,15 @@ const BOQSubItemTable = ({
                     <table
                       //  className="mb-5"
                       className="tbl-container"
-                      style={{ minWidth: "1200px", borderCollapse: "collapse" }}
+                      style={{ 
+                        // minWidth: "1200px",
+                         borderCollapse: "collapse" }}
                     >
                       <thead style={{ zIndex: "0" }}>
                         <tr>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "100px", whiteSpace: "nowrap" }}
                           >
                             {/* <input
                               type="checkbox"
@@ -1509,44 +1511,44 @@ const BOQSubItemTable = ({
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Assest Type
                           </th>
 
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Assest
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Assest Sub-Type
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Generic Specification
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Colour{" "}
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Brand{" "}
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             UOM
                           </th>
@@ -1556,22 +1558,22 @@ const BOQSubItemTable = ({
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Wastage%
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "300px", whiteSpace: "nowrap" }}
+                            style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
                             Total Estimated Qty Wastage
                           </th>
                         </tr>
                         <tr>
-                          <th style={{ width: "300px", whiteSpace: "nowrap" }}>
+                          <th style={{ width: "350px", whiteSpace: "nowrap" }}>
                             Co-Efficient Factor <span>*</span>
                           </th>
-                          <th style={{ width: "300px", whiteSpace: "nowrap" }}>
+                          <th style={{ width: "350px", whiteSpace: "nowrap" }}>
                             Estimated Qty
                           </th>
                         </tr>

@@ -69,6 +69,7 @@ import InvoiceApproval from "./pages/invoice-approval";
 import ApprovalEdit from "./pages/approval-edit";
 import UnassignedMor from "./pages/unassigned-mor";
 import SubProject from "./pages/sub-project";
+import CreateTemplate from "./pages/create-template";
 
 function App() {
   return (
@@ -134,6 +135,7 @@ function App() {
             element={<ErpRfqDetailPriceTrends4h />}
           />
           <Route path="/create-rfq" element={<CreateRfq />} />
+          <Route path="/create-template" element={<CreateTemplate />} />
           {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
           <Route path="/event-list" element={<EventListPage />} />
           <Route path="/contract-invitation" element={<ContractInvitation />} />
