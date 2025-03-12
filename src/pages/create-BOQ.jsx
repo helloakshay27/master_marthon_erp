@@ -1327,11 +1327,28 @@ const CreateBOQ = () => {
     setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
   };
 
+  const [AssetwastageErrors, setAssetWastageErrors] = useState({});
+  // const handleAssetWastageChange = (index, value) => {
+  //   const updatedAssetWastages = [...assetWastages];
+  //   updatedAssetWastages[index] = value;
+  //   setAssetWastages(updatedAssetWastages);
+  // };
+
   const handleAssetWastageChange = (index, value) => {
+    if (value > 100) {
+        setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+    } else {
+        setAssetWastageErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[index]; // Remove error if valid
+            return newErrors;
+        });
+    }
+
     const updatedAssetWastages = [...assetWastages];
     updatedAssetWastages[index] = value;
     setAssetWastages(updatedAssetWastages);
-  };
+};
 
   const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
     const updatedAssetTotalEstimatedQtyWastages = [
@@ -1673,12 +1690,33 @@ const CreateBOQ = () => {
     setEstimatedQuantities(updatedEstimatedQuantities);
   };
 
+  //wastage
+
+  const [wastageErrors, setWastageErrors] = useState({});
+
+  // const handleWastageChange = (index, value) => {
+  //   const updatedWastages = [...wastages];
+  //   updatedWastages[index] = value;
+  //   setWastages(updatedWastages);
+  //   // calculateEstimatedQuantities(); // Recalculate estimated quantities when coefficient factor changes
+  //   // calculateTotalEstimatedQtyWastages()
+  // };
+
+
   const handleWastageChange = (index, value) => {
+    if (value > 100) {
+      setWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+    } else {
+      setWastageErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index]; // Remove error if valid
+        return newErrors;
+      });
+    }
+  
     const updatedWastages = [...wastages];
     updatedWastages[index] = value;
     setWastages(updatedWastages);
-    // calculateEstimatedQuantities(); // Recalculate estimated quantities when coefficient factor changes
-    // calculateTotalEstimatedQtyWastages()
   };
 
   const handleTotalEstimatedQtyWastageChange = (index, value) => {
@@ -2512,6 +2550,8 @@ const CreateBOQ = () => {
                                           value={wastages[index] || ""}
                                           onChange={(e) => handleWastageChange(index, e.target.value)}
                                         />
+
+{wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
                                       </td>
                                       <td style={{ width: "300px" }}>
                                         <input
@@ -2819,6 +2859,7 @@ const CreateBOQ = () => {
                                             )
                                           }
                                         />
+                                        {AssetwastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{AssetwastageErrors[index]}</p>}
                                       </td>
                                       <td>
                                         <input
@@ -2878,9 +2919,9 @@ const CreateBOQ = () => {
                     <div className="card mx-3 mt-2">
                       <div className="card-body mt-0 pt-0">
                         <div className="mt-3">
-                          <h1>boqSubItems</h1>
+                          {/* <h1>boqSubItems</h1> */}
 
-                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> 
+                          {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>  */}
 
                           <div className=" my-4">
                             <div style={{ overflowX: "auto", maxWidth: "100%" }}>

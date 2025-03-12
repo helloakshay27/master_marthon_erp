@@ -2,10 +2,8 @@ import React from "react";
 import "../styles/mor.css";
 import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "./base/Card/CollapsibleCards";
 import MaterialModal from "../components/MaterialModal";
-import LabourModal from "../components/LabourModal";
 import AssetModal from "../components/AssestModal";
 import SingleSelector from "./base/Select/SingleSelector";
 import axios from "axios";
@@ -637,7 +635,25 @@ const BOQSubItemTable = ({
     setEstimatedQuantities(updatedEstimatedQuantities);
   };
 
+  const [wastageErrors, setWastageErrors] = useState({});
+
+  // const handleWastageChange = (index, value) => {
+  //   const updatedWastages = [...wastages];
+  //   updatedWastages[index] = value;
+  //   setWastages(updatedWastages);
+  // };
+
   const handleWastageChange = (index, value) => {
+    if (value > 100) {
+      setWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+    } else {
+      setWastageErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index]; // Remove error if valid
+        return newErrors;
+      });
+    }
+  
     const updatedWastages = [...wastages];
     updatedWastages[index] = value;
     setWastages(updatedWastages);
@@ -680,11 +696,29 @@ const BOQSubItemTable = ({
     setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
   };
 
+   const [AssetwastageErrors, setAssetWastageErrors] = useState({});
+  // const handleAssetWastageChange = (index, value) => {
+  //   const updatedAssetWastages = [...assetWastages];
+  //   updatedAssetWastages[index] = value;
+  //   setAssetWastages(updatedAssetWastages);
+  // };
+
   const handleAssetWastageChange = (index, value) => {
+    if (value > 100) {
+        setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+    } else {
+        setAssetWastageErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[index]; // Remove error if valid
+            return newErrors;
+        });
+    }
+
     const updatedAssetWastages = [...assetWastages];
     updatedAssetWastages[index] = value;
     setAssetWastages(updatedAssetWastages);
-  };
+};
+
 
   const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
     const updatedAssetTotalEstimatedQtyWastages = [
@@ -1248,6 +1282,8 @@ const BOQSubItemTable = ({
                                       handleWastageChange(index, e.target.value)
                                     }
                                   />
+
+{wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
                                 </td>
                                 <td>
                                   <input
@@ -1609,6 +1645,7 @@ const BOQSubItemTable = ({
                                     )
                                   }
                                 />
+                                 {AssetwastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{AssetwastageErrors[index]}</p>}
                               </td>
                               <td>
                                 <input
