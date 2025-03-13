@@ -116,15 +116,16 @@ const ErpStockRegister13B = () => {
     {
       data: "material",
       title: "Material / Asset",
+     
+    },
+    { data: "material_name", title: "Material",
       render: (data, type, row) =>
         `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
-    },
-    { data: "material_name", title: "Material" },
+     },
 
     { data: "lastReceived", title: "Last Received On" },
     { data: "total_received", title: "Total Received" },
     { data: "total_issued", title: "Total Issued" },
-    { data: "stockStatus", title: "Stock Status" },
     { data: "stock_as_on", title: "Stock As On" },
 
     { data: "deadstockQty", title: "Deadstock Qty" },
