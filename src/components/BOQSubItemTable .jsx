@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/mor.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback , useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CollapsibleCard from "./base/Card/CollapsibleCards";
 import MaterialModal from "../components/MaterialModal";
@@ -8,6 +8,8 @@ import AssetModal from "../components/AssestModal";
 import SingleSelector from "./base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import _ from "lodash"; // Install using `npm install lodash`
+
 
 const BOQSubItemTable = ({
   setBoqSubItems,
@@ -75,32 +77,32 @@ const BOQSubItemTable = ({
 
   const handleDeleteAllMaterial = () => {
     // console.log("Selected Materials Before Deletion:", selectedMaterials);
-    
+
     setMaterials((prev) => {
       // console.log("Previous Materials:", prev);
-  
+
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
-  
+
         // console.log(`Processing Key: ${key}, Materials:`, materialsArray);
-  
+
         acc[key] = materialsArray.filter((material, index) => {
-          const isSelected = selectedMaterials.some(selected => 
+          const isSelected = selectedMaterials.some(selected =>
             selected.rowIndex === index && selected.materialId === material.id
           );
-  
+
           return !isSelected;
         });
-  
+
         return acc;
       }, {});
-  
-  
+
+
       return filteredMaterials;
     });
-  
+
     setSelectedMaterials([]);
-  }; 
+  };
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
@@ -653,7 +655,7 @@ const BOQSubItemTable = ({
         return newErrors;
       });
     }
-  
+
     const updatedWastages = [...wastages];
     updatedWastages[index] = value;
     setWastages(updatedWastages);
@@ -696,7 +698,7 @@ const BOQSubItemTable = ({
     setAssetEstimatedQuantities(updatedAssetEstimatedQuantities);
   };
 
-   const [AssetwastageErrors, setAssetWastageErrors] = useState({});
+  const [AssetwastageErrors, setAssetWastageErrors] = useState({});
   // const handleAssetWastageChange = (index, value) => {
   //   const updatedAssetWastages = [...assetWastages];
   //   updatedAssetWastages[index] = value;
@@ -705,19 +707,19 @@ const BOQSubItemTable = ({
 
   const handleAssetWastageChange = (index, value) => {
     if (value > 100) {
-        setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+      setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
     } else {
-        setAssetWastageErrors((prev) => {
-            const newErrors = { ...prev };
-            delete newErrors[index]; // Remove error if valid
-            return newErrors;
-        });
+      setAssetWastageErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index]; // Remove error if valid
+        return newErrors;
+      });
     }
 
     const updatedAssetWastages = [...assetWastages];
     updatedAssetWastages[index] = value;
     setAssetWastages(updatedAssetWastages);
-};
+  };
 
 
   const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
@@ -737,153 +739,109 @@ const BOQSubItemTable = ({
   const [localMaterialErrors, setLocalMaterialErrors] = useState({});
   const [localAssetsErrors, setLocalAssetsErrors] = useState({});
 
-  useEffect(() => {
-    if (!boqSubItemId) return; // Ensure ID exists
 
-    const predefinedMaterials2 = materials.map((material, index) => ({
-      material_id: material.id,
-      material_sub_type_id: selectedSubTypes[index]?.value || "",
-      generic_info_id: selectedGenericSpecifications[index]?.value || "",
-      colour_id: selectedColors[index]?.value || "",
-      brand_id: selectedInventoryBrands[index]?.value || "",
-      uom_id: selectedUnit2[index]?.value || "",
-      co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
-      estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
-      wastage: parseFloat(wastages[index]) || 0,
-      estimated_quantity_wastage:
-        parseFloat(totalEstimatedQtyWastages[index]) || 0,
-    }));
+  const validateDuplicates = useCallback((items) => {
     const seenCombinations = new Map();
-    let errors = {};
+    const errors = {};
 
-    predefinedMaterials2.forEach((material, index) => {
-      // Skip validation if all fields are empty
-      if (
-        !material.generic_info_id &&
-        !material.colour_id &&
-        !material.brand_id
-      )
-        return;
+    items.forEach((item, index) => {
+      if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
 
-      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
-
+      const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
       if (seenCombinations.has(key)) {
         errors[index] = {
-          generic_info: "Duplicate Generic Info is not allowed.",
-          colour: "Duplicate Colour is not allowed.",
-          brand: "Duplicate Brand is not allowed.",
+          generic_info: "Duplicate Generic Info not allowed.",
+          colour: "Duplicate Colour not allowed.",
+          brand: "Duplicate Brand not allowed.",
         };
       } else {
         seenCombinations.set(key, true);
       }
     });
 
-    setLocalMaterialErrors(errors);
-    setMaterialErrors(errors); // Pass errors to parent
-    // Update materials in parent state if no duplicates found
-    if (Object.keys(errors).length === 0) {
-      setBoqSubItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === boqSubItemId
-            ? { ...item, materials: predefinedMaterials2 }
-            : item
-        )
-      );
-    }
-  }, [
-    boqSubItemId,
-    materials,
-    setBoqSubItems,
-    selectedSubTypes,
-    selectedGenericSpecifications,
-    selectedColors,
-    selectedInventoryBrands,
-    selectedUnit2,
-    coefficientFactors,
-    estimatedQuantities,
-    wastages,
-    totalEstimatedQtyWastages,
-    localMaterialErrors,
-  ]);
+    return errors;
+  }, []);
 
-  //assets
-
-  useEffect(() => {
-    if (!boqSubItemId) return; // Ensure ID exists
-
-    const predefinedAssets2 = Assets.map((asset, index) => ({
-      material_id: asset.id,
-      material_sub_type_id: selectedSubTypesAssets[index]?.value || "",
-      generic_info_id: selectedGenericSpecifications[index]?.value || "",
-      colour_id: selectedColors[index]?.value || "",
-      brand_id: selectedInventoryBrands[index]?.value || "",
-      uom_id: selectedUnit3[index]?.value || "",
-      co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
-      estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
-      wastage: parseFloat(assetWastages[index]) || 0,
-      estimated_quantity_wastage:
-        parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
-      cost_qty: parseFloat(assetCostQTY[index]) || 0,
+  // ✅ Memoizing predefinedMaterials
+  const predefinedMaterials = useMemo(() => {
+    return materials.map((m, i) => ({
+      material_id: m.id,
+      material_sub_type_id: selectedSubTypes[i]?.value || "",
+      generic_info_id: selectedGenericSpecifications[i]?.value || "",
+      colour_id: selectedColors[i]?.value || "",
+      brand_id: selectedInventoryBrands[i]?.value || "",
+      uom_id: selectedUnit2[i]?.value || "",
+      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
+      estimated_quantity: parseFloat(estimatedQuantities[i]) || 0,
+      wastage: parseFloat(wastages[i]) || 0,
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
     }));
-
-    // Update assets in parent state
-    const seenCombinations = new Map();
-    let errors = {};
-
-    predefinedAssets2.forEach((material, index) => {
-      // Skip validation if all fields are empty
-      if (
-        !material.generic_info_id &&
-        !material.colour_id &&
-        !material.brand_id
-      )
-        return;
-
-      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
-
-      if (seenCombinations.has(key)) {
-        errors[index] = {
-          generic_info: "Duplicate Generic Info is not allowed.",
-          colour: "Duplicate Colour is not allowed.",
-          brand: "Duplicate Brand is not allowed.",
-        };
-      } else {
-        seenCombinations.set(key, true);
-      }
-    });
-
-    setAssetsErrors(errors); // Update error state
-    setLocalAssetsErrors(errors);
-
-    // Update materials in parent state if no duplicates found
-    if (Object.keys(errors).length === 0) {
-      setBoqSubItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === boqSubItemId
-            ? { ...item, assets: predefinedAssets2 }
-            : item
-        )
-      );
-    }
   }, [
-    boqSubItemId,
-    Assets,
-    setBoqSubItems,
-    selectedSubTypesAssets,
-    selectedGenericSpecifications,
-    selectedColors,
-    selectedInventoryBrands,
-    selectedUnit3,
-    assetCoefficientFactors,
-    assetEstimatedQuantities,
-    assetWastages,
-    assetTotalEstimatedQtyWastages,
-    assetCostQTY,
-    localAssetsErrors,
+    materials, selectedSubTypes, selectedGenericSpecifications, selectedColors, 
+    selectedInventoryBrands, selectedUnit2, coefficientFactors, 
+    estimatedQuantities, wastages, totalEstimatedQtyWastages
   ]);
 
-  //
+  // ✅ Memoizing predefinedAssets
+  const predefinedAssets = useMemo(() => {
+    return Assets.map((a, i) => ({
+      material_id: a.id,
+      material_sub_type_id: selectedSubTypesAssets[i]?.value || "",
+      generic_info_id: selectedGenericSpecifications[i]?.value || "",
+      colour_id: selectedColors[i]?.value || "",
+      brand_id: selectedInventoryBrands[i]?.value || "",
+      uom_id: selectedUnit3[i]?.value || "",
+      co_efficient_factor: parseFloat(assetCoefficientFactors[i]) || 0,
+      estimated_quantity: parseFloat(assetEstimatedQuantities[i]) || 0,
+      wastage: parseFloat(assetWastages[i]) || 0,
+      estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[i]) || 0,
+      cost_qty: parseFloat(assetCostQTY[i]) || 0,
+    }));
+  }, [
+    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors, 
+    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors, 
+    assetEstimatedQuantities, assetWastages, assetTotalEstimatedQtyWastages, assetCostQTY
+  ]);
 
+  // ✅ Memoized validation results (prevents infinite updates)
+  const materialErrors = useMemo(() => validateDuplicates(predefinedMaterials), [predefinedMaterials, validateDuplicates]);
+  const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
+
+  // ✅ Updating material errors and BoqSubItems (Fixed infinite loop)
+  useEffect(() => {
+    if (!boqSubItemId) return;
+
+    // Only update state if there is a real change
+    if (!_.isEqual(materialErrors, localMaterialErrors)) {
+      setLocalMaterialErrors(materialErrors);
+    }
+
+    setBoqSubItems((prev) => {
+      return prev.map((item) =>
+        item.id === boqSubItemId && !_.isEqual(item.materials, predefinedMaterials)
+          ? { ...item, materials: predefinedMaterials }
+          : item
+      );
+    });
+  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+
+  // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
+  useEffect(() => {
+    if (!boqSubItemId) return;
+
+    // Only update state if there is a real change
+    if (!_.isEqual(assetErrors, localAssetsErrors)) {
+      setLocalAssetsErrors(assetErrors);
+    }
+
+    setBoqSubItems((prev) => {
+      return prev.map((item) =>
+        item.id === boqSubItemId && !_.isEqual(item.assets, predefinedAssets)
+          ? { ...item, assets: predefinedAssets }
+          : item
+      );
+    });
+  }, [boqSubItemId, predefinedAssets, assetErrors]);
   const handleCostQtyChange = (id, value) => {
     // This will call the parent's handleInputChange2 method
     handleInputChange2(id, cost_quantity, value);
@@ -1039,7 +997,7 @@ const BOQSubItemTable = ({
                                 }}
                                 checked={
                                   selectedMaterials.length ===
-                                    materials.length && materials.length > 0
+                                  materials.length && materials.length > 0
                                 }
                               />
                             </th>
@@ -1269,7 +1227,7 @@ const BOQSubItemTable = ({
                                     disabled
                                     placeholder="Estimated Qty"
                                     value={estimatedQuantities[index] || ""}
-                                    // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
+                                  // onChange={(e) => handleEstimatedQtyChange(index, e.target.value)}
                                   />
                                 </td>
                                 <td>
@@ -1283,7 +1241,7 @@ const BOQSubItemTable = ({
                                     }
                                   />
 
-{wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
+                                  {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
                                 </td>
                                 <td>
                                   <input
@@ -1294,7 +1252,7 @@ const BOQSubItemTable = ({
                                     value={
                                       totalEstimatedQtyWastages[index] || ""
                                     }
-                                    // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
+                                  // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                   />
                                 </td>
                               </tr>
@@ -1304,7 +1262,7 @@ const BOQSubItemTable = ({
                               <td
                                 colSpan="12"
                                 className="text-center"
-                                // style={{ paddingLeft: "400px" }}
+                              // style={{ paddingLeft: "400px" }}
                               >
                                 No materials added yet.
                               </td>
@@ -1645,7 +1603,7 @@ const BOQSubItemTable = ({
                                     )
                                   }
                                 />
-                                 {AssetwastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{AssetwastageErrors[index]}</p>}
+                                {AssetwastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{AssetwastageErrors[index]}</p>}
                               </td>
                               <td>
                                 <input
@@ -1671,7 +1629,7 @@ const BOQSubItemTable = ({
                             <td
                               colSpan="12"
                               className="text-center"
-                              // style={{ paddingLeft: "400px" }}
+                            // style={{ paddingLeft: "400px" }}
                             >
                               No asset added yet.
                             </td>
