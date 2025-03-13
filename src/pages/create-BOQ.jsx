@@ -2,7 +2,7 @@ import React from "react";
 import BOQSubItemTable from "../components/BOQSubItemTable ";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import MaterialModal from "../components/MaterialModal";
@@ -236,7 +236,7 @@ const CreateBOQ = () => {
   const handleAddAssets = (newAsset) => {
     setAssets((prev) => [...prev, ...newAsset]); // No duplicate check, always adds new assets
   };
-  
+
 
   // const handleDeleteAllAssets = () => {
   //   setAssets((prev) =>
@@ -266,7 +266,7 @@ const CreateBOQ = () => {
         : [...prev, assetIndex] // Select asset
     );
   };
-  
+
 
   //asset 2 modal and table data handle add or delete
   const [showModalAsset2, setShowModalAsset2] = useState(false);
@@ -1336,19 +1336,19 @@ const CreateBOQ = () => {
 
   const handleAssetWastageChange = (index, value) => {
     if (value > 100) {
-        setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
+      setAssetWastageErrors((prev) => ({ ...prev, [index]: "Wastage cannot exceed 100%" }));
     } else {
-        setAssetWastageErrors((prev) => {
-            const newErrors = { ...prev };
-            delete newErrors[index]; // Remove error if valid
-            return newErrors;
-        });
+      setAssetWastageErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[index]; // Remove error if valid
+        return newErrors;
+      });
     }
 
     const updatedAssetWastages = [...assetWastages];
     updatedAssetWastages[index] = value;
     setAssetWastages(updatedAssetWastages);
-};
+  };
 
   const handleAssetTotalEstimatedQtyWastageChange = (index, value) => {
     const updatedAssetTotalEstimatedQtyWastages = [
@@ -1386,33 +1386,8 @@ const CreateBOQ = () => {
       parseFloat(totalEstimatedQtyWastages[index]) || 0,
   }));
 
-  const validateDuplicateMaterials = () => {
-    const seenCombinations = new Map();
-    let errors = {};
-  
-    predefinedMaterials.forEach((material, index) => {
-      // Skip validation if ANY of the three required fields is empty
-      if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
-        return;
-      }
-  
-      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
-  
-      if (seenCombinations.has(key)) {
-        errors[index] = {
-          generic_info: "Duplicate Generic Info is not allowed.",
-          colour: "Duplicate Colour is not allowed.",
-          brand: "Duplicate Brand is not allowed.",
-        };
-      } else {
-        seenCombinations.set(key, true);
-      }
-    });
-  
-    setLocalMaterialErrors(Object.keys(errors).length > 0 ? { ...errors } : {});
-    return Object.keys(errors).length === 0;
-  };
-  
+
+
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -1434,18 +1409,25 @@ const CreateBOQ = () => {
       parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
     cost_qty: parseFloat(assetCostQTY[index]) || 0,
   }));
-  const validateDuplicateAssets = () => {
+
+
+
+
+
+
+
+
+  const validateDuplicateAssets = useCallback(() => {
     const seenCombinations = new Map();
     let errors = {};
-  
+
     predefinedAssets.forEach((asset, index) => {
-      // Skip validation if ANY of the three required fields is empty
       if (!asset.generic_info_id || !asset.colour_id || !asset.brand_id) {
         return;
       }
-  
+
       const key = `${asset.material_id}-${asset.generic_info_id}-${asset.colour_id}-${asset.brand_id}`;
-  
+
       if (seenCombinations.has(key)) {
         errors[index] = {
           generic_info: "Duplicate Generic Info is not allowed.",
@@ -1456,23 +1438,55 @@ const CreateBOQ = () => {
         seenCombinations.set(key, true);
       }
     });
-  
-    setLocalAssetErrors(Object.keys(errors).length > 0 ? { ...errors } : {});
+
+    // Only update state if errors have changed to prevent infinite re-renders
+    setLocalAssetErrors((prevErrors) => {
+      const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+      return hasChanged ? errors : prevErrors;
+    });
+
     return Object.keys(errors).length === 0;
-  };
-  
+  }, [predefinedAssets]);
+
+  const validateDuplicateMaterials = useCallback(() => {
+    const seenCombinations = new Map();
+    let errors = {};
+
+    predefinedMaterials.forEach((material, index) => {
+      if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
+        return;
+      }
+
+      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info is not allowed.",
+          colour: "Duplicate Colour is not allowed.",
+          brand: "Duplicate Brand is not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+
+    // Only update state if errors have changed
+    setLocalMaterialErrors((prevErrors) => {
+      const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+      return hasChanged ? errors : prevErrors;
+    });
+
+    return Object.keys(errors).length === 0;
+  }, [predefinedMaterials]);
 
   useEffect(() => {
     validateDuplicateMaterials();
-  }, [predefinedMaterials , localMaterialErrors]); // ✅ Removed localMaterialErrors to prevent infinite loop
-  
+  }, [validateDuplicateMaterials]);
+
   useEffect(() => {
     validateDuplicateAssets();
-  }, [predefinedAssets , localAssetErrors]); // ✅ Removed localAssetErrors to prevent infinite loop
-  
+  }, [validateDuplicateAssets]);
 
-
-  // console.log("material data table 1", predefinedMaterials)
 
 
 
@@ -1713,7 +1727,7 @@ const CreateBOQ = () => {
         return newErrors;
       });
     }
-  
+
     const updatedWastages = [...wastages];
     updatedWastages[index] = value;
     setWastages(updatedWastages);
@@ -2315,13 +2329,13 @@ const CreateBOQ = () => {
                       <div className="card-body mt-0 pt-0">
                         <div className=" my-4">
                           <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                          {/* predefinedMaterials
+                            {/* predefinedMaterials
 
                           <h1>predefinedMaterialsData</h1>
 
 <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre> */}
 
-{/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
+                            {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
 
 
                             <table
@@ -2391,17 +2405,17 @@ const CreateBOQ = () => {
                                         checked={selectedMaterials.length === materials.length}
                                       /> */}
 
-<input
-  type="checkbox"
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
-    } else {
-      setSelectedMaterials([]); // Deselect all
-    }
-  }}
-  checked={selectedMaterials.length === materials.length && materials.length > 0} 
-/>
+                                      <input
+                                        type="checkbox"
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                          } else {
+                                            setSelectedMaterials([]); // Deselect all
+                                          }
+                                        }}
+                                        checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                      />
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width={14}
@@ -2436,7 +2450,7 @@ const CreateBOQ = () => {
                               <tbody>
                                 {materials.length > 0 ? (
                                   materials.map((material, index) => (
-                                    <tr key={index}>
+                                    <tr key={`${material.id}-${index}`}>
                                       <td style={{ width: "100px" }}>
                                         {/* <input
                                           className="ms-5"
@@ -2445,12 +2459,12 @@ const CreateBOQ = () => {
                                           onChange={() => handleSelectRow(material.id)}
                                         /> */}
 
-<input
-  className="ms-5"
-  type="checkbox"
-  checked={selectedMaterials.includes(index)} // Use index instead of material.id
-  onChange={() => handleSelectRow(index)} // Pass index to function
-/>
+                                        <input
+                                          className="ms-5"
+                                          type="checkbox"
+                                          checked={selectedMaterials.includes(index)} // Use index instead of material.id
+                                          onChange={() => handleSelectRow(index)} // Pass index to function
+                                        />
                                       </td>
                                       <td style={{ width: "300px" }}>{material.inventory_type_name}</td>
                                       <td style={{ width: "300px" }}>{material.name}</td>
@@ -2474,8 +2488,8 @@ const CreateBOQ = () => {
                                           placeholder={`Select Specification`}
                                         />
                                         {localMaterialErrors[index]?.generic_info && (
-    <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
-  )}
+                                          <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+                                        )}
                                       </td>
 
                                       <td style={{ width: "300px" }}>
@@ -2487,9 +2501,9 @@ const CreateBOQ = () => {
                                           value={selectedColors[index]}
                                           placeholder={`Select Colour`}
                                         />
-                                       {localMaterialErrors[index]?.colour && (
-    <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
-  )}
+                                        {localMaterialErrors[index]?.colour && (
+                                          <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+                                        )}
                                       </td>
 
                                       <td style={{ width: "300px" }}>
@@ -2501,9 +2515,9 @@ const CreateBOQ = () => {
                                           value={selectedInventoryBrands[index]}
                                           placeholder={`Select Brand`}
                                         />
-                                      {localMaterialErrors[index]?.brand && (
-    <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
-  )}
+                                        {localMaterialErrors[index]?.brand && (
+                                          <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+                                        )}
                                       </td>
 
                                       <td style={{ width: "300px" }}>
@@ -2551,7 +2565,7 @@ const CreateBOQ = () => {
                                           onChange={(e) => handleWastageChange(index, e.target.value)}
                                         />
 
-{wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
+                                        {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
                                       </td>
                                       <td style={{ width: "300px" }}>
                                         <input
@@ -2628,18 +2642,18 @@ const CreateBOQ = () => {
                                         }
                                       /> */}
 
-<input
-  className=""
-  type="checkbox"
-  onChange={(e) => {
-    if (e.target.checked) {
-      setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
-    } else {
-      setSelectedAssets([]); // Deselect all
-    }
-  }}
-  checked={selectedAssets.length === Assets.length && Assets.length > 0}
-/>
+                                      <input
+                                        className=""
+                                        type="checkbox"
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
+                                          } else {
+                                            setSelectedAssets([]); // Deselect all
+                                          }
+                                        }}
+                                        checked={selectedAssets.length === Assets.length && Assets.length > 0}
+                                      />
 
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -2711,13 +2725,13 @@ const CreateBOQ = () => {
                                           } // Toggle selection
                                         /> */}
 
-<input
-    key={index}
-    className="ms-5"
-    type="checkbox"
-    checked={selectedAssets.includes(index)} // Use index instead of asset.id
-    onChange={() => handleSelectRowAssets(index)} // Pass index instead of asset.id
-  />
+                                        <input
+                                          key={index}
+                                          className="ms-5"
+                                          type="checkbox"
+                                          checked={selectedAssets.includes(index)} // Use index instead of asset.id
+                                          onChange={() => handleSelectRowAssets(index)} // Pass index instead of asset.id
+                                        />
                                       </td>
 
                                       <td>{assets.inventory_type_name}</td>
@@ -2954,7 +2968,7 @@ const CreateBOQ = () => {
                                 </thead>
                                 <tbody>
                                   {count.map((el, index) => (
-                                    <>
+                                    <React.Fragment key={index}>
                                       <tr>
                                         <td>
                                           <input type="checkbox" />
@@ -3232,7 +3246,7 @@ const CreateBOQ = () => {
                                           </td>
                                         </tr>
                                       )}
-                                    </>
+                                    </React.Fragment>
                                   ))}
                                 </tbody>
                               </table>
