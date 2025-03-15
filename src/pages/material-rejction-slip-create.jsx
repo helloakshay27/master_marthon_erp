@@ -1,6 +1,9 @@
 import React from "react";
+import { useState } from "react";
 
 const MaterialRejctionSlipCreate = () => {
+  const [decision, setDecision] = useState(""); // Store selected value
+
   return (
     <main className="h-100 w-100">
       <div className="main-content">
@@ -9,172 +12,144 @@ const MaterialRejctionSlipCreate = () => {
         <div className="website-content overflow-auto">
           <div className="module-data-section p-3">
             <div
-              className="card card-default mt-5 px-4 pb-4"
+              className="card card-default mt-5 p-2b-4"
               id="mor-material-slip"
             >
-              <h5 className="text-center my-4" style={{ fontSize: "1.5rem" }}>
-                Material Rejection Slip
-              </h5>
-              <div className="card-body mt-0">
-                <div className="row">
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Project </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                    {/* /.form-group */}
-                    {/* /.form-group */}
-                  </div>
-                  {/* /.col */}
-                  <div className="col-md-3">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Sub-Project</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-3">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Store</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>{" "}
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-3">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Challan No.</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                </div>
-                <div className="row mt-2 separteinto5">
-                  {/* /.col */}
-                  <div className="col-md-2">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Rejection Slip No.</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-2">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Date </label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-2">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>Created On </label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-2">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>GRN No.</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                  <div className="col-md-2">
-                    {/* /.form-group */}
-                    <div className="form-group">
-                      <label>MOR No.</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder="Default input"
-                      />
-                    </div>
-                    {/* /.form-group */}
-                  </div>
-                </div>
-                <div className="d-flex justify-content-end align-items-center gap-3 mt-3">
-                  <button className=" purple-btn2 ">Search Supplier</button>
-                  <button className=" purple-btn2 ">Search Material</button>
-                </div>
-                {/* /.col */}
+              <div class="card-header3">
+                <h3 class="card-title">Material Slip</h3>
               </div>
+              <div class="card-body mt-0 pt-0">
+                <div class="row px-3 mt-3">
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div class="col-6">
+                      <label>Company</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        Sanvo Resorts Pvt Ltd
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div class="col-6">
+                      <label>Project </label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        Marathon Nexzone
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div class="col-6">
+                      <label>Sub-Project </label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        Antilia
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Store</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        Antilia
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Issue Slip No</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        ISSUE/213/03/2025
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Requisition Date</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        12/03/2025
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Activity</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        CIVIL WORK
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Supplier Name</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        CIVIL WORK
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Po No</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        54165146
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Po Date</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        08-03-2024
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    <div class="col-6">
+                      <label>Remark</label>
+                    </div>
+                    <div class="col-6">
+                      <label class="text">
+                        <span class="me-3">:</span>
+                        Rejected
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div
                 className="card card-default  mx-4 px-3"
                 id="mor-material-details"
               >
                 <div className="card-body mt-0 mb-2">
                   <div className="row">
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Supplier Name</label>
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Default input"
-                        />
-                      </div>
-                      {/* /.form-group */}
-                      {/* /.form-group */}
-                    </div>
                     <div className="row mt-2 justify-content-between align-items-end">
                       <h5 className="col-md-3"> Material Details</h5>
                     </div>
@@ -208,35 +183,75 @@ const MaterialRejctionSlipCreate = () => {
                       </table>
                     </div>
                     <div className="row mt-3">
-                      <div className="col-md-6">
-                        <div className="form-group">
+                      {/* Radio Buttons */}
+                      <div className="col-md-12">
+                        <div className="form-group d-flex align-items-center">
+                          <label className="me-3">Select Decision:</label>
+                          <div className="form-check me-3">
+                            <input
+                              type="radio"
+                              className="form-check-input"
+                              id="accept"
+                              name="decision"
+                              value="accept"
+                              checked={decision === "accept"}
+                              onChange={(e) => setDecision(e.target.value)}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="accept"
+                            >
+                              Accept
+                            </label>
+                          </div>
+
+                          <div className="form-check">
+                            <input
+                              type="radio"
+                              className="form-check-input"
+                              id="reject"
+                              name="decision"
+                              value="reject"
+                              checked={decision === "reject"}
+                              onChange={(e) => setDecision(e.target.value)}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="reject"
+                            >
+                              Reject
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Reason for Rejection */}
+                      {decision === "reject" && (
+                        <div className="col-md-6">
                           <div className="form-group">
-                            <label>Reason of Rejection</label>
+                            <label>Reason for Rejection</label>
                             <input
                               className="form-control"
                               type="text"
-                              placeholder="Abhishek Kumar"
+                              placeholder="Enter reason"
                             />
                           </div>
                         </div>
-                        {/* /.form-group */}
-                        {/* /.form-group */}
-                      </div>
-                      {/* /.col */}
-                      <div className="col-md-6">
-                        {/* /.form-group */}
-                        <div className="form-group">
+                      )}
+
+                      {/* Reason for Acceptance */}
+                      {decision === "accept" && (
+                        <div className="col-md-6">
                           <div className="form-group">
-                            <label>Reason of Acceptance</label>
+                            <label>Reason for Acceptance</label>
                             <input
                               className="form-control"
                               type="text"
-                              placeholder="Abhishek Kumar"
+                              placeholder="Enter reason"
                             />
                           </div>
                         </div>
-                        {/* /.form-group */}
-                      </div>
+                      )}
                     </div>
                   </div>
                   {/* /.col */}
@@ -245,39 +260,22 @@ const MaterialRejctionSlipCreate = () => {
                 {/* /.row */}
               </div>
               <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    PO Draft
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+                <p className="mb-0">Status</p>
+                <select
+                  className="form-select purple-btn2"
+                  style={{ width: "150px" }}
+                >
+                  <option value="draft">PO Draft</option>
+                  <option value="accept">Accept</option>
+                  <option value="reject">Reject</option>
+                  <option value="submit">Submit</option>
+                </select>
               </div>
+
               <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
+                {/* <div className="col-md-2">
                   <button className="purple-btn2 w-100">Print</button>
-                </div>
+                </div> */}
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Submit</button>
                 </div>
@@ -288,11 +286,11 @@ const MaterialRejctionSlipCreate = () => {
             </div>
           </div>
         </div>
-        <footer className="footer">
+        {/* <footer className="footer">
           <p className="">
             Powered by <img src="./images/go-logo.JPG" />
           </p>
-        </footer>
+        </footer> */}
       </div>
     </main>
   );

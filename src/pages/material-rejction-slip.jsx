@@ -34,7 +34,13 @@ const MaterialRejctionSlip = () => {
                   </div>
                   <div className="col-md-2" style={{ opacity: 1 }}>
                     <div className="content-box text-center">
-                      <h4 className="content-box-title">Pending for Action</h4>
+                      <h4 className="content-box-title">Accepted</h4>
+                      <p className="content-box-sub ">150</p>
+                    </div>
+                  </div>
+                  <div className="col-md-2" style={{ opacity: 1 }}>
+                    <div className="content-box text-center">
+                      <h4 className="content-box-title">Rejected</h4>
                       <p className="content-box-sub ">150</p>
                     </div>
                   </div>
@@ -204,11 +210,12 @@ const MaterialRejctionSlip = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container m-3 px-1  mt-3">
-                <table className="w-100">
+              <div className="tbl-container  mt-3">
+                {/* <table className="w-100">
                   <thead>
                     <tr>
                       <th>Sr.No.</th>
+                      <th>Rejection Slip No</th>
                       <th>PO No.</th>
                       <th>Challan</th>
                       <th>Material Types</th>
@@ -234,6 +241,76 @@ const MaterialRejctionSlip = () => {
                       <td>Tiles</td>
                       <td>MOR/MAR/MAX/101/02/2024</td>
                       <td> 40</td>
+                    </tr>
+                  </tbody>
+                </table> */}
+
+                <table className="w-100 table table-bordered">
+                  <thead
+                    style={{
+                      maxWidth: "100%",
+                      overflowX: "auto",
+                      paddingRight: "20px",
+                    }}
+                  >
+                    <tr>
+                      <th>Sr. No.</th>
+                      <th>Company</th>
+                      <th>Project</th>
+                      <th>Sub Project</th>
+                      <th>Rejection Slip No.</th>
+                      <th>PO No.</th>
+                      <th>Challan No.</th>
+                      <th>GRN No.</th>
+                      <th>GRN Date</th>
+                      <th>Rejection Slip Date</th>
+                      <th>Created On</th>
+                      <th>MOR No.</th>
+                      <th>Material Type</th>
+                      <th>Sub Type</th>
+                      <th>Material</th>
+                      <th>Supplier Name</th>
+                      <th>Defective Qty</th>
+                      <th>Defective Remark</th>
+                      <th>Store</th>
+                      <th>Status</th>
+                      <th>Due Date</th>
+                      <th>Overdue</th>
+                      <th>Due At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>ABC Ltd.</td>
+                      <td>Project Alpha</td>
+                      <td>Sub-Project X</td>
+                      <td
+                        style={{
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                        }}
+                      >
+                        RS65585
+                      </td>
+                      <td>IS6564262</td>
+                      <td>CH123456</td>
+                      <td>GRN7890</td>
+                      <td>08-03-2024</td>
+                      <td>09-03-2024</td>
+                      <td>10-03-2024</td>
+                      <td>MOR/MAR/MAX/101/02/2024</td>
+                      <td>Tiles</td>
+                      <td>Ceramic</td>
+                      <td>Floor Tiles</td>
+                      <td>XYZ Supplies</td>
+                      <td>40</td>
+                      <td>Cracked during transport</td>
+                      <td>Main Warehouse</td>
+                      <td>Pending</td>
+                      <td>20-03-2024</td>
+                      <td>2 days</td>
+                      <td>22-03-2024</td>
                     </tr>
                   </tbody>
                 </table>
