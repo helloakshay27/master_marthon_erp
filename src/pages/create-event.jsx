@@ -1,6 +1,4 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-import { format, parseISO } from "date-fns";
 import {
   CreateRFQForm,
   DynamicModalBox,
@@ -11,14 +9,9 @@ import {
   Table,
 } from "../components";
 import { baseURL } from "../confi/apiDomain";
-
 import { citiesList, participantsTabColumns } from "../constant/data";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
 import PopupBox from "../components/base/Popup/Popup";
-import { fi } from "date-fns/locale";
-import { set } from "date-fns";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -64,7 +57,6 @@ export default function CreateEvent() {
    const [eventStatus, setEventStatus] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
-  // @ts-ignore
   const [selectedCity, setSelectedCity] = useState([]);
   const [isTrafficSelected, setIsTrafficSelected] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -75,18 +67,11 @@ export default function CreateEvent() {
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
 
-  // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
-  // @ts-ignore
   const [selectedVendors, setSelectedVendors] = useState([]);
-  // @ts-ignore
-  // @ts-ignore
   const [eventSchedule, setEventSchedule] = useState("");
   const [eventScheduleText, setEventScheduleText] = useState("");
-  // @ts-ignore
   const [scheduleData, setScheduleData] = useState({});
-  // @ts-ignore
-  // @ts-ignore
   const [data, setData] = useState([
     { user: "", date: "", status: "", remark: "" },
   ]);
@@ -122,7 +107,6 @@ export default function CreateEvent() {
   const handleEventTypeModalClose = () => {
     setEventTypeModal(false);
   };
-  // @ts-ignore
   const handleInviteModalShow = () => {
     setVendorModal(false);
     setInviteModal(true);
@@ -130,12 +114,9 @@ export default function CreateEvent() {
   const handleInviteModalClose = () => {
     setInviteModal(false);
   };
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const handlePublishEventModalShow = () => {
     setPublishEventModal(true);
-  };
+  };i 
   const handlePublishEventModalClose = () => {
     setPublishEventModal(false);
   };
@@ -206,7 +187,6 @@ export default function CreateEvent() {
 
   const handleDynamicExtensionChange = (id, isChecked) => {
     setDynamicExtension((prevState) => ({
-      // @ts-ignore
       ...prevState,
       [id]: isChecked,
     }));
@@ -261,8 +241,6 @@ export default function CreateEvent() {
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
 
-  // @ts-ignore
-  // @ts-ignore
   const [loading, setLoading] = useState(false);
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
@@ -891,7 +869,6 @@ export default function CreateEvent() {
                       ) : (
                         <tr>
                           <td
-                            // @ts-ignore
                             colSpan="5"
                             className="text-center"
                           >
@@ -1671,3 +1648,4 @@ export default function CreateEvent() {
     </>
   );
 }
+    
