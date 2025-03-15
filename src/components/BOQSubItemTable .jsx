@@ -97,8 +97,67 @@ const BOQSubItemTable = ({
         return acc;
       }, {});
 
+       // Get a flattened list of materials after deletion
+    // const newMaterials = Object.values(filteredMaterials).flat();
+    //   const updateSelection = (selectionArray) =>
+    //     selectionArray.filter((_, index) =>
+    //       selectedMaterials.every((selected) => selected.rowIndex !== index)
+    //     );
 
-      return filteredMaterials;
+        // const updateSelection = (selectionArray) =>
+        //   newMaterials.map((_, newIndex) => Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : []);
+  
+      // Update only the affected selections
+      // setSelectedSubTypes(updateSelection(selectedSubTypes));
+      // setGenericSpecifications(updateSelection(selectedGenericSpecifications));
+      // setSelectedColors(updateSelection(selectedColors));
+      // setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
+      // setSelectedUnit2(updateSelection(selectedUnit2));
+      // setCoefficientFactors(updateSelection(coefficientFactors));
+      // setEstimatedQuantities(updateSelection(estimatedQuantities));
+      // setWastages(updateSelection(wastages));
+      // setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+
+      // return filteredMaterials;
+
+        // Get a flattened list of materials **before deletion** for accurate index mapping
+    const oldMaterials = Object.values(prev).flat();
+    const newMaterials = Object.values(filteredMaterials).flat();
+
+    // Function to update selection **without affecting unselected materials**
+    const updateSelection = (selectionArray) =>
+      // selectionArray
+      //   .map((item, index) => ({
+      //     item,
+      //     material: oldMaterials[index], // Keep track of original material
+      //   }))
+      //   .filter(({ material }) =>
+      //     newMaterials.some((newMat) => newMat.id === material?.id)
+      //   )
+      //   .map(({ item }) => item); // Extract the updated selection
+
+      selectionArray
+      .map((item, index) => ({
+        item: Array.isArray(item) ? item : [], // Ensure it's always an array
+        material: oldMaterials[index] || null, // Prevent undefined errors
+      }))
+      .filter(({ material }) =>
+        material && newMaterials.some((newMat) => newMat.id === material.id)
+      )
+      .map(({ item }) => item); // Extract the updated selection
+
+    // Update only the affected selections
+    setSelectedSubTypes(updateSelection(selectedSubTypes));
+    setGenericSpecifications(updateSelection(selectedGenericSpecifications));
+    setSelectedColors(updateSelection(selectedColors));
+    setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
+    setSelectedUnit2(updateSelection(selectedUnit2));
+    setCoefficientFactors(updateSelection(coefficientFactors));
+    setEstimatedQuantities(updateSelection(estimatedQuantities));
+    setWastages(updateSelection(wastages));
+    setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+
+    return filteredMaterials;
     });
 
     setSelectedMaterials([]);
@@ -740,27 +799,27 @@ const BOQSubItemTable = ({
   const [localAssetsErrors, setLocalAssetsErrors] = useState({});
 
 
-  const validateDuplicates = useCallback((items) => {
-    const seenCombinations = new Map();
-    const errors = {};
+  // const validateDuplicates = useCallback((items) => {
+  //   const seenCombinations = new Map();
+  //   const errors = {};
 
-    items.forEach((item, index) => {
-      if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
+  //   items.forEach((item, index) => {
+  //     if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
 
-      const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
-      if (seenCombinations.has(key)) {
-        errors[index] = {
-          generic_info: "Duplicate Generic Info not allowed.",
-          colour: "Duplicate Colour not allowed.",
-          brand: "Duplicate Brand not allowed.",
-        };
-      } else {
-        seenCombinations.set(key, true);
-      }
-    });
+  //     const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
+  //     if (seenCombinations.has(key)) {
+  //       errors[index] = {
+  //         generic_info: "Duplicate Generic Info not allowed.",
+  //         colour: "Duplicate Colour not allowed.",
+  //         brand: "Duplicate Brand not allowed.",
+  //       };
+  //     } else {
+  //       seenCombinations.set(key, true);
+  //     }
+  //   });
 
-    return errors;
-  }, []);
+  //   return errors;
+  // }, []);
 
   // ✅ Memoizing predefinedMaterials
   const predefinedMaterials = useMemo(() => {
@@ -781,6 +840,29 @@ const BOQSubItemTable = ({
     selectedInventoryBrands, selectedUnit2, coefficientFactors, 
     estimatedQuantities, wastages, totalEstimatedQtyWastages
   ]);
+
+
+  const validateDuplicates = useCallback(() => {
+    const seenCombinations = new Map();
+    const errors = {};
+
+    predefinedMaterials.forEach((item, index) => {
+      if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
+
+      const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info not allowed.",
+          colour: "Duplicate Colour not allowed.",
+          brand: "Duplicate Brand not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+
+    return errors;
+  }, [predefinedMaterials]);
 
   // ✅ Memoizing predefinedAssets
   const predefinedAssets = useMemo(() => {

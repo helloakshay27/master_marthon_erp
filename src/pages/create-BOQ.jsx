@@ -145,12 +145,61 @@ const CreateBOQ = () => {
   //   setSelectedMaterials([]); // Reset selected materials
   // };
 
+  // const handleDeleteAll = () => {
+  //   setMaterials((prev) =>
+  //     prev.filter((_, index) => !selectedMaterials.includes(index)) // Filter using index
+  //   );
+  //   setSelectedMaterials([]); // Reset selection
+  // };
+
+
+  // const handleDeleteAll = () => {
+  //   setMaterials((prev) => {
+  //     // Filter out selected materials
+  //     const updatedMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
+  
+  //     // Reset selected materials because indexes are shifting
+  //     setSelectedMaterials([]);
+  
+  //     return updatedMaterials;
+  //   });
+  // };
+
   const handleDeleteAll = () => {
-    setMaterials((prev) =>
-      prev.filter((_, index) => !selectedMaterials.includes(index)) // Filter using index
-    );
-    setSelectedMaterials([]); // Reset selection
+    setMaterials((prev) => {
+      // Get the new materials after deletion
+      const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
+  
+      // Re-map selected values based on the new materials' indexes
+      // const updateSelection = (selectionArray) =>
+      //   newMaterials.map((_, newIndex) => selectionArray[newIndex] || null);
+
+      // const updateSelection = (selectionArray) =>
+      //   newMaterials.map((_, newIndex) => Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : []);
+  
+      const updateSelection = (selectionArray = []) =>
+        // selectionArray.filter((_, index) => !selectedMaterials.includes(index));
+
+      newMaterials.map((_, newIndex) =>
+        selectedMaterials.includes(newIndex) ? [] : (Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : [])
+      );
+
+      setSelectedSubTypes(updateSelection(selectedSubTypes));
+      setGenericSpecifications(updateSelection(selectedGenericSpecifications))
+      setSelectedColors(updateSelection(selectedColors));
+      setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
+      setSelectedUnit2(updateSelection(selectedUnit2));
+      setCoefficientFactors(updateSelection(coefficientFactors));
+      setEstimatedQuantities(updateSelection(estimatedQuantities));
+      setWastages(updateSelection(wastages));
+      setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+  
+      return newMaterials;
+    });
+  
+    setSelectedMaterials([]); // Clear selected materials
   };
+  
 
   // const handleSelectRow = (materialName) => {
   //   setSelectedMaterials(
@@ -161,6 +210,14 @@ const CreateBOQ = () => {
   //   );
   // };
 
+  // const handleSelectRow = (materialIndex) => {
+  //   setSelectedMaterials((prev) =>
+  //     prev.includes(materialIndex)
+  //       ? prev.filter((index) => index !== materialIndex) // Unselect
+  //       : [...prev, materialIndex] // Select
+  //   );
+  // };
+
   const handleSelectRow = (materialIndex) => {
     setSelectedMaterials((prev) =>
       prev.includes(materialIndex)
@@ -168,6 +225,7 @@ const CreateBOQ = () => {
         : [...prev, materialIndex] // Select
     );
   };
+  
 
   //Material modal and table data handle add or delete
 
