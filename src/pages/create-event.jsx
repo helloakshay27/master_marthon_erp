@@ -116,7 +116,7 @@ export default function CreateEvent() {
   };
   const handlePublishEventModalShow = () => {
     setPublishEventModal(true);
-  };i 
+  };
   const handlePublishEventModalClose = () => {
     setPublishEventModal(false);
   };
