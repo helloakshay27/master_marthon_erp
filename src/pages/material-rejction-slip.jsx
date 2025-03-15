@@ -11,7 +11,147 @@ import {
   StarIcon,
 } from "../components";
 
+import ButtonChnageIcon from "../components/common/Icon/ButtonChnageIcon";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
+
 const MaterialRejctionSlip = () => {
+  const [tableData, setTableData] = useState([]); // Store API Data
+  const [loading, setLoading] = useState(true); // Loading State
+  const [error, setError] = useState(null); // Error Handling
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [siteOptions, setSiteOptions] = useState([]);
+
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    company: true,
+    project: true,
+    subProject: true,
+    rejectionSlipNo: true,
+    poNo: true,
+    challanNo: true,
+    grnNo: true,
+    grnDate: true,
+    rejectionSlipDate: true,
+    createdOn: true,
+    morNo: true,
+    materialType: true,
+    subType: true,
+    material: true,
+    supplierName: true,
+    defectiveQty: true,
+    defectiveRemark: true,
+    store: true,
+    status: true,
+    dueDate: true,
+    overdue: true,
+    dueAt: true,
+  });
+
+  const handleToggleChange = (colKey) => {
+    setColumnVisibility((prev) => ({
+      ...prev,
+      [colKey]: !prev[colKey],
+    }));
+  };
+
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+  // Fetch Data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/mor_rejection_slips.json`);
+        setTableData(response.data);
+      } catch (error) {
+        setError("Failed to fetch data!");
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+
+    setSiteOptions([]); // Reset site options
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+
+    if (selectedOption) {
+      setFormData((prevState) => ({
+        ...prevState,
+        site_id: selectedOption.value, // Update formData with site_id
+      }));
+    }
+  };
+
   return (
     <main className="h-100 w-100">
       <div className="main-content">
@@ -52,50 +192,76 @@ const MaterialRejctionSlip = () => {
                 <div>
                   <div className="row my-2 align-items-end">
                     {/* Event Title */}
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-title-select">Company</label>
 
-                      <SelectBox
-                        // options={companyOptions}
+                      <SingleSelector
+                        options={companyOptions}
                         // onChange={(selectedOption) =>
-                        //   handleCompanySelection(selectedOption)
+                        //   handleFilterChange("company", selectedOption?.value)
                         // }
-                        value
-                        placeholder={`Select Company`} // Dynamic placeholder
+                        // value={
+                        //   filters.company
+                        //     ? companyOptions.find(
+                        //         (opt) => opt.value === filters.company
+                        //       )
+                        //     : null
+                        // }
+                        onChange={handleCompanyChange}
+                        value={selectedCompany}
+                        placeholder="Select Company"
                         isSearchable={true}
                       />
                     </div>
 
                     {/* Event Number */}
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-no-select">Project</label>
 
-                      <SelectBox
-                        // options={projects}
+                      <SingleSelector
+                        options={projects}
                         // onChange={(selectedOption) =>
-                        //   handleProjectSelection(selectedOption)
+                        //   handleFilterChange("project", selectedOption?.value)
                         // }
-                        value
-                        placeholder={`Select Project`} // Dynamic placeholder
+                        // value={
+                        //   filters.project
+                        //     ? projects.find(
+                        //         (opt) => opt.value === filters.project
+                        //       )
+                        //     : null
+                        // }
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder="Select Project"
                       />
                     </div>
 
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <label htmlFor="event-no-select"> Sub Project</label>
-                      <SelectBox
-                        // options={siteOptions}
+
+                      <SingleSelector
+                        options={siteOptions}
                         // onChange={(selectedOption) =>
-                        //   handleSiteSelection(selectedOption)
+                        //   handleFilterChange("site", selectedOption?.value)
                         // }
-                        value
-                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                        // value={
+                        //   filters.site
+                        //     ? siteOptions.find(
+                        //         (opt) => opt.value === filters.site
+                        //       )
+                        //     : null
+                        // }
+                        onChange={(option) => setSelectedSite(option)}
+                        value={selectedSite}
+                        placeholder="Select Sub-project"
                       />
                     </div>
 
-                    {/* )} */}
+                    {/* Status */}
+
                     <button
                       type="submit"
-                      className="col-md-1 purple-btn2 ms-2 mt-4"
+                      className="col-md-1 purple-btn2 ms-4 mt-5"
                       // onClick={handleFilterSubmit}
                     >
                       Go{" "}
@@ -111,31 +277,12 @@ const MaterialRejctionSlip = () => {
                   {/* </form> */}
                 </div>
               </CollapsibleCard>
-              <div className="card mx-3 collapsed-card">
-                <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+              {/* <div className="card mx-3 collapsed-card"> */}
+              <CollapsibleCard title="Bulk Action">
+                {/* <div className="card-header3">
+                  <h3 className="card-title">Bulk Action</h3> */}
+                <div className="card-tools"></div>
+                {/* </div> */}
                 <div className="card-body mt-0 pt-0">
                   <div className="row align-items-center">
                     <div className="col-md-4">
@@ -186,7 +333,8 @@ const MaterialRejctionSlip = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+                {/* </div> */}
+              </CollapsibleCard>
               <div className="d-flex mt-3 align-items-end px-3">
                 <div className="col-md-6">
                   <div className="input-group">
@@ -209,115 +357,225 @@ const MaterialRejctionSlip = () => {
                     </div>
                   </div>
                 </div>
+                <div className="col-md-6">
+                  <div className="row justify-content-end">
+                    <div className="col-md-5">
+                      <div className="row justify-content-end px-3">
+                        <div className="col-md-3">
+                          <button
+                            type="submit"
+                            className="btn btn-md"
+                            data-bs-toggle="modal"
+                            data-bs-target="#settings"
+                          >
+                            <SettingIcon></SettingIcon>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4"></div>
+                  </div>
+                </div>
               </div>
-              <div className="tbl-container  mt-3">
-                {/* <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Rejection Slip No</th>
-                      <th>PO No.</th>
-                      <th>Challan</th>
-                      <th>Material Types</th>
-                      <th>MOR No.</th>
-                      <th>Defective Qty</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td
-                        style={{
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                        }}
+              <div className="tbl-container mt-3">
+                <table className="w-100 table  ">
+                  {loading ? (
+                    <p>Loading data...</p>
+                  ) : error ? (
+                    <p className="text-danger">{error}</p>
+                  ) : (
+                    <>
+                      <thead
+                      // style={{
+                      //   maxWidth: "100%",
+                      //   overflowX: "auto",
+                      //   paddingRight: "20px",
+                      // }}
                       >
-                        {" "}
-                        RS65585
-                      </td>
-                      <td>IS6564262</td>
-                      <td>10-03-2024</td>
-                      <td>Tiles</td>
-                      <td>MOR/MAR/MAX/101/02/2024</td>
-                      <td> 40</td>
-                    </tr>
-                  </tbody>
-                </table> */}
-
-                <table className="w-100 table table-bordered">
-                  <thead
-                    style={{
-                      maxWidth: "100%",
-                      overflowX: "auto",
-                      paddingRight: "20px",
-                    }}
-                  >
-                    <tr>
-                      <th>Sr. No.</th>
-                      <th>Company</th>
-                      <th>Project</th>
-                      <th>Sub Project</th>
-                      <th>Rejection Slip No.</th>
-                      <th>PO No.</th>
-                      <th>Challan No.</th>
-                      <th>GRN No.</th>
-                      <th>GRN Date</th>
-                      <th>Rejection Slip Date</th>
-                      <th>Created On</th>
-                      <th>MOR No.</th>
-                      <th>Material Type</th>
-                      <th>Sub Type</th>
-                      <th>Material</th>
-                      <th>Supplier Name</th>
-                      <th>Defective Qty</th>
-                      <th>Defective Remark</th>
-                      <th>Store</th>
-                      <th>Status</th>
-                      <th>Due Date</th>
-                      <th>Overdue</th>
-                      <th>Due At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>ABC Ltd.</td>
-                      <td>Project Alpha</td>
-                      <td>Sub-Project X</td>
-                      <td
-                        style={{
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                        }}
-                      >
-                        RS65585
-                      </td>
-                      <td>IS6564262</td>
-                      <td>CH123456</td>
-                      <td>GRN7890</td>
-                      <td>08-03-2024</td>
-                      <td>09-03-2024</td>
-                      <td>10-03-2024</td>
-                      <td>MOR/MAR/MAX/101/02/2024</td>
-                      <td>Tiles</td>
-                      <td>Ceramic</td>
-                      <td>Floor Tiles</td>
-                      <td>XYZ Supplies</td>
-                      <td>40</td>
-                      <td>Cracked during transport</td>
-                      <td>Main Warehouse</td>
-                      <td>Pending</td>
-                      <td>20-03-2024</td>
-                      <td>2 days</td>
-                      <td>22-03-2024</td>
-                    </tr>
-                  </tbody>
+                        <tr>
+                          {columnVisibility.srNo && <th>Sr. No.</th>}
+                          {columnVisibility.company && <th>Company</th>}
+                          {columnVisibility.project && <th>Project</th>}
+                          {columnVisibility.subProject && <th>Sub Project</th>}
+                          {columnVisibility.rejectionSlipNo && (
+                            <th>Rejection Slip No.</th>
+                          )}
+                          {columnVisibility.poNo && <th>PO No.</th>}
+                          {columnVisibility.challanNo && <th>Challan No.</th>}
+                          {columnVisibility.grnNo && <th>GRN No.</th>}
+                          {columnVisibility.grnDate && <th>GRN Date</th>}
+                          {columnVisibility.rejectionSlipDate && (
+                            <th>Rejection Slip Date</th>
+                          )}
+                          {columnVisibility.createdOn && <th>Created On</th>}
+                          {columnVisibility.morNo && <th>MOR No.</th>}
+                          {columnVisibility.materialType && (
+                            <th>Material Type</th>
+                          )}
+                          {columnVisibility.subType && <th>Sub Type</th>}
+                          {columnVisibility.material && <th>Material</th>}
+                          {columnVisibility.supplierName && (
+                            <th>Supplier Name</th>
+                          )}
+                          {columnVisibility.defectiveQty && (
+                            <th>Defective Qty</th>
+                          )}
+                          {columnVisibility.defectiveRemark && (
+                            <th>Defective Remark</th>
+                          )}
+                          {columnVisibility.store && <th>Store</th>}
+                          {columnVisibility.status && <th>Status</th>}
+                          {columnVisibility.dueDate && <th>Due Date</th>}
+                          {columnVisibility.overdue && <th>Overdue</th>}
+                          {columnVisibility.dueAt && <th>Due At</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tableData.length > 0 ? (
+                          tableData.map((item, index) => (
+                            <tr key={item.id}>
+                              {columnVisibility.srNo && <td>{index + 1}</td>}
+                              {columnVisibility.company && (
+                                <td>{item.company}</td>
+                              )}
+                              {columnVisibility.project && (
+                                <td>{item.project}</td>
+                              )}
+                              {columnVisibility.subProject && (
+                                <td>{item.sub_project}</td>
+                              )}
+                              {columnVisibility.rejectionSlipNo && (
+                                <td>{item.rejection_slip_number}</td>
+                              )}
+                              {columnVisibility.poNo && (
+                                <td>{item.po_number}</td>
+                              )}
+                              {columnVisibility.challanNo && (
+                                <td>{item.challan_number}</td>
+                              )}
+                              {columnVisibility.grnNo && (
+                                <td>{item.grn_number}</td>
+                              )}
+                              {columnVisibility.grnDate && (
+                                <td>{item.grn_date}</td>
+                              )}
+                              {columnVisibility.rejectionSlipDate && (
+                                <td>{item.rejection_slip_date}</td>
+                              )}
+                              {columnVisibility.createdOn && (
+                                <td>
+                                  {new Date(
+                                    item.created_on
+                                  ).toLocaleDateString()}
+                                </td>
+                              )}
+                              {columnVisibility.morNo && (
+                                <td>{item.mor_number}</td>
+                              )}
+                              {columnVisibility.materialType && (
+                                <td>{item.material_type}</td>
+                              )}
+                              {columnVisibility.subType && (
+                                <td>{item.sub_type}</td>
+                              )}
+                              {columnVisibility.material && (
+                                <td>{item.material}</td>
+                              )}
+                              {columnVisibility.supplierName && (
+                                <td>{item.supplier_name}</td>
+                              )}
+                              {columnVisibility.defectiveQty && (
+                                <td>{item.defective_qty}</td>
+                              )}
+                              {columnVisibility.defectiveRemark && (
+                                <td>{item.defective_remark}</td>
+                              )}
+                              {columnVisibility.store && (
+                                <td>{item.store || "N/A"}</td>
+                              )}
+                              {columnVisibility.status && (
+                                <td>{item.status}</td>
+                              )}
+                              {columnVisibility.dueDate && (
+                                <td>{item.due_date || "N/A"}</td>
+                              )}
+                              {columnVisibility.overdue && (
+                                <td>{item.overdue || "N/A"}</td>
+                              )}
+                              {columnVisibility.dueAt && (
+                                <td>{item.due_at || "N/A"}</td>
+                              )}
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="23" className="text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </>
+                  )}
                 </table>
               </div>
             </div>
           </div>
           {/* filter modal */}
+        </div>
+      </div>
+      <div
+        className="modal fade"
+        id="settings"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered modal-sm">
+          <div className="modal-content">
+            {/* Modal Header */}
+            <div className="modal-header">
+              <h4 className="modal-title text-center w-100">Layout</h4>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              />
+            </div>
+
+            {/* Modal Body with Inline Scrolling */}
+            <div
+              className="modal-body"
+              style={{
+                maxHeight: "400px",
+                overflowY: "auto",
+                paddingRight: "10px",
+              }}
+            >
+              {Object.keys(columnVisibility).map((colKey, index) => (
+                <div
+                  className="row justify-content-between align-items-center mt-2"
+                  key={index}
+                >
+                  <div className="col-md-8">
+                    <label className="ms-2">
+                      {colKey.replace(/([A-Z])/g, " $1")}
+                    </label>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-check form-switch mt-1">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={columnVisibility[colKey]}
+                        onChange={() => handleToggleChange(colKey)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </main>

@@ -1,9 +1,33 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const MaterialRejctionSlipCreate = () => {
-  const [decision, setDecision] = useState(""); // Store selected value
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [decision, setDecision] = useState("");
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/mor_rejection_slips/1.json"
+        );
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching rejection slip data:", error);
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!data) return null;
   return (
     <main className="h-100 w-100">
       <div className="main-content">
@@ -18,7 +42,7 @@ const MaterialRejctionSlipCreate = () => {
               <div class="card-header3">
                 <h3 class="card-title">Material Slip</h3>
               </div>
-              <div class="card-body mt-0 pt-0">
+              {/* <div class="card-body mt-0 pt-0">
                 <div class="row px-3 mt-3">
                   <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
                     <div class="col-6">
@@ -142,6 +166,95 @@ const MaterialRejctionSlipCreate = () => {
                     </div>
                   </div>
                 </div>
+              </div> */}
+
+              <div className="card-body">
+                <div className="row px-3 mt-3">
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Company</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.company}</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Project</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.project}</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Sub-Project</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.sub_project}</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Rejection Slip No</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.rejection_slip_number}</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Rejection Date</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.rejection_date}</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Supplier</label>
+                    </div>
+                    <div className="col-6">
+                      <span>
+                        :{" "}
+                        {data.rejection_materials[0]?.grn_material
+                          ?.good_receive_note?.supplier || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>PO No</label>
+                    </div>
+                    <div className="col-6">
+                      <span>
+                        :{" "}
+                        {data.rejection_materials[0]?.grn_material
+                          ?.good_receive_note?.po_number || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>PO Date</label>
+                    </div>
+                    <div className="col-6">
+                      <span>
+                        :{" "}
+                        {data.rejection_materials[0]?.grn_material
+                          ?.good_receive_note?.po_date || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6 col-md-6 row px-3">
+                    <div className="col-6">
+                      <label>Rejection Reason</label>
+                    </div>
+                    <div className="col-6">
+                      <span>: {data.rejection_reason}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div
@@ -159,9 +272,9 @@ const MaterialRejctionSlipCreate = () => {
                           <tr>
                             <th>Sr.No.</th>
                             <th>Material Type</th>
-                            <th>
+                            {/* <th>
                               Material Description<htd></htd>
-                            </th>
+                            </th> */}
                             <th>UOM</th>
                             <th>GRN Date</th>
                             <th>Received Qty</th>
@@ -170,15 +283,30 @@ const MaterialRejctionSlipCreate = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>1</td>
-                            <td>Tiles</td>
-                            <td>600 x 600 Tiles</td>
-                            <td>400</td>
-                            <td>50</td>
-                            <td>350</td>
-                            <td> </td>
-                          </tr>
+                          {data.rejection_materials.length > 0 ? (
+                            data.rejection_materials.map((item, index) => (
+                              <tr key={item.id}>
+                                <td>{index + 1}</td>
+                                <td>
+                                  {item.grn_material.material_type || "N/A"}
+                                </td>
+                                <td>{item.grn_material.uom || "N/A"}</td>
+                                <td>
+                                  {item.grn_material.good_receive_note
+                                    .grn_date || "N/A"}
+                                </td>
+                                <td>{item.grn_material.received}</td>
+                                <td>{item.grn_material.defective}</td>
+                                <td>{item.grn_material.accepted}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="7" className="text-center">
+                                No materials found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
