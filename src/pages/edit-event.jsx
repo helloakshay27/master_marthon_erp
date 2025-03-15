@@ -490,7 +490,11 @@ export default function EditEvent() {
   };
 
   const handleRemoveTextarea = (index) => {
-    setTextareas((prev) => prev.filter((_, idx) => idx !== index));
+    // setTextareas((prev) => prev.filter((_, idx) => idx !== index));
+    const updatedTextareas = textareas.filter(
+      (textarea) => textarea.id !== index
+    );
+    setTextareas([...updatedTextareas]);
   };
 
   const handleTextareaChange = (id, value) => {
@@ -511,13 +515,15 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                ...textarea,
-                id: selectedCondition.value,
+                // ...textarea,
+                // id: selectedCondition.value,
+                // value: selectedCondition.condition,
+                // defaultOption: {
+                //   label: selectedCondition.label,
+                //   value: selectedCondition.value,
+                // },
+                id: textarea.id,
                 value: selectedCondition.condition,
-                defaultOption: {
-                  label: selectedCondition.label,
-                  value: selectedCondition.value,
-                },
               }
             : textarea
         )
@@ -1112,7 +1118,7 @@ export default function EditEvent() {
                       return (
                         <tr key={idx}>
                           <td>
-                            {textarea?.defaultOption?.value && termsOptions && (
+                            {/* {textarea?.defaultOption?.value && termsOptions && (
                               <SelectBox
                                 options={termsOptions}
                                 onChange={(option) =>
@@ -1132,7 +1138,22 @@ export default function EditEvent() {
                                     option.condition === textarea.value
                                 )}
                               />
-                            )}
+                            )} */}
+                            <SelectBox
+                              options={termsOptions.map((option) => ({
+                                label: option.label,
+                                value: option.value,
+                              }))}
+                              onChange={(option) =>
+                                handleConditionChange(textarea.id, option)
+                              }
+                              defaultValue={
+                                termsOptions.find(
+                                  (option) =>
+                                    option.condition === textarea.value
+                                )?.value
+                              }
+                            />
                           </td>
                           <td>
                             <textarea
@@ -1144,7 +1165,7 @@ export default function EditEvent() {
                           <td>
                             <button
                               className="btn btn-danger"
-                              onClick={() => handleRemoveTextarea(idx)}
+                              onClick={() => handleRemoveTextarea(textarea.id)}
                               disabled={idx === 0}
                             >
                               Remove
