@@ -103,8 +103,17 @@ const CreateBOQ = () => {
     // console.log("aa", newValue)
     // setcount(newValue)
     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
-    setcount(count.filter((row) => row.id !== id));
-    setcounter(counter - 1);
+    // setcount(count.filter((row) => row.id !== id));
+    // setcounter(counter - 1);
+
+     // Remove the row from count
+  setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+
+  // Remove the corresponding BOQ sub-item
+  setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+
+  // Decrement the counter safely
+  setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
   };
 
   // Function to delete a row from Table 2
