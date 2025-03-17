@@ -795,15 +795,20 @@ const BOQSubItemTable = ({
     setAssetCostQTY(updatedAssetCostQTY);
   };
 
-  const [localMaterialErrors, setLocalMaterialErrors] = useState({});
-  const [localAssetsErrors, setLocalAssetsErrors] = useState({});
+  
 
 
-  // const validateDuplicates = useCallback((items) => {
+ 
+
+  
+
+
+  
+  // const validateDuplicates = useCallback(() => {
   //   const seenCombinations = new Map();
   //   const errors = {};
 
-  //   items.forEach((item, index) => {
+  //   predefinedMaterials.forEach((item, index) => {
   //     if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
 
   //     const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
@@ -819,111 +824,18 @@ const BOQSubItemTable = ({
   //   });
 
   //   return errors;
-  // }, []);
-
-  // ✅ Memoizing predefinedMaterials
-  const predefinedMaterials = useMemo(() => {
-    return materials.map((m, i) => ({
-      material_id: m.id,
-      material_sub_type_id: selectedSubTypes[i]?.value || "",
-      generic_info_id: selectedGenericSpecifications[i]?.value || "",
-      colour_id: selectedColors[i]?.value || "",
-      brand_id: selectedInventoryBrands[i]?.value || "",
-      uom_id: selectedUnit2[i]?.value || "",
-      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
-      estimated_quantity: parseFloat(estimatedQuantities[i]) || 0,
-      wastage: parseFloat(wastages[i]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
-    }));
-  }, [
-    materials, selectedSubTypes, selectedGenericSpecifications, selectedColors, 
-    selectedInventoryBrands, selectedUnit2, coefficientFactors, 
-    estimatedQuantities, wastages, totalEstimatedQtyWastages
-  ]);
-
-
-  const validateDuplicates = useCallback(() => {
-    const seenCombinations = new Map();
-    const errors = {};
-
-    predefinedMaterials.forEach((item, index) => {
-      if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
-
-      const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
-      if (seenCombinations.has(key)) {
-        errors[index] = {
-          generic_info: "Duplicate Generic Info not allowed.",
-          colour: "Duplicate Colour not allowed.",
-          brand: "Duplicate Brand not allowed.",
-        };
-      } else {
-        seenCombinations.set(key, true);
-      }
-    });
-
-    return errors;
-  }, [predefinedMaterials]);
+  // }, [predefinedMaterials]);
 
   // ✅ Memoizing predefinedAssets
-  const predefinedAssets = useMemo(() => {
-    return Assets.map((a, i) => ({
-      material_id: a.id,
-      material_sub_type_id: selectedSubTypesAssets[i]?.value || "",
-      generic_info_id: selectedGenericSpecifications[i]?.value || "",
-      colour_id: selectedColors[i]?.value || "",
-      brand_id: selectedInventoryBrands[i]?.value || "",
-      uom_id: selectedUnit3[i]?.value || "",
-      co_efficient_factor: parseFloat(assetCoefficientFactors[i]) || 0,
-      estimated_quantity: parseFloat(assetEstimatedQuantities[i]) || 0,
-      wastage: parseFloat(assetWastages[i]) || 0,
-      estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[i]) || 0,
-      cost_qty: parseFloat(assetCostQTY[i]) || 0,
-    }));
-  }, [
-    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors, 
-    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors, 
-    assetEstimatedQuantities, assetWastages, assetTotalEstimatedQtyWastages, assetCostQTY
-  ]);
+ 
 
-  // ✅ Memoized validation results (prevents infinite updates)
-  const materialErrors = useMemo(() => validateDuplicates(predefinedMaterials), [predefinedMaterials, validateDuplicates]);
-  const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
+ 
+
+ 
 
   // ✅ Updating material errors and BoqSubItems (Fixed infinite loop)
-  useEffect(() => {
-    if (!boqSubItemId) return;
+//  .................
 
-    // Only update state if there is a real change
-    if (!_.isEqual(materialErrors, localMaterialErrors)) {
-      setLocalMaterialErrors(materialErrors);
-    }
-
-    setBoqSubItems((prev) => {
-      return prev.map((item) =>
-        item.id === boqSubItemId && !_.isEqual(item.materials, predefinedMaterials)
-          ? { ...item, materials: predefinedMaterials }
-          : item
-      );
-    });
-  }, [boqSubItemId, predefinedMaterials, materialErrors]);
-
-  // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
-  useEffect(() => {
-    if (!boqSubItemId) return;
-
-    // Only update state if there is a real change
-    if (!_.isEqual(assetErrors, localAssetsErrors)) {
-      setLocalAssetsErrors(assetErrors);
-    }
-
-    setBoqSubItems((prev) => {
-      return prev.map((item) =>
-        item.id === boqSubItemId && !_.isEqual(item.assets, predefinedAssets)
-          ? { ...item, assets: predefinedAssets }
-          : item
-      );
-    });
-  }, [boqSubItemId, predefinedAssets, assetErrors]);
   const handleCostQtyChange = (id, value) => {
     // This will call the parent's handleInputChange2 method
     handleInputChange2(id, cost_quantity, value);
@@ -1000,6 +912,115 @@ const BOQSubItemTable = ({
       setAssetTotalEstimatedQtyWastages(newAssetTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
+
+
+
+  // validation for duplicate 
+  const [localMaterialErrors, setLocalMaterialErrors] = useState({});
+  const [localAssetsErrors, setLocalAssetsErrors] = useState({});
+
+  // ✅ Memoizing predefinedMaterials
+  const predefinedMaterials = useMemo(() => {
+    return materials.map((m, i) => ({
+      material_id: m.id,
+      material_sub_type_id: selectedSubTypes[i]?.value || "",
+      generic_info_id: selectedGenericSpecifications[i]?.value || "",
+      colour_id: selectedColors[i]?.value || "",
+      brand_id: selectedInventoryBrands[i]?.value || "",
+      uom_id: selectedUnit2[i]?.value || "",
+      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
+      estimated_quantity: parseFloat(estimatedQuantities[i]) || 0,
+      wastage: parseFloat(wastages[i]) || 0,
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
+    }));
+  }, [
+    materials, selectedSubTypes, selectedGenericSpecifications, selectedColors, 
+    selectedInventoryBrands, selectedUnit2, coefficientFactors, 
+    estimatedQuantities, wastages, totalEstimatedQtyWastages
+  ]);
+
+  const predefinedAssets = useMemo(() => {
+    return Assets.map((a, i) => ({
+      material_id: a.id,
+      material_sub_type_id: selectedSubTypesAssets[i]?.value || "",
+      generic_info_id: selectedGenericSpecifications[i]?.value || "",
+      colour_id: selectedColors[i]?.value || "",
+      brand_id: selectedInventoryBrands[i]?.value || "",
+      uom_id: selectedUnit3[i]?.value || "",
+      co_efficient_factor: parseFloat(assetCoefficientFactors[i]) || 0,
+      estimated_quantity: parseFloat(assetEstimatedQuantities[i]) || 0,
+      wastage: parseFloat(assetWastages[i]) || 0,
+      estimated_quantity_wastage: parseFloat(assetTotalEstimatedQtyWastages[i]) || 0,
+      cost_qty: parseFloat(assetCostQTY[i]) || 0,
+    }));
+  }, [
+    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors, 
+    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors, 
+    assetEstimatedQuantities, assetWastages, assetTotalEstimatedQtyWastages, assetCostQTY
+  ]);
+
+  const validateDuplicates = useCallback((items) => {
+    const seenCombinations = new Map();
+    const errors = {};
+
+    items.forEach((item, index) => {
+      if (!item.generic_info_id || !item.colour_id || !item.brand_id) return;
+
+      const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
+      if (seenCombinations.has(key)) {
+        errors[index] = {
+          generic_info: "Duplicate Generic Info not allowed.",
+          colour: "Duplicate Colour not allowed.",
+          brand: "Duplicate Brand not allowed.",
+        };
+      } else {
+        seenCombinations.set(key, true);
+      }
+    });
+
+    return errors;
+  }, []);
+
+   // ✅ Memoized validation results (prevents infinite updates)
+   const materialErrors = useMemo(() => validateDuplicates(predefinedMaterials), [predefinedMaterials, validateDuplicates]);
+   const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
+
+  useEffect(() => {
+    console.log("boq sub id vaidation:",boqSubItemId)
+    if (!boqSubItemId) return;
+
+    // Only update state if there is a real change
+    if (!_.isEqual(materialErrors, localMaterialErrors)) {
+      setLocalMaterialErrors(materialErrors);
+    }
+
+    setBoqSubItems((prev) => {
+      return prev.map((item) =>
+        item.id === boqSubItemId && !_.isEqual(item.materials, predefinedMaterials)
+          ? { ...item, materials: predefinedMaterials }
+          : item
+      );
+    });
+    
+  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+
+  // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
+  useEffect(() => {
+    if (!boqSubItemId) return;
+
+    // Only update state if there is a real change
+    if (!_.isEqual(assetErrors, localAssetsErrors)) {
+      setLocalAssetsErrors(assetErrors);
+    }
+
+    setBoqSubItems((prev) => {
+      return prev.map((item) =>
+        item.id === boqSubItemId && !_.isEqual(item.assets, predefinedAssets)
+          ? { ...item, assets: predefinedAssets }
+          : item
+      );
+    });
+  }, [boqSubItemId, predefinedAssets, assetErrors]);
 
   return (
     <>

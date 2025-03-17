@@ -1506,40 +1506,76 @@ const CreateBOQ = () => {
     return Object.keys(errors).length === 0;
   }, [predefinedAssets]);
 
-  const validateDuplicateMaterials = useCallback(() => {
-    const seenCombinations = new Map();
-    let errors = {};
+  // const validateDuplicateMaterials = useCallback(() => {
+  //   const seenCombinations = new Map();
+  //   let errors = {};
 
-    predefinedMaterials.forEach((material, index) => {
-      if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
-        return;
-      }
+  //   predefinedMaterials.forEach((material, index) => {
+  //     if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
+  //       return;
+  //     }
 
-      const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+  //     const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
 
-      if (seenCombinations.has(key)) {
-        errors[index] = {
-          generic_info: "Duplicate Generic Info is not allowed.",
-          colour: "Duplicate Colour is not allowed.",
-          brand: "Duplicate Brand is not allowed.",
-        };
-      } else {
-        seenCombinations.set(key, true);
-      }
-    });
+  //     if (seenCombinations.has(key)) {
+  //       errors[index] = {
+  //         generic_info: "Duplicate Generic Info is not allowed.",
+  //         colour: "Duplicate Colour is not allowed.",
+  //         brand: "Duplicate Brand is not allowed.",
+  //       };
+  //     } else {
+  //       seenCombinations.set(key, true);
+  //     }
+  //   });
 
-    // Only update state if errors have changed
-    setLocalMaterialErrors((prevErrors) => {
-      const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
-      return hasChanged ? errors : prevErrors;
-    });
+  //   // Only update state if errors have changed
+  //   setLocalMaterialErrors((prevErrors) => {
+  //     const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+  //     return hasChanged ? errors : prevErrors;
+  //   });
 
-    return Object.keys(errors).length === 0;
-  }, [predefinedMaterials]);
+  //   return Object.keys(errors).length === 0;
+  // }, [predefinedMaterials]);
 
   useEffect(() => {
+    const validateDuplicateMaterials = () => {
+      const seenCombinations = new Map();
+      let errors = {};
+  
+      predefinedMaterials.forEach((material, index) => {
+        if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
+          return;
+        }
+  
+        const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+  
+        if (seenCombinations.has(key)) {
+          errors[index] = {
+            generic_info: "Duplicate Generic Info is not allowed.",
+            colour: "Duplicate Colour is not allowed.",
+            brand: "Duplicate Brand is not allowed.",
+          };
+        } else {
+          seenCombinations.set(key, true);
+        }
+      });
+  
+      // Only update state if errors have changed
+      setLocalMaterialErrors((prevErrors) => {
+        const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+        return hasChanged ? errors : prevErrors;
+      });
+  
+      return Object.keys(errors).length === 0;
+    };
+  
     validateDuplicateMaterials();
-  }, [validateDuplicateMaterials]);
+  }, [predefinedMaterials]); // Runs whenever predefinedMaterials changes
+  
+
+  // useEffect(() => {
+  //   validateDuplicateMaterials();
+  // }, [validateDuplicateMaterials]);
 
   useEffect(() => {
     validateDuplicateAssets();
@@ -2993,7 +3029,7 @@ const CreateBOQ = () => {
                         <div className="mt-3">
                           {/* <h1>boqSubItems</h1> */}
 
-                          {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>  */}
+                         {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>  */}
 
                           <div className=" my-4">
                             <div style={{ overflowX: "auto", maxWidth: "100%" }}>
