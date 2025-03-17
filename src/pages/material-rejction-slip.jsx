@@ -53,6 +53,34 @@ const MaterialRejctionSlip = () => {
     dueAt: true,
   });
 
+  const resetColumnVisibility = () => {
+    setColumnVisibility({
+      srNo: true,
+      company: true,
+      project: true,
+      subProject: true,
+      rejectionSlipNo: true,
+      poNo: true,
+      challanNo: true,
+      grnNo: true,
+      grnDate: true,
+      rejectionSlipDate: true,
+      createdOn: true,
+      morNo: true,
+      materialType: true,
+      subType: true,
+      material: true,
+      supplierName: true,
+      defectiveQty: true,
+      defectiveRemark: true,
+      store: true,
+      status: true,
+      dueDate: true,
+      overdue: true,
+      dueAt: true,
+    });
+  };
+
   const handleToggleChange = (colKey) => {
     setColumnVisibility((prev) => ({
       ...prev,
@@ -151,6 +179,18 @@ const MaterialRejctionSlip = () => {
       }));
     }
   };
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredData = tableData.filter((item) =>
+    Object.values(item).some((value) =>
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   return (
     <main className="h-100 w-100">
@@ -343,8 +383,8 @@ const MaterialRejctionSlip = () => {
                       id="searchInput"
                       className="form-control tbl-search"
                       placeholder="Type your keywords here"
-                      //  value={searchTerm}
-                      //  onChange={(e) => setSearchTerm(e.target.value)}
+                      value={searchTerm}
+                      onChange={handleSearchChange}
                     />
                     <div className="input-group-append">
                       <button
@@ -377,7 +417,11 @@ const MaterialRejctionSlip = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mt-3">
+              <div
+                className="tbl-container mt-3
+              
+              "
+              >
                 <table className="w-100 table  ">
                   {loading ? (
                     <p>Loading data...</p>
@@ -386,11 +430,18 @@ const MaterialRejctionSlip = () => {
                   ) : (
                     <>
                       <thead
-                      // style={{
-                      //   maxWidth: "100%",
-                      //   overflowX: "auto",
-                      //   paddingRight: "20px",
-                      // }}
+                        // style={{
+                        //   maxWidth: "100%",
+                        //   overflowX: "auto",
+                        //   paddingRight: "20px",
+                        // }}
+                        style={{
+                          position: "sticky",
+                          top: "0",
+                          zIndex: 1020, // Keeps the header above the table body but below modal
+                          background: "#fff", // Ensures readability
+                          boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.1)", // Adds slight shadow for distinction
+                        }}
                       >
                         <tr>
                           {columnVisibility.srNo && <th>Sr. No.</th>}
@@ -432,7 +483,7 @@ const MaterialRejctionSlip = () => {
                       </thead>
                       <tbody>
                         {tableData.length > 0 ? (
-                          tableData.map((item, index) => (
+                          filteredData.map((item, index) => (
                             <tr key={item.id}>
                               {columnVisibility.srNo && <td>{index + 1}</td>}
                               {columnVisibility.company && (
@@ -524,23 +575,25 @@ const MaterialRejctionSlip = () => {
           {/* filter modal */}
         </div>
       </div>
-      <div
-        className="modal fade"
-        id="settings"
-        tabIndex="-1"
-        aria-hidden="true"
-      >
+      <div className="modal fade" id="settings" tabIndex="1" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-sm">
           <div className="modal-content">
             {/* Modal Header */}
-            <div className="modal-header">
-              <h4 className="modal-title text-center w-100">Layout</h4>
+            <div className="modal-header d-flex justify-content-between">
               <button
                 type="button"
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
               />
+              <h4 className="modal-title text-center flex-grow-1">Layout</h4>
+
+              <button
+                className="btn btn-link text-danger"
+                onClick={resetColumnVisibility}
+              >
+                Reset
+              </button>
             </div>
 
             {/* Modal Body with Inline Scrolling */}
