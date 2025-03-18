@@ -840,7 +840,6 @@ input[type="checkbox"] {
 .tbl-container td {
   text-align: left;
   border: 1px solid #dfdfdf;
-
   font-family: "Poppins", sans-serif;
   font-weight: 500;
   padding: 10px 1rem;
@@ -13810,7 +13809,7 @@ input[type="checkbox"] {
 
 .tbl-container td {
   text-align: left!important;
-  border: 1px solid #dee2e6 !important;
+  border: 1px solid #dee2e6;
   font-family: "Poppins", sans-serif;
   font-weight: 500;
   padding: 10px 1rem;
