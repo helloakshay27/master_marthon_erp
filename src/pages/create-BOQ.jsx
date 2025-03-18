@@ -1583,7 +1583,7 @@ const CreateBOQ = () => {
         const wastagePercentage = parseFloat(wastages[index]) || 0;
         console.log("wastage",wastagePercentage)
         const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
-        return parseFloat(totalWithWastage); // Adding wastage percentage
+        return parseFloat(totalWithWastage.toFixed(4)); // Adding wastage percentage
       });
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
