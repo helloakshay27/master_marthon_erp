@@ -969,9 +969,9 @@ const BOQSubItemTable = ({
       const key = `${item.material_id}-${item.generic_info_id}-${item.colour_id}-${item.brand_id}`;
       if (seenCombinations.has(key)) {
         errors[index] = {
-          generic_info: "Duplicate Generic Info not allowed.",
-          colour: "Duplicate Colour not allowed.",
-          brand: "Duplicate Brand not allowed.",
+          generic_info: "This combination already exists.",
+          colour: "This combination already exists.",
+          brand: "This combination already exists.",
         };
       } else {
         seenCombinations.set(key, true);

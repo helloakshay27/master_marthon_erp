@@ -511,10 +511,21 @@ const BOQList = () => {
     <>
 
 {loading2 ? (
-        <div className="loading-container">
-          <div className="spinner"></div> {/* Spinner element */}
-          <p style={{ fontSize:"18px",fontWeight:"400px"}}>Loading...</p>
+        // <div className="loading-container">
+        //   <div className="spinner"></div> {/* Spinner element */}
+        //   <p style={{ fontSize:"18px",fontWeight:"400px"}}>Loading...</p>
+        // </div>
+        <div id="full-screen-loader" className="full-screen-loader">
+        <div className="loader-container">
+          <img
+            src="https://newerp.marathonrealty.com/assets/loader.gif"
+            alt="Loading..."
+            width={50}
+          />
+          <h5>Please wait</h5>
         </div>
+      </div>
+        
       ) : (
 
         <div className="website-content">

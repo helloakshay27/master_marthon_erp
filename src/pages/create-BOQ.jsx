@@ -661,50 +661,7 @@ const CreateBOQ = () => {
   const [assetSubTypes, setAssetSubTypes] = useState([]); // For assets
   const [selectedSubTypesAssets, setSelectedSubTypesAssets] = useState([]);
   // Fetch inventory sub-types when materials array changes or inventory type changes
-  // useEffect(() => {
-  //   // Fetch sub-types only for materials that have an inventory type
-  //   materials.forEach((material, index) => {
-  //     if (material.inventory_type_id) {
-  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(subType => ({
-  //             value: subType.id,
-  //             label: subType.name
-  //           }));
-  //           setInventorySubTypes(prevSubTypes => {
-  //             const newSubTypes = [...prevSubTypes];
-  //             newSubTypes[index] = options;  // Update sub-types for this specific material
-  //             return newSubTypes;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching inventory sub-types:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch sub-types for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.inventory_type_id) {
-  //       console.log('aseets inventory id', asset.inventory_type_id)
-  //       axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(subType => ({
-  //             value: subType.id,
-  //             label: subType.name
-  //           }));
-  //           setAssetSubTypes(prevSubTypes => {
-  //             const newSubTypes = [...prevSubTypes];
-  //             newSubTypes[index] = options;  // Update sub-types for this specific asset
-  //             return newSubTypes;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching inventory sub-types for asset:', error);
-  //         });
-  //     }
-  //   });
-  // }, []);  // Trigger this effect whenever the materials array changes
+ 
 
   // Fetch sub-types for materials
   useEffect(() => {
@@ -791,93 +748,6 @@ const CreateBOQ = () => {
   ] = useState([]); // Holds the selected generic specifications for each asset
 
   // Fetch generic specifications when materials array changes or material_id changes
-  // useEffect(() => {
-  //   // Fetch generic specifications for materials
-  //   materials.forEach((material) => {
-  //     if (material.id) {
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(specification => ({
-  //             value: specification.id,
-  //             label: specification.generic_info
-  //           }));
-
-  //           console.log("gen options:",options)
-  //           // setGenericSpecifications((prevSpecifications,index) => {
-  //           //   const newSpecifications = [...prevSpecifications];
-  //           //   newSpecifications[index] = options;  // Update specifications for the material at the current index
-  //           //   return newSpecifications;
-  //           // });
-
-  //           setGenericSpecifications((prevSpecifications) => {
-  //             // Avoid index-based issues. We want to push the new options.
-  //             return [...prevSpecifications, options];
-  //           });
-
-  //           // setGenericSpecifications((prevSpecifications) => {
-  //           //   //  Update only if the data has changed
-  //           //   // if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-  //           //   //   return { ...prevSpecifications, [material.id]: options };
-
-  //           //   // }
-  //           //   // const newColors = [...prevSpecifications];
-  //           //   // newColors[index] = options; // Update colors for this specific material
-  //           //   // return newColors;
-  //           //   // return { ...prevSpecifications,  options };  ; // No update needed
-  //           //   // const newSpecifications = prevSpecifications || {};
-
-  //           //   // if (!newSpecifications[material.id] || JSON.stringify(newSpecifications[material.id]) !== JSON.stringify(options)) {
-  //           //   //   return { ...newSpecifications, [material.id]: options };
-  //           //   // }
-
-  //           //   // return newSpecifications; // No update needed
-
-  //           //   setGenericSpecifications((prevSpecifications) => {
-  //           //     return [...prevSpecifications ];
-  //           //   });
-  //           // });
-  //           // });
-  //         })
-  //         // .catch(error => console.error('Error fetching generic specifications:', error));
-  //     }
-  //   });
-
-  //   // Fetch generic specifications for assets
-  //   Assets.forEach((asset) => {
-  //     if (asset.id) {
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(specification => ({
-  //             value: specification.id,
-  //             label: specification.generic_info
-  //           }));
-  //           console.log("gen options:",options)
-
-  //           setGenericSpecifications((prevSpecifications) => {
-  //             // Avoid index-based issues. We want to push the new options.
-  //             return [...prevSpecifications, options];
-  //           });
-
-  //           // setAssetGenericSpecifications(prevSpecifications => {
-  //           //   // ✅ Update only if the data has changed
-  //           //   if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-  //           //     return { ...prevSpecifications, [asset.id]: options };
-  //           //   }
-
-  //           //   const newColors = [...prevSpecifications];
-  //           //   newColors[index] = options; // Update colors for this specific material
-  //           //   return newColors;
-  //           //   // return prevSpecifications; // No update needed
-  //           // });
-  //         })
-  //         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
-  //     }
-  //   });
-  // }, [materials,Assets,baseURL]); // Runs only when materials or Assets change
-
-  // console.log("gen specification",genericSpecifications)
 
   // Fetch generic specifications for materials
   useEffect(() => {
@@ -950,66 +820,6 @@ const CreateBOQ = () => {
     });
   }, [Assets, baseURL]); // Runs when assets or baseURL changes
 
-  // Fetch generic specifications for materials
-  // useEffect(() => {
-  //   materials.forEach((material) => {
-  //     if (material.id) {
-  //       console.log("gen material id:",material.id)
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then((response) => {
-  //           const options = response.data.map((specification) => ({
-  //             value: specification.id,
-  //             label: specification.generic_info,
-  //           }));
-
-  //           console.log("options:",options)
-
-  //           setGenericSpecifications((prevSpecifications) => {
-  //             // Update only if the data has changed
-  //             if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-  //               return { ...prevSpecifications, [material.id]: options };
-  //             }
-  //             return prevSpecifications; // No update needed
-
-  //             // const newSpecifications = [...prevSpecifications];
-  //             // newSpecifications[index] = options; // Update colors for this specific material
-  //             // return newSpecifications;
-  //           });
-  //         })
-  //         // .catch((error) => console.error('Error fetching generic specifications for material:', error));
-  //     }
-  //   });
-  // }, [materials, baseURL]); // Runs when materials or baseURL changes
-
-  // Fetch generic specifications for assets
-  // useEffect(() => {
-  //   Assets.forEach((asset) => {
-  //     if (asset.id) {
-  //       axios
-  //         .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then((response) => {
-  //           const options = response.data.map((specification) => ({
-  //             value: specification.id,
-  //             label: specification.generic_info,
-  //           }));
-
-  //           setAssetGenericSpecifications((prevSpecifications) => {
-  //             // Update only if the data has changed
-  //             // if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-  //             //   return { ...prevSpecifications, [asset.id]: options };
-  //             // }
-
-  //             const newSpecifications = [...prevSpecifications];
-  //             newSpecifications[index] = options; // Update colors for this specific material
-  //             return newSpecifications;
-  //             // return prevSpecifications; // No update needed
-  //           });
-  //         })
-  //         // .catch((error) => console.error('Error fetching generic specifications for asset:', error));
-  //     }
-  //   });
-  // }, [Assets, baseURL]); // Runs when assets or baseURL changes
 
   // Handler for generic specification selection change
   const handleGenericSpecificationChange = (index, selectedOption) => {
@@ -1034,49 +844,6 @@ const CreateBOQ = () => {
   const [assetColors, setAssetColors] = useState([]); // State to hold the fetched colors for assets
   const [selectedAssetColors, setSelectedAssetColors] = useState([]); // Holds the selected color for each asset
   // Fetch colors when materials array changes or material_id changes
-  // useEffect(() => {
-  //   // Fetch colors only for materials that have a valid material_id
-  //   materials.forEach((material, index) => {
-  //     if (material.id) {
-  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(color => ({
-  //             value: color.id,
-  //             label: color.colour
-  //           }));
-  //           setColors(prevColors => {
-  //             const newColors = [...prevColors];
-  //             newColors[index] = options;  // Update colors for this specific material
-  //             return newColors;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching colors:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch colors for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.id) {
-  //       axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(color => ({
-  //             value: color.id,
-  //             label: color.colour
-  //           }));
-  //           setAssetColors(prevColors => {
-  //             const newColors = [...prevColors];
-  //             newColors[index] = options;  // Update colors for this specific asset
-  //             return newColors;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching colors for asset:', error);
-  //         });
-  //     }
-  //   });
-  // }, []);  // Trigger this effect whenever the materials array changes
 
   useEffect(() => {
     materials.forEach((material, index) => {
@@ -1152,49 +919,6 @@ const CreateBOQ = () => {
   const [selectedAssetInventoryBrands, setSelectedAssetInventoryBrands] =
     useState([]); // Holds the selected brands for each asset
   // Fetch inventory brands when materials array changes or material_id changes
-  // useEffect(() => {
-  //   // Fetch brands only for materials that have a valid material_id
-  //   materials.forEach((material, index) => {
-  //     if (material.id) {
-  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(brand => ({
-  //             value: brand.id,
-  //             label: brand.brand_name
-  //           }));
-  //           setInventoryBrands(prevBrands => {
-  //             const newBrands = [...prevBrands];
-  //             newBrands[index] = options;  // Update brands for this specific material
-  //             return newBrands;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching inventory brands:', error);
-  //         });
-  //     }
-  //   });
-
-  //   // Fetch inventory brands for assets
-  //   Assets.forEach((asset, index) => {
-  //     if (asset.id) {
-  //       axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-  //         .then(response => {
-  //           const options = response.data.map(brand => ({
-  //             value: brand.id,
-  //             label: brand.brand_name
-  //           }));
-  //           setAssetInventoryBrands(prevBrands => {
-  //             const newBrands = [...prevBrands];
-  //             newBrands[index] = options;  // Update brands for this specific asset
-  //             return newBrands;
-  //           });
-  //         })
-  //         .catch(error => {
-  //           console.error('Error fetching inventory brands for asset:', error);
-  //         });
-  //     }
-  //   });
-  // }, []);  // Trigger this effect whenever the materials array changes
 
   // Fetch inventory brands for materials
   useEffect(() => {
@@ -1301,12 +1025,6 @@ const CreateBOQ = () => {
   };
 
   // Function to update predefined assets for a specific BOQ row
-
-
-
-
-
-
 
 
   const updatePredefinedAssetsData = (boqSubItemId, data) => {
@@ -1479,11 +1197,6 @@ const CreateBOQ = () => {
 
 
 
-
-
-
-
-
   const validateDuplicateAssets = useCallback(() => {
     const seenCombinations = new Map();
     let errors = {};
@@ -1497,9 +1210,9 @@ const CreateBOQ = () => {
 
       if (seenCombinations.has(key)) {
         errors[index] = {
-          generic_info: "Duplicate Generic Info is not allowed.",
-          colour: "Duplicate Colour is not allowed.",
-          brand: "Duplicate Brand is not allowed.",
+          generic_info: "This combination already exists.",
+          colour: "This combination already exists.",
+          brand: "This combination already exists.",
         };
       } else {
         seenCombinations.set(key, true);
@@ -1560,9 +1273,9 @@ const CreateBOQ = () => {
   
         if (seenCombinations.has(key)) {
           errors[index] = {
-            generic_info: "Duplicate Generic Info is not allowed.",
-            colour: "Duplicate Colour is not allowed.",
-            brand: "Duplicate Brand is not allowed.",
+            generic_info: "This combination already exists.",
+            colour: "This combination already exists.",
+            brand: "This combination already exists.",
           };
         } else {
           seenCombinations.set(key, true);
@@ -1589,10 +1302,6 @@ const CreateBOQ = () => {
   useEffect(() => {
     validateDuplicateAssets();
   }, [validateDuplicateAssets]);
-
-
-
-
 
 
   // console.log("asset data table", predefinedAssets);
@@ -1915,10 +1624,10 @@ const CreateBOQ = () => {
       return; // Exit function if validation fails
     }
 
-    if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
-      toast.error("Please resolve duplicate materials or assets before submitting.");
-      return;
-    }
+    // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
+    //   toast.error("Please resolve duplicate materials or assets before submitting.");
+    //   return;
+    // }
 
 
     // Show toast messages for each missing field
@@ -3384,19 +3093,31 @@ const CreateBOQ = () => {
             <div className="row mt-2 justify-content-center mb-5">
               <div className="col-md-2">
                 {loading && (
+                  // <div className="loader-container">
+                  //   <div className="lds-ring">
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //     <div></div>
+                  //   </div>
+                  //   <p>Submitting your BOQ...</p>
+                  // </div>
+
+                  <div id="full-screen-loader" className="full-screen-loader">
                   <div className="loader-container">
-                    <div className="lds-ring">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                    <p>Submitting your BOQ...</p>
+                    <img
+                      src="https://newerp.marathonrealty.com/assets/loader.gif"
+                      alt="Loading..."
+                      width={50}
+                    />
+                    <h5>Please wait</h5>
                   </div>
+                </div>
+
                 )}
                 <button
                   className="purple-btn2 w-100"
@@ -3417,355 +3138,7 @@ const CreateBOQ = () => {
       </div>
 
       {/* Modal start */}
-      {/* material modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={materialshowModal}
-        onHide={closeModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Material</h5>
-        </Modal.Header>
-
-        <Modal.Body>
-          <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div className="">
-                <select
-                  className="form-control"
-                  style={{ width: "100%" }}
-                  fdprocessedid="cda5b"
-                >
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div>
-          <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead >
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Material Type</th>
-                  <th>Material Sub-Type</th>
-                  <th>Material</th>
-                  <th>UOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>ADMIXTURE</td>
-                  <td>ADMIXTURE</td>
-                  <td>ADMIXTURE</td>
-                  <td>KGS</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>AGGREGATE</td>
-                  <td>KAPCHI</td>
-                  <td>KAPCHI</td>
-                  <td>cft</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-
-      </Modal> */}
-      {/* material modal */}
-
-      {/* Assest modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={assetShowModal}
-        onHide={closeAssestModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Asset</h5>
-        </Modal.Header>
-        <Modal.Body> */}
-      {/* Pagination and Display options */}
-      {/* <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div>
-                <select className="form-control" style={{ width: "100%" }}>
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div> */}
-
-      {/* Table for Assets */}
-      {/* <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Asset Type</th>
-                  <th>Asset Sub-Type</th>
-                  <th>Asset</th>
-                  <th>UOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Aluminium Ladder</td>
-                  <td>Aluminium Ladder</td>
-                  <td>Aluminium Ladder</td>
-                  <td>NOS</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>21'' IMAC Desktop 4K</td>
-                  <td>21'' IMAC Desktop 4K Retina Display</td>
-                  <td>21" IMAC Desktop 4K Retina Display</td>
-                  <td>NOS</td>
-                </tr>
-              </tbody>
-            </table>
-          </div> */}
-
-      {/* Add Button */}
-      {/* <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeAssestModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
-      {/* Assest modal */}
-
-      {/* Labour modal */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={labourShowModal}
-        onHide={closeLabourModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Add Labour</h5>
-        </Modal.Header>
-        <Modal.Body>
-          {/* Pagination and Display options */}
-      {/* <div className="d-flex justify-content-between px-4 pt-2">
-            <div>
-              <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      1
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      2
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">
-                      3
-                    </a>
-                  </li>
-                  <li className="page-item">
-                    <a className="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">»</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-            <div className="d-flex">
-              <p className="fw-bold me-2 mt-1">Display</p>
-              <div>
-                <select className="form-control" style={{ width: "100%" }}>
-                  <option selected="selected">10</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-              <p className="fw-bold ms-2 mt-1">Items per Page</p>
-            </div>
-          </div> */}
-
-      {/* Table for Labour */}
-      {/* <div className="tbl-container mx-3 mt-1">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Labour Category</th>
-                  <th>Material Sub-Category</th>
-                  <th>Labour Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Departmental Work</td>
-                  <td>RCC</td>
-                  <td>Carpenter</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Departmental Work</td>
-                  <td>RCC</td>
-                  <td>Carpenter</td>
-                </tr>
-              </tbody>
-            </table>
-          </div> */}
-
-      {/* Add Button */}
-      {/* <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                onClick={closeLabourModal}
-                className="purple-btn2 w-100"
-                fdprocessedid="u33pye"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
-      {/* Labour modal */}
-
+     
       {/* Modal end */}
     </>
   );

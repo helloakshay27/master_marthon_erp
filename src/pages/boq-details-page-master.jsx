@@ -1100,19 +1100,31 @@ console.log(boqDetails.assets);   // Should contain an array of assets
             </div>
             <div className="d-flex justify-content-center">
               {loading2 && (
+                // <div className="loader-container">
+                //   <div className="lds-ring">
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //     <div></div>
+                //   </div>
+                //   <p>Submitting Status...</p>
+                // </div>
+
+                <div id="full-screen-loader" className="full-screen-loader">
                 <div className="loader-container">
-                  <div className="lds-ring">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                  </div>
-                  <p>Submitting Status...</p>
+                  <img
+                    src="https://newerp.marathonrealty.com/assets/loader.gif"
+                    alt="Loading..."
+                    width={50}
+                  />
+                  <h5>Please wait</h5>
                 </div>
+              </div>
+
               )}
               <button className="purple-btn2" onClick={handleSubmit}>Submit</button>
               <button className="purple-btn1" onClick={handleCancel}>Cancel</button>
