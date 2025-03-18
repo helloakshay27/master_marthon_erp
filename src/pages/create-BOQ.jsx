@@ -751,7 +751,7 @@ const CreateBOQ = () => {
 
   // Fetch generic specifications for materials
   useEffect(() => {
-    materials.forEach((material) => {
+    materials.forEach((material,index) => {
       if (material.id) {
         axios
           .get(
@@ -771,10 +771,17 @@ const CreateBOQ = () => {
             //   return prevSpecifications; // No update needed
             // });
 
+            // setGenericSpecifications((prevSpecifications) => {
+            //   // Avoid index-based issues. We want to push the new options.
+            //   return [...prevSpecifications, options];
+            // });
+
             setGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
-              return [...prevSpecifications, options];
-            });
+              const newColors = [...prevSpecifications];
+              newColors[index] = options; // Update colors for this specific material
+              return newColors;           
+             });
           })
           .catch((error) => {
             console.error("Error fetching generic specifications:", error);
@@ -785,7 +792,7 @@ const CreateBOQ = () => {
 
   // Fetch generic specifications for assets
   useEffect(() => {
-    Assets.forEach((asset) => {
+    Assets.forEach((asset,index) => {
       if (asset.id) {
         axios
           .get(
@@ -805,10 +812,16 @@ const CreateBOQ = () => {
             //   return prevSpecifications; // No update needed
             // });
 
+            // setAssetGenericSpecifications((prevSpecifications) => {
+            //   // Avoid index-based issues. We want to push the new options.
+            //   return [...prevSpecifications, options];
+            // });
             setAssetGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
-              return [...prevSpecifications, options];
-            });
+              const newColors = [...prevSpecifications];
+              newColors[index] = options; // Update colors for this specific material
+              return newColors;           
+             });
           })
           .catch((error) => {
             console.error(
@@ -1568,8 +1581,9 @@ const CreateBOQ = () => {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
+        console.log("wastage",wastagePercentage)
         const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
-        return parseFloat(totalWithWastage.toFixed(4)); // Adding wastage percentage
+        return parseFloat(totalWithWastage); // Adding wastage percentage
       });
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
@@ -2143,9 +2157,9 @@ const CreateBOQ = () => {
                           <div style={{ overflowX: "auto", maxWidth: "100%" }}>
                             {/* predefinedMaterials
 
-                          <h1>predefinedMaterialsData</h1>
+                          <h1>predefinedMaterialsData</h1>*/}
 
-<pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre> */}
+{/* <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre>  */}
 
                             {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
 

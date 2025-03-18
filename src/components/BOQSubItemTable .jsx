@@ -395,7 +395,7 @@ const BOQSubItemTable = ({
   ] = useState([]); // Holds the selected generic specifications for each asset
 
   useEffect(() => {
-    materials.forEach((material) => {
+    materials.forEach((material,index) => {
       if (material.id) {
         axios
           .get(
@@ -415,10 +415,17 @@ const BOQSubItemTable = ({
             //   return prevSpecifications; // No update needed
             // });
 
+            // setGenericSpecifications((prevSpecifications) => {
+            //   // Avoid index-based issues. We want to push the new options.
+            //   return [...prevSpecifications, options];
+            // });
+
             setGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
-              return [...prevSpecifications, options];
-            });
+              const newColors = [...prevSpecifications];
+              newColors[index] = options; // Update colors for this specific material
+              return newColors;           
+             });
           });
         // .catch(error => console.error('Error fetching generic specifications:', error));
       }
@@ -427,7 +434,7 @@ const BOQSubItemTable = ({
 
   // Fetch generic specifications for assets
   useEffect(() => {
-    Assets.forEach((asset) => {
+    Assets.forEach((asset,index) => {
       if (asset.id) {
         axios
           .get(
@@ -447,10 +454,17 @@ const BOQSubItemTable = ({
             //   return prevSpecifications; // No update needed
             // });
 
+            // setAssetGenericSpecifications((prevSpecifications) => {
+            //   // Avoid index-based issues. We want to push the new options.
+            //   return [...prevSpecifications, options];
+            // });
             setAssetGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
-              return [...prevSpecifications, options];
-            });
+              const newColors = [...prevSpecifications];
+              newColors[index] = options; // Update colors for this specific material
+              return newColors;           
+             });
+
           });
         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
       }
