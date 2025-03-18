@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Ensure Bootstrap JS is included
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { baseURL } from "../../confi/apiDomain";
+import { baseURL, baseURL1 } from "../../confi/apiDomain";
 import Select from "react-select"; // Importing the react-select component
 import FormattedDate from "../../components/FormattedDate";
 
@@ -917,7 +917,7 @@ const GoodReceiveNoteDetails = () => {
                               <td>{item.status || "-"}</td>
 
                               <td>{item.remark || "-"}</td>
-                              <td>{item.comment || "-"}</td>
+                              <td>{item?.admin_comment || item.comment || "-"}</td>
                             </tr>
                           ))}
                         </tbody>{" "}
