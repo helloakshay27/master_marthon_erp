@@ -103,10 +103,16 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
     // ];
   
     const handleCheckboxChange = (material) => {
+      // setSelectedMaterials((prev) =>
+      //   prev.some((item) => item.id === material.id)
+      //     ? prev // Do nothing if already selected
+      //     : [...prev, material] // Add only if not already selected
+      // );
+
       setSelectedMaterials((prev) =>
         prev.some((item) => item.id === material.id)
-          ? prev // Do nothing if already selected
-          : [...prev, material] // Add only if not already selected
+          ? prev.filter((item) => item.id !== material.id) // Uncheck: Remove from selection
+          : [...prev, material] // Check: Add to selection
       );
     };
   
