@@ -86,21 +86,18 @@ const BOQSubItemTable = ({
   const handleDeleteAllMaterial = () => {
     setMaterials((prev) => {
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
-        const materialsArray = prev[key] || [];
-        acc[key] = materialsArray.filter((material, index) => {
-          const isSelected = selectedMaterials.some(
-            (selected) =>
-              selected.rowIndex === index && selected.materialId === material.id
-          );
-          return !isSelected;
-        });
+        acc[key] = (prev[key] || []).filter((material, index) =>
+          !selectedMaterials.some(
+            (selected) => selected.rowIndex === index && selected.materialId === material.id
+          )
+        );
         return acc;
       }, {});
   
       return filteredMaterials;
     });
   
-    // Use updateSelection for filtering state updates
+    // Update selection states after material deletion
     setSelectedSubTypes(updateSelection(selectedSubTypes));
     setSelectedColors(updateSelection(selectedColors));
     setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
@@ -116,9 +113,8 @@ const BOQSubItemTable = ({
       prev.filter(
         (selected) =>
           !materials.some(
-            (material) =>
-              material.id === selected.materialId &&
-              materials.indexOf(material) === selected.rowIndex
+            (material, index) =>
+              material.id === selected.materialId && index === selected.rowIndex
           )
       )
     );
