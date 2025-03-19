@@ -1,44 +1,169 @@
-// @ts-nocheck
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer";
-
-import React, { useEffect, useState } from "react";
-import { Modal, Button } from "react-bootstrap"; // Combined Modal and Button imports
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-
+import React, { useState, useEffect } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import { Pagination, Typography, Stack, Button as MuiButton, Box } from "@mui/material";
+import { useLocation } from "react-router-dom";
+import { Modal, Button } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
+import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import DataTable from "datatables.net-react";
-import DT from "datatables.net-dt";
-import { baseURL } from "../confi/apiDomain"; // Import baseURL using named import
-import { Checkbox, FormControlLabel, Box } from "@mui/material";
 
-import $ from "jquery";
+import { baseURL, baseURL1 } from "../confi/apiDomain";
 
-DataTable.use(DT);
+
 
 
 const ErpStockRegister13B = () => {
 
-  const [data, setData] = useState([]); // State to hold the fetched data
+  const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // Track loading state
+  const [loading, setLoading] = useState(true);
   const [bulkIsCollapsed, setBulkIsCollapsed] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  const [pinnedRows, setPinnedRows] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    material: true,
+    material_name: true,
+    material_type: true,
+    materialSubType: true,
+    materialDescription: true,
+    specification: true,
+    lastReceived: true,
+    total_received: true,
+    total_issued: true,
+    stock_as_on: true,
+    stockStatus: true,
+    deadstockQty: true,
+    theftMissing: true,
+    uom_name: true,
+    Star: true,
+  });
+
+
+  const location = useLocation();
+
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
-
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
-  const location = useLocation(); // Access the location object
+  // Calculate displayed rows for the current page
+  const startEntry = (page - 1) * pageSize + 1;
+  const endEntry = Math.min(page * pageSize, filteredData.length);
 
 
+
+  const allColumns = [
+    { field: "srNo", headerName: "Sr. No.", width: 100 },
+    {
+      field: "Star",
+      headerName: "Star",
+      width: 90,
+      renderCell: (params) => (
+        <button className="btn btn-sm" onClick={() => handlePinRow(params.row.id)}>
+          {pinnedRows.includes(params.row.id) ? <svg class="star-icon pinned-star" data-id="259" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#8B0203" stroke="#8B0203">
+            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+          </svg> : <svg class="star-icon" data-id="260" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#cccccc" stroke="#cccccc">
+            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+          </svg>}
+        </button>
+      ),
+    },
+
+    { field: "material", headerName: "Material / Asset", width: 200 },
+
+    {
+      field: "material_name",
+      headerName: "Material",
+      width: 300,
+      renderCell: (params) => (
+        <a href={params.row.materialUrl} rel="noopener noreferrer">
+          {params.value}
+        </a>
+      ),
+    },
+
+    { field: "lastReceived", headerName: "Last Received On", width: 200 },
+
+    { field: "total_received", headerName: "Total Received", width: 150 },
+
+    { field: "total_issued", headerName: "Total Issued", width: 150 },
+
+    { field: "stock_as_on", headerName: "Stock As On", width: 150 },
+
+    { field: "deadstockQty", headerName: "Deadstock Qty", width: 150 },
+
+    { field: "theftMissing", headerName: "Theft / Missing", width: 150 },
+
+    { field: "uom_name", headerName: "UOM", width: 100 },
+
+
+  ];
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage - 1); // MUI Pagination starts at 1, DataGrid at 0
+  };
+
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  const handlePinRow = (rowId) => {
+    setPinnedRows((prev) =>
+      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
+    );
+  };
+
+  const toggleShowOnlyPinned = () => {
+    setShowOnlyPinned((prev) => !prev);
+  };
+
+
+
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "Stock_Data.xlsx");
+  };
+
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleReset = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +174,9 @@ const ErpStockRegister13B = () => {
         const token = urlParams.get('token');
 
         const response = await fetch(
-          `${baseURL}/mor_inventories/stock_data.json?token=${token}`
+          `${baseURL1}/mor_inventories/stock_data.json?token=${token}`
         ); // Replace with your API endpoint
+
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -60,28 +186,23 @@ const ErpStockRegister13B = () => {
         const transformedData = result.map((item, index) => {
           const materialUrl = item.id && token
             ? `/stock_register_detail/${item.id}/?token=${token}`
-            : "#"; // Fallback to "#" if id or token is missing
+            : "#"; // Fallback if id or token is missing
 
           return {
+            id: item.id ?? `row-${index + 1}`,  // Ensure unique ID
             srNo: index + 1,
             material: item.category || "-",
-            materialUrl: materialUrl, // Safeguard added here
+            materialUrl: materialUrl,
             material_name: item.material_name || "-",
-            // materialSubType: item.inventory_sub_type_id || "-",
-            // materialDescription: item.material_description || "-",
-            // specification: item.specification || "-",
             lastReceived: item.last_received_on || "-",
             total_received: item.total_received || "-",
             total_issued: item.total_issued || "-",
-            // stockStatus: item.available_quantity || "-",
             deadstockQty: item.deadstockQty || "-",
             stock_as_on: item.stock_as_on || "-",
-            stockStatus: item.stock_details.status || "-",
-
-
+            stockStatus: item.stock_details?.[0]?.status || "-",  // Fix array issue
             theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
             uom_name: item.uom_name || "-",
-            stock_details: item?.stock_details.map((stock) => ({
+            stock_details: item?.stock_details?.map((stock) => ({
               stockId: stock.id,
               createdAt: stock.created_at || "-",
               mor: stock.mor || "-",
@@ -89,7 +210,7 @@ const ErpStockRegister13B = () => {
               receivedQty: stock.received_qty || "-",
               issuedQty: stock.issued_qty || "-",
               returnedQty: stock.returned_qty || "-",
-            })),
+            })) || [],
           };
         });
 
@@ -108,62 +229,32 @@ const ErpStockRegister13B = () => {
     fetchData(); // Call the fetch function
 
 
-  }, []); // Empty dependency array to run once on mount
+  }, [location.search]); // Empty dependency array to run once on mount
 
 
-  const columns = [
-    { data: "srNo", title: "Sr. No." },
-    {
-      data: "material",
-      title: "Material / Asset",
-     
-    },
-    { data: "material_name", title: "Material",
-      render: (data, type, row) =>
-        `<a href="${row.materialUrl}" >${data}</a>`, // Hyperlink with the material URL
-     },
 
-    { data: "lastReceived", title: "Last Received On" },
-    { data: "total_received", title: "Total Received" },
-    { data: "total_issued", title: "Total Issued" },
-    { data: "stock_as_on", title: "Stock As On" },
+  const getTransformedRows = () => {
+    let rowsToShow = showOnlyPinned
+      ? data.filter((row) => pinnedRows.includes(row.id))
+      : data;
 
-    { data: "deadstockQty", title: "Deadstock Qty" },
-    { data: "theftMissing", title: "Theft / Missing" },
-    { data: "uom_name", title: "UOM" },
-  ];
+    // Apply search filter
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-
-  useEffect(() => {
-    const normalizedSearchTerm = searchTerm
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
-
-    const filtered = data.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(normalizedSearchTerm),
-      ),
+    rowsToShow = rowsToShow.filter((item) =>
+      Object.values(item).some((value) => {
+        if (value == null) return false; // Handle null/undefined
+        return String(value).toLowerCase().includes(normalizedSearchTerm);
+      })
     );
 
-    setFilteredData(filtered);
-  }, [searchTerm, data]);
-
-
-
-
-  if (loading) {
-    return <div>Loading...</div>; // Show loading message while data loads
-  }
-
-  const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to Excel sheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(blob, "Stock_Data.xlsx"); // Save the file
+    return rowsToShow.map((row, index) => ({
+      ...row,
+      id: row.id ?? `row-${index}`, // Ensure unique `id`
+      srNo: index + 1
+    }));
   };
+
 
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
@@ -173,6 +264,7 @@ const ErpStockRegister13B = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  if (loading) return <div>Loading...</div>;
   return (
     <>
       <div className="website-content overflow-auto">
@@ -349,19 +441,13 @@ const ErpStockRegister13B = () => {
                         </button>
                       </div>
                       <div className="col-md-3">
-                        <button type="submit" className="btn btn-md">
-                          <svg
-                            width={22}
-                            height={22}
-                            viewBox="0 0 22 22"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M10.9702 17.0592L5.11875 21.4773L3.93017 20.5937L6.18541 13.4616L0.333984 9.07497L0.791127 7.6233L8.04446 7.65486L10.2692 0.522705H11.7321L13.9568 7.65486L21.2102 7.6233L21.6673 9.07497L15.7549 13.4616L18.0102 20.5937L16.8216 21.4773L10.9702 17.0592ZM11.4273 15.4182L15.7854 18.7318L14.1092 13.3984L14.3835 12.5148L18.7721 9.23277H13.3778L12.6464 8.66472L10.9702 3.36294L9.32446 8.69628L8.59303 9.26432H3.16827L7.55684 12.5464L7.83113 13.43L6.15494 18.7633L10.513 15.4182H11.4273Z"
-                              fill="#8B0203"
-                            />
-                          </svg>
+                        <button type="submit" className="btn btn-md" onClick={toggleShowOnlyPinned}>
+                          {showOnlyPinned ? <svg class="star-icon pinned-star" data-id="259" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#8B0203" stroke="#8B0203">
+                            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+                          </svg> : <svg class="star-icon" data-id="260" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#cccccc" stroke="#cccccc">
+                            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+                          </svg>}
+
                         </button>
                       </div>
                       <div className="col-md-3">
@@ -424,19 +510,47 @@ const ErpStockRegister13B = () => {
               className="tbl-container  px-1 mt-3"
               style={{ width: "max-congent", maxHeight: "max-content", boxShadow: "unset" }}
             >
-              <DataTable
-                data={filteredData} // Use fetched and transformed data
+              <DataGrid
+                rows={getTransformedRows().slice(startEntry - 1, endEntry)} // Show paginated rows
                 columns={columns}
-                className="display"
-                options={{
-                  paging: true,           // Enable pagination
-                  pageLength: 10,          // Items per page
-                  lengthChange: false,      // Allow user to change the page length
-                  searching: false,        // Disable search bar
-                  ordering: true,         // Disable column sorting
-                  info: true
-                }}
+                pageSize={pageSize}
+                autoHeight
+                getRowId={(row) => row.id ?? row.srNo}
               />
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                padding={2}
+              >
+                <Pagination
+                  count={Math.ceil(filteredData.length / pageSize)} // Total pages
+                  page={page}
+                  onChange={(event, value) => setPage(value)} // Handle page changes
+                  siblingCount={1} // Number of sibling page buttons
+                  boundaryCount={1} // Number of boundary page buttons
+                  color="red"
+                  showFirstButton
+                  showLastButton
+                  className="display"
+                  options={{
+                    paging: true,           // Enable pagination
+                    pageLength: 10,          // Items per page
+                    lengthChange: false,      // Allow user to change the page length
+                    searching: false,        // Disable search bar
+                    ordering: true,         // Disable column sorting
+                    info: true
+                  }}
+                />
+                {/* Dynamic Entries Info */}
+                <Typography variant="body2">
+                  Showing {startEntry} to {endEntry} of {filteredData.length}{" "}
+                  entries
+                </Typography>
+
+                {/* Pagination Buttons */}
+              </Stack>
+
             </div>
           </div>
         </div>
@@ -777,69 +891,97 @@ const ErpStockRegister13B = () => {
       </Modal>
 
       <Modal
-        centered
-        size="md"
         show={settingShow}
-        onHide={handleSettingClose}
-        backdrop="true" // Modal closes on backdrop click
-        keyboard={true} // Modal closes on 'ESC' key press
-        className="modal-centered-custom" // Custom class to handle centering
+        onHide={settingShow}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
       >
         <Modal.Header>
-          <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
-            <h4
-              className="modal-title text-center w-100"
-              style={{ fontWeight: 500 }}
-            >
-              Layout
-            </h4>
-            <button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={handleSettingClose}
-            />
-          </div>
-        </Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
 
-        <Modal.Body>
-          {columns.map((column, index) => (
-            <div
-              className="row justify-content-between align-items-center mt-2"
-              key={index}
-            >
-              <div className="col-md-6">
-                <button type="submit" className="btn btn-md">
-                  <svg key={index}
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="22"
-                    height="22"
-                    viewBox="0 0 48 48"
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
                     fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                      fill="black"
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
                 </button>
-                <label>   {column.title}</label>
+              </div>
+              <Button style={{ textDecoration: "underline" }} variant="alert" onClick={handleReset}>
+                Reset
+              </Button>
+            </div>
+          </div>
+        </Modal.Header>
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns.filter((column) => column.field !== "srNo" && column.field !== "Star").map((column, index) => (
+            <div
+              className="row justify-content-between align-items-center mt-2"
+              key={column.field} // Use column.field as the key
+            >
+              <div className="col-md-6">
+                <button type="submit" className="btn btn-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
+                </button>
+                <label>{column.headerName}</label>
               </div>
               <div className="col-md-4">
                 <div className="form-check form-switch mt-1">
-                  <input key={index}
+                  <input
                     className="form-check-input"
                     type="checkbox"
+                    checked={columnVisibility[column.field]}
+                    onChange={() => handleToggleColumn(column.field)}
                     role="switch"
-                    id="flexSwitchCheckDefault"
+                    id={`flexSwitchCheckDefault-${column.field}`} // Unique ID for each input
                   />
                 </div>
               </div>
             </div>
           ))}
         </Modal.Body>
+
+        <Modal.Footer>
+
+          <Button variant="primary" onClick={handleShowAll}>
+            Show All
+          </Button>
+
+          <Button variant="danger" onClick={handleHideAll}>
+            Hide All
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );

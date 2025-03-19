@@ -106,14 +106,14 @@ const CreateBOQ = () => {
     // setcount(count.filter((row) => row.id !== id));
     // setcounter(counter - 1);
 
-     // Remove the row from count
-  setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+    // Remove the row from count
+    setcount((prevCount) => prevCount.filter((row) => row.id !== id));
 
-  // Remove the corresponding BOQ sub-item
-  setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    // Remove the corresponding BOQ sub-item
+    setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
 
-  // Decrement the counter safely
-  setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+    // Decrement the counter safely
+    setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
   };
 
   // Function to delete a row from Table 2
@@ -166,36 +166,29 @@ const CreateBOQ = () => {
   //   setMaterials((prev) => {
   //     // Filter out selected materials
   //     const updatedMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
-  
+
   //     // Reset selected materials because indexes are shifting
   //     setSelectedMaterials([]);
-  
+
   //     return updatedMaterials;
   //   });
   // };
-
   const handleDeleteAll = () => {
     setMaterials((prev) => {
       // Get the new materials after deletion
       const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
   
-      // Re-map selected values based on the new materials' indexes
-      // const updateSelection = (selectionArray) =>
-      //   newMaterials.map((_, newIndex) => selectionArray[newIndex] || null);
-
-      // const updateSelection = (selectionArray) =>
-      //   newMaterials.map((_, newIndex) => Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : []);
-  
+      // Function to update selections after deletion
       const updateSelection = (selectionArray = []) =>
-        selectionArray.filter((_, index) => !selectedMaterials.includes(index));
-
-      // newMaterials.map((_, newIndex) =>
-      //   selectedMaterials.includes(newIndex) ? [] : (Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : [])
-      // );
-
+        selectedMaterials.reduce((acc, index) => {
+          acc.splice(index, 1); // Remove the selected index
+          return acc;
+        }, [...selectionArray]);
+  
+      // Update all related state variables
       setSelectedSubTypes(updateSelection(selectedSubTypes));
-      setGenericSpecifications(updateSelection([selectedGenericSpecifications]))
-      console.log("specific type:",typeof selectedGenericSpecifications, typeof genericSpecifications)
+      setGenericSpecifications(updateSelection(genericSpecifications));
+      setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
       setSelectedColors(updateSelection(selectedColors));
       setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
       setSelectedUnit2(updateSelection(selectedUnit2));
@@ -204,12 +197,19 @@ const CreateBOQ = () => {
       setWastages(updateSelection(wastages));
       setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
   
+      // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
+      // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
+  
       return newMaterials;
     });
   
     setSelectedMaterials([]); // Clear selected materials
   };
   
+
+
+
+
 
   // const handleSelectRow = (materialName) => {
   //   setSelectedMaterials(
@@ -235,7 +235,7 @@ const CreateBOQ = () => {
         : [...prev, materialIndex] // Select
     );
   };
-  
+
 
   //Material modal and table data handle add or delete
 
@@ -662,7 +662,7 @@ const CreateBOQ = () => {
   const [assetSubTypes, setAssetSubTypes] = useState([]); // For assets
   const [selectedSubTypesAssets, setSelectedSubTypesAssets] = useState([]);
   // Fetch inventory sub-types when materials array changes or inventory type changes
- 
+
 
   // Fetch sub-types for materials
   useEffect(() => {
@@ -738,15 +738,15 @@ const CreateBOQ = () => {
 
   // for generic specification
   const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
-  const [selectedGenericSpecifications, setSelectedGenericSpecifications] =useState([]); // Holds the selected generic specifications for each material
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState([]); // Holds the selected generic specifications for each material
   const [assetGenericSpecifications, setAssetGenericSpecifications] = useState([]); // State to hold the fetched generic specifications for assets
-  const [ selectedAssetGenericSpecifications,setSelectedAssetGenericSpecifications ] = useState([]); // Holds the selected generic specifications for each asset
+  const [selectedAssetGenericSpecifications, setSelectedAssetGenericSpecifications] = useState([]); // Holds the selected generic specifications for each asset
 
   // Fetch generic specifications when materials array changes or material_id changes
 
   // Fetch generic specifications for materials
   useEffect(() => {
-    materials.forEach((material,index) => {
+    materials.forEach((material, index) => {
       if (material.id) {
         axios
           .get(
@@ -775,8 +775,8 @@ const CreateBOQ = () => {
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
               newColors[index] = options; // Update colors for this specific material
-              return newColors;           
-             });
+              return newColors;
+            });
           })
           .catch((error) => {
             console.error("Error fetching generic specifications:", error);
@@ -787,7 +787,7 @@ const CreateBOQ = () => {
 
   // Fetch generic specifications for assets
   useEffect(() => {
-    Assets.forEach((asset,index) => {
+    Assets.forEach((asset, index) => {
       if (asset.id) {
         axios
           .get(
@@ -815,8 +815,8 @@ const CreateBOQ = () => {
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
               newColors[index] = options; // Update colors for this specific material
-              return newColors;           
-             });
+              return newColors;
+            });
           })
           .catch((error) => {
             console.error(
@@ -1271,14 +1271,14 @@ const CreateBOQ = () => {
     const validateDuplicateMaterials = () => {
       const seenCombinations = new Map();
       let errors = {};
-  
+
       predefinedMaterials.forEach((material, index) => {
         if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
           return;
         }
-  
+
         const key = `${material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
-  
+
         if (seenCombinations.has(key)) {
           errors[index] = {
             generic_info: "This combination already exists.",
@@ -1289,19 +1289,19 @@ const CreateBOQ = () => {
           seenCombinations.set(key, true);
         }
       });
-  
+
       // Only update state if errors have changed
       setLocalMaterialErrors((prevErrors) => {
         const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
         return hasChanged ? errors : prevErrors;
       });
-  
+
       return Object.keys(errors).length === 0;
     };
-  
+
     validateDuplicateMaterials();
   }, [predefinedMaterials]); // Runs whenever predefinedMaterials changes
-  
+
 
   // useEffect(() => {
   //   validateDuplicateMaterials();
@@ -1576,7 +1576,7 @@ const CreateBOQ = () => {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
-        console.log("wastage",wastagePercentage)
+        console.log("wastage", wastagePercentage)
         const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
         return parseFloat(totalWithWastage.toFixed(4)); // Adding wastage percentage
       });
@@ -2154,7 +2154,7 @@ const CreateBOQ = () => {
 
                           <h1>predefinedMaterialsData</h1>*/}
 
-{/* <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre>  */}
+                            {/* <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre>  */}
 
                             {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
 
@@ -2301,7 +2301,7 @@ const CreateBOQ = () => {
                                       </td>
                                       <td style={{ width: "300px" }}>
                                         <SingleSelector
-                                          options={genericSpecifications[index] || []}
+                                          options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
                                           onChange={(selectedOption) =>
                                             handleGenericSpecificationChange(index, selectedOption)
                                           }
@@ -2756,7 +2756,7 @@ const CreateBOQ = () => {
                         <div className="mt-3">
                           {/* <h1>boqSubItems</h1> */}
 
-                         {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>  */}
+                          {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>  */}
 
                           <div className=" my-4">
                             <div style={{ overflowX: "auto", maxWidth: "100%" }}>
@@ -3117,15 +3117,15 @@ const CreateBOQ = () => {
                   // </div>
 
                   <div id="full-screen-loader" className="full-screen-loader">
-                  <div className="loader-container">
-                    <img
-                      src="https://newerp.marathonrealty.com/assets/loader.gif"
-                      alt="Loading..."
-                      width={50}
-                    />
-                    <h5>Please wait</h5>
+                    <div className="loader-container">
+                      <img
+                        src="https://newerp.marathonrealty.com/assets/loader.gif"
+                        alt="Loading..."
+                        width={50}
+                      />
+                      <h5>Please wait</h5>
+                    </div>
                   </div>
-                </div>
 
                 )}
                 <button
@@ -3147,7 +3147,7 @@ const CreateBOQ = () => {
       </div>
 
       {/* Modal start */}
-     
+
       {/* Modal end */}
     </>
   );
