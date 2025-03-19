@@ -254,6 +254,16 @@ console.log(boqDetails.assets);   // Should contain an array of assets
   // Filter out the current status from the options
   // const filteredOptions = options?.filter(option => option.value !== boqDetails.status);
 
+  // const filteredOptions = boqDetails.status === 'approved' 
+  // ? options.filter(option => option.value === 'approved') 
+  // : options;
+
+  const filteredOptions = boqDetails.status === 'draft'
+  ? options // Show all options when in draft
+  : boqDetails.status === 'submitted'
+  ? options.filter(option => option.value !== 'draft') // Hide "Draft" after submission
+  : options.filter(option => option.value === 'approved'); // Only show "Approved" if already approved
+
 
 
 
@@ -1086,7 +1096,8 @@ console.log(boqDetails.assets);   // Should contain an array of assets
 
 
                   <SingleSelector
-                    options={options}
+                    // options={options}
+                    options={filteredOptions}
                     onChange={handleStatusChange}
                     // options.find(option => option.value === status)
                     // value={filteredOptions.find(option => option.value === status)}
