@@ -314,7 +314,36 @@ const CreateBOQ = () => {
   // };
 
   const handleDeleteAllAssets = () => {
-    setAssets((prev) => prev.filter((_, index) => !selectedAssets.includes(index))); // Filter using index
+    // setAssets((prev) => prev.filter((_, index) => !selectedAssets.includes(index))); // Filter using index
+
+    setAssets((prev) => {
+      // Get the new materials after deletion
+      const newMaterials = prev.filter((_, index) => !selectedAssets.includes(index));
+  
+      // Function to update selections after deletion
+      const updateSelection = (selectionArray = []) =>
+        selectedAssets.reduce((acc, index) => {
+          acc.splice(index, 1); // Remove the selected index
+          return acc;
+        }, [...selectionArray]);
+  
+      // Update all related state variables
+      setSelectedSubTypesAssets(updateSelection(selectedSubTypesAssets));
+      setAssetGenericSpecifications(updateSelection(assetGenericSpecifications));
+      setSelectedAssetGenericSpecifications(updateSelection(selectedAssetGenericSpecifications));
+      setSelectedAssetColors(updateSelection(selectedAssetColors));
+      setSelectedAssetInventoryBrands(updateSelection(selectedAssetInventoryBrands));
+      setSelectedUnit3(updateSelection(selectedUnit3));
+      setAssetCoefficientFactors(updateSelection(assetCoefficientFactors));
+      setAssetEstimatedQuantities(updateSelection(assetEstimatedQuantities));
+      setAssetWastages(updateSelection(assetWastages));
+      setAssetTotalEstimatedQtyWastages(updateSelection(assetTotalEstimatedQtyWastages));
+  
+      // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
+      // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
+  
+      return newMaterials;
+    });
     setSelectedAssets([]); // Reset selection
   };
 
