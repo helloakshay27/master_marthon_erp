@@ -187,14 +187,15 @@ const CreateBOQ = () => {
       //   newMaterials.map((_, newIndex) => Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : []);
   
       const updateSelection = (selectionArray = []) =>
-        // selectionArray.filter((_, index) => !selectedMaterials.includes(index));
+        selectionArray.filter((_, index) => !selectedMaterials.includes(index));
 
-      newMaterials.map((_, newIndex) =>
-        selectedMaterials.includes(newIndex) ? [] : (Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : [])
-      );
+      // newMaterials.map((_, newIndex) =>
+      //   selectedMaterials.includes(newIndex) ? [] : (Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : [])
+      // );
 
       setSelectedSubTypes(updateSelection(selectedSubTypes));
-      setGenericSpecifications(updateSelection(selectedGenericSpecifications))
+      setGenericSpecifications(updateSelection([selectedGenericSpecifications]))
+      console.log("specific type:",typeof selectedGenericSpecifications, typeof genericSpecifications)
       setSelectedColors(updateSelection(selectedColors));
       setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
       setSelectedUnit2(updateSelection(selectedUnit2));
@@ -737,15 +738,9 @@ const CreateBOQ = () => {
 
   // for generic specification
   const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
-  const [selectedGenericSpecifications, setSelectedGenericSpecifications] =
-    useState([]); // Holds the selected generic specifications for each material
-  const [assetGenericSpecifications, setAssetGenericSpecifications] = useState(
-    []
-  ); // State to hold the fetched generic specifications for assets
-  const [
-    selectedAssetGenericSpecifications,
-    setSelectedAssetGenericSpecifications,
-  ] = useState([]); // Holds the selected generic specifications for each asset
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] =useState([]); // Holds the selected generic specifications for each material
+  const [assetGenericSpecifications, setAssetGenericSpecifications] = useState([]); // State to hold the fetched generic specifications for assets
+  const [ selectedAssetGenericSpecifications,setSelectedAssetGenericSpecifications ] = useState([]); // Holds the selected generic specifications for each asset
 
   // Fetch generic specifications when materials array changes or material_id changes
 
