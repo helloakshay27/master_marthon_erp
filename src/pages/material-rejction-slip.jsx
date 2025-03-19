@@ -106,21 +106,72 @@ const MaterialRejctionSlip = () => {
       });
   }, []);
   // Fetch Data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/mor_rejection_slips.json`);
-        setTableData(response.data);
-      } catch (error) {
-        setError("Failed to fetch data!");
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
+  const [activeTab, setActiveTab] = useState("rejection_slip"); // Default selection
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(`${baseURL}/mor_rejection_slips.json`);
+  //       setTableData(response.data);
+  //     } catch (error) {
+  //       setError("Failed to fetch data!");
+  //       console.error("Error fetching data:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+  const [counts, setCounts] = useState({
+    total: 0,
+    accepted: 0,
+    rejected: 0,
+  });
+
+  const fetchData = async (status = "") => {
+    setLoading(true);
+    setError(null);
+    try {
+      let url = `${baseURL}/mor_rejection_slips.json`;
+
+      if (status) {
+        url += `?q[status_eq]=${status}`;
+      }
+
+      const response = await axios.get(url);
+      console.log("API Response:", response.data);
+
+      if (status) {
+        setTableData(response.data.slips || []); // Only update table for specific status
+      } else {
+        setTableData(response.data.slips || []);
+        setCounts({
+          total: response.data.total_count || 0,
+          accepted: response.data.accepted_count || 0,
+          rejected: response.data.rejected_count || 0,
+        });
+      }
+    } catch (error) {
+      setError("Failed to fetch data!");
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch rejection slips by default on mount
+  useEffect(() => {
     fetchData();
   }, []);
+
+  // Handle tab selection
+  const handleTabClick = (tab, status = "") => {
+    setActiveTab(tab);
+    fetchData(status);
+  };
 
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
@@ -186,11 +237,11 @@ const MaterialRejctionSlip = () => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredData = tableData.filter((item) =>
-    Object.values(item).some((value) =>
-      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  // const filteredData = tableData.filter((item) =>
+  //   Object.values(item).some((value) =>
+  //     value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  //   )
+  // );
 
   return (
     <main className="h-100 w-100">
@@ -203,7 +254,7 @@ const MaterialRejctionSlip = () => {
               Home &gt; Purchase &gt; MOR &gt; Material Rejection Slip
             </a>
             <h5 className="mt-3">Material Rejection Slip</h5>
-            <div className="material-boxes mt-3">
+            {/* <div className="material-boxes mt-3">
               <div className="container-fluid">
                 <div className="row justify-content-center gap-4">
                   <div className="col-md-2 text-center" style={{ opacity: 1 }}>
@@ -222,6 +273,71 @@ const MaterialRejctionSlip = () => {
                     <div className="content-box text-center">
                       <h4 className="content-box-title">Rejected</h4>
                       <p className="content-box-sub ">150</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+
+            <div className="material-boxes mt-3">
+              <div className="container-fluid">
+                <div className="row justify-content-center gap-4">
+                  {/* Rejection Slip List (Default Selected) */}
+                  <div
+                    className="col-md-2 text-center"
+                    style={{
+                      backgroundColor:
+                        activeTab === "rejection_slip"
+                          ? "#8b0203"
+                          : "transparent",
+                      color: activeTab === "rejection_slip" ? "#fff" : "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                    onClick={() => handleTabClick("rejection_slip")}
+                  >
+                    <div className="content-box">
+                      <h4 className="content-box-title">Rejection Slip List</h4>
+                      <p className="content-box-sub">{counts.total}</p>
+                    </div>
+                  </div>
+
+                  {/* Accepted */}
+                  <div
+                    className="col-md-2 text-center"
+                    style={{
+                      backgroundColor:
+                        activeTab === "accepted" ? "#8b0203" : "transparent",
+                      color: activeTab === "accepted" ? "#fff" : "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                    onClick={() => handleTabClick("accepted", "accepted")}
+                  >
+                    <div className="content-box">
+                      <h4 className="content-box-title">Accepted</h4>
+                      <p className="content-box-sub ">{counts.accepted}</p>
+                    </div>
+                  </div>
+
+                  {/* Rejected */}
+                  <div
+                    className="col-md-2 text-center"
+                    style={{
+                      backgroundColor:
+                        activeTab === "rejected" ? "#8b0203" : "transparent",
+                      color: activeTab === "rejected" ? "#fff" : "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                    onClick={() => handleTabClick("rejected", "rejected")}
+                  >
+                    <div className="content-box">
+                      <h4 className="content-box-title">Rejected</h4>
+                      <p className="content-box-sub ">{counts.rejected}</p>
                     </div>
                   </div>
                 </div>
@@ -483,7 +599,7 @@ const MaterialRejctionSlip = () => {
                       </thead>
                       <tbody>
                         {tableData.length > 0 ? (
-                          filteredData.map((item, index) => (
+                          tableData.map((item, index) => (
                             <tr key={item.id}>
                               {columnVisibility.srNo && <td>{index + 1}</td>}
                               {columnVisibility.company && (
