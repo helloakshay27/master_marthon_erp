@@ -254,6 +254,9 @@ console.log(boqDetails.assets);   // Should contain an array of assets
   // Filter out the current status from the options
   // const filteredOptions = options?.filter(option => option.value !== boqDetails.status);
 
+  const filteredOptions = boqDetails.status === 'approved' 
+  ? options.filter(option => option.value === 'approved') 
+  : options;
 
 
 
@@ -1086,7 +1089,8 @@ console.log(boqDetails.assets);   // Should contain an array of assets
 
 
                   <SingleSelector
-                    options={options}
+                    // options={options}
+                    options={filteredOptions}
                     onChange={handleStatusChange}
                     // options.find(option => option.value === status)
                     // value={filteredOptions.find(option => option.value === status)}
