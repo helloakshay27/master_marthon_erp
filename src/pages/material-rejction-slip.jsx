@@ -131,29 +131,47 @@ const MaterialRejctionSlip = () => {
     rejected: 0,
   });
 
-  const fetchData = async (status = "") => {
+  const fetchData = async (status = "", filters = {}) => {
     setLoading(true);
     setError(null);
+
     try {
       let url = `${baseURL}/mor_rejection_slips.json`;
 
-      if (status) {
-        url += `?q[status_eq]=${status}`;
+      // Apply filters dynamically
+      const queryParams = [];
+      if (filters.company) {
+        queryParams.push(
+          `q[good_receive_note_company_id_eq]=${filters.company}`
+        );
       }
+      if (filters.project) {
+        queryParams.push(
+          `q[good_receive_note_project_id_eq]=${filters.project}`
+        );
+      }
+      if (filters.site) {
+        queryParams.push(`q[good_receive_note_pms_site_id_eq]=${filters.site}`);
+      }
+      if (status) {
+        queryParams.push(`q[status_eq]=${status}`);
+      }
+
+      if (queryParams.length) {
+        url += `?${queryParams.join("&")}`;
+      }
+
+      console.log("Fetching Data from URL:", url);
 
       const response = await axios.get(url);
       console.log("API Response:", response.data);
 
-      if (status) {
-        setTableData(response.data.slips || []); // Only update table for specific status
-      } else {
-        setTableData(response.data.slips || []);
-        setCounts({
-          total: response.data.total_count || 0,
-          accepted: response.data.accepted_count || 0,
-          rejected: response.data.rejected_count || 0,
-        });
-      }
+      setTableData(response.data.slips || []);
+      setCounts({
+        total: response.data.total_count || 0,
+        accepted: response.data.accepted_count || 0,
+        rejected: response.data.rejected_count || 0,
+      });
     } catch (error) {
       setError("Failed to fetch data!");
       console.error("Error fetching data:", error);
@@ -173,44 +191,61 @@ const MaterialRejctionSlip = () => {
     fetchData(status);
   };
 
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
+  const [filters, setFilters] = useState({
+    company: null,
+    project: null,
+    site: null,
+  });
 
-    setProjects([]); // Reset projects
-    setSiteOptions([]); // Reset site options
+  // Handle Company Change
+  const handleCompanyChange = (selectedOption) => {
+    setFilters((prev) => ({
+      ...prev,
+      company: selectedOption ? selectedOption.value : null,
+      project: null, // Reset project when company changes
+      site: null, // Reset site when company changes
+    }));
+
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
 
     if (selectedOption) {
-      // Find the selected company from the list
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedOption.value
       );
+
       setProjects(
         selectedCompanyData?.projects.map((prj) => ({
           value: prj.id,
           label: prj.name,
-        }))
+        })) || []
       );
+
+      setSiteOptions([]); // Reset sites when company changes
     }
   };
 
+  // Handle Project Change
   const handleProjectChange = (selectedOption) => {
-    setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
+    setFilters((prev) => ({
+      ...prev,
+      project: selectedOption ? selectedOption.value : null,
+      site: null, // Reset site when project changes
+    }));
 
-    setSiteOptions([]); // Reset site options
+    setSelectedProject(selectedOption);
+    setSelectedSite(null);
 
     if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
       const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
+        (company) => company.id === filters.company
       );
+
       const selectedProjectData = selectedCompanyData?.projects.find(
         (project) => project.id === selectedOption.value
       );
 
-      // Set site options based on selected project
       setSiteOptions(
         selectedProjectData?.pms_sites.map((site) => ({
           value: site.id,
@@ -220,15 +255,32 @@ const MaterialRejctionSlip = () => {
     }
   };
 
+  // Handle Site Change
   const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption);
+    setFilters((prev) => ({
+      ...prev,
+      site: selectedOption ? selectedOption.value : null,
+    }));
 
-    if (selectedOption) {
-      setFormData((prevState) => ({
-        ...prevState,
-        site_id: selectedOption.value, // Update formData with site_id
-      }));
-    }
+    setSelectedSite(selectedOption);
+  };
+
+  const handleFilterSubmit = () => {
+    fetchData("", filters);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      company: null,
+      project: null,
+      site: null,
+    });
+
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    fetchData(); // Fetch all data without filters
   };
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -418,14 +470,14 @@ const MaterialRejctionSlip = () => {
                     <button
                       type="submit"
                       className="col-md-1 purple-btn2 ms-4 mt-5"
-                      // onClick={handleFilterSubmit}
+                      onClick={handleFilterSubmit}
                     >
                       Go{" "}
                     </button>
 
                     <button
                       className="col-md-1 purple-btn2 ms-2 mt-4"
-                      // onClick={handleResetFilters}
+                      onClick={handleResetFilters}
                     >
                       Reset
                     </button>
@@ -435,40 +487,46 @@ const MaterialRejctionSlip = () => {
               </CollapsibleCard>
               {/* <div className="card mx-3 collapsed-card"> */}
               <CollapsibleCard title="Bulk Action">
-                {/* <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3> */}
-                <div className="card-tools"></div>
-                {/* </div> */}
                 <div className="card-body mt-0 pt-0">
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <div className="form-group">
                         <label>From Status</label>
-                        <select
+                        <SingleSelector
                           name="from_status"
                           id="from_status"
-                          className="form-control form-select from"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="send_for_approval">
-                            Sent For Approval
-                          </option>
-                        </select>
+                          className="form-control from"
+                          options={[
+                            { value: "", label: "Select Status" },
+                            { value: "draft", label: "Draft" },
+                            {
+                              value: "send_for_approval",
+                              label: "Sent For Approval",
+                            },
+                          ]}
+                          onChange={(selectedOption) =>
+                            console.log("From Status:", selectedOption)
+                          }
+                        />
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
-                        <select
+                        <SingleSelector
                           name="to_status"
                           id="to_status"
-                          className="form-control form-select to"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="draft">Draft</option>
-                          <option value="send_for_approval">
-                            Sent For Approval
-                          </option>
-                        </select>
+                          className="form-control to"
+                          options={[
+                            { value: "", label: "Select Status" },
+                            { value: "draft", label: "Draft" },
+                            {
+                              value: "send_for_approval",
+                              label: "Sent For Approval",
+                            },
+                          ]}
+                          onChange={(selectedOption) =>
+                            console.log("To Status:", selectedOption)
+                          }
+                        />
                       </div>
                     </div>
                     <div className="col-md-4">
@@ -478,19 +536,16 @@ const MaterialRejctionSlip = () => {
                           className="form-control remark"
                           rows={4}
                           placeholder="Enter ..."
-                          defaultValue={""}
                         />
                       </div>
                     </div>
                     <div className="offset-md-1 col-md-2">
-                      <button className="purple-btn2 m-0 status">
-                        <a style={{ color: "white !important" }}> Submit </a>
-                      </button>
+                      <button className="purple-btn2 m-0 status">Submit</button>
                     </div>
                   </div>
                 </div>
-                {/* </div> */}
               </CollapsibleCard>
+
               <div className="d-flex mt-3 align-items-end px-3">
                 <div className="col-md-6">
                   <div className="input-group">
@@ -721,28 +776,37 @@ const MaterialRejctionSlip = () => {
                 paddingRight: "10px",
               }}
             >
-              {Object.keys(columnVisibility).map((colKey, index) => (
-                <div
-                  className="row justify-content-between align-items-center mt-2"
-                  key={index}
-                >
-                  <div className="col-md-8">
-                    <label className="ms-2">
-                      {colKey.replace(/([A-Z])/g, " $1")}
-                    </label>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-check form-switch mt-1">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={columnVisibility[colKey]}
-                        onChange={() => handleToggleChange(colKey)}
-                      />
+              {Object.keys(columnVisibility).map((colKey, index) => {
+                // Format column names for readability
+                const formattedLabel =
+                  colKey === "srNo"
+                    ? "Sr. No."
+                    : colKey
+                        .replace(/([A-Z])/g, " $1") // Add space before capital letters
+                        .replace(/^./, (str) => str.toUpperCase()) // Capitalize the first letter
+                        .trim();
+
+                return (
+                  <div
+                    className="row justify-content-between align-items-center mt-2"
+                    key={index}
+                  >
+                    <div className="col-md-8">
+                      <label className="ms-2">{formattedLabel}</label>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-check form-switch mt-1">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={columnVisibility[colKey]}
+                          onChange={() => handleToggleChange(colKey)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
