@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/mor.css";
-import { useState, useEffect, useCallback , useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CollapsibleCard from "./base/Card/CollapsibleCards";
 import MaterialModal from "../components/MaterialModal";
@@ -74,81 +74,34 @@ const BOQSubItemTable = ({
   //   });
   //   setSelectedMaterials([]);
   // };
-
+  const updateSelection = (selectionArray = []) =>
+    selectedMaterials.reduce((acc, selected) => {
+      const indexToRemove = selected.rowIndex;
+      if (indexToRemove >= 0 && indexToRemove < acc.length) {
+        acc.splice(indexToRemove, 1);
+      }
+      return acc;
+    }, [...selectionArray]);
+  
   const handleDeleteAllMaterial = () => {
-    // console.log("Selected Materials Before Deletion:", selectedMaterials);
-
     setMaterials((prev) => {
-      // console.log("Previous Materials:", prev);
-
       const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
         const materialsArray = prev[key] || [];
-
-        // console.log(`Processing Key: ${key}, Materials:`, materialsArray);
-
         acc[key] = materialsArray.filter((material, index) => {
-          const isSelected = selectedMaterials.some(selected =>
-            selected.rowIndex === index && selected.materialId === material.id
+          const isSelected = selectedMaterials.some(
+            (selected) =>
+              selected.rowIndex === index && selected.materialId === material.id
           );
-
           return !isSelected;
         });
-
         return acc;
       }, {});
-
-       // Get a flattened list of materials after deletion
-    // const newMaterials = Object.values(filteredMaterials).flat();
-    //   const updateSelection = (selectionArray) =>
-    //     selectionArray.filter((_, index) =>
-    //       selectedMaterials.every((selected) => selected.rowIndex !== index)
-    //     );
-
-        // const updateSelection = (selectionArray) =>
-        //   newMaterials.map((_, newIndex) => Array.isArray(selectionArray[newIndex]) ? selectionArray[newIndex] : []);
   
-      // Update only the affected selections
-      // setSelectedSubTypes(updateSelection(selectedSubTypes));
-      // setGenericSpecifications(updateSelection(selectedGenericSpecifications));
-      // setSelectedColors(updateSelection(selectedColors));
-      // setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
-      // setSelectedUnit2(updateSelection(selectedUnit2));
-      // setCoefficientFactors(updateSelection(coefficientFactors));
-      // setEstimatedQuantities(updateSelection(estimatedQuantities));
-      // setWastages(updateSelection(wastages));
-      // setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-
-      // return filteredMaterials;
-
-        // Get a flattened list of materials **before deletion** for accurate index mapping
-    const oldMaterials = Object.values(prev).flat();
-    const newMaterials = Object.values(filteredMaterials).flat();
-
-    // Function to update selection **without affecting unselected materials**
-    const updateSelection = (selectionArray) =>
-      // selectionArray
-      //   .map((item, index) => ({
-      //     item,
-      //     material: oldMaterials[index], // Keep track of original material
-      //   }))
-      //   .filter(({ material }) =>
-      //     newMaterials.some((newMat) => newMat.id === material?.id)
-      //   )
-      //   .map(({ item }) => item); // Extract the updated selection
-
-      selectionArray
-      .map((item, index) => ({
-        item: Array.isArray(item) ? item : [], // Ensure it's always an array
-        material: oldMaterials[index] || null, // Prevent undefined errors
-      }))
-      .filter(({ material }) =>
-        material && newMaterials.some((newMat) => newMat.id === material.id)
-      )
-      .map(({ item }) => item); // Extract the updated selection
-
-    // Update only the affected selections
+      return filteredMaterials;
+    });
+  
+    // Use updateSelection for filtering state updates
     setSelectedSubTypes(updateSelection(selectedSubTypes));
-    setGenericSpecifications(updateSelection(selectedGenericSpecifications));
     setSelectedColors(updateSelection(selectedColors));
     setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
     setSelectedUnit2(updateSelection(selectedUnit2));
@@ -156,12 +109,24 @@ const BOQSubItemTable = ({
     setEstimatedQuantities(updateSelection(estimatedQuantities));
     setWastages(updateSelection(wastages));
     setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-
-    return filteredMaterials;
-    });
-
-    setSelectedMaterials([]);
+    setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
+  
+    // Remove only selected materials instead of clearing everything
+    setSelectedMaterials((prev) =>
+      prev.filter(
+        (selected) =>
+          !materials.some(
+            (material) =>
+              material.id === selected.materialId &&
+              materials.indexOf(material) === selected.rowIndex
+          )
+      )
+    );
   };
+  
+  
+  
+
 
   // Handle input change in specific row
   const handleInputChange = (index, field, value) => {
@@ -395,7 +360,7 @@ const BOQSubItemTable = ({
   ] = useState([]); // Holds the selected generic specifications for each asset
 
   useEffect(() => {
-    materials.forEach((material,index) => {
+    materials.forEach((material, index) => {
       if (material.id) {
         axios
           .get(
@@ -424,8 +389,8 @@ const BOQSubItemTable = ({
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
               newColors[index] = options; // Update colors for this specific material
-              return newColors;           
-             });
+              return newColors;
+            });
           });
         // .catch(error => console.error('Error fetching generic specifications:', error));
       }
@@ -434,7 +399,7 @@ const BOQSubItemTable = ({
 
   // Fetch generic specifications for assets
   useEffect(() => {
-    Assets.forEach((asset,index) => {
+    Assets.forEach((asset, index) => {
       if (asset.id) {
         axios
           .get(
@@ -462,8 +427,8 @@ const BOQSubItemTable = ({
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
               newColors[index] = options; // Update colors for this specific material
-              return newColors;           
-             });
+              return newColors;
+            });
 
           });
         // .catch(error => console.error('Error fetching generic specifications for asset:', error));
@@ -809,15 +774,15 @@ const BOQSubItemTable = ({
     setAssetCostQTY(updatedAssetCostQTY);
   };
 
-  
 
 
- 
-
-  
 
 
-  
+
+
+
+
+
   // const validateDuplicates = useCallback(() => {
   //   const seenCombinations = new Map();
   //   const errors = {};
@@ -841,14 +806,14 @@ const BOQSubItemTable = ({
   // }, [predefinedMaterials]);
 
   // ✅ Memoizing predefinedAssets
- 
 
- 
 
- 
+
+
+
 
   // ✅ Updating material errors and BoqSubItems (Fixed infinite loop)
-//  .................
+  //  .................
 
   const handleCostQtyChange = (id, value) => {
     // This will call the parent's handleInputChange2 method
@@ -948,8 +913,8 @@ const BOQSubItemTable = ({
       estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
     }));
   }, [
-    materials, selectedSubTypes, selectedGenericSpecifications, selectedColors, 
-    selectedInventoryBrands, selectedUnit2, coefficientFactors, 
+    materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
+    selectedInventoryBrands, selectedUnit2, coefficientFactors,
     estimatedQuantities, wastages, totalEstimatedQtyWastages
   ]);
 
@@ -968,8 +933,8 @@ const BOQSubItemTable = ({
       cost_qty: parseFloat(assetCostQTY[i]) || 0,
     }));
   }, [
-    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors, 
-    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors, 
+    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors,
+    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors,
     assetEstimatedQuantities, assetWastages, assetTotalEstimatedQtyWastages, assetCostQTY
   ]);
 
@@ -995,12 +960,12 @@ const BOQSubItemTable = ({
     return errors;
   }, []);
 
-   // ✅ Memoized validation results (prevents infinite updates)
-   const materialErrors = useMemo(() => validateDuplicates(predefinedMaterials), [predefinedMaterials, validateDuplicates]);
-   const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
+  // ✅ Memoized validation results (prevents infinite updates)
+  const materialErrors = useMemo(() => validateDuplicates(predefinedMaterials), [predefinedMaterials, validateDuplicates]);
+  const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
 
   useEffect(() => {
-    console.log("boq sub id vaidation:",boqSubItemId)
+    // console.log("boq sub id vaidation:", boqSubItemId)
     if (!boqSubItemId) return;
 
     // Only update state if there is a real change
@@ -1015,7 +980,7 @@ const BOQSubItemTable = ({
           : item
       );
     });
-    
+
   }, [boqSubItemId, predefinedMaterials, materialErrors]);
 
   // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
@@ -1243,7 +1208,7 @@ const BOQSubItemTable = ({
                                 </td>
                                 <td>
                                   <SingleSelector
-                                    options={genericSpecifications[index] || []} // Get the generic specifications for the specific material
+                                    options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
                                     onChange={(selectedOption) =>
                                       handleGenericSpecificationChange(
                                         index,
