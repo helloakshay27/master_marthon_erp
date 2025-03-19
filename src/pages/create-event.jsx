@@ -54,7 +54,7 @@ export default function CreateEvent() {
   const [selectedStrategy, setSelectedStrategy] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
-   const [eventStatus, setEventStatus] = useState("");
+  const [eventStatus, setEventStatus] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedCity, setSelectedCity] = useState([]);
@@ -336,9 +336,9 @@ export default function CreateEvent() {
   };
 
   const handleRemoveTextarea = (id) => {
-    const updatedTextareas = textareas.filter((textarea) => textarea.id !== id)
-    console.log("updatedTextareas",updatedTextareas);
-    
+    const updatedTextareas = textareas.filter((textarea) => textarea.id !== id);
+    console.log("updatedTextareas", updatedTextareas);
+
     setTextareas([...updatedTextareas]);
   };
 
@@ -378,26 +378,41 @@ export default function CreateEvent() {
   const handleRemoveDocumentRow = (index) => {
     if (documentRows.length > 1) {
       const updatedRows = documentRows.filter((_, i) => i !== index);
+
+      // Reset row numbers properly
+      updatedRows.forEach((row, i) => {
+        row.srNo = i + 1;
+      });
+
       documentRowsRef.current = updatedRows;
-      console.log("updatedRows", updatedRows);
       setDocumentRows([...updatedRows]);
     }
   };
 
   const handleFileChange = (index, file) => {
+    if (!file) return; // Ensure a file is selected
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
+
       documentRowsRef.current[index].upload = {
         filename: file.name,
         content: base64String,
         content_type: file.type,
       };
+
       setDocumentRows([...documentRowsRef.current]);
     };
-    reader.readAsDataURL(file);
-  };
 
+    reader.readAsDataURL(file);
+
+    // Reset the input field to allow re-selecting the same file
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = ""; // Clear input value
+    }
+  };
   const appendFormData = (formData, data, parentKey = "") => {
     if (data && typeof data === "object" && !(data instanceof File)) {
       Object.keys(data).forEach((key) => {
@@ -868,10 +883,7 @@ export default function CreateEvent() {
                           ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan="5"
-                            className="text-center"
-                          >
+                          <td colSpan="5" className="text-center">
                             No vendors selected
                           </td>
                         </tr>
@@ -908,24 +920,46 @@ export default function CreateEvent() {
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
                     upload: (
-                      <input
-                        type="file"
-                        onChange={(e) =>
-                          handleFileChange(index, e.target.files[0])
-                        }
-                        key={row?.srNo}
-                        defaultValue={
-                          row?.upload?.filename ? row.upload.filename : ""
-                        }
-                        multiple
-                        accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                      />
+                      <td
+                      style={{border:"none"}}
+                      >
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          id={`file-input-${index}`}
+                          key={row?.srNo}
+                          style={{ display: "none" }} // Hide input
+                          onChange={(e) =>
+                            handleFileChange(index, e.target.files[0])
+                          }
+                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                        />
+
+                        <label
+                          htmlFor={`file-input-${index}`}
+                          style={{
+                            display: "inline-block",
+                            width: "300px",
+                            padding: "10px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            color: "#555",
+                            backgroundColor: "#f5f5f5",
+                            textAlign: "center",
+                          }}
+                        >
+                          {row.upload?.filename
+                            ? row.upload.filename
+                            : "Choose File"}
+                        </label>
+                      </td>
                     ),
                     action: (
                       <button
                         className="btn btn-danger"
                         onClick={() => handleRemoveDocumentRow(index)}
-                        disabled={index === 0}
+                        disabled={documentRows.length === 1}
                       >
                         Remove
                       </button>
@@ -971,9 +1005,11 @@ export default function CreateEvent() {
                             onChange={(option) =>
                               handleConditionChange(textarea.id, option)
                             }
-                            defaultValue={termsOptions.find(
-                              (option) => option.condition === textarea.value
-                            )?.value}
+                            defaultValue={
+                              termsOptions.find(
+                                (option) => option.condition === textarea.value
+                              )?.value
+                            }
                           />
                         </td>
                         <td>
@@ -1648,4 +1684,3 @@ export default function CreateEvent() {
     </>
   );
 }
-    
