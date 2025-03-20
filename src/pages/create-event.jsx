@@ -62,7 +62,7 @@ export default function CreateEvent() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [eventNo, setEventNo] = useState("");
   const [eventName, seteventName] = useState("");
-  const [textareas, setTextareas] = useState([{ id: Date.now(), value: "" }]);
+  const [textareas, setTextareas] = useState([{ id: Date.now(), value: "", textareaId:0 }]);
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
@@ -332,7 +332,7 @@ export default function CreateEvent() {
   };
 
   const handleAddTextarea = () => {
-    setTextareas([...textareas, { id: Date.now(), value: "" }]);
+    setTextareas([...textareas, { id: Date.now(), value: "", textareaId:0 }]);
   };
 
   const handleRemoveTextarea = (id) => {
@@ -354,6 +354,8 @@ export default function CreateEvent() {
     const selectedCondition = termsOptions.find(
       (option) => String(option.value) === String(selectedOption)
     );
+    console.log("selectedCondition", selectedCondition);
+    
 
     if (selectedCondition) {
       setTextareas(
@@ -362,6 +364,7 @@ export default function CreateEvent() {
             ? {
                 id: textarea.id,
                 value: selectedCondition.condition,
+                textareaId: selectedCondition.value,
               }
             : textarea
         )
@@ -463,6 +466,7 @@ export default function CreateEvent() {
     }
 
     setSubmitted(true);
+    console.log("textareas", textareas);
 
     const eventData = {
       event: {
@@ -517,7 +521,7 @@ export default function CreateEvent() {
           },
         ],
         resource_term_conditions_attributes: textareas.map((textarea) => ({
-          term_condition_id: textarea.id,
+          term_condition_id: textarea.textareaId,
           condition_type: "general",
           condition: textarea.value,
         })),
