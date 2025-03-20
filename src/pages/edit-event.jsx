@@ -18,7 +18,6 @@ import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
-
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
@@ -540,31 +539,41 @@ export default function EditEvent() {
 
   const handleRemoveDocumentRow = (index) => {
     if (documentRows.length > 1) {
-      documentRowsRef.current = documentRowsRef.current.filter(
-        (_, i) => i !== index
-      );
-      setDocumentRows([...documentRowsRef.current]);
+      const updatedRows = documentRows.filter((_, i) => i !== index);
+
+      // Reset row numbers properly
+      updatedRows.forEach((row, i) => {
+        row.srNo = i + 1;
+      });
+
+      documentRowsRef.current = updatedRows;
+      setDocumentRows([...updatedRows]);
     }
   };
 
-  const handleFileChange = (srNo, file) => {
-    const index = documentRows.findIndex((row) => row.srNo === srNo);
-    if (index === -1) {
-      console.error("Invalid index for file upload:", srNo);
-      return;
-    }
+  const handleFileChange = (index, file) => {
+    if (!file) return; // Ensure a file is selected
 
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
+
       documentRowsRef.current[index].upload = {
         filename: file.name,
         content: base64String,
         content_type: file.type,
       };
+
       setDocumentRows([...documentRowsRef.current]);
     };
+
     reader.readAsDataURL(file);
+
+    // Reset the input field to allow re-selecting the same file
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = ""; // Clear input value
+    }
   };
 
   const fetcher = (url, options) =>
@@ -1059,24 +1068,48 @@ export default function EditEvent() {
                   onRowSelect={undefined}
                   resetSelectedRows={undefined}
                   onResetComplete={undefined}
-                  data={documentRows.map((row) => ({
-                    ...row,
+                  data={documentRows.map((row, index) => ({
                     upload: (
-                      <input
-                        type="file"
-                        onChange={(e) =>
-                          handleFileChange(row.srNo, e.target.files[0])
-                        }
-                        ref={fileInputRef}
-                        multiple
-                        accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                      />
+                      <td
+                      style={{border:"none"}}
+                      >
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          id={`file-input-${index}`}
+                          key={row?.srNo}
+                          style={{ display: "none" }} // Hide input
+                          onChange={(e) =>
+                            handleFileChange(index, e.target.files[0])
+                          }
+                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                        />
+
+                        <label
+                          htmlFor={`file-input-${index}`}
+                          style={{
+                            display: "inline-block",
+                            width: "300px",
+                            padding: "10px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            color: "#555",
+                            backgroundColor: "#f5f5f5",
+                            textAlign: "center",
+                          }}
+                        >
+                          {row.upload?.filename
+                            ? row.upload.filename
+                            : "Choose File"}
+                        </label>
+                      </td>
                     ),
                     action: (
                       <button
                         className="btn btn-danger"
-                        onClick={() => handleRemoveDocumentRow(row.srNo)}
-                        disabled={row.srNo === 1}
+                        onClick={() => handleRemoveDocumentRow(index)}
+                        disabled={documentRows.length === 1}
                       >
                         Remove
                       </button>

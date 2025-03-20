@@ -74,54 +74,94 @@ const BOQSubItemTable = ({
   //   });
   //   setSelectedMaterials([]);
   // };
-  const updateSelection = (selectionArray = []) =>
-    selectedMaterials.reduce((acc, selected) => {
-      const indexToRemove = selected.rowIndex;
-      if (indexToRemove >= 0 && indexToRemove < acc.length) {
-        acc.splice(indexToRemove, 1);
+  const handleSelectRowMaterial = (materialId, rowIndex) => {
+    setSelectedMaterials((prev) => {
+      const isSelected = prev.some(
+        (selected) =>
+          selected.boqSubItemId === boqSubItemId &&
+          selected.materialId === materialId &&
+          selected.rowIndex === rowIndex
+      );
+
+      if (isSelected) {
+        return prev.filter(
+          (selected) =>
+            !(
+              selected.boqSubItemId === boqSubItemId &&
+              selected.materialId === materialId &&
+              selected.rowIndex === rowIndex
+
+            )
+        );
+      } else {
+        return [...prev, { boqSubItemId, materialId, rowIndex }];
       }
-      return acc;
-    }, [...selectionArray]);
-  
+    });
+  };
+
   const handleDeleteAllMaterial = () => {
     setMaterials((prev) => {
-      const filteredMaterials = Object.keys(prev).reduce((acc, key) => {
-        acc[key] = (prev[key] || []).filter((material, index) =>
+      // Clone the previous state to avoid mutation
+      const newMaterials = { ...prev };
+      
+      // Only process the current boqSubItemId
+      if (newMaterials[boqSubItemId]) {
+        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
           !selectedMaterials.some(
-            (selected) => selected.rowIndex === index && selected.materialId === material.id
+            selected => 
+              selected.materialId === material.id &&
+              selected.rowIndex === index &&
+              selected.boqSubItemId === boqSubItemId
           )
         );
-        return acc;
-      }, {});
-  
-      return filteredMaterials;
+      }
+      
+      // console.log("Updated materials:", newMaterials);
+      return newMaterials;
     });
   
-    // Update selection states after material deletion
-    setSelectedSubTypes(updateSelection(selectedSubTypes));
-    setSelectedColors(updateSelection(selectedColors));
-    setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
-    setSelectedUnit2(updateSelection(selectedUnit2));
-    setCoefficientFactors(updateSelection(coefficientFactors));
-    setEstimatedQuantities(updateSelection(estimatedQuantities));
-    setWastages(updateSelection(wastages));
-    setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-    setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
+    // Update dependent states with boqSubItemId-aware cleanup
+    const updateSelection = (selectionArray = []) =>
+      selectedMaterials
+        .filter(selected => selected.boqSubItemId === boqSubItemId)
+        .reduce((acc, selected) => {
+          const indexToRemove = selected.rowIndex;
+          if (indexToRemove >= 0 && indexToRemove < acc.length) {
+            acc.splice(indexToRemove, 1);
+          }
+          return acc;
+        }, [...selectionArray]);
   
-    // Remove only selected materials instead of clearing everything
-    setSelectedMaterials((prev) =>
-      prev.filter(
-        (selected) =>
-          !materials.some(
-            (material, index) =>
-              material.id === selected.materialId && index === selected.rowIndex
+    // Update all dependent states
+    setSelectedSubTypes(prev => updateSelection(prev));
+    setSelectedColors(prev => updateSelection(prev));
+    setSelectedInventoryBrands(prev => updateSelection(prev));
+    setSelectedUnit2(prev => updateSelection(prev));
+    setCoefficientFactors(prev => updateSelection(prev));
+    setEstimatedQuantities(prev => updateSelection(prev));
+    setWastages(prev => updateSelection(prev));
+    setTotalEstimatedQtyWastages(prev => updateSelection(prev));
+    setSelectedGenericSpecifications(prev => updateSelection(prev));
+  
+    // Clean up selected materials for this boqSubItemId
+    setSelectedMaterials(prev =>
+      prev.filter(selected => 
+        !prev.some(s => 
+          s.boqSubItemId === boqSubItemId &&
+          ![boqSubItemId]?.some(
+            (material, index) => 
+              material.id === s.materialId && 
+              index === s.rowIndex
           )
+        )
       )
     );
   };
   
-  
-  
+
+
+
+
 
 
   // Handle input change in specific row
@@ -154,26 +194,7 @@ const BOQSubItemTable = ({
   //   );
   // };
 
-  const handleSelectRowMaterial = (materialId, rowIndex) => {
-    setSelectedMaterials((prev) => {
-      const isSelected = prev.some(
-        (selected) =>
-          selected.materialId === materialId && selected.rowIndex === rowIndex
-      );
 
-      if (isSelected) {
-        return prev.filter(
-          (selected) =>
-            !(
-              selected.materialId === materialId &&
-              selected.rowIndex === rowIndex
-            )
-        );
-      } else {
-        return [...prev, { materialId, rowIndex }];
-      }
-    });
-  };
 
   //asset modal and table data handle add or delete
   const [showModalAsset, setShowModalAsset] = useState(false);
@@ -222,7 +243,7 @@ const BOQSubItemTable = ({
   // };
 
   const handleDeleteAllAssets2 = () => {
-    console.log("boqSubItemId", boqSubItemId);
+    // console.log("boqSubItemId", boqSubItemId);
 
     setAssets((prev) => {
       console.log("prev", typeof prev, prev);
@@ -235,7 +256,7 @@ const BOQSubItemTable = ({
         return acc;
       }, {});
 
-      console.log("filteredAssets", filteredAssets);
+      // console.log("filteredAssets", filteredAssets);
 
       return filteredAssets;
     });
@@ -997,10 +1018,15 @@ const BOQSubItemTable = ({
     });
   }, [boqSubItemId, predefinedAssets, assetErrors]);
 
+ 
+  
+
   return (
     <>
       <div className="collapse show">
         <div className="w-100">
+          
+
           <div style={{ overflowX: "auto", maxWidth: "100%" }}>
             <CollapsibleCard title="Material">
               <div className="card   mx-3 mt-2">
@@ -1064,6 +1090,8 @@ const BOQSubItemTable = ({
                                   if (e.target.checked) {
                                     const allSelected = materials.flatMap(
                                       (m, index) => ({
+                                        boqSubItemId: boqSubItemId,
+
                                         materialId: m.id,
                                         rowIndex: index,
                                       })
@@ -1179,8 +1207,10 @@ const BOQSubItemTable = ({
                                     type="checkbox"
                                     checked={selectedMaterials.some(
                                       (selected) =>
+                                        selected.boqSubItemId === boqSubItemId &&
                                         selected.materialId === material.id &&
                                         selected.rowIndex === index
+
                                     )}
                                     onChange={() =>
                                       handleSelectRowMaterial(
