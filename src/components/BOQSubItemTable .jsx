@@ -242,27 +242,27 @@ const BOQSubItemTable = ({
   //   setSelectedAssets([]); // Reset selected assets
   // };
 
-  const handleDeleteAllAssets2 = () => {
-    // console.log("boqSubItemId", boqSubItemId);
+  // const handleDeleteAllAssets2 = () => {
+  //   // console.log("boqSubItemId", boqSubItemId);
 
-    setAssets((prev) => {
-      console.log("prev", typeof prev, prev);
+  //   setAssets((prev) => {
+  //     console.log("prev", typeof prev, prev);
 
-      const filteredAssets = Object.keys(prev).reduce((acc, key) => {
-        const assetsArray = prev[key] || [];
-        acc[key] = assetsArray.filter(
-          (_, index) => !selectedAssets.includes(index)
-        ); // Use index
-        return acc;
-      }, {});
+  //     const filteredAssets = Object.keys(prev).reduce((acc, key) => {
+  //       const assetsArray = prev[key] || [];
+  //       acc[key] = assetsArray.filter(
+  //         (_, index) => !selectedAssets.includes(index)
+  //       ); // Use index
+  //       return acc;
+  //     }, {});
 
-      // console.log("filteredAssets", filteredAssets);
+  //     // console.log("filteredAssets", filteredAssets);
 
-      return filteredAssets;
-    });
+  //     return filteredAssets;
+  //   });
 
-    setSelectedAssets([]); // Reset selection
-  };
+  //   setSelectedAssets([]); // Reset selection
+  // };
 
   // const handleSelectRowAssets2 = (index) => {
   //   const updatedAssets = [...Assets];
@@ -279,14 +279,102 @@ const BOQSubItemTable = ({
   //   );
   // };
 
-  const handleSelectRowAssets2 = (assetIndex) => {
-    setSelectedAssets(
-      (prev) =>
-        prev.includes(assetIndex)
-          ? prev.filter((index) => index !== assetIndex) // Unselect asset
-          : [...prev, assetIndex] // Select asset
+  // const handleSelectRowAssets2 = (assetIndex) => {
+  //   setSelectedAssets(
+  //     (prev) =>
+  //       prev.includes(assetIndex)
+  //         ? prev.filter((index) => index !== assetIndex) // Unselect asset
+  //         : [...prev, assetIndex] // Select asset
+  //   );
+  // };
+
+  // ,.............
+  const handleSelectRowAssets2 = (assetId, rowIndex) => {
+    setSelectedAssets((prev) => {
+      const isSelected = prev.some(
+        (selected) =>
+          selected.boqSubItemId === boqSubItemId &&
+          selected.assetId === assetId &&
+          selected.rowIndex === rowIndex
+      );
+
+      if (isSelected) {
+        return prev.filter(
+          (selected) =>
+            !(
+              selected.boqSubItemId === boqSubItemId &&
+              selected.assetId === assetId &&
+              selected.rowIndex === rowIndex
+
+            )
+        );
+      } else {
+        return [...prev, { boqSubItemId, assetId, rowIndex }];
+      }
+    });
+  };
+
+  const handleDeleteAllAssets2 = () => {
+    setAssets((prev) => {
+      // Clone the previous state to avoid mutation
+      const newMaterials = { ...prev };
+      
+      // Only process the current boqSubItemId
+      if (newMaterials[boqSubItemId]) {
+        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((asset, index) => 
+          !selectedAssets.some(
+            selected => 
+              selected.assetId === asset.id &&
+              selected.rowIndex === index &&
+              selected.boqSubItemId === boqSubItemId
+          )
+        );
+      }
+      
+      // console.log("Updated materials:", newMaterials);
+      return newMaterials;
+    });
+  
+    // Update dependent states with boqSubItemId-aware cleanup
+    const updateSelectionAssets = (selectionArray = []) =>
+      selectedAssets
+        .filter(selected => selected.boqSubItemId === boqSubItemId)
+        .reduce((acc, selected) => {
+          const indexToRemove = selected.rowIndex;
+          if (indexToRemove >= 0 && indexToRemove < acc.length) {
+            acc.splice(indexToRemove, 1);
+          }
+          return acc;
+        }, [...selectionArray]);
+  
+    // Update all dependent states
+    setSelectedSubTypesAssets(prev => updateSelectionAssets(prev));
+    setSelectedAssetColors(prev => updateSelectionAssets(prev));
+    setSelectedAssetInventoryBrands(prev => updateSelectionAssets(prev));
+    setSelectedUnit3(prev => updateSelectionAssets(prev));
+    setAssetCoefficientFactors(prev => updateSelectionAssets(prev));
+    setAssetEstimatedQuantities(prev => updateSelectionAssets(prev));
+    setAssetWastages(prev => updateSelectionAssets(prev));
+    setAssetTotalEstimatedQtyWastages(prev => updateSelectionAssets(prev));
+    setSelectedAssetGenericSpecifications(prev => updateSelectionAssets(prev));
+  
+    // Clean up selected materials for this boqSubItemId
+    setSelectedAssets(prev =>
+      prev.filter(selected => 
+        !prev.some(s => 
+          s.boqSubItemId === boqSubItemId &&
+          ![boqSubItemId]?.some(
+            (asset, index) => 
+              asset.id === s.assetId && 
+              index === s.rowIndex
+          )
+        )
+      )
     );
   };
+  
+
+  // .......
 
   // for subproject material table
 
@@ -939,9 +1027,9 @@ const BOQSubItemTable = ({
     return Assets.map((a, i) => ({
       material_id: a.id,
       material_sub_type_id: selectedSubTypesAssets[i]?.value || "",
-      generic_info_id: selectedGenericSpecifications[i]?.value || "",
-      colour_id: selectedColors[i]?.value || "",
-      brand_id: selectedInventoryBrands[i]?.value || "",
+      generic_info_id: selectedAssetGenericSpecifications[i]?.value || "",
+      colour_id: selectedAssetColors[i]?.value || "",
+      brand_id: selectedAssetInventoryBrands[i]?.value || "",
       uom_id: selectedUnit3[i]?.value || "",
       co_efficient_factor: parseFloat(assetCoefficientFactors[i]) || 0,
       estimated_quantity: parseFloat(assetEstimatedQuantities[i]) || 0,
@@ -950,8 +1038,8 @@ const BOQSubItemTable = ({
       cost_qty: parseFloat(assetCostQTY[i]) || 0,
     }));
   }, [
-    Assets, selectedSubTypesAssets, selectedGenericSpecifications, selectedColors,
-    selectedInventoryBrands, selectedUnit3, assetCoefficientFactors,
+    Assets, selectedSubTypesAssets, selectedAssetGenericSpecifications, selectedAssetColors,
+    selectedAssetInventoryBrands, selectedUnit3, assetCoefficientFactors,
     assetEstimatedQuantities, assetWastages, assetTotalEstimatedQtyWastages, assetCostQTY
   ]);
 
@@ -1442,7 +1530,7 @@ const BOQSubItemTable = ({
                               checked={selectedAssets.length === Assets.length}
                             /> */}
 
-                            <input
+                            {/* <input
                               type="checkbox"
                               onChange={(e) => {
                                 if (e.target.checked) {
@@ -1457,7 +1545,30 @@ const BOQSubItemTable = ({
                                 selectedAssets.length === Assets.length &&
                                 Assets.length > 0
                               }
-                            />
+                            /> */}
+
+<input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const allSelected = Assets.flatMap(
+                                      (m, index) => ({
+                                        boqSubItemId: boqSubItemId,
+
+                                        assetId: m.id,
+                                        rowIndex: index,
+                                      })
+                                    );
+                                    setSelectedAssets(allSelected);
+                                  } else {
+                                    setSelectedMaterials([]);
+                                  }
+                                }}
+                                checked={
+                                  selectedAssets.length ===
+                                  Assets.length && Assets.length > 0
+                                }
+                              />
                           </th>
                           <th
                             rowSpan={2}
@@ -1553,13 +1664,32 @@ const BOQSubItemTable = ({
                                   } // Toggle selection
                                 /> */}
 
-                                <input
+                                {/* <input
                                   key={index}
                                   className="ms-5"
                                   type="checkbox"
                                   checked={selectedAssets.includes(index)} // Use index instead of asset.id
                                   onChange={() => handleSelectRowAssets2(index)} // Pass index instead of asset.id
-                                />
+                                /> */}
+
+<input
+                                    key={index}
+                                    className="ms-5"
+                                    type="checkbox"
+                                    checked={selectedAssets.some(
+                                      (selected) =>
+                                        selected.boqSubItemId === boqSubItemId &&
+                                        selected.assetId === assets.id &&
+                                        selected.rowIndex === index
+
+                                    )}
+                                    onChange={() =>
+                                      handleSelectRowAssets2(
+                                        assets.id,
+                                        index
+                                      )
+                                    }
+                                  />
                               </td>
 
                               <td>{assets.inventory_type_name}</td>
