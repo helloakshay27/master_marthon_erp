@@ -5,6 +5,7 @@ export default function ShortTable({
   editable = false,
   onValueChange,
   onInputClick, // New prop for handling input click
+  onDeleteClick, // New prop for handling delete click
   ...rest
 }) {
   const handleInputChange = (index, newValue) => {
@@ -105,7 +106,7 @@ export default function ShortTable({
                       width: "25px",
                       height: "25px",
                     }}
-                    onClick={() => onValueChange(index)}
+                    onClick={() => onDeleteClick(index)}
                   >
                     <i className="bi bi-trash" style={{ border: 0 }}></i>
                   </button>
