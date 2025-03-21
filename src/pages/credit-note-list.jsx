@@ -25,7 +25,7 @@ const CreditNoteList = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Credit Note List</a>
-          <h5 className="mt-4">Credit Note List</h5>
+          <h5 className="mt-4 fw-bold">Credit Note List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row separteinto5 justify-content-start">
@@ -34,13 +34,13 @@ const CreditNoteList = () => {
                     className="content-box tab-button active"
                     data-tab="total"
                   >
-                    <h4 className="content-box-title">Total</h4>
+                    <h4 className="content-box-title fw-bold">Total</h4>
                     <p className="content-box-sub">150</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title">Pending</h4>
+                    <h4 className="content-box-title fw-bold">Pending</h4>
                     <p className="content-box-sub">4</p>
                   </div>
                 </div>
@@ -49,7 +49,7 @@ const CreditNoteList = () => {
                     className="content-box tab-button"
                     data-tab="pending-approval"
                   >
-                    <h4 className="content-box-title">Draft</h4>
+                    <h4 className="content-box-title fw-bold">Draft</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -58,7 +58,7 @@ const CreditNoteList = () => {
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title">Self Overdue</h4>
+                    <h4 className="content-box-title fw-bold">Self Overdue</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ const CreditNoteList = () => {
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title">Processed</h4>
+                    <h4 className="content-box-title fw-bold">Processed</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -241,14 +241,13 @@ const CreditNoteList = () => {
                       </div>
                     </div>
                     <div className="offset-md-1 col-md-2">
-                      <button className="purple-btn2 m-0">
-                        <a
+                    <button
+                          className="purple-btn2 m-0"
                           style={{ color: "white" }}
-                          href="./erp-material-order-request-create.html"
+                          onClick={() => (window.location.href = "#")}
                         >
                           Submit
-                        </a>
-                      </button>
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -435,21 +434,20 @@ const CreditNoteList = () => {
                         </div>
                       </div>
                       <div className="col-md-3">
-                        <button className="purple-btn2 m-0">
-                          <a
-                            style={{ color: "white" }}
-                            href="./erp-material-order-request-create.html"
-                          >
-                            Clear All
-                          </a>
+                      <button
+                          className="purple-btn2 m-0"
+                          style={{ color: "white" }}
+                          onClick={() => (window.location.href = "#")}
+                        >
+                          Clear All
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mx-3 mt-3">
-                <table className="w-100">
+              <div className="tbl-container mx-3 mt-3"  style={{width:"98%"}}>
+                <table  style={{ width: 'max-content', maxHeight: 'max-content', height: 'auto' }}>
                   <thead>
                     <tr>
                       <th className="text-start">
@@ -526,7 +524,7 @@ const CreditNoteList = () => {
  <Modal.Header closeButton>
           <Modal.Title>Filters</Modal.Title>
         </Modal.Header>
-        <ModalBody className="overflow-auto">
+        <div  className="modal-body " style={{ maxHeight: "400px", overflowY: "auto" }}>
          
   <div className="row">
     <div className="col-md-4">
@@ -583,7 +581,7 @@ const CreditNoteList = () => {
         </select>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Debit Note No.</label>
         <input
@@ -594,7 +592,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Date From 7 to</label>
         <input
@@ -605,7 +603,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Created on From &amp; To</label>
         <input
@@ -616,7 +614,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Dabit Note Type</label>
         <select
@@ -634,7 +632,7 @@ const CreditNoteList = () => {
         </select>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Created on From &amp; To</label>
         <input
@@ -645,7 +643,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>PO No.</label>
         <input
@@ -656,7 +654,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>PO Date</label>
         <input
@@ -667,7 +665,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>PO Value</label>
         <input
@@ -678,7 +676,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Supplier Name</label>
         <input
@@ -689,7 +687,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>GSTIN No.</label>
         <input
@@ -700,7 +698,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>PAN No.</label>
         <input
@@ -711,7 +709,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Debit Note Amount</label>
         <input
@@ -722,7 +720,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Deduction Tax</label>
         <input
@@ -733,7 +731,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Payable Amount</label>
         <input
@@ -744,7 +742,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Addition Tax </label>
         <div className="">
@@ -757,7 +755,7 @@ const CreditNoteList = () => {
         </div>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Total Amount</label>
         <input
@@ -768,7 +766,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Status</label>
         <input
@@ -779,7 +777,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Due Date From &amp; To</label>
         <input
@@ -790,7 +788,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Overdue</label>
         <input
@@ -801,7 +799,7 @@ const CreditNoteList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Due At</label>
         <input
@@ -813,7 +811,7 @@ const CreditNoteList = () => {
       </div>
     </div>
   </div>
- 
+  </div>
 <div className="modal-footer modal-footer-k justify-content-center">
           <a
             className="purple-btn2"
@@ -823,7 +821,7 @@ const CreditNoteList = () => {
           </a>
         </div>
 
-        </ModalBody>
+       
         
 
          </Modal>

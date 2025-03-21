@@ -25,7 +25,7 @@ const BillVerificationList = () => {
      <div className="website-content overflow-auto">
   <div className="module-data-section p-4">
     <a href="">Home &gt; Billing &gt; MOR &gt; Bill Verification</a>
-    <h5 className="mt-4">Bill Verification</h5>
+    <h5 className="mt-4 fw-bold">Bill Verification</h5>
     <div className="mor-tabs mt-4">
       <ul
         className="nav nav-pills mb-3 justify-content-center"
@@ -80,25 +80,25 @@ const BillVerificationList = () => {
         <div className="row separteinto6 justify-content-center">
           <div className="col-md-2 text-center">
             <div className="content-box tab-button active" data-tab="total">
-              <h4 className="content-box-title">Bill List</h4>
+              <h4 className="content-box-title fw-semibold">Bill List</h4>
               <p className="content-box-sub">150</p>
             </div>
           </div>
           <div className="col-md-2 text-center">
             <div className="content-box tab-button" data-tab="draft">
-              <h4 className="content-box-title">Open Bills</h4>
+              <h4 className="content-box-title fw-semibold">Open Bills</h4>
               <p className="content-box-sub">4</p>
             </div>
           </div>
           <div className="col-md-2 text-center">
             <div className="content-box tab-button" data-tab="pending-approval">
-              <h4 className="content-box-title">Received for Verification</h4>
+              <h4 className="content-box-title fw-semibold">Received for Verification</h4>
               <p className="content-box-sub">2</p>
             </div>
           </div>
           <div className="col-md-2 text-center">
             <div className="content-box tab-button" data-tab="self-overdue">
-              <h4 className="content-box-title">Verified</h4>
+              <h4 className="content-box-title fw-semibold">Verified</h4>
               <p className="content-box-sub">2</p>
             </div>
           </div>
@@ -286,14 +286,13 @@ const BillVerificationList = () => {
                 </div>
               </div>
               <div className="offset-md-1 col-md-2">
-                <button className="purple-btn2 m-0">
-                  <a
-                    style={{ color: "white" }}
-                    href="../erp_Billing_&_Accounts/Bill_Verification_(Create).html"
-                  >
-                    Submit
-                  </a>
-                </button>
+              <button
+                          className="purple-btn2 m-0"
+                          style={{ color: "white" }}
+                          onClick={() => (window.location.href = "#")}
+                        >
+                          Submit
+                        </button>
               </div>
             </div>
           </div>
@@ -476,21 +475,20 @@ const BillVerificationList = () => {
                   </div>
                 </div>
                 <div className="col-md-3">
-                  <button className="purple-btn2 m-0">
-                    <a
-                      style={{ color: "white" }}
-                      href="./erp-material-order-request-create.html"
-                    >
-                      Clear All
-                    </a>
-                  </button>
+                <button
+                          className="purple-btn2 m-0"
+                          style={{ color: "white" }}
+                          onClick={() => (window.location.href = "#")}
+                        >
+                          Clear All
+                        </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="tbl-container mx-3 mt-3">
-          <table className="w-100">
+        <div className="tbl-container mx-3 mt-3" style={{width:"98%"}}>
+          <table  style={{ width: 'max-content', maxHeight: 'max-content', height: 'auto' }} >
             <thead>
               <tr>
                 <th className="text-start">
@@ -630,7 +628,7 @@ const BillVerificationList = () => {
         </select>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Sub Project </label>
         <select
@@ -648,7 +646,7 @@ const BillVerificationList = () => {
         </select>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Vendor Name</label>
         <input
@@ -659,7 +657,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Is MSME</label>
         <select
@@ -677,7 +675,7 @@ const BillVerificationList = () => {
         </select>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>PO No.</label>
         <input
@@ -688,7 +686,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Created on From </label>
         <input
@@ -699,7 +697,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Created on To</label>
         <input
@@ -710,7 +708,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Accepted On From</label>
         <input
@@ -721,7 +719,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Accepted On To</label>
         <input
@@ -732,7 +730,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Bill No.</label>
         <input
@@ -743,7 +741,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Bill Date From &amp; To</label>
         <input
@@ -754,7 +752,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Bill Amount</label>
         <input
@@ -765,7 +763,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Bill Copies</label>
         <input
@@ -776,7 +774,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Due</label>
         <input
@@ -787,7 +785,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Due Date From &amp; To</label>
         <input
@@ -798,7 +796,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Certificate No.</label>
         <input
@@ -809,7 +807,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Payable Amount</label>
         <input
@@ -820,7 +818,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Paid</label>
         <div className="">
@@ -833,7 +831,7 @@ const BillVerificationList = () => {
         </div>
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Balance</label>
         <input
@@ -844,7 +842,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Status</label>
         <input
@@ -855,7 +853,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Overdue</label>
         <input
@@ -866,7 +864,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>Assign To</label>
         <input
@@ -877,7 +875,7 @@ const BillVerificationList = () => {
         />
       </div>
     </div>
-    <div className="col-md-4">
+    <div className="col-md-4 mt-2">
       <div className="form-group">
         <label>TAT</label>
         <input
