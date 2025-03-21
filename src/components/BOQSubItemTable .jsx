@@ -1218,7 +1218,7 @@ const BOQSubItemTable = ({
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
-                              Generic Specification
+                              Generic Specification <span>*</span>
                             </th>
                             <th
                               rowSpan={2}
@@ -1593,7 +1593,7 @@ const BOQSubItemTable = ({
                             rowSpan={2}
                             style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
-                            Generic Specification
+                            Generic Specification <span>*</span>
                           </th>
                           <th
                             rowSpan={2}
