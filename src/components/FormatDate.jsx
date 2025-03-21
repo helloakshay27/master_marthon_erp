@@ -12,14 +12,14 @@ const FormatDate = ({ timestamp }) => {
     year: "numeric",
   });
 
-  const formattedTime = date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    // second: "2-digit",
-    hour12: false, // 24-hour format
-  });
+  // const formattedTime = date.toLocaleTimeString("en-US", {
+  //   hour: "2-digit",
+  //   minute: "2-digit",
+  //   // second: "2-digit",
+  //   hour12: false, // 24-hour format
+  // });
 
-  return <div>{`${formattedDate} ${formattedTime}`}</div>;
+  return <div>{`${formattedDate}`}</div>;
 };
 
 export default FormatDate;
