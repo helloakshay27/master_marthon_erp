@@ -58,9 +58,18 @@ export default function CreateRFQForm({
   });
 
   const mapBidTemplateFields = (fields) => {
+    console.log("fields", fields);
+    
     return fields.map((field) => ({
       label: field.field_name,
       value: "", // Initialize with empty value or any default value
+      field_name: field.field_name,
+      is_required: field.is_required ,
+      is_read_only: field.is_read_only ,
+      field_owner: field.field_owner,
+      extra_fields: field.extra_fields || null,
+      created_at: field.created_at || new Date().toISOString(),
+      updated_at: field.updated_at || new Date().toISOString(),
     }));
   };
 
@@ -824,6 +833,11 @@ export default function CreateRFQForm({
                   editable={true}
                   onValueChange={handleShortTableChange}
                   onInputClick={handleEditShortTableRow}
+                  onDeleteClick={(index) => {
+                    const updatedFields = bidTemplateFields.filter((_, i) => i !== index);
+                    setBidTemplateFields(updatedFields);
+                    updateBidTemplateFields(updatedFields);
+                  }}
                 />
               </div>
             </div>

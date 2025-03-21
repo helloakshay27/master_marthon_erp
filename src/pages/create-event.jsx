@@ -530,49 +530,57 @@ export default function CreateEvent() {
           event_template_id: selectedTemplate,
           applied_bid_template_fields_attributes: bidTemplateFields.map(
             (field) => ({
-              field_name: field.label,
+              field_name: field.field_name,
               is_required: field.is_required,
               is_read_only: field.is_read_only,
               field_owner: field.field_owner,
+              extra_fields: field.extra_fields || null,
             })
           ),
           applied_bid_material_template_fields_attributes: additionalFields
             .filter((field) => field.field_name !== "Sr no.")
             .map((field) => ({
               field_name: field.field_name,
-              is_required: field.is_required,
-              is_read_only: field.is_read_only,
-              field_owner: field.field_owner,
+              is_required: field.is_required || false,
+              is_read_only: field.is_read_only || false,
+              field_owner: field.field_owner || "user",
+              field_type: field.field_type || "string",
+              extra_fields: field.extra_fields || null,
             })),
         },
       },
     };
 
+    console.log("payload:-",eventData);
+    console.log("bidTemplate", bidTemplateFields);
+    
+    
+
     try {
-      const response = await fetch(
-        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        }
-      );
-      if (response.ok) {
-        toast.success("Event created successfully!", {
-          autoClose: 1000, // Duration for the toast to disappear (in ms)
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 500);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response data:", errorData);
-        throw new Error("Failed to create event.");
-      }
+      // const response = await fetch(
+      //   `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(eventData),
+      //   }
+      // );
+      // if (response.ok) {
+      //   toast.success("Event created successfully!", {
+      //     autoClose: 1000, // Duration for the toast to disappear (in ms)
+      //   });
+      //   setTimeout(() => {
+      //     navigate(
+      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //     );
+      //   }, 500);
+      // } else {
+      //   const errorData = await response.json();
+      //   console.error("Error response data:", errorData);
+      //   throw new Error("Failed to create event.");
+      // }
     } catch (error) {
       console.error("Error creating event:", error);
       toast.error("Failed to create event.", {

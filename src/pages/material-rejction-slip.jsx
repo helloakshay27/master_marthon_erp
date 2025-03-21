@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import FormatDate from "../components/FormatDate";
+import { useNavigate } from "react-router-dom";
 
 const MaterialRejctionSlip = () => {
   const [tableData, setTableData] = useState([]); // Store API Data
@@ -132,12 +133,19 @@ const MaterialRejctionSlip = () => {
     rejected: 0,
   });
 
-  const fetchData = async (status = "", filters = {}) => {
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    total_pages: 1,
+    total_entries: 0,
+  });
+  const pageSize = 10; // Adjust as needed
+
+  const fetchData = async (status = "", filters = {}, page = 1) => {
     setLoading(true);
     setError(null);
 
     try {
-      let url = `${baseURL}/mor_rejection_slips.json`;
+      let url = `${baseURL}/mor_rejection_slips.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
       // Apply filters dynamically
       const queryParams = [];
@@ -172,6 +180,12 @@ const MaterialRejctionSlip = () => {
         total: response.data.total_count || 0,
         accepted: response.data.accepted_count || 0,
         rejected: response.data.rejected_count || 0,
+      });
+
+      setPagination({
+        current_page: response.data.pagination.current_page,
+        total_pages: response.data.pagination.total_pages,
+        total_entries: response.data.pagination.total_count,
       });
     } catch (error) {
       setError("Failed to fetch data!");
@@ -284,6 +298,21 @@ const MaterialRejctionSlip = () => {
     fetchData(); // Fetch all data without filters
   };
 
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.total_pages) {
+      fetchData("", filters, newPage);
+    }
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    for (let i = 1; i <= pagination.total_pages; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearchChange = (event) => {
@@ -295,6 +324,8 @@ const MaterialRejctionSlip = () => {
   //     value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
   //   )
   // );
+
+  const navigate = useNavigate();
 
   return (
     <main className="h-100 w-100">
@@ -706,7 +737,20 @@ const MaterialRejctionSlip = () => {
                                 </td>
                               )}
                               {columnVisibility.morNo && (
-                                <td>{item.mor_number}</td>
+                                <td
+                                  style={{
+                                    cursor: "pointer",
+                                    color: "#8b0203",
+                                    textDecoration: "underline",
+                                  }}
+                                  onClick={() =>
+                                    navigate(
+                                      `/material-rejection-slip-create/${item.id}`
+                                    )
+                                  }
+                                >
+                                  {item.mor_number}
+                                </td>
                               )}
                               {columnVisibility.materialType && (
                                 <td>{item.material_type}</td>
@@ -757,6 +801,108 @@ const MaterialRejctionSlip = () => {
                     </>
                   )}
                 </table>
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  {/* First Page */}
+                  <li
+                    className={`page-item ${
+                      pagination.current_page === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                    >
+                      First
+                    </button>
+                  </li>
+
+                  {/* Previous Page */}
+                  <li
+                    className={`page-item ${
+                      pagination.current_page === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        handlePageChange(pagination.current_page - 1)
+                      }
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {/* Page Numbers */}
+                  {getPageNumbers().map((pageNumber) => (
+                    <li
+                      key={pageNumber}
+                      className={`page-item ${
+                        pagination.current_page === pageNumber ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pageNumber)}
+                      >
+                        {pageNumber}
+                      </button>
+                    </li>
+                  ))}
+
+                  {/* Next Page */}
+                  <li
+                    className={`page-item ${
+                      pagination.current_page === pagination.total_pages
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        handlePageChange(pagination.current_page + 1)
+                      }
+                    >
+                      Next
+                    </button>
+                  </li>
+
+                  {/* Last Page */}
+                  <li
+                    className={`page-item ${
+                      pagination.current_page === pagination.total_pages
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(pagination.total_pages)}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+
+                {/* Showing Entries Info */}
+                <div>
+                  <p>
+                    Showing{" "}
+                    {Math.min(
+                      (pagination.current_page - 1) * pageSize + 1,
+                      pagination.total_entries
+                    )}{" "}
+                    to{" "}
+                    {Math.min(
+                      pagination.current_page * pageSize,
+                      pagination.total_entries
+                    )}{" "}
+                    of {pagination.total_entries} entries
+                  </p>
+                </div>
               </div>
             </div>
           </div>

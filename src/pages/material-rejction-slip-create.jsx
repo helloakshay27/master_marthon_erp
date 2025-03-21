@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
+import FormatDate from "../components/FormatDate";
 
 const MaterialRejctionSlipCreate = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [decision, setDecision] = useState("");
+  const [reason, setReason] = useState("");
+  const { id } = useParams();
+  const [submitting, setSubmitting] = useState(false); // For loading state during API call
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/mor_rejection_slips/1.json"
+          `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
+          `
         );
         setData(response.data);
       } catch (error) {
@@ -22,8 +29,48 @@ const MaterialRejctionSlipCreate = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
+
+  const handleSubmit = async () => {
+    // Validation: If rejecting, reason must be provided
+    if (decision === "reject" && reason.trim() === "") {
+      alert("Rejection reason is required.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const payload = {
+        status: decision,
+        rejection_reason: decision === "reject" ? reason : "",
+        acceptance_reason: decision === "accept" ? reason : "",
+      };
+
+      const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Add token if required
+      const response = await axios.put(
+        `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Update successful:", response.data);
+      alert("Status updated successfully!");
+      setReason("");
+    } catch (error) {
+      console.error("Error updating rejection slip:", error);
+      alert("Failed to update status. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -82,7 +129,13 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Rejection Date</label>
                     </div>
                     <div className="col-6">
-                      <span>: {data.rejection_date}</span>
+                      {/* <span>:{data.rejection_date}</span> */}
+                      <span>
+                        :{" "}
+                        {new Date(data.rejection_date).toLocaleDateString(
+                          "en-GB"
+                        )}
+                      </span>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
@@ -114,10 +167,20 @@ const MaterialRejctionSlipCreate = () => {
                       <label>PO Date</label>
                     </div>
                     <div className="col-6">
-                      <span>
+                      {/* <span>
                         :{" "}
                         {data.rejection_materials[0]?.grn_material
                           ?.good_receive_note?.po_date || "N/A"}
+                      </span> */}
+
+                      <span>
+                        :{" "}
+                        {data.rejection_materials[0]?.grn_material
+                          ?.good_receive_note?.po_date
+                          ? new Date(
+                              data.rejection_materials[0].grn_material.good_receive_note.po_date
+                            ).toLocaleDateString("en-GB")
+                          : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -167,8 +230,14 @@ const MaterialRejctionSlipCreate = () => {
                                 </td>
                                 <td>{item.grn_material.uom || "N/A"}</td>
                                 <td>
-                                  {item.grn_material.good_receive_note
-                                    .grn_date || "N/A"}
+                                  {/* {item.grn_material.good_receive_note
+                                    .grn_date || "N/A"} */}
+                                  <FormatDate
+                                    timestamp={
+                                      item.grn_material.good_receive_note
+                                        .grn_date || "N/A"
+                                    }
+                                  />
                                 </td>
                                 <td>{item.grn_material.received}</td>
                                 <td>{item.grn_material.defective}</td>
@@ -231,12 +300,19 @@ const MaterialRejctionSlipCreate = () => {
                       {/* Reason for Rejection */}
                       {decision === "reject" && (
                         <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Reason for Rejection</label>
+                          <div className="form-group mt-2">
+                            <label>
+                              Reason for Rejection
+                              <span className="ms-1" color="#8b0203">
+                                *
+                              </span>
+                            </label>
                             <input
                               className="form-control"
                               type="text"
                               placeholder="Enter reason"
+                              value={reason}
+                              onChange={(e) => setReason(e.target.value)}
                             />
                           </div>
                         </div>
@@ -245,12 +321,14 @@ const MaterialRejctionSlipCreate = () => {
                       {/* Reason for Acceptance */}
                       {decision === "accept" && (
                         <div className="col-md-6">
-                          <div className="form-group">
+                          <div className="form-group mt-2">
                             <label>Reason for Acceptance</label>
                             <input
                               className="form-control"
                               type="text"
                               placeholder="Enter reason"
+                              value={reason}
+                              onChange={(e) => setReason(e.target.value)}
                             />
                           </div>
                         </div>
@@ -280,7 +358,13 @@ const MaterialRejctionSlipCreate = () => {
                   <button className="purple-btn2 w-100">Print</button>
                 </div> */}
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100">Submit</button>
+                  <button
+                    className="purple-btn2 w-100"
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                  >
+                    {submitting ? "Submitting..." : "Submit"}
+                  </button>
                 </div>
                 <div className="col-md-2">
                   <button className="purple-btn1 w-100">Cancel</button>

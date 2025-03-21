@@ -125,24 +125,25 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
   };
 
   const handleSaveScheduleFun = () => {
+    const currentTime = new Date();
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
-      : existingData?.start_time || new Date().toISOString();
-
+      : existingData?.start_time || new Date(currentTime.getTime() + 30 * 60000).toISOString();
+  
     const endTimeFormatted = endDate && endTime
       ? `${endDate}T${endTime}:00Z`
       : existingData?.end_time || "";
-
+  
     const evaluationTimeFormatted = evaluationDurationVal && customEvaluationDuration
       ? `${evaluationDurationVal} ${customEvaluationDuration}`
       : existingData?.evaluation_time || "Mins Mins";
-
+  
     const data = {
       start_time: startTime,
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     };
-
+  
     handleSaveSchedule(data);
   };
 

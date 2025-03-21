@@ -383,7 +383,8 @@ function App() {
           <Route path="/sub-mor" element={<SubProject />} />
           sub-mor
           <Route
-            path="/material-rejction-slip-create"
+            // path="/material-rejction-slip-create/:id"
+            path="/material-rejection-slip-create/:id"
             element={<MaterialRejctionSlipCreate />}
           />
           <Route
