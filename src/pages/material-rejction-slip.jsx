@@ -15,6 +15,7 @@ import ButtonChnageIcon from "../components/common/Icon/ButtonChnageIcon";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import FormatDate from "../components/FormatDate";
 
 const MaterialRejctionSlip = () => {
   const [tableData, setTableData] = useState([]); // Store API Data
@@ -679,16 +680,29 @@ const MaterialRejctionSlip = () => {
                                 <td>{item.grn_number}</td>
                               )}
                               {columnVisibility.grnDate && (
-                                <td>{item.grn_date}</td>
+                                // <td>{item.grn_date}</td>
+                                <td>
+                                  <FormatDate timestamp={item.grn_date} />
+                                </td>
                               )}
                               {columnVisibility.rejectionSlipDate && (
-                                <td>{item.rejection_slip_date}</td>
+                                // <td>{item.rejection_slip_date}</td>
+                                <td>
+                                  <FormatDate
+                                    timestamp={item.rejection_slip_date}
+                                  />
+                                </td>
                               )}
                               {columnVisibility.createdOn && (
+                                // <td>
+                                //   {new Date(
+                                //     item.created_on
+                                //   ).toLocaleDateString()}
+                                // </td>
                                 <td>
-                                  {new Date(
-                                    item.created_on
-                                  ).toLocaleDateString()}
+                                  <FormatDate
+                                    timestamp={item.rejection_slip_date}
+                                  />
                                 </td>
                               )}
                               {columnVisibility.morNo && (
@@ -719,7 +733,10 @@ const MaterialRejctionSlip = () => {
                                 <td>{item.status}</td>
                               )}
                               {columnVisibility.dueDate && (
-                                <td>{item.due_date || "N/A"}</td>
+                                // <td>{item.due_date || "N/A"}</td>
+                                <td>
+                                  <FormatDate timestamp={item.due_at} />
+                                </td>
                               )}
                               {columnVisibility.overdue && (
                                 <td>{item.overdue || "N/A"}</td>

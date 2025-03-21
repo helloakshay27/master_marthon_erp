@@ -1209,19 +1209,19 @@ const CreateBOQ = () => {
   }));
 
 
-
+// console.log("pre mtL...", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
     material_sub_type_id: selectedSubTypesAssets[index]
       ? selectedSubTypesAssets[index].value
       : "",
-    generic_info_id: selectedGenericSpecifications[index]
-      ? selectedGenericSpecifications[index].value
+    generic_info_id: selectedAssetGenericSpecifications[index]
+      ? selectedAssetGenericSpecifications[index].value
       : "",
-    colour_id: selectedColors[index] ? selectedColors[index].value : "",
-    brand_id: selectedInventoryBrands[index]
-      ? selectedInventoryBrands[index].value
+    colour_id: selectedAssetColors[index] ? selectedAssetColors[index].value : "",
+    brand_id: selectedAssetInventoryBrands[index]
+      ? selectedAssetInventoryBrands[index].value
       : "",
     uom_id: selectedUnit3[index] ? selectedUnit3[index].value : "",
     co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
@@ -1636,8 +1636,9 @@ const CreateBOQ = () => {
       validationErrors.boqQuantity = "BOQ Quantity is required.";
 
     // If predefinedMaterials is empty, show a toast error
-    if (predefinedMaterials.length === 0 || predefinedAssets.length === 0) {
+    if (predefinedMaterials.length === 0 && predefinedAssets.length === 0) {
       toast.error("Select at least one material or asset.");
+      return; // Exit function if validation fails
     }
 
     const invalidCoefficient = materials.some((material, index) => {
@@ -1645,22 +1646,43 @@ const CreateBOQ = () => {
       const coefficientFactor = coefficientFactors[index];
 
       // Check if the coefficient factor is invalid (NaN or empty)
-      return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+      return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0;
     });
 
     // Validate coefficient factors for assets
     const invalidAssetCoefficient = Assets.some((asset, index) => {
       const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
-      return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+      return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0;
     });
 
     // If any coefficient factor is invalid, show a toast and stop
     if (invalidCoefficient || invalidAssetCoefficient) {
       toast.error(
-        "Co-efficient factor cannot be empty or invalid for any material or asset."
+        "Co-efficient factor cannot be empty,zero or invalid for any material or asset."
       );
       return; // Exit function if validation fails
     }
+
+    const invalidGenericSpecification = materials.some((material, index) => {
+      // Get the selected generic specification for this material
+      const genericSpecification = selectedGenericSpecifications[index];
+    
+      // Check if the generic specification is invalid (empty or undefined)
+      return !genericSpecification || genericSpecification === "";
+    });
+
+    const invalidAssetGenericSpecification = Assets.some((asset, index) => {
+      const genericSpecification = selectedGenericSpecifications[index]; // Assuming an array for assets' generic specifications
+      return !genericSpecification || genericSpecification === "";
+    });
+
+    if (invalidGenericSpecification || invalidAssetGenericSpecification) {
+      toast.error(
+        "Generic Specification is required for all materials and assets."
+      );
+      return; // Exit function if validation fails
+    }
+    
 
     // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
     //   toast.error("Please resolve duplicate materials or assets before submitting.");
@@ -1675,6 +1697,7 @@ const CreateBOQ = () => {
     //  if (!selectedUnit) toast.error("UOM is required.");
 
     // if (!newErrors.project && !newErrors.itemName && !newErrors.boqQuantity && !newErrors.unit) {
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
@@ -1832,6 +1855,140 @@ const CreateBOQ = () => {
         toast.error(`At least one material or asset must be selected for BoQ Sub Item ${i + 1}.`);
         return;
       }
+
+      
+
+      // const invalidCoefficient = boqSubItem?.materials?.some((material, index) => {
+      //   // Get the coefficient factor for this material
+      //   const coefficientFactor = coefficientFactors[index];
+  
+      //   // Check if the coefficient factor is invalid (NaN or empty)
+      //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+      // });
+  
+      // // Validate coefficient factors for assets
+      // const invalidAssetCoefficient =boqSubItem?.assets?.some((asset, index) => {
+      //   const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
+      //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
+      // });
+  
+      // // If any coefficient factor is invalid, show a toast and stop
+      // if (invalidCoefficient || invalidAssetCoefficient) {
+      //   toast.error(
+      //     `Co-efficient factor cannot be empty or invalid for any material or asset inside BoQ Sub Item ${i + 1}.`
+      //   );
+      //   return; // Exit function if validation fails
+      // }
+
+
+      // // if(boqSubItem.materials.length>0) {
+      //   boqSubItems.forEach((boqSubItem, i) => {
+      //   console.log("boq sub mt:",boqSubItem.materials)
+      //   let hasErrors = false; // Flag to track errors
+
+      //   // boqSubItem.materials.forEach((material) => {
+      //   //   const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
+      
+      //   //   if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
+      //   //     toast.error(`Coefficient factor is required for material in BoQ Sub Item ${i + 1}.`, {
+      //   //       // position: "top-right",
+      //   //       // autoClose: 3000,
+      //   //       // hideProgressBar: false,
+      //   //       // closeOnClick: true,
+      //   //       // pauseOnHover: true,
+      //   //       // draggable: true,
+      //   //       // theme: "colored",
+      //   //     });
+      //   //   }
+      //   // });
+
+      //   boqSubItem.materials.forEach((material) => {
+      //     const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
+      
+      //     if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
+      //       hasErrors = true; // Mark that there's an error
+      //     }
+      //   });
+      
+      //   if (hasErrors) {
+      //     toast.error(`Coefficient factor is required for all materials in BoQ Sub Item ${i + 1}.`);
+      //   }
+        
+      // })
+
+
+      let hasErrors = false; // Track global errors
+
+boqSubItems.forEach((boqSubItem, i) => {
+  console.log("boq sub mt:", boqSubItem.materials);
+
+  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+
+  boqSubItem.materials.forEach((material) => {
+    const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
+
+    if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
+      subItemHasErrors = true; // Mark that there's an error for this sub-item
+    }
+  });
+
+  if (subItemHasErrors) {
+    hasErrors = true; // Mark that there are global errors
+    toast.error(`
+      Co-efficient factor cannot be empty,zero or invalid for any materials in BoQ Sub Item ${i + 1}.`);
+  }
+});
+
+// **Prevent form submission if any sub-item has errors**
+if (hasErrors) return;
+
+
+
+let hasErrors2 = false; // Track global errors
+
+boqSubItems.forEach((boqSubItem, i) => {
+  console.log("boq sub mt:", boqSubItem.materials);
+
+  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+
+  boqSubItem.materials.forEach((material) => {
+    const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
+
+    if (!genericInfoId) {
+      subItemHasErrors = true; // Mark that there's an error for this sub-item
+    }
+  });
+
+  if (subItemHasErrors) {
+    hasErrors2 = true; // Mark that there are global errors
+    toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
+  }
+});
+
+// **Prevent form submission if any sub-item has errors**
+if (hasErrors2) return;
+
+
+      // // if (boqSubItem.materials.length > 0) {
+      //   boqSubItems.forEach((boqSubItem, i) => {
+      //   console.log("boq sub mt:", boqSubItem.materials);
+      
+      //   let hasErrors = false; // Flag to track errors
+      
+      //   boqSubItem.materials.forEach((material) => {
+      //     const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
+      
+      //     if (!genericInfoId) {
+      //       hasErrors = true; // Mark that there's an error
+      //     }
+      //   });
+      
+      //   if (hasErrors) {
+      //     toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
+      //   }
+      // })
+
+      
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -2282,7 +2439,7 @@ const CreateBOQ = () => {
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Type</th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material</th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Colour </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Brand </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>UOM</th>
@@ -2529,7 +2686,7 @@ const CreateBOQ = () => {
                                     Assest Sub-Type
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
-                                    Generic Specification
+                                    Generic Specification <span>*</span>
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     Colour

@@ -384,9 +384,7 @@ export default function CreateRFQForm({
 
   const handleRemoveSection = (sectionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].sectionData.forEach((row) => {
-      row._destroy = true;
-    });
+    updatedSections.splice(sectionIndex, 1); // Remove the section at the specified index
     setSections(updatedSections);
   };
 

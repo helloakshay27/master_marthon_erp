@@ -42,131 +42,6 @@ const MaterialRejctionSlipCreate = () => {
               <div class="card-header3">
                 <h3 class="card-title">Material Slip</h3>
               </div>
-              {/* <div class="card-body mt-0 pt-0">
-                <div class="row px-3 mt-3">
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
-                    <div class="col-6">
-                      <label>Company</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        Sanvo Resorts Pvt Ltd
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
-                    <div class="col-6">
-                      <label>Project </label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        Marathon Nexzone
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3">
-                    <div class="col-6">
-                      <label>Sub-Project </label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        Antilia
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Store</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        Antilia
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Issue Slip No</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        ISSUE/213/03/2025
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Requisition Date</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        12/03/2025
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Activity</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        CIVIL WORK
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Supplier Name</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        CIVIL WORK
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Po No</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        54165146
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Po Date</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        08-03-2024
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                    <div class="col-6">
-                      <label>Remark</label>
-                    </div>
-                    <div class="col-6">
-                      <label class="text">
-                        <span class="me-3">:</span>
-                        Rejected
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
 
               <div className="card-body">
                 <div className="row px-3 mt-3">
@@ -387,7 +262,7 @@ const MaterialRejctionSlipCreate = () => {
                 {/* /.row */}
                 {/* /.row */}
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
+              {/* <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
                 <p className="mb-0">Status</p>
                 <select
                   className="form-select purple-btn2"
@@ -398,7 +273,7 @@ const MaterialRejctionSlipCreate = () => {
                   <option value="reject">Reject</option>
                   <option value="submit">Submit</option>
                 </select>
-              </div>
+              </div> */}
 
               <div className="row mt-2 justify-content-end">
                 {/* <div className="col-md-2">
