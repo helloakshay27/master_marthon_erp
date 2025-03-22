@@ -24,7 +24,7 @@ const BillBookingList = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Bill Booking</a>
-          <h5 className="mt-4">Bill Booking</h5>
+          <h5 className="mt-4 fw-bold">Bill Booking</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row separteinto7 justify-content-between">
@@ -33,13 +33,13 @@ const BillBookingList = () => {
                     className="content-box tab-button active"
                     data-tab="total"
                   >
-                    <h4 className="content-box-title">Bill List</h4>
+                    <h4 className="content-box-title fw-semibold">Bill List</h4>
                     <p className="content-box-sub">150</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title">Verified Bills</h4>
+                    <h4 className="content-box-title fw-semibold">Verified Bills</h4>
                     <p className="content-box-sub">4</p>
                   </div>
                 </div>
@@ -48,7 +48,7 @@ const BillBookingList = () => {
                     className="content-box tab-button"
                     data-tab="pending-approval"
                   >
-                    <h4 className="content-box-title">Submit</h4>
+                    <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -57,7 +57,7 @@ const BillBookingList = () => {
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title">Approved</h4>
+                    <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -66,7 +66,7 @@ const BillBookingList = () => {
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title">Proceed</h4>
+                    <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">2</p>
                   </div>
                 </div>
@@ -251,13 +251,12 @@ const BillBookingList = () => {
                         </div>
                       </div>
                       <div className="offset-md-1 col-md-2">
-                        <button className="purple-btn2 m-0">
-                          <a
-                            style={{ color: "white" }}
-                            href="./erp-material-order-request-create.html"
-                          >
-                            Submit
-                          </a>
+                        <button
+                          className="purple-btn2 m-0"
+                          style={{ color: "white" }}
+                          onClick={() => (window.location.href = "#")}
+                        >
+                          Submit
                         </button>
                       </div>
                     </div>
@@ -445,13 +444,12 @@ const BillBookingList = () => {
                         </div>
                       </div>
                       <div className="col-md-3">
-                        <button className="purple-btn2 m-0">
-                          <a
-                            style={{ color: "white" }}
-                            href="./erp-material-order-request-create.html"
-                          >
-                            Clear All
-                          </a>
+                        <button
+                          className="purple-btn2 m-0"
+                          style={{ color: "white" }}
+                          onClick={() => (window.location.href = "")}
+                        >
+                          Clear All
                         </button>
                       </div>
                     </div>
@@ -478,8 +476,8 @@ const BillBookingList = () => {
                   <span>Create Supplier Cert</span>
                 </button>
               </div>
-              <div className="tbl-container mx-3 mt-3">
-                <table className="w-100">
+              <div className="tbl-container mx-3 mt-3" style={{width:"98%"}}>
+                <table  style={{ width: 'max-content', maxHeight: 'max-content', height: 'auto' }}>
                   <thead>
                     <tr>
                       <th className="text-start">
@@ -566,322 +564,325 @@ const BillBookingList = () => {
         <Modal.Header closeButton>
           <Modal.Title>Filters</Modal.Title>
         </Modal.Header>
-        <div className="modal-body " style={{ maxHeight: "400px", overflowY: "auto" }}>
-  <div className="row">
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Mode of Submission</label>
-        <select
-          className="form-control form-select"
-          style={{ width: "100%" }}
-          fdprocessedid="3x7jfv"
+        <div
+          className="modal-body "
+          style={{ maxHeight: "400px", overflowY: "auto" }}
         >
-          <option selected="selected">Alabama</option>
-          <option>Alaska</option>
-          <option>California</option>
-          <option>Delaware</option>
-          <option>Tennessee</option>
-          <option>Texas</option>
-          <option>Washington</option>
-        </select>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Company</label>
-        <select
-          className="form-control form-select"
-          style={{ width: "100%" }}
-          fdprocessedid="3x7jfv"
-        >
-          <option selected="selected">Alabama</option>
-          <option>Alaska</option>
-          <option>California</option>
-          <option>Delaware</option>
-          <option>Tennessee</option>
-          <option>Texas</option>
-          <option>Washington</option>
-        </select>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Project </label>
-        <select
-          className="form-control form-select"
-          style={{ width: "100%" }}
-          fdprocessedid="3x7jfv"
-        >
-          <option selected="selected">Alabama</option>
-          <option>Alaska</option>
-          <option>California</option>
-          <option>Delaware</option>
-          <option>Tennessee</option>
-          <option>Texas</option>
-          <option>Washington</option>
-        </select>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Sub Project </label>
-        <select
-          className="form-control form-select"
-          style={{ width: "100%" }}
-          fdprocessedid="3x7jfv"
-        >
-          <option selected="selected">Alabama</option>
-          <option>Alaska</option>
-          <option>California</option>
-          <option>Delaware</option>
-          <option>Tennessee</option>
-          <option>Texas</option>
-          <option>Washington</option>
-        </select>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Vendor Name</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Is MSME</label>
-        <select
-          className="form-control form-select"
-          style={{ width: "100%" }}
-          fdprocessedid="3x7jfv"
-        >
-          <option selected="selected">Alabama</option>
-          <option>Alaska</option>
-          <option>California</option>
-          <option>Delaware</option>
-          <option>Tennessee</option>
-          <option>Texas</option>
-          <option>Washington</option>
-        </select>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>PO No.</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Created on From </label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Created on To</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Accepted On From</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Accepted On To</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Bill No.</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Bill Date From &amp; To</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Bill Amount</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Bill Copies</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Due</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Due Date From &amp; To</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Certificate No.</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Payable Amount</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Paid</label>
-        <div className="">
-          <input
-            className="form-control"
-            type="text"
-            placeholder=""
-            fdprocessedid="qv9ju9"
-          />
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Mode of Submission</label>
+                <select
+                  className="form-control form-select"
+                  style={{ width: "100%" }}
+                  fdprocessedid="3x7jfv"
+                >
+                  <option selected="selected">Alabama</option>
+                  <option>Alaska</option>
+                  <option>California</option>
+                  <option>Delaware</option>
+                  <option>Tennessee</option>
+                  <option>Texas</option>
+                  <option>Washington</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Company</label>
+                <select
+                  className="form-control form-select"
+                  style={{ width: "100%" }}
+                  fdprocessedid="3x7jfv"
+                >
+                  <option selected="selected">Alabama</option>
+                  <option>Alaska</option>
+                  <option>California</option>
+                  <option>Delaware</option>
+                  <option>Tennessee</option>
+                  <option>Texas</option>
+                  <option>Washington</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Project </label>
+                <select
+                  className="form-control form-select"
+                  style={{ width: "100%" }}
+                  fdprocessedid="3x7jfv"
+                >
+                  <option selected="selected">Alabama</option>
+                  <option>Alaska</option>
+                  <option>California</option>
+                  <option>Delaware</option>
+                  <option>Tennessee</option>
+                  <option>Texas</option>
+                  <option>Washington</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Sub Project </label>
+                <select
+                  className="form-control form-select"
+                  style={{ width: "100%" }}
+                  fdprocessedid="3x7jfv"
+                >
+                  <option selected="selected">Alabama</option>
+                  <option>Alaska</option>
+                  <option>California</option>
+                  <option>Delaware</option>
+                  <option>Tennessee</option>
+                  <option>Texas</option>
+                  <option>Washington</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Vendor Name</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Is MSME</label>
+                <select
+                  className="form-control form-select"
+                  style={{ width: "100%" }}
+                  fdprocessedid="3x7jfv"
+                >
+                  <option selected="selected">Alabama</option>
+                  <option>Alaska</option>
+                  <option>California</option>
+                  <option>Delaware</option>
+                  <option>Tennessee</option>
+                  <option>Texas</option>
+                  <option>Washington</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO No.</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Created on From </label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Created on To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Accepted On From</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Accepted On To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Bill No.</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Bill Date From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Bill Amount</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Bill Copies</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Due</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Due Date From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Certificate No.</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Payable Amount</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Paid</label>
+                <div className="">
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Balance</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Status</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Overdue</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Assign To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>TAT</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Balance</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Status</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Overdue</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Assign To</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>TAT</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-  </div>
-</div>
 
         <div className="modal-footer modal-footer-k justify-content-center">
           <a
@@ -906,199 +907,194 @@ const BillBookingList = () => {
           <Modal.Title>Layout</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-                
-  <div className="row justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-between align-items-center">
-    <div className="col-md-6">
-      <button type="submit" className="btn btn-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={22}
-          height={22}
-          viewBox="0 0 48 48"
-          fill="none"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-            fill="black"
-          />
-        </svg>
-      </button>
-      <label htmlFor=""> Sr No.</label>
-    </div>
-    <div className="col-md-4">
-      <div className="form-check form-switch mt-1">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="flexSwitchCheckDefault"
-        />
-      </div>
-    </div>
-  </div>
- 
-
+          <div className="row justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-between align-items-center">
+            <div className="col-md-6">
+              <button type="submit" className="btn btn-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={22}
+                  height={22}
+                  viewBox="0 0 48 48"
+                  fill="none"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                    fill="black"
+                  />
+                </svg>
+              </button>
+              <label htmlFor=""> Sr No.</label>
+            </div>
+            <div className="col-md-4">
+              <div className="form-check form-switch mt-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
+              </div>
+            </div>
+          </div>
         </Modal.Body>
-       
       </Modal>
-
     </>
   );
 };

@@ -752,6 +752,9 @@ a.purple-btn1:hover {
   background-color: var(--red);
   margin: 8px 8px 8px 0px;
 }
+.purple-btn2-k {
+  color: #fff!important;
+}
 
 .purple-btn2 a {
   color: var(--body-bg-color);
