@@ -399,60 +399,7 @@ const BillVerificationList = () => {
                   </div>
                 </div>
               </div>
-              <div className="row mt-5 justify-content-center px-4">
-                <div className="col-md-8 card mx-3">
-                  <div className="card-header2">
-                    <h3 className="card-title2">
-                      <div className="form-group form-control">
-                        Applied Fliter
-                      </div>
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="row align-items-center">
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Company</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Project</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <p className="px-3">Sub-project</p>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+  
               <div className="d-flex justify-content-end me-3">
                 <button
                   className="purple-btn2 m-0 p-1 px-3"
