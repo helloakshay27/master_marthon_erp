@@ -32,6 +32,7 @@ export default function OverviewTab({
     participated_vendor: 0,
   });
   const [error, setError] = useState(null);
+  const [additionalFields, setAdditionalFields] = useState([]);
 
   const { eventId } = useParams();
 
@@ -94,7 +95,23 @@ export default function OverviewTab({
       }
     };
 
+    const fetchAdditionalFields = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        const additionalFields = response.data.applied_bid_material_template_fields.map(field => ({
+          label: field.field_name,
+          value: ""
+        }));
+        setAdditionalFields(additionalFields);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
     fetchParticipationSummary();
+    fetchAdditionalFields();
   }, [eventId]);
 
   const transformedData = biddingData.flatMap((vendor) =>
@@ -187,6 +204,18 @@ export default function OverviewTab({
     }
     return value;
   };
+
+  const columns = [
+    { label: "Material Type ", key: "sectionName" },
+    { label: "Sub Material Type ", key: "subSectionName" },
+    { label: "Material Name", key: "inventoryName" },
+    { label: "Quantity", key: "quantity" },
+    { label: "UOM", key: "uom" },
+    { label: "Location", key: "location" },
+    { label: "Rate", key: "rate" },
+    { label: "Amount", key: "amount" },
+    ...additionalFields
+  ];
 
   return (
     <div
@@ -454,17 +483,7 @@ export default function OverviewTab({
             <div id="product-sheet" className="mx-5">
               <div className="card card-body p-4 rounded-3">
                 <Table
-                  columns={[
-                    { label: "Material Type ", key: "sectionName" },
-                    { label: "Sub Material Type ", key: "subSectionName" },
-                    { label: "Material Name", key: "inventoryName" },
-                    { label: "Quantity", key: "quantity" },
-                    { label: "UOM", key: "uom" },
-                    // { label: "Material Type", key: "materialType" },
-                    { label: "Location", key: "location" },
-                    { label: "Rate", key: "rate" },
-                    { label: "Amount", key: "amount" },
-                  ]}
+                  columns={columns}
                   data={overviewDatas}
                 />
               </div>
