@@ -788,15 +788,15 @@ export default function EditEvent() {
     console.log("eventData paylaod", eventData);
 
     try {
-        // const data = await updateEvent(id, eventData);
-        // toast.success("Event updated successfully!", {
-        //   autoClose: 1000,
-        // });
-        // setTimeout(() => {
-        //   navigate(
-        //     "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        //   );
-        // }, 1500); // Increase the delay to 1.5 seconds before navigating
+        const data = await updateEvent(id, eventData);
+        toast.success("Event updated successfully!", {
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          navigate(
+            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+        }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
