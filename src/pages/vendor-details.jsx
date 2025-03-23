@@ -21,11 +21,14 @@ export default function VendorDetails() {
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
   const [linkedData, setLinkedData] = useState({});
 
+  const { eventId } = useParams();
+
   const increment = () => {
     if (currentIndex + 1 < bids.length) {
       setCurrentIndex(currentIndex + 1);
     }
   };
+  
 
   // Function to move to the previous bid
   const decrement = () => {
@@ -86,7 +89,7 @@ export default function VendorDetails() {
     const fetchFreightData = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/163/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `https://marathon.lockated.com/rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = response.data.applied_bid_template_fields.map(
           (field) => ({
@@ -110,7 +113,7 @@ export default function VendorDetails() {
     const fetchAdditionalColumns = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/163/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `https://marathon.lockated.com/rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const columns = response.data.applied_bid_material_template_fields.map(
           (field) => ({
@@ -210,14 +213,7 @@ export default function VendorDetails() {
     const frt_vlu_parsed = parseFloat(frt_vlu) || 0;
 
     const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
-    // debugger;
-    // console.log("calculateFreightTotal()", frt_vlu);
-    // console.log("updatedGrossTotal", updatedGrossTotal);
     setGrossTotal(updatedGrossTotal);
-    // setData(updatedData, () => {
-    //   const updatedGrossTotal = calculateSumTotal();
-    //   setGrossTotal(updatedGrossTotal);
-    // });
   };
 
   const calculateFreightTotal = () => {
@@ -294,7 +290,7 @@ export default function VendorDetails() {
     width: "auto", // Allow the other columns to take up available space
   };
 
-  const { eventId } = useParams();
+
 
   const [loading, setLoading] = useState(true);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
@@ -627,10 +623,12 @@ export default function VendorDetails() {
         realised_gst: gstAmount.toFixed(2), // Realised GST for the row
         landed_amount: landedAmount.toFixed(2), // Landed amount for the row
         total_amount: finalTotal.toFixed(2), // Row-specific total amount
+        ...additionalColumns.reduce((acc, col) => {
+          acc[col.key] = row[col.key] || "";
+          return acc;
+        }, {}),
       };
     });
-
-    // console.log("------bid material :", bidMaterialsAttributes);
 
     // Utility function to safely fetch and process values from freightData
     const getFreightDataValue = (label, key) => {
@@ -697,16 +695,16 @@ export default function VendorDetails() {
       // Send POST request
 
       // Validate mandatory fields
-      if (!validateMandatoryFields() || !validateTableData()) {
-        setLoading(false);
-        return; // Stop further execution if validation fails
-      }
+      // if (!validateMandatoryFields() || !validateTableData()) {
+      //   setLoading(false);
+      //   return; // Stop further execution if validation fails
+      // }
 
       const payload = preparePayload();
 
       console.log("payloadssss", payload);
 
-      // console.log("vendor ID", vendorId);
+      console.log("vendor ID", vendorId);
 
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -753,29 +751,6 @@ export default function VendorDetails() {
   console.log("Bid Created:", isBidCreated); // Debugging state
 
   const preparePayload2 = () => {
-    // const bidMaterialsAttributes = data.map((row) => {
-    //   // Calculate row-specific totals
-    //   const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Row total based on price and quantity
-    //   const gstAmount = rowTotal * (parseFloat(row.gst || 0) / 100); // GST for the row
-    //   const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100); // Discount for the row
-    //   const landedAmount = rowTotal + gstAmount - discountAmount; // Final landed amount for the row
-    //   const finalTotal = landedAmount + gstAmount;
-
-    //   return {
-    //     event_material_id: row.eventMaterialId,
-    //     quantity_available: row.quantityAvail || 0,
-    //     price: Number(row.price || 0),
-    //     discount: Number(row.discount || 0),
-    //     bid_material_id: row.id,
-    //     vendor_remark: row.vendorRemark || "",
-    //     gst: row.gst || 0,
-    //     realised_discount: discountAmount, // Realised discount for the row
-    //     realised_gst: gstAmount, // Realised GST for the row
-    //     landed_amount: landedAmount, // Landed amount for the row
-    //     total_amount: finalTotal, // Row-specific total amount
-    //   };
-    // });
-
     const bidMaterialsAttributes = data.map((row) => {
       // Calculate row-specific totals
       const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Row total based on price and quantity
@@ -796,10 +771,12 @@ export default function VendorDetails() {
         realised_gst: gstAmount.toFixed(2), // Realised GST for the row
         landed_amount: landedAmount.toFixed(2), // Landed amount for the row
         total_amount: finalTotal.toFixed(2), // Row-specific total amount
+        ...additionalColumns.reduce((acc, col) => {
+          acc[col.key] = row[col.key] || "";
+          return acc;
+        }, {}),
       };
     });
-
-    // console.log("------bid material :", bidMaterialsAttributes);
 
     // Utility function to safely fetch and process values from freightData
     const getFreightDataValue = (label, key) => {
@@ -868,7 +845,6 @@ export default function VendorDetails() {
 
     // Example: API call to revise the bid
     setLoading(true);
-
     setSubmitted(true);
 
     const userConfirmed = window.confirm(
@@ -885,10 +861,10 @@ export default function VendorDetails() {
       // Send POST request
 
       // Validate mandatory fields
-      if (!validateMandatoryFields() || !validateTableData()) {
-        setLoading(false);
-        return; // Stop further execution if validation fails
-      }
+      // if (!validateMandatoryFields() || !validateTableData()) {
+      //   setLoading(false);
+      //   return; // Stop further execution if validation fails
+      // }
 
       const payload2 = preparePayload2();
       // console.log("payloadssss2 revised", payload2);
