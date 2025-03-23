@@ -401,62 +401,9 @@ const BillEntryList = () => {
                   </div>
                 </div>
               </div>
-              <div className="row mt-5 justify-content-center px-4">
-                <div className="col-md-8 card mx-3">
-                  <div className="card-header2">
-                    <h3 className="card-title2">
-                      <div className="form-group form-control">
-                        Applied Fliter
-                      </div>
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="row align-items-center">
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Company</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Project</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <p className="px-3">Sub-project</p>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+             
               <div className="d-flex justify-content-end me-3">
-                <button className="purple-btn2 m-0 p-1 px-3">
+                <button className="purple-btn2 m-0 p-1 px-3"  onClick={openFilterModal}>
                   <div style={{ color: "white" }}>
                     <span className="material-symbols-outlined align-text-top me-2">
                       add{" "}
@@ -553,7 +500,7 @@ const BillEntryList = () => {
         className="modal-centered-custom"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Filters</Modal.Title>
+          <Modal.Title>Add</Modal.Title>
         </Modal.Header>
         <div
           className="modal-body "
@@ -563,73 +510,41 @@ const BillEntryList = () => {
             <div className="col-md-4">
               <div className="form-group">
                 <label>Mode of Submission</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4">
               <div className="form-group">
                 <label>Company</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4">
               <div className="form-group">
                 <label>Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Sub Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4 mt-2">
@@ -646,19 +561,11 @@ const BillEntryList = () => {
             <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Is MSME</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4 mt-2">
