@@ -1503,7 +1503,7 @@ const BillBookingCreate = () => {
                   data-bs-dismiss="modal"
                   data-bs-target="#secModal"
                   fdprocessedid="xn3e6n"
-                  onClick={openAttachTwoModal}
+                  // onClick={openAttachTwoModal}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
