@@ -3,8 +3,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button, ModalBody, ModalFooter } from "react-bootstrap";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const BillPaymentList = () => {
+  const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+
+  // Static data for SingleSelector (this will be replaced by API data later)
+  const companyOptions = [
+    { value: "company1", label: "Company 1" },
+    { value: "company2", label: "Company 2" },
+    { value: "company3", label: "Company 3" },
+  ];
+
+  // Handle value change in SingleSelector
+  const handleChange = (value) => {
+    setSelectedValue(value);
+  };
+
   const [bulkActionDetails, setbulkActionDetails] = useState(true);
   const [paymentModal, setpaymentModal] = useState(false);
   const [makeCashModal, setmakeCashModal] = useState(false);
@@ -14,23 +30,11 @@ const BillPaymentList = () => {
   const [layoutModal, setlayoutModal] = useState(false);
   // const [showRows, setShowRows] = useState(false);
 
-  const openpaymentModal = () => setpaymentModal(true);
-  const closepaymentModal = () => setpaymentModal(false);
+  const openFilterModal = () => setfilterModal(true);
+  const closeFilterModal = () => setfilterModal(false);
 
-  const openCashModal = () => setmakeCashModal(true);
-  const closeCashModal = () => setmakeCashModal(false);
-
-  const openBankModal = () => setmakeBankModal(true);
-  const closeBankModal = () => setmakeBankModal(false);
-
-  const openAdjustModal = () => setmakeAdjustModal(true);
-  const closeAdjustModal = () => setmakeAdjustModal(false);
-
-  const openfilterModal = () => setfilterModal(true);
-  const closefilterModal = () => setfilterModal(false);
-
-  const openlayoutModal = () => setlayoutModal(true);
-  const closelayoutModal = () => setlayoutModal(false);
+  const openLayoutModal = () => setlayoutModal(true);
+  const closeLayoutModal = () => setlayoutModal(false);
 
   // Bootstrap collaps
   const bulkActionDropdown = () => {
@@ -51,11 +55,11 @@ const BillPaymentList = () => {
     setTableRows(tableRows.filter((row) => row.id !== id));
   };
 
-  const handleChange = (id, field, value) => {
-    setTableRows(
-      tableRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-    );
-  };
+  // const handleChange = (id, field, value) => {
+  //   setTableRows(
+  //     tableRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+  //   );
+  // };
   // add row & delete row
   return (
     <>
@@ -143,27 +147,19 @@ const BillPaymentList = () => {
           <div className="tab-content1 active" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
-              <div className="card-body">
-                <div className="row my-4 align-items-end">
+              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
+                <div className="row">
                   <div className="col-md-2">
                     <div className="form-group">
                       <label>
-                        {" "}
-                        Company<span>*</span>
+                        Company <span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
                   <div className="col-md-2">
@@ -171,79 +167,45 @@ const BillPaymentList = () => {
                       <label>
                         Project<span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
                   <div className="col-md-2">
                     <div className="form-group">
                       <label>
-                        Sub-project<span>*</span>
+                        Sub-Project <span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      {/* Pass static data as options */}
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
-                  <div className="col-md-2 ps-5">
-                    <button
-                      className="purple-btn1 m-0"
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal2"
-                      onClick={openfilterModal}
-                    >
-                      <svg
-                        className="me-3"
-                        width={15}
-                        height={19}
-                        viewBox="0 0 15 19"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M0.830098 0.557129C0.564033 0.557129 0.31961 0.703714 0.194307 0.938426C0.0690032 1.17314 0.0832034 1.45779 0.231244 1.67887L5.72558 9.88378V17.6142C5.72558 17.8742 5.86556 18.114 6.0919 18.2418C6.31825 18.3696 6.59589 18.3656 6.81849 18.2314L9.04044 16.8915C9.25674 16.761 9.38898 16.5269 9.38898 16.2743V9.88465L14.8825 1.67879C15.0305 1.45771 15.0447 1.17308 14.9193 0.938386C14.794 0.703697 14.5496 0.557129 14.2836 0.557129H0.830098ZM7.04516 9.26374L2.18011 1.99857H12.9338L8.06935 9.26473C7.98993 9.38336 7.94753 9.52291 7.94753 9.66567V15.8673L7.16702 16.338V9.66475C7.16702 9.52196 7.12461 9.38239 7.04516 9.26374Z"
-                          fill="#8B0203"
-                        />
-                      </svg>
-                      Filter
-                    </button>
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>
+                        Last Created <span>*</span>
+                      </label>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
+                    </div>
                   </div>
-                  <div className="col-md-2 ps-5"></div>
-                  <div
-                    className="col-md-2 pe-auto"
-                    data-bs-toggle="modal"
-                    data-bs-target="#bulkModal"
-                    onClick={openpaymentModal}
-                  >
-                    <button className="purple-btn2 m-0 p-1 px-3">
-                      <div style={{ color: "white" }}>Bulk Payment</div>
-                    </button>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2 m-0">Go</button>
                   </div>
                 </div>
-              </div>
+              </CollapsibleCard>
               <div className="card mx-3 mt-2">
                 <div className="card-header3">
                   <h3 className="card-title">Bulk Action</h3>
@@ -251,6 +213,7 @@ const BillPaymentList = () => {
                     <button
                       type="button"
                       className="btn btn-tool"
+                      data-card-widget="collapse"
                       onClick={bulkActionDropdown}
                     >
                       <svg
@@ -275,33 +238,19 @@ const BillPaymentList = () => {
                       <div className="col-md-4">
                         <div className="form-group">
                           <label>From Status</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
+                          <SingleSelector
+                            options={companyOptions}
+                            selectedValue={selectedValue}
+                            onChange={handleChange}
+                          />
                         </div>
                         <div className="form-group mt-3">
                           <label>To Status</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
+                          <SingleSelector
+                            options={companyOptions}
+                            selectedValue={selectedValue} // Passing selected value to SingleSelector
+                            onChange={handleChange} // Handle change event
+                          />
                         </div>
                       </div>
                       <div className="col-md-4">
@@ -328,44 +277,67 @@ const BillPaymentList = () => {
                   </div>
                 )}
               </div>
-              <div className="row mt-3 align-items-end px-3">
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label htmlFor="">Rows Per Page</label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">25 Rows</option>
-                      <option>50 Rows</option>
-                      <option>100 Rows</option>
-                      <option>1000 Rows</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label
-                      htmlFor="
-              "
-                    >
-                      Last Created
-                    </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Last week</option>
-                      <option>Last Month</option>
-                      <option>Last Quarter</option>
-                      <option>Last 6 Month</option>
-                    </select>
-                  </div>
+              <div className="row mt-2">
+                <div className="col-md-5 ms-3">
+                  <form>
+                    <div className="input-group">
+                      <input
+                        type="search"
+                        className="form-control tbl-search"
+                        placeholder="Type your keywords here"
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="submit"
+                          className="btn btn-md btn-default"
+                        >
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </form>
                 </div>
                 <div className="col-md-6">
                   <div className="row justify-content-end">
                     <div className="col-md-5">
                       <div className="row justify-content-end px-3">
+                        <div className="col-md-3">
+                          <button
+                            className="btn btn-md"
+                            data-bs-toggle="modal"
+                            data-bs-target="#sidebarModal"
+                          >
+                            <svg
+                              width={28}
+                              height={28}
+                              viewBox="0 0 32 32"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                         <div className="col-md-3">
                           <button type="submit" className="btn btn-md">
                             <svg
@@ -383,7 +355,11 @@ const BillPaymentList = () => {
                           </button>
                         </div>
                         <div className="col-md-3">
-                          <button type="submit" className="btn btn-md">
+                          <button
+                            id="downloadButton"
+                            type="submit"
+                            className="btn btn-md"
+                          >
                             <svg
                               width={22}
                               height={23}
@@ -404,7 +380,7 @@ const BillPaymentList = () => {
                             className="btn btn-md"
                             data-bs-toggle="modal"
                             data-bs-target="#settings"
-                            onClick={openlayoutModal}
+                            onClick={openLayoutModal}
                           >
                             <svg
                               width={22}
@@ -430,99 +406,35 @@ const BillPaymentList = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="col-md-6">
-                      <form>
-                        <div className="input-group">
-                          <input
-                            type="search"
-                            className="form-control tbl-search"
-                            placeholder="Type your keywords here"
-                          />
-                          <div className="input-group-append">
-                            <button
-                              type="submit"
-                              className="btn btn-md btn-default"
-                            >
-                              <svg
-                                width={16}
-                                height={16}
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                                  fill="#8B0203"
-                                />
-                                <path
-                                  d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                                  fill="#8B0203"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
+                    <div className="col-md-4"></div>
                   </div>
                 </div>
               </div>
-              <div className="row mt-5 justify-content-center px-4">
-                <div className="col-md-8 card mx-3">
-                  <div className="card-header2">
-                    <h3 className="card-title2">
-                      <div className="form-group form-control">
-                        Applied Fliter
-                      </div>
-                    </h3>
+  
+              <div className="d-flex justify-content-end me-3">
+                <button
+                  className="purple-btn2 m-0 p-1 px-3"
+                  onClick={openFilterModal}
+                >
+                  <div style={{ color: "white" }}>
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add{" "}
+                    </span>
+                    Add
                   </div>
-                  <div className="card-body">
-                    <div className="row align-items-center">
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Company</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Project</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <p className="px-3">Sub-project</p>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
-                          Clear All
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </button>
               </div>
-              <div className="tbl-container mx-3 mt-3 " style={{width:"98%"}}>
-                <table  style={{ width: 'max-content', maxHeight: 'max-content', height: 'auto' }}>
+              <div
+                className="tbl-container mx-3 mt-3 "
+                style={{ width: "98%" }}
+              >
+                <table
+                  style={{
+                    width: "max-content",
+                    maxHeight: "max-content",
+                    height: "auto",
+                  }}
+                >
                   <thead>
                     <tr>
                       <th className="text-start">
@@ -592,957 +504,9 @@ const BillPaymentList = () => {
 
       <Modal
         centered
-        size="xl"
-        show={paymentModal}
-        onHide={closepaymentModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Payment Details</Modal.Title>
-        </Modal.Header>
-        <ModalBody>
-          <div className="d-flex justify-content-end">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={20}
-              height={20}
-              fill="currentColor"
-              className="bi bi-file-earmark-excel-fill"
-              viewBox="0 0 16 16"
-            >
-              <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M5.884 6.68 8 9.219l2.116-2.54a.5.5 0 1 1 .768.641L8.651 10l2.233 2.68a.5.5 0 0 1-.768.64L8 10.781l-2.116 2.54a.5.5 0 0 1-.768-.641L7.349 10 5.116 7.32a.5.5 0 1 1 .768-.64" />
-            </svg>
-          </div>
-          <div className="row">
-            <div className="col-md-3 mt-2">
-              <div className="form-group">
-                <label>Payable Amount</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="d-flex">
-                <span className="me-2">
-                  <img src="../Data_Mapping/img/Green_check.svg" alt="" />
-                </span>
-                <p>CIN Verification</p>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="d-flex">
-                <span className="me-2">
-                  <img src="../Data_Mapping/img/Green_check.svg" alt="" />
-                </span>
-                <p>GST Verification</p>
-              </div>
-            </div>
-          </div>
-          <div className="tbl-container mx-3 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>Mode of Payment</th>
-                  <th>Instrument Date</th>
-                  <th>Instrument No.</th>
-                  <th>UTR NO.</th>
-                  <th>Bank/ Cash Account</th>
-                  <th>Amount</th>
-                  <th>Created By</th>
-                  <th>Created On</th>
-                  <th>Status</th>
-                  <th>Reconciliation Date</th>
-                  <th>Cheque Print</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td className="text-decoration-underline">Print</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div
-              className="col-md-3"
-              data-bs-toggle="modal"
-              data-bs-target="#makecasheModal"
-              onClick={openCashModal}
-            >
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-                Make Cash Payment
-              </button>
-            </div>
-            <div
-              className="col-md-3"
-              data-bs-toggle="modal"
-              data-bs-target="#makebankModal"
-              onClick={openBankModal}
-            >
-              <button className="purple-btn2 w-100" fdprocessedid="af5l5g">
-                Make Bank Payment
-              </button>
-            </div>
-            <div
-              className="col-md-3"
-              data-bs-toggle="modal"
-              data-bs-target="#makeadjustmentModal"
-              onClick={openAdjustModal}
-            >
-              <button className="purple-btn2 w-100" fdprocessedid="af5l5g">
-                Make Adjustment Entry
-              </button>
-            </div>
-          </div>
-        </ModalBody>
-      </Modal>
-
-      {/* cash modal start */}
-      <Modal
-        centered
-        size="l"
-        show={makeCashModal}
-        onHide={closeCashModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Cash Payment Details</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Certifying Company</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Outstanding Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Voucher Date <span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Cash Account <span>*</span>
-                </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Closing Balance Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Favouring / Payee<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Amount<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Narration</label>
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  placeholder=""
-                  defaultValue={""}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-                Submit
-              </button>
-            </div>
-            <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="af5l5g">
-                Reset
-              </button>
-            </div>
-            <div className="col-md-3">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      {/* cash modal end */}
-
-      {/* bank modal start */}
-      <Modal
-        centered
-        size="l"
-        show={makeBankModal}
-        onHide={closeBankModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Bank Payment Details</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Certifying Company</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Outstanding Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Voucher Date <span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Instrument Date<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Bank Account <span>*</span>
-                </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Instrument No. <span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Closing Balance Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Favouring / Payee<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Amount<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="INR"
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Narration</label>
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  placeholder=""
-                  defaultValue={""}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-                Submit
-              </button>
-            </div>
-            <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="af5l5g">
-                Reset
-              </button>
-            </div>
-            <div className="col-md-3">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      {/* bank modal end */}
-
-      {/* Adjust modal start */}
-      <Modal
-        centered
-        size="lg"
-        show={makeAdjustModal}
-        onHide={closeAdjustModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Payment Adjustment</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Company</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder={123}
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Project</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Voucher Type</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>
-                  Voucher Date <span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder={123}
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="tbl-container me-2 mt-3 mx-3">
-              <table id="table3" className="w-100">
-                <thead>
-                  <tr>
-                    <th />
-                    <th>Dr/Cr</th>
-                    <th>Ledger Account</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableRows.map((row) => (
-                    <tr key={row.id}>
-                      <td />
-                      <td>
-                        <div className="form-group">
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                            value={row.type}
-                            onChange={(e) =>
-                              handleChange(row.id, "type", e.target.value)
-                            }
-                          >
-                            <option value="Tax Type 1">Tax Type 1</option>
-                            <option value="Tax Type 2">Tax Type 2</option>
-                          </select>
-                        </div>
-                      </td>
-                      <td />
-                      <td>
-                        <input
-                          type="number"
-                          value={row.charges}
-                          onChange={(e) =>
-                            handleChange(row.id, "charges", e.target.value)
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="d-flex justify-content-end">
-              <p className="me-5">Total</p>
-              <p className="me-3">
-                Dr. <span>:0.00</span>
-              </p>
-              <p className="me-3">
-                Cr. <span>:0.00</span>
-              </p>
-            </div>
-
-            {/* Buttons placed side by side */}
-
-            <div className="row mx-3">
-              <p>
-                <button
-                  className="fw-bold text-decoration-underline border-0"
-                  // onclick="myCreateFunction('table3')"
-                  style={{ color: "var(--red)" }}
-                  onClick={handleAddRow}
-                >
-                  Add Row
-                </button>{" "}
-                |
-                <button
-                  className="fw-bold text-decoration-underline border-0"
-                  onClick={() =>
-                    handleDeleteRow(tableRows[tableRows.length - 1]?.id)
-                  }
-                  style={{ color: "var(--red)" }}
-                >
-                  Delete Row
-                </button>
-              </p>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>Narration</label>
-                <textarea
-                  className="form-control"
-                  rows={2}
-                  placeholder=""
-                  defaultValue={""}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="af5l5g">
-                Create
-              </button>
-            </div>
-            <div className="col-md-3">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      {/* Adjust modal end */}
-
-      <Modal
-        centered
-        size="lg"
-        show={filterModal}
-        onHide={closefilterModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton className="text-center">
-          <Modal.Title>Filters</Modal.Title>
-        </Modal.Header>
-
-        <div
-          className="modal-body "
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          {/* <div className="modal-body overflow-auto"> */}
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Mode of Submission</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Company</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Sub Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Vendor Name</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Is MSME</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>PO No.</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Created on From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Created on From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Accepted On From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Bill No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Bill Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Bill Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Bill Copies</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Due</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Due Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Certificate No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Payable Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Paid</label>
-                <div className="">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Balance</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Status</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Overdue</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Assign To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>TAT</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-          </div>
-          {/* </div> */}
-        </div>
-        <div className="modal-footer modal-footer-k justify-content-center">
-          <a
-            className="purple-btn2"
-            href="/pms/admin/task_managements/kanban_list?type="
-          >
-            Go
-          </a>
-        </div>
-      </Modal>
-
-      <Modal
-        centered
         size="sm"
         show={layoutModal}
-        onHide={closelayoutModal}
+        onHide={closeLayoutModal}
         backdrop="static"
         keyboard={true}
         className="modal-centered-custom"
@@ -1742,22 +706,295 @@ const BillPaymentList = () => {
         </ModalBody>
       </Modal>
 
-      {/* <Modal
+      <Modal
         centered
         size="lg"
-        show={}
-        onHide={}
+        show={filterModal}
+        onHide={closeFilterModal}
         backdrop="static"
         keyboard={true}
         className="modal-centered-custom"
       >
-<Modal.Header closeButton>
-          <Modal.Title></Modal.Title>
+        <Modal.Header closeButton>
+          <Modal.Title>Add</Modal.Title>
         </Modal.Header>
-        <ModalBody>
-          
-        </ModalBody>
-         </Modal> */}
+        <div
+          className="modal-body "
+          style={{ maxHeight: "400px", overflowY: "auto" }}
+        >
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Mode of Submission</label>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Company</label>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Project </label>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Sub Project </label>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Vendor Name</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Is MSME</label>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>PO No.</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Created on From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Created on From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Accepted On From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Bill No.</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Bill Date From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Bill Amount</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Bill Copies</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Due</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Due Date From &amp; To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Certificate No.</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Payable Amount</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Paid</label>
+                <div className="">
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Balance</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Status</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Overdue</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>Assign To</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4 mt-2">
+              <div className="form-group">
+                <label>TAT</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer modal-footer-k justify-content-center">
+          <a
+            className="purple-btn2"
+            href="/pms/admin/task_managements/kanban_list?type="
+          >
+            Go
+          </a>
+        </div>
+      </Modal>
     </>
   );
 };

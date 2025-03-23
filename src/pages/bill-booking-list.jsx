@@ -3,8 +3,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const BillBookingList = () => {
+  const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+
+  // Static data for SingleSelector (this will be replaced by API data later)
+  const companyOptions = [
+    { value: "company1", label: "Company 1" },
+    { value: "company2", label: "Company 2" },
+    { value: "company3", label: "Company 3" },
+  ];
+
+  // Handle value change in SingleSelector
+  const handleChange = (value) => {
+    setSelectedValue(value);
+  };
+
   const [bulkActionDetails, setbulkActionDetails] = useState(true);
   const [filterModal, setfilterModal] = useState(false);
   const [layoutModal, setlayoutModal] = useState(false);
@@ -39,7 +55,9 @@ const BillBookingList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title fw-semibold">Verified Bills</h4>
+                    <h4 className="content-box-title fw-semibold">
+                      Verified Bills
+                    </h4>
                     <p className="content-box-sub">4</p>
                   </div>
                 </div>
@@ -76,27 +94,19 @@ const BillBookingList = () => {
           <div className="tab-content1 active" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
-              <div className="card-body">
-                <div className="row my-4 align-items-end">
+              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
+                <div className="row">
                   <div className="col-md-2">
                     <div className="form-group">
                       <label>
-                        {" "}
-                        Company<span>*</span>
+                        Company <span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
                   <div className="col-md-2">
@@ -104,80 +114,45 @@ const BillBookingList = () => {
                       <label>
                         Project<span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
                   <div className="col-md-2">
                     <div className="form-group">
                       <label>
-                        Sub-project<span>*</span>
+                        Sub-Project <span>*</span>
                       </label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      {/* Pass static data as options */}
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
                     </div>
                   </div>
-                  <div className="col-md-2 ps-5">
-                    <button
-                      className="purple-btn1 m-0"
-                      data-bs-toggle="modal"
-                      data-bs-target="#exampleModal2"
-                      onClick={openFilterModal}
-                    >
-                      <svg
-                        className="me-3"
-                        width={15}
-                        height={19}
-                        viewBox="0 0 15 19"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M0.830098 0.557129C0.564033 0.557129 0.31961 0.703714 0.194307 0.938426C0.0690032 1.17314 0.0832034 1.45779 0.231244 1.67887L5.72558 9.88378V17.6142C5.72558 17.8742 5.86556 18.114 6.0919 18.2418C6.31825 18.3696 6.59589 18.3656 6.81849 18.2314L9.04044 16.8915C9.25674 16.761 9.38898 16.5269 9.38898 16.2743V9.88465L14.8825 1.67879C15.0305 1.45771 15.0447 1.17308 14.9193 0.938386C14.794 0.703697 14.5496 0.557129 14.2836 0.557129H0.830098ZM7.04516 9.26374L2.18011 1.99857H12.9338L8.06935 9.26473C7.98993 9.38336 7.94753 9.52291 7.94753 9.66567V15.8673L7.16702 16.338V9.66475C7.16702 9.52196 7.12461 9.38239 7.04516 9.26374Z"
-                          fill="#8B0203"
-                        />
-                      </svg>
-                      Filter
-                    </button>
-                  </div>
-                  {/* <div class="col-md-2 ps-5">
+                  <div className="col-md-2">
+                    <div className="form-group">
+                      <label>
+                        Last Created <span>*</span>
+                      </label>
 
-                              </div> */}
-                  {/* <a href="../erp_security/Bill_Entry_List_Sub-Page(Create).html"
-                                  class="col-md-2 pe-auto">
-                                  <button class="purple-btn2 m-0 p-1 px-3">
-                                      <div style="color: white">
-                                          <span class="material-symbols-outlined align-text-top me-2">
-                                              add </span>Add
-                                      </div>
-                                  </button>
-                              </a> */}
+                      <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue} // Passing selected value to SingleSelector
+                        onChange={handleChange} // Handle change event
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2 m-0">Go</button>
+                  </div>
                 </div>
-              </div>
+              </CollapsibleCard>
               <div className="card mx-3 mt-2">
                 <div className="card-header3">
                   <h3 className="card-title">Bulk Action</h3>
@@ -210,33 +185,19 @@ const BillBookingList = () => {
                       <div className="col-md-4">
                         <div className="form-group">
                           <label>From Status</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
+                          <SingleSelector
+                            options={companyOptions}
+                            selectedValue={selectedValue}
+                            onChange={handleChange}
+                          />
                         </div>
                         <div className="form-group mt-3">
                           <label>To Status</label>
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option selected="selected">Alabama</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
+                          <SingleSelector
+                            options={companyOptions}
+                            selectedValue={selectedValue} // Passing selected value to SingleSelector
+                            onChange={handleChange} // Handle change event
+                          />
                         </div>
                       </div>
                       <div className="col-md-4">
@@ -263,7 +224,7 @@ const BillBookingList = () => {
                   </div>
                 )}
               </div>
-              <div className="row mt-3 align-items-end px-3">
+              {/* <div className="row mt-3 align-items-end px-3">
                 <div className="col-md-3">
                   <div className="form-group">
                     <label htmlFor="">Rows Per Page</label>
@@ -401,83 +362,158 @@ const BillBookingList = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="row mt-5 justify-content-center px-4">
-                <div className="col-md-8 card mx-3">
-                  <div className="card-header2">
-                    <h3 className="card-title2">
-                      <div className="form-group form-control">
-                        Applied Fliter
-                      </div>
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="row align-items-center">
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Company</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <label className="px-3">Project</label>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
-                        <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                          <p className="px-3">Sub-project</p>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-3">
+              </div> */}
+              <div className="row mt-2">
+                <div className="col-md-5 ms-3">
+                  <form>
+                    <div className="input-group">
+                      <input
+                        type="search"
+                        className="form-control tbl-search"
+                        placeholder="Type your keywords here"
+                      />
+                      <div className="input-group-append">
                         <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "")}
+                          type="submit"
+                          className="btn btn-md btn-default"
                         >
-                          Clear All
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
+                          </svg>
                         </button>
                       </div>
                     </div>
+                  </form>
+                </div>
+                <div className="col-md-6">
+                  <div className="row justify-content-end">
+                    <div className="col-md-5">
+                      <div className="row justify-content-end px-3">
+                        <div className="col-md-3">
+                          <button
+                            className="btn btn-md"
+                            data-bs-toggle="modal"
+                            data-bs-target="#sidebarModal"
+                          >
+                            <svg
+                              width={28}
+                              height={28}
+                              viewBox="0 0 32 32"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="col-md-3">
+                          <button type="submit" className="btn btn-md">
+                            <svg
+                              width={22}
+                              height={22}
+                              viewBox="0 0 22 22"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M10.9702 17.0592L5.11875 21.4773L3.93017 20.5937L6.18541 13.4616L0.333984 9.07497L0.791127 7.6233L8.04446 7.65486L10.2692 0.522705H11.7321L13.9568 7.65486L21.2102 7.6233L21.6673 9.07497L15.7549 13.4616L18.0102 20.5937L16.8216 21.4773L10.9702 17.0592ZM11.4273 15.4182L15.7854 18.7318L14.1092 13.3984L14.3835 12.5148L18.7721 9.23277H13.3778L12.6464 8.66472L10.9702 3.36294L9.32446 8.69628L8.59303 9.26432H3.16827L7.55684 12.5464L7.83113 13.43L6.15494 18.7633L10.513 15.4182H11.4273Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="col-md-3">
+                          <button
+                            id="downloadButton"
+                            type="submit"
+                            className="btn btn-md"
+                          >
+                            <svg
+                              width={22}
+                              height={23}
+                              viewBox="0 0 22 23"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M20.8468 22.9744H1.1545C0.662189 22.9744 0.333984 22.6462 0.333984 22.1538V15.5897C0.333984 15.0974 0.662189 14.7692 1.1545 14.7692C1.6468 14.7692 1.97501 15.0974 1.97501 15.5897V21.3333H20.0263V15.5897C20.0263 15.0974 20.3545 14.7692 20.8468 14.7692C21.3391 14.7692 21.6673 15.0974 21.6673 15.5897V22.1538C21.6673 22.6462 21.3391 22.9744 20.8468 22.9744ZM11.0007 18.0513C10.9186 18.0513 10.7545 18.0513 10.6724 17.9692C10.5904 17.9692 10.5083 17.8872 10.4263 17.8051L3.86219 11.241C3.53398 10.9128 3.53398 10.4205 3.86219 10.0923C4.19039 9.7641 4.6827 9.7641 5.01091 10.0923L10.1801 15.2615V0.820513C10.1801 0.328205 10.5083 0 11.0007 0C11.493 0 11.8212 0.328205 11.8212 0.820513V15.2615L16.9904 10.0923C17.3186 9.7641 17.8109 9.7641 18.1391 10.0923C18.4673 10.4205 18.4673 10.9128 18.1391 11.241L11.575 17.8051C11.493 17.8872 11.4109 17.9692 11.3289 17.9692C11.2468 18.0513 11.0827 18.0513 11.0007 18.0513Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="col-md-3">
+                          <button
+                            type="submit"
+                            className="btn btn-md"
+                            data-bs-toggle="modal"
+                            data-bs-target="#settings"
+                          >
+                            <svg
+                              width={22}
+                              height={24}
+                              viewBox="0 0 22 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M10.9985 7.45532C8.64565 7.45532 6.73828 9.36269 6.73828 11.7155C6.73828 14.0684 8.64565 15.9757 10.9985 15.9757C13.3514 15.9757 15.2587 14.0684 15.2587 11.7155C15.2587 9.36269 13.3514 7.45532 10.9985 7.45532ZM8.86838 11.7155C8.86838 10.5391 9.82208 9.58544 10.9985 9.58544C12.1749 9.58544 13.1286 10.5391 13.1286 11.7155C13.1286 12.892 12.1749 13.8457 10.9985 13.8457C9.82208 13.8457 8.86838 12.892 8.86838 11.7155Z"
+                                fill="#8B0203"
+                              />
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M14.3416 2.97635C13.8887 -0.992103 8.10872 -0.992127 7.65577 2.97635L7.56116 3.80528C7.46818 4.61997 6.60664 5.12268 5.84081 4.79072L5.07295 4.45788C1.43655 2.88166 -1.52087 7.83752 1.73283 10.2351L2.40609 10.7312C3.07122 11.2213 3.07122 12.2099 2.40609 12.7L1.73283 13.1961C-1.52085 15.5936 1.43653 20.5496 5.07295 18.9733L5.84081 18.6405C6.60664 18.3085 7.46818 18.8113 7.56116 19.6259L7.65577 20.4549C8.10872 24.4233 13.8887 24.4233 14.3416 20.4549L14.4362 19.6259C14.5292 18.8113 15.3908 18.3085 16.1565 18.6405L16.9244 18.9733C20.5609 20.5495 23.5183 15.5936 20.2645 13.1961L19.5913 12.7C18.9262 12.2099 18.9262 11.2213 19.5913 10.7312L20.2645 10.2351C23.5183 7.83753 20.5609 2.88164 16.9244 4.45788L16.1566 4.79072C15.3908 5.12268 14.5292 4.61997 14.4362 3.8053L14.3416 2.97635ZM9.77214 3.2179C9.93768 1.76752 12.0597 1.7675 12.2252 3.2179L12.3198 4.04684C12.5762 6.29253 14.9347 7.64199 17.0037 6.74512L17.7716 6.41228C19.1548 5.81273 20.1484 7.67469 19.001 8.52023L18.3278 9.01632C16.5072 10.3578 16.5072 13.0734 18.3278 14.4149L19.001 14.911C20.1484 15.7566 19.1548 17.6185 17.7716 17.019L17.0037 16.686C14.9347 15.7891 12.5762 17.1386 12.3198 19.3843L12.2252 20.2133C12.0597 21.6636 9.93768 21.6638 9.77214 20.2133L9.67753 19.3843C9.42121 17.1386 7.06273 15.7891 4.99366 16.686L4.22578 17.019C2.84258 17.6185 1.84896 15.7566 2.99644 14.911L3.66969 14.4149C5.49017 13.0734 5.49015 10.3578 3.66969 9.01632L2.99642 8.52021C1.84898 7.67471 2.84256 5.81271 4.2258 6.4123L4.99366 6.74512C7.06273 7.64199 9.42121 6.29253 9.67753 4.04684L9.77214 3.2179Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4"></div>
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end me-2">
-                <button
-                  className="purple-btn2 rounded-3"
-                  fdprocessedid="xn3e6n"
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={20}
-                    height={20}
-                    fill="currentColor"
-                    className="bi bi-plus"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                  </svg>
-                  <span>Create Supplier Cert</span>
+            
+              <div className="d-flex justify-content-end me-3">
+                <button className="purple-btn2 m-0 p-1 px-3"  onClick={openFilterModal}>
+                  <div style={{ color: "white" }}>
+                    <span className="material-symbols-outlined align-text-top me-2">
+                      add{" "}
+                    </span>
+                    Add
+                  </div>
                 </button>
               </div>
-              <div className="tbl-container mx-3 mt-3" style={{width:"98%"}}>
-                <table  style={{ width: 'max-content', maxHeight: 'max-content', height: 'auto' }}>
+              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
+                <table
+                  style={{
+                    width: "max-content",
+                    maxHeight: "max-content",
+                    height: "auto",
+                  }}
+                >
                   <thead>
                     <tr>
                       <th className="text-start">
@@ -562,7 +598,7 @@ const BillBookingList = () => {
         className="modal-centered-custom"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Filters</Modal.Title>
+          <Modal.Title>Add</Modal.Title>
         </Modal.Header>
         <div
           className="modal-body "
@@ -572,76 +608,44 @@ const BillBookingList = () => {
             <div className="col-md-4">
               <div className="form-group">
                 <label>Mode of Submission</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4">
               <div className="form-group">
                 <label>Company</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
             <div className="col-md-4">
               <div className="form-group">
                 <label>Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Sub Project </label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Vendor Name</label>
                 <input
@@ -652,25 +656,17 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Is MSME</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                  fdprocessedid="3x7jfv"
-                >
-                  <option selected="selected">Alabama</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
+                <SingleSelector
+                        options={companyOptions}
+                        selectedValue={selectedValue}  
+                        onChange={handleChange}  
+                      />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>PO No.</label>
                 <input
@@ -681,7 +677,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Created on From </label>
                 <input
@@ -692,7 +688,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Created on To</label>
                 <input
@@ -703,7 +699,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Accepted On From</label>
                 <input
@@ -714,7 +710,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Accepted On To</label>
                 <input
@@ -725,7 +721,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Bill No.</label>
                 <input
@@ -736,7 +732,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Bill Date From &amp; To</label>
                 <input
@@ -747,7 +743,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Bill Amount</label>
                 <input
@@ -758,7 +754,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Bill Copies</label>
                 <input
@@ -769,7 +765,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Due</label>
                 <input
@@ -780,7 +776,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Due Date From &amp; To</label>
                 <input
@@ -791,7 +787,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Certificate No.</label>
                 <input
@@ -802,7 +798,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Payable Amount</label>
                 <input
@@ -813,7 +809,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Paid</label>
                 <div className="">
@@ -826,7 +822,7 @@ const BillBookingList = () => {
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Balance</label>
                 <input
@@ -837,7 +833,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Status</label>
                 <input
@@ -848,7 +844,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Overdue</label>
                 <input
@@ -859,7 +855,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>Assign To</label>
                 <input
@@ -870,7 +866,7 @@ const BillBookingList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-4 mt-2">
               <div className="form-group">
                 <label>TAT</label>
                 <input
