@@ -552,7 +552,7 @@ export default function CreateEvent() {
     };
 
     console.log("payload:-",eventData);
-    console.log("bidTemplate", bidTemplateFields);
+    // console.log("bidTemplate", bidTemplateFields);
     
     
 
