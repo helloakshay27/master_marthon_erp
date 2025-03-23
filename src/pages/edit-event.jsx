@@ -761,39 +761,42 @@ export default function EditEvent() {
           };
         }),
         attachments: documentRows?.map((row) => row?.upload),
-        applied_bid_template_fields_attributes: bidTemplateFields.map(
-          (field) => ({
-            field_name: field.field_name,
-            is_required: field.is_required,
-            is_read_only: field.is_read_only,
-            field_owner: field.field_owner,
-            extra_fields: field.extra_fields || null,
-          })
-        ),
-        applied_bid_material_template_fields_attributes: additionalFields
-          .filter((field) => field.field_name !== "Sr no.")
-          .map((field) => ({
-            field_name: field.field_name,
-            is_required: field.is_required || false,
-            is_read_only: field.is_read_only || false,
-            field_owner: field.field_owner || "user",
-            field_type: field.field_type || "string",
-            extra_fields: field.extra_fields || null,
-          })),
+        applied_event_template: {
+          event_template_id: selectedTemplate,
+          applied_bid_template_fields_attributes: bidTemplateFields.map(
+            (field) => ({
+              field_name: field.field_name,
+              is_required: field.is_required,
+              is_read_only: field.is_read_only,
+              field_owner: field.field_owner,
+              extra_fields: field.extra_fields || null,
+            })
+          ),
+          applied_bid_material_template_fields_attributes: additionalFields
+            .filter((field) => field.field_name !== "Sr no.")
+            .map((field) => ({
+              field_name: field.field_name,
+              is_required: field.is_required || false,
+              is_read_only: field.is_read_only || false,
+              field_owner: field.field_owner || "user",
+              field_type: field.field_type || "string",
+              extra_fields: field.extra_fields || null,
+            })),
+        },
       },
     };
     console.log("eventData paylaod", eventData);
 
     try {
-        const data = await updateEvent(id, eventData);
-        toast.success("Event updated successfully!", {
-          autoClose: 1000,
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 1500); // Increase the delay to 1.5 seconds before navigating
+        // const data = await updateEvent(id, eventData);
+        // toast.success("Event updated successfully!", {
+        //   autoClose: 1000,
+        // });
+        // setTimeout(() => {
+        //   navigate(
+        //     "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        //   );
+        // }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
