@@ -557,30 +557,30 @@ export default function CreateEvent() {
     
 
     try {
-      const response = await fetch(
-        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        }
-      );
-      if (response.ok) {
-        toast.success("Event created successfully!", {
-          autoClose: 1000, // Duration for the toast to disappear (in ms)
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 500);
-      } else {
-        const errorData = await response.json();
-        console.error("Error response data:", errorData);
-        throw new Error("Failed to create event.");
-      }
+      // const response = await fetch(
+      //   `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(eventData),
+      //   }
+      // );
+      // if (response.ok) {
+      //   toast.success("Event created successfully!", {
+      //     autoClose: 1000, // Duration for the toast to disappear (in ms)
+      //   });
+      //   setTimeout(() => {
+      //     navigate(
+      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //     );
+      //   }, 500);
+      // } else {
+      //   const errorData = await response.json();
+      //   console.error("Error response data:", errorData);
+      //   throw new Error("Failed to create event.");
+      // }
     } catch (error) {
       console.error("Error creating event:", error);
       toast.error("Failed to create event.", {
