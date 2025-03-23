@@ -9,32 +9,32 @@ import {
 import { auditLogColumns, auditLogData } from "../constant/data";
 
 const BillBookingCreate = () => {
-    const [actionDetails, setactionDetails] = useState(false);
-    const [selectPOModal, setselectPOModal] = useState(false);
-    const [selectGRNModal, setselectGRNModal] = useState(false);
-    const [attachOneModal, setattachOneModal] = useState(false);
-    const [attachTwoModal, setattachTwoModal] = useState(false);
-    const [attachThreeModal, setattachThreeModal] = useState(false);
+  const [actionDetails, setactionDetails] = useState(false);
+  const [selectPOModal, setselectPOModal] = useState(false);
+  const [selectGRNModal, setselectGRNModal] = useState(false);
+  const [attachOneModal, setattachOneModal] = useState(false);
+  const [attachTwoModal, setattachTwoModal] = useState(false);
+  const [attachThreeModal, setattachThreeModal] = useState(false);
 
-    // action dropdown
-    const actionDropdown = () => {
-        setactionDetails(!actionDetails);
-      };
-    //   modal
-    const openSelectPOModal = () => setselectPOModal(true);
-    const closeSelectPOModal = () => setselectPOModal(false);
+  // action dropdown
+  const actionDropdown = () => {
+    setactionDetails(!actionDetails);
+  };
+  //   modal
+  const openSelectPOModal = () => setselectPOModal(true);
+  const closeSelectPOModal = () => setselectPOModal(false);
 
-    const openSelectGRNModal = () => setselectGRNModal(true);
-    const closeSelectGRNModal = () => setselectGRNModal(false);
+  const openSelectGRNModal = () => setselectGRNModal(true);
+  const closeSelectGRNModal = () => setselectGRNModal(false);
 
-    const openAttachOneModal = () => setattachOneModal(true);
-    const closeAttachOneModal = () => setattachOneModal(false);
-    
-    const openAttachTwoModal = () => setattachTwoModal(true);
-    const closeAttachTwoModal = () => setattachTwoModal(false);
-    
-    const openAttachThreeModal = () => setattachThreeModal(true);
-    const closeAttachThreeModal = () => setattachThreeModal(false);
+  const openAttachOneModal = () => setattachOneModal(true);
+  const closeAttachOneModal = () => setattachOneModal(false);
+
+  const openAttachTwoModal = () => setattachTwoModal(true);
+  const closeAttachTwoModal = () => setattachTwoModal(false);
+
+  const openAttachThreeModal = () => setattachThreeModal(true);
+  const closeAttachThreeModal = () => setattachThreeModal(false);
   return (
     <>
       <div className="website-content overflow-auto">
@@ -268,39 +268,7 @@ const BillBookingCreate = () => {
                       </select>
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Retention Amount Payable</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Retention Amount Paid</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Retention Amount Pending</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
+
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Department</label>
@@ -436,86 +404,86 @@ const BillBookingCreate = () => {
                   <h5 className=" ">Tax Deduction:</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th className="text-start" style={{ width: 200 }}>
-                    Tax / Charge Type
-                  </th>
-                  <th className="text-start">Tax / Charges per UOM (INR)</th>
-                  <th className="text-start">Inclusive / Exculsive</th>
-                  <th className="text-start">Amount</th>
-                  <th className="text-start">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th className="text-start">Taxable Amount</th>
-                  <td className="text-start" />
-                  <td className="text-start"> </td>
-                  <td className="text-start" />
-                  <td className="text-start" />
-                </tr>
-                <tr>
-                  <th className="text-start">Deduction Tax</th>
-                  <td className="text-start" />
-                  <td className="text-start"> </td>
-                  <td className="text-start"> </td>
-                  <td>
-                    <a
-                      data-toggle="collapse"
-                      href="#collapse1"
-                      onClick={actionDropdown}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        className="bi bi-plus-circle"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                      </svg>
-                    </a>
-                  </td>
-                </tr>
-                {actionDetails && (
-                <tr>
-                  <td colSpan={2}>
-                    <div className="d-flex">
-                      <input
-                        className="me-2"
-                        style={{ width: "61%" }}
-                        type="text"
-                      />
-                      <input
-                        className="me-5 ms-5"
-                        style={{ width: "100%" }}
-                        type="text"
-                      />
-                    </div>
-                  </td>
-                </tr>
-                )}
-                <tr>
-                  <th className="text-start">Total Deduction</th>
-                  <td className="text-start" />
-                  <td className="text-start"> </td>
-                  <td className="text-start" />
-                  <td className="text-start" />
-                </tr>
-                <tr>
-                  <th className="text-start">Payble Amount</th>
-                  <td className="text-start" />
-                  <td className="text-start"> </td>
-                  <td className="text-start" />
-                  <td className="text-start" />
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start" style={{ width: 200 }}>
+                          Tax / Charge Type
+                        </th>
+                        <th className="text-start">Tax / Charges per UOM (INR)</th>
+                        <th className="text-start">Inclusive / Exculsive</th>
+                        <th className="text-start">Amount</th>
+                        <th className="text-start">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th className="text-start">Taxable Amount</th>
+                        <td className="text-start" />
+                        <td className="text-start"> </td>
+                        <td className="text-start" />
+                        <td className="text-start" />
+                      </tr>
+                      <tr>
+                        <th className="text-start">Deduction Tax</th>
+                        <td className="text-start" />
+                        <td className="text-start"> </td>
+                        <td className="text-start"> </td>
+                        <td>
+                          <a
+                            data-toggle="collapse"
+                            href="#collapse1"
+                            onClick={actionDropdown}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width={20}
+                              height={20}
+                              fill="currentColor"
+                              className="bi bi-plus-circle"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                      {actionDetails && (
+                        <tr>
+                          <td colSpan={2}>
+                            <div className="d-flex">
+                              <input
+                                className="me-2"
+                                style={{ width: "61%" }}
+                                type="text"
+                              />
+                              <input
+                                className="me-5 ms-5"
+                                style={{ width: "100%" }}
+                                type="text"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <th className="text-start">Total Deduction</th>
+                        <td className="text-start" />
+                        <td className="text-start"> </td>
+                        <td className="text-start" />
+                        <td className="text-start" />
+                      </tr>
+                      <tr>
+                        <th className="text-start">Payble Amount</th>
+                        <td className="text-start" />
+                        <td className="text-start"> </td>
+                        <td className="text-start" />
+                        <td className="text-start" />
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Tax Details:</h5>
                 </div>
@@ -613,6 +581,33 @@ const BillBookingCreate = () => {
                         <td className="text-start" />
                         <td className="text-start" />
                       </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Retention Details:</h5>
+                </div>
+
+
+                <div className="tbl-container mx-3 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Retention Amount Payable</th>
+                        <th className="text-start">Retention Amount Paid</th>
+                        <th className="text-start">Retention Amount Pending</th>
+
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="text-start" />
+                        <td className="text-start" />
+                        <td className="text-start" />
+
+                      </tr>
+
                     </tbody>
                   </table>
                 </div>
@@ -1105,9 +1100,9 @@ const BillBookingCreate = () => {
                 </div>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-                <div className="mx-0">
-                                                        <Table columns={auditLogColumns} data={auditLogData} />
-                                                      </div>
+              <div className="mx-0">
+                <Table columns={auditLogColumns} data={auditLogData} />
+              </div>
             </div>
           </div>
         </div>
@@ -1126,840 +1121,846 @@ const BillBookingCreate = () => {
           <Modal.Title>Select PO</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div>
-  <div className="d-flex justify-content-between mt-3 me-2">
-    <h5 className=" ">Category of PO</h5>
-  </div>
-  <div className="radio-buttons d-flex align-items-center gap-4">
-    <div className="form-check">
-      <button
-        className="border-0 "
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal2"
-      >
-        <input className="form-check-input" type="radio" name="radio1" />
-      </button>
-      <label className="form-check-label" htmlFor="yesRadio">
-        Material
-      </label>
-    </div>
-    <div className="form-check">
-      <input
-        className="form-check-input"
-        type="radio"
-        name="radio1"
-        id="noRadio"
-      />
-      <label className="form-check-label" htmlFor="noRadio">
-        Asset
-      </label>
-    </div>
-  </div>
-  <div className="row">
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Project</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Sub Project</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>PO Number</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Supplier</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>PO Start Date</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>PO End Date</label>
-        <input
-          className="form-control"
-          type="date"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Indent</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Work Order</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Work Catogery</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-6">
-      <div className="form-group">
-        <label>Contractor</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-center">
-    <div className="col-md-3">
-      <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-        Search
-      </button>
-    </div>
-    <div className="col-md-3">
-      <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-        Select All
-      </button>
-    </div>
-    <div className="col-md-3">
-      <button className="purple-btn1 w-100" fdprocessedid="u33pye">
-        Reset
-      </button>
-    </div>
-    <div className="col-md-3">
-      <button className="purple-btn1 w-100" fdprocessedid="u33pye">
-        Close
-      </button>
-    </div>
-  </div>
-  <div className="d-flex justify-content-between mt-3 me-2">
-    <h5 className=" ">Search Result</h5>
-  </div>
-  <div className="tbl-container mx-3 mt-3">
-    <table className="w-100">
-      <thead>
-        <tr>
-          <th className="text-start">Sr.No</th>
-          <th className="text-start">PO Number</th>
-          <th className="text-start">PO Date</th>
-          <th className="text-start">Upload Date</th>
-          <th className="text-start">Uploaded By</th>
-          <th className="text-start">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td className="text-start">1</td>
-          <td className="text-start">MTC</td>
-          <td className="text-start">Material test Cert 1.pdf</td>
-          <td className="text-start">01-04-2024</td>
-          <td className="text-start">vendor user</td>
-          <td>
-            <i
-              className="fa-regular fa-eye"
-              data-bs-toggle="modal"
-              data-bs-target="#remark-modal"
-              style={{ fontSize: 18 }}
-            />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Category of PO</h5>
+            </div>
+            <div className="radio-buttons d-flex align-items-center gap-4">
+              <div className="form-check">
+                <button
+                  className="border-0 "
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal2"
+                >
+                  <input className="form-check-input" type="radio" name="radio1" />
+                </button>
+                <label className="form-check-label" htmlFor="yesRadio">
+                  Material
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="radio1"
+                  id="noRadio"
+                />
+                <label className="form-check-label" htmlFor="noRadio">
+                  Asset
+                </label>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Project</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Sub Project</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO Number</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Supplier</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO Start Date</label>
+                  <input
+                    className="form-control"
+                    type="date"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO End Date</label>
+                  <input
+                    className="form-control"
+                    type="date"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Indent</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Work Order</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Work Catogery</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Contractor</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder=""
+                    fdprocessedid="qv9ju9"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="row mt-2 justify-content-center">
+              <div className="col-md-3">
+                <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                  Search
+                </button>
+              </div>
+              <div className="col-md-3">
+                <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                  Select All
+                </button>
+              </div>
+              <div className="col-md-3">
+                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                  Reset
+                </button>
+              </div>
+              <div className="col-md-3">
+                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                  Close
+                </button>
+              </div>
+            </div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Search Result</h5>
+            </div>
+            <div className="tbl-container mx-3 mt-3">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th className="text-start">Sr.No</th>
+                    <th className="text-start">PO Number</th>
+                    <th className="text-start">PO Date</th>
+                    <th className="text-start">Upload Date</th>
+                    <th className="text-start">Uploaded By</th>
+                    <th className="text-start">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-start">1</td>
+                    <td className="text-start">MTC</td>
+                    <td className="text-start">Material test Cert 1.pdf</td>
+                    <td className="text-start">01-04-2024</td>
+                    <td className="text-start">vendor user</td>
+                    <td>
+                      <i
+                        className="fa-regular fa-eye"
+                        data-bs-toggle="modal"
+                        data-bs-target="#remark-modal"
+                        style={{ fontSize: 18 }}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           <div className="row mt-2 justify-content-center">
-  <div className="col-md-2">
-    <button className="purple-btn1 w-100" fdprocessedid="u33pye">
-      Close
-    </button>
-  </div>
-</div>
+            <div className="col-md-2">
+              <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                Close
+              </button>
+            </div>
+          </div>
         </Modal.Body>
-         
+
       </Modal>
 
       {/*  */}
       <Modal
-       centered
-       size="lg"
-       show={selectGRNModal}
-       onHide={closeSelectGRNModal}
-       backdrop="static"
-       keyboard={false}>
+        centered
+        size="lg"
+        show={selectGRNModal}
+        onHide={closeSelectGRNModal}
+        backdrop="static"
+        keyboard={false}>
         <Modal.Header closeButton>
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div className="row">
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>PO Number</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>GRN Number</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Delivery Challan No</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Amount (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Certified Till Date (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>All Inclusive Cost (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-  </div>
-  <div className=" mt-3 me-2">
-    <h5 className=" ">GRN Details</h5>
-  </div>
-  <div className="tbl-container mx-3 mt-3">
-    <table className="w-100">
-      <thead>
-        <tr>
-          <th>
-            <input type="checkbox" />
-          </th>
-          <th>Material Name</th>
-          <th>Material GRN Amount</th>
-          <th>Certified Till Date</th>
-          <th>Base cost</th>
-          <th>Net Taxes</th>
-          <th>Net Charges</th>
-          <th>Qty</th>
-          <th>All Inclusive Cost</th>
-          <th>Taxes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <input type="checkbox" />
-          </td>
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td
-            className="text-decoration-underline"
-            data-bs-toggle="modal"
-            data-bs-target="#taxesModal"
-          >
-            Taxes
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div className="row mt-2 justify-content-center">
-    <div className="col-md-3">
-      <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-        Submit
-      </button>
-    </div>
-    <div className="col-md-3">
-      <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-        Cancel
-      </button>
-    </div>
-  </div>
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>GRN Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Delivery Challan No</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Amount (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Certified Till Date (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>All Inclusive Cost (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+          </div>
+          <div className=" mt-3 me-2">
+            <h5 className=" ">GRN Details</h5>
+          </div>
+          <div className="tbl-container mx-3 mt-3">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" />
+                  </th>
+                  <th>Material Name</th>
+                  <th>Material GRN Amount</th>
+                  <th>Certified Till Date</th>
+                  <th>Base cost</th>
+                  <th>Net Taxes</th>
+                  <th>Net Charges</th>
+                  <th>Qty</th>
+                  <th>All Inclusive Cost</th>
+                  <th>Taxes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td
+
+                  >
+                    <button className=" btn text-decoration-underline"
+                      data-bs-toggle="modal"
+                      data-bs-target="#taxesModal" onClick={openAttachThreeModal}>
+                      Taxes
+                    </button>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                Submit
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal.Body>
 
       </Modal>
 
       {/*  */}
       <Modal
-      centered
-      size="lg"
-      show={attachOneModal}
-      onHide={closeAttachOneModal}
-      backdrop="static"
-      keyboard={false}
+        centered
+        size="lg"
+        show={attachOneModal}
+        onHide={closeAttachOneModal}
+        backdrop="static"
+        keyboard={false}
       >
-      <Modal.Header closeButton>
+        <Modal.Header closeButton>
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        
-  <div>
-    <div className="d-flex justify-content-between mt-3 me-2">
-      <h5 className=" ">Latest Documents</h5>
-      <div
-        className="card-tools d-flex"
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal"
-      >
-        <button
-          className="purple-btn2 rounded-3"
-          data-bs-toggle="modal"
-          data-bs-dismiss="modal"
-          data-bs-target="#secModal"
-          fdprocessedid="xn3e6n"
-          onClick={openAttachTwoModal}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={20}
-            height={20}
-            fill="currentColor"
-            className="bi bi-plus"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-          </svg>
-          <span>Attach</span>
-        </button>
-      </div>
-    </div>
-    <div className="tbl-container px-0">
-      <table className="w-100">
-        <thead>
-          <tr>
-            <th>Sr.No.</th>
-            <th>Document Name</th>
-            <th>Attachment Name</th>
-            <th>Upload Date</th>
-            <th>Uploaded By</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th>1</th>
-            <td>MTC</td>
-            <td>Material test Cert 1.pdf</td>
-            <td>01-03-2024</td>
-            <td>vendor user</td>
-            <td>
-              <i
-                className="fa-regular fa-eye"
+
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Latest Documents</h5>
+              <div
+                className="card-tools d-flex"
                 data-bs-toggle="modal"
-                data-bs-target="#comments-modal"
-                style={{ fontSize: 18 }}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div className=" mt-3 me-2">
-      <h5 className=" ">Document Attachment History</h5>
-    </div>
-    <div className="tbl-container px-0">
-      <table className="w-100">
-        <thead>
-          <tr>
-            <th>Sr.No.</th>
-            <th>Document Name</th>
-            <th>Attachment Name</th>
-            <th>Upload Date</th>
-            <th>Uploaded By</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th>1</th>
-            <td>MTC</td>
-            <td>Material test Cert 1.pdf</td>
-            <td>01-03-2024</td>
-            <td>vendor user</td>
-            <td>
-              <i
-                className="fa-regular fa-eye"
-                data-bs-toggle="modal"
-                data-bs-target="#comments-modal"
-                style={{ fontSize: 18 }}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-center">
-    <div className="col-md-4">
-      <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-        Close
-      </button>
-    </div>
-  </div>
- 
+                data-bs-target="#exampleModal"
+              >
+                <button
+                  className="purple-btn2 rounded-3"
+                  data-bs-toggle="modal"
+                  data-bs-dismiss="modal"
+                  data-bs-target="#secModal"
+                  fdprocessedid="xn3e6n"
+                  onClick={openAttachTwoModal}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th>1</th>
+                    <td>MTC</td>
+                    <td>Material test Cert 1.pdf</td>
+                    <td>01-03-2024</td>
+                    <td>vendor user</td>
+                    <td>
+                      <i
+                        className="fa-regular fa-eye"
+                        data-bs-toggle="modal"
+                        data-bs-target="#comments-modal"
+                        style={{ fontSize: 18 }}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className=" mt-3 me-2">
+              <h5 className=" ">Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th>1</th>
+                    <td>MTC</td>
+                    <td>Material test Cert 1.pdf</td>
+                    <td>01-03-2024</td>
+                    <td>vendor user</td>
+                    <td>
+                      <i
+                        className="fa-regular fa-eye"
+                        data-bs-toggle="modal"
+                        data-bs-target="#comments-modal"
+                        style={{ fontSize: 18 }}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+                Close
+              </button>
+            </div>
+          </div>
+
 
         </Modal.Body>
       </Modal>
 
       {/*  */}
       <Modal
-       centered
-       size="lg"
-       show={attachTwoModal}
-       onHide={closeAttachTwoModal}
-       backdrop="static"
-       keyboard={false}
+        centered
+        size="lg"
+        show={attachTwoModal}
+        onHide={closeAttachTwoModal}
+        backdrop="static"
+        keyboard={false}
       >
-      <Modal.Header closeButton>
+        <Modal.Header closeButton>
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div className="row">
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>PO Number</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>GRN Number</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Delivery Challan No</label>
-        <input
-          className="form-control"
-          type="text"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Amount (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>Certified Till Date (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="form-group">
-        <label>All Inclusive Cost (INR)</label>
-        <input
-          className="form-control"
-          type="number"
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-  </div>
-  <div className=" mt-3 me-2">
-    <h5 className=" ">GRN Details</h5>
-  </div>
-  <div className="tbl-container mx-3 mt-3">
-    <table className="w-100">
-      <thead>
-        <tr>
-          <th>
-            <input type="checkbox" />
-          </th>
-          <th>Material Name</th>
-          <th>Material GRN Amount</th>
-          <th>Certified Till Date</th>
-          <th>Base cost</th>
-          <th>Net Taxes</th>
-          <th>Net Charges</th>
-          <th>Qty</th>
-          <th>All Inclusive Cost</th>
-          <th>Taxes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <input type="checkbox" />
-          </td>
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td />
-          <td
-            className="text-decoration-underline"
-            data-bs-toggle="modal"
-            data-bs-target="#taxesModal"
-            data-bs-dismiss="modal"
-            onClick={openAttachThreeModal}
-          >
-            Taxes
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div className="row mt-2 justify-content-center">
-    <div className="col-md-4">
-      <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-        Submit
-      </button>
-    </div>
-    <div className="col-md-4">
-      <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-        Cancel
-      </button>
-    </div>
-  </div>
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>GRN Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Delivery Challan No</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Amount (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Certified Till Date (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>All Inclusive Cost (INR)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+          </div>
+          <div className=" mt-3 me-2">
+            <h5 className=" ">GRN Details</h5>
+          </div>
+          <div className="tbl-container mx-3 mt-3">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" />
+                  </th>
+                  <th>Material Name</th>
+                  <th>Material GRN Amount</th>
+                  <th>Certified Till Date</th>
+                  <th>Base cost</th>
+                  <th>Net Taxes</th>
+                  <th>Net Charges</th>
+                  <th>Qty</th>
+                  <th>All Inclusive Cost</th>
+                  <th>Taxes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td />
+                  <td
+
+                  >
+
+                    <button className=" btn text-decoration-underline"
+                      data-bs-toggle="modal"
+                      data-bs-target="#taxesModal"
+                      data-bs-dismiss="modal" onClick={openAttachThreeModal}>
+                      Taxesss
+                    </button>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                Submit
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
 
-       {/*  */}
-       <Modal
+      {/*  */}
+      <Modal
         centered
         size="lg"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"
         keyboard={false}
-       >
-      <Modal.Header closeButton>
+      >
+        <Modal.Header closeButton>
           <Modal.Title></Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <div className="tbl-container mx-3 mt-3">
-  <table className="w-100">
-    <thead>
-      <tr>
-        <th>Tax / Charge Type</th>
-        <th>Tax / Charges per UOM (INR)</th>
-        <th>Inclusive / Exculsive</th>
-        <th>Amount</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <th>Total Base Cost</th>
-        <td />
-        <td />
-        <td>3000</td>
-        <td />
-      </tr>
-      <tr>
-        <th>Addition Tax &amp; Charges</th>
-        <td />
-        <td />
-        <td />
-        <td className="row-1" data-group={1}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-plus-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-          </svg>
-        </td>
-      </tr>
-      <tr className="row-2" data-group={1}>
-        <td>
-          <select
-            className="form-control form-select"
-            style={{ width: "100%" }}
-            fdprocessedid="3x7jfv"
-          >
-            <option selected="selected">Vendor Name</option>
-            <option>Alaska</option>
-            <option>California</option>
-            <option>Delaware</option>
-            <option>Tennessee</option>
-            <option>Texas</option>
-            <option>Washington</option>
-          </select>
-        </td>
-        <td>
-          <select
-            className="form-control form-select"
-            style={{ width: "100%" }}
-            fdprocessedid="3x7jfv"
-          >
-            <option selected="selected">Vendor Name</option>
-            <option>Alaska</option>
-            <option>California</option>
-            <option>Delaware</option>
-            <option>Tennessee</option>
-            <option>Texas</option>
-            <option>Washington</option>
-          </select>
-        </td>
-        <td>
-          <input type="checkbox" />
-        </td>
-        <td>270</td>
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-dash-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-          </svg>{" "}
-        </td>
-      </tr>
-      <tr className="row-2" data-group={1}>
-        <td> Sub Total A (Addition)</td>
-        <td />
-        <td />
-        <td />
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-dash-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-          </svg>
-        </td>
-      </tr>
-      <tr>
-        <th>Gross Amount</th>
-        <td />
-        <td />
-        <td>3540</td>
-        <td />
-      </tr>
-      <tr>
-        <th className="row-1" data-group={2}>
-          Deduction Tax
-        </th>
-        <td />
-        <td />
-        <td />
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-plus-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-          </svg>
-        </td>
-      </tr>
-      <tr className="row-2" data-group={2}>
-        <td>
-          <select
-            className="form-control form-select"
-            style={{ width: "100%" }}
-            fdprocessedid="3x7jfv"
-          >
-            <option selected="selected">Vendor Name</option>
-            <option>Alaska</option>
-            <option>California</option>
-            <option>Delaware</option>
-            <option>Tennessee</option>
-            <option>Texas</option>
-            <option>Washington</option>
-          </select>
-        </td>
-        <td>
-          <select
-            className="form-control form-select"
-            style={{ width: "100%" }}
-            fdprocessedid="3x7jfv"
-          >
-            <option selected="selected">Vendor Name</option>
-            <option>Alaska</option>
-            <option>California</option>
-            <option>Delaware</option>
-            <option>Tennessee</option>
-            <option>Texas</option>
-            <option>Washington</option>
-          </select>
-        </td>
-        <td>
-          <input type="checkbox" />
-        </td>
-        <td>30</td>
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-dash-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-          </svg>{" "}
-        </td>
-      </tr>
-      <tr className="row-2" data-group={2}>
-        <td>Payble Amount</td>
-        <td />
-        <td />
-        <td>3510</td>
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width={16}
-            height={16}
-            fill="currentColor"
-            className="bi bi-dash-circle"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-          </svg>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+          <div className="tbl-container mx-3 mt-3">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Tax / Charge Type</th>
+                  <th>Tax / Charges per UOM (INR)</th>
+                  <th>Inclusive / Exculsive</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Total Base Cost</th>
+                  <td />
+                  <td />
+                  <td>3000</td>
+                  <td />
+                </tr>
+                <tr>
+                  <th>Addition Tax &amp; Charges</th>
+                  <td />
+                  <td />
+                  <td />
+                  <td className="row-1" data-group={1}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-plus-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                    </svg>
+                  </td>
+                </tr>
+                <tr className="row-2" data-group={1}>
+                  <td>
+                    <select
+                      className="form-control form-select"
+                      style={{ width: "100%" }}
+                      fdprocessedid="3x7jfv"
+                    >
+                      <option selected="selected">Vendor Name</option>
+                      <option>Alaska</option>
+                      <option>California</option>
+                      <option>Delaware</option>
+                      <option>Tennessee</option>
+                      <option>Texas</option>
+                      <option>Washington</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      className="form-control form-select"
+                      style={{ width: "100%" }}
+                      fdprocessedid="3x7jfv"
+                    >
+                      <option selected="selected">Vendor Name</option>
+                      <option>Alaska</option>
+                      <option>California</option>
+                      <option>Delaware</option>
+                      <option>Tennessee</option>
+                      <option>Texas</option>
+                      <option>Washington</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+                  <td>270</td>
+                  <td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-dash-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                    </svg>{" "}
+                  </td>
+                </tr>
+                <tr className="row-2" data-group={1}>
+                  <td> Sub Total A (Addition)</td>
+                  <td />
+                  <td />
+                  <td />
+                  <td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-dash-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                    </svg>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Gross Amount</th>
+                  <td />
+                  <td />
+                  <td>3540</td>
+                  <td />
+                </tr>
+                <tr>
+                  <th className="row-1" data-group={2}>
+                    Deduction Tax
+                  </th>
+                  <td />
+                  <td />
+                  <td />
+                  <td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-plus-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                    </svg>
+                  </td>
+                </tr>
+                <tr className="row-2" data-group={2}>
+                  <td>
+                    <select
+                      className="form-control form-select"
+                      style={{ width: "100%" }}
+                      fdprocessedid="3x7jfv"
+                    >
+                      <option selected="selected">Vendor Name</option>
+                      <option>Alaska</option>
+                      <option>California</option>
+                      <option>Delaware</option>
+                      <option>Tennessee</option>
+                      <option>Texas</option>
+                      <option>Washington</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      className="form-control form-select"
+                      style={{ width: "100%" }}
+                      fdprocessedid="3x7jfv"
+                    >
+                      <option selected="selected">Vendor Name</option>
+                      <option>Alaska</option>
+                      <option>California</option>
+                      <option>Delaware</option>
+                      <option>Tennessee</option>
+                      <option>Texas</option>
+                      <option>Washington</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+                  <td>30</td>
+                  <td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-dash-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                    </svg>{" "}
+                  </td>
+                </tr>
+                <tr className="row-2" data-group={2}>
+                  <td>Payble Amount</td>
+                  <td />
+                  <td />
+                  <td>3510</td>
+                  <td>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={16}
+                      height={16}
+                      fill="currentColor"
+                      className="bi bi-dash-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+                    </svg>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
         </Modal.Body>
       </Modal>
