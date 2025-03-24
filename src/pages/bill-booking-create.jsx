@@ -106,7 +106,7 @@ const BillBookingCreate = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section container-fluid px-2">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Bill Booking</a>
           <h5 className="mt-3">Bill Booking</h5>
           <div className="row my-4 align-items-center">
@@ -1080,37 +1080,19 @@ const BillBookingCreate = () => {
                   </ul>
                 </div>
               </div> */}
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Received for Verification
-                  </button>
-                  {/* <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul> */}
-                </div>
+              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
+                <p className="mb-0">Status</p>
+                <select
+                  className="form-select purple-btn2"
+                  style={{ width: "150px" }}
+                >
+                  <option value="draft">PO Draft</option>
+                  <option value="accept">Accept</option>
+                  <option value="reject">Reject</option>
+                  <option value="submit">Submit</option>
+                </select>
               </div>
+
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Submit</button>
