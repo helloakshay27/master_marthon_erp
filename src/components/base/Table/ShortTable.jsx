@@ -5,7 +5,6 @@ export default function ShortTable({
   editable = false,
   onValueChange,
   onInputClick, // New prop for handling input click
-  onDeleteClick, // New prop for handling delete click
   ...rest
 }) {
   const handleInputChange = (index, newValue) => {
@@ -56,6 +55,11 @@ export default function ShortTable({
     onValueChange(updatedData);
   };
 
+  const handleDelete = (index) => {
+    const updatedData = data.filter((_, i) => i !== index);
+    onValueChange(updatedData);
+  };
+
   return (
     <table
       className="tbl-container mt-4 ShortTable"
@@ -63,7 +67,7 @@ export default function ShortTable({
       {...rest}
     >
       <tbody>
-        {data?.map((row, index) => (
+        {Array.isArray(data) && data.map((row, index) => (
           <tr
             key={index}
             style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
@@ -106,7 +110,7 @@ export default function ShortTable({
                       width: "25px",
                       height: "25px",
                     }}
-                    onClick={() => onDeleteClick(index)}
+                    onClick={() => handleDelete(index)}
                   >
                     <i className="bi bi-trash" style={{ border: 0 }}></i>
                   </button>
