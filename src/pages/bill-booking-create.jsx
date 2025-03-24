@@ -3,10 +3,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import {
-  Table
-} from "../components";
+import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
@@ -15,6 +14,15 @@ const BillBookingCreate = () => {
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
+  const companyOptions = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
 
   // action dropdown
   const actionDropdown = () => {
@@ -59,76 +67,40 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Project</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Sub Project</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-3 mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
-                  <div className="col-md-1 pt-2 mt-2">
+                  <div className="col-md-1 pt-2 mt-4">
                     <p className="mt-2 text-decoration-underline">
                       View Details
                     </p>
@@ -150,7 +122,7 @@ const BillBookingCreate = () => {
                     data-bs-target="#selectModal"
                     onClick={openSelectPOModal}
                   >
-                    <p className="mt-2 text-decoration-underline">Select</p>
+                    <p className="mt-3 text-decoration-underline">Select</p>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -177,19 +149,11 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>E-Invoice</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
                         fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
@@ -253,38 +217,20 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Type of Certificate</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Department</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                 </div>
@@ -410,7 +356,9 @@ const BillBookingCreate = () => {
                         <th className="text-start" style={{ width: 200 }}>
                           Tax / Charge Type
                         </th>
-                        <th className="text-start">Tax / Charges per UOM (INR)</th>
+                        <th className="text-start">
+                          Tax / Charges per UOM (INR)
+                        </th>
                         <th className="text-start">Inclusive / Exculsive</th>
                         <th className="text-start">Amount</th>
                         <th className="text-start">Action</th>
@@ -589,7 +537,6 @@ const BillBookingCreate = () => {
                   <h5 className=" ">Retention Details:</h5>
                 </div>
 
-
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
@@ -597,7 +544,6 @@ const BillBookingCreate = () => {
                         <th className="text-start">Retention Amount Payable</th>
                         <th className="text-start">Retention Amount Paid</th>
                         <th className="text-start">Retention Amount Pending</th>
-
                       </tr>
                     </thead>
                     <tbody>
@@ -605,9 +551,7 @@ const BillBookingCreate = () => {
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
-
                       </tr>
-
                     </tbody>
                   </table>
                 </div>
@@ -956,7 +900,7 @@ const BillBookingCreate = () => {
                       data-bs-toggle="modal"
                       data-bs-target="#viewDocumentModal"
                       fdprocessedid="xn3e6n"
-                      onClick={openAttachOneModal}
+                      onClick={openAttachTwoModal}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -993,9 +937,10 @@ const BillBookingCreate = () => {
                         <td className="text-start">04-03-2024</td>
                         <td
                           className="text-decoration-underline cursor-pointer"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openAttachTwoModal}                        >
+                          // data-bs-toggle="modal"
+                          // data-bs-target="#RevisionModal"
+                          onClick={openAttachOneModal}
+                        >
                           View
                         </td>
                       </tr>
@@ -1029,7 +974,7 @@ const BillBookingCreate = () => {
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
+              {/* <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Assigned To User</p>
                 <div className="dropdown">
                   <button
@@ -1059,7 +1004,7 @@ const BillBookingCreate = () => {
                     </li>
                   </ul>
                 </div>
-              </div>
+              </div> */}
               <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Status</p>
                 <div className="dropdown">
@@ -1072,7 +1017,7 @@ const BillBookingCreate = () => {
                   >
                     Received for Verification
                   </button>
-                  <ul className="dropdown-menu">
+                  {/* <ul className="dropdown-menu">
                     <li>
                       <a className="dropdown-item" href="#">
                         Action
@@ -1088,7 +1033,7 @@ const BillBookingCreate = () => {
                         Something else here
                       </a>
                     </li>
-                  </ul>
+                  </ul> */}
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
@@ -1132,7 +1077,11 @@ const BillBookingCreate = () => {
                   data-bs-toggle="modal"
                   data-bs-target="#exampleModal2"
                 >
-                  <input className="form-check-input" type="radio" name="radio1" />
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="radio1"
+                  />
                 </button>
                 <label className="form-check-label" htmlFor="yesRadio">
                   Material
@@ -1328,7 +1277,6 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-
       </Modal>
 
       {/*  */}
@@ -1338,7 +1286,8 @@ const BillBookingCreate = () => {
         show={selectGRNModal}
         onHide={closeSelectGRNModal}
         backdrop="static"
-        keyboard={false}>
+        keyboard={false}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
@@ -1445,15 +1394,16 @@ const BillBookingCreate = () => {
                   <td />
                   <td />
                   <td />
-                  <td
 
-                  >
-                    <button className=" btn text-decoration-underline"
+                  <td>
+                    <button
+                      className=" btn text-decoration-underline"
                       data-bs-toggle="modal"
-                      data-bs-target="#taxesModal" onClick={openAttachThreeModal}>
+                      data-bs-target="#taxesModal"
+                      onClick={openAttachThreeModal}
+                    >
                       Taxes
                     </button>
-
                   </td>
                 </tr>
               </tbody>
@@ -1472,7 +1422,6 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-
       </Modal>
 
       {/*  */}
@@ -1488,7 +1437,6 @@ const BillBookingCreate = () => {
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
           <div>
             <div className="d-flex justify-content-between mt-3 me-2">
               <h5 className=" ">Latest Documents</h5>
@@ -1592,13 +1540,63 @@ const BillBookingCreate = () => {
               </button>
             </div>
           </div>
+        </Modal.Body>
+      </Modal>
 
+      <Modal
+        centered
+        size="lg"
+        show={attachTwoModal}
+        onHide={closeAttachOneModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Attach Other Document</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            {/* Document Name Input */}
+            <div className="mb-3">
+              <label htmlFor="documentName" className="form-label">
+                Document Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="documentName"
+                placeholder="Enter document name"
+              />
+            </div>
 
+            {/* File Upload Field */}
+            <div className="mb-3">
+              <label htmlFor="fileUpload" className="form-label">
+                Choose File
+              </label>
+              <input type="file" className="form-control" id="fileUpload" />
+            </div>
+
+            {/* Submit & Cancel Buttons */}
+            <div className="row mt-3 justify-content-center">
+              <div className="col-md-4">
+                <button className="purple-btn2 w-100">Submit</button>
+              </div>
+              <div className="col-md-4">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={closeAttachTwoModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
 
       {/*  */}
-      <Modal
+      {/* <Modal
         centered
         size="lg"
         show={attachTwoModal}
@@ -1712,17 +1710,16 @@ const BillBookingCreate = () => {
                   <td />
                   <td />
                   <td />
-                  <td
-
-                  >
-
-                    <button className=" btn text-decoration-underline"
+                  <td>
+                    <button
+                      className=" btn text-decoration-underline"
                       data-bs-toggle="modal"
                       data-bs-target="#taxesModal"
-                      data-bs-dismiss="modal" onClick={openAttachThreeModal}>
+                      data-bs-dismiss="modal"
+                      onClick={openAttachThreeModal}
+                    >
                       Taxesss
                     </button>
-
                   </td>
                 </tr>
               </tbody>
@@ -1741,7 +1738,7 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
 
       {/*  */}
       <Modal
@@ -1961,7 +1958,6 @@ const BillBookingCreate = () => {
               </tbody>
             </table>
           </div>
-
         </Modal.Body>
       </Modal>
     </>
