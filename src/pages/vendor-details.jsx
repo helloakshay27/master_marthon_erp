@@ -20,6 +20,7 @@ export default function VendorDetails() {
   const [isBid, setIsBid] = useState(false);
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
   const [linkedData, setLinkedData] = useState({});
+  const [realisedGstVal, setRealisedGstVal] = useState(0);
 
   const { eventId } = useParams();
 
@@ -206,16 +207,13 @@ export default function VendorDetails() {
     updatedData[rowIndex].total = finalTotal.toFixed(2); // After GST
 
     setData(updatedData);
-    const frt_vlu = document.querySelector(".frt_vlu").value;
-    const frt_vlu_parsed = parseFloat(frt_vlu) || 0;
-
-    const updatedGrossTotal = calculateSumTotal() + frt_vlu_parsed;
+    const updatedGrossTotal = calculateSumTotal();
     setGrossTotal(updatedGrossTotal);
   };
 
-  const calculateFreightTotal = () => {
+  const calculateFreightTotal = (updatedFreightData = freightData) => {
     const getFreightValue = (label) => {
-      const row = freightData.find((row) => row.label === label);
+      const row = updatedFreightData.find((row) => row.label === label);
       if (row && row.value) {
         const { firstBid, counterBid } = row.value;
         const valueToParse = counterBid || firstBid;
@@ -233,26 +231,59 @@ export default function VendorDetails() {
     return realisedFreight || freightCharge;
   };
 
-  const calculateSumTotal = () => {
+  const calculateRealisedGstTotal = () => {
+    if (!Array.isArray(data)) {
+      return 0;
+    }
+    const sum = data.reduce((sum, row) => {
+      const realisedGst = parseFloat(row.realisedGst) || 0;
+      return sum + realisedGst;
+    }, 0);
+  
+    // Add realised GST from freight data
+    const freightRealisedGst = freightData.reduce((sum, row) => {
+      if (row.label === "GST on Freight") {
+        const gstValue = parseFloat(row.value.firstBid || row.value.counterBid || 0);
+        const freightCharge = parseFloat(freightData.find(f => f.label === "Freight Charge")?.value.firstBid || 0);
+        return sum + (freightCharge * gstValue / 100);
+      }
+      return sum;
+    }, 0);
+  
+    const totalRealisedGst = sum + freightRealisedGst;
+    setRealisedGstVal(totalRealisedGst);
+    return parseFloat(totalRealisedGst.toFixed(2)); // Ensure two decimal places
+  };
+  
+  const calculateSumTotal = (updatedFreightData = freightData) => {
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
-    const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-    return Math.round((dataSum + freightTotal) * 100) / 100;
+    const freightTotal = parseFloat(calculateFreightTotal(updatedFreightData)) || 0; // Total from freight data
+    const realisedGstTotal = parseFloat(calculateRealisedGstTotal()) || 0; // Total from realised GST
+  
+    // Ensure realisedGstTotal is included in the total calculation
+    const totalBeforeFreight = Math.round(dataSum * 100) / 100;
+    const totalWithFreightAndGst = Math.round((dataSum + freightTotal + realisedGstTotal) * 100) / 100;
+  
+    console.log("Total before Freight:", totalBeforeFreight);
+    console.log("Total with Freight and GST:", totalWithFreightAndGst);
+  
+    return totalWithFreightAndGst;
   };
 
   const handleFreightDataChange = (updatedFreightData) => {
     setFreightData(updatedFreightData);
-    const updatedGrossTotal = calculateSumTotal();
+    const updatedGrossTotal = calculateSumTotal(updatedFreightData);
     setGrossTotal(updatedGrossTotal);
+  };
+
+  const handleSumTotalChange = (sumTotal) => {
+    setGrossTotal(sumTotal);
   };
 
   //____________________________________________________________________
 
   // const calculateFreightTotal = () => {
   //   const getFreightValue = (label) => {
-  //     const row = freightData.find((row) => row.label === label);
-  //     // console.log("row.value", row.value);
-  //     if (row && row.value) {
-  //       const { firstBid, counterBid } = row.value;
 
   //       const valueToParse = counterBid || firstBid;
 
@@ -693,7 +724,7 @@ export default function VendorDetails() {
     const loadingUnloadingClause =
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
-
+    
     // Construct the payload
     const payload = {
       bid: {
@@ -4050,7 +4081,7 @@ export default function VendorDetails() {
                           bidTemplate
                         )} */}
                         <ShortDataTable
-                          data={mergedColumns}
+                          data={bidTemplate}
                           editable={true}
                           onValueChange={handleFreightDataChange}
                         />
