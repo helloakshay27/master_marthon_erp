@@ -739,6 +739,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
+        extra:{},
         bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -891,6 +892,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
+        extra:{},
         revised_bid_materials_attributes: bidMaterialsAttributes,
       },
     };
