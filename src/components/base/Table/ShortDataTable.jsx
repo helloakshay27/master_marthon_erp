@@ -1,487 +1,4 @@
-// import React from "react";
-// export default function ShortDataTable({
-//   data,
-//   editable = false,
-//   onValueChange,
-//   ...rest
-// }) {
-//   // const handleInputChange = (index, newValue) => {
-//   //   const updatedData = [...data];
-
-//   //   if (!newValue.trim()) {
-//   //     updatedData[index].value.firstBid = "";
-//   //     updatedData[index].value.counterBid = "";
-//   //   } else {
-//   //     const [firstBid, counterBid] = newValue.split("→").map((v) => v.trim());
-//   //     updatedData[index].value.firstBid =
-//   //       firstBid || updatedData[index].value.firstBid;
-//   //     updatedData[index].value.counterBid = counterBid || "";
-//   //   }
-
-//   //   if (updatedData[index].label === "Freight Charge") {
-//   //     const freightCharge =
-//   //       parseFloat(
-//   //         (
-//   //           updatedData[index].value.counterBid ||
-//   //           updatedData[index].value.firstBid ||
-//   //           "0"
-//   //         ).replace(/₹|,/g, "")
-//   //       ) || 0;
-
-//   //     const gstRow = updatedData.find((row) => row.label === "GST on Freight");
-//   //     const gstOnFreight =
-//   //       gstRow && gstRow.value && typeof gstRow.value.firstBid === "string"
-//   //         ? parseFloat(gstRow.value.firstBid.replace(/%/g, "")) || 0
-//   //         : 0;
-
-//   //     const realisedFreight = (freightCharge * gstOnFreight) / 100;
-
-//   //     const realisedFreightIndex = updatedData.findIndex(
-//   //       (row) => row.label === "Realised Freight"
-//   //     );
-
-//   //     if (realisedFreightIndex !== -1) {
-//   //       updatedData[realisedFreightIndex].value.firstBid = `₹${(
-//   //         freightCharge + realisedFreight
-//   //       ).toFixed(2)}`;
-//   //       updatedData[realisedFreightIndex].value.counterBid = "";
-//   //     }
-//   //   } else if (updatedData[index].label === "GST on Freight") {
-//   //     const gstOnFreight =
-//   //       parseFloat(
-//   //         (
-//   //           updatedData[index].value.counterBid ||
-//   //           updatedData[index].value.firstBid ||
-//   //           "0"
-//   //         ).replace(/%/g, "")
-//   //       ) || 0;
-
-//   //     const freightRow = updatedData.find(
-//   //       (row) => row.label === "Freight Charge"
-//   //     );
-//   //     const freightCharge =
-//   //       freightRow &&
-//   //       freightRow.value &&
-//   //       typeof freightRow.value.firstBid === "string"
-//   //         ? parseFloat(freightRow.value.firstBid.replace(/₹|,/g, "")) || 0
-//   //         : 0;
-
-//   //     const realisedFreight = (freightCharge * gstOnFreight) / 100;
-
-//   //     const realisedFreightIndex = updatedData.findIndex(
-//   //       (row) => row.label === "Realised Freight"
-//   //     );
-
-//   //     if (realisedFreightIndex !== -1) {
-//   //       updatedData[realisedFreightIndex].value.firstBid = `₹${(
-//   //         freightCharge + realisedFreight
-//   //       ).toFixed(2)}`;
-//   //       updatedData[realisedFreightIndex].value.counterBid = "";
-//   //     }
-//   //   }
-
-//   //   onValueChange(updatedData);
-//   // };
-
-//   // const handleInputChange = (index, newValue) => {
-//   //   const updatedData = [...data];
-
-//   //   // Block empty inputs
-//   //   if (!newValue.trim()) {
-//   //     updatedData[index].value.firstBid = "";
-//   //     updatedData[index].value.counterBid = "";
-//   //     onValueChange(updatedData);
-//   //     return;
-//   //   }
-
-//   //   const currentLabel = updatedData[index].label;
-
-//   //   // Validation based on label
-//   //   if (["Freight Charge", "GST on Freight"].includes(currentLabel)) {
-//   //     // Allow only numbers
-//   //     if (!/^\d+(\.\d+)?$/.test(newValue)) {
-//   //       alert("Please enter a valid numeric value.");
-//   //       return; // Stop updating if invalid
-//   //     }
-//   //   } else if (["Warranty Clause", "Payment Terms"].includes(currentLabel)) {
-//   //     // Allow only strings (no numbers or special characters)
-//   //     if (/[^a-zA-Z\s]/.test(newValue)) {
-//   //       // Check for anything outside letters/spaces
-//   //       alert("Please enter a valid string value (letters and spaces only).");
-//   //       return; // Stop updating if invalid
-//   //     }
-//   //   }
-
-//   //   // If valid, update the data
-//   //   const [firstBid, counterBid] = newValue.split("→").map((v) => v.trim());
-//   //   updatedData[index].value.firstBid =
-//   //     firstBid || updatedData[index].value.firstBid;
-//   //   updatedData[index].value.counterBid = counterBid || "";
-
-//   //   // Logic for "Realised Freight" update (unchanged from original)
-//   //   if (currentLabel === "Freight Charge") {
-//   //     const freightCharge =
-//   //       parseFloat(
-//   //         (
-//   //           updatedData[index].value.counterBid ||
-//   //           updatedData[index].value.firstBid ||
-//   //           "0"
-//   //         ).replace(/₹|,/g, "")
-//   //       ) || 0;
-
-//   //     const gstRow = updatedData.find((row) => row.label === "GST on Freight");
-//   //     // const gstOnFreight = gstRow?.value?.firstBid
-//   //     //   ? parseFloat(gstRow.value.firstBid.replace(/%/g, "")) || 0
-//   //     //   : 0;
-
-//   //     const gstOnFreight = gstRow?.value?.firstBid
-//   //       ? parseFloat(String(gstRow.value.firstBid).replace(/%/g, "") || "0") // Convert to string before replacing
-//   //       : 0;
-
-//   //     const realisedFreight = (freightCharge * gstOnFreight) / 100;
-
-//   //     const realisedFreightIndex = updatedData.findIndex(
-//   //       (row) => row.label === "Realised Freight"
-//   //     );
-//   //     if (realisedFreightIndex !== -1) {
-//   //       updatedData[realisedFreightIndex].value.firstBid = `₹${(
-//   //         freightCharge + realisedFreight
-//   //       ).toFixed(2)}`;
-//   //       updatedData[realisedFreightIndex].value.counterBid = "";
-//   //     }
-//   //   }
-
-//   //   onValueChange(updatedData);
-//   // };
-
-//   const handleInputChange = (index, newValue) => {
-//     console.log("Input value:", newValue); // Debugging input
-//     const updatedData = [...data];
-
-//     // Block empty inputs
-
-//     if (!newValue) {
-//       updatedData[index].value.firstBid = "";
-//       updatedData[index].value.counterBid = "";
-//       onValueChange(updatedData);
-//       return;
-//     }
-
-//     const currentLabel = updatedData[index].label;
-
-//     // if (
-//     //   ["Warranty Clause", "Payment Terms", "Loading / Unloading"].includes(
-//     //     currentLabel
-//     //   )
-//     // ) {
-//     //   // Allow only letters and spaces
-//     //   if (/[^a-zA-Z\s]/.test(newValue)) {
-//     //     alert("Please enter a valid string value (letters and spaces only).");
-//     //     return;
-//     //   }
-//     // }
-
-//     if (["Freight Charge", "GST on Freight"].includes(currentLabel)) {
-//       // Validate numeric values
-//       if (!/^\d+(\.\d+)?$/.test(newValue)) {
-//         alert("Please enter a valid numeric value.");
-//         return;
-//       }
-//     } else if (
-//       ["Warranty Clause", "Payment Terms", "Loading / Unloading"].includes(
-//         currentLabel
-//       )
-//     ) {
-//       // Validate string values with spaces
-//       if (/[^a-zA-Z\s]/.test(newValue)) {
-//         alert("Please enter a valid string value (letters and spaces only).");
-//         return;
-//       }
-//     }
-
-//     // If valid, update the data
-//     const [firstBid, counterBid] = newValue.split("→").map((v) => v.trim());
-//     updatedData[index].value.firstBid =
-//       firstBid || updatedData[index].value.firstBid;
-//     updatedData[index].value.counterBid = counterBid || "";
-
-//     // Logic for "Realised Freight" update
-//     const freightChargeRow = updatedData.find(
-//       (row) => row.label === "Freight Charge"
-//     );
-//     const gstRow = updatedData.find((row) => row.label === "GST on Freight");
-//     const realisedFreightIndex = updatedData.findIndex(
-//       (row) => row.label === "Realised Freight"
-//     );
-
-//     // if (freightChargeRow && gstRow && realisedFreightIndex !== -1) {
-//     //   const freightCharge =
-//     //     parseFloat(
-//     //       (
-//     //         freightChargeRow.value.counterBid ||
-//     //         freightChargeRow.value.firstBid ||
-//     //         "0"
-//     //       ).replace(/₹|,/g, "")
-//     //     ) || 0;
-
-//     //   const gstOnFreight = gstRow.value.firstBid
-//     //     ? parseFloat(String(gstRow.value.firstBid).replace(/%/g, "") || "0")
-//     //     : 0;
-
-//     //   const realisedFreight = (freightCharge * gstOnFreight) / 100;
-
-//     //   updatedData[realisedFreightIndex].value.firstBid = `₹${(
-//     //     freightCharge + realisedFreight
-//     //   ).toFixed(2)}`;
-//     //   updatedData[realisedFreightIndex].value.counterBid = "";
-//     // }
-
-//     if (freightChargeRow && gstRow && realisedFreightIndex !== -1) {
-//       const freightCharge =
-//         parseFloat(
-//           String(
-//             freightChargeRow.value.counterBid ||
-//               freightChargeRow.value.firstBid ||
-//               "0"
-//           ).replace(/₹|,/g, "") // Ensure it's a string before replacing
-//         ) || 0;
-
-//       const gstOnFreight = gstRow.value.firstBid
-//         ? parseFloat(String(gstRow.value.firstBid).replace(/%/g, "") || "0")
-//         : 0;
-
-//       const realisedFreight = (freightCharge * gstOnFreight) / 100;
-
-//       // Only set a value if freightCharge and realisedFreight are valid
-//       updatedData[realisedFreightIndex].value.firstBid =
-//         freightCharge === 0 && realisedFreight === 0
-//           ? "₹0.00" // Explicitly set to zero
-//           : `₹${(freightCharge + realisedFreight).toFixed(2)}`;
-
-//       updatedData[realisedFreightIndex].value.counterBid = "";
-//     }
-
-//     updatedData[index].value.firstBid = newValue; // Update state
-
-//     onValueChange(updatedData);
-//   };
-
-//   return (
-//     <table
-//       className="tbl-container mt-4 ShortTable"
-//       style={{ width: "40% !important" }}
-//       {...rest}
-//     >
-//       <tbody>
-//         {data.map((row, index) => {
-//           const { firstBid, counterBid } = row.value;
-//           const showBothValues = firstBid !== counterBid;
-
-//           return (
-//             <tr
-//               key={index}
-//               style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
-//             >
-//               <td
-//                 style={{
-//                   padding: "12px",
-//                   fontWeight: "bold",
-//                   background: "#8b0203",
-//                 }}
-//               >
-//                 {row.label}
-//               </td>
-//               <td style={{ padding: "12px", color: "#777", textAlign: "left" }}>
-//                 {/* {row.label === "Realised Freight" ? (
-//                   // Non-editable for Realised Freight
-//                   <span className="">
-//                     {counterBid ? (
-//                       <>
-//                         {showBothValues ? (
-//                           <>
-//                             <span
-//                               style={{
-//                                 textDecoration: "line-through",
-//                                 marginRight: "5px",
-//                                 color: "gray",
-//                               }}
-//                             >
-//                               ₹{firstBid}
-//                             </span>
-//                             <span className="me-2">
-//                               <svg
-//                                 className="me-2"
-//                                 viewBox="64 64 896 896"
-//                                 focusable="false"
-//                                 width="1em"
-//                                 height="1em"
-//                                 fill="currentColor"
-//                                 aria-hidden="true"
-//                               >
-//                                 <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-//                               </svg>
-//                             </span>
-//                             <span
-//                               style={{
-//                                 backgroundColor: "#fcc17e", // Yellow background
-//                                 padding: "4px 10px",
-//                                 borderRadius: "5px",
-//                                 color: "#7c2d12",
-//                               }}
-//                             >
-//                               ₹{counterBid}
-//                             </span>
-//                           </>
-//                         ) : (
-//                           counterBid
-//                         )}
-//                       </>
-//                     ) : (
-
-//                       firstBid
-
-//                     )}
-//                   </span>
-//                 ) : counterBid ? ( */}
-
-//                 {row.label === "Realised Freight" ? (
-//                   // Non-editable for Realised Freight
-//                   <span>
-//                     {counterBid ? (
-//                       <>
-//                         {showBothValues ? (
-//                           <>
-//                             <span
-//                               style={{
-//                                 textDecoration: "line-through",
-//                                 marginRight: "5px",
-//                                 color: "gray",
-//                               }}
-//                             >
-//                               ₹ {firstBid}
-//                             </span>
-//                             <span className="me-2">
-//                               <svg
-//                                 className="me-2"
-//                                 viewBox="64 64 896 896"
-//                                 focusable="false"
-//                                 width="1em"
-//                                 height="1em"
-//                                 fill="currentColor"
-//                                 aria-hidden="true"
-//                               >
-//                                 <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-//                               </svg>
-//                             </span>
-//                             <span
-//                               style={{
-//                                 backgroundColor: "#b45253", // Yellow background
-//                                 padding: "4px 10px",
-//                                 borderRadius: "5px",
-//                                 color: "white",
-//                               }}
-//                             >
-//                               ₹ {counterBid}
-//                             </span>
-//                           </>
-//                         ) : (
-//                           <input
-//                             type="text"
-//                             value={`${counterBid}`}
-//                             className="form-control frt_vlu "
-//                             readOnly
-//                             style={{
-//                               // border: "none",
-//                               backgroundColor: "transparent",
-//                               color: "#000",
-//                               // fontWeight: "bold",
-//                             }}
-//                           />
-//                         )}
-//                       </>
-//                     ) : (
-//                       <input
-//                         type="text"
-//                         value={`${firstBid}`}
-//                         className="form-control frt_vlu"
-//                         readOnly
-//                         style={{
-//                           // border: "none",
-//                           backgroundColor: "transparent",
-//                           color: "#000",
-//                           // fontWeight: "bold",
-//                         }}
-//                       />
-//                     )}
-//                   </span>
-//                 ) : counterBid ? (
-//                   // Your other logic here
-
-//                   // Non-editable when counterBid is present
-//                   <span>
-//                     {showBothValues ? (
-//                       <>
-//                         <span
-//                           style={{
-//                             textDecoration: "line-through",
-//                             marginRight: "5px",
-//                             color: "gray",
-//                           }}
-//                         >
-//                           {firstBid}
-//                         </span>
-//                         <span className="me-2">
-//                           <svg
-//                             className="me-2"
-//                             viewBox="64 64 896 896"
-//                             focusable="false"
-//                             width="1em"
-//                             height="1em"
-//                             fill="currentColor"
-//                             aria-hidden="true"
-//                           >
-//                             <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-//                           </svg>
-//                         </span>
-//                         <span
-//                           style={{
-//                             backgroundColor: "#b45253", // Yellow background
-//                             padding: "4px 10px",
-//                             borderRadius: "5px",
-//                             color: "white",
-//                           }}
-//                         >
-//                           {counterBid}
-//                         </span>
-//                       </>
-//                     ) : (
-//                       counterBid
-//                     )}
-//                   </span>
-//                 ) : editable ? (
-//                   // Editable if only firstBid is present
-//                   <input
-//                     type="text"
-//                     className="form-control"
-//                     // value={firstBid}
-//                     value={row.value.firstBid}
-//                     onChange={(e) => handleInputChange(index, e.target.value)}
-//                     style={{ backgroundColor: "#fff", color: "#000" }}
-//                   />
-//                 ) : (
-//                   firstBid
-//                 )}
-//               </td>
-//             </tr>
-//           );
-//         })}
-//       </tbody>
-//     </table>
-//   );
-// }
-
 import React from "react";
-
 export default function ShortDataTable({
   data,
   editable = false,
@@ -489,30 +6,59 @@ export default function ShortDataTable({
   ...rest
 }) {
   const handleInputChange = (index, newValue) => {
-    const updatedData = data.map((item, i) => {
-      if (i === index) {
-        // Ensure value object exists
-        const currentValue = item.value || { firstBid: "", counterBid: "" };
-
-        // Extract firstBid and counterBid
-        const [firstBid, counterBid] = newValue.includes("→")
-          ? newValue.split("→").map((v) => v.trim())
-          : [newValue.trim(), ""];
-
-        return {
-          ...item,
-          value: {
-            ...currentValue,
-            firstBid,
-            counterBid,
-          },
-        };
+    console.log("Input value:", newValue);
+  
+    const updatedData = [...data];
+  
+    // Ensure value object exists
+    if (!updatedData[index].value) {
+      updatedData[index].value = {};
+    }
+  
+    // Update firstBid and counterBid from input
+    const [firstBid, counterBid] = newValue.split("→").map((v) => v.trim());
+    updatedData[index].value.firstBid = firstBid || "";
+    updatedData[index].value.counterBid = counterBid || "";
+  
+    // Find required rows
+    const freightChargeRow = updatedData.find((row) => row.label === "Freight Charge");
+    const gstOnFreightRow = updatedData.find((row) => row.label === "GST on Freight");
+    const realisedGstRowIndex = updatedData.findIndex((row) => row.label === "Realised GST");
+  
+    if (freightChargeRow && gstOnFreightRow && realisedGstRowIndex !== -1) {
+      const freightCharge = parseFloat(freightChargeRow.value?.firstBid || "0") || 0;
+      const gstOnFreight = parseFloat(gstOnFreightRow.value?.firstBid || "0") || 0;
+  
+      const realisedGst = (freightCharge * gstOnFreight) / 100;
+  
+      console.log("Freight Charge:", freightCharge);
+      console.log("GST on Freight:", gstOnFreight);
+      console.log("Calculated Realised GST:", realisedGst);
+  
+      // Update Realised GST row
+      if (!updatedData[realisedGstRowIndex].value) {
+        updatedData[realisedGstRowIndex].value = {};
       }
-      return item;
-    });
-
-    console.log("Updated Data:", updatedData);
+  
+      updatedData[realisedGstRowIndex].value.firstBid = realisedGst.toFixed(2);
+      updatedData[realisedGstRowIndex].value.counterBid = "";
+    }
+  
+    // Update state and trigger re-render
     onValueChange(updatedData);
+    calculateSumTotal(updatedData); // Call calculateSumTotal after updating realised GST
+  };
+
+  const calculateSumTotal = (updatedData) => {
+    const freightChargeRow = updatedData.find((row) => row.label === "Freight Charge");
+    const realisedGstRow = updatedData.find((row) => row.label === "Realised GST");
+
+    const freightCharge = parseFloat(freightChargeRow?.value?.firstBid || "0") || 0;
+    const realisedGst = parseFloat(realisedGstRow?.value?.firstBid || "0") || 0;
+
+    const sumTotal = freightCharge + realisedGst;
+    console.log("Sum Total:", sumTotal);
+    return sumTotal;
   };
 
   return (
@@ -523,11 +69,11 @@ export default function ShortDataTable({
     >
       <tbody>
         {data.map((row, index) => {
-          const { value = {} } = row;
-          // console.log("value:----------", value);
-
-          const { firstBid = "", counterBid = "" } = value;
+          // console.log("Row:", row); // Debugging row
+          const { firstBid, counterBid } = row?.value || {};
           const showBothValues = firstBid !== counterBid;
+
+          // console.log("First Bid:", firstBid); // Debugging firstBid
 
           return (
             <tr
@@ -545,6 +91,7 @@ export default function ShortDataTable({
               </td>
               <td style={{ padding: "12px", color: "#777", textAlign: "left" }}>
                 {row.label === "Realised Freight" ? (
+                  // Non-editable for Realised Freight
                   <span>
                     {counterBid ? (
                       <>
@@ -557,7 +104,7 @@ export default function ShortDataTable({
                                 color: "gray",
                               }}
                             >
-                              ₹{firstBid}
+                              ₹ {firstBid}
                             </span>
                             <span className="me-2">
                               <svg
@@ -574,24 +121,26 @@ export default function ShortDataTable({
                             </span>
                             <span
                               style={{
-                                backgroundColor: "#b45253",
+                                backgroundColor: "#b45253", // Yellow background
                                 padding: "4px 10px",
                                 borderRadius: "5px",
                                 color: "white",
                               }}
                             >
-                              ₹{counterBid}
+                              ₹ {counterBid}
                             </span>
                           </>
                         ) : (
                           <input
                             type="text"
-                            value={counterBid}
-                            className="form-control frt_vlu"
+                            value={`${counterBid}`}
+                            className="form-control frt_vlu "
                             readOnly
                             style={{
+                              // border: "none",
                               backgroundColor: "transparent",
                               color: "#000",
+                              // fontWeight: "bold",
                             }}
                           />
                         )}
@@ -599,17 +148,20 @@ export default function ShortDataTable({
                     ) : (
                       <input
                         type="text"
-                        value={firstBid}
+                        value={`${firstBid}`}
                         className="form-control frt_vlu"
                         readOnly
                         style={{
+                          // border: "none",
                           backgroundColor: "transparent",
                           color: "#000",
+                          // fontWeight: "bold",
                         }}
                       />
                     )}
                   </span>
                 ) : counterBid ? (
+                  // Non-editable when counterBid is present
                   <span>
                     {showBothValues ? (
                       <>
@@ -637,7 +189,7 @@ export default function ShortDataTable({
                         </span>
                         <span
                           style={{
-                            backgroundColor: "#b45253",
+                            backgroundColor: "#b45253", // Yellow background
                             padding: "4px 10px",
                             borderRadius: "5px",
                             color: "white",
@@ -651,17 +203,14 @@ export default function ShortDataTable({
                     )}
                   </span>
                 ) : editable ? (
-                  <>
+                  // Editable if only firstBid is present
                   <input
                     type="text"
                     className="form-control"
-                    value={row.value?.firstBid || ""}
+                    value={firstBid}
                     onChange={(e) => handleInputChange(index, e.target.value)}
                     style={{ backgroundColor: "#fff", color: "#000" }}
                   />
-                  <p>{row.value?.firstBid}</p>
-                  </>
-                  
                 ) : (
                   firstBid
                 )}
