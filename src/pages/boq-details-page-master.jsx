@@ -375,7 +375,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
           <div className="d-flex justify-content-end m-4">
-            {/* <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+            <Link to={`/boq-edit/${id}`} className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -390,7 +390,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                   d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                 />
               </svg>
-            </Link> */}
+            </Link>
 
           </div>
           <CollapsibleCard title="BOQ Details">
