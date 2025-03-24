@@ -145,10 +145,12 @@ const MaterialRejctionSlip = () => {
     setError(null);
 
     try {
-      let url = `${baseURL}/mor_rejection_slips.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}/mor_rejection_slips.json`;
+      const queryParams = [
+        `token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      ]; // Always include token
 
       // Apply filters dynamically
-      const queryParams = [];
       if (filters.company) {
         queryParams.push(
           `q[good_receive_note_company_id_eq]=${filters.company}`
@@ -165,7 +167,11 @@ const MaterialRejctionSlip = () => {
       if (status) {
         queryParams.push(`q[status_eq]=${status}`);
       }
+      if (page) {
+        queryParams.push(`page=${page}`);
+      }
 
+      // Append query parameters if any
       if (queryParams.length) {
         url += `?${queryParams.join("&")}`;
       }
