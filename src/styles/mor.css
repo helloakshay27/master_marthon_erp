@@ -19,7 +19,40 @@
   border-radius: 10px;
   color: var(--red);
 }
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected{
+  z-index: 3;
+  color: var(--body-bg-color) !important;
+  background-color: var(--red) !important;
+  border-color: var(--red) !important;
 
+}
+
+
+..css-1c5o7vy-MuiPagination-ul li {
+  margin: 0 5px;
+}
+
+.active>.page-link, .page-link.active {
+  z-index: 3;
+  color: var(--bs-pagination-active-color) !important;
+  background-color: var(--red) !important;
+  border-color: var(--red) !important;
+}
+
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root{
+
+  border-radius: 3px !important;
+
+  color: var(--black) !important;
+
+}
+
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root:hover {
+  z-index: 2;
+  color: var(--red) !important;
+  background-color: var(--bs-pagination-hover-bg);
+  border-color: var(--bs-pagination-hover-border-color);
+}
 
 .input-group-append .btn {
   border: 1px solid var(--red) !important;
