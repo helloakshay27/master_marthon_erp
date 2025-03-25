@@ -293,6 +293,21 @@ function Members() {
                     Material Rejection Slip
                   </Link>
                 </li>
+                <li>
+                  <Link to="/material-reconciliation-create">
+                    Material reconciliation Create
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/material-reconciliation-detail">
+                    Material reconciliation detail
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/material-reconciliation-list">
+                    Material reconciliation list
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="m-3">
