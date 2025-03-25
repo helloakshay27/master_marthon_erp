@@ -1033,7 +1033,7 @@ export default function EditEvent() {
                       <tr>
                         <th style={{ width: "100px" }}>Sr No.</th>
                         <th>Vendor Name</th>
-                        <th>Mob No.</th>
+                        <th>Organization</th>
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
@@ -1049,6 +1049,8 @@ export default function EditEvent() {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
+                            {console.log("vendor", vendor)
+                            }
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             <td>{vendor.phone}</td>

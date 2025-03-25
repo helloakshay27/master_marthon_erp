@@ -3,10 +3,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import {
-  Table
-} from "../components";
+import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
@@ -15,6 +14,15 @@ const BillBookingCreate = () => {
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
+  const companyOptions = [
+    { value: "alabama", label: "Alabama" },
+    { value: "alaska", label: "Alaska" },
+    { value: "california", label: "California" },
+    { value: "delaware", label: "Delaware" },
+    { value: "tennessee", label: "Tennessee" },
+    { value: "texas", label: "Texas" },
+    { value: "washington", label: "Washington" },
+  ];
 
   // action dropdown
   const actionDropdown = () => {
@@ -35,10 +43,70 @@ const BillBookingCreate = () => {
 
   const openAttachThreeModal = () => setattachThreeModal(true);
   const closeAttachThreeModal = () => setattachThreeModal(false);
+
+  const [charges, setCharges] = useState([
+    { id: 1, type: "SGCT", amount: 270, inclusive: false },
+    { id: 2, type: "CGST", amount: 270, inclusive: false },
+  ]);
+
+  const [deductions, setDeductions] = useState([
+    { id: 1, type: "TDS", amount: 30 },
+  ]);
+
+  // Function to add a new charge row
+  const addCharge = () => {
+    setCharges([
+      ...charges,
+      { id: Date.now(), type: "", amount: 0, inclusive: false },
+    ]);
+  };
+
+  // Function to remove a charge row
+  const removeCharge = (id) => {
+    setCharges(charges.filter((charge) => charge.id !== id));
+  };
+
+  // Function to add a new deduction row
+  const addDeduction = () => {
+    setDeductions([...deductions, { id: Date.now(), type: "", amount: 0 }]);
+  };
+
+  // Function to remove a deduction row
+  const removeDeduction = (id) => {
+    setDeductions(deductions.filter((deduction) => deduction.id !== id));
+  };
+
+  const [rows, setRows] = useState([
+    { id: 1, type: "TDS 1", charges: "100", inclusive: false, amount: 50.0 },
+  ]);
+  const [showRows, setShowRows] = useState(true);
+
+  // Add New Row
+  const handleAddRow = () => {
+    const newRow = {
+      id: new Date().getTime(), // Unique ID
+      type: "New Type",
+      charges: "0",
+      inclusive: false,
+      amount: 0.0,
+    };
+    setRows((prevRows) => [...prevRows, newRow]); // Ensure correct state update
+  };
+
+  // Delete Row
+  const handleDeleteRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+
+  // Toggle Rows
+  const toggleRows = () => {
+    setShowRows((prev) => !prev);
+  };
+
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section container-fluid px-2">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Bill Booking</a>
           <h5 className="mt-3">Bill Booking</h5>
           <div className="row my-4 align-items-center">
@@ -59,76 +127,40 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Project</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Sub Project</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-3 mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
-                  <div className="col-md-1 pt-2 mt-2">
+                  <div className="col-md-1 pt-2 mt-4">
                     <p className="mt-2 text-decoration-underline">
                       View Details
                     </p>
@@ -150,7 +182,7 @@ const BillBookingCreate = () => {
                     data-bs-target="#selectModal"
                     onClick={openSelectPOModal}
                   >
-                    <p className="mt-2 text-decoration-underline">Select</p>
+                    <p className="mt-3 text-decoration-underline">Select</p>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -177,19 +209,11 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>E-Invoice</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
                         fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
@@ -253,38 +277,20 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Type of Certificate</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Department</label>
-                      <select
+                      <SingleSelector
+                        options={companyOptions}
                         className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Vendor Name</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      ></SingleSelector>
                     </div>
                   </div>
                 </div>
@@ -407,11 +413,11 @@ const BillBookingCreate = () => {
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th className="text-start" style={{ width: 200 }}>
-                          Tax / Charge Type
+                        <th className="text-start">Tax / Charge Type</th>
+                        <th className="text-start">
+                          Tax / Charges per UOM (INR)
                         </th>
-                        <th className="text-start">Tax / Charges per UOM (INR)</th>
-                        <th className="text-start">Inclusive / Exculsive</th>
+                        <th className="text-start">Inclusive / Exclusive</th>
                         <th className="text-start">Amount</th>
                         <th className="text-start">Action</th>
                       </tr>
@@ -420,66 +426,83 @@ const BillBookingCreate = () => {
                       <tr>
                         <th className="text-start">Taxable Amount</th>
                         <td className="text-start" />
-                        <td className="text-start"> </td>
                         <td className="text-start" />
-                        <td className="text-start" />
+                        <td className="text-start">3000</td>
+                        <td />
                       </tr>
                       <tr>
                         <th className="text-start">Deduction Tax</th>
                         <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start"> </td>
+                        <td className="text-start" />
+                        <td className="text-start" />
                         <td>
-                          <a
-                            data-toggle="collapse"
-                            href="#collapse1"
-                            onClick={actionDropdown}
+                          {/* Add Row Using Plus Icon */}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="currentColor"
+                            className="bi bi-plus-circle"
+                            viewBox="0 0 16 16"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleAddRow} // Add Row on Click
+                          >
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                          </svg>
+                        </td>
+                      </tr>
+
+                      {/* Dynamic Rows */}
+                      {rows.map((row) => (
+                        <tr key={row.id}>
+                          <td className="text-start">
+                            <select className="form-control form-select">
+                              <option selected>{row.type}</option>
+                              <option>Other Type</option>
+                            </select>
+                          </td>
+                          <td className="text-start">
+                            <select className="form-control form-select">
+                              <option selected>{row.charges}</option>
+                              <option>Other Charges</option>
+                            </select>
+                          </td>
+                          <td className="text-start"></td>
+                          <td className="text-start"></td>
+                          <td
+                            className="text-start"
+                            onClick={() => handleDeleteRow(row.id)}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width={20}
-                              height={20}
+                              width="16"
+                              height="16"
                               fill="currentColor"
-                              className="bi bi-plus-circle"
+                              className="bi bi-dash-circle"
                               viewBox="0 0 16 16"
+                              style={{ cursor: "pointer" }}
                             >
-                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
                             </svg>
-                          </a>
-                        </td>
-                      </tr>
-                      {actionDetails && (
-                        <tr>
-                          <td colSpan={2}>
-                            <div className="d-flex">
-                              <input
-                                className="me-2"
-                                style={{ width: "61%" }}
-                                type="text"
-                              />
-                              <input
-                                className="me-5 ms-5"
-                                style={{ width: "100%" }}
-                                type="text"
-                              />
-                            </div>
                           </td>
                         </tr>
-                      )}
+                      ))}
+
                       <tr>
                         <th className="text-start">Total Deduction</th>
                         <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start" />
-                        <td className="text-start" />
+                        <td className="" />
+                        <td className="text-start">3540</td>
+                        <td />
                       </tr>
                       <tr>
-                        <th className="text-start">Payble Amount</th>
+                        <th className="text-start">Payable Amount</th>
                         <td className="text-start" />
-                        <td className="text-start"> </td>
+                        <td className="" />
                         <td className="text-start" />
-                        <td className="text-start" />
+                        <td />
                       </tr>
                     </tbody>
                   </table>
@@ -589,7 +612,6 @@ const BillBookingCreate = () => {
                   <h5 className=" ">Retention Details:</h5>
                 </div>
 
-
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
@@ -597,7 +619,6 @@ const BillBookingCreate = () => {
                         <th className="text-start">Retention Amount Payable</th>
                         <th className="text-start">Retention Amount Paid</th>
                         <th className="text-start">Retention Amount Pending</th>
-
                       </tr>
                     </thead>
                     <tbody>
@@ -605,9 +626,7 @@ const BillBookingCreate = () => {
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
-
                       </tr>
-
                     </tbody>
                   </table>
                 </div>
@@ -956,7 +975,7 @@ const BillBookingCreate = () => {
                       data-bs-toggle="modal"
                       data-bs-target="#viewDocumentModal"
                       fdprocessedid="xn3e6n"
-                      onClick={openAttachOneModal}
+                      onClick={openAttachTwoModal}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -993,9 +1012,10 @@ const BillBookingCreate = () => {
                         <td className="text-start">04-03-2024</td>
                         <td
                           className="text-decoration-underline cursor-pointer"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openAttachTwoModal}                        >
+                          // data-bs-toggle="modal"
+                          // data-bs-target="#RevisionModal"
+                          onClick={openAttachOneModal}
+                        >
                           View
                         </td>
                       </tr>
@@ -1029,7 +1049,7 @@ const BillBookingCreate = () => {
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
+              {/* <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Assigned To User</p>
                 <div className="dropdown">
                   <button
@@ -1059,38 +1079,20 @@ const BillBookingCreate = () => {
                     </li>
                   </ul>
                 </div>
+              </div> */}
+              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
+                <p className="mb-0">Status</p>
+                <select
+                  className="form-select purple-btn2"
+                  style={{ width: "150px" }}
+                >
+                  <option value="draft">PO Draft</option>
+                  <option value="accept">Accept</option>
+                  <option value="reject">Reject</option>
+                  <option value="submit">Submit</option>
+                </select>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Received for Verification
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Submit</button>
@@ -1132,7 +1134,11 @@ const BillBookingCreate = () => {
                   data-bs-toggle="modal"
                   data-bs-target="#exampleModal2"
                 >
-                  <input className="form-check-input" type="radio" name="radio1" />
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="radio1"
+                  />
                 </button>
                 <label className="form-check-label" htmlFor="yesRadio">
                   Material
@@ -1328,7 +1334,6 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-
       </Modal>
 
       {/*  */}
@@ -1338,9 +1343,10 @@ const BillBookingCreate = () => {
         show={selectGRNModal}
         onHide={closeSelectGRNModal}
         backdrop="static"
-        keyboard={false}>
+        keyboard={false}
+      >
         <Modal.Header closeButton>
-          <Modal.Title>Attach Other Document</Modal.Title>
+          <Modal.Title>GRN Information</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="row">
@@ -1445,15 +1451,16 @@ const BillBookingCreate = () => {
                   <td />
                   <td />
                   <td />
-                  <td
 
-                  >
-                    <button className=" btn text-decoration-underline"
+                  <td>
+                    <button
+                      className=" btn text-decoration-underline"
                       data-bs-toggle="modal"
-                      data-bs-target="#taxesModal" onClick={openAttachThreeModal}>
+                      data-bs-target="#taxesModal"
+                      onClick={openAttachThreeModal}
+                    >
                       Taxes
                     </button>
-
                   </td>
                 </tr>
               </tbody>
@@ -1472,7 +1479,6 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-
       </Modal>
 
       {/*  */}
@@ -1488,7 +1494,6 @@ const BillBookingCreate = () => {
           <Modal.Title>Attach Other Document</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
           <div>
             <div className="d-flex justify-content-between mt-3 me-2">
               <h5 className=" ">Latest Documents</h5>
@@ -1592,13 +1597,63 @@ const BillBookingCreate = () => {
               </button>
             </div>
           </div>
+        </Modal.Body>
+      </Modal>
 
+      <Modal
+        centered
+        size="lg"
+        show={attachTwoModal}
+        onHide={closeAttachOneModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Attach Other Document</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            {/* Document Name Input */}
+            <div className="mb-3">
+              <label htmlFor="documentName" className="form-label">
+                Document Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="documentName"
+                placeholder="Enter document name"
+              />
+            </div>
 
+            {/* File Upload Field */}
+            <div className="mb-3">
+              <label htmlFor="fileUpload" className="form-label">
+                Choose File
+              </label>
+              <input type="file" className="form-control" id="fileUpload" />
+            </div>
+
+            {/* Submit & Cancel Buttons */}
+            <div className="row mt-3 justify-content-center">
+              <div className="col-md-4">
+                <button className="purple-btn2 w-100">Submit</button>
+              </div>
+              <div className="col-md-4">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={closeAttachTwoModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
 
       {/*  */}
-      <Modal
+      {/* <Modal
         centered
         size="lg"
         show={attachTwoModal}
@@ -1712,17 +1767,16 @@ const BillBookingCreate = () => {
                   <td />
                   <td />
                   <td />
-                  <td
-
-                  >
-
-                    <button className=" btn text-decoration-underline"
+                  <td>
+                    <button
+                      className=" btn text-decoration-underline"
                       data-bs-toggle="modal"
                       data-bs-target="#taxesModal"
-                      data-bs-dismiss="modal" onClick={openAttachThreeModal}>
+                      data-bs-dismiss="modal"
+                      onClick={openAttachThreeModal}
+                    >
                       Taxesss
                     </button>
-
                   </td>
                 </tr>
               </tbody>
@@ -1741,7 +1795,7 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
 
       {/*  */}
       <Modal
@@ -1753,7 +1807,7 @@ const BillBookingCreate = () => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title></Modal.Title>
+          <Modal.Title>Tax & Charges</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="tbl-container mx-3 mt-3">
@@ -1762,206 +1816,202 @@ const BillBookingCreate = () => {
                 <tr>
                   <th>Tax / Charge Type</th>
                   <th>Tax / Charges per UOM (INR)</th>
-                  <th>Inclusive / Exculsive</th>
+                  <th>Inclusive / Exclusive</th>
                   <th>Amount</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
+                {/* Base Cost Row */}
                 <tr>
                   <th>Total Base Cost</th>
-                  <td />
-                  <td />
+                  <td></td>
+                  <td></td>
                   <td>3000</td>
-                  <td />
+                  <td></td>
                 </tr>
+
+                {/* Addition Tax & Charges Section */}
                 <tr>
-                  <th>Addition Tax &amp; Charges</th>
-                  <td />
-                  <td />
-                  <td />
-                  <td className="row-1" data-group={1}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-plus-circle"
-                      viewBox="0 0 16 16"
+                  <th>Addition Tax & Charges</th>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    <button
+                      className="btn btn-light p-0 border-0"
+                      onClick={addCharge}
                     >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                    </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width={20}
+                        height={20}
+                        fill="currentColor"
+                        className="bi bi-plus-circle"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                      </svg>
+                    </button>
                   </td>
                 </tr>
-                <tr className="row-2" data-group={1}>
-                  <td>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                      fdprocessedid="3x7jfv"
-                    >
-                      <option selected="selected">Vendor Name</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </td>
-                  <td>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                      fdprocessedid="3x7jfv"
-                    >
-                      <option selected="selected">Vendor Name</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>270</td>
-                  <td>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-dash-circle"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-                    </svg>{" "}
-                  </td>
+
+                {charges.map((charge) => (
+                  <tr key={charge.id}>
+                    <td>
+                      <select className="form-control">
+                        <option value="">Select</option>
+                        <option value="IGST">IGST</option>
+                        <option value="SGCT">SGCT</option>
+                        <option value="CGST">CGST</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={charge.amount}
+                        readOnly
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={charge.inclusive}
+                        readOnly
+                      />
+                    </td>
+                    <td>{charge.amount}</td>
+                    <td>
+                      <button
+                        className="btn btn-light p-0 border-0"
+                        onClick={() => removeCharge(charge.id)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width={20}
+                          height={20}
+                          fill="currentColor"
+                          className="bi bi-dash-circle"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                          <path d="M5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 8" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                <tr>
+                  <th>Sub Total A (Addition)</th>
+                  <td></td>
+                  <td></td>
+                  <td>{charges.reduce((acc, curr) => acc + curr.amount, 0)}</td>
+                  <td></td>
                 </tr>
-                <tr className="row-2" data-group={1}>
-                  <td> Sub Total A (Addition)</td>
-                  <td />
-                  <td />
-                  <td />
-                  <td>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-dash-circle"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-                    </svg>
-                  </td>
-                </tr>
+
+                {/* Gross Amount Row */}
                 <tr>
                   <th>Gross Amount</th>
-                  <td />
-                  <td />
-                  <td>3540</td>
-                  <td />
+                  <td></td>
+                  <td></td>
+                  <td>
+                    {3000 + charges.reduce((acc, curr) => acc + curr.amount, 0)}
+                  </td>
+                  <td></td>
                 </tr>
+
+                {/* Deduction Tax Section */}
                 <tr>
-                  <th className="row-1" data-group={2}>
-                    Deduction Tax
-                  </th>
-                  <td />
-                  <td />
-                  <td />
+                  <th>Deduction Tax</th>
+                  <td></td>
+                  <td></td>
+                  <td></td>
                   <td>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-plus-circle"
-                      viewBox="0 0 16 16"
+                    <button
+                      className="btn btn-light p-0 border-0"
+                      onClick={addDeduction}
                     >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                    </svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width={20}
+                        height={20}
+                        fill="currentColor"
+                        className="bi bi-plus-circle"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                      </svg>
+                    </button>
                   </td>
                 </tr>
-                <tr className="row-2" data-group={2}>
+
+                {deductions.map((deduction) => (
+                  <tr key={deduction.id}>
+                    <td>
+                      <select className="form-control">
+                        <option value="TDS">TDS</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={deduction.amount}
+                        readOnly
+                      />
+                    </td>
+                    <td></td>
+                    <td>{deduction.amount}</td>
+                    <td>
+                      <button
+                        className="btn btn-light p-0 border-0"
+                        onClick={() => removeDeduction(deduction.id)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width={20}
+                          height={20}
+                          fill="currentColor"
+                          className="bi bi-dash-circle"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                          <path d="M5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 8" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                <tr>
+                  <th>Sub Total B (Deductions)</th>
+                  <td></td>
+                  <td></td>
                   <td>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                      fdprocessedid="3x7jfv"
-                    >
-                      <option selected="selected">Vendor Name</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
+                    {deductions.reduce((acc, curr) => acc + curr.amount, 0)}
                   </td>
-                  <td>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                      fdprocessedid="3x7jfv"
-                    >
-                      <option selected="selected">Vendor Name</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>30</td>
-                  <td>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-dash-circle"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-                    </svg>{" "}
-                  </td>
+                  <td></td>
                 </tr>
-                <tr className="row-2" data-group={2}>
-                  <td>Payble Amount</td>
-                  <td />
-                  <td />
-                  <td>3510</td>
+
+                {/* Payable Amount */}
+                <tr>
+                  <th>Payable Amount</th>
+                  <td></td>
+                  <td></td>
                   <td>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={16}
-                      height={16}
-                      fill="currentColor"
-                      className="bi bi-dash-circle"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                      <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
-                    </svg>
+                    {3000 +
+                      charges.reduce((acc, curr) => acc + curr.amount, 0) -
+                      deductions.reduce((acc, curr) => acc + curr.amount, 0)}
                   </td>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
           </div>
-
         </Modal.Body>
       </Modal>
     </>
