@@ -10,6 +10,9 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
+
 
 import { baseURL, baseURL1 } from "../confi/apiDomain";
 
@@ -30,6 +33,8 @@ const ErpStockRegister13B = () => {
   const [pageSize, setPageSize] = useState(10);
   const [showOnlyPinned, setShowOnlyPinned] = useState(false);
   const [pinnedRows, setPinnedRows] = useState([]);
+  const [errors, setErrors] = useState({});
+
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
     material: true,
@@ -264,6 +269,64 @@ const ErpStockRegister13B = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [subProjects, setSubProjects] = useState([]);
+
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSubProject, setSelectedSubProject] = useState(null);
+
+  // Fetch Companies
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+        setCompanies(response.data.companies || []);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    };
+    fetchCompanies();
+  }, []);
+
+  // Handle Company Selection
+  const handleCompanyChange = (option) => {
+    setSelectedCompany(option);
+    setSelectedProject(null);
+    setSelectedSubProject(null);
+    setProjects([]);
+    setSubProjects([]);
+
+    if (option) {
+      const company = companies.find((c) => c.id === option.value);
+      setProjects(
+        company?.projects.map((p) => ({ value: p.id, label: p.name })) || []
+      );
+    }
+  };
+
+  // Handle Project Selection
+  const handleProjectChange = (option) => {
+    setSelectedProject(option);
+    setSelectedSubProject(null);
+    setSubProjects([]);
+
+    if (option) {
+      const company = companies.find((c) => c.id === selectedCompany.value);
+      const project = company?.projects.find((p) => p.id === option.value);
+      setSubProjects(
+        project?.pms_sites.map((s) => ({ value: s.id, label: s.name })) || []
+      );
+    }
+  };
+
+  // Handle Subproject Selection
+  const handleSubProjectChange = (option) => {
+    setSelectedSubProject(option);
+  };
+
+
   if (loading) return <div>Loading...</div>;
   return (
     <>
@@ -272,31 +335,14 @@ const ErpStockRegister13B = () => {
           <p>Home &gt; Store &gt; Store Operations &gt; Stock Register</p>
           <h5 className="mt-2">Stock Register</h5>
           <div className="card mt-3 pb-4">
-            <div className="card mx-3 mt-3 collapsed-card">
+            <div className="card mx-3 mt-3">
               <div className="card-header3">
                 <h3 className="card-title">Quick Filter</h3>
                 <div className="card-tools">
-                  <button
-                    type="button"
-                    className="btn btn-tool"
-                    onClick={toggleCardBody}
-                  >
-                    <svg
-                      width={32}
-                      height={32}
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
+                  <button type="button" className="btn btn-tool" onClick={toggleCardBody}>
+                    <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                      <path
-                        d={
-                          isCollapsed
-                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
-                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
-                        }
-                        fill="white"
-                      />
+                      <path d={isCollapsed ? "M16 24L9.0718 12L22.9282 12L16 24Z" : "M16 8L22.9282 20L9.0718 20L16 8Z"} fill="white" />
                     </svg>
                   </button>
                 </div>
@@ -305,78 +351,50 @@ const ErpStockRegister13B = () => {
               {!isCollapsed && (
                 <div className="card-body pt-0 mt-0">
                   <div className="row my-2 align-items-end">
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Company</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
+                        <label>Company <span>*</span></label>
+                        <SingleSelector
+                          options={companies.map(c => ({ value: c.id, label: c.company_name }))}
+                          onChange={handleCompanyChange}
+                          value={selectedCompany}
+                          placeholder="Select Company"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project <span>*</span></label>
+                        <SingleSelector
+                          options={projects}
+                          onChange={handleProjectChange}
+                          value={selectedProject}
+                          placeholder="Select Project"
+                          isDisabled={!selectedCompany}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-project</label>
+                        <SingleSelector
+                          options={subProjects}
+                          onChange={handleSubProjectChange}
+                          value={selectedSubProject}
+                          placeholder="Select Sub-project"
+                          isDisabled={!selectedProject}
+                        />
                       </div>
                     </div>
                     <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Project</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Sub-Project</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <label>Last Created</label>
-                        <select
-                          className="form-control form-select"
-                          style={{ width: "100%" }}
-                        >
-                          <option selected="selected">Material</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-2">
-                      <button className="purple-btn2 m-0">Go</button>
-                    </div>
+                    <button className="purple-btn2 m-0">Go</button>
                   </div>
+
+
+
+                  </div>
+                 
+
                 </div>
               )}
             </div>
@@ -554,7 +572,7 @@ const ErpStockRegister13B = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
 
       <Modal
         show={show}
