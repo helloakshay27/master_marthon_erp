@@ -1,14 +1,12 @@
 import React from "react";
-import {
-  Table
-} from "../components";
+import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 
 const BillEntryDetails = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section container-fluid px-3 mt-2">
           <a href="">
             Home &gt; Security &gt; Bill Entry List &gt; Bill Information (For
             Billing User)
@@ -133,41 +131,22 @@ const BillEntryDetails = () => {
                   </ul>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Received for Verification
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
+                <p className="mb-0">Status</p>
+                <select
+                  className="form-select purple-btn2"
+                  style={{ width: "150px" }}
+                >
+                  <option value="draft">PO Draft</option>
+                  <option value="accept">Accept</option>
+                  <option value="reject">Reject</option>
+                  <option value="submit">Submit</option>
+                </select>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-                <div className="mx-0">
-                                                        <Table columns={auditLogColumns} data={auditLogData} />
-                                                      </div>
+              <div className="mx-0">
+                <Table columns={auditLogColumns} data={auditLogData} />
+              </div>
             </div>
           </div>
         </div>
