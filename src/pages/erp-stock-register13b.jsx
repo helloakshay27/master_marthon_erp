@@ -34,6 +34,7 @@ const ErpStockRegister13B = () => {
   const [showOnlyPinned, setShowOnlyPinned] = useState(false);
   const [pinnedRows, setPinnedRows] = useState([]);
   const [errors, setErrors] = useState({});
+  const [pagination, setPagination] = useState({});
 
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
@@ -61,6 +62,8 @@ const ErpStockRegister13B = () => {
   const handleClose = () => setShow(false);
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
+
+
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, filteredData.length);
@@ -168,7 +171,13 @@ const ErpStockRegister13B = () => {
       return acc;
     }, {});
     setColumnVisibility(defaultVisibility);
-  };
+  }; const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [subProjects, setSubProjects] = useState([]);
+
+  const [selectedCompany, setSelectedCompany] = useState([]);
+  const [selectedProject, setSelectedProject] = useState([]);
+  const [selectedSubProject, setSelectedSubProject] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -179,7 +188,7 @@ const ErpStockRegister13B = () => {
         const token = urlParams.get('token');
 
         const response = await fetch(
-          `${baseURL1}/mor_inventories/stock_data.json?token=${token}`
+          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(searchTerm)}&q[material_order_request_company_id_eq]=${selectedCompany}&q[material_order_request_project_id_eq]=${selectedProject}&page=${page}&per_page=${pageSize}`
         ); // Replace with your API endpoint
 
 
@@ -188,7 +197,7 @@ const ErpStockRegister13B = () => {
         }
 
         const result = await response.json();
-        const transformedData = result.map((item, index) => {
+        const transformedData = result?.mor_inventories.map((item, index) => {
           const materialUrl = item.id && token
             ? `/stock_register_detail/${item.id}/?token=${token}`
             : "#"; // Fallback if id or token is missing
@@ -220,9 +229,12 @@ const ErpStockRegister13B = () => {
         });
 
         console.log(transformedData);
+
         setData(transformedData);
         setFilteredData(transformedData); // Initialize with full data
         setLoading(false); // Stop loading once data is ready
+        setPagination(result.pagination);  // Store API pagination
+
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -234,7 +246,7 @@ const ErpStockRegister13B = () => {
     fetchData(); // Call the fetch function
 
 
-  }, [location.search]); // Empty dependency array to run once on mount
+  }, [location.search, selectedCompany, selectedProject, page, searchTerm]); // Empty dependency array to run once on mount
 
 
 
@@ -245,18 +257,20 @@ const ErpStockRegister13B = () => {
 
     // Apply search filter
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+    if (normalizedSearchTerm) {
+      rowsToShow = rowsToShow.filter((item) =>
+        Object.values(item).some((value) =>
+          value && String(value).toLowerCase().includes(normalizedSearchTerm)
+        )
+      );
+    }
 
-    rowsToShow = rowsToShow.filter((item) =>
-      Object.values(item).some((value) => {
-        if (value == null) return false; // Handle null/undefined
-        return String(value).toLowerCase().includes(normalizedSearchTerm);
-      })
-    );
+
 
     return rowsToShow.map((row, index) => ({
       ...row,
-      id: row.id ?? `row-${index}`, // Ensure unique `id`
-      srNo: index + 1
+      id: row.id || `row-${index}`, // Ensure unique `id`
+      srNo: index + 1,
     }));
   };
 
@@ -269,13 +283,7 @@ const ErpStockRegister13B = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  const [companies, setCompanies] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [subProjects, setSubProjects] = useState([]);
 
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedSubProject, setSelectedSubProject] = useState(null);
 
   // Fetch Companies
   useEffect(() => {
@@ -291,35 +299,38 @@ const ErpStockRegister13B = () => {
   }, []);
 
   // Handle Company Selection
-  const handleCompanyChange = (option) => {
-    setSelectedCompany(option);
+  const handleCompanyChange = (companyId) => {
+    setSelectedCompany(companyId);
     setSelectedProject(null);
     setSelectedSubProject(null);
     setProjects([]);
     setSubProjects([]);
 
-    if (option) {
-      const company = companies.find((c) => c.id === option.value);
+    if (companyId) {
+      const company = companies.find((c) => c.id === companyId);
       setProjects(
         company?.projects.map((p) => ({ value: p.id, label: p.name })) || []
       );
     }
   };
 
+
   // Handle Project Selection
-  const handleProjectChange = (option) => {
-    setSelectedProject(option);
+  const handleProjectChange = (projectId) => {
+    setSelectedProject(projectId);
     setSelectedSubProject(null);
     setSubProjects([]);
 
-    if (option) {
-      const company = companies.find((c) => c.id === selectedCompany.value);
-      const project = company?.projects.find((p) => p.id === option.value);
+    if (projectId) {
+      const company = companies.find((c) => c.id === selectedCompany); // Use selectedCompany directly
+      const project = company?.projects.find((p) => p.id === projectId);
+
       setSubProjects(
         project?.pms_sites.map((s) => ({ value: s.id, label: s.name })) || []
       );
     }
   };
+
 
   // Handle Subproject Selection
   const handleSubProjectChange = (option) => {
@@ -334,6 +345,7 @@ const ErpStockRegister13B = () => {
         <div className="module-data-section px-3">
           <p>Home &gt; Store &gt; Store Operations &gt; Stock Register</p>
           <h5 className="mt-2">Stock Register</h5>
+
           <div className="card mt-3 pb-4">
             <div className="card mx-3 mt-3">
               <div className="card-header3">
@@ -356,10 +368,11 @@ const ErpStockRegister13B = () => {
                         <label>Company <span>*</span></label>
                         <SingleSelector
                           options={companies.map(c => ({ value: c.id, label: c.company_name }))}
-                          onChange={handleCompanyChange}
-                          value={selectedCompany}
+                          onChange={(option) => handleCompanyChange(option.value)} // Pass only the ID
+                          value={companies.find(c => c.id === selectedCompany) ? { value: selectedCompany, label: companies.find(c => c.id === selectedCompany).company_name } : null}
                           placeholder="Select Company"
                         />
+
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -367,11 +380,12 @@ const ErpStockRegister13B = () => {
                         <label>Project <span>*</span></label>
                         <SingleSelector
                           options={projects}
-                          onChange={handleProjectChange}
-                          value={selectedProject}
+                          onChange={(option) => handleProjectChange(option.value)} // Pass only the ID
+                          value={projects.find(p => p.value === selectedProject) || null} // Ensure correct value format
                           placeholder="Select Project"
                           isDisabled={!selectedCompany}
                         />
+
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -379,21 +393,21 @@ const ErpStockRegister13B = () => {
                         <label>Sub-project</label>
                         <SingleSelector
                           options={subProjects}
-                          onChange={handleSubProjectChange}
-                          value={selectedSubProject}
+                          onChange={(option) => handleSubProjectChange(option.value)} // Pass only the ID
+                          value={subProjects.find(s => s.value === selectedSubProject) || null} // Ensure correct value format
                           placeholder="Select Sub-project"
                           isDisabled={!selectedProject}
                         />
                       </div>
                     </div>
                     <div className="col-md-2">
-                    <button className="purple-btn2 m-0">Go</button>
-                  </div>
+                      <button className="purple-btn2 m-0">Go</button>
+                    </div>
 
 
 
                   </div>
-                 
+
 
                 </div>
               )}
@@ -529,45 +543,31 @@ const ErpStockRegister13B = () => {
               style={{ width: "max-congent", maxHeight: "max-content", boxShadow: "unset" }}
             >
               <DataGrid
-                rows={getTransformedRows().slice(startEntry - 1, endEntry)} // Show paginated rows
+                rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
                 autoHeight
-                getRowId={(row) => row.id ?? row.srNo}
+                getRowId={(row) => row.id}
               />
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                padding={2}
-              >
+              <Stack direction="row" alignItems="center" justifyContent="space-between" padding={2}>
                 <Pagination
-                  count={Math.ceil(filteredData.length / pageSize)} // Total pages
+                  count={pagination.total_pages || 1} // Use API's total pages
                   page={page}
-                  onChange={(event, value) => setPage(value)} // Handle page changes
-                  siblingCount={1} // Number of sibling page buttons
-                  boundaryCount={1} // Number of boundary page buttons
-                  color="red"
+                  onChange={(event, value) => setPage(value)} // Update page state
+                  siblingCount={1}
+                  boundaryCount={1}
+                  color="primary"
                   showFirstButton
                   showLastButton
-                  className="display"
-                  options={{
-                    paging: true,           // Enable pagination
-                    pageLength: 10,          // Items per page
-                    lengthChange: false,      // Allow user to change the page length
-                    searching: false,        // Disable search bar
-                    ordering: true,         // Disable column sorting
-                    info: true
-                  }}
+                  disabled={pagination.total_pages <= 1} // Disable if only one page
                 />
+
                 {/* Dynamic Entries Info */}
                 <Typography variant="body2">
-                  Showing {startEntry} to {endEntry} of {filteredData.length}{" "}
-                  entries
+                  Showing {startEntry} to {endEntry} of {pagination.total_count} entries
                 </Typography>
-
-                {/* Pagination Buttons */}
               </Stack>
+
 
             </div>
           </div>
