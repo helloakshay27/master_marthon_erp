@@ -130,6 +130,7 @@ const BillBookingCreate = () => {
                       <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
+                        isDisabled={true}
                       ></SingleSelector>
                     </div>
                   </div>
@@ -139,6 +140,7 @@ const BillBookingCreate = () => {
                       <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
+                        isDisabled={true}
                       ></SingleSelector>
                     </div>
                   </div>
@@ -148,6 +150,7 @@ const BillBookingCreate = () => {
                       <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
+                        isDisabled={true}
                       ></SingleSelector>
                     </div>
                   </div>
@@ -157,6 +160,7 @@ const BillBookingCreate = () => {
                       <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
+                        isDisabled={true}
                       ></SingleSelector>
                     </div>
                   </div>
@@ -246,6 +250,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -257,6 +262,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -271,6 +277,7 @@ const BillBookingCreate = () => {
                         type="text"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -699,6 +706,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -710,6 +718,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -743,6 +752,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -754,6 +764,7 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        disabled
                       />
                     </div>
                   </div>
@@ -1102,7 +1113,7 @@ const BillBookingCreate = () => {
                 </div>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-              <div className="mx-0">
+              <div className="pb-4 mb-4">
                 <Table columns={auditLogColumns} data={auditLogData} />
               </div>
             </div>
