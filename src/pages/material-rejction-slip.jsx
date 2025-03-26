@@ -341,7 +341,7 @@ const MaterialRejctionSlip = () => {
         <div className="website-content overflow-auto">
           <div className="module-data-section p-3">
             <a href="">
-              Home &gt; Purchase &gt; MOR &gt; Material Rejection Slip
+              Home &gt; Store &gt; Store Operations &gt; Material Rejection Slip
             </a>
             <h5 className="mt-3">Material Rejection Slip</h5>
             {/* <div className="material-boxes mt-3">

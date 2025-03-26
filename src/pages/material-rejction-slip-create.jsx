@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 import FormatDate from "../components/FormatDate";
+import { useNavigate } from "react-router-dom";
 
 const MaterialRejctionSlipCreate = () => {
   const [data, setData] = useState(null);
@@ -12,6 +13,7 @@ const MaterialRejctionSlipCreate = () => {
   const [reason, setReason] = useState("");
   const { id } = useParams();
   const [submitting, setSubmitting] = useState(false); // For loading state during API call
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,10 +36,65 @@ const MaterialRejctionSlipCreate = () => {
     }
   }, [id]);
 
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+  //   if (!decision) {
+  //     alert("Please select either 'Accept' or 'Reject' before submitting.");
+  //     return;
+
+  //   }
+  //   // Validation: If rejecting, reason must be provided
+  //   if (decision === "reject" && reason.trim() === "") {
+  //     alert("Rejection reason is required.");
+  //     return;
+  //   }
+
+  //   setSubmitting(true);
+
+  //   try {
+  //     const payload = {
+  //       status: decision,
+  //       rejection_reason: decision === "reject" ? reason : "",
+  //       acceptance_reason: decision === "accept" ? reason : "",
+  //     };
+
+  //     const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Add token if required
+  //     const response = await axios.put(
+  //       `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`,
+  //       payload,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     console.log("Update successful:", response.data);
+  //     alert("Status updated successfully!");
+  //     setReason("");
+  //     navigate("/material-rejction-slip");
+  //   } catch (error) {
+  //     console.error("Error updating rejection slip:", error);
+  //     alert("Failed to update status. Please try again.");
+  //   } finally {
+  //     // setSubmitting(false);
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
+    setLoading(true);
+
+    if (!decision) {
+      alert("Please select either 'Accept' or 'Reject' before submitting.");
+      setLoading(false); // ✅ Ensure loader stops
+      return;
+    }
+
     // Validation: If rejecting, reason must be provided
     if (decision === "reject" && reason.trim() === "") {
       alert("Rejection reason is required.");
+      setLoading(false); // ✅ Ensure loader stops
       return;
     }
 
@@ -64,15 +121,22 @@ const MaterialRejctionSlipCreate = () => {
       console.log("Update successful:", response.data);
       alert("Status updated successfully!");
       setReason("");
+      navigate("/material-rejction-slip");
     } catch (error) {
       console.error("Error updating rejection slip:", error);
       alert("Failed to update status. Please try again.");
     } finally {
       setSubmitting(false);
+      setLoading(false); // ✅ Ensure loader stops
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  const handleCancel = () => {
+    // Navigate to the new route when cancel is clicked
+    navigate("/material-rejction-slip");
+  };
+
+  // if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
   if (!data) return null;
   return (
@@ -357,17 +421,37 @@ const MaterialRejctionSlipCreate = () => {
                 {/* <div className="col-md-2">
                   <button className="purple-btn2 w-100">Print</button>
                 </div> */}
+
                 <div className="col-md-2">
-                  <button
-                    className="purple-btn2 w-100"
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                  >
-                    {submitting ? "Submitting..." : "Submit"}
-                  </button>
+                  <div style={{ textAlign: "center" }}>
+                    {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>Submitting ...</p>
+                      </div>
+                    )}
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleSubmit}
+                      // disabled={submitting}
+                    >
+                      Submit
+                    </button>
+                  </div>
                 </div>
                 <div className="col-md-2">
-                  <button className="purple-btn1 w-100">Cancel</button>
+                  <button className="purple-btn1 w-100" onClick={handleCancel}>
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>

@@ -722,7 +722,7 @@ const ApprovalMatrics = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {approvals.map((record) => (
+                    {approvals.map((record, index) => (
                       <tr key={record.id}>
                         <td>
                           <span
@@ -733,7 +733,7 @@ const ApprovalMatrics = () => {
                             edit
                           </span>
                         </td>
-                        <td>{record.id}</td>
+                        <td>{index + 1}</td>
                         {/* <td>{record.site_id}</td> */}
                         <td>{record.approval_type}</td>
                         <td>{record.company_name}</td>
