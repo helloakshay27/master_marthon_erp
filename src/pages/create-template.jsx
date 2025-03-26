@@ -129,7 +129,12 @@ export default function CreateTemplate() {
   };
 
   const handleShortTableChange = (updatedData) => {
-    setShortTableData(updatedData);
+    const defaultLabels = ["Freight Charge", "GST on Freight", "Realised GST"];
+    const filteredData = updatedData.filter(row => !defaultLabels.includes(row.label));
+    setShortTableData([
+      ...shortTableData.filter(row => defaultLabels.includes(row.label)),
+      ...filteredData
+    ]);
   };
 
   const handleShortTableInputClick = (row) => {
