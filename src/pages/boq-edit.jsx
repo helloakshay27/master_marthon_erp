@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useCallback } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
@@ -39,7 +39,7 @@ const BOQEdit = () => {
     const [openBoqDetailId2, setOpenBoqDetailId2] = useState(null); // Track BOQ details visibility
     const [openBoqDetailId3, setOpenBoqDetailId3] = useState(null); // Track BOQ details visibility
 
-
+    // const [materialsBySubItem, setMaterialsBySubItem] = useState({});
     // edit 
     const fetchData = async () => {
         try {
@@ -83,6 +83,48 @@ const BOQEdit = () => {
             ),
         ]);
     };
+
+    const handleDeleteAll = () => {
+        setMaterials((prev) => {
+            // Get the new materials after deletion
+            const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
+
+            // Function to update selections after deletion
+            const updateSelection = (selectionArray = []) =>
+                selectedMaterials.reduce((acc, index) => {
+                    acc.splice(index, 1); // Remove the selected index
+                    return acc;
+                }, [...selectionArray]);
+
+            // Update all related state variables
+            setSelectedSubTypes(updateSelection(selectedSubTypes));
+            setGenericSpecifications(updateSelection(genericSpecifications));
+            setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
+            setSelectedColors(updateSelection(selectedColors));
+            setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
+            setSelectedUnit2(updateSelection(selectedUnit2));
+            setCoefficientFactors(updateSelection(coefficientFactors));
+            setEstimatedQuantities(updateSelection(estimatedQuantities));
+            setWastages(updateSelection(wastages));
+            setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+
+            // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
+            // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
+
+            return newMaterials;
+        });
+
+        setSelectedMaterials([]); // Clear selected materials
+    };
+
+    const handleSelectRow = (materialIndex) => {
+        setSelectedMaterials((prev) =>
+            prev.includes(materialIndex)
+                ? prev.filter((index) => index !== materialIndex) // Unselect
+                : [...prev, materialIndex] // Select
+        );
+    };
+
 
     console.log("material:", materials)
     const [unitOfMeasures, setUnitOfMeasures] = useState([]);
@@ -208,42 +250,6 @@ const BOQEdit = () => {
             }
         }
 
-
-
-        // if (boqDetails?.boq_sub_items?.length > 0) {
-        //     const subItemMaterialsMap = boqDetails.boq_sub_items.map(subItem => ({
-        //         subItemId: subItem.id, // Keep track of sub-item ID
-        //         materials: subItem.materials || [], // Store materials specific to this sub-item
-        //         selectedSubTypes: subItem.materials.map(m => ({
-        //             value: m.pms_inventory_sub_type_id,
-        //             label: m.material_sub_type
-        //         })),
-        //         selectedGenericSpecifications: subItem.materials.map(m => ({
-        //             value: m.pms_generic_info_id,
-        //             label: m.generic_info
-        //         })),
-        //         selectedColors: subItem.materials.map(m => ({
-        //             value: m.pms_colour_id,
-        //             label: m.color
-        //         })),
-        //         selectedInventoryBrands: subItem.materials.map(m => ({
-        //             value: m.pms_inventory_brand_id,
-        //             label: m.brand
-        //         })),
-        //         selectedUnit2: subItem.materials.map(m => ({
-        //             value: m.unit_of_measure_id,
-        //             label: m.uom
-        //         })),
-        //         coefficientFactors: subItem.materials.map(m => m.co_efficient_factor),
-        //         estimatedQuantities: subItem.materials.map(m => m.estimated_quantity),
-        //         wastages: subItem.materials.map(m => m.wastage),
-        //         totalEstimatedQtyWastages: subItem.materials.map(m => m.estimated_quantity_wastage)
-        //     }));
-
-        //     setMaterials(subItemMaterialsMap);
-        // }
-
-
     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
 
     // unit
@@ -298,8 +304,7 @@ const BOQEdit = () => {
 
 
     // Modal
-    // const [showModal, setShowModal] = useState(false);
-    const [showAssocoatedModal, setShowAssocoatedModal] = useState(false);
+
 
     //asset modal and table data handle add or delete
     const [showModalAsset, setShowModalAsset] = useState(false);
@@ -311,6 +316,49 @@ const BOQEdit = () => {
     const handleAddAssets = (newAsset) => {
         setAssets((prev) => [...prev, ...newAsset]); // No duplicate check, always adds new assets
     };
+
+    const handleDeleteAllAssets = () => {
+        // setAssets((prev) => prev.filter((_, index) => !selectedAssets.includes(index))); // Filter using index
+
+        setAssets((prev) => {
+            // Get the new materials after deletion
+            const newMaterials = prev.filter((_, index) => !selectedAssets.includes(index));
+
+            // Function to update selections after deletion
+            const updateSelection = (selectionArray = []) =>
+                selectedAssets.reduce((acc, index) => {
+                    acc.splice(index, 1); // Remove the selected index
+                    return acc;
+                }, [...selectionArray]);
+
+            // Update all related state variables
+            setSelectedSubTypesAssets(updateSelection(selectedSubTypesAssets));
+            setAssetGenericSpecifications(updateSelection(assetGenericSpecifications));
+            setSelectedAssetGenericSpecifications(updateSelection(selectedAssetGenericSpecifications));
+            setSelectedAssetColors(updateSelection(selectedAssetColors));
+            setSelectedAssetInventoryBrands(updateSelection(selectedAssetInventoryBrands));
+            setSelectedUnit3(updateSelection(selectedUnit3));
+            setAssetCoefficientFactors(updateSelection(assetCoefficientFactors));
+            setAssetEstimatedQuantities(updateSelection(assetEstimatedQuantities));
+            setAssetWastages(updateSelection(assetWastages));
+            setAssetTotalEstimatedQtyWastages(updateSelection(assetTotalEstimatedQtyWastages));
+
+            // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
+            // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
+
+            return newMaterials;
+        });
+        setSelectedAssets([]); // Reset selection
+    };
+
+    const handleSelectRowAssets = (assetIndex) => {
+        setSelectedAssets((prev) =>
+            prev.includes(assetIndex)
+                ? prev.filter((index) => index !== assetIndex) // Unselect asset
+                : [...prev, assetIndex] // Select asset
+        );
+    };
+
 
     // for subproject material table
 
@@ -852,23 +900,6 @@ const BOQEdit = () => {
     };
 
 
-
-    //   modal
-    const openModal = () => setShowModal(true);
-    const closeModal = () => setShowModal(false);
-
-    const openAssocoatedModal = () => setShowAssocoatedModal(true);
-    const closeAssocoatedModal = () => setShowAssocoatedModal(false);
-
-    // const options = [
-    //     { value: "alabama", label: "Alabama" },
-    //     { value: "alaska", label: "Alaska" },
-    //     { value: "california", label: "California" },
-    //     { value: "delaware", label: "Delaware" },
-    //     { value: "tennessee", label: "Tennessee" },
-    //     { value: "texas", label: "Texas" },
-    //     { value: "washington", label: "Washington" },
-    // ];
     // edit code.......
 
     // Group categories by level
@@ -983,9 +1014,123 @@ const BOQEdit = () => {
     //   console.log("boq edit detail:", boqDetails.boq_sub_items.materials)
 
 
-    //Material modal and table data handle add or delete
+    const [localMaterialErrors, setLocalMaterialErrors] = useState({});
+    const [localAssetErrors, setLocalAssetErrors] = useState({});
+    // Example predefined materials data (replace with actual data from your source)
+    const predefinedMaterials = materials.map((material, index) => ({
+        material_id: material.pms_inventory_id || material.id,
+        material_sub_type_id: selectedSubTypes[index]
+            ? selectedSubTypes[index].value
+            : "",
+        generic_info_id: selectedGenericSpecifications[index]
+            ? selectedGenericSpecifications[index].value
+            : "", // Safe access with fallback
+        colour_id: selectedColors[index] ? selectedColors[index].value : "", // Safe access with fallback
+        brand_id: selectedInventoryBrands[index]
+            ? selectedInventoryBrands[index].value
+            : "", // Safe access with fallback
+        uom_id: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
+        co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
+        estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
+        wastage: parseFloat(wastages[index]) || 0,
+        estimated_quantity_wastage:
+            parseFloat(totalEstimatedQtyWastages[index]) || 0,
+    }));
 
 
+    console.log("pre mtL...", predefinedMaterials)
+
+    const predefinedAssets = Assets.map((asset, index) => ({
+        material_id: asset.id,
+        material_sub_type_id: selectedSubTypesAssets[index]
+            ? selectedSubTypesAssets[index].value
+            : "",
+        generic_info_id: selectedAssetGenericSpecifications[index]
+            ? selectedAssetGenericSpecifications[index].value
+            : "",
+        colour_id: selectedAssetColors[index] ? selectedAssetColors[index].value : "",
+        brand_id: selectedAssetInventoryBrands[index]
+            ? selectedAssetInventoryBrands[index].value
+            : "",
+        uom_id: selectedUnit3[index] ? selectedUnit3[index].value : "",
+        co_efficient_factor: parseFloat(assetCoefficientFactors[index]) || 0,
+        estimated_quantity: parseFloat(assetEstimatedQuantities[index]) || 0,
+        wastage: parseFloat(assetWastages[index]) || 0,
+        estimated_quantity_wastage:
+            parseFloat(assetTotalEstimatedQtyWastages[index]) || 0,
+        cost_qty: parseFloat(assetCostQTY[index]) || 0,
+    }));
+
+
+    useEffect(() => {
+        const validateDuplicateMaterials = () => {
+            const seenCombinations = new Map();
+            let errors = {};
+
+            predefinedMaterials.forEach((material, index) => {
+                if (!material.generic_info_id || !material.colour_id || !material.brand_id) {
+                    return;
+                }
+
+                const key = `${material.pms_inventory_id || material.material_id}-${material.generic_info_id}-${material.colour_id}-${material.brand_id}`;
+
+                if (seenCombinations.has(key)) {
+                    errors[index] = {
+                        generic_info: "This combination already exists.",
+                        colour: "This combination already exists.",
+                        brand: "This combination already exists.",
+                    };
+                } else {
+                    seenCombinations.set(key, true);
+                }
+            });
+
+            // Only update state if errors have changed
+            setLocalMaterialErrors((prevErrors) => {
+                const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+                return hasChanged ? errors : prevErrors;
+            });
+
+            return Object.keys(errors).length === 0;
+        };
+
+        validateDuplicateMaterials();
+    }, [predefinedMaterials]); // Runs whenever predefinedMaterials changes
+
+    const validateDuplicateAssets = useCallback(() => {
+        const seenCombinations = new Map();
+        let errors = {};
+
+        predefinedAssets.forEach((asset, index) => {
+            if (!asset.generic_info_id || !asset.colour_id || !asset.brand_id) {
+                return;
+            }
+
+            const key = `${asset.material_id}-${asset.generic_info_id}-${asset.colour_id}-${asset.brand_id}`;
+
+            if (seenCombinations.has(key)) {
+                errors[index] = {
+                    generic_info: "This combination already exists.",
+                    colour: "This combination already exists.",
+                    brand: "This combination already exists.",
+                };
+            } else {
+                seenCombinations.set(key, true);
+            }
+        });
+
+        // Only update state if errors have changed to prevent infinite re-renders
+        setLocalAssetErrors((prevErrors) => {
+            const hasChanged = JSON.stringify(prevErrors) !== JSON.stringify(errors);
+            return hasChanged ? errors : prevErrors;
+        });
+
+        return Object.keys(errors).length === 0;
+    }, [predefinedAssets]);
+
+    useEffect(() => {
+        validateDuplicateAssets();
+    }, [validateDuplicateAssets]);
 
 
     // Loading, error, and data display logic
@@ -1262,6 +1407,13 @@ const BOQEdit = () => {
                                                     className="tbl-container mx-3 mt-1"
                                                 // style={{ height: '200px' }}
                                                 >
+                                                    {/* <h1>predefinedMaterialsData</h1> */}
+
+                                                    {/* <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre> */}
+
+                                                    {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
+
+
                                                     <table
                                                     // className="w-100"
                                                     //  className="tbl-container"
@@ -1269,7 +1421,30 @@ const BOQEdit = () => {
                                                     >
                                                         <thead>
                                                             <tr>
-                                                                <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}> </th>
+                                                                <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                                                            } else {
+                                                                                setSelectedMaterials([]); // Deselect all
+                                                                            }
+                                                                        }}
+                                                                        checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                                                    />
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width={14}
+                                                                        height={14}
+                                                                        fill="currentColor"
+                                                                        className="bi bi-trash3-fill ms-2"
+                                                                        viewBox="0 0 16 16"
+                                                                        onClick={handleDeleteAll} // Delete selected rows on click
+                                                                    >
+                                                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                                    </svg>
+                                                                </th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
@@ -1322,9 +1497,9 @@ const BOQEdit = () => {
                                                                                 value={selectedGenericSpecifications[index]}
                                                                                 placeholder={`Select Specification`}
                                                                             />
-                                                                            {/* {localMaterialErrors[index]?.generic_info && (
-                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
-                                                                                                                    )} */}
+                                                                            {localMaterialErrors[index]?.generic_info && (
+                                                                                <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+                                                                            )}
                                                                         </td>
 
                                                                         <td style={{ width: "300px" }}>
@@ -1336,9 +1511,9 @@ const BOQEdit = () => {
                                                                                 value={selectedColors[index]}
                                                                                 placeholder={`Select Colour`}
                                                                             />
-                                                                            {/* {localMaterialErrors[index]?.colour && (
-                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
-                                                                                                                    )} */}
+                                                                            {localMaterialErrors[index]?.colour && (
+                                                                                <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+                                                                            )}
                                                                         </td>
 
                                                                         <td style={{ width: "300px" }}>
@@ -1350,9 +1525,9 @@ const BOQEdit = () => {
                                                                                 value={selectedInventoryBrands[index]}
                                                                                 placeholder={`Select Brand`}
                                                                             />
-                                                                            {/* {localMaterialErrors[index]?.brand && (
-                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
-                                                                                                                    )} */}
+                                                                            {localMaterialErrors[index]?.brand && (
+                                                                                <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+                                                                            )}
                                                                         </td>
 
                                                                         <td style={{ width: "300px" }}>
@@ -1400,7 +1575,7 @@ const BOQEdit = () => {
                                                                                 onChange={(e) => handleWastageChange(index, e.target.value)}
                                                                             />
 
-                                                                            {/* {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>} */}
+                                                                            {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>}
                                                                         </td>
                                                                         <td style={{ width: "300px" }}>
                                                                             <input
@@ -1455,7 +1630,32 @@ const BOQEdit = () => {
                                                     >
                                                         <thead>
                                                             <tr>
-                                                                <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}> </th>
+                                                                <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                                                    <input
+                                                                        className=""
+                                                                        type="checkbox"
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setSelectedAssets(Assets.map((_, index) => index)); // Select all using indexes
+                                                                            } else {
+                                                                                setSelectedAssets([]); // Deselect all
+                                                                            }
+                                                                        }}
+                                                                        checked={selectedAssets.length === Assets.length && Assets.length > 0}
+                                                                    />
+
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width={14}
+                                                                        height={14}
+                                                                        fill="currentColor"
+                                                                        className="bi bi-trash3-fill ms-2"
+                                                                        viewBox="0 0 16 16"
+                                                                        onClick={handleDeleteAllAssets}
+                                                                    >
+                                                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                                    </svg>
+                                                                </th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Asset Type</th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Asset</th>
                                                                 <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Asset Sub-Type</th>
@@ -1790,7 +1990,7 @@ const BOQEdit = () => {
                                                                                             <table>
                                                                                                 <thead>
                                                                                                     <tr>
-                                                                                                        <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Sr.No</th>
+                                                                                                        <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}></th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
@@ -1809,6 +2009,7 @@ const BOQEdit = () => {
                                                                                                     </tr>
                                                                                                 </thead>
                                                                                                 <tbody>
+
 
 
                                                                                                     {materials.length > 0 ? (
@@ -1972,7 +2173,7 @@ const BOQEdit = () => {
                                                                                             <table className="w-100">
                                                                                                 <thead>
                                                                                                     <tr>
-                                                                                                        <th rowSpan={2}>Sr.No.</th>
+                                                                                                        <th rowSpan={2}></th>
                                                                                                         <th rowSpan={2}>Asset Type</th>
                                                                                                         <th rowSpan={2}>Asset</th>
                                                                                                         <th rowSpan={2}>Asset Sub-Type</th>
