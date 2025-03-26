@@ -248,6 +248,11 @@ const ErpStockRegister13B = () => {
 
   }, [location.search, selectedCompany, selectedProject, page, searchTerm]); // Empty dependency array to run once on mount
 
+  const handleResets = () => {
+    setSelectedCompany([]);
+    setSelectedProject([]);
+    setSelectedSubProject([]);
+  };
 
 
   const getTransformedRows = () => {
@@ -401,7 +406,7 @@ const ErpStockRegister13B = () => {
                       </div>
                     </div>
                     <div className="col-md-2">
-                      <button className="purple-btn2 m-0">Go</button>
+                      <button className="purple-btn2 m-0" onClick={handleResets}>Reset</button>
                     </div>
 
 
