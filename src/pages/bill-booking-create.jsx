@@ -115,17 +115,6 @@ const BillBookingCreate = () => {
                 <div className="row">
                   <div className="col-md-4">
                     <div className="form-group">
-                      <label>ID</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder={123}
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
                       <label>Company</label>
                       <SingleSelector
                         options={companyOptions}
@@ -154,7 +143,7 @@ const BillBookingCreate = () => {
                       ></SingleSelector>
                     </div>
                   </div>
-                  <div className="col-md-3 mt-2">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
                       <SingleSelector
@@ -169,7 +158,17 @@ const BillBookingCreate = () => {
                       View Details
                     </p>
                   </div>
-                  <div className="col-md-3 mt-2">
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>PO Type</label>
+                      <SingleSelector
+                        options={companyOptions}
+                        className="form-control form-select"
+                      ></SingleSelector>
+                    </div>
+                  </div>
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Number</label>
                       <input
@@ -188,18 +187,35 @@ const BillBookingCreate = () => {
                   >
                     <p className="mt-3 text-decoration-underline">Select</p>
                   </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>PO Type</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
+
+                  <div className="d-flex justify-content-between mt-3 me-2">
+                    <h5 className=" ">PO Details</h5>
                   </div>
-                  <div className="col-md-4 mt-2">
+
+                  <div className="tbl-container mx-1 mt-3">
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th className="text-start">Sr. No.</th>
+                          <th className="text-start">Po Display No</th>
+                          <th className="text-start">PO Date</th>
+                          <th className="text-start">PO Value</th>
+                          <th className="text-start">PO Type</th>
+                          <th className="text-start">PO Fright</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="text-start"> 1</td>
+                          <td className="text-start" />
+                          <td className="text-start"> </td>
+                          <td className="text-start" />
+                          <td className="text-start text-decoration-underline" />
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Number</label>
                       <input
@@ -210,7 +226,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>E-Invoice</label>
                       <SingleSelector
@@ -220,7 +236,7 @@ const BillBookingCreate = () => {
                       ></SingleSelector>
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Date</label>
                       <input
@@ -231,7 +247,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
                       <input
@@ -242,7 +258,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>PO Value</label>
                       <input
@@ -254,7 +270,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3 mt-2">
+                  <div className="col-md-3 mt-3">
                     <div className="form-group">
                       <label>GSTIN</label>
                       <input
@@ -266,7 +282,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-1 pt-4 mt-2">
+                  <div className="col-md-1 pt-4 mt-3">
                     <p className="mt-2 text-decoration-underline">Verify</p>
                   </div>
                   <div className="col-md-4 mt-2">
@@ -281,7 +297,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Type of Certificate</label>
                       <SingleSelector
@@ -291,7 +307,7 @@ const BillBookingCreate = () => {
                     </div>
                   </div>
 
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Department</label>
                       <SingleSelector
@@ -898,7 +914,7 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Payment Details</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
@@ -973,7 +989,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                   <div
@@ -1176,6 +1192,7 @@ const BillBookingCreate = () => {
                     type="text"
                     placeholder=""
                     fdprocessedid="qv9ju9"
+                    disabled
                   />
                 </div>
               </div>
@@ -1187,20 +1204,11 @@ const BillBookingCreate = () => {
                     type="text"
                     placeholder=""
                     fdprocessedid="qv9ju9"
+                    disabled
                   />
                 </div>
               </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Number</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
+
               <div className="col-md-6">
                 <div className="form-group">
                   <label>Supplier</label>
@@ -1209,6 +1217,7 @@ const BillBookingCreate = () => {
                     type="text"
                     placeholder=""
                     fdprocessedid="qv9ju9"
+                    disabled
                   />
                 </div>
               </div>
@@ -1235,6 +1244,15 @@ const BillBookingCreate = () => {
                 </div>
               </div>
               <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO Number</label>
+                  <SingleSelector
+                    options={companyOptions}
+                    className="form-control form-select"
+                  ></SingleSelector>
+                </div>
+              </div>
+              {/* <div className="col-md-6">
                 <div className="form-group">
                   <label>Indent</label>
                   <input
@@ -1277,7 +1295,7 @@ const BillBookingCreate = () => {
                     fdprocessedid="qv9ju9"
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="row mt-2 justify-content-center">
               <div className="col-md-3">
@@ -1308,6 +1326,9 @@ const BillBookingCreate = () => {
               <table className="w-100">
                 <thead>
                   <tr>
+                    <th>
+                      <input type="checkbox" />
+                    </th>
                     <th className="text-start">Sr.No</th>
                     <th className="text-start">PO Number</th>
                     <th className="text-start">PO Date</th>
@@ -1318,6 +1339,9 @@ const BillBookingCreate = () => {
                 </thead>
                 <tbody>
                   <tr>
+                    <td>
+                      <input type="checkbox" />
+                    </td>
                     <td className="text-start">1</td>
                     <td className="text-start">MTC</td>
                     <td className="text-start">Material test Cert 1.pdf</td>
@@ -1369,10 +1393,11 @@ const BillBookingCreate = () => {
                   type="text"
                   placeholder=""
                   fdprocessedid="qv9ju9"
+                  disabled
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            {/* <div className="col-md-4">
               <div className="form-group">
                 <label>GRN Number</label>
                 <input
@@ -1426,7 +1451,7 @@ const BillBookingCreate = () => {
                   fdprocessedid="qv9ju9"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
           <div className=" mt-3 me-2">
             <h5 className=" ">GRN Details</h5>
@@ -1851,9 +1876,9 @@ const BillBookingCreate = () => {
                   <td>
                     <button
                       className="btn btn-light p-0 border-0"
-                      onClick={addCharge}
+                      // onClick={addCharge}
                     >
-                      <svg
+                      {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width={20}
                         height={20}
@@ -1863,43 +1888,46 @@ const BillBookingCreate = () => {
                       >
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                      </svg>
+                      </svg> */}
                     </button>
                   </td>
                 </tr>
 
-                {charges.map((charge) => (
-                  <tr key={charge.id}>
-                    <td>
-                      <select className="form-control">
-                        <option value="">Select</option>
-                        <option value="IGST">IGST</option>
-                        <option value="SGCT">SGCT</option>
-                        <option value="CGST">CGST</option>
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={charge.amount}
-                        readOnly
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={charge.inclusive}
-                        readOnly
-                      />
-                    </td>
-                    <td>{charge.amount}</td>
-                    <td>
-                      <button
-                        className="btn btn-light p-0 border-0"
-                        onClick={() => removeCharge(charge.id)}
-                      >
-                        <svg
+                {/* {/* {charges.map((charge) => ( */}
+                <tr
+                // key={charge.id}>
+                >
+                  <td>
+                    {/* <select className="form-control">
+                      <option value="">Select</option>
+                      <option value="IGST">IGST</option>
+                      <option value="SGCT">SGCT</option>
+                      <option value="CGST">CGST</option>
+                    </select> */}
+                    <input type="number" className="form-control" />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      className="form-control"
+                      // value={charge.amount}
+                      readOnly
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      // checked={charge.inclusive}
+                      readOnly
+                    />
+                  </td>
+                  <td></td>
+                  <td>
+                    <button
+                      className="btn btn-light p-0 border-0"
+                      // onClick={() => removeCharge(charge.id)}
+                    >
+                      {/* <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width={20}
                           height={20}
@@ -1909,11 +1937,11 @@ const BillBookingCreate = () => {
                         >
                           <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                           <path d="M5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 8" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        </svg> */}
+                    </button>
+                  </td>
+                </tr>
+                {/* ))} */}
 
                 <tr>
                   <th>Sub Total A (Addition)</th>
