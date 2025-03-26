@@ -19,7 +19,7 @@
   border-radius: 10px;
   color: var(--red);
 }
-.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected{
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected , .css-1wzaoor.Mui-selected{
   z-index: 3;
   color: var(--body-bg-color) !important;
   background-color: var(--red) !important;
@@ -28,8 +28,8 @@
 }
 
 
-.css-1c5o7vy-MuiPagination-ul li {
-  margin: 0 5px;
+.css-1c5o7vy-MuiPagination-ul li , .css-51eq8m li{
+  margin: 0 4px;
 }
 
 .active>.page-link, .page-link.active {
@@ -39,7 +39,7 @@
   border-color: var(--red) !important;
 }
 
-.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root{
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root , .css-1wzaoor{
 
   border-radius: 3px !important;
 
@@ -47,7 +47,7 @@
 
 }
 
-.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root:hover {
+.css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root:hover , .css-1wzaoor:hover {
   z-index: 2;
   color: var(--red) !important;
   background-color: var(--bs-pagination-hover-bg);
@@ -12933,7 +12933,7 @@ input.rank {
   border-color: #ccc !important;
 }
 
-.css-15lx25q-MuiDataGrid-footerContainer,.css-1hr2sou-MuiTablePagination-root:last-child{
+.css-15lx25q-MuiDataGrid-footerContainer,.css-1hr2sou-MuiTablePagination-root:last-child , .css-t4440l .MuiDataGrid-withBorderColor:last-child {
   display: none !important;
 }
  /* events.css end */
