@@ -707,7 +707,7 @@ const ApprovalMatrics = () => {
                   <thead>
                     <tr>
                       <th>Edit</th>
-                      <th>Id</th>
+                      <th>Sr No</th>
                       <th>Function</th>
                       <th>Company</th>
                       <th>project</th>
