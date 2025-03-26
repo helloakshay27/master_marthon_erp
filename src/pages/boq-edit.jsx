@@ -168,6 +168,82 @@ const BOQEdit = () => {
         }
 
 
+        // sub item
+
+        if (boqDetails?.boq_sub_items?.length > 0) {
+            const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem => subItem.materials || []);
+
+            if (subItemMaterials.length > 0) {
+                setMaterials(subItemMaterials);
+
+                setSelectedSubTypes(subItemMaterials.map(m => ({
+                    value: m.pms_inventory_sub_type_id,
+                    label: m.material_sub_type
+                })));
+
+                setSelectedGenericSpecifications(subItemMaterials.map(m => ({
+                    value: m.pms_generic_info_id,
+                    label: m.generic_info
+                })));
+
+                setSelectedColors(subItemMaterials.map(m => ({
+                    value: m.pms_colour_id,
+                    label: m.color
+                })));
+
+                setSelectedInventoryBrands(subItemMaterials.map(m => ({
+                    value: m.pms_inventory_brand_id,
+                    label: m.brand
+                })));
+
+                setSelectedUnit2(subItemMaterials.map(m => ({
+                    value: m.unit_of_measure_id,
+                    label: m.uom
+                })));
+
+                setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
+                setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
+                setWastages(subItemMaterials.map(m => m.wastage));
+                setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
+            }
+        }
+
+
+
+        // if (boqDetails?.boq_sub_items?.length > 0) {
+        //     const subItemMaterialsMap = boqDetails.boq_sub_items.map(subItem => ({
+        //         subItemId: subItem.id, // Keep track of sub-item ID
+        //         materials: subItem.materials || [], // Store materials specific to this sub-item
+        //         selectedSubTypes: subItem.materials.map(m => ({
+        //             value: m.pms_inventory_sub_type_id,
+        //             label: m.material_sub_type
+        //         })),
+        //         selectedGenericSpecifications: subItem.materials.map(m => ({
+        //             value: m.pms_generic_info_id,
+        //             label: m.generic_info
+        //         })),
+        //         selectedColors: subItem.materials.map(m => ({
+        //             value: m.pms_colour_id,
+        //             label: m.color
+        //         })),
+        //         selectedInventoryBrands: subItem.materials.map(m => ({
+        //             value: m.pms_inventory_brand_id,
+        //             label: m.brand
+        //         })),
+        //         selectedUnit2: subItem.materials.map(m => ({
+        //             value: m.unit_of_measure_id,
+        //             label: m.uom
+        //         })),
+        //         coefficientFactors: subItem.materials.map(m => m.co_efficient_factor),
+        //         estimatedQuantities: subItem.materials.map(m => m.estimated_quantity),
+        //         wastages: subItem.materials.map(m => m.wastage),
+        //         totalEstimatedQtyWastages: subItem.materials.map(m => m.estimated_quantity_wastage)
+        //     }));
+
+        //     setMaterials(subItemMaterialsMap);
+        // }
+
+
     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
 
     // unit
@@ -1218,13 +1294,6 @@ const BOQEdit = () => {
                                                                 materials.map((material, index) => (
                                                                     <tr key={`${material.id}-${index}`}>
                                                                         <td style={{ width: "100px" }}>
-                                                                            {/* <input
-                                                                                                                      className="ms-5"
-                                                                                                                      type="checkbox"
-                                                                                                                      checked={selectedMaterials.includes(material.id)}
-                                                                                                                      onChange={() => handleSelectRow(material.id)}
-                                                                                                                    /> */}
-
                                                                             <input
                                                                                 className="ms-5"
                                                                                 type="checkbox"
@@ -1637,9 +1706,6 @@ const BOQEdit = () => {
                                                     <th className="text-start">Remarks</th>
                                                     <th className="text-start">UOM</th>
                                                     <th className="text-start">Quantity</th>
-                                                    {/* <th className="text-start">
-                                  Document
-                              </th> */}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1720,22 +1786,22 @@ const BOQEdit = () => {
                                                                             <div>
                                                                                 <CollapsibleCard title="Materials">
                                                                                     <div className="card-body mt-0 pt-0">
-                                                                                        <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                                            <table className="w-100">
+                                                                                        <div className="tbl-container mx-3 mt-1" >
+                                                                                            <table>
                                                                                                 <thead>
                                                                                                     <tr>
-                                                                                                        <th rowSpan={2}>Sr.No</th>
-                                                                                                        <th rowSpan={2}>Material Type</th>
-                                                                                                        <th rowSpan={2}>Material</th>
-                                                                                                        <th rowSpan={2}>Material Sub-Type</th>
-                                                                                                        <th rowSpan={2}>Generic Specification</th>
-                                                                                                        <th rowSpan={2}>Colour</th>
-                                                                                                        <th rowSpan={2}>Brand</th>
-                                                                                                        <th rowSpan={2}>UOM</th>
+                                                                                                        <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Sr.No</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
                                                                                                         {/* <th rowSpan={2}>Cost QTY</th> */}
-                                                                                                        <th colSpan={3}>Cost</th>
-                                                                                                        <th rowSpan={2}>Wastage</th>
-                                                                                                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                        <th colSpan={3} style={{ width: "200px", whiteSpace: "nowrap" }}>Cost</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Wastage</th>
+                                                                                                        <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Total Estimated Qty Wastage</th>
                                                                                                     </tr>
                                                                                                     <tr>
                                                                                                         <th>Co-Efficient Factor</th>
@@ -1743,29 +1809,162 @@ const BOQEdit = () => {
                                                                                                     </tr>
                                                                                                 </thead>
                                                                                                 <tbody>
-                                                                                                    {boqDetail2?.materials?.map((material, index) => (
 
-                                                                                                        <tr key={material.id}>
-                                                                                                            <td>{index + 1}</td>
-                                                                                                            <td>{material.material_type}</td>
-                                                                                                            <td>{material.material_name}</td>
-                                                                                                            <td>{material.material_sub_type}</td>
-                                                                                                            <td>{material.generic_info}</td>
-                                                                                                            <td>{material.color}</td>
-                                                                                                            <td>{material.brand}</td>
-                                                                                                            <td>{material.uom}</td>
-                                                                                                            {/* <td>{material.generic_info}</td> */}
-                                                                                                            <td>{material.co_efficient_factor}</td>
-                                                                                                            <td colSpan={2}>{material.estimated_quantity}</td>
-                                                                                                            <td>{material.wastage}</td>
-                                                                                                            <td>{material.estimated_quantity_wastage}</td>
+
+                                                                                                    {materials.length > 0 ? (
+                                                                                                        materials.map((material, index) => (
+                                                                                                            <tr key={`${material.id}-${index}`}>
+                                                                                                                <td style={{ width: "100px" }}>
+                                                                                                                    <input
+                                                                                                                        className="ms-5"
+                                                                                                                        type="checkbox"
+                                                                                                                        checked={selectedMaterials.includes(index)} // Use index instead of material.id
+                                                                                                                        onChange={() => handleSelectRow(index)} // Pass index to function
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
+                                                                                                                <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <SingleSelector
+                                                                                                                        options={inventorySubTypes[index] || []}
+                                                                                                                        onChange={(selectedOption) =>
+                                                                                                                            handleSubTypeChange(index, selectedOption)
+                                                                                                                        }
+                                                                                                                        value={selectedSubTypes[index]}
+                                                                                                                        placeholder={`Select Sub-Type`}
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <SingleSelector
+                                                                                                                        options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
+                                                                                                                        onChange={(selectedOption) =>
+                                                                                                                            handleGenericSpecificationChange(index, selectedOption)
+                                                                                                                        }
+                                                                                                                        value={selectedGenericSpecifications[index]}
+                                                                                                                        placeholder={`Select Specification`}
+                                                                                                                    />
+                                                                                                                    {/* {localMaterialErrors[index]?.generic_info && (
+                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
+                                                                                                                    )} */}
+                                                                                                                </td>
+
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <SingleSelector
+                                                                                                                        options={colors[index] || []}
+                                                                                                                        onChange={(selectedOption) =>
+                                                                                                                            handleColorChange(index, selectedOption)
+                                                                                                                        }
+                                                                                                                        value={selectedColors[index]}
+                                                                                                                        placeholder={`Select Colour`}
+                                                                                                                    />
+                                                                                                                    {/* {localMaterialErrors[index]?.colour && (
+                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
+                                                                                                                    )} */}
+                                                                                                                </td>
+
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <SingleSelector
+                                                                                                                        options={inventoryBrands[index] || []}
+                                                                                                                        onChange={(selectedOption) =>
+                                                                                                                            handleBrandChange(index, selectedOption)
+                                                                                                                        }
+                                                                                                                        value={selectedInventoryBrands[index]}
+                                                                                                                        placeholder={`Select Brand`}
+                                                                                                                    />
+                                                                                                                    {/* {localMaterialErrors[index]?.brand && (
+                                                                                                                      <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
+                                                                                                                    )} */}
+                                                                                                                </td>
+
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <SingleSelector
+                                                                                                                        options={unitOfMeasures}
+                                                                                                                        onChange={(selectedOption) =>
+                                                                                                                            handleUnitChange2(index, selectedOption)
+                                                                                                                        }
+                                                                                                                        value={selectedUnit2[index]}
+                                                                                                                        placeholder={`Select UOM`}
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <input
+                                                                                                                        className="form-control"
+                                                                                                                        type="number"
+                                                                                                                        placeholder="Please Enter co-efficient Factor"
+                                                                                                                        value={coefficientFactors[index] || ""}
+                                                                                                                        onKeyDown={(e) => {
+                                                                                                                            if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                                                                                                                e.preventDefault();
+                                                                                                                            }
+                                                                                                                        }}
+                                                                                                                        min="0"
+                                                                                                                        onChange={(e) =>
+                                                                                                                            handleCoefficientFactorChange(index, e.target.value)
+                                                                                                                        }
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }} colSpan={2}>
+                                                                                                                    <input
+                                                                                                                        className="form-control"
+                                                                                                                        type="number"
+                                                                                                                        placeholder="Estimated Quantity"
+                                                                                                                        disabled
+                                                                                                                        value={estimatedQuantities[index] || ""}
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <input
+                                                                                                                        className="form-control"
+                                                                                                                        type="number"
+                                                                                                                        placeholder="Please Enter wastage"
+                                                                                                                        value={wastages[index] || ""}
+                                                                                                                        onChange={(e) => handleWastageChange(index, e.target.value)}
+                                                                                                                    />
+
+                                                                                                                    {/* {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>} */}
+                                                                                                                </td>
+                                                                                                                <td style={{ width: "300px" }}>
+                                                                                                                    <input
+                                                                                                                        className="form-control"
+                                                                                                                        type="number"
+                                                                                                                        placeholder="Total Estimated Qty Wastage"
+                                                                                                                        disabled
+                                                                                                                        value={totalEstimatedQtyWastages[index] || ""}
+                                                                                                                    />
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        ))
+                                                                                                    ) : (
+                                                                                                        <tr>
+                                                                                                            <td colSpan="12" className="text-center">
+                                                                                                                No materials added yet.
+                                                                                                            </td>
                                                                                                         </tr>
-                                                                                                    ))}
+                                                                                                    )}
+
+
+
                                                                                                 </tbody>
                                                                                             </table>
                                                                                         </div>
+                                                                                        <div>
+                                                                                            <button
+                                                                                                style={{ color: "var(--red)" }}
+                                                                                                className="fw-bold text-decoration-underline border-0 bg-white ms-3"
+                                                                                                // onclick="myCreateFunction('table1')"
+                                                                                                onClick={handleOpenModal}
+                                                                                            >
+                                                                                                Add Material
+                                                                                            </button>{" "}
+                                                                                        </div>
                                                                                     </div>
                                                                                 </CollapsibleCard>
+
+                                                                                <MaterialModal
+                                                                                    show={showModal}
+                                                                                    handleClose={handleCloseModal}
+                                                                                    handleAdd={handleAddMaterials}
+                                                                                />
 
                                                                                 <CollapsibleCard title="Assets">
                                                                                     <div className="card-body mt-0 pt-0">
@@ -1818,8 +2017,12 @@ const BOQEdit = () => {
                                                                             </div>
                                                                         </td>
                                                                     </tr>
+
                                                                 </React.Fragment>
                                                             )}
+
+
+
 
                                                         </React.Fragment>
                                                     ))
