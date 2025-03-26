@@ -1208,7 +1208,7 @@ const BOQEdit = () => {
                                             <input
                                                 className="form-control"
                                                 type="text"
-                                                placeholder='56914'
+                                                // placeholder='56914'
                                                 value={boqDetails?.wing}
                                                 disabled
                                             />
@@ -1221,7 +1221,7 @@ const BOQEdit = () => {
                                             <input
                                                 className="form-control"
                                                 type="text"
-                                                placeholder='56914'
+                                                // placeholder='56914'
                                                 value={groupedCategories[1] && groupedCategories[1].length > 0 ? groupedCategories[1][0].category_name : ''}
                                                 disabled
                                             />
