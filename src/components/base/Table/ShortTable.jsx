@@ -102,18 +102,20 @@ export default function ShortTable({
                   >
                     <i className="bi bi-pencil" style={{ border: 0 }}></i>
                   </button>
-                  <button
-                    className="purple-btn2 ms-2 rounded-circle p-0"
-                    style={{
-                      border: "none",
-                      color: "white",
-                      width: "25px",
-                      height: "25px",
-                    }}
-                    onClick={() => handleDelete(index)}
-                  >
-                    <i className="bi bi-trash" style={{ border: 0 }}></i>
-                  </button>
+                  {["Freight Charge", "GST on Freight", "Realised GST"].includes(row.label) ? null : (
+                    <button
+                      className="purple-btn2 ms-2 rounded-circle p-0"
+                      style={{
+                        border: "none",
+                        color: "white",
+                        width: "25px",
+                        height: "25px",
+                      }}
+                      onClick={() => handleDelete(index)}
+                    >
+                      <i className="bi bi-trash" style={{ border: 0 }}></i>
+                    </button>
+                  )}
                 </>
               ) : (
                 row.value

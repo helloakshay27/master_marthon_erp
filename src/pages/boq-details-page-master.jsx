@@ -375,6 +375,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
           <div className="d-flex justify-content-end m-4">
+          {boqDetails.status === "draft" && (
             <Link 
             to={`/boq-edit/${id}`} 
             className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
@@ -393,7 +394,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                 />
               </svg>
             </Link>
-
+)}
           </div>
           <CollapsibleCard title="BOQ Details">
 
