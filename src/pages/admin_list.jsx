@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import Select from "react-select";
@@ -108,7 +108,17 @@ export default function adminList() {
     setIsMyEvent(false);
   };
 
-  const preprocessOptions = (array, isKeyValuePair = false) => {
+  // Debounce function to limit API calls
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // Memoize preprocessOptions to avoid recomputation
+  const preprocessOptions = useCallback((array, isKeyValuePair = false) => {
     if (!array) return [];
     const uniqueMap = new Map();
     array
@@ -120,7 +130,8 @@ export default function adminList() {
         });
       });
     return Array.from(uniqueMap.values());
-  };
+  }, []);
+
   const token = new URLSearchParams(window.location.search).get("token");
 
   const fetchFilterOptions = async () => {
@@ -296,8 +307,8 @@ export default function adminList() {
 
   const { events: eventsToDisplay, pagination } = getFilteredData(); // Destructure to get events and pagination
 
-  // Get the range of pages to display
-  const getPageRange = () => {
+  // Memoize getPageRange to avoid recomputation
+  const getPageRange = useMemo(() => {
     const totalPages = pagination.total_pages || 1; // Default to 1 if total_pages is undefined
     let startPage = Math.max(
       pagination.current_page - Math.floor(pageRange / 2),
@@ -315,9 +326,9 @@ export default function adminList() {
       pages.push(i);
     }
     return pages;
-  };
+  }, [pagination, pageRange]);
 
-  const pageNumbers = getPageRange(); // Get the current page range for display
+  const pageNumbers = getPageRange; // Get the current page range for display
 
   const handleFilterChange = (key, name) => {
     setFilters((prevFilters) => ({
@@ -381,18 +392,18 @@ export default function adminList() {
     }
   };
 
-  // const handleSearchSubmit = (e) => {
-  //   e.preventDefault();
-  //   handleSearch();
-  //   // handleResetSearch();
-  // };
+  // Debounced fetchSuggestions
+  const debouncedFetchSuggestions = useMemo(
+    () => debounce(fetchSuggestions, 300),
+    []
+  );
 
   const handleInputChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
 
     if (query) {
-      fetchSuggestions(query);
+      debouncedFetchSuggestions(query); // Use debounced function
     } else {
       setSuggestions([]);
       setIsSuggestionsVisible(false);
@@ -473,6 +484,9 @@ export default function adminList() {
     { label: "Action", key: "action" },
     { label: "Edit", key: "edit" },
   ];
+
+  // Lazy load Modal component
+  const LazyModal = React.lazy(() => import("react-bootstrap/Modal"));
 
   return (
     <>
@@ -1051,182 +1065,187 @@ export default function adminList() {
 
               <LayoutModal show={settingShow} onHide={handleSettingClose} />
 
-              <Modal
-                show={show}
-                onHide={handleClose}
-                dialogClassName="modal-right"
-                className="setting-modal"
-                backdrop={true}
-                style={{ height: "100vh", overflowY: "scroll" }}
-              >
-                <Modal.Header>
-                  <div className="container-fluid p-0">
-                    <div className="border-0 d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        <button
-                          type="button"
-                          className="btn"
-                          aria-label="Close"
-                          onClick={handleClose}
-                        >
-                          <svg
-                            width="10"
-                            height="16"
-                            viewBox="0 0 10 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <LazyModal
+                  show={show}
+                  onHide={handleClose}
+                  dialogClassName="modal-right"
+                  className="setting-modal"
+                  backdrop={true}
+                  style={{ height: "100vh", overflowY: "scroll" }}
+                >
+                  <Modal.Header>
+                    <div className="container-fluid p-0">
+                      <div className="border-0 d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center">
+                          <button
+                            type="button"
+                            className="btn"
+                            aria-label="Close"
+                            onClick={handleClose}
                           >
-                            <path
-                              d="M9 1L1 9L9 17"
-                              stroke="#8b0203"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                        <h3
-                          className="modal-title m-0"
-                          style={{ fontWeight: 500 }}
+                            <svg
+                              width="10"
+                              height="16"
+                              viewBox="0 0 10 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M9 1L1 9L9 17"
+                                stroke="#8b0203"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                          <h3
+                            className="modal-title m-0"
+                            style={{ fontWeight: 500 }}
+                          >
+                            Filter
+                          </h3>
+                        </div>
+                        <Link
+                          className="resetCSS"
+                          style={{
+                            fontSize: "14px",
+                            textDecoration: "underline",
+                          }}
+                          to="#"
+                          onClick={handleReset} // Attach the reset function
                         >
-                          Filter
-                        </h3>
-                      </div>
-                      <Link
-                        className="resetCSS"
-                        style={{
-                          fontSize: "14px",
-                          textDecoration: "underline",
-                        }}
-                        to="#"
-                        onClick={handleReset} // Attach the reset function
-                      >
-                        Reset
-                      </Link>
-                    </div>
-                  </div>
-                </Modal.Header>
-                <form onSubmit={handleSubmit}>
-                  <div className="modal-body" style={{ overflowY: "scroll" }}>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Enter Title </label>
-                        <Select
-                          options={filterOptions.event_titles}
-                          placeholder="Select an Event Title"
-                          isClearable
-                          value={filterOptions.event_titles.find(
-                            (opt) => opt.value === filters.title_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange("title_in", option?.value || "")
-                          }
-                        />
+                          Reset
+                        </Link>
                       </div>
                     </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Product</label>
-                        <Select
-                          options={filterOptions.material_name}
-                          placeholder="Select a Product"
-                          isClearable
-                          value={filterOptions.material_name.find(
-                            (opt) =>
-                              opt.value ===
-                              filters.event_materials_inventory_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_inventory_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Product Category</label>
-                        <Select
-                          options={filterOptions.material_type}
-                          placeholder="Select a Product Category"
-                          isClearable
-                          value={filterOptions.material_type.find(
-                            (opt) =>
-                              opt.value ===
-                              filters.event_materials_pms_inventory_inventory_type_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_pms_inventory_inventory_type_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Location</label>
-                        <Select
-                          options={filterOptions.locations}
-                          placeholder="Select a Location"
-                          isClearable
-                          value={filterOptions.locations.find(
-                            (opt) => opt.value === filters.event_materials_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Created By</label>
-                        <Select
-                          options={filterOptions.creaters}
-                          placeholder="Select a Creator"
-                          isClearable
-                          value={filterOptions.creaters.find(
-                            (opt) => opt.value === filters.created_by_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "created_by_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group d-flex align-items-start">
-                        <label htmlFor="mor-date-from">My Event</label>
-                        <div className="form-check form-switch ms-5">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            role="switch"
-                            id="flexSwitchCheckDefault"
-                            checked={isMyEvent}
-                            onChange={(e) => setIsMyEvent(e.target.checked)}
+                  </Modal.Header>
+                  <form onSubmit={handleSubmit}>
+                    <div className="modal-body" style={{ overflowY: "scroll" }}>
+                      <div className="form-group mb-4">
+                        <div className="form-group">
+                          <label htmlFor="mor-date-from">Enter Title </label>
+                          <Select
+                            options={filterOptions.event_titles}
+                            placeholder="Select an Event Title"
+                            isClearable
+                            value={filterOptions.event_titles.find(
+                              (opt) => opt.value === filters.title_in
+                            )}
+                            onChange={(option) =>
+                              handleFilterChange("title_in", option?.value || "")
+                            }
                           />
                         </div>
                       </div>
+                      <div className="form-group mb-4">
+                        <div className="form-group">
+                          <label htmlFor="mor-date-from">Product</label>
+                          <Select
+                            options={filterOptions.material_name}
+                            placeholder="Select a Product"
+                            isClearable
+                            value={filterOptions.material_name.find(
+                              (opt) =>
+                                opt.value ===
+                                filters.event_materials_inventory_id_in
+                            )}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "event_materials_inventory_id_in",
+                                option?.value || ""
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group mb-4">
+                        <div className="form-group">
+                          <label htmlFor="mor-date-from">
+                            Product Category
+                          </label>
+                          <Select
+                            options={filterOptions.material_type}
+                            placeholder="Select a Product Category"
+                            isClearable
+                            value={filterOptions.material_type.find(
+                              (opt) =>
+                                opt.value ===
+                                filters.event_materials_pms_inventory_inventory_type_id_in
+                            )}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "event_materials_pms_inventory_inventory_type_id_in",
+                                option?.value || ""
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group mb-4">
+                        <div className="form-group">
+                          <label htmlFor="mor-date-from">Location</label>
+                          <Select
+                            options={filterOptions.locations}
+                            placeholder="Select a Location"
+                            isClearable
+                            value={filterOptions.locations.find(
+                              (opt) =>
+                                opt.value === filters.event_materials_id_in
+                            )}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "event_materials_id_in",
+                                option?.value || ""
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group mb-4">
+                        <div className="form-group">
+                          <label htmlFor="mor-date-from">Created By</label>
+                          <Select
+                            options={filterOptions.creaters}
+                            placeholder="Select a Creator"
+                            isClearable
+                            value={filterOptions.creaters.find(
+                              (opt) => opt.value === filters.created_by_id_in
+                            )}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "created_by_id_in",
+                                option?.value || ""
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group mb-4">
+                        <div className="form-group d-flex align-items-start">
+                          <label htmlFor="mor-date-from">My Event</label>
+                          <div className="form-check form-switch ms-5">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              role="switch"
+                              id="flexSwitchCheckDefault"
+                              checked={isMyEvent}
+                              onChange={(e) => setIsMyEvent(e.target.checked)}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="modal-footer justify-content-center">
-                    <button type="submit" className="purple-btn2">
-                      Go
-                    </button>
-                  </div>
-                </form>
-              </Modal>
+                    <div className="modal-footer justify-content-center">
+                      <button type="submit" className="purple-btn2">
+                        Go
+                      </button>
+                    </div>
+                  </form>
+                </LazyModal>
+              </React.Suspense>
             </div>
           </div>
         </div>

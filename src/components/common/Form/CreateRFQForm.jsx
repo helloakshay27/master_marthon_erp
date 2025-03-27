@@ -5,6 +5,7 @@ import { baseURL } from "../../../confi/apiDomain";
 import ShortTable from "../../base/Table/ShortTable";
 import axios from "axios";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
+import { set } from "lodash";
 
 export default function CreateRFQForm({
   data,
@@ -32,6 +33,7 @@ export default function CreateRFQForm({
   const [additionalFields, setAdditionalFields] = useState([]);
   const [bidTemplateFields, setBidTemplateFields] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [subTypeId, setSubTypeId] = useState(0);
   const [showShortTableEditModal, setShowShortTableEditModal] = useState(false);
   const [editField, setEditField] = useState({
     fieldName: "",
@@ -59,13 +61,13 @@ export default function CreateRFQForm({
 
   const mapBidTemplateFields = (fields) => {
     console.log("fields", fields);
-    
+
     return fields.map((field) => ({
       label: field.field_name,
       value: "", // Initialize with empty value or any default value
       field_name: field.field_name,
-      is_required: field.is_required ,
-      is_read_only: field.is_read_only ,
+      is_required: field.is_required,
+      is_read_only: field.is_read_only,
       field_owner: field.field_owner,
       extra_fields: field.extra_fields || null,
       created_at: field.created_at || new Date().toISOString(),
@@ -85,7 +87,8 @@ export default function CreateRFQForm({
       if (response.data) {
         const templateData = response.data;
         console.log("Template Data:", templateData);
-        const updatedAdditionalFields = templateData.bid_material_template_fields || [];
+        const updatedAdditionalFields =
+          templateData.bid_material_template_fields || [];
         updateAdditionalFields(updatedAdditionalFields);
         updateBidTemplateFields(
           mapBidTemplateFields(templateData.bid_template_fields || [])
@@ -178,7 +181,7 @@ export default function CreateRFQForm({
 
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
-
+          setSubTypeId(inventorySubTypeId);
           fetchMaterials(inventoryTypeId);
           fetchSubSections(inventorySubTypeId);
           return {
@@ -466,7 +469,7 @@ export default function CreateRFQForm({
       (f) => f.field_name !== field.field_name
     );
     setAdditionalFields(updatedFields);
-    updateAdditionalFields(updatedFields); 
+    updateAdditionalFields(updatedFields);
   };
 
   const handleShortTableChange = (updatedData) => {
@@ -515,7 +518,7 @@ export default function CreateRFQForm({
     };
     const updatedAdditionalFields = [...additionalFields, newFieldData];
     setAdditionalFields(updatedAdditionalFields);
-    updateAdditionalFields(updatedAdditionalFields); 
+    updateAdditionalFields(updatedAdditionalFields);
     setShowAddColumnModal(false);
   };
 
@@ -595,6 +598,11 @@ export default function CreateRFQForm({
                     />
                   </div>
                   <div className="flex-grow-1">
+                    {
+                      console.log((section?.sectionData[0]?.subMaterialType)
+                        ?.value,
+                      subSectionOptions)
+                    }
                     <SelectBox
                       label={"Select Sub Material Type"}
                       options={subSectionOptions}
@@ -603,8 +611,8 @@ export default function CreateRFQForm({
                           ? "Select Sub Material Type"
                           : subSectionOptions?.find(
                               (option) =>
-                                option.label ===
-                                section?.sectionData[0]?.subMaterialType
+                                option.value ===
+                                subTypeId
                             )?.value || "Select Sub Material Type"
                       }
                       onChange={(selected) =>
@@ -641,28 +649,28 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => (
-                   <>
-                    <SelectBox
-                      options={materials}
-                      onChange={(value) =>
-                        handleDescriptionOfItemChange(
-                          value,
-                          rowIndex,
-                          sectionIndex
-                        )
-                      }
-                      defaultValue={
-                        section?.sectionData[rowIndex]?._destroy
-                          ? ""
-                          : materials?.find(
-                              (option) =>
-                                option?.value ===
-                                section?.sectionData[rowIndex]?.inventory_id
-                            )?.value || ""
-                      }
-                    />
-                    {/* {console.log(cell,"this is cell",rowIndex)} */}
-                   </>
+                    <>
+                      <SelectBox
+                        options={materials}
+                        onChange={(value) =>
+                          handleDescriptionOfItemChange(
+                            value,
+                            rowIndex,
+                            sectionIndex
+                          )
+                        }
+                        defaultValue={
+                          section?.sectionData[rowIndex]?._destroy
+                            ? ""
+                            : materials?.find(
+                                (option) =>
+                                  option?.value ===
+                                  section?.sectionData[rowIndex]?.inventory_id
+                              )?.value || ""
+                        }
+                      />
+                      {/* {console.log(cell,"this is cell",rowIndex)} */}
+                    </>
                   ),
                   unit: (cell, rowIndex) => (
                     <SelectBox
@@ -834,7 +842,9 @@ export default function CreateRFQForm({
                   onValueChange={handleShortTableChange}
                   onInputClick={handleEditShortTableRow}
                   onDeleteClick={(index) => {
-                    const updatedFields = bidTemplateFields.filter((_, i) => i !== index);
+                    const updatedFields = bidTemplateFields.filter(
+                      (_, i) => i !== index
+                    );
                     setBidTemplateFields(updatedFields);
                     updateBidTemplateFields(updatedFields);
                   }}
