@@ -373,6 +373,7 @@ export default function EditEvent() {
   useEffect(() => {
     if (eventDetails) {
       seteventName(eventDetails?.event_title);
+      setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
       setEventScheduleText(

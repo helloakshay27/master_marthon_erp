@@ -424,7 +424,7 @@ export default function ParticipantsTab({ data, id }) {
         {vendorData.length > 0 ? (
           <Table
             columns={participantsTabColumns} // Use columns with serial number
-            data={vendorData.reverse()}
+            data={vendorData}
           />
         ) : (
           <div className="text-center mt-4">No data found</div>

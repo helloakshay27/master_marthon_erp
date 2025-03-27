@@ -3252,8 +3252,8 @@ export default function VendorDetails() {
                               label: "Realised Discount",
                               key: "realisedDiscount",
                             },
-                            { label: "GST *", key: "gst" },
-                            { label: "Realised GST", key: "realisedGst" },
+                            // { label: "GST *", key: "gst" },
+                            // { label: "Realised GST", key: "realisedGst" },
                             { label: "Landed Amount", key: "landedAmount" },
                             {
                               label: "Participant Attachment",
