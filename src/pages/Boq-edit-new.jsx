@@ -29,323 +29,323 @@ const EditBOQNew = () => {
   const [materialErrors, setMaterialErrors] = useState({});
   const [assetsErrors, setAssetsErrors] = useState({});
 
-// boq edit start ......
- const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
-    const [boqDetailsSub, setBoqDetailsSub] = useState(true);
-     const [remark, setRemark] = useState("");
+  // boq edit start ......
+  const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
+  const [boqDetailsSub, setBoqDetailsSub] = useState(true);
+  const [remark, setRemark] = useState("");
 
-     const fetchData = async () => {
-        
-            try {
-                const response = await axios.get(`${baseURL}boq_details/247.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
-                console.log("responce:", response.data)
-                // Assuming the API returns data based on the id (you may need to adjust based on your response)
-                setBoqDetails(response.data);
-                //   setStatus(response.data.status || '');
-                //   setInitialStatus(response.data.status || '');
-                setLoading(false);
-                // setBoqDetailsSub(response.data.uom)
-                if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
-                    setBoqDetailsSub(false); // Set to true if uom is not null
-                }
-    
-            } catch (error) {
-                setError('An error occurred while fetching the data');
-                setLoading(false);
-            }
-        };
-    
-         useEffect(() => {
-                // Fetch the data when the component mounts or when 'id' changes
-        
-                // console.log("id in useeffect:", id)
-                fetchData();
-            }, []);  // Dependency array ensures fetch is triggered when 'id' changes
+  const fetchData = async () => {
+
+    try {
+      const response = await axios.get(`${baseURL}boq_details/260.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+      console.log("responce:", response.data)
+      // Assuming the API returns data based on the id (you may need to adjust based on your response)
+      setBoqDetails(response.data);
+      //   setStatus(response.data.status || '');
+      //   setInitialStatus(response.data.status || '');
+      setLoading(false);
+      // setBoqDetailsSub(response.data.uom)
+      if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
+        setBoqDetailsSub(false); // Set to true if uom is not null
+      }
+
+    } catch (error) {
+      setError('An error occurred while fetching the data');
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch the data when the component mounts or when 'id' changes
+
+    // console.log("id in useeffect:", id)
+    fetchData();
+  }, []);  // Dependency array ensures fetch is triggered when 'id' changes
 
 
-            // Group categories by level
-   const groupedCategories = boqDetails?.categories?.reduce((acc, category) => {
+  // Group categories by level
+  const groupedCategories = boqDetails?.categories?.reduce((acc, category) => {
     if (!acc[category.level]) {
-        acc[category.level] = [];
+      acc[category.level] = [];
     }
     acc[category.level].push(category);
     return acc;
-}, {});
+  }, {});
 
-const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ details visibility
-    const [openBoqDetailId1, setOpenBoqDetailId1] = useState(null); // Track BOQ details visibility
-    const [openBoqDetailId2, setOpenBoqDetailId2] = useState(null); // Track BOQ details visibility
-    const [openBoqDetailId3, setOpenBoqDetailId3] = useState(null); // Track BOQ details visibility
-
-
-    // Toggle project visibility
-    const toggleProject = (id) => {
-        if (openProjectId === id) {
-            setOpenProjectId(null);  // Close the project if it's already open
-        } else {
-            setOpenProjectId(id);  // Open the selected project
-        }
-    };
-
-    // Toggle sub-project visibility
-    const toggleSubProject = (id) => {
-        if (openSubProjectId === id) {
-            setOpenSubProjectId(null);  // Close the sub-project if it's already open
-        } else {
-            setOpenSubProjectId(id);  // Open the selected sub-project
-        }
-    };
-
-    // Toggle category visibility
-    const toggleCategory = (id) => {
-        if (openCategoryId === id) {
-            setOpenCategoryId(null);  // Close the category if it's already open
-        } else {
-            setOpenCategoryId(id);  // Open the selected category
-        }
-    };
-
-    // Toggle sub-category 2 visibility
-    const toggleSubCategory2 = (id) => {
+  const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ details visibility
+  const [openBoqDetailId1, setOpenBoqDetailId1] = useState(null); // Track BOQ details visibility
+  const [openBoqDetailId2, setOpenBoqDetailId2] = useState(null); // Track BOQ details visibility
+  const [openBoqDetailId3, setOpenBoqDetailId3] = useState(null); // Track BOQ details visibility
 
 
-        if (openSubCategory2Id === id) {
-            setOpenSubCategory2Id(null);  // Close the category if it's already open
-        } else {
-            setOpenSubCategory2Id(id);  // Open the selected category
-        }
-    };
+  // Toggle project visibility
+  const toggleProject = (id) => {
+    if (openProjectId === id) {
+      setOpenProjectId(null);  // Close the project if it's already open
+    } else {
+      setOpenProjectId(id);  // Open the selected project
+    }
+  };
+
+  // Toggle sub-project visibility
+  const toggleSubProject = (id) => {
+    if (openSubProjectId === id) {
+      setOpenSubProjectId(null);  // Close the sub-project if it's already open
+    } else {
+      setOpenSubProjectId(id);  // Open the selected sub-project
+    }
+  };
+
+  // Toggle category visibility
+  const toggleCategory = (id) => {
+    if (openCategoryId === id) {
+      setOpenCategoryId(null);  // Close the category if it's already open
+    } else {
+      setOpenCategoryId(id);  // Open the selected category
+    }
+  };
+
+  // Toggle sub-category 2 visibility
+  const toggleSubCategory2 = (id) => {
 
 
-    // Toggle BOQ details visibility
-    const toggleBoqDetail = (id) => {
+    if (openSubCategory2Id === id) {
+      setOpenSubCategory2Id(null);  // Close the category if it's already open
+    } else {
+      setOpenSubCategory2Id(id);  // Open the selected category
+    }
+  };
 
-        // if (openBoqDetailId === id) {
-        //   setOpenBoqDetailId(null);  // Close the category if it's already open
-        // } else {
-        //   setOpenBoqDetailId(id);  // Open the selected category
-        // }
 
-        setOpenBoqDetailId(prevId => prevId === id ? null : id);
-    };
+  // Toggle BOQ details visibility
+  const toggleBoqDetail = (id) => {
 
-    // Toggle BOQ details 1 visibility
-    const toggleBoqDetail1 = (id) => {
+    // if (openBoqDetailId === id) {
+    //   setOpenBoqDetailId(null);  // Close the category if it's already open
+    // } else {
+    //   setOpenBoqDetailId(id);  // Open the selected category
+    // }
 
-        if (openBoqDetailId1 === id) {
-            setOpenBoqDetailId1(null);  // Close the category if it's already open
-        } else {
-            setOpenBoqDetailId1(id);  // Open the selected category
-        }
-    };
+    setOpenBoqDetailId(prevId => prevId === id ? null : id);
+  };
 
-    // Toggle BOQ details 2 visibility
-    const toggleBoqDetail2 = (id) => {
+  // Toggle BOQ details 1 visibility
+  const toggleBoqDetail1 = (id) => {
 
-        if (openBoqDetailId2 === id) {
-            setOpenBoqDetailId2(null);  // Close the category if it's already open
-        } else {
-            setOpenBoqDetailId2(id);  // Open the selected category
-        }
-    };
+    if (openBoqDetailId1 === id) {
+      setOpenBoqDetailId1(null);  // Close the category if it's already open
+    } else {
+      setOpenBoqDetailId1(id);  // Open the selected category
+    }
+  };
 
-    // Toggle BOQ details 3 visibility
-    const toggleBoqDetail3 = (id) => {
+  // Toggle BOQ details 2 visibility
+  const toggleBoqDetail2 = (id) => {
 
-        if (openBoqDetailId3 === id) {
-            setOpenBoqDetailId3(null);  // Close the category if it's already open
-        } else {
-            setOpenBoqDetailId3(id);  // Open the selected category
-        }
-    };
+    if (openBoqDetailId2 === id) {
+      setOpenBoqDetailId2(null);  // Close the category if it's already open
+    } else {
+      setOpenBoqDetailId2(id);  // Open the selected category
+    }
+  };
 
-    // Toggle sub-category 3 visibility
-    const toggleSubCategory3 = (id) => {
-        setOpenSubCategory3Id(openSubCategory3Id === id ? null : id);
-    };
+  // Toggle BOQ details 3 visibility
+  const toggleBoqDetail3 = (id) => {
 
-    // Toggle sub-category 3 visibility
-    const toggleSubCategory4 = (id) => {
-        setOpenSubCategory4Id(openSubCategory4Id === id ? null : id);
-    };
+    if (openBoqDetailId3 === id) {
+      setOpenBoqDetailId3(null);  // Close the category if it's already open
+    } else {
+      setOpenBoqDetailId3(id);  // Open the selected category
+    }
+  };
 
-    // Toggle sub-category 3 visibility
-    const toggleSubCategory5 = (id) => {
-        setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
-    };
-    
-            //   useEffect(() => {
-            //         if (boqDetails?.materials?.length > 0) {
-            //             setMaterials(boqDetails.materials); // Store materials from boqDetails
-            
-            //             setSelectedSubTypes(boqDetails.materials.map(m => ({
-            //                 value: m.pms_inventory_sub_type_id,
-            //                 label: m.material_sub_type
-            //             })));
-            
-            //             setSelectedGenericSpecifications(boqDetails.materials.map(m => ({
-            //                 value: m.pms_generic_info_id,
-            //                 label: m.generic_info
-            //             })));
-            
-            //             setSelectedColors(boqDetails.materials.map(m => ({
-            //                 value: m.pms_colour_id,
-            //                 label: m.color
-            //             })));
-            
-            //             setSelectedInventoryBrands(boqDetails.materials.map(m => ({
-            //                 value: m.pms_inventory_brand_id,
-            //                 label: m.brand
-            //             })));
-            
-            //             setSelectedUnit2(boqDetails.materials.map(m => ({
-            //                 value: m.unit_of_measure_id,
-            //                 label: m.uom
-            //             })));
-            //             // ✅ Correct way to set coefficient factors
-            //             setCoefficientFactors(boqDetails.materials.map(m => m.co_efficient_factor));
-            //             setEstimatedQuantities(boqDetails.materials.map(m => m.estimated_quantity));
-            //             setWastages(boqDetails.materials.map(m => m.wastage));
-            //             setTotalEstimatedQtyWastages(boqDetails.materials.map(m => m.estimated_quantity_wastage));
-            //         }
-            
-            //         if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
-            //             const preselectedUnit = unitOfMeasures.find(
-            //                 (unit) => unit.value === boqDetails.unit_of_measure_id
-            //             );
-            //             setSelectedUnit(preselectedUnit || null);
-            //         }
-            //         setBoqQuantity(boqDetails?.quantity)
-            
-            //         // ✅ Handling assets in the same way
-            //         if (boqDetails?.assets?.length > 0) {
-            //             setAssets(boqDetails.assets); // Store assets from boqDetails
-            
-            //             setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
-            //                 value: a.pms_inventory_sub_type_id,
-            //                 label: a.asset_sub_type
-            //             })));
-            
-            //             setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
-            //                 value: a.pms_generic_info_id,
-            //                 label: a.generic_info
-            //             })));
-            
-            //             setSelectedAssetColors(boqDetails.assets.map(a => ({
-            //                 value: a.pms_colour_id,
-            //                 label: a.color
-            //             })));
-            
-            //             setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
-            //                 value: a.pms_inventory_brand_id,
-            //                 label: a.brand
-            //             })));
-            
-            //             setSelectedUnit3(boqDetails.assets.map(a => ({
-            //                 value: a.unit_of_measure_id,
-            //                 label: a.uom
-            //             })));
-            
-            //             // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
-            //             setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
-            //             setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
-            //             setAssetWastages(boqDetails.assets.map(a => a.wastage));
-            //             setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
-            //         }
-            
-            
-            //         // sub item
-            
-            //         if (boqDetails?.boq_sub_items?.length > 0) {
-            //             const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem => subItem.materials || []);
-            
-            //             if (subItemMaterials.length > 0) {
-            //                 setMaterials(subItemMaterials);
-            
-            //                 setSelectedSubTypes(subItemMaterials.map(m => ({
-            //                     value: m.pms_inventory_sub_type_id,
-            //                     label: m.material_sub_type
-            //                 })));
-            
-            //                 setSelectedGenericSpecifications(subItemMaterials.map(m => ({
-            //                     value: m.pms_generic_info_id,
-            //                     label: m.generic_info
-            //                 })));
-            
-            //                 setSelectedColors(subItemMaterials.map(m => ({
-            //                     value: m.pms_colour_id,
-            //                     label: m.color
-            //                 })));
-            
-            //                 setSelectedInventoryBrands(subItemMaterials.map(m => ({
-            //                     value: m.pms_inventory_brand_id,
-            //                     label: m.brand
-            //                 })));
-            
-            //                 setSelectedUnit2(subItemMaterials.map(m => ({
-            //                     value: m.unit_of_measure_id,
-            //                     label: m.uom
-            //                 })));
-            
-            //                 setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
-            //                 setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
-            //                 setWastages(subItemMaterials.map(m => m.wastage));
-            //                 setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
-            //             }
-            //         }
-            
-            
-            
-            //         // if (boqDetails?.boq_sub_items?.length > 0) {
-            //         //     const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem =>
-            //         //         (subItem.materials || []).map(material => ({
-            //         //             ...material,
-            //         //             boqSubItemId: subItem.id // Attach subItem.id to each material
-            //         //         }))
-            //         //     );
-                    
-            //         //     if (subItemMaterials.length > 0) {
-            //         //         setMaterials(subItemMaterials);
-                    
-            //         //         setSelectedSubTypes(subItemMaterials.map(m => ({
-            //         //             value: m.pms_inventory_sub_type_id,
-            //         //             label: m.material_sub_type
-            //         //         })));
-                    
-            //         //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
-            //         //             value: m.pms_generic_info_id,
-            //         //             label: m.generic_info
-            //         //         })));
-                    
-            //         //         setSelectedColors(subItemMaterials.map(m => ({
-            //         //             value: m.pms_colour_id,
-            //         //             label: m.color
-            //         //         })));
-                    
-            //         //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
-            //         //             value: m.pms_inventory_brand_id,
-            //         //             label: m.brand
-            //         //         })));
-                    
-            //         //         setSelectedUnit2(subItemMaterials.map(m => ({
-            //         //             value: m.unit_of_measure_id,
-            //         //             label: m.uom
-            //         //         })));
-                    
-            //         //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
-            //         //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
-            //         //         setWastages(subItemMaterials.map(m => m.wastage));
-            //         //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
-            //         //     }
-            //         // }
-                    
-            
-            //     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
-            
-            //     console.log("boq sub materials:",materials)
-            
+  // Toggle sub-category 3 visibility
+  const toggleSubCategory3 = (id) => {
+    setOpenSubCategory3Id(openSubCategory3Id === id ? null : id);
+  };
 
-//boq edit end ....
+  // Toggle sub-category 3 visibility
+  const toggleSubCategory4 = (id) => {
+    setOpenSubCategory4Id(openSubCategory4Id === id ? null : id);
+  };
+
+  // Toggle sub-category 3 visibility
+  const toggleSubCategory5 = (id) => {
+    setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
+  };
+
+  //   useEffect(() => {
+  //         if (boqDetails?.materials?.length > 0) {
+  //             setMaterials(boqDetails.materials); // Store materials from boqDetails
+
+  //             setSelectedSubTypes(boqDetails.materials.map(m => ({
+  //                 value: m.pms_inventory_sub_type_id,
+  //                 label: m.material_sub_type
+  //             })));
+
+  //             setSelectedGenericSpecifications(boqDetails.materials.map(m => ({
+  //                 value: m.pms_generic_info_id,
+  //                 label: m.generic_info
+  //             })));
+
+  //             setSelectedColors(boqDetails.materials.map(m => ({
+  //                 value: m.pms_colour_id,
+  //                 label: m.color
+  //             })));
+
+  //             setSelectedInventoryBrands(boqDetails.materials.map(m => ({
+  //                 value: m.pms_inventory_brand_id,
+  //                 label: m.brand
+  //             })));
+
+  //             setSelectedUnit2(boqDetails.materials.map(m => ({
+  //                 value: m.unit_of_measure_id,
+  //                 label: m.uom
+  //             })));
+  //             // ✅ Correct way to set coefficient factors
+  //             setCoefficientFactors(boqDetails.materials.map(m => m.co_efficient_factor));
+  //             setEstimatedQuantities(boqDetails.materials.map(m => m.estimated_quantity));
+  //             setWastages(boqDetails.materials.map(m => m.wastage));
+  //             setTotalEstimatedQtyWastages(boqDetails.materials.map(m => m.estimated_quantity_wastage));
+  //         }
+
+  //         if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
+  //             const preselectedUnit = unitOfMeasures.find(
+  //                 (unit) => unit.value === boqDetails.unit_of_measure_id
+  //             );
+  //             setSelectedUnit(preselectedUnit || null);
+  //         }
+  //         setBoqQuantity(boqDetails?.quantity)
+
+  //         // ✅ Handling assets in the same way
+  //         if (boqDetails?.assets?.length > 0) {
+  //             setAssets(boqDetails.assets); // Store assets from boqDetails
+
+  //             setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
+  //                 value: a.pms_inventory_sub_type_id,
+  //                 label: a.asset_sub_type
+  //             })));
+
+  //             setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
+  //                 value: a.pms_generic_info_id,
+  //                 label: a.generic_info
+  //             })));
+
+  //             setSelectedAssetColors(boqDetails.assets.map(a => ({
+  //                 value: a.pms_colour_id,
+  //                 label: a.color
+  //             })));
+
+  //             setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
+  //                 value: a.pms_inventory_brand_id,
+  //                 label: a.brand
+  //             })));
+
+  //             setSelectedUnit3(boqDetails.assets.map(a => ({
+  //                 value: a.unit_of_measure_id,
+  //                 label: a.uom
+  //             })));
+
+  //             // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
+  //             setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
+  //             setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
+  //             setAssetWastages(boqDetails.assets.map(a => a.wastage));
+  //             setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
+  //         }
+
+
+  //         // sub item
+
+  //         if (boqDetails?.boq_sub_items?.length > 0) {
+  //             const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem => subItem.materials || []);
+
+  //             if (subItemMaterials.length > 0) {
+  //                 setMaterials(subItemMaterials);
+
+  //                 setSelectedSubTypes(subItemMaterials.map(m => ({
+  //                     value: m.pms_inventory_sub_type_id,
+  //                     label: m.material_sub_type
+  //                 })));
+
+  //                 setSelectedGenericSpecifications(subItemMaterials.map(m => ({
+  //                     value: m.pms_generic_info_id,
+  //                     label: m.generic_info
+  //                 })));
+
+  //                 setSelectedColors(subItemMaterials.map(m => ({
+  //                     value: m.pms_colour_id,
+  //                     label: m.color
+  //                 })));
+
+  //                 setSelectedInventoryBrands(subItemMaterials.map(m => ({
+  //                     value: m.pms_inventory_brand_id,
+  //                     label: m.brand
+  //                 })));
+
+  //                 setSelectedUnit2(subItemMaterials.map(m => ({
+  //                     value: m.unit_of_measure_id,
+  //                     label: m.uom
+  //                 })));
+
+  //                 setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
+  //                 setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
+  //                 setWastages(subItemMaterials.map(m => m.wastage));
+  //                 setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
+  //             }
+  //         }
+
+
+
+  //         // if (boqDetails?.boq_sub_items?.length > 0) {
+  //         //     const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem =>
+  //         //         (subItem.materials || []).map(material => ({
+  //         //             ...material,
+  //         //             boqSubItemId: subItem.id // Attach subItem.id to each material
+  //         //         }))
+  //         //     );
+
+  //         //     if (subItemMaterials.length > 0) {
+  //         //         setMaterials(subItemMaterials);
+
+  //         //         setSelectedSubTypes(subItemMaterials.map(m => ({
+  //         //             value: m.pms_inventory_sub_type_id,
+  //         //             label: m.material_sub_type
+  //         //         })));
+
+  //         //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
+  //         //             value: m.pms_generic_info_id,
+  //         //             label: m.generic_info
+  //         //         })));
+
+  //         //         setSelectedColors(subItemMaterials.map(m => ({
+  //         //             value: m.pms_colour_id,
+  //         //             label: m.color
+  //         //         })));
+
+  //         //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
+  //         //             value: m.pms_inventory_brand_id,
+  //         //             label: m.brand
+  //         //         })));
+
+  //         //         setSelectedUnit2(subItemMaterials.map(m => ({
+  //         //             value: m.unit_of_measure_id,
+  //         //             label: m.uom
+  //         //         })));
+
+  //         //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
+  //         //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
+  //         //         setWastages(subItemMaterials.map(m => m.wastage));
+  //         //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
+  //         //     }
+  //         // }
+
+
+  //     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
+
+  //     console.log("boq sub materials:",materials)
+
+
+  //boq edit end ....
 
 
 
@@ -383,9 +383,33 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: "" }]);
   const [count, setcount] = useState([]);
   const [counter, setcounter] = useState(0);
-  // useEffect(() => {
-  //   console.log(count);
-  // }, [count])
+
+  useEffect(() => {
+    if (boqDetails?.boq_sub_items) {
+      setcounter(boqDetails.boq_sub_items.length);
+      
+
+      const existingBoqItems = boqDetails?.boq_sub_items?.map((item) => ({
+        id: item.id || newId, // Keep existing ID or assign new
+        name: item.name || "",
+        description: item.description || "",
+        notes: item.notes || "",
+        remarks: item.remarks || "",
+        cost_quantity: item.cost_quantity || 0,
+        uom_id: item.uom_id || null,
+        materials: item.materials || [],
+        assets: item.assets || [],
+      })) || [];
+      setBoqSubItems((prevItems) => [...existingBoqItems]);
+
+
+
+
+
+
+    }
+  }, [boqDetails]); // Runs when `boqDetails` updates
+  
 
   // bootstrap modal
   const toggleRow = (rowIndex) => {
@@ -500,14 +524,14 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
     setMaterials((prev) => {
       // Get the new materials after deletion
       const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
-  
+
       // Function to update selections after deletion
       const updateSelection = (selectionArray = []) =>
         selectedMaterials.reduce((acc, index) => {
           acc.splice(index, 1); // Remove the selected index
           return acc;
         }, [...selectionArray]);
-  
+
       // Update all related state variables
       setSelectedSubTypes(updateSelection(selectedSubTypes));
       setGenericSpecifications(updateSelection(genericSpecifications));
@@ -519,16 +543,16 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
       setEstimatedQuantities(updateSelection(estimatedQuantities));
       setWastages(updateSelection(wastages));
       setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-  
+
       // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
       // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
-  
+
       return newMaterials;
     });
-  
+
     setSelectedMaterials([]); // Clear selected materials
   };
-  
+
 
 
 
@@ -642,14 +666,14 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
     setAssets((prev) => {
       // Get the new materials after deletion
       const newMaterials = prev.filter((_, index) => !selectedAssets.includes(index));
-  
+
       // Function to update selections after deletion
       const updateSelection = (selectionArray = []) =>
         selectedAssets.reduce((acc, index) => {
           acc.splice(index, 1); // Remove the selected index
           return acc;
         }, [...selectionArray]);
-  
+
       // Update all related state variables
       setSelectedSubTypesAssets(updateSelection(selectedSubTypesAssets));
       setAssetGenericSpecifications(updateSelection(assetGenericSpecifications));
@@ -661,10 +685,10 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
       setAssetEstimatedQuantities(updateSelection(assetEstimatedQuantities));
       setAssetWastages(updateSelection(assetWastages));
       setAssetTotalEstimatedQtyWastages(updateSelection(assetTotalEstimatedQtyWastages));
-  
+
       // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
       // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
-  
+
       return newMaterials;
     });
     setSelectedAssets([]); // Reset selection
@@ -1099,10 +1123,10 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
   // Fetch generic specifications for materials
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.pms_inventory_id ||material.id) {
+      if (material.pms_inventory_id || material.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -1207,10 +1231,10 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
 
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.pms_inventory_id ||material.id) {
+      if (material.pms_inventory_id || material.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -1283,7 +1307,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
   // Fetch inventory brands for materials
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.pms_inventory_id ||material.id) {
+      if (material.pms_inventory_id || material.id) {
         axios
           .get(
             `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -1532,7 +1556,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
   }));
 
 
-// console.log("pre mtL...", predefinedMaterials)
+  // console.log("pre mtL...", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -1698,37 +1722,42 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
     //  setSelectedUnit(updatedSelectedUnit);
   };
 
-  // console.log("sub item boq row :", boqSubItems)
-
+ 
+  
   const addRowToTable1 = () => {
-    const newId = count.length + 1; // Generate a unique ID for the new row
-
-    // Update the count
-    const newCountRow = { id: newId, value: "" };
-    setcount((prevCount) => [...prevCount, newCountRow]);
-
-    // Create independent material copies
-
-
-    // Create new BOQ sub-item row
-    const newBoqSubItem = {
-      id: newId,
-      name: "",
-      description: "",
-      notes: "",
-      remarks: "",
-      cost_quantity: 0,
-      uom_id: null,
-      materials: [], // Assign fresh copies
-      assets: [] // Assign fresh copies
-    };
-
-    // Update boqSubItems with the new row
-    setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-
-    // Increment the counter
-    setcounter(counter + 1);
+    setcounter((prevCounter) => {
+      const newId = prevCounter + 1; // Ensures unique IDs
+      console.log("New ID:", newId);
+  
+      // Update count state separately
+      setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
+  
+      // Create a new BOQ sub-item row
+      const newBoqSubItem = {
+        id: newId,
+        name: "",
+        description: "",
+        notes: "",
+        remarks: "",
+        cost_quantity: 0,
+        uom_id: null,
+        materials: [], // Fresh copy
+        assets: [] // Fresh copy
+      };
+  
+      // Merge existing items and new item
+      setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
+  
+      return newId; // Ensures correct counter update
+    });
   };
+  
+  
+  
+
+
+
+
 
 
 
@@ -1989,7 +2018,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
     const invalidGenericSpecification = materials.some((material, index) => {
       // Get the selected generic specification for this material
       const genericSpecification = selectedGenericSpecifications[index];
-    
+
       // Check if the generic specification is invalid (empty or undefined)
       return !genericSpecification || genericSpecification === "";
     });
@@ -2005,7 +2034,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
       );
       return; // Exit function if validation fails
     }
-    
+
 
     // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
     //   toast.error("Please resolve duplicate materials or assets before submitting.");
@@ -2020,7 +2049,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
     //  if (!selectedUnit) toast.error("UOM is required.");
 
     // if (!newErrors.project && !newErrors.itemName && !newErrors.boqQuantity && !newErrors.unit) {
-    
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
@@ -2179,22 +2208,22 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
         return;
       }
 
-      
+
 
       // const invalidCoefficient = boqSubItem?.materials?.some((material, index) => {
       //   // Get the coefficient factor for this material
       //   const coefficientFactor = coefficientFactors[index];
-  
+
       //   // Check if the coefficient factor is invalid (NaN or empty)
       //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
       // });
-  
+
       // // Validate coefficient factors for assets
       // const invalidAssetCoefficient =boqSubItem?.assets?.some((asset, index) => {
       //   const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
       //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
       // });
-  
+
       // // If any coefficient factor is invalid, show a toast and stop
       // if (invalidCoefficient || invalidAssetCoefficient) {
       //   toast.error(
@@ -2211,7 +2240,7 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
 
       //   // boqSubItem.materials.forEach((material) => {
       //   //   const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-      
+
       //   //   if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
       //   //     toast.error(`Coefficient factor is required for material in BoQ Sub Item ${i + 1}.`, {
       //   //       // position: "top-right",
@@ -2227,91 +2256,91 @@ const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ detai
 
       //   boqSubItem.materials.forEach((material) => {
       //     const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-      
+
       //     if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
       //       hasErrors = true; // Mark that there's an error
       //     }
       //   });
-      
+
       //   if (hasErrors) {
       //     toast.error(`Coefficient factor is required for all materials in BoQ Sub Item ${i + 1}.`);
       //   }
-        
+
       // })
 
 
       let hasErrors = false; // Track global errors
 
-boqSubItems.forEach((boqSubItem, i) => {
-  console.log("boq sub mt:", boqSubItem.materials);
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
 
-  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-  boqSubItem.materials.forEach((material) => {
-    const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
+        boqSubItem.materials.forEach((material) => {
+          const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
 
-    if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
-      subItemHasErrors = true; // Mark that there's an error for this sub-item
-    }
-  });
+          if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
 
-  if (subItemHasErrors) {
-    hasErrors = true; // Mark that there are global errors
-    toast.error(`
+        if (subItemHasErrors) {
+          hasErrors = true; // Mark that there are global errors
+          toast.error(`
       Co-efficient factor cannot be empty,zero or invalid for any materials in BoQ Sub Item ${i + 1}.`);
-  }
-});
+        }
+      });
 
-// **Prevent form submission if any sub-item has errors**
-if (hasErrors) return;
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors) return;
 
 
 
-let hasErrors2 = false; // Track global errors
+      let hasErrors2 = false; // Track global errors
 
-boqSubItems.forEach((boqSubItem, i) => {
-  console.log("boq sub mt:", boqSubItem.materials);
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
 
-  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-  boqSubItem.materials.forEach((material) => {
-    const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
+        boqSubItem.materials.forEach((material) => {
+          const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
 
-    if (!genericInfoId) {
-      subItemHasErrors = true; // Mark that there's an error for this sub-item
-    }
-  });
+          if (!genericInfoId) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
 
-  if (subItemHasErrors) {
-    hasErrors2 = true; // Mark that there are global errors
-    toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
-  }
-});
+        if (subItemHasErrors) {
+          hasErrors2 = true; // Mark that there are global errors
+          toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
+        }
+      });
 
-// **Prevent form submission if any sub-item has errors**
-if (hasErrors2) return;
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors2) return;
 
 
       // // if (boqSubItem.materials.length > 0) {
       //   boqSubItems.forEach((boqSubItem, i) => {
       //   console.log("boq sub mt:", boqSubItem.materials);
-      
+
       //   let hasErrors = false; // Flag to track errors
-      
+
       //   boqSubItem.materials.forEach((material) => {
       //     const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
-      
+
       //     if (!genericInfoId) {
       //       hasErrors = true; // Mark that there's an error
       //     }
       //   });
-      
+
       //   if (hasErrors) {
       //     toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
       //   }
       // })
 
-      
+
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -2400,85 +2429,85 @@ if (hasErrors2) return;
   };
 
 
-   
+
 
   useEffect(() => {
     if (boqDetails?.materials?.length > 0) {
-        setMaterials(boqDetails.materials); // Store materials from boqDetails
+      setMaterials(boqDetails.materials); // Store materials from boqDetails
 
-        setSelectedSubTypes(boqDetails.materials.map(m => ({
-            value: m.pms_inventory_sub_type_id,
-            label: m.material_sub_type
-        })));
+      setSelectedSubTypes(boqDetails.materials.map(m => ({
+        value: m.pms_inventory_sub_type_id,
+        label: m.material_sub_type
+      })));
 
-        setSelectedGenericSpecifications(boqDetails.materials.map(m => ({
-            value: m.pms_generic_info_id,
-            label: m.generic_info
-        })));
+      setSelectedGenericSpecifications(boqDetails.materials.map(m => ({
+        value: m.pms_generic_info_id,
+        label: m.generic_info
+      })));
 
-        setSelectedColors(boqDetails.materials.map(m => ({
-            value: m.pms_colour_id,
-            label: m.color
-        })));
+      setSelectedColors(boqDetails.materials.map(m => ({
+        value: m.pms_colour_id,
+        label: m.color
+      })));
 
-        setSelectedInventoryBrands(boqDetails.materials.map(m => ({
-            value: m.pms_inventory_brand_id,
-            label: m.brand
-        })));
+      setSelectedInventoryBrands(boqDetails.materials.map(m => ({
+        value: m.pms_inventory_brand_id,
+        label: m.brand
+      })));
 
-        setSelectedUnit2(boqDetails.materials.map(m => ({
-            value: m.unit_of_measure_id,
-            label: m.uom
-        })));
-        // ✅ Correct way to set coefficient factors
-        setCoefficientFactors(boqDetails.materials.map(m => m.co_efficient_factor));
-        setEstimatedQuantities(boqDetails.materials.map(m => m.estimated_quantity));
-        setWastages(boqDetails.materials.map(m => m.wastage));
-        setTotalEstimatedQtyWastages(boqDetails.materials.map(m => m.estimated_quantity_wastage));
+      setSelectedUnit2(boqDetails.materials.map(m => ({
+        value: m.unit_of_measure_id,
+        label: m.uom
+      })));
+      // ✅ Correct way to set coefficient factors
+      setCoefficientFactors(boqDetails.materials.map(m => m.co_efficient_factor));
+      setEstimatedQuantities(boqDetails.materials.map(m => m.estimated_quantity));
+      setWastages(boqDetails.materials.map(m => m.wastage));
+      setTotalEstimatedQtyWastages(boqDetails.materials.map(m => m.estimated_quantity_wastage));
     }
 
     if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
-        const preselectedUnit = unitOfMeasures.find(
-            (unit) => unit.value === boqDetails.unit_of_measure_id
-        );
-        setSelectedUnit(preselectedUnit || null);
+      const preselectedUnit = unitOfMeasures.find(
+        (unit) => unit.value === boqDetails.unit_of_measure_id
+      );
+      setSelectedUnit(preselectedUnit || null);
     }
     setBoqQuantity(boqDetails?.quantity)
 
     // ✅ Handling assets in the same way
     if (boqDetails?.assets?.length > 0) {
-        setAssets(boqDetails.assets); // Store assets from boqDetails
+      setAssets(boqDetails.assets); // Store assets from boqDetails
 
-        setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
-            value: a.pms_inventory_sub_type_id,
-            label: a.asset_sub_type
-        })));
+      setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
+        value: a.pms_inventory_sub_type_id,
+        label: a.asset_sub_type
+      })));
 
-        setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
-            value: a.pms_generic_info_id,
-            label: a.generic_info
-        })));
+      setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
+        value: a.pms_generic_info_id,
+        label: a.generic_info
+      })));
 
-        setSelectedAssetColors(boqDetails.assets.map(a => ({
-            value: a.pms_colour_id,
-            label: a.color
-        })));
+      setSelectedAssetColors(boqDetails.assets.map(a => ({
+        value: a.pms_colour_id,
+        label: a.color
+      })));
 
-        setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
-            value: a.pms_inventory_brand_id,
-            label: a.brand
-        })));
+      setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
+        value: a.pms_inventory_brand_id,
+        label: a.brand
+      })));
 
-        setSelectedUnit3(boqDetails.assets.map(a => ({
-            value: a.unit_of_measure_id,
-            label: a.uom
-        })));
+      setSelectedUnit3(boqDetails.assets.map(a => ({
+        value: a.unit_of_measure_id,
+        label: a.uom
+      })));
 
-        // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
-        setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
-        setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
-        setAssetWastages(boqDetails.assets.map(a => a.wastage));
-        setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
+      // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
+      setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
+      setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
+      setAssetWastages(boqDetails.assets.map(a => a.wastage));
+      setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
     }
 
 
@@ -2531,44 +2560,44 @@ if (hasErrors2) return;
     //             boqSubItemId: subItem.id // Attach subItem.id to each material
     //         }))
     //     );
-    
+
     //     if (subItemMaterials.length > 0) {
     //         setMaterials(subItemMaterials);
-    
+
     //         setSelectedSubTypes(subItemMaterials.map(m => ({
     //             value: m.pms_inventory_sub_type_id,
     //             label: m.material_sub_type
     //         })));
-    
+
     //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
     //             value: m.pms_generic_info_id,
     //             label: m.generic_info
     //         })));
-    
+
     //         setSelectedColors(subItemMaterials.map(m => ({
     //             value: m.pms_colour_id,
     //             label: m.color
     //         })));
-    
+
     //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
     //             value: m.pms_inventory_brand_id,
     //             label: m.brand
     //         })));
-    
+
     //         setSelectedUnit2(subItemMaterials.map(m => ({
     //             value: m.unit_of_measure_id,
     //             label: m.uom
     //         })));
-    
+
     //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
     //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
     //         setWastages(subItemMaterials.map(m => m.wastage));
     //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
     //     }
     // }
-    
 
-}, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
+
+  }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
   return (
     <>
       <div className="website-content">
@@ -2582,231 +2611,231 @@ if (hasErrors2) return;
             {/* Total Content Here */}
 
             <div className="card mt-5 pb-4">
-             
-               <CollapsibleCard title="BOQ Edit">
-                                          <div
-                                              className="card-body mt-0 pt-0"
-                                              style={{ display: "block" }}
-                                          >
-                                              <div className="row">
-                                                  <div className="col-md-3">
-                                                      <div className="form-group">
-                                                          <label>BOQ ID</label>
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              // placeholder='56914'
-                                                              disabled
-                                                              value={boqDetails?.id}
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3">
-                                                      <div className="form-group">
-                                                          <label>Project</label>
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              placeholder='56914'
-                                                              value={boqDetails?.project}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3">
-                                                      <div className="form-group">
-                                                          <label>Sub-Project</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              placeholder='56914'
-                                                              value={boqDetails?.sub_project}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3">
-                                                      <div className="form-group">
-                                                          <label>Wing</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              // placeholder='56914'
-                                                              value={boqDetails?.wing}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Main Category</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              // placeholder='56914'
-                                                              value={groupedCategories?.[1]?.[0]?.category_name || ''} // Safe access
-                                                            //   value={groupedCategories[1] && groupedCategories[1]?.length > 0 ? groupedCategories[1][0]?.category_name : ''}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Sub-Lvl 2</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              // placeholder='56914'
-                                                              value={groupedCategories?.[2]?.[0]?.category_name || ''} // Safe access
-                                                            //   value={groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Sub-Lvl 3</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              // placeholder='56914'
-                                                              value={groupedCategories?.[3]?.[0]?.category_name || ''} // Safe access
-                                                            //   value={groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Sub-Lvl 4</label>
-              
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              value={groupedCategories?.[4]?.[0]?.category_name || ''} // Safe access
-                                                            //   value={groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Sub-Lvl 5</label>
-              
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              value={groupedCategories?.[5]?.[0]?.category_name || ''} // Safe access
-                                                            //   value={groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
-                                                              disabled
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>BOQ Item Name</label>
-                                                          <input
-                                                              className="form-control"
-                                                              type="text"
-                                                              placeholder=""
-                                                              fdprocessedid="qv9ju9"
-                                                              value={boqDetails?.item_name}
-                                                              onChange={(e) =>
-                                                                  handleInputChange("itemName", e.target.value)
-                                                              }
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-6 mt-2">
-                                                      <div className="form-group">
-                                                          <label>BOQ Description</label>
-                                                          <textarea
-                                                              className="form-control"
-                                                              rows={2}
-                                                              placeholder="Enter ..."
-                                                              defaultValue={""}
-                                                              value={boqDetails?.description || ""}
-              
-                                                              onChange={(e) =>
-                                                                  handleInputChange("description", e.target.value)
-                                                              }
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>UOM</label>
-                                                          <SingleSelector
-                                                              options={unitOfMeasures} // Providing the options to the select component
-                                                              onChange={handleUnitChange} // Setting the handler when an option is selected
-                                                              value={selectedUnit} // Setting the selected value
-                                                              placeholder={`Select UOM`} // Dynamic placeholder
-                                                          //   isDisabled={showBOQSubItem}
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-3 mt-2">
-                                                      <div className="form-group">
-                                                          <label>BOQ Qty (Cost)</label>
-                                                          <input
-                                                              className="form-control"
-                                                              type="number"
-                                                              placeholder=""
-                                                              fdprocessedid="qv9ju9"
-                                                              value={boqDetails?.quantity}
-                                                              onChange={(e) =>
-                                                                  handleInputChange("boqQuantity", e.target.value)
-                                                              }
-                                                              onKeyDown={(e) => {
-                                                                  if (
-                                                                      e.key === "-" ||
-                                                                      e.key === "e" ||
-                                                                      e.key === "E"
-                                                                  ) {
-                                                                      e.preventDefault(); // Prevent entering "-" or "e" or "E"
-                                                                  }
-                                                              }}
-                                                              //   disabled={showBOQSubItem}
-                                                              min="0"
-                                                          />
-                                                      </div>
-                                                  </div>
-              
-                                                  <div className="col-md-6 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Notes</label>
-                                                          <textarea
-                                                              className="form-control"
-                                                              rows={2}
-                                                              placeholder="Enter ..."
-                                                              defaultValue={""}
-                                                              value={boqDetails?.note}
-                                                              onChange={(e) =>
-                                                                  handleInputChange("note", e.target.value)
-                                                              }
-                                                          />
-                                                      </div>
-                                                  </div>
-                                                  <div className="col-md-6 mt-2">
-                                                      <div className="form-group">
-                                                          <label>Remark</label>
-                                                          <textarea
-                                                              className="form-control"
-                                                              rows={2}
-                                                              // placeholder="Enter remark..."
-                                                              value={remark} // Controlled input
-                                                              onChange={(e) => handleInputChange("remark", e.target.value)}
-                                                          />
-                                                      </div>
-                                                  </div>
 
-                                                  <div className="row mt-2">
+              <CollapsibleCard title="BOQ Edit">
+                <div
+                  className="card-body mt-0 pt-0"
+                  style={{ display: "block" }}
+                >
+                  <div className="row">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>BOQ ID</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          // placeholder='56914'
+                          disabled
+                          value={boqDetails?.id}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder='56914'
+                          value={boqDetails?.project}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-Project</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder='56914'
+                          value={boqDetails?.sub_project}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Wing</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          // placeholder='56914'
+                          value={boqDetails?.wing}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>Main Category</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          // placeholder='56914'
+                          value={groupedCategories?.[1]?.[0]?.category_name || ''} // Safe access
+                          //   value={groupedCategories[1] && groupedCategories[1]?.length > 0 ? groupedCategories[1][0]?.category_name : ''}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>Sub-Lvl 2</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          // placeholder='56914'
+                          value={groupedCategories?.[2]?.[0]?.category_name || ''} // Safe access
+                          //   value={groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>Sub-Lvl 3</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          // placeholder='56914'
+                          value={groupedCategories?.[3]?.[0]?.category_name || ''} // Safe access
+                          //   value={groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>Sub-Lvl 4</label>
+
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={groupedCategories?.[4]?.[0]?.category_name || ''} // Safe access
+                          //   value={groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>Sub-Lvl 5</label>
+
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={groupedCategories?.[5]?.[0]?.category_name || ''} // Safe access
+                          //   value={groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>BOQ Item Name</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder=""
+                          fdprocessedid="qv9ju9"
+                          value={boqDetails?.item_name}
+                          onChange={(e) =>
+                            handleInputChange("itemName", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6 mt-2">
+                      <div className="form-group">
+                        <label>BOQ Description</label>
+                        <textarea
+                          className="form-control"
+                          rows={2}
+                          placeholder="Enter ..."
+                          defaultValue={""}
+                          value={boqDetails?.description || ""}
+
+                          onChange={(e) =>
+                            handleInputChange("description", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>UOM</label>
+                        <SingleSelector
+                          options={unitOfMeasures} // Providing the options to the select component
+                          onChange={handleUnitChange} // Setting the handler when an option is selected
+                          value={selectedUnit} // Setting the selected value
+                          placeholder={`Select UOM`} // Dynamic placeholder
+                        //   isDisabled={showBOQSubItem}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>BOQ Qty (Cost)</label>
+                        <input
+                          className="form-control"
+                          type="number"
+                          placeholder=""
+                          fdprocessedid="qv9ju9"
+                          value={boqDetails?.quantity}
+                          onChange={(e) =>
+                            handleInputChange("boqQuantity", e.target.value)
+                          }
+                          onKeyDown={(e) => {
+                            if (
+                              e.key === "-" ||
+                              e.key === "e" ||
+                              e.key === "E"
+                            ) {
+                              e.preventDefault(); // Prevent entering "-" or "e" or "E"
+                            }
+                          }}
+                          //   disabled={showBOQSubItem}
+                          min="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-md-6 mt-2">
+                      <div className="form-group">
+                        <label>Notes</label>
+                        <textarea
+                          className="form-control"
+                          rows={2}
+                          placeholder="Enter ..."
+                          defaultValue={""}
+                          value={boqDetails?.note}
+                          onChange={(e) =>
+                            handleInputChange("note", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6 mt-2">
+                      <div className="form-group">
+                        <label>Remark</label>
+                        <textarea
+                          className="form-control"
+                          rows={2}
+                          // placeholder="Enter remark..."
+                          value={remark} // Controlled input
+                          onChange={(e) => handleInputChange("remark", e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="row mt-2">
                       {/* Checkboxes */}
                       <div className="col-md-6 d-flex align-items-center">
                         <div className="form-check me-3">
@@ -2837,14 +2866,14 @@ if (hasErrors2) return;
                         </div>
                       </div>
                     </div>
-              
-                                              </div>
-              
-              
-                                          </div>
-              
-                                      </CollapsibleCard>
-              
+
+                  </div>
+
+
+                </div>
+
+              </CollapsibleCard>
+
 
               {showMaterialLabour && (
                 <>
@@ -2857,7 +2886,7 @@ if (hasErrors2) return;
 
                           <h1>predefinedMaterialsData</h1>*/}
 
-                            <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre> 
+                            <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre>
 
                             {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
 
@@ -2990,9 +3019,9 @@ if (hasErrors2) return;
                                           onChange={() => handleSelectRow(index)} // Pass index to function
                                         />
                                       </td>
-                                    
+
                                       <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
-                                      <td style={{ width: "300px" }}>{material.material_name ||material.name}</td>
+                                      <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
                                       <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={inventorySubTypes[index] || []}
@@ -3460,7 +3489,7 @@ if (hasErrors2) return;
                         <div className="mt-3">
                           {/* <h1>boqSubItems</h1> */}
 
-                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> 
+                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
 
                           <div className=" my-4">
                             <div style={{ overflowX: "auto", maxWidth: "100%" }}>
@@ -3493,358 +3522,358 @@ if (hasErrors2) return;
                                 </thead>
                                 <tbody>
 
-                                {boqDetails.boq_sub_items && (
-                                                    boqDetails.boq_sub_items.map((boqDetail2, index) => (
-                                                        <React.Fragment key={boqDetail2.id}>
-                                                                                                                    <tr>
-                                                                                                                        <td className="text-start">{index + 1}</td>
-                                                        
-                                                        
-                                                                                                                        <td className="text-start">
-                                                                                                                            <button
-                                                                                                                                className="btn btn-link p-0"
-                                                                                                                                onClick={() => toggleBoqDetail(boqDetail2.id)}
-                                                        
-                                                                                                                            >
-                                                                                                                                {openBoqDetailId === boqDetail2.id ? (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                                                                        {/* Minus Icon */}
-                                                                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                                                                    </svg>
-                                                                                                                                ) : (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                                                                        {/* Plus Icon */}
-                                                                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                                                                    </svg>
-                                                                                                                                )}
-                                                                                                                            </button>
-                                                        
-                                                                                                                        </td>
-                                                        
-                                                                                                                        <td className="text-start">
-                                                        
-                                                                                                                            {boqDetail2.name}
-                                                                                                                        </td>
-                                                                                                                        <td className="text-start">{boqDetail2.description}</td>
-                                                                                                                        <td className="text-start">{boqDetail2.notes}</td>
-                                                                                                                        <td className="text-start">{boqDetail2.remarks}</td>
-                                                                                                                        <td className="text-start">{boqDetail2.uom}</td>
-                                                                                                                        <td className="text-start">
-                                                                                                                            {/* {boqDetail2.cost_quantity} */}
-                                                                                                                            <input
-                                                                                                        className="form-control"
-                                                                                                        type="text"
-                                                                                                        placeholder=""
-                                                                                                        fdprocessedid="qv9ju9"
-                                                                                                        value={boqDetail2.cost_quantity}
-                                                                                                        onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
-                                                                                                        // onChange={(e) =>
-                                                                                                        //     handleInputChange("itemName", e.target.value)
-                                                                                                        // }
-                                                                                                    />
-                                                                                                                        </td>
-                                                                                                                        {/* <td></td> */}
-                                                                                                                        {/* <td></td> */}
-                                                                                                                    </tr>
-                                                        
-                                                                                                                    {/* Render Materials Table for BOQ Detail in Sub-Category  */}
-                                                                                                                    {openBoqDetailId === boqDetail2.id && (boqDetail2?.materials || boqDetail2?.boq_sub_items?.materials) && (
-                                                                                                                        <React.Fragment>
-                                                                                                                            <tr>
-                                                                                                                                <td colSpan={13}>
-                                                                                                                                    <div>
-                                                                                                                                        <CollapsibleCard title="Materials">
-                                                                                                                                            <div className="card-body mt-0 pt-0">
-                                                                                                                                                <div className="tbl-container mx-3 mt-1" >
-                                                                                                                                                    <table>
-                                                                                                                                                        <thead>
-                                                                                                                                                            <tr>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                                                                                                                                                                <input
-                                                                                                                                type="checkbox"
-                                                                                                                                onChange={(e) => {
-                                                                                                                                    if (e.target.checked) {
-                                                                                                                                        setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
-                                                                                                                                    } else {
-                                                                                                                                        setSelectedMaterials([]); // Deselect all
-                                                                                                                                    }
-                                                                                                                                }}
-                                                                                                                                checked={selectedMaterials.length === materials.length && materials.length > 0}
-                                                                                                                            />
-                                                                                                                            <svg
-                                                                                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                width={14}
-                                                                                                                                height={14}
-                                                                                                                                fill="currentColor"
-                                                                                                                                className="bi bi-trash3-fill ms-2"
-                                                                                                                                viewBox="0 0 16 16"
-                                                                                                                                onClick={handleDeleteAll} // Delete selected rows on click
-                                                                                                                            >
-                                                                                                                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                                                                                                            </svg>
-                                                                                                                                                                </th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
-                                                                                                                                                                {/* <th rowSpan={2}>Cost QTY</th> */}
-                                                                                                                                                                <th colSpan={3} style={{ width: "200px", whiteSpace: "nowrap" }}>Cost</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Wastage</th>
-                                                                                                                                                                <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Total Estimated Qty Wastage</th>
-                                                                                                                                                            </tr>
-                                                                                                                                                            <tr>
-                                                                                                                                                                <th>Co-Efficient Factor</th>
-                                                                                                                                                                <th colSpan={2}>Estimated Qty</th>
-                                                                                                                                                            </tr>
-                                                                                                                                                        </thead>
-                                                                                                                                                        <tbody>
-                                                        
-                                                        
-                                                        
-                                                                                                                                                            {materials.length > 0 ? (
-                                                                                                                                                                materials.map((material, index) => (
-                                                                                                                                                                    <tr key={`${material.id}-${index}`}>
-                                                                                                                                                                        <td style={{ width: "100px" }}>
-                                                                                                                                                                            <input
-                                                                                                                                                                                className="ms-5"
-                                                                                                                                                                                type="checkbox"
-                                                                                                                                                                                checked={selectedMaterials.includes(index)} // Use index instead of material.id
-                                                                                                                                                                                onChange={() => handleSelectRow(index)} // Pass index to function
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <SingleSelector
-                                                                                                                                                                                options={inventorySubTypes[index] || []}
-                                                                                                                                                                                onChange={(selectedOption) =>
-                                                                                                                                                                                    handleSubTypeChange(index, selectedOption)
-                                                                                                                                                                                }
-                                                                                                                                                                                value={selectedSubTypes[index]}
-                                                                                                                                                                                placeholder={`Select Sub-Type`}
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <SingleSelector
-                                                                                                                                                                                options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
-                                                                                                                                                                                onChange={(selectedOption) =>
-                                                                                                                                                                                    handleGenericSpecificationChange(index, selectedOption)
-                                                                                                                                                                                }
-                                                                                                                                                                                value={selectedGenericSpecifications[index]}
-                                                                                                                                                                                placeholder={`Select Specification`}
-                                                                                                                                                                            />
-                                                                                                                                                                            {/* {localMaterialErrors[index]?.generic_info && (
+                                  {boqDetails.boq_sub_items && (
+                                    boqDetails.boq_sub_items.map((boqDetail2, index) => (
+                                      <React.Fragment key={boqDetail2.id}>
+                                        <tr>
+                                          <td className="text-start">{index + 1}</td>
+
+
+                                          <td className="text-start">
+                                            <button
+                                              className="btn btn-link p-0"
+                                              onClick={() => toggleBoqDetail(boqDetail2.id)}
+
+                                            >
+                                              {openBoqDetailId === boqDetail2.id ? (
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="24"
+                                                  height="24"
+                                                  viewBox="0 0 24 24"
+                                                  fill=" #e0e0e0"
+                                                  stroke="black"
+                                                  strokeWidth="1"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                >
+                                                  {/* Square */}
+                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                  {/* Minus Icon */}
+                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                </svg>
+                                              ) : (
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="24"
+                                                  height="24"
+                                                  viewBox="0 0 24 24"
+                                                  fill=" #e0e0e0"
+                                                  stroke="black"
+                                                  strokeWidth="1"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                >
+                                                  {/* Square */}
+                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                  {/* Plus Icon */}
+                                                  <line x1="12" y1="8" x2="12" y2="16" />
+                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                </svg>
+                                              )}
+                                            </button>
+
+                                          </td>
+
+                                          <td className="text-start">
+
+                                            {boqDetail2.name}
+                                          </td>
+                                          <td className="text-start">{boqDetail2.description}</td>
+                                          <td className="text-start">{boqDetail2.notes}</td>
+                                          <td className="text-start">{boqDetail2.remarks}</td>
+                                          <td className="text-start">{boqDetail2.uom}</td>
+                                          <td className="text-start">
+                                            {/* {boqDetail2.cost_quantity} */}
+                                            <input
+                                              className="form-control"
+                                              type="text"
+                                              placeholder=""
+                                              fdprocessedid="qv9ju9"
+                                              value={boqDetail2.cost_quantity}
+                                              onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
+                                            // onChange={(e) =>
+                                            //     handleInputChange("itemName", e.target.value)
+                                            // }
+                                            />
+                                          </td>
+                                          {/* <td></td> */}
+                                          {/* <td></td> */}
+                                        </tr>
+
+                                        {/* Render Materials Table for BOQ Detail in Sub-Category  */}
+                                        {openBoqDetailId === boqDetail2.id && (boqDetail2?.materials || boqDetail2?.boq_sub_items?.materials) && (
+                                          <React.Fragment>
+                                            <tr>
+                                              <td colSpan={13}>
+                                                <div>
+                                                  <CollapsibleCard title="Materials">
+                                                    <div className="card-body mt-0 pt-0">
+                                                      <div className="tbl-container mx-3 mt-1" >
+                                                        <table>
+                                                          <thead>
+                                                            <tr>
+                                                              <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                                                <input
+                                                                  type="checkbox"
+                                                                  onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                                                    } else {
+                                                                      setSelectedMaterials([]); // Deselect all
+                                                                    }
+                                                                  }}
+                                                                  checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                                                />
+                                                                <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width={14}
+                                                                  height={14}
+                                                                  fill="currentColor"
+                                                                  className="bi bi-trash3-fill ms-2"
+                                                                  viewBox="0 0 16 16"
+                                                                  onClick={handleDeleteAll} // Delete selected rows on click
+                                                                >
+                                                                  <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                                </svg>
+                                                              </th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
+                                                              {/* <th rowSpan={2}>Cost QTY</th> */}
+                                                              <th colSpan={3} style={{ width: "200px", whiteSpace: "nowrap" }}>Cost</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Wastage</th>
+                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Total Estimated Qty Wastage</th>
+                                                            </tr>
+                                                            <tr>
+                                                              <th>Co-Efficient Factor</th>
+                                                              <th colSpan={2}>Estimated Qty</th>
+                                                            </tr>
+                                                          </thead>
+                                                          <tbody>
+
+
+
+                                                            {boqDetail2?.materials.length > 0 ? (
+                                                              boqDetail2?.materials.map((material, index) => (
+                                                                <tr key={`${material.id}-${index}`}>
+                                                                  <td style={{ width: "100px" }}>
+                                                                    <input
+                                                                      className="ms-5"
+                                                                      type="checkbox"
+                                                                      checked={selectedMaterials.includes(index)} // Use index instead of material.id
+                                                                      onChange={() => handleSelectRow(index)} // Pass index to function
+                                                                    />
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
+                                                                  <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <SingleSelector
+                                                                      options={inventorySubTypes[index] || []}
+                                                                      onChange={(selectedOption) =>
+                                                                        handleSubTypeChange(index, selectedOption)
+                                                                      }
+                                                                      value={selectedSubTypes[index]}
+                                                                      placeholder={`Select Sub-Type`}
+                                                                    />
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <SingleSelector
+                                                                      options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
+                                                                      onChange={(selectedOption) =>
+                                                                        handleGenericSpecificationChange(index, selectedOption)
+                                                                      }
+                                                                      value={selectedGenericSpecifications[index]}
+                                                                      placeholder={`Select Specification`}
+                                                                    />
+                                                                    {/* {localMaterialErrors[index]?.generic_info && (
                                                                                                                                                                               <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
                                                                                                                                                                             )} */}
-                                                                                                                                                                        </td>
-                                                        
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <SingleSelector
-                                                                                                                                                                                options={colors[index] || []}
-                                                                                                                                                                                onChange={(selectedOption) =>
-                                                                                                                                                                                    handleColorChange(index, selectedOption)
-                                                                                                                                                                                }
-                                                                                                                                                                                value={selectedColors[index]}
-                                                                                                                                                                                placeholder={`Select Colour`}
-                                                                                                                                                                            />
-                                                                                                                                                                            {/* {localMaterialErrors[index]?.colour && (
+                                                                  </td>
+
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <SingleSelector
+                                                                      options={colors[index] || []}
+                                                                      onChange={(selectedOption) =>
+                                                                        handleColorChange(index, selectedOption)
+                                                                      }
+                                                                      value={selectedColors[index]}
+                                                                      placeholder={`Select Colour`}
+                                                                    />
+                                                                    {/* {localMaterialErrors[index]?.colour && (
                                                                                                                                                                               <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
                                                                                                                                                                             )} */}
-                                                                                                                                                                        </td>
-                                                        
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <SingleSelector
-                                                                                                                                                                                options={inventoryBrands[index] || []}
-                                                                                                                                                                                onChange={(selectedOption) =>
-                                                                                                                                                                                    handleBrandChange(index, selectedOption)
-                                                                                                                                                                                }
-                                                                                                                                                                                value={selectedInventoryBrands[index]}
-                                                                                                                                                                                placeholder={`Select Brand`}
-                                                                                                                                                                            />
-                                                                                                                                                                            {/* {localMaterialErrors[index]?.brand && (
+                                                                  </td>
+
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <SingleSelector
+                                                                      options={inventoryBrands[index] || []}
+                                                                      onChange={(selectedOption) =>
+                                                                        handleBrandChange(index, selectedOption)
+                                                                      }
+                                                                      value={selectedInventoryBrands[index]}
+                                                                      placeholder={`Select Brand`}
+                                                                    />
+                                                                    {/* {localMaterialErrors[index]?.brand && (
                                                                                                                                                                               <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
                                                                                                                                                                             )} */}
-                                                                                                                                                                        </td>
-                                                        
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <SingleSelector
-                                                                                                                                                                                options={unitOfMeasures}
-                                                                                                                                                                                onChange={(selectedOption) =>
-                                                                                                                                                                                    handleUnitChange2(index, selectedOption)
-                                                                                                                                                                                }
-                                                                                                                                                                                value={selectedUnit2[index]}
-                                                                                                                                                                                placeholder={`Select UOM`}
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <input
-                                                                                                                                                                                className="form-control"
-                                                                                                                                                                                type="number"
-                                                                                                                                                                                placeholder="Please Enter co-efficient Factor"
-                                                                                                                                                                                value={coefficientFactors[index] || ""}
-                                                                                                                                                                                onKeyDown={(e) => {
-                                                                                                                                                                                    if (e.key === "-" || e.key === "e" || e.key === "E") {
-                                                                                                                                                                                        e.preventDefault();
-                                                                                                                                                                                    }
-                                                                                                                                                                                }}
-                                                                                                                                                                                min="0"
-                                                                                                                                                                                onChange={(e) =>
-                                                                                                                                                                                    handleCoefficientFactorChange(index, e.target.value)
-                                                                                                                                                                                }
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }} colSpan={2}>
-                                                                                                                                                                            <input
-                                                                                                                                                                                className="form-control"
-                                                                                                                                                                                type="number"
-                                                                                                                                                                                placeholder="Estimated Quantity"
-                                                                                                                                                                                disabled
-                                                                                                                                                                                value={estimatedQuantities[index] || ""}
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <input
-                                                                                                                                                                                className="form-control"
-                                                                                                                                                                                type="number"
-                                                                                                                                                                                placeholder="Please Enter wastage"
-                                                                                                                                                                                value={wastages[index] || ""}
-                                                                                                                                                                                onChange={(e) => handleWastageChange(index, e.target.value)}
-                                                                                                                                                                            />
-                                                        
-                                                                                                                                                                            {/* {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>} */}
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td style={{ width: "300px" }}>
-                                                                                                                                                                            <input
-                                                                                                                                                                                className="form-control"
-                                                                                                                                                                                type="number"
-                                                                                                                                                                                placeholder="Total Estimated Qty Wastage"
-                                                                                                                                                                                disabled
-                                                                                                                                                                                value={totalEstimatedQtyWastages[index] || ""}
-                                                                                                                                                                            />
-                                                                                                                                                                        </td>
-                                                                                                                                                                    </tr>
-                                                                                                                                                                ))
-                                                                                                                                                            ) : (
-                                                                                                                                                                <tr>
-                                                                                                                                                                    <td colSpan="12" className="text-center">
-                                                                                                                                                                        No materials added yet.
-                                                                                                                                                                    </td>
-                                                                                                                                                                </tr>
-                                                                                                                                                            )}
-                                                        
-                                                        
-                                                        
-                                                                                                                                                        </tbody>
-                                                                                                                                                    </table>
-                                                                                                                                                </div>
-                                                                                                                                                <div>
-                                                                                                                                                    <button
-                                                                                                                                                        style={{ color: "var(--red)" }}
-                                                                                                                                                        className="fw-bold text-decoration-underline border-0 bg-white ms-3"
-                                                                                                                                                        // onclick="myCreateFunction('table1')"
-                                                                                                                                                        onClick={handleOpenModal}
-                                                                                                                                                    >
-                                                                                                                                                        Add Material
-                                                                                                                                                    </button>{" "}
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                        </CollapsibleCard>
-                                                        
-                                                                                                                                        <MaterialModal
-                                                                                                                                            show={showModal}
-                                                                                                                                            handleClose={handleCloseModal}
-                                                                                                                                            handleAdd={handleAddMaterials}
-                                                                                                                                        />
-                                                        
-                                                                                                                                        <CollapsibleCard title="Assets">
-                                                                                                                                            <div className="card-body mt-0 pt-0">
-                                                                                                                                                <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                                                                                                    <table className="w-100">
-                                                                                                                                                        <thead>
-                                                                                                                                                            <tr>
-                                                                                                                                                                <th rowSpan={2}></th>
-                                                                                                                                                                <th rowSpan={2}>Asset Type</th>
-                                                                                                                                                                <th rowSpan={2}>Asset</th>
-                                                                                                                                                                <th rowSpan={2}>Asset Sub-Type</th>
-                                                                                                                                                                <th rowSpan={2}>Generic Specification</th>
-                                                                                                                                                                <th rowSpan={2}>Colour</th>
-                                                                                                                                                                <th rowSpan={2}>Brand</th>
-                                                                                                                                                                <th rowSpan={2}>UOM</th>
-                                                                                                                                                                {/* <th rowSpan={2}>Asset QTY</th> */}
-                                                                                                                                                                <th colSpan={3}>Cost</th>
-                                                                                                                                                                <th rowSpan={2}>Wastage</th>
-                                                                                                                                                                <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                                                                                                                            </tr>
-                                                                                                                                                            <tr>
-                                                                                                                                                                <th>Co-Efficient Factor</th>
-                                                                                                                                                                <th colSpan={2}>Estimated Qty</th>
-                                                                                                                                                            </tr>
-                                                                                                                                                        </thead>
-                                                                                                                                                        <tbody>
-                                                                                                                                                            {boqDetail2.assets.map((asset, index) => (
-                                                                                                                                                                <tr key={asset.id}>
-                                                                                                                                                                    <td>{index + 1}</td>
-                                                                                                                                                                    <td>{asset.material_type}</td>
-                                                                                                                                                                    <td>{asset.material_name}</td>
-                                                                                                                                                                    <td>{asset.material_sub_type}</td>
-                                                                                                                                                                    <td>{asset.generic_info}</td>
-                                                                                                                                                                    <td>{asset.color}</td>
-                                                                                                                                                                    <td>{asset.brand}</td>
-                                                                                                                                                                    <td>{asset.uom}</td>
-                                                                                                                                                                    {/* <td>{asset.asset_quantity}</td> */}
-                                                                                                                                                                    <td>{asset.co_efficient_factor}</td>
-                                                                                                                                                                    <td colSpan={2}>{asset.estimated_quantity}</td>
-                                                                                                                                                                    <td>{asset.wastage}</td>
-                                                                                                                                                                    <td>{asset.estimated_quantity_wastage}</td>
-                                                                                                                                                                </tr>
-                                                                                                                                                            ))}
-                                                                                                                                                        </tbody>
-                                                                                                                                                    </table>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                        </CollapsibleCard>
-                                                        
-                                                                                                                                    </div>
-                                                                                                                                </td>
-                                                                                                                            </tr>
-                                                        
-                                                                                                                        </React.Fragment>
-                                                                                                                    )}
-                                                        
-                                                        
-                                                        
-                                                        
-                                                                                                                </React.Fragment>
-                                                                                                            ))
-                                                                                                        )}
+                                                                  </td>
+
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <SingleSelector
+                                                                      options={unitOfMeasures}
+                                                                      onChange={(selectedOption) =>
+                                                                        handleUnitChange2(index, selectedOption)
+                                                                      }
+                                                                      value={selectedUnit2[index]}
+                                                                      placeholder={`Select UOM`}
+                                                                    />
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <input
+                                                                      className="form-control"
+                                                                      type="number"
+                                                                      placeholder="Please Enter co-efficient Factor"
+                                                                      value={coefficientFactors[index] || ""}
+                                                                      onKeyDown={(e) => {
+                                                                        if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                                                          e.preventDefault();
+                                                                        }
+                                                                      }}
+                                                                      min="0"
+                                                                      onChange={(e) =>
+                                                                        handleCoefficientFactorChange(index, e.target.value)
+                                                                      }
+                                                                    />
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }} colSpan={2}>
+                                                                    <input
+                                                                      className="form-control"
+                                                                      type="number"
+                                                                      placeholder="Estimated Quantity"
+                                                                      disabled
+                                                                      value={estimatedQuantities[index] || ""}
+                                                                    />
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <input
+                                                                      className="form-control"
+                                                                      type="number"
+                                                                      placeholder="Please Enter wastage"
+                                                                      value={wastages[index] || ""}
+                                                                      onChange={(e) => handleWastageChange(index, e.target.value)}
+                                                                    />
+
+                                                                    {/* {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>} */}
+                                                                  </td>
+                                                                  <td style={{ width: "300px" }}>
+                                                                    <input
+                                                                      className="form-control"
+                                                                      type="number"
+                                                                      placeholder="Total Estimated Qty Wastage"
+                                                                      disabled
+                                                                      value={totalEstimatedQtyWastages[index] || ""}
+                                                                    />
+                                                                  </td>
+                                                                </tr>
+                                                              ))
+                                                            ) : (
+                                                              <tr>
+                                                                <td colSpan="12" className="text-center">
+                                                                  No materials added yet.
+                                                                </td>
+                                                              </tr>
+                                                            )}
+
+
+
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                      <div>
+                                                        <button
+                                                          style={{ color: "var(--red)" }}
+                                                          className="fw-bold text-decoration-underline border-0 bg-white ms-3"
+                                                          // onclick="myCreateFunction('table1')"
+                                                          onClick={handleOpenModal}
+                                                        >
+                                                          Add Material
+                                                        </button>{" "}
+                                                      </div>
+                                                    </div>
+                                                  </CollapsibleCard>
+
+                                                  <MaterialModal
+                                                    show={showModal}
+                                                    handleClose={handleCloseModal}
+                                                    handleAdd={handleAddMaterials}
+                                                  />
+
+                                                  <CollapsibleCard title="Assets">
+                                                    <div className="card-body mt-0 pt-0">
+                                                      <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                        <table className="w-100">
+                                                          <thead>
+                                                            <tr>
+                                                              <th rowSpan={2}></th>
+                                                              <th rowSpan={2}>Asset Type</th>
+                                                              <th rowSpan={2}>Asset</th>
+                                                              <th rowSpan={2}>Asset Sub-Type</th>
+                                                              <th rowSpan={2}>Generic Specification</th>
+                                                              <th rowSpan={2}>Colour</th>
+                                                              <th rowSpan={2}>Brand</th>
+                                                              <th rowSpan={2}>UOM</th>
+                                                              {/* <th rowSpan={2}>Asset QTY</th> */}
+                                                              <th colSpan={3}>Cost</th>
+                                                              <th rowSpan={2}>Wastage</th>
+                                                              <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                            </tr>
+                                                            <tr>
+                                                              <th>Co-Efficient Factor</th>
+                                                              <th colSpan={2}>Estimated Qty</th>
+                                                            </tr>
+                                                          </thead>
+                                                          <tbody>
+                                                            {boqDetail2.assets.map((asset, index) => (
+                                                              <tr key={asset.id}>
+                                                                <td>{index + 1}</td>
+                                                                <td>{asset.material_type}</td>
+                                                                <td>{asset.material_name}</td>
+                                                                <td>{asset.material_sub_type}</td>
+                                                                <td>{asset.generic_info}</td>
+                                                                <td>{asset.color}</td>
+                                                                <td>{asset.brand}</td>
+                                                                <td>{asset.uom}</td>
+                                                                {/* <td>{asset.asset_quantity}</td> */}
+                                                                <td>{asset.co_efficient_factor}</td>
+                                                                <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                <td>{asset.wastage}</td>
+                                                                <td>{asset.estimated_quantity_wastage}</td>
+                                                              </tr>
+                                                            ))}
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    </div>
+                                                  </CollapsibleCard>
+
+                                                </div>
+                                              </td>
+                                            </tr>
+
+                                          </React.Fragment>
+                                        )}
+
+
+
+
+                                      </React.Fragment>
+                                    ))
+                                  )}
                                   {count.map((el, index) => (
                                     <React.Fragment key={index}>
                                       <tr>
@@ -4126,7 +4155,7 @@ if (hasErrors2) return;
                                       )}
                                     </React.Fragment>
                                   ))}
-                                  
+
                                 </tbody>
                               </table>
                             </div>
