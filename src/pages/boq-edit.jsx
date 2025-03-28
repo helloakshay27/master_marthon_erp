@@ -1529,9 +1529,13 @@ const BOQEdit = () => {
                                                                             <input
                                                                                 className="ms-5"
                                                                                 type="checkbox"
+                                                                                // disabled={!material.can_delete === false} // Ensure it evaluates to a Boolean
+                                                                                disabled={!material.can_delete} // Disable when can_delete is false
                                                                                 checked={selectedMaterials.includes(index)} // Use index instead of material.id
                                                                                 onChange={() => handleSelectRow(index)} // Pass index to function
+                                                                               
                                                                             />
+                                                                            {console.log("delete mt:", !material.can_delete)}
                                                                         </td>
                                                                         <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
                                                                         <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
