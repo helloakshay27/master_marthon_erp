@@ -59,6 +59,8 @@ export default function CreateRFQForm({
     fieldOwner: "",
     fieldType: "string",
   });
+  const [brandOptions, setBrandOptions] = useState([]);
+  const [materialId, setMaterialId] = useState(0); // New state for materialId
 
   const mapBidTemplateFields = (fields) => {
     console.log("fields", fields);
@@ -98,6 +100,19 @@ export default function CreateRFQForm({
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );
         setAdditionalFields(updatedAdditionalFields);
+
+        // Reset sections to ensure compatibility with the new template
+        const updatedSections = sections.map((section) => ({
+          ...section,
+          sectionData: section.sectionData.map((row) => ({
+            ...row,
+            ...updatedAdditionalFields.reduce((acc, field) => {
+              acc[field.field_name] = row[field.field_name] || ""; // Initialize missing fields
+              return acc;
+            }, {}),
+          })),
+        }));
+        setSections(updatedSections);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -134,13 +149,13 @@ export default function CreateRFQForm({
     try {
       // const url = inventoryTypeId
       //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-  
+      const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
       console.log("Fetching sub-sections with URL:", url);
-  
+
       const response = await axios.get(url);
       console.log("API Response for sub-sections:", response.data);
-  
+
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
         const options = response.data.inventory_sub_types.map((subSection) => ({
           label: subSection.name,
@@ -185,20 +200,26 @@ export default function CreateRFQForm({
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
           console.log("materialsArray:----", materialsArray);
-  
+
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
-  
+
           if (inventoryTypeId) {
-            console.log("Fetching materials for inventoryTypeId:", inventoryTypeId);
+            console.log(
+              "Fetching materials for inventoryTypeId:",
+              inventoryTypeId
+            );
             fetchMaterials(inventoryTypeId);
           }
           if (inventorySubTypeId) {
-            console.log("Fetching sub-sections for inventorySubTypeId:", inventorySubTypeId);
+            console.log(
+              "Fetching sub-sections for inventorySubTypeId:",
+              inventorySubTypeId
+            );
             fetchSubSections(inventorySubTypeId);
           }
-  
+
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
@@ -227,6 +248,7 @@ export default function CreateRFQForm({
       fetchMaterials();
       fetchSubSections(); // Fetch sub-sections without inventory_type_id
     }
+    fetchBrands();
   }, [existingData]);
 
   useEffect(() => {
@@ -297,10 +319,9 @@ export default function CreateRFQForm({
     fetchLocations();
     fetchUoms();
     fetchMaterials();
+    fetchBrands(); // Fetch brands
     fetchTemplates(); // Fetch templates
   }, []);
-  console.log("templateData", templateData);
-  
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
@@ -344,19 +365,36 @@ export default function CreateRFQForm({
   }, [templateData]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
+    console.log("handleUnitChange called with:", {
+      selected,
+      rowIndex,
+      sectionIndex,
+    });
+
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
+
     setSections(updatedSections);
+    console.log("Updated sections after unit change:", updatedSections);
   };
 
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
+    console.log("handleLocationChange called with:", {
+      selected,
+      rowIndex,
+      sectionIndex,
+    });
+
     const updatedSections = [...sections];
     const selectedLocation = locationOptions.find(
       (location) => location.value === selected
     );
+
     updatedSections[sectionIndex].sectionData[rowIndex].location =
       selectedLocation ? selectedLocation.label : selected;
+
     setSections(updatedSections);
+    console.log("Updated sections after location change:", updatedSections);
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
@@ -411,6 +449,7 @@ export default function CreateRFQForm({
         section_name: row.section_id,
         inventory_type_id: row.inventory_type_id,
         inventory_sub_type_id: row.inventory_sub_type_id,
+        brand: row.brand || null, // Include brand
         ...additionalFields.reduce((acc, field) => {
           acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
           return acc;
@@ -421,26 +460,82 @@ export default function CreateRFQForm({
     setData(updatedData); // Update the parent data
   };
 
+  const fetchBrands = async () => {
+    console.log("fetchBrands called with materialId:", materialId);
+
+    if (!materialId) {
+      console.warn("Material ID is not set. Skipping fetchBrands.");
+      return;
+    }
+
+    try {
+      const url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
+      console.log("Fetching brands with URL:", url);
+
+      const response = await axios.get(url);
+
+      if (response.data && Array.isArray(response.data.brands)) {
+        const options = response.data.brands.map((brand) => ({
+          label: brand.name,
+          value: brand.value,
+        }));
+        setBrandOptions(options);
+        console.log("Fetched brand options:", options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBrands(materialId); // Fetch brands whenever materialId changes
+  }, [materialId]);
+
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
+    console.log("handleDescriptionOfItemChange called with:", {
+      selected,
+      rowIndex,
+      sectionIndex,
+    });
+
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
       (material) => material.value === selected
     );
 
+    if (!selectedMaterial) {
+      console.error("Selected material not found in materials list:", selected);
+      return;
+    }
+
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
       selected;
 
-    if (selectedMaterial && selectedMaterial.uom) {
+    if (selectedMaterial.uom) {
       updatedSections[sectionIndex].sectionData[rowIndex].unit =
         selectedMaterial.uom.uom_short_name;
     } else {
       updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
     }
+
     updatedSections[sectionIndex].sectionData[rowIndex].type =
-      selectedMaterial?.type || "N/A";
+      selectedMaterial.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.value || "";
+      selectedMaterial.value || "";
+
+    console.log(
+      "Updated row after material selection:",
+      updatedSections[sectionIndex].sectionData[rowIndex]
+    );
+
+    // Update materialId state
+    setMaterialId(selectedMaterial.id);
+    fetchBrands(selectedMaterial.id); // Fetch brands based on selected material ID
+
     setSections(updatedSections);
+    console.log("Updated sections state:", updatedSections);
   };
 
   const handleAddSection = () => {
@@ -452,6 +547,7 @@ export default function CreateRFQForm({
           quantity: "",
           unit: [],
           type: materials[0]?.type || "",
+          brand: [], // Add brand field
           location: [],
           rate: 0,
           amount: 0,
@@ -610,6 +706,7 @@ export default function CreateRFQForm({
       { label: "Quantity", key: "quantity" },
       { label: "UOM", key: "unit" },
       { label: "Type", key: "type" },
+      { label: "Brand", key: "brand" }, // Add brand column
       { label: "Location", key: "location" },
       { label: "Rate", key: "rate" },
       { label: "Amount", key: "amount" },
@@ -623,30 +720,240 @@ export default function CreateRFQForm({
 
     return [...defaultColumns, ...additionalColumns];
   };
-  
-  const renderAdminFields = (field, rowIndex, sectionIndex) => (
-    <input
-      className="form-control"
-      type={field.field_type === "integer" ? "number" : "text"}
-      value={sections[sectionIndex]?.sectionData[rowIndex]?.[field.field_name] || ""}
-      onChange={(e) =>
-        handleInputChange(e.target.value, rowIndex, field.field_name, sectionIndex)
-      }
-      // readOnly={field.is_read_only}
-      // required={field.is_required}
-    />
-  );
 
-  const renderGenericField = (fieldName, rowIndex, sectionIndex) => (
-    <input
-      className="form-control"
-      type="text"
-      value={sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || ""}
-      onChange={(e) =>
-        handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
-      }
-    />
-  );
+  const renderAdminFields = (field, rowIndex, sectionIndex) => {
+    const fieldValue =
+      sections[sectionIndex]?.sectionData[rowIndex]?.[field.field_name] || "";
+    const inputList = [
+      "srNo",
+      "descriptionOfItem",
+      "quantity",
+      "unit",
+      "type",
+      "brand",
+      "location",
+      "rate",
+      "amount",
+      "actions",
+    ];
+
+    // Explicitly handle SelectBox for specific fields
+    if (field.field_name === "descriptionOfItem") {
+      return (
+        <SelectBox
+          options={materials}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "unit") {
+      return (
+        <SelectBox
+          options={uomOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "location") {
+      return (
+        <SelectBox
+          options={locationOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "brand") {
+      return (
+        <SelectBox
+          options={brandOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    // Default input for other fields
+    return (
+      <div className="input-group">
+        {
+          field.field_owner === "admin" && (
+
+            <input
+              className="form-control"
+              type={field.field_type === "integer" ? "number" : "text"}
+              value={fieldValue}
+              onChange={(e) =>
+                handleInputChange(
+                  e.target.value,
+                  rowIndex,
+                  field.field_name,
+                  sectionIndex
+                )
+              }
+            />
+          )
+        }
+        {/* {!inputList.includes(field.field_name) && ( */}
+          <div
+            // style={{
+            //   display: inputList.includes(field.field_name) ? "block" : "none",
+            // }}
+          >
+            {/* <button
+              className="btn btn-outline-secondary"
+              onClick={() => handleEditAdditionalField(field)}
+            >
+              <i className="material-icons">edit</i>
+            </button> */}
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() => handleEditAdditionalField(field)}
+            >
+              <i className="bi bi-pencil" style={{ border: 0 }}></i>
+            </button>
+            {/* <button
+              className="btn btn-outline-danger"
+              onClick={() => handleDeleteAdditionalField(field)}
+            >
+              <i className="material-icons">delete</i>
+            </button> */}
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() => handleDeleteAdditionalField(field)}
+            >
+              <i className="bi bi-trash" style={{ border: 0 }}></i>
+            </button>
+          </div>
+        {/* )} */}
+      </div>
+    );
+  };
+
+  const renderGenericField = (fieldName, rowIndex, sectionIndex) => {
+    const fieldValue =
+      sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
+
+    // Explicitly handle SelectBox for specific fields
+    if (fieldName === "descriptionOfItem") {
+      return (
+        <SelectBox
+          options={materials}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "unit") {
+      return (
+        <SelectBox
+          options={uomOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "location") {
+      return (
+        <SelectBox
+          options={locationOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "brand") {
+      return (
+        <SelectBox
+          options={brandOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    // Default input for other fields
+    return (
+      <div className="input-group">
+        <input
+          className="form-control"
+          type="text"
+          value={fieldValue}
+          onChange={(e) =>
+            handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+        {/* {!inputList.includes(fieldName) && ( */}
+          {/* <>
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() =>
+                handleEditAdditionalField({ field_name: fieldName })
+              }
+            >
+              <i className="bi bi-pencil" style={{ border: 0 }}></i>
+            </button>
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() =>
+                handleDeleteAdditionalField({ field_name: fieldName })
+              }
+            >
+              <i className="bi bi-trash" style={{ border: 0 }}></i>
+            </button>
+          </> */}
+        {/* )} */}
+      </div>
+    );
+  };
 
   return (
     <div className="row px-3">
@@ -662,7 +969,7 @@ export default function CreateRFQForm({
               label={"Select Template"}
               options={templateOptions}
               onChange={handleTemplateChange}
-              defaultValue={templateData?.event_template_id || ""} // Set default value from templateData
+              value={selectedTemplate} // Set value instead of defaultValue
             />
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
@@ -681,7 +988,7 @@ export default function CreateRFQForm({
                     <SelectBox
                       label={"Select Material Type"}
                       options={sectionOptions}
-                      defaultValue={
+                      value={
                         section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material Type"
                           : sectionOptions?.find(
@@ -694,15 +1001,18 @@ export default function CreateRFQForm({
                     />
                   </div>
                   <div className="flex-grow-1">
-                    {
-                      console.log("subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",subTypeId,
-                      subSectionOptions)
-                    }
+                    {console.log(
+                      "subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",
+                      subTypeId,
+                      subSectionOptions
+                    )}
                     <SelectBox
                       label={"Select Sub Material Type"}
                       options={subSectionOptions}
-                      defaultValue={
-                        subSectionOptions?.find((option) => option.value === subTypeId)?.value || ""
+                      value={
+                        subSectionOptions?.find(
+                          (option) => option.value === subTypeId
+                        )?.value || ""
                       }
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
@@ -737,10 +1047,15 @@ export default function CreateRFQForm({
                 data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
-                  descriptionOfItem: (cell, rowIndex) => (
-                    <>
+                  descriptionOfItem: (cell, rowIndex) => {
+                    console.log("Materials options:", materials);
+                    console.log(
+                      "Selected value for descriptionOfItem:",
+                      section?.sectionData[rowIndex]?.descriptionOfItem
+                    );
+                    return (
                       <SelectBox
-                        options={materials}
+                        options={materials} // Ensure materials is an array of objects with `label` and `value`
                         onChange={(value) =>
                           handleDescriptionOfItemChange(
                             value,
@@ -748,36 +1063,66 @@ export default function CreateRFQForm({
                             sectionIndex
                           )
                         }
-                        defaultValue={
-                          section?.sectionData[rowIndex]?._destroy
-                            ? ""
-                            : materials?.find(
-                                (option) =>
-                                  option?.value ===
-                                  section?.sectionData[rowIndex]?.inventory_id
-                              )?.value || ""
+                        value={
+                          section?.sectionData[rowIndex]?.descriptionOfItem ||
+                          ""
                         }
                       />
-                      {/* {console.log(cell,"this is cell",rowIndex)} */}
-                    </>
-                  ),
-                  unit: (cell, rowIndex) => (
-                    <SelectBox
-                      options={uomOptions}
-                      onChange={(value) =>
-                        handleUnitChange(value, rowIndex, sectionIndex)
-                      }
-                      defaultValue={
-                        section?.sectionData[rowIndex]?._destroy
-                          ? ""
-                          : uomOptions?.find(
-                              (option) =>
-                                option?.value ===
-                                section?.sectionData[rowIndex]?.unit
-                            )?.value || ""
-                      }
-                    />
-                  ),
+                    );
+                  },
+                  unit: (cell, rowIndex) => {
+                    console.log("UOM options:", uomOptions);
+                    console.log(
+                      "Selected value for unit:",
+                      section?.sectionData[rowIndex]?.unit
+                    );
+                    return (
+                      <SelectBox
+                        options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleUnitChange(value, rowIndex, sectionIndex)
+                        }
+                        value={section?.sectionData[rowIndex]?.unit || ""}
+                      />
+                    );
+                  },
+                  location: (cell, rowIndex) => {
+                    console.log("Location options:", locationOptions);
+                    console.log(
+                      "Selected value for location:",
+                      section?.sectionData[rowIndex]?.location
+                    );
+                    return (
+                      <SelectBox
+                        options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleLocationChange(value, rowIndex, sectionIndex)
+                        }
+                        value={section?.sectionData[rowIndex]?.location || ""}
+                      />
+                    );
+                  },
+                  brand: (cell, rowIndex) => {
+                    console.log("Brand options:", brandOptions);
+                    console.log(
+                      "Selected value for brand:",
+                      section?.sectionData[rowIndex]?.brand
+                    );
+                    return (
+                      <SelectBox
+                        options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleInputChange(
+                            value,
+                            rowIndex,
+                            "brand",
+                            sectionIndex
+                          )
+                        }
+                        value={section?.sectionData[rowIndex]?.brand || ""}
+                      />
+                    );
+                  },
                   type: (cell, rowIndex) => (
                     <input
                       className="form-control"
@@ -793,25 +1138,6 @@ export default function CreateRFQForm({
                       }
                     />
                   ),
-                  location: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={locationOptions}
-                        onChange={(value) =>
-                          handleLocationChange(value, rowIndex, sectionIndex)
-                        }
-                        defaultValue={
-                          section.sectionData[rowIndex]._destroy
-                            ? ""
-                            : locationOptions.find(
-                                (option) =>
-                                  option.label ===
-                                  section.sectionData[rowIndex]?.location
-                              )?.value || ""
-                        }
-                      />
-                    );
-                  },
                   quantity: (cell, rowIndex) => (
                     <input
                       className="form-control"
@@ -874,16 +1200,19 @@ export default function CreateRFQForm({
                       renderAdminFields(field, rowIndex, sectionIndex);
                     return acc;
                   }, {}),
-                  ...Object.keys(sections[sectionIndex]?.sectionData[0] || {}).reduce(
-                    (acc, fieldName) => {
-                      if (!additionalFields.some((field) => field.field_name === fieldName)) {
-                        acc[fieldName] = (cell, rowIndex) =>
-                          renderGenericField(fieldName, rowIndex, sectionIndex);
-                      }
-                      return acc;
-                    },
-                    {}
-                  ),
+                  ...Object.keys(
+                    sections[sectionIndex]?.sectionData[0] || {}
+                  ).reduce((acc, fieldName) => {
+                    if (
+                      !additionalFields.some(
+                        (field) => field.field_name === fieldName
+                      )
+                    ) {
+                      acc[fieldName] = (cell, rowIndex) =>
+                        renderGenericField(fieldName, rowIndex, sectionIndex);
+                    }
+                    return acc;
+                  }, {}),
                 }}
                 onRowSelect={undefined}
                 handleCheckboxChange={undefined}

@@ -498,17 +498,29 @@ export default function CreateEvent() {
             dynamicExtensionConfigurations.time_extension_on_change_in,
           delivery_date: dynamicExtensionConfigurations.delivery_date,
         },
-        event_materials_attributes: materialFormData.map((material) => ({
-          descriptionOfItem: material.descriptionOfItem,
-          inventory_id: material.inventory_id,
-          quantity: material.quantity,
-          uom: material.unit,
-          location: material.location,
-          rate: material.rate,
-          amount: material.amount,
-          sub_section_id: material.sub_section_id,
-          section_id: material.section_id,
-        })),
+        event_materials_attributes: materialFormData.map((material) => {
+          // Dynamically include all fields from materialFormData
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            acc[key] = material[key] || null; // Include all fields, default to null if undefined
+            return acc;
+          }, {});
+
+          return {
+            ...dynamicFields, // Include all dynamic fields
+            id: material.id || null, // Ensure id is included
+            inventory_id: Number(material.inventory_id),
+            quantity: Number(material.quantity),
+            uom: material.unit,
+            location: material.location,
+            rate: Number(material.rate),
+            amount: material.amount,
+            sub_section_name: material.sub_section_id,
+            section_name: material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            _destroy: material._destroy || false,
+          };
+        }),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.id,
