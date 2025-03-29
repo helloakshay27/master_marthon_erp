@@ -64,7 +64,7 @@ export default function CreateRFQForm({
 
     return fields.map((field) => ({
       label: field.field_name,
-      value: "", // Initialize with empty value or any default value
+      value: field.field_name, // Initialize with empty value or any default value
       field_name: field.field_name,
       is_required: field.is_required,
       is_read_only: field.is_read_only,

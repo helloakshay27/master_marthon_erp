@@ -79,7 +79,7 @@ export default function ShortTable({
                 background: "#8b0203",
               }}
             >
-              {row.label}
+              {row.label || row.field_name} {/* Ensure field_name is displayed */}
             </td>
             <td style={{ padding: "12px", color: "#777" }}>
               {editable ? (
@@ -102,7 +102,7 @@ export default function ShortTable({
                   >
                     <i className="bi bi-pencil" style={{ border: 0 }}></i>
                   </button>
-                  {["Freight Charge", "GST on Freight", "Realised GST"].includes(row.label) ? null : (
+                  {["Freight Charge", "GST on Freight", "Realised GST"].includes(row.label || row.field_name) ? null : (
                     <button
                       className="purple-btn2 ms-2 rounded-circle p-0"
                       style={{

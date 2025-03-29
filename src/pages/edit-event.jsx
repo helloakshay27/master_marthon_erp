@@ -347,6 +347,7 @@ export default function EditEvent() {
         id: vendor.id,
         name: vendor.full_name || vendor.organization_name || "N/A",
         email: vendor.email || "N/A",
+        organisation: vendor.organization_name || "N/A",
         phone: vendor.contact_number || vendor.mobile || "N/A",
         city: vendor.city_id || "N/A",
         tags: vendor.tags || "N/A",
