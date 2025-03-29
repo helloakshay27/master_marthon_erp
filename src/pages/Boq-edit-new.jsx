@@ -2598,6 +2598,66 @@ const EditBOQNew = () => {
 
 
   }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
+
+  const handleDeleteAllMaterial = () => {
+    setMaterials((prev) => {
+      // Clone the previous state to avoid mutation
+      const newMaterials = { ...prev };
+      
+      // Only process the current boqSubItemId
+      if (newMaterials[boqSubItemId]) {
+        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
+          !selectedMaterials.some(
+            selected => 
+              selected.materialId === material.id &&
+              selected.rowIndex === index &&
+              selected.boqSubItemId === boqSubItemId
+          )
+        );
+      }
+      
+      // console.log("Updated materials:", newMaterials);
+      return newMaterials;
+    });
+  
+    // Update dependent states with boqSubItemId-aware cleanup
+    const updateSelection = (selectionArray = []) =>
+      selectedMaterials
+        .filter(selected => selected.boqSubItemId === boqSubItemId)
+        .reduce((acc, selected) => {
+          const indexToRemove = selected.rowIndex;
+          if (indexToRemove >= 0 && indexToRemove < acc.length) {
+            acc.splice(indexToRemove, 1);
+          }
+          return acc;
+        }, [...selectionArray]);
+  
+    // Update all dependent states
+    setSelectedSubTypes(prev => updateSelection(prev));
+    setSelectedColors(prev => updateSelection(prev));
+    setSelectedInventoryBrands(prev => updateSelection(prev));
+    setSelectedUnit2(prev => updateSelection(prev));
+    setCoefficientFactors(prev => updateSelection(prev));
+    setEstimatedQuantities(prev => updateSelection(prev));
+    setWastages(prev => updateSelection(prev));
+    setTotalEstimatedQtyWastages(prev => updateSelection(prev));
+    setSelectedGenericSpecifications(prev => updateSelection(prev));
+  
+    // Clean up selected materials for this boqSubItemId
+    setSelectedMaterials(prev =>
+      prev.filter(selected => 
+        !prev.some(s => 
+          s.boqSubItemId === boqSubItemId &&
+          ![boqSubItemId]?.some(
+            (material, index) => 
+              material.id === s.materialId && 
+              index === s.rowIndex
+          )
+        )
+      )
+    );
+  };
+  
   return (
     <>
       <div className="website-content">
@@ -3803,6 +3863,25 @@ const EditBOQNew = () => {
                                                         >
                                                           Add Material
                                                         </button>{" "}
+                                                        <p>
+                      <button
+                        style={{ color: "var(--red)" }}
+                        className="fw-bold text-decoration-underline border-0 bg-white"
+                        // onclick="myCreateFunction('table1')"
+                        onClick={handleOpenModal}
+                      >
+                        Add Material
+                      </button>{" "}
+                      |
+                      <button
+                        style={{ color: "var(--red)" }}
+                        className="fw-bold text-decoration-underline border-0 bg-white"
+                        onClick={handleDeleteAllMaterial}
+                      >
+                        Delete Material
+                      </button>
+                    </p>
+                                                        
                                                       </div>
                                                     </div>
                                                   </CollapsibleCard>
