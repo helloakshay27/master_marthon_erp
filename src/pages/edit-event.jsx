@@ -191,7 +191,7 @@ export default function EditEvent() {
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
-    console.log("scheduleText", scheduleText, data.end_time_duration);
+    // console.log("scheduleText", scheduleText, data.end_time_duration);
   };
 
   const [eventScheduleText, setEventScheduleText] = useState("");
@@ -265,7 +265,7 @@ export default function EditEvent() {
   }, []);
 
   const handleEventConfigurationSubmit = (config) => {
-    console.log("config", config);
+    // console.log("config", config);
 
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
@@ -424,7 +424,7 @@ export default function EditEvent() {
   useEffect(() => {
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        console.log("term:---", term);
+        // console.log("term:---", term);
 
         return {
           id: term.term_condition_id,
@@ -886,7 +886,7 @@ export default function EditEvent() {
       );
       const data = await response.json();
       setSuggestions(data.vendors || []);
-      console.log("Suggestions:", data.vendors);
+      // console.log("Suggestions:", data.vendors);
 
       setIsSuggestionsVisible(true);
     } catch (error) {
@@ -1015,7 +1015,7 @@ export default function EditEvent() {
                   />
                 </div>
               </div>
-              {console.log("materialFormData :------",materialFormData)}
+              {/* {console.log("materialFormData :------",materialFormData)} */}
               <CreateRFQForm
                 data={materialFormData}
                 setData={setMaterialFormData}
@@ -1072,8 +1072,8 @@ export default function EditEvent() {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
-                            {console.log("vendor", vendor)
-                            }
+                            {/* {console.log("vendor", vendor)
+                            } */}
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             <td>{vendor.phone}</td>

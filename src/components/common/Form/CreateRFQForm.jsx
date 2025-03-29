@@ -63,7 +63,7 @@ export default function CreateRFQForm({
   const [materialId, setMaterialId] = useState(0); // New state for materialId
 
   const mapBidTemplateFields = (fields) => {
-    console.log("fields", fields);
+    // console.log("fields", fields);
 
     return fields.map((field) => ({
       label: field.field_name,
@@ -81,7 +81,7 @@ export default function CreateRFQForm({
   const handleTemplateChange = async (event) => {
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
-    console.log("selectedTemplate", selectedTemplate, event);
+    // console.log("selectedTemplate", selectedTemplate, event);
 
     try {
       const response = await axios.get(
@@ -89,7 +89,7 @@ export default function CreateRFQForm({
       );
       if (response.data) {
         const templateData = response.data;
-        console.log("Template Data:", templateData);
+        console.log("Template Data:", templateData) ;
         const updatedAdditionalFields =
           templateData.bid_material_template_fields || [];
         updateAdditionalFields(updatedAdditionalFields);
@@ -136,7 +136,7 @@ export default function CreateRFQForm({
           uom: material.uom,
         }));
         setMaterials(materialOptions);
-        console.log("materials :----", materials);
+        // console.log("materials :----", materials);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -151,10 +151,10 @@ export default function CreateRFQForm({
       //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
       const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
-      console.log("Fetching sub-sections with URL:", url);
+      // console.log("Fetching sub-sections with URL:", url);
 
       const response = await axios.get(url);
-      console.log("API Response for sub-sections:", response.data);
+      // console.log("API Response for sub-sections:", response.data);
 
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
         const options = response.data.inventory_sub_types.map((subSection) => ({
@@ -162,7 +162,7 @@ export default function CreateRFQForm({
           value: subSection.value,
         }));
         setSubSectionOptions(options);
-        console.log("Fetched subSectionOptions:", options);
+        // console.log("Fetched subSectionOptions:", options);
       } else {
         console.error("Unexpected response structure:", response.data);
         setSubSectionOptions((prevOptions) => [...prevOptions]); // Retain previous options
@@ -199,24 +199,24 @@ export default function CreateRFQForm({
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
-          console.log("materialsArray:----", materialsArray);
+          // console.log("materialsArray:----", materialsArray);
 
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
 
           if (inventoryTypeId) {
-            console.log(
-              "Fetching materials for inventoryTypeId:",
-              inventoryTypeId
-            );
+            // console.log(
+            //   "Fetching materials for inventoryTypeId:",
+            //   inventoryTypeId
+            // );
             fetchMaterials(inventoryTypeId);
           }
           if (inventorySubTypeId) {
-            console.log(
-              "Fetching sub-sections for inventorySubTypeId:",
-              inventorySubTypeId
-            );
+            // console.log(
+            //   "Fetching sub-sections for inventorySubTypeId:",
+            //   inventorySubTypeId
+            // );
             fetchSubSections(inventorySubTypeId);
           }
 
@@ -252,7 +252,7 @@ export default function CreateRFQForm({
   }, [existingData]);
 
   useEffect(() => {
-    console.log("Existing data:", existingData);
+    // console.log("Existing data:", existingData);
 
     const fetchSections = async () => {
       try {
@@ -365,25 +365,25 @@ export default function CreateRFQForm({
   }, [templateData]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
-    console.log("handleUnitChange called with:", {
-      selected,
-      rowIndex,
-      sectionIndex,
-    });
+    // console.log("handleUnitChange called with:", {
+    //   selected,
+    //   rowIndex,
+    //   sectionIndex,
+    // });
 
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
 
     setSections(updatedSections);
-    console.log("Updated sections after unit change:", updatedSections);
+    // console.log("Updated sections after unit change:", updatedSections);
   };
 
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
-    console.log("handleLocationChange called with:", {
-      selected,
-      rowIndex,
-      sectionIndex,
-    });
+    // console.log("handleLocationChange called with:", {
+    //   selected,
+    //   rowIndex,
+    //   sectionIndex,
+    // });
 
     const updatedSections = [...sections];
     const selectedLocation = locationOptions.find(
@@ -394,7 +394,7 @@ export default function CreateRFQForm({
       selectedLocation ? selectedLocation.label : selected;
 
     setSections(updatedSections);
-    console.log("Updated sections after location change:", updatedSections);
+    // console.log("Updated sections after location change:", updatedSections);
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
@@ -461,7 +461,7 @@ export default function CreateRFQForm({
   };
 
   const fetchBrands = async () => {
-    console.log("fetchBrands called with materialId:", materialId);
+    // console.log("fetchBrands called with materialId:", materialId);
 
     if (!materialId) {
       console.warn("Material ID is not set. Skipping fetchBrands.");
@@ -470,7 +470,7 @@ export default function CreateRFQForm({
 
     try {
       const url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
-      console.log("Fetching brands with URL:", url);
+      // console.log("Fetching brands with URL:", url);
 
       const response = await axios.get(url);
 
@@ -480,7 +480,7 @@ export default function CreateRFQForm({
           value: brand.value,
         }));
         setBrandOptions(options);
-        console.log("Fetched brand options:", options);
+        // console.log("Fetched brand options:", options);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -525,17 +525,17 @@ export default function CreateRFQForm({
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
       selectedMaterial.value || "";
 
-    console.log(
-      "Updated row after material selection:",
-      updatedSections[sectionIndex].sectionData[rowIndex]
-    );
+    // console.log(
+    //   "Updated row after material selection:",
+    //   updatedSections[sectionIndex].sectionData[rowIndex]
+    // );
 
     // Update materialId state
     setMaterialId(selectedMaterial.id);
     fetchBrands(selectedMaterial.id); // Fetch brands based on selected material ID
 
     setSections(updatedSections);
-    console.log("Updated sections state:", updatedSections);
+    // console.log("Updated sections state:", updatedSections);
   };
 
   const handleAddSection = () => {
@@ -616,7 +616,7 @@ export default function CreateRFQForm({
 
     setAdditionalFields(updatedFields);
     updateAdditionalFields(updatedFields); // Update the parent component's state
-    console.log("Updated additional fields:", updatedFields, editField);
+    // console.log("Updated additional fields:", updatedFields, editField);
 
     setShowEditModal(false);
     setSections((prevSections) => {
@@ -858,17 +858,24 @@ export default function CreateRFQForm({
   const renderGenericField = (fieldName, rowIndex, sectionIndex) => {
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
+      
+    console.log(fieldValue, "fieldValue:----", fieldName);  
 
     // Explicitly handle SelectBox for specific fields
     if (fieldName === "descriptionOfItem") {
+      
       return (
+        <>
         <SelectBox
           options={materials}
-          value={fieldValue}
+          // value={fieldValue}
+        defaultValue={materials.find((option) => option.label === fieldValue)?.value}
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
         />
+        {/* <p>{materials.find((option) => option.label === fieldValue).value}</p> */}
+        </>
       );
     }
 
@@ -876,7 +883,7 @@ export default function CreateRFQForm({
       return (
         <SelectBox
           options={uomOptions}
-          value={fieldValue}
+          defaultValue={uomOptions.find((option) => option.label === fieldValue)?.value}
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
@@ -885,10 +892,12 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "location") {
+      console.log("locationOptions:----", locationOptions, fieldValue);
+      
       return (
         <SelectBox
           options={locationOptions}
-          value={fieldValue}
+          defaultValue={locationOptions.find((option) => option.label === fieldValue)?.value}
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
@@ -969,7 +978,7 @@ export default function CreateRFQForm({
               label={"Select Template"}
               options={templateOptions}
               onChange={handleTemplateChange}
-              value={selectedTemplate} // Set value instead of defaultValue
+              defaultValue={selectedTemplate} // Set value instead of defaultValue
             />
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
@@ -988,7 +997,7 @@ export default function CreateRFQForm({
                     <SelectBox
                       label={"Select Material Type"}
                       options={sectionOptions}
-                      value={
+                      defaultValue={
                         section?.sectionData?.some((row) => row?._destroy)
                           ? "Select Material Type"
                           : sectionOptions?.find(
@@ -1001,15 +1010,15 @@ export default function CreateRFQForm({
                     />
                   </div>
                   <div className="flex-grow-1">
-                    {console.log(
+                    {/* {console.log(
                       "subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",
                       subTypeId,
                       subSectionOptions
-                    )}
+                    )} */}
                     <SelectBox
                       label={"Select Sub Material Type"}
                       options={subSectionOptions}
-                      value={
+                      defaultValue={
                         subSectionOptions?.find(
                           (option) => option.value === subTypeId
                         )?.value || ""
@@ -1048,11 +1057,11 @@ export default function CreateRFQForm({
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => {
-                    console.log("Materials options:", materials);
-                    console.log(
-                      "Selected value for descriptionOfItem:",
-                      section?.sectionData[rowIndex]?.descriptionOfItem
-                    );
+                    // console.log("Materials options:", materials);
+                    // console.log(
+                    //   "Selected value for descriptionOfItem:",
+                    //   section?.sectionData[rowIndex]?.descriptionOfItem
+                    // );
                     return (
                       <SelectBox
                         options={materials} // Ensure materials is an array of objects with `label` and `value`
@@ -1071,11 +1080,11 @@ export default function CreateRFQForm({
                     );
                   },
                   unit: (cell, rowIndex) => {
-                    console.log("UOM options:", uomOptions);
-                    console.log(
-                      "Selected value for unit:",
-                      section?.sectionData[rowIndex]?.unit
-                    );
+                    // console.log("UOM options:", uomOptions);
+                    // console.log(
+                    //   "Selected value for unit:",
+                    //   section?.sectionData[rowIndex]?.unit
+                    // );
                     return (
                       <SelectBox
                         options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
@@ -1087,11 +1096,11 @@ export default function CreateRFQForm({
                     );
                   },
                   location: (cell, rowIndex) => {
-                    console.log("Location options:", locationOptions);
-                    console.log(
-                      "Selected value for location:",
-                      section?.sectionData[rowIndex]?.location
-                    );
+                    // console.log("Location options:", locationOptions);
+                    // console.log(
+                    //   "Selected value for location:",
+                    //   section?.sectionData[rowIndex]?.location
+                    // );
                     return (
                       <SelectBox
                         options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
@@ -1174,7 +1183,7 @@ export default function CreateRFQForm({
                     <input
                       className="form-control"
                       type="number"
-                      value={""}
+                      value={cell}
                       onChange={(e) =>
                         handleInputChange(
                           e.target.value,
@@ -1273,7 +1282,7 @@ export default function CreateRFQForm({
             value={editField.fieldName}
             onChange={(e) => {
               setEditField({ ...editField, fieldName: e.target.value });
-              console.log("inputVal", e.target.value);
+              // console.log("inputVal", e.target.value);
             }}
             placeholder="Enter Field Name"
           />
