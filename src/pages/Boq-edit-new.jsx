@@ -382,34 +382,106 @@ const EditBOQNew = () => {
   const [table1Rows, setTable1Rows] = useState([{ id: 1, value: "" }]);
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: "" }]);
   const [count, setcount] = useState([]);
-  const [counter, setcounter] = useState(0);
-
-  useEffect(() => {
-    if (boqDetails?.boq_sub_items) {
-      setcounter(boqDetails.boq_sub_items.length);
-      
-
-      const existingBoqItems = boqDetails?.boq_sub_items?.map((item) => ({
-        id: item.id || newId, // Keep existing ID or assign new
-        name: item.name || "",
-        description: item.description || "",
-        notes: item.notes || "",
-        remarks: item.remarks || "",
-        cost_quantity: item.cost_quantity || 0,
-        uom_id: item.uom_id || null,
-        materials: item.materials || [],
-        assets: item.assets || [],
-      })) || [];
-      setBoqSubItems((prevItems) => [...existingBoqItems]);
+  const [counter, setCounter] = useState(0);
 
 
-
-
-
-
-    }
-  }, [boqDetails]); // Runs when `boqDetails` updates
   
+  useEffect(() => {
+    if (!boqDetails?.boq_sub_items) return;
+  
+    setCounter(boqDetails.boq_sub_items.length);
+  
+    const existingBoqItems = boqDetails.boq_sub_items.map((item) => ({
+      id: item.id || crypto.randomUUID(),
+      name: item.name || "",
+      description: item.description || "",
+      notes: item.notes || "",
+      remarks: item.remarks || "",
+      cost_quantity: item.cost_quantity || 0,
+      uom_id: item.uom_id || null,
+      materials: item.materials || [], // Fetch materials from API
+      assets: item.assets || [],
+    }));
+  
+    setBoqSubItems(existingBoqItems);
+  
+    // ✅ Merge API materials with existing ones in `materials2`
+    setMaterials2((prev) => {
+      const updatedMaterials = { ...prev };
+  
+      existingBoqItems.forEach((item) => {
+        const existingMaterials = updatedMaterials[item.id] || [];
+        const newMaterials = item.materials || [];
+  
+        // Ensure all materials use `material_id`
+        const normalizedExistingMaterials = existingMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id, // Normalize material_id
+        }));
+        const normalizedNewMaterials = newMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id, // Normalize material_id
+        }));
+  
+        // Avoid duplicates using `Set`
+        const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+        const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+  
+        updatedMaterials[item.id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
+      });
+  
+      return updatedMaterials;
+    });
+  }, [boqDetails]); // Runs when API data updates
+  
+  // ✅ Function to add new materials dynamically
+  const handleAddMaterials2 = (id, newMaterials) => {
+    setMaterials2((prev) => {
+      const updatedMaterials = { ...prev };
+  
+      if (!updatedMaterials[id]) {
+        updatedMaterials[id] = [];
+      }
+  
+      // Normalize `material_id`
+      const normalizedExistingMaterials = updatedMaterials[id].map((m) => ({
+        ...m,
+        material_id: m.material_id || m.id,
+      }));
+      const normalizedNewMaterials = newMaterials.map((m) => ({
+        ...m,
+        material_id: m.material_id || m.id,
+      }));
+  
+      // Avoid duplicates using `Set`
+      const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+      const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+  
+      updatedMaterials[id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
+  
+      return updatedMaterials;
+    });
+  
+    // ✅ Sync with `boqSubItems`
+    setBoqSubItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              materials: [
+                ...item.materials,
+                ...newMaterials.filter(
+                  (m) => !item.materials.some((em) => em.material_id === (m.material_id || m.id))
+                ),
+              ],
+            }
+          : item
+      )
+    );
+  };
+  
+
+
 
   // bootstrap modal
   const toggleRow = (rowIndex) => {
@@ -445,23 +517,23 @@ const EditBOQNew = () => {
   };
 
   // Function to delete a row from Table 1
-//   const deleteRowFromTable1 = (id) => {
-//     // const newValue = count.pop()
-//     // console.log("aa", newValue)
-//     // setcount(newValue)
-//     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
-//     // setcount(count.filter((row) => row.id !== id));
-//     // setcounter(counter - 1);
+  //   const deleteRowFromTable1 = (id) => {
+  //     // const newValue = count.pop()
+  //     // console.log("aa", newValue)
+  //     // setcount(newValue)
+  //     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
+  //     // setcount(count.filter((row) => row.id !== id));
+  //     // setCounter(counter - 1);
 
-//     // Remove the row from count
-//     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+  //     // Remove the row from count
+  //     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
 
-//     // Remove the corresponding BOQ sub-item
-//     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  //     // Remove the corresponding BOQ sub-item
+  //     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
 
-//     // Decrement the counter safely
-//     setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
-//   };
+  //     // Decrement the counter safely
+  //     setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+  //   };
 
   // Function to delete a row from Table 2
   const deleteRowFromTable2 = (id) => {
@@ -592,20 +664,8 @@ const EditBOQNew = () => {
   const handleOpenModal2 = () => setShowModal2(true);
   const handleCloseModal2 = () => setShowModal2(false);
 
-  const handleAddMaterials2 = (id, newMaterials) => {
-    setMaterials2((prev) => {
-      const updatedMaterials = { ...prev };
 
-      if (!updatedMaterials[id]) {
-        updatedMaterials[id] = [];
-      }
-
-      // Directly add new materials without filtering duplicates
-      updatedMaterials[id] = [...updatedMaterials[id], ...newMaterials];
-
-      return updatedMaterials;
-    });
-  };
+  
 
 
   // const handleAddMaterials2 = (newMaterials) => {
@@ -1722,43 +1782,43 @@ const EditBOQNew = () => {
     //  setSelectedUnit(updatedSelectedUnit);
   };
 
- 
-  
-//   const addRowToTable1 = () => {
-//     setcounter((prevCounter) => {
-//       const newId = prevCounter + 1; // Ensures unique IDs
-//       console.log("New ID:", newId);
-  
-//       // Update count state separately
-//       setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
-  
-//       // Create a new BOQ sub-item row
-//       const newBoqSubItem = {
-//         id: newId,
-//         name: "",
-//         description: "",
-//         notes: "",
-//         remarks: "",
-//         cost_quantity: 0,
-//         uom_id: null,
-//         materials: [], // Fresh copy
-//         assets: [] // Fresh copy
-//       };
-  
-//       // Merge existing items and new item
-//       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-  
-//       return newId; // Ensures correct counter update
-//     });
-//   };
-  
-  
-  
-// Modified addRowToTable1 function
-const addRowToTable1 = () => {
-    setcounter((prevCounter) => {
+
+
+  //   const addRowToTable1 = () => {
+  //     setCounter((prevCounter) => {
+  //       const newId = prevCounter + 1; // Ensures unique IDs
+  //       console.log("New ID:", newId);
+
+  //       // Update count state separately
+  //       setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
+
+  //       // Create a new BOQ sub-item row
+  //       const newBoqSubItem = {
+  //         id: newId,
+  //         name: "",
+  //         description: "",
+  //         notes: "",
+  //         remarks: "",
+  //         cost_quantity: 0,
+  //         uom_id: null,
+  //         materials: [], // Fresh copy
+  //         assets: [] // Fresh copy
+  //       };
+
+  //       // Merge existing items and new item
+  //       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
+
+  //       return newId; // Ensures correct counter update
+  //     });
+  //   };
+
+
+
+  // Modified addRowToTable1 function
+  const addRowToTable1 = () => {
+    setCounter((prevCounter) => {
       const newId = prevCounter + 1;
-      
+
       // Create a new BOQ sub-item row with proper structure
       const newBoqSubItem = {
         id: newId,
@@ -1774,7 +1834,7 @@ const addRowToTable1 = () => {
 
       // Update count state
       setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
-      
+
       // Update boqSubItems state
       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
 
@@ -1783,16 +1843,16 @@ const addRowToTable1 = () => {
   };
 
 
-// Modified deleteRowFromTable1 function
-const deleteRowFromTable1 = (id) => {
+  // Modified deleteRowFromTable1 function
+  const deleteRowFromTable1 = (id) => {
     // Remove from count state
     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
-    
+
     // Remove from boqSubItems state
     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    
+
     // Decrement counter
-    setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+    setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
   };
 
 
@@ -2641,23 +2701,23 @@ const deleteRowFromTable1 = (id) => {
     setMaterials((prev) => {
       // Clone the previous state to avoid mutation
       const newMaterials = { ...prev };
-      
+
       // Only process the current boqSubItemId
       if (newMaterials[boqSubItemId]) {
-        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
+        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) =>
           !selectedMaterials.some(
-            selected => 
+            selected =>
               selected.materialId === material.id &&
               selected.rowIndex === index &&
               selected.boqSubItemId === boqSubItemId
           )
         );
       }
-      
+
       // console.log("Updated materials:", newMaterials);
       return newMaterials;
     });
-  
+
     // Update dependent states with boqSubItemId-aware cleanup
     const updateSelection = (selectionArray = []) =>
       selectedMaterials
@@ -2669,7 +2729,7 @@ const deleteRowFromTable1 = (id) => {
           }
           return acc;
         }, [...selectionArray]);
-  
+
     // Update all dependent states
     setSelectedSubTypes(prev => updateSelection(prev));
     setSelectedColors(prev => updateSelection(prev));
@@ -2680,22 +2740,22 @@ const deleteRowFromTable1 = (id) => {
     setWastages(prev => updateSelection(prev));
     setTotalEstimatedQtyWastages(prev => updateSelection(prev));
     setSelectedGenericSpecifications(prev => updateSelection(prev));
-  
+
     // Clean up selected materials for this boqSubItemId
     setSelectedMaterials(prev =>
-      prev.filter(selected => 
-        !prev.some(s => 
+      prev.filter(selected =>
+        !prev.some(s =>
           s.boqSubItemId === boqSubItemId &&
           ![boqSubItemId]?.some(
-            (material, index) => 
-              material.id === s.materialId && 
+            (material, index) =>
+              material.id === s.materialId &&
               index === s.rowIndex
           )
         )
       )
     );
   };
-  
+
   return (
     <>
       <div className="website-content">
@@ -2984,7 +3044,6 @@ const deleteRowFromTable1 = (id) => {
 
                           <h1>predefinedMaterialsData</h1>*/}
 
-                            <pre>{JSON.stringify(predefinedMaterials, null, 2)}</pre>
 
                             {/* <pre>{JSON.stringify(localMaterialErrors, null, 2)}</pre> */}
 
@@ -3579,494 +3638,501 @@ const deleteRowFromTable1 = (id) => {
                 </>
               )}
 
-            
-                  
 
 
 
-                  {showBOQSubItem && (
-  <>
-    <CollapsibleCard title="BOQ Sub-Item">
-      <div className="card mx-3 mt-2">
-        <div className="card-body mt-0 pt-0">
-          <div className="mt-3">
-            <div className="my-4">
-              <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                <table className="tbl-container" style={{ borderCollapse: "collapse" }}>
-                  <thead style={{ zIndex: "1" }}>
-                    <tr>
-                      <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                        <input type="checkbox" />
-                      </th>
-                      <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
-                        Sub Item Name <span>*</span>
-                      </th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Description</th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Notes</th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
-                      <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost Quantity <span>*</span></th>
-                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Render existing BOQ sub-items from API */}
-                    {boqSubItems.map((subItem, index) => (
-                      <React.Fragment key={subItem.id}>
-                        <tr>
-                          <td>
-                            <input type="checkbox" />
-                          </td>
-                          <td className="text-center">
-                            <button
-                              className="btn btn-link p-0"
-                              onClick={() => toggleRow(subItem.id)}
-                              aria-label="Toggle row visibility"
-                            >
-                              {expandedRows.includes(subItem.id) ? (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  stroke="black"
-                                  strokeWidth="1"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  fill=" #e0e0e0"
-                                >
-                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                  <line x1="8" y1="12" x2="16" y2="12" />
-                                </svg>
-                              ) : (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  stroke="black"
-                                  strokeWidth="1"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  fill=" #e0e0e0"
-                                >
-                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                  <line x1="12" y1="8" x2="12" y2="16" />
-                                  <line x1="8" y1="12" x2="16" y2="12" />
-                                </svg>
-                              )}
-                            </button>
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter Sub Item Name"
-                              value={subItem.name || ''}
-                              onChange={(e) =>
-                                handleInputChange2(
-                                  index,
-                                  "name",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Enter Description"
-                              className="form-control"
-                              value={subItem.description || ''}
-                              onChange={(e) =>
-                                handleInputChange2(
-                                  index,
-                                  "description",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Enter Notes"
-                              className="form-control"
-                              value={subItem.notes || ''}
-                              onChange={(e) =>
-                                handleInputChange2(
-                                  index,
-                                  "notes",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Enter Remark"
-                              value={subItem.remarks || ''}
-                              className="form-control"
-                              onChange={(e) =>
-                                handleInputChange2(
-                                  index,
-                                  "remarks",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <SingleSelector
-                              onChange={(selectedOption) =>
-                                handleUnitChangeForRow(
-                                  index,
-                                  selectedOption
-                                )
-                              }
-                              value={selectedUnitSubRow[index] || 
-                                (subItem.unit_of_measure_id ? 
-                                  unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id) : 
-                                  null)}
-                              options={unitOfMeasures}
-                              placeholder={`Select UOM`}
-                            />
-                          </td>
-                          <td colSpan={2}>
-                            <input
-                              type="number"
-                              value={subItem.cost_quantity || ''}
-                              onKeyDown={(e) => {
-                                if (
-                                  e.key === "-" ||
-                                  e.key === "e" ||
-                                  e.key === "E"
-                                ) {
-                                  e.preventDefault();
-                                }
-                              }}
-                              min="0"
-                              placeholder="Enter Quantity"
-                              className="form-control"
-                              onChange={(e) =>
-                                handleInputChange2(
-                                  index,
-                                  "cost_quantity",
-                                  parseFloat(e.target.value)
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width={16}
-                              height={16}
-                              fill="currentColor"
-                              className="bi bi-file-earmark-text"
-                              viewBox="0 0 16 16"
-                              onClick={handleIconClick}
-                            >
-                              <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                              <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                            </svg>
-                            <input
-                              id="file-input"
-                              type="file"
-                              style={{ display: "none" }}
-                              onChange={handleFileChange}
-                            />
-                            {file && (
-                              <div>Selected File: {file.name}</div>
-                            )}
-                          </td>
-                        </tr>
-                        {expandedRows.includes(subItem.id) && (
-                          <tr>
-                            <td colSpan={11}>
-                              <BOQSubItemTable
-                                materials={materials2[subItem.id] || subItem.materials || []}
-                                handleAddMaterials={(newMaterials) =>
-                                  handleAddMaterials2(
-                                    subItem.id,
-                                    newMaterials
-                                  )
-                                }
-                                setMaterials={setMaterials2}
-                                Assets={Assets2[subItem.id] || subItem.assets || []}
-                                setAssets={setAssets2}
-                                handleDeleteAll={handleDeleteAll2}
-                                handleSelectRow={handleSelectRow2}
-                                handleAddAssets={(newMaterials) =>
-                                  handleAddAssets2(
-                                    subItem.id,
-                                    newMaterials
-                                  )
-                                }
-                                handleDeleteAllAssets={handleDeleteAllAssets2}
-                                handleSelectRowAsset={handleSelectRowAssets2}
-                                predefinedMaterialsData={(data) => updatePredefinedMaterialsData(subItem.id, data)}
-                                predefinedAssetsData={(data) => updatePredefinedAssetsData(subItem.id, data)}
-                                boqSubItemId={subItem.id}
-                                boqSubItems={boqSubItems.filter((item) => item.id === subItem.id)}
-                                setBoqSubItems={setBoqSubItems}
-                                setMaterialErrors={setMaterialErrors}
-                                setAssetsErrors={setAssetsErrors}
-                              />
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                    
-                    {/* Render new rows being added */}
-                    {count.map((el, index) => {
-                      // Skip if this is an existing item
-                      if (boqSubItems.some(item => item.id === el.id)) {
-                        return null;
-                      }
-                      return (
-                        <React.Fragment key={index}>
-                          <tr>
-                            <td>
-                              <input type="checkbox" />
-                            </td>
-                            <td className="text-center">
+
+
+              {showBOQSubItem && (
+                <>
+
+
+                  <pre>{JSON.stringify(materials2, null, 2)}</pre>
+
+                  <CollapsibleCard title="BOQ Sub-Item">
+                    <div className="card mx-3 mt-2">
+                      <div className="card-body mt-0 pt-0">
+                        <div className="mt-3">
+                          <div className="my-4">
+                            <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                              <table className="tbl-container" style={{ borderCollapse: "collapse" }}>
+                                <thead style={{ zIndex: "1" }}>
+                                  <tr>
+                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                      <input type="checkbox" />
+                                    </th>
+                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
+                                      Sub Item Name <span>*</span>
+                                    </th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Description</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Notes</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
+                                    <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost Quantity <span>*</span></th>
+                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {/* Render existing BOQ sub-items from API */}
+                                  {boqSubItems.map((subItem, index) => (
+                                    <React.Fragment key={subItem.id}>
+                                      <tr>
+                                        <td>
+                                          <input type="checkbox" />
+                                        </td>
+                                        <td className="text-center">
+                                          <button
+                                            className="btn btn-link p-0"
+                                            onClick={() => toggleRow(subItem.id)}
+                                            aria-label="Toggle row visibility"
+                                          >
+                                            {expandedRows.includes(subItem.id) ? (
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                fill=" #e0e0e0"
+                                              >
+                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                              </svg>
+                                            ) : (
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                stroke="black"
+                                                strokeWidth="1"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                fill=" #e0e0e0"
+                                              >
+                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                              </svg>
+                                            )}
+                                          </button>
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Enter Sub Item Name"
+                                            value={subItem.name || ''}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "name",
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            placeholder="Enter Description"
+                                            className="form-control"
+                                            value={subItem.description || ''}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "description",
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            placeholder="Enter Notes"
+                                            className="form-control"
+                                            value={subItem.notes || ''}
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "notes",
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            placeholder="Enter Remark"
+                                            value={subItem.remarks || ''}
+                                            className="form-control"
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "remarks",
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          <SingleSelector
+                                            onChange={(selectedOption) =>
+                                              handleUnitChangeForRow(
+                                                index,
+                                                selectedOption
+                                              )
+                                            }
+                                            value={selectedUnitSubRow[index] ||
+                                              (subItem.unit_of_measure_id ?
+                                                unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id) :
+                                                null)}
+                                            options={unitOfMeasures}
+                                            placeholder={`Select UOM`}
+                                          />
+                                        </td>
+                                        <td colSpan={2}>
+                                          <input
+                                            type="number"
+                                            value={subItem.cost_quantity || ''}
+                                            onKeyDown={(e) => {
+                                              if (
+                                                e.key === "-" ||
+                                                e.key === "e" ||
+                                                e.key === "E"
+                                              ) {
+                                                e.preventDefault();
+                                              }
+                                            }}
+                                            min="0"
+                                            placeholder="Enter Quantity"
+                                            className="form-control"
+                                            onChange={(e) =>
+                                              handleInputChange2(
+                                                index,
+                                                "cost_quantity",
+                                                parseFloat(e.target.value)
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width={16}
+                                            height={16}
+                                            fill="currentColor"
+                                            className="bi bi-file-earmark-text"
+                                            viewBox="0 0 16 16"
+                                            onClick={handleIconClick}
+                                          >
+                                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                                          </svg>
+                                          <input
+                                            id="file-input"
+                                            type="file"
+                                            style={{ display: "none" }}
+                                            onChange={handleFileChange}
+                                          />
+                                          {file && (
+                                            <div>Selected File: {file.name}</div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                      {expandedRows.includes(subItem.id) && (
+                                        <tr>
+                                          <td colSpan={11}>
+                                            <BOQSubItemTable
+                                              materials={materials2[subItem.id] || subItem.materials || []}
+                                              handleAddMaterials={(newMaterials) =>
+                                                handleAddMaterials2(
+                                                  subItem.id,
+                                                  newMaterials
+                                                )
+                                              }
+                                              setMaterials={setMaterials2}
+                                              Assets={Assets2[subItem.id] || subItem.assets || []}
+                                              setAssets={setAssets2}
+                                              handleDeleteAll={handleDeleteAll2}
+                                              handleSelectRow={handleSelectRow2}
+                                              handleAddAssets={(newMaterials) =>
+                                                handleAddAssets2(
+                                                  subItem.id,
+                                                  newMaterials
+                                                )
+                                              }
+                                              handleDeleteAllAssets={handleDeleteAllAssets2}
+                                              handleSelectRowAsset={handleSelectRowAssets2}
+                                              predefinedMaterialsData={(data) => updatePredefinedMaterialsData(subItem.id, data)}
+                                              predefinedAssetsData={(data) => updatePredefinedAssetsData(subItem.id, data)}
+                                              boqSubItemId={subItem.id}
+                                              boqSubItems={boqSubItems.filter((item) => item.id === subItem.id)}
+                                              setBoqSubItems={setBoqSubItems}
+                                              setMaterialErrors={setMaterialErrors}
+                                              setAssetsErrors={setAssetsErrors}
+                                              boqDetails={boqDetails}
+                                              setCounter={setCounter}
+
+                                            />
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+
+                                  {/* Render new rows being added */}
+                                  {count.map((el, index) => {
+                                    // Skip if this is an existing item
+                                    if (boqSubItems.some(item => item.id === el.id)) {
+                                      return null;
+                                    }
+                                    return (
+                                      <React.Fragment key={index}>
+                                        <tr>
+                                          <td>
+                                            <input type="checkbox" />
+                                          </td>
+                                          <td className="text-center">
+                                            <button
+                                              className="btn btn-link p-0"
+                                              onClick={() => toggleRow(el.id)}
+                                              aria-label="Toggle row visibility"
+                                            >
+                                              {expandedRows.includes(el.id) ? (
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="24"
+                                                  height="24"
+                                                  viewBox="0 0 24 24"
+                                                  stroke="black"
+                                                  strokeWidth="1"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  fill=" #e0e0e0"
+                                                >
+                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                </svg>
+                                              ) : (
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="24"
+                                                  height="24"
+                                                  viewBox="0 0 24 24"
+                                                  stroke="black"
+                                                  strokeWidth="1"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  fill=" #e0e0e0"
+                                                >
+                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                  <line x1="12" y1="8" x2="12" y2="16" />
+                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                </svg>
+                                              )}
+                                            </button>
+                                          </td>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              placeholder="Enter Sub Item Name"
+                                              value={expandedRows.name}
+                                              onChange={(e) =>
+                                                handleInputChange2(
+                                                  index,
+                                                  "name",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              placeholder="Enter Description"
+                                              className="form-control"
+                                              value={expandedRows.description}
+                                              onChange={(e) =>
+                                                handleInputChange2(
+                                                  index,
+                                                  "description",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              placeholder="Enter Notes"
+                                              className="form-control"
+                                              value={expandedRows.notes}
+                                              onChange={(e) =>
+                                                handleInputChange2(
+                                                  index,
+                                                  "notes",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              placeholder="Enter Remark"
+                                              value={expandedRows.remarks}
+                                              className="form-control"
+                                              onChange={(e) =>
+                                                handleInputChange2(
+                                                  index,
+                                                  "remarks",
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <SingleSelector
+                                              onChange={(selectedOption) =>
+                                                handleUnitChangeForRow(
+                                                  index,
+                                                  selectedOption
+                                                )
+                                              }
+                                              value={selectedUnitSubRow[index]}
+                                              options={unitOfMeasures}
+                                              placeholder={`Select UOM`}
+                                            />
+                                          </td>
+                                          <td colSpan={2}>
+                                            <input
+                                              type="number"
+                                              value={expandedRows.qty}
+                                              onKeyDown={(e) => {
+                                                if (
+                                                  e.key === "-" ||
+                                                  e.key === "e" ||
+                                                  e.key === "E"
+                                                ) {
+                                                  e.preventDefault();
+                                                }
+                                              }}
+                                              min="0"
+                                              placeholder="Enter Quantity"
+                                              className="form-control"
+                                              onChange={(e) =>
+                                                handleInputChange2(
+                                                  index,
+                                                  "cost_quantity",
+                                                  parseFloat(e.target.value)
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width={16}
+                                              height={16}
+                                              fill="currentColor"
+                                              className="bi bi-file-earmark-text"
+                                              viewBox="0 0 16 16"
+                                              onClick={handleIconClick}
+                                            >
+                                              <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                              <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                                            </svg>
+                                            <input
+                                              id="file-input"
+                                              type="file"
+                                              style={{ display: "none" }}
+                                              onChange={handleFileChange}
+                                            />
+                                            {file && (
+                                              <div>Selected File: {file.name}</div>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        {expandedRows.includes(el.id) && (
+                                          <tr>
+                                            <td colSpan={11}>
+                                              <EditBoqSub
+                                                materials={materials2[el.id] || []}
+                                                handleAddMaterials={(newMaterials) =>
+                                                  handleAddMaterials2(
+                                                    el.id,
+                                                    newMaterials
+                                                  )
+                                                }
+                                                setMaterials={setMaterials2}
+                                                Assets={Assets2[el.id] || []}
+                                                setAssets={setAssets2}
+                                                handleDeleteAll={handleDeleteAll2}
+                                                handleSelectRow={handleSelectRow2}
+                                                handleAddAssets={(newMaterials) =>
+                                                  handleAddAssets2(
+                                                    el.id,
+                                                    newMaterials
+                                                  )
+                                                }
+                                                handleDeleteAllAssets={handleDeleteAllAssets2}
+                                                handleSelectRowAsset={handleSelectRowAssets2}
+                                                predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
+                                                predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
+                                                boqSubItemId={el.id}
+                                                boqSubItems={boqSubItems.filter((item) => item.id === el.id)}
+                                                setBoqSubItems={setBoqSubItems}
+                                                setMaterialErrors={setMaterialErrors}
+                                                setAssetsErrors={setAssetsErrors}
+                                              />
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div className="row mt-3 mx-3">
+                            <p>
                               <button
-                                className="btn btn-link p-0"
-                                onClick={() => toggleRow(el.id)}
-                                aria-label="Toggle row visibility"
+                                style={{ color: "var(--red)" }}
+                                className="fw-bold text-decoration-underline border-0 bg-white"
+                                onClick={addRowToTable1}
                               >
-                                {expandedRows.includes(el.id) ? (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    stroke="black"
-                                    strokeWidth="1"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    fill=" #e0e0e0"
-                                  >
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                  </svg>
-                                ) : (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    stroke="black"
-                                    strokeWidth="1"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    fill=" #e0e0e0"
-                                  >
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                  </svg>
-                                )}
+                                Add Row
+                              </button>{" "}
+                              |
+                              <button
+                                style={{ color: "var(--red)" }}
+                                className="fw-bold text-decoration-underline border-0 bg-white"
+                                onClick={() => deleteRowFromTable1(counter)}
+                              >
+                                Delete Row
                               </button>
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Enter Sub Item Name"
-                                value={expandedRows.name}
-                                onChange={(e) =>
-                                  handleInputChange2(
-                                    index,
-                                    "name",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                placeholder="Enter Description"
-                                className="form-control"
-                                value={expandedRows.description}
-                                onChange={(e) =>
-                                  handleInputChange2(
-                                    index,
-                                    "description",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                placeholder="Enter Notes"
-                                className="form-control"
-                                value={expandedRows.notes}
-                                onChange={(e) =>
-                                  handleInputChange2(
-                                    index,
-                                    "notes",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                placeholder="Enter Remark"
-                                value={expandedRows.remarks}
-                                className="form-control"
-                                onChange={(e) =>
-                                  handleInputChange2(
-                                    index,
-                                    "remarks",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <SingleSelector
-                                onChange={(selectedOption) =>
-                                  handleUnitChangeForRow(
-                                    index,
-                                    selectedOption
-                                  )
-                                }
-                                value={selectedUnitSubRow[index]}
-                                options={unitOfMeasures}
-                                placeholder={`Select UOM`}
-                              />
-                            </td>
-                            <td colSpan={2}>
-                              <input
-                                type="number"
-                                value={expandedRows.qty}
-                                onKeyDown={(e) => {
-                                  if (
-                                    e.key === "-" ||
-                                    e.key === "e" ||
-                                    e.key === "E"
-                                  ) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                                min="0"
-                                placeholder="Enter Quantity"
-                                className="form-control"
-                                onChange={(e) =>
-                                  handleInputChange2(
-                                    index,
-                                    "cost_quantity",
-                                    parseFloat(e.target.value)
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={16}
-                                height={16}
-                                fill="currentColor"
-                                className="bi bi-file-earmark-text"
-                                viewBox="0 0 16 16"
-                                onClick={handleIconClick}
-                              >
-                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                              </svg>
-                              <input
-                                id="file-input"
-                                type="file"
-                                style={{ display: "none" }}
-                                onChange={handleFileChange}
-                              />
-                              {file && (
-                                <div>Selected File: {file.name}</div>
-                              )}
-                            </td>
-                          </tr>
-                          {expandedRows.includes(el.id) && (
-                            <tr>
-                              <td colSpan={11}>
-                                <EditBoqSub
-                                  materials={materials2[el.id] || []}
-                                  handleAddMaterials={(newMaterials) =>
-                                    handleAddMaterials2(
-                                      el.id,
-                                      newMaterials
-                                    )
-                                  }
-                                  setMaterials={setMaterials2}
-                                  Assets={Assets2[el.id] || []}
-                                  setAssets={setAssets2}
-                                  handleDeleteAll={handleDeleteAll2}
-                                  handleSelectRow={handleSelectRow2}
-                                  handleAddAssets={(newMaterials) =>
-                                    handleAddAssets2(
-                                      el.id,
-                                      newMaterials
-                                    )
-                                  }
-                                  handleDeleteAllAssets={handleDeleteAllAssets2}
-                                  handleSelectRowAsset={handleSelectRowAssets2}
-                                  predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
-                                  predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
-                                  boqSubItemId={el.id}
-                                  boqSubItems={boqSubItems.filter((item) => item.id === el.id)}
-                                  setBoqSubItems={setBoqSubItems}
-                                  setMaterialErrors={setMaterialErrors}
-                                  setAssetsErrors={setAssetsErrors}
-                                />
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="row mt-3 mx-3">
-              <p>
-                <button
-                  style={{ color: "var(--red)" }}
-                  className="fw-bold text-decoration-underline border-0 bg-white"
-                  onClick={addRowToTable1}
-                >
-                  Add Row
-                </button>{" "}
-                |
-                <button
-                  style={{ color: "var(--red)" }}
-                  className="fw-bold text-decoration-underline border-0 bg-white"
-                  onClick={() => deleteRowFromTable1(counter)}
-                >
-                  Delete Row
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </CollapsibleCard>
-  </>
-)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleCard>
+                </>
+              )}
 
 
 
 
-             
+
             </div>
             <div className="row mt-2 justify-content-center mb-5">
               <div className="col-md-2">
