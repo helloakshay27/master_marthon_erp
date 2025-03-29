@@ -445,23 +445,23 @@ const EditBOQNew = () => {
   };
 
   // Function to delete a row from Table 1
-  const deleteRowFromTable1 = (id) => {
-    // const newValue = count.pop()
-    // console.log("aa", newValue)
-    // setcount(newValue)
-    // setTable1Rows(table1Rows.filter((row) => row.id !== id));
-    // setcount(count.filter((row) => row.id !== id));
-    // setcounter(counter - 1);
+//   const deleteRowFromTable1 = (id) => {
+//     // const newValue = count.pop()
+//     // console.log("aa", newValue)
+//     // setcount(newValue)
+//     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
+//     // setcount(count.filter((row) => row.id !== id));
+//     // setcounter(counter - 1);
 
-    // Remove the row from count
-    setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+//     // Remove the row from count
+//     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
 
-    // Remove the corresponding BOQ sub-item
-    setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+//     // Remove the corresponding BOQ sub-item
+//     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
 
-    // Decrement the counter safely
-    setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
-  };
+//     // Decrement the counter safely
+//     setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+//   };
 
   // Function to delete a row from Table 2
   const deleteRowFromTable2 = (id) => {
@@ -1724,15 +1724,42 @@ const EditBOQNew = () => {
 
  
   
-  const addRowToTable1 = () => {
+//   const addRowToTable1 = () => {
+//     setcounter((prevCounter) => {
+//       const newId = prevCounter + 1; // Ensures unique IDs
+//       console.log("New ID:", newId);
+  
+//       // Update count state separately
+//       setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
+  
+//       // Create a new BOQ sub-item row
+//       const newBoqSubItem = {
+//         id: newId,
+//         name: "",
+//         description: "",
+//         notes: "",
+//         remarks: "",
+//         cost_quantity: 0,
+//         uom_id: null,
+//         materials: [], // Fresh copy
+//         assets: [] // Fresh copy
+//       };
+  
+//       // Merge existing items and new item
+//       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
+  
+//       return newId; // Ensures correct counter update
+//     });
+//   };
+  
+  
+  
+// Modified addRowToTable1 function
+const addRowToTable1 = () => {
     setcounter((prevCounter) => {
-      const newId = prevCounter + 1; // Ensures unique IDs
-      console.log("New ID:", newId);
-  
-      // Update count state separately
-      setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
-  
-      // Create a new BOQ sub-item row
+      const newId = prevCounter + 1;
+      
+      // Create a new BOQ sub-item row with proper structure
       const newBoqSubItem = {
         id: newId,
         name: "",
@@ -1741,21 +1768,32 @@ const EditBOQNew = () => {
         remarks: "",
         cost_quantity: 0,
         uom_id: null,
-        materials: [], // Fresh copy
-        assets: [] // Fresh copy
+        materials: [], // Initialize empty materials array
+        assets: []    // Initialize empty assets array
       };
-  
-      // Merge existing items and new item
+
+      // Update count state
+      setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
+      
+      // Update boqSubItems state
       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-  
-      return newId; // Ensures correct counter update
+
+      return newId;
     });
   };
-  
-  
-  
 
 
+// Modified deleteRowFromTable1 function
+const deleteRowFromTable1 = (id) => {
+    // Remove from count state
+    setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+    
+    // Remove from boqSubItems state
+    setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    
+    // Decrement counter
+    setcounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+  };
 
 
 
@@ -3541,729 +3579,494 @@ const EditBOQNew = () => {
                 </>
               )}
 
-              {showBOQSubItem && (
-                <>
-                  <CollapsibleCard title="BOQ Sub-Item">
-                    <div className="card mx-3 mt-2">
-                      <div className="card-body mt-0 pt-0">
-                        <div className="mt-3">
-                          {/* <h1>boqSubItems</h1> */}
-
-                          <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
-
-                          <div className=" my-4">
-                            <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-                              {/* <div className="tbl-container tbl-container-SpecificBOQ mx-3 mt-1"> */}
-                              <table
-                                className="tbl-container"
-                                style={{ borderCollapse: "collapse" }}
-                              >
-                                <thead style={{ zIndex: "1" }}>
-                                  <tr>
-                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                                      <input type="checkbox" />
-                                    </th>
-                                    <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
-                                      Sub Item Name <span>*</span>
-                                    </th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Description</th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Notes</th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
-                                    <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
-                                  </tr>
-                                  <tr>
-                                    {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
-                                    Quantity <span>*</span>
-                                  </th> */}
-                                  </tr>
-                                </thead>
-                                <tbody>
-
-                                  {boqDetails.boq_sub_items && (
-                                    boqDetails.boq_sub_items.map((boqDetail2, index) => (
-                                      <React.Fragment key={boqDetail2.id}>
-                                        <tr>
-                                          <td className="text-start">{index + 1}</td>
-
-
-                                          <td className="text-start">
-                                            <button
-                                              className="btn btn-link p-0"
-                                              onClick={() => toggleBoqDetail(boqDetail2.id)}
-
-                                            >
-                                              {openBoqDetailId === boqDetail2.id ? (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="24"
-                                                  height="24"
-                                                  viewBox="0 0 24 24"
-                                                  fill=" #e0e0e0"
-                                                  stroke="black"
-                                                  strokeWidth="1"
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                >
-                                                  {/* Square */}
-                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                  {/* Minus Icon */}
-                                                  <line x1="8" y1="12" x2="16" y2="12" />
-                                                </svg>
-                                              ) : (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="24"
-                                                  height="24"
-                                                  viewBox="0 0 24 24"
-                                                  fill=" #e0e0e0"
-                                                  stroke="black"
-                                                  strokeWidth="1"
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                >
-                                                  {/* Square */}
-                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                  {/* Plus Icon */}
-                                                  <line x1="12" y1="8" x2="12" y2="16" />
-                                                  <line x1="8" y1="12" x2="16" y2="12" />
-                                                </svg>
-                                              )}
-                                            </button>
-
-                                          </td>
-
-                                          <td className="text-start">
-
-                                            {boqDetail2.name}
-                                          </td>
-                                          <td className="text-start">{boqDetail2.description}</td>
-                                          <td className="text-start">{boqDetail2.notes}</td>
-                                          <td className="text-start">{boqDetail2.remarks}</td>
-                                          <td className="text-start">{boqDetail2.uom}</td>
-                                          <td className="text-start">
-                                            {/* {boqDetail2.cost_quantity} */}
-                                            <input
-                                              className="form-control"
-                                              type="text"
-                                              placeholder=""
-                                              fdprocessedid="qv9ju9"
-                                              value={boqDetail2.cost_quantity}
-                                              onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
-                                            // onChange={(e) =>
-                                            //     handleInputChange("itemName", e.target.value)
-                                            // }
-                                            />
-                                          </td>
-                                          {/* <td></td> */}
-                                          {/* <td></td> */}
-                                        </tr>
-
-                                        {/* Render Materials Table for BOQ Detail in Sub-Category  */}
-                                        {openBoqDetailId === boqDetail2.id && (boqDetail2?.materials || boqDetail2?.boq_sub_items?.materials) && (
-                                          <React.Fragment>
-                                            <tr>
-                                              <td colSpan={13}>
-                                                <div>
-                                                  <CollapsibleCard title="Materials">
-                                                    <div className="card-body mt-0 pt-0">
-                                                      <div className="tbl-container mx-3 mt-1" >
-                                                        <table>
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                                                                <input
-                                                                  type="checkbox"
-                                                                  onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                      setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
-                                                                    } else {
-                                                                      setSelectedMaterials([]); // Deselect all
-                                                                    }
-                                                                  }}
-                                                                  checked={selectedMaterials.length === materials.length && materials.length > 0}
-                                                                />
-                                                                <svg
-                                                                  xmlns="http://www.w3.org/2000/svg"
-                                                                  width={14}
-                                                                  height={14}
-                                                                  fill="currentColor"
-                                                                  className="bi bi-trash3-fill ms-2"
-                                                                  viewBox="0 0 16 16"
-                                                                  onClick={handleDeleteAll} // Delete selected rows on click
-                                                                >
-                                                                  <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                                                </svg>
-                                                              </th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
-                                                              {/* <th rowSpan={2}>Cost QTY</th> */}
-                                                              <th colSpan={3} style={{ width: "200px", whiteSpace: "nowrap" }}>Cost</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Wastage</th>
-                                                              <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Total Estimated Qty Wastage</th>
-                                                            </tr>
-                                                            <tr>
-                                                              <th>Co-Efficient Factor</th>
-                                                              <th colSpan={2}>Estimated Qty</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody>
+            
+                  
 
 
 
-                                                            {boqDetail2?.materials.length > 0 ? (
-                                                              boqDetail2?.materials.map((material, index) => (
-                                                                <tr key={`${material.id}-${index}`}>
-                                                                  <td style={{ width: "100px" }}>
-                                                                    <input
-                                                                      className="ms-5"
-                                                                      type="checkbox"
-                                                                      checked={selectedMaterials.includes(index)} // Use index instead of material.id
-                                                                      onChange={() => handleSelectRow(index)} // Pass index to function
-                                                                    />
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
-                                                                  <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <SingleSelector
-                                                                      options={inventorySubTypes[index] || []}
-                                                                      onChange={(selectedOption) =>
-                                                                        handleSubTypeChange(index, selectedOption)
-                                                                      }
-                                                                      value={selectedSubTypes[index]}
-                                                                      placeholder={`Select Sub-Type`}
-                                                                    />
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <SingleSelector
-                                                                      options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
-                                                                      onChange={(selectedOption) =>
-                                                                        handleGenericSpecificationChange(index, selectedOption)
-                                                                      }
-                                                                      value={selectedGenericSpecifications[index]}
-                                                                      placeholder={`Select Specification`}
-                                                                    />
-                                                                    {/* {localMaterialErrors[index]?.generic_info && (
-                                                                                                                                                                              <p style={{ color: "red" }}>{localMaterialErrors[index].generic_info}</p>
-                                                                                                                                                                            )} */}
-                                                                  </td>
-
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <SingleSelector
-                                                                      options={colors[index] || []}
-                                                                      onChange={(selectedOption) =>
-                                                                        handleColorChange(index, selectedOption)
-                                                                      }
-                                                                      value={selectedColors[index]}
-                                                                      placeholder={`Select Colour`}
-                                                                    />
-                                                                    {/* {localMaterialErrors[index]?.colour && (
-                                                                                                                                                                              <p style={{ color: "red" }}>{localMaterialErrors[index].colour}</p>
-                                                                                                                                                                            )} */}
-                                                                  </td>
-
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <SingleSelector
-                                                                      options={inventoryBrands[index] || []}
-                                                                      onChange={(selectedOption) =>
-                                                                        handleBrandChange(index, selectedOption)
-                                                                      }
-                                                                      value={selectedInventoryBrands[index]}
-                                                                      placeholder={`Select Brand`}
-                                                                    />
-                                                                    {/* {localMaterialErrors[index]?.brand && (
-                                                                                                                                                                              <p style={{ color: "red" }}>{localMaterialErrors[index].brand}</p>
-                                                                                                                                                                            )} */}
-                                                                  </td>
-
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <SingleSelector
-                                                                      options={unitOfMeasures}
-                                                                      onChange={(selectedOption) =>
-                                                                        handleUnitChange2(index, selectedOption)
-                                                                      }
-                                                                      value={selectedUnit2[index]}
-                                                                      placeholder={`Select UOM`}
-                                                                    />
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <input
-                                                                      className="form-control"
-                                                                      type="number"
-                                                                      placeholder="Please Enter co-efficient Factor"
-                                                                      value={coefficientFactors[index] || ""}
-                                                                      onKeyDown={(e) => {
-                                                                        if (e.key === "-" || e.key === "e" || e.key === "E") {
-                                                                          e.preventDefault();
-                                                                        }
-                                                                      }}
-                                                                      min="0"
-                                                                      onChange={(e) =>
-                                                                        handleCoefficientFactorChange(index, e.target.value)
-                                                                      }
-                                                                    />
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }} colSpan={2}>
-                                                                    <input
-                                                                      className="form-control"
-                                                                      type="number"
-                                                                      placeholder="Estimated Quantity"
-                                                                      disabled
-                                                                      value={estimatedQuantities[index] || ""}
-                                                                    />
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <input
-                                                                      className="form-control"
-                                                                      type="number"
-                                                                      placeholder="Please Enter wastage"
-                                                                      value={wastages[index] || ""}
-                                                                      onChange={(e) => handleWastageChange(index, e.target.value)}
-                                                                    />
-
-                                                                    {/* {wastageErrors[index] && <p style={{ color: "red", fontSize: "12px" }}>{wastageErrors[index]}</p>} */}
-                                                                  </td>
-                                                                  <td style={{ width: "300px" }}>
-                                                                    <input
-                                                                      className="form-control"
-                                                                      type="number"
-                                                                      placeholder="Total Estimated Qty Wastage"
-                                                                      disabled
-                                                                      value={totalEstimatedQtyWastages[index] || ""}
-                                                                    />
-                                                                  </td>
-                                                                </tr>
-                                                              ))
-                                                            ) : (
-                                                              <tr>
-                                                                <td colSpan="12" className="text-center">
-                                                                  No materials added yet.
-                                                                </td>
-                                                              </tr>
-                                                            )}
-
-
-
-                                                          </tbody>
-                                                        </table>
-                                                      </div>
-                                                      <div>
-                                                        <button
-                                                          style={{ color: "var(--red)" }}
-                                                          className="fw-bold text-decoration-underline border-0 bg-white ms-3"
-                                                          // onclick="myCreateFunction('table1')"
-                                                          onClick={handleOpenModal}
-                                                        >
-                                                          Add Material
-                                                        </button>{" "}
-                                                        <p>
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        // onclick="myCreateFunction('table1')"
-                        onClick={handleOpenModal}
-                      >
-                        Add Material
-                      </button>{" "}
-                      |
-                      <button
-                        style={{ color: "var(--red)" }}
-                        className="fw-bold text-decoration-underline border-0 bg-white"
-                        onClick={handleDeleteAllMaterial}
-                      >
-                        Delete Material
-                      </button>
-                    </p>
-                                                        
-                                                      </div>
-                                                    </div>
-                                                  </CollapsibleCard>
-
-                                                  <MaterialModal
-                                                    show={showModal}
-                                                    handleClose={handleCloseModal}
-                                                    handleAdd={handleAddMaterials}
-                                                  />
-
-                                                  <CollapsibleCard title="Assets">
-                                                    <div className="card-body mt-0 pt-0">
-                                                      <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                        <table className="w-100">
-                                                          <thead>
-                                                            <tr>
-                                                              <th rowSpan={2}></th>
-                                                              <th rowSpan={2}>Asset Type</th>
-                                                              <th rowSpan={2}>Asset</th>
-                                                              <th rowSpan={2}>Asset Sub-Type</th>
-                                                              <th rowSpan={2}>Generic Specification</th>
-                                                              <th rowSpan={2}>Colour</th>
-                                                              <th rowSpan={2}>Brand</th>
-                                                              <th rowSpan={2}>UOM</th>
-                                                              {/* <th rowSpan={2}>Asset QTY</th> */}
-                                                              <th colSpan={3}>Cost</th>
-                                                              <th rowSpan={2}>Wastage</th>
-                                                              <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                            </tr>
-                                                            <tr>
-                                                              <th>Co-Efficient Factor</th>
-                                                              <th colSpan={2}>Estimated Qty</th>
-                                                            </tr>
-                                                          </thead>
-                                                          <tbody>
-                                                            {boqDetail2.assets.map((asset, index) => (
-                                                              <tr key={asset.id}>
-                                                                <td>{index + 1}</td>
-                                                                <td>{asset.material_type}</td>
-                                                                <td>{asset.material_name}</td>
-                                                                <td>{asset.material_sub_type}</td>
-                                                                <td>{asset.generic_info}</td>
-                                                                <td>{asset.color}</td>
-                                                                <td>{asset.brand}</td>
-                                                                <td>{asset.uom}</td>
-                                                                {/* <td>{asset.asset_quantity}</td> */}
-                                                                <td>{asset.co_efficient_factor}</td>
-                                                                <td colSpan={2}>{asset.estimated_quantity}</td>
-                                                                <td>{asset.wastage}</td>
-                                                                <td>{asset.estimated_quantity_wastage}</td>
-                                                              </tr>
-                                                            ))}
-                                                          </tbody>
-                                                        </table>
-                                                      </div>
-                                                    </div>
-                                                  </CollapsibleCard>
-
-                                                </div>
-                                              </td>
-                                            </tr>
-
-                                          </React.Fragment>
-                                        )}
-
-
-
-
-                                      </React.Fragment>
-                                    ))
-                                  )}
-                                  {count.map((el, index) => (
-                                    <React.Fragment key={index}>
-                                      <tr>
-                                        <td>
-                                          <input type="checkbox" />
-                                        </td>
-
-                                        <td className="text-center">
-                                          <button
-                                            className="btn btn-link p-0"
-                                            onClick={() => toggleRow(el.id)}
-                                            aria-label="Toggle row visibility"
-                                          >
-                                            {expandedRows.includes(el.id) ? (
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                // fill="none"
-                                                stroke="black"
-                                                strokeWidth="1"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                fill=" #e0e0e0"
-                                              >
-                                                {/* Square */}
-                                                <rect
-                                                  x="3"
-                                                  y="3"
-                                                  width="18"
-                                                  height="20"
-                                                  rx="1"
-                                                  ry="1"
-                                                />
-                                                {/* Minus Icon */}
-                                                <line
-                                                  x1="8"
-                                                  y1="12"
-                                                  x2="16"
-                                                  y2="12"
-                                                />
-                                              </svg>
-                                            ) : (
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                // fill="none"
-                                                stroke="black"
-                                                strokeWidth="1"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                fill=" #e0e0e0"
-                                              >
-                                                {/* Square */}
-                                                <rect
-                                                  x="3"
-                                                  y="3"
-                                                  width="18"
-                                                  height="20"
-                                                  rx="1"
-                                                  ry="1"
-                                                />
-                                                {/* Plus Icon */}
-                                                <line
-                                                  x1="12"
-                                                  y1="8"
-                                                  x2="12"
-                                                  y2="16"
-                                                />
-                                                <line
-                                                  x1="8"
-                                                  y1="12"
-                                                  x2="16"
-                                                  y2="12"
-                                                />
-                                              </svg>
-                                            )}
-                                          </button>
-                                        </td>
-
-                                        <td>
-                                          <input
-                                            type="text"
-                                            className="form-control"
-                                            // defaultValue="MS Fabrication"
-                                            placeholder="Enter Sub Item Name"
-                                            value={expandedRows.name}
-                                            onChange={(e) =>
-                                              handleInputChange2(
-                                                index,
-                                                "name",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td>
-                                          <input
-                                            type="text"
-                                            // defaultValue="MS Fabrication_20010"
-                                            placeholder="Enter Description"
-                                            className="form-control"
-                                            value={expandedRows.description}
-                                            onChange={(e) =>
-                                              handleInputChange2(
-                                                index,
-                                                "description",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td>
-                                          <input
-                                            type="text"
-                                            // defaultValue="MS Fabrication_20010"
-                                            placeholder="Enter Notes"
-                                            className="form-control"
-                                            value={expandedRows.notes}
-                                            onChange={(e) =>
-                                              handleInputChange2(
-                                                index,
-                                                "notes",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td>
-                                          <input
-                                            type="text"
-                                            defaultValue=""
-                                            placeholder="Enter Remark"
-                                            value={expandedRows.remarks}
-                                            className="form-control"
-                                            onChange={(e) =>
-                                              handleInputChange2(
-                                                index,
-                                                "remarks",
-                                                e.target.value
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td>
-                                          <SingleSelector
-                                            onChange={(selectedOption) =>
-                                              handleUnitChangeForRow(
-                                                index,
-                                                selectedOption
-                                              )
-                                            } // Update the row's UOM
-                                            // value={unitOfMeasures.find(option => option.value === unitOfMeasures.uom_id)}
-                                            value={selectedUnitSubRow[index]}
-                                            options={unitOfMeasures} // Providing the options to the select component
-                                            placeholder={`Select UOM`} // Dynamic placeholder
-                                          />
-                                        </td>
-                                        <td colSpan={2}>
-                                          <input
-                                            type="number"
-                                            value={expandedRows.qty}
-                                            onKeyDown={(e) => {
-                                              if (
-                                                e.key === "-" ||
-                                                e.key === "e" ||
-                                                e.key === "E"
-                                              ) {
-                                                e.preventDefault(); // Prevent entering "-" or "e" or "E"
-                                              }
-                                            }}
-                                            min="0"
-                                            placeholder="Enter Quantity"
-                                            className="form-control"
-                                            onChange={(e) =>
-                                              handleInputChange2(
-                                                index,
-                                                "cost_quantity",
-                                                parseFloat(e.target.value)
-                                              )
-                                            }
-                                          />
-                                        </td>
-
-                                        <td>
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width={16}
-                                            height={16}
-                                            fill="currentColor"
-                                            className="bi bi-file-earmark-text"
-                                            viewBox="0 0 16 16"
-                                            onClick={handleIconClick} // Trigger file input on click
-                                          >
-                                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
-                                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                                          </svg>
-                                          {/* Hidden file input */}
-                                          <input
-                                            id="file-input"
-                                            type="file"
-                                            style={{ display: "none" }} // Hide the file input
-                                            onChange={handleFileChange} // Handle file change
-                                          />
-                                          {/* Display the selected file name */}
-                                          {file && (
-                                            <div>Selected File: {file.name}</div>
-                                          )}
-                                        </td>
-                                      </tr>
-                                      {expandedRows.includes(el.id) && (
-                                        <tr>
-
-
-
-
-                                          <td colSpan={11}>
-                                            {/* <BOQSubItemTable /> */}
-                                            <EditBoqSub
-                                              // materials={materials2}
-                                              materials={materials2[el.id] || []}
-                                              handleAddMaterials={(
-                                                newMaterials
-                                              ) =>
-                                                handleAddMaterials2(
-                                                  el.id,
-                                                  newMaterials
-                                                )
-                                              }
-                                              setMaterials={setMaterials2}
-                                              Assets={Assets2[el.id] || []}
-                                              setAssets={setAssets2}
-                                              // handleAddMaterials={handleAddMaterials2}
-                                              handleDeleteAll={handleDeleteAll2}
-                                              handleSelectRow={handleSelectRow2}
-                                              handleAddAssets={(newMaterials) =>
-                                                handleAddAssets2(
-                                                  el.id,
-                                                  newMaterials
-                                                )
-                                              }
-                                              handleDeleteAllAssets={
-                                                handleDeleteAllAssets2
-                                              }
-                                              handleSelectRowAsset={
-                                                handleSelectRowAssets2
-                                              }
-                                              predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
-
-                                              predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
-
-                                              // boqSubItems={boqSubItems}
-                                              boqSubItemId={el.id}
-                                              boqSubItems={boqSubItems.filter((item) => item.id === el.id)} // Pass only the relevant item
-                                              setBoqSubItems={setBoqSubItems}
-                                              setMaterialErrors={setMaterialErrors}
-                                              setAssetsErrors={setAssetsErrors}
-
-                                            // Only pass the latest boqSubItems based on el.id
-                                            // handleInputChange2={handleInputChange2}
-                                            />
-
-                                            {/* <MaterialModal
-                                            show={showModal2}
-                                            handleClose={handleCloseModal2}
-                                            handleAdd={handleAddMaterials2}
-                                          /> */}
-
-                                            {/* <AssetModal
-                                            showAssets={showModalAsset}
-                                            handleCloseAssets={handleCloseModalAsset}
-                                            handleAdd={handleAddAssets}
-                                          /> */}
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </React.Fragment>
-                                  ))}
-
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                          <div className="row mt-3 mx-3">
-                            <p>
+                  {showBOQSubItem && (
+  <>
+    <CollapsibleCard title="BOQ Sub-Item">
+      <div className="card mx-3 mt-2">
+        <div className="card-body mt-0 pt-0">
+          <div className="mt-3">
+            <div className="my-4">
+              <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+                <table className="tbl-container" style={{ borderCollapse: "collapse" }}>
+                  <thead style={{ zIndex: "1" }}>
+                    <tr>
+                      <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                        <input type="checkbox" />
+                      </th>
+                      <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
+                        Sub Item Name <span>*</span>
+                      </th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Description</th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Notes</th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
+                      <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost Quantity <span>*</span></th>
+                      <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Render existing BOQ sub-items from API */}
+                    {boqSubItems.map((subItem, index) => (
+                      <React.Fragment key={subItem.id}>
+                        <tr>
+                          <td>
+                            <input type="checkbox" />
+                          </td>
+                          <td className="text-center">
+                            <button
+                              className="btn btn-link p-0"
+                              onClick={() => toggleRow(subItem.id)}
+                              aria-label="Toggle row visibility"
+                            >
+                              {expandedRows.includes(subItem.id) ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  stroke="black"
+                                  strokeWidth="1"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  fill=" #e0e0e0"
+                                >
+                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  stroke="black"
+                                  strokeWidth="1"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  fill=" #e0e0e0"
+                                >
+                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                  <line x1="12" y1="8" x2="12" y2="16" />
+                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                </svg>
+                              )}
+                            </button>
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Enter Sub Item Name"
+                              value={subItem.name || ''}
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  index,
+                                  "name",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="Enter Description"
+                              className="form-control"
+                              value={subItem.description || ''}
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="Enter Notes"
+                              className="form-control"
+                              value={subItem.notes || ''}
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  index,
+                                  "notes",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="Enter Remark"
+                              value={subItem.remarks || ''}
+                              className="form-control"
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  index,
+                                  "remarks",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <SingleSelector
+                              onChange={(selectedOption) =>
+                                handleUnitChangeForRow(
+                                  index,
+                                  selectedOption
+                                )
+                              }
+                              value={selectedUnitSubRow[index] || 
+                                (subItem.unit_of_measure_id ? 
+                                  unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id) : 
+                                  null)}
+                              options={unitOfMeasures}
+                              placeholder={`Select UOM`}
+                            />
+                          </td>
+                          <td colSpan={2}>
+                            <input
+                              type="number"
+                              value={subItem.cost_quantity || ''}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "-" ||
+                                  e.key === "e" ||
+                                  e.key === "E"
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
+                              min="0"
+                              placeholder="Enter Quantity"
+                              className="form-control"
+                              onChange={(e) =>
+                                handleInputChange2(
+                                  index,
+                                  "cost_quantity",
+                                  parseFloat(e.target.value)
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width={16}
+                              height={16}
+                              fill="currentColor"
+                              className="bi bi-file-earmark-text"
+                              viewBox="0 0 16 16"
+                              onClick={handleIconClick}
+                            >
+                              <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                              <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                            </svg>
+                            <input
+                              id="file-input"
+                              type="file"
+                              style={{ display: "none" }}
+                              onChange={handleFileChange}
+                            />
+                            {file && (
+                              <div>Selected File: {file.name}</div>
+                            )}
+                          </td>
+                        </tr>
+                        {expandedRows.includes(subItem.id) && (
+                          <tr>
+                            <td colSpan={11}>
+                              <BOQSubItemTable
+                                materials={materials2[subItem.id] || subItem.materials || []}
+                                handleAddMaterials={(newMaterials) =>
+                                  handleAddMaterials2(
+                                    subItem.id,
+                                    newMaterials
+                                  )
+                                }
+                                setMaterials={setMaterials2}
+                                Assets={Assets2[subItem.id] || subItem.assets || []}
+                                setAssets={setAssets2}
+                                handleDeleteAll={handleDeleteAll2}
+                                handleSelectRow={handleSelectRow2}
+                                handleAddAssets={(newMaterials) =>
+                                  handleAddAssets2(
+                                    subItem.id,
+                                    newMaterials
+                                  )
+                                }
+                                handleDeleteAllAssets={handleDeleteAllAssets2}
+                                handleSelectRowAsset={handleSelectRowAssets2}
+                                predefinedMaterialsData={(data) => updatePredefinedMaterialsData(subItem.id, data)}
+                                predefinedAssetsData={(data) => updatePredefinedAssetsData(subItem.id, data)}
+                                boqSubItemId={subItem.id}
+                                boqSubItems={boqSubItems.filter((item) => item.id === subItem.id)}
+                                setBoqSubItems={setBoqSubItems}
+                                setMaterialErrors={setMaterialErrors}
+                                setAssetsErrors={setAssetsErrors}
+                              />
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                    
+                    {/* Render new rows being added */}
+                    {count.map((el, index) => {
+                      // Skip if this is an existing item
+                      if (boqSubItems.some(item => item.id === el.id)) {
+                        return null;
+                      }
+                      return (
+                        <React.Fragment key={index}>
+                          <tr>
+                            <td>
+                              <input type="checkbox" />
+                            </td>
+                            <td className="text-center">
                               <button
-                                style={{ color: "var(--red)" }}
-                                className="fw-bold text-decoration-underline border-0 bg-white"
-                                onClick={addRowToTable1}
+                                className="btn btn-link p-0"
+                                onClick={() => toggleRow(el.id)}
+                                aria-label="Toggle row visibility"
                               >
-                                Add Row
-                              </button>{" "}
-                              |
-                              <button
-                                style={{ color: "var(--red)" }}
-                                className="fw-bold text-decoration-underline border-0 bg-white"
-                                onClick={() => deleteRowFromTable1(counter)}
-                              >
-                                Delete Row
+                                {expandedRows.includes(el.id) ? (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    stroke="black"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    fill=" #e0e0e0"
+                                  >
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    stroke="black"
+                                    strokeWidth="1"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    fill=" #e0e0e0"
+                                  >
+                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                  </svg>
+                                )}
                               </button>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CollapsibleCard>
-                </>
-              )}
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Enter Sub Item Name"
+                                value={expandedRows.name}
+                                onChange={(e) =>
+                                  handleInputChange2(
+                                    index,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                placeholder="Enter Description"
+                                className="form-control"
+                                value={expandedRows.description}
+                                onChange={(e) =>
+                                  handleInputChange2(
+                                    index,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                placeholder="Enter Notes"
+                                className="form-control"
+                                value={expandedRows.notes}
+                                onChange={(e) =>
+                                  handleInputChange2(
+                                    index,
+                                    "notes",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                placeholder="Enter Remark"
+                                value={expandedRows.remarks}
+                                className="form-control"
+                                onChange={(e) =>
+                                  handleInputChange2(
+                                    index,
+                                    "remarks",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <SingleSelector
+                                onChange={(selectedOption) =>
+                                  handleUnitChangeForRow(
+                                    index,
+                                    selectedOption
+                                  )
+                                }
+                                value={selectedUnitSubRow[index]}
+                                options={unitOfMeasures}
+                                placeholder={`Select UOM`}
+                              />
+                            </td>
+                            <td colSpan={2}>
+                              <input
+                                type="number"
+                                value={expandedRows.qty}
+                                onKeyDown={(e) => {
+                                  if (
+                                    e.key === "-" ||
+                                    e.key === "e" ||
+                                    e.key === "E"
+                                  ) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                min="0"
+                                placeholder="Enter Quantity"
+                                className="form-control"
+                                onChange={(e) =>
+                                  handleInputChange2(
+                                    index,
+                                    "cost_quantity",
+                                    parseFloat(e.target.value)
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={16}
+                                height={16}
+                                fill="currentColor"
+                                className="bi bi-file-earmark-text"
+                                viewBox="0 0 16 16"
+                                onClick={handleIconClick}
+                              >
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
+                              </svg>
+                              <input
+                                id="file-input"
+                                type="file"
+                                style={{ display: "none" }}
+                                onChange={handleFileChange}
+                              />
+                              {file && (
+                                <div>Selected File: {file.name}</div>
+                              )}
+                            </td>
+                          </tr>
+                          {expandedRows.includes(el.id) && (
+                            <tr>
+                              <td colSpan={11}>
+                                <EditBoqSub
+                                  materials={materials2[el.id] || []}
+                                  handleAddMaterials={(newMaterials) =>
+                                    handleAddMaterials2(
+                                      el.id,
+                                      newMaterials
+                                    )
+                                  }
+                                  setMaterials={setMaterials2}
+                                  Assets={Assets2[el.id] || []}
+                                  setAssets={setAssets2}
+                                  handleDeleteAll={handleDeleteAll2}
+                                  handleSelectRow={handleSelectRow2}
+                                  handleAddAssets={(newMaterials) =>
+                                    handleAddAssets2(
+                                      el.id,
+                                      newMaterials
+                                    )
+                                  }
+                                  handleDeleteAllAssets={handleDeleteAllAssets2}
+                                  handleSelectRowAsset={handleSelectRowAssets2}
+                                  predefinedMaterialsData={(data) => updatePredefinedMaterialsData(el.id, data)}
+                                  predefinedAssetsData={(data) => updatePredefinedAssetsData(el.id, data)}
+                                  boqSubItemId={el.id}
+                                  boqSubItems={boqSubItems.filter((item) => item.id === el.id)}
+                                  setBoqSubItems={setBoqSubItems}
+                                  setMaterialErrors={setMaterialErrors}
+                                  setAssetsErrors={setAssetsErrors}
+                                />
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="row mt-3 mx-3">
+              <p>
+                <button
+                  style={{ color: "var(--red)" }}
+                  className="fw-bold text-decoration-underline border-0 bg-white"
+                  onClick={addRowToTable1}
+                >
+                  Add Row
+                </button>{" "}
+                |
+                <button
+                  style={{ color: "var(--red)" }}
+                  className="fw-bold text-decoration-underline border-0 bg-white"
+                  onClick={() => deleteRowFromTable1(counter)}
+                >
+                  Delete Row
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </CollapsibleCard>
+  </>
+)}
+
+
+
+
+             
             </div>
             <div className="row mt-2 justify-content-center mb-5">
               <div className="col-md-2">

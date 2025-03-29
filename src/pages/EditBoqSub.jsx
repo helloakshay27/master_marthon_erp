@@ -1311,8 +1311,8 @@ const EditBoqSub = ({
                                     }
                                   />
                                 </td>
-                                <td>{material.inventory_type_name}</td>
-                                <td>{material.name}</td>
+                                <td>{material.material_type ||material.inventory_type_name}</td>
+                                <td>{material.material_name ||material.name}</td>
                                 <td>
                                   <SingleSelector
                                     options={inventorySubTypes[index] || []} // Get the sub-types for the specific material

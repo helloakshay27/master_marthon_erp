@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect,useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
@@ -10,6 +10,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import MaterialModal from "../components/MaterialModal";
 import AssetModal from "../components/AssestModal";
+import { useNavigate, Link } from "react-router-dom";
 
 import {
     LayoutModal,
@@ -18,6 +19,8 @@ import {
 import { baseURL } from "../confi/apiDomain";
 
 const BOQEdit = () => {
+    const navigate = useNavigate(); // Initialize navigate function
+
     const { id } = useParams(); // Get the id
     console.log("id in edit", id)
 
@@ -125,20 +128,20 @@ const BOQEdit = () => {
                 .filter((_, index) => selectedMaterials.includes(index))
                 .map((material) => material.id)
                 .filter((id) => id !== undefined); // Ensure only valid IDs are stored
-    
+
             // Store deleted material IDs
             setDeletedMaterialIds((prevDeletedIds) => [...prevDeletedIds, ...deletedIds]);
-    
+
             // Get the new materials after deletion
             const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
-    
+
             // Function to update selections after deletion
             const updateSelection = (selectionArray = []) =>
                 selectedMaterials.reduce((acc, index) => {
                     acc.splice(index, 1); // Remove the selected index
                     return acc;
                 }, [...selectionArray]);
-    
+
             // Update all related state variables
             setSelectedSubTypes(updateSelection(selectedSubTypes));
             setGenericSpecifications(updateSelection(genericSpecifications));
@@ -150,10 +153,10 @@ const BOQEdit = () => {
             setEstimatedQuantities(updateSelection(estimatedQuantities));
             setWastages(updateSelection(wastages));
             setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-    
+
             return newMaterials;
         });
-    
+
         setSelectedMaterials([]); // Clear selected materials
     };
     console.log("deleted materil ids", deletedMaterialIds)
@@ -300,46 +303,46 @@ const BOQEdit = () => {
         //             boqSubItemId: subItem.id // Attach subItem.id to each material
         //         }))
         //     );
-        
+
         //     if (subItemMaterials.length > 0) {
         //         setMaterials(subItemMaterials);
-        
+
         //         setSelectedSubTypes(subItemMaterials.map(m => ({
         //             value: m.pms_inventory_sub_type_id,
         //             label: m.material_sub_type
         //         })));
-        
+
         //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
         //             value: m.pms_generic_info_id,
         //             label: m.generic_info
         //         })));
-        
+
         //         setSelectedColors(subItemMaterials.map(m => ({
         //             value: m.pms_colour_id,
         //             label: m.color
         //         })));
-        
+
         //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
         //             value: m.pms_inventory_brand_id,
         //             label: m.brand
         //         })));
-        
+
         //         setSelectedUnit2(subItemMaterials.map(m => ({
         //             value: m.unit_of_measure_id,
         //             label: m.uom
         //         })));
-        
+
         //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
         //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
         //         setWastages(subItemMaterials.map(m => m.wastage));
         //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
         //     }
         // }
-        
+
 
     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
 
-    console.log("boq sub materials:",materials)
+    console.log("boq sub materials:", materials)
 
     // unit
 
@@ -1003,9 +1006,9 @@ const BOQEdit = () => {
     const categories = boqDetails?.categories || [];
 
     const lastCategory = categories.length > 0 ? categories[categories.length - 1].id : null;
-    
+
     console.log(lastCategory);
-    
+
 
     // Toggle project visibility
     const toggleProject = (id) => {
@@ -1134,8 +1137,8 @@ const BOQEdit = () => {
 
     const predefinedMaterials = [
         ...materials.map((material, index) => ({
-            id: material.pms_inventory_id ? material.id :null,
-            material_id: material.pms_inventory_id||material.id,
+            id: material.pms_inventory_id ? material.id : null,
+            material_id: material.pms_inventory_id || material.id,
             material_sub_type_id: selectedSubTypes[index]
                 ? selectedSubTypes[index].value
                 : "",
@@ -1157,7 +1160,7 @@ const BOQEdit = () => {
             deleted: deletedMaterialIds, // Store deleted material IDs in a separate object
         },
     ];
-    
+
 
 
     console.log("pre mtL...", predefinedMaterials)
@@ -1256,12 +1259,12 @@ const BOQEdit = () => {
 
     const handleInputChangeCostQuantity = (id, newValue) => {
         setBoqDetails((prevDetails) => ({
-          ...prevDetails,
-          boq_sub_items: prevDetails.boq_sub_items.map((subItem) =>
-            subItem.id === id ? { ...subItem, cost_quantity: newValue } : subItem
-          ),
+            ...prevDetails,
+            boq_sub_items: prevDetails.boq_sub_items.map((subItem) =>
+                subItem.id === id ? { ...subItem, cost_quantity: newValue } : subItem
+            ),
         }));
-      };
+    };
 
 
     // Loading, error, and data display logic
@@ -1357,64 +1360,68 @@ const BOQEdit = () => {
     //     },
     //   };
 
-      const payload = {boq_detail :{
-        id:boqDetails?.id,
-        item_name: boqDetails?.item_name,
-        description: boqDetails?.description,
-        quantity: boqDetails?.quantity,
-        note: boqDetails?.note,
-        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
-        sub_categories: [
-            {
-                id: lastCategory,
-                materials: predefinedMaterials
-            }
-        ]
-    }
-}
-         
-
-      console.log("boq data payload 1 ", payload)
-
-
-     
-
-const handleUpdateMaterials = async () => {
-    const payload ={ boq_detail : {
-        id: boqDetails?.id,
-        item_name: boqDetails?.item_name,
-        description: boqDetails?.description,
-        quantity: boqDetails?.quantity,
-        note: boqDetails?.note,
-        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
-        sub_categories: [
-            {
-                id: lastCategory, // Ensure lastCategory is set correctly
-                materials: predefinedMaterials,
-            },
-        ],
-    }}
-    console.log("payload submission:",payload)
-
-    try {
-        const response = await axios.patch(
-            `https://marathon.lockated.com//boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-            payload,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        if (response.status === 200) {
-            alert("BOQ updated successfully!");
+    const payload = {
+        boq_detail: {
+            id: boqDetails?.id,
+            item_name: boqDetails?.item_name,
+            description: boqDetails?.description,
+            quantity: boqDetails?.quantity,
+            note: boqDetails?.note,
+            unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+            sub_categories: [
+                {
+                    id: lastCategory,
+                    materials: predefinedMaterials
+                }
+            ]
         }
-    } catch (error) {
-        console.error("Error updating BOQ:", error);
-        alert("Failed to update BOQ. Please try again.");
     }
-};
+
+
+    console.log("boq data payload 1 ", payload)
+
+
+
+
+    const handleUpdateMaterials = async () => {
+        const payload = {
+            boq_detail: {
+                id: boqDetails?.id,
+                item_name: boqDetails?.item_name,
+                description: boqDetails?.description,
+                quantity: boqDetails?.quantity,
+                note: boqDetails?.note,
+                unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+                sub_categories: [
+                    {
+                        id: lastCategory, // Ensure lastCategory is set correctly
+                        materials: predefinedMaterials,
+                    },
+                ],
+            }
+        }
+        console.log("payload submission:", payload)
+
+        try {
+            const response = await axios.patch(
+                `https://marathon.lockated.com//boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                payload,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                alert("BOQ updated successfully!");
+                navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+            }
+        } catch (error) {
+            console.error("Error updating BOQ:", error);
+            alert("Failed to update BOQ. Please try again.");
+        }
+    };
 
 
     return (
@@ -1746,10 +1753,10 @@ const handleUpdateMaterials = async () => {
                                                                                 type="checkbox"
                                                                                 // disabled={!material.can_delete === false} // Ensure it evaluates to a Boolean
                                                                                 // disabled={!material.can_delete} // Disable when can_delete is false
-                                                                                disabled={material.hasOwnProperty("can_delete") ? !material.can_delete : false} 
+                                                                                disabled={material.hasOwnProperty("can_delete") ? !material.can_delete : false}
                                                                                 checked={selectedMaterials.includes(index)} // Use index instead of material.id
                                                                                 onChange={() => handleSelectRow(index)} // Pass index to function
-                                                                               
+
                                                                             />
                                                                             {console.log("delete mt:", !material.can_delete)}
                                                                         </td>
@@ -2240,16 +2247,16 @@ const handleUpdateMaterials = async () => {
                                                                 <td className="text-start">
                                                                     {/* {boqDetail2.cost_quantity} */}
                                                                     <input
-                                                className="form-control"
-                                                type="text"
-                                                placeholder=""
-                                                fdprocessedid="qv9ju9"
-                                                value={boqDetail2.cost_quantity}
-                                                onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
-                                                // onChange={(e) =>
-                                                //     handleInputChange("itemName", e.target.value)
-                                                // }
-                                            />
+                                                                        className="form-control"
+                                                                        type="text"
+                                                                        placeholder=""
+                                                                        fdprocessedid="qv9ju9"
+                                                                        value={boqDetail2.cost_quantity}
+                                                                        onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
+                                                                    // onChange={(e) =>
+                                                                    //     handleInputChange("itemName", e.target.value)
+                                                                    // }
+                                                                    />
                                                                 </td>
                                                                 {/* <td></td> */}
                                                                 {/* <td></td> */}
@@ -2268,28 +2275,28 @@ const handleUpdateMaterials = async () => {
                                                                                                 <thead>
                                                                                                     <tr>
                                                                                                         <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                                                                                                        <input
-                                                                        type="checkbox"
-                                                                        onChange={(e) => {
-                                                                            if (e.target.checked) {
-                                                                                setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
-                                                                            } else {
-                                                                                setSelectedMaterials([]); // Deselect all
-                                                                            }
-                                                                        }}
-                                                                        checked={selectedMaterials.length === materials.length && materials.length > 0}
-                                                                    />
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        width={14}
-                                                                        height={14}
-                                                                        fill="currentColor"
-                                                                        className="bi bi-trash3-fill ms-2"
-                                                                        viewBox="0 0 16 16"
-                                                                        onClick={handleDeleteAll} // Delete selected rows on click
-                                                                    >
-                                                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                                                    </svg>
+                                                                                                            <input
+                                                                                                                type="checkbox"
+                                                                                                                onChange={(e) => {
+                                                                                                                    if (e.target.checked) {
+                                                                                                                        setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                                                                                                    } else {
+                                                                                                                        setSelectedMaterials([]); // Deselect all
+                                                                                                                    }
+                                                                                                                }}
+                                                                                                                checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                                                                                            />
+                                                                                                            <svg
+                                                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                                                width={14}
+                                                                                                                height={14}
+                                                                                                                fill="currentColor"
+                                                                                                                className="bi bi-trash3-fill ms-2"
+                                                                                                                viewBox="0 0 16 16"
+                                                                                                                onClick={handleDeleteAll} // Delete selected rows on click
+                                                                                                            >
+                                                                                                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                                                                            </svg>
                                                                                                         </th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
@@ -2459,7 +2466,7 @@ const handleUpdateMaterials = async () => {
                                                                                             </button>{" "}
 
 
-                                                                                            
+
                                                                                         </div>
                                                                                     </div>
                                                                                 </CollapsibleCard>
@@ -2567,13 +2574,16 @@ const handleUpdateMaterials = async () => {
                                 </button>
                             </div>
                             <div className="col-md-2">
-                                <button
-                                    className="purple-btn1 w-100"
-                                    fdprocessedid="u33pye"
-                                >
-                                    {/* Back */}
-                                    Cancel
-                                </button>
+                                <Link to={`/boq-details-page-master/${boqDetails?.id}`}>
+                                    <button
+                                        className="purple-btn1 w-100"
+                                        fdprocessedid="u33pye"
+                                    >
+                                    
+                                        Cancel
+
+                                    </button>
+                                </Link>
                             </div>
                         </div>
                         {/* <div className="row mx-2">
