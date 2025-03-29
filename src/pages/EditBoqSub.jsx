@@ -5,7 +5,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // import CollapsibleCard from "./base/Card/CollapsibleCards";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import MaterialModal from "../components/MaterialModal";
-// import MaterialModal from "../components/MaterialModal";
 import AssetModal from "../components/AssestModal";
 // import SingleSelector from "./base/Select/SingleSelector";
 import SingleSelector from "../components/base/Select/SingleSelector";
@@ -15,6 +14,7 @@ import _ from "lodash"; // Install using `npm install lodash`
 
 
 const EditBoqSub = ({
+  boqDetails,
   setBoqSubItems,
   materials,
   setMaterials,
@@ -57,6 +57,8 @@ const EditBoqSub = ({
     );
   };
 
+
+  
   // const handleDeleteAllMaterial = () => {
   //   console.log("boqSubItemId", boqSubItemId);
 
@@ -469,10 +471,10 @@ const EditBoqSub = ({
 
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.id) {
+      if (material.pms_inventory_id || material.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -570,10 +572,10 @@ const EditBoqSub = ({
 
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.id) {
+      if (material.pms_inventory_id ||material.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -646,10 +648,10 @@ const EditBoqSub = ({
 
   useEffect(() => {
     materials.forEach((material, index) => {
-      if (material.id) {
+      if (material.pms_inventory_id ||material.id) {
         axios
           .get(
-            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           )
           .then((response) => {
             const options = response.data.map((brand) => ({
@@ -1015,10 +1017,10 @@ const EditBoqSub = ({
       colour_id: selectedColors[i]?.value || "",
       brand_id: selectedInventoryBrands[i]?.value || "",
       uom_id: selectedUnit2[i]?.value || "",
-      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
-      estimated_quantity: parseFloat(estimatedQuantities[i]) || 0,
-      wastage: parseFloat(wastages[i]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
+      co_efficient_factor: parseFloat(coefficientFactors[i]) || "",
+      estimated_quantity: parseFloat(estimatedQuantities[i]) ||  "",
+      wastage: parseFloat(wastages[i]) || "",
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  "",
     }));
   }, [
     materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
@@ -1073,23 +1075,58 @@ const EditBoqSub = ({
   const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
 
   useEffect(() => {
-    // console.log("boq sub id vaidation:", boqSubItemId)
     if (!boqSubItemId) return;
-
-    // Only update state if there is a real change
-    if (!_.isEqual(materialErrors, localMaterialErrors)) {
-      setLocalMaterialErrors(materialErrors);
-    }
-
-    setBoqSubItems((prev) => {
-      return prev.map((item) =>
+  
+    setBoqSubItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== boqSubItemId) return item;
+  
+        const existingMaterials = item.materials || [];
+        const newMaterials = predefinedMaterials || [];
+  
+        // Normalize material IDs
+        const normalizedExistingMaterials = existingMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id,
+        }));
+        const normalizedNewMaterials = newMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id,
+        }));
+  
+        // Use Set to remove duplicates
+        const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+        const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+  
+        // Merge materials correctly
+        const mergedMaterials = [...normalizedExistingMaterials, ...filteredNewMaterials];
+  
+        return _.isEqual(item.materials, mergedMaterials)
+          ? item
+          : { ...item, materials: mergedMaterials };
+      })
+    );
+  
+    // ✅ Prevent unnecessary material error updates
+    setLocalMaterialErrors((prev) =>
+      _.isEqual(prev, materialErrors) ? prev : materialErrors
+    );
+  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+  
+  // ✅ Force replace only when `predefinedMaterials` changes drastically
+  useEffect(() => {
+    if (!boqSubItemId) return;
+  
+    setBoqSubItems((prev) =>
+      prev.map((item) =>
         item.id === boqSubItemId && !_.isEqual(item.materials, predefinedMaterials)
           ? { ...item, materials: predefinedMaterials }
           : item
-      );
-    });
-
-  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+      )
+    );
+  
+  }, [boqSubItemId, predefinedMaterials]);
+  
 
   // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
   useEffect(() => {
@@ -1108,6 +1145,92 @@ const EditBoqSub = ({
       );
     });
   }, [boqSubItemId, predefinedAssets, assetErrors]);
+
+
+  useEffect(() => {
+    if (materials?.length > 0) {
+      //   setMaterials(boqDetails.materials); // Store materials from boqDetails
+
+        setSelectedSubTypes(materials.map(m => ({
+            value: m.pms_inventory_sub_type_id,
+            label: m.material_sub_type
+        })));
+
+        setSelectedGenericSpecifications(materials.map(m => ({
+            value: m.pms_generic_info_id,
+            label: m.generic_info
+        })));
+
+        setSelectedColors(materials.map(m => ({
+            value: m.pms_colour_id,
+            label: m.color
+        })));
+
+        setSelectedInventoryBrands(materials.map(m => ({
+            value: m.pms_inventory_brand_id,
+            label: m.brand
+        })));
+
+        setSelectedUnit2(materials.map(m => ({
+            value: m.unit_of_measure_id,
+            label: m.uom
+        })));
+        // ✅ Correct way to set coefficient factors
+        setCoefficientFactors(materials.map(m => m.co_efficient_factor));
+        setEstimatedQuantities(materials.map(m => m.estimated_quantity));
+        setWastages(materials.map(m => m.wastage));
+        setTotalEstimatedQtyWastages(materials.map(m => m.estimated_quantity_wastage));
+    }
+
+  //   if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
+  //       const preselectedUnit = unitOfMeasures.find(
+  //           (unit) => unit.value === boqDetails.unit_of_measure_id
+  //       );
+  //       setSelectedUnit(preselectedUnit || null);
+  //   }
+  //   setBoqQuantity(boqDetails?.quantity)
+
+    // ✅ Handling assets in the same way
+  //   if (boqDetails?.assets?.length > 0) {
+  //       setAssets(boqDetails.assets); // Store assets from boqDetails
+
+  //       setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
+  //           value: a.pms_inventory_sub_type_id,
+  //           label: a.asset_sub_type
+  //       })));
+
+  //       setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
+  //           value: a.pms_generic_info_id,
+  //           label: a.generic_info
+  //       })));
+
+  //       setSelectedAssetColors(boqDetails.assets.map(a => ({
+  //           value: a.pms_colour_id,
+  //           label: a.color
+  //       })));
+
+  //       setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
+  //           value: a.pms_inventory_brand_id,
+  //           label: a.brand
+  //       })));
+
+  //       setSelectedUnit3(boqDetails.assets.map(a => ({
+  //           value: a.unit_of_measure_id,
+  //           label: a.uom
+  //       })));
+
+  //       // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
+  //       setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
+  //       setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
+  //       setAssetWastages(boqDetails.assets.map(a => a.wastage));
+  //       setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
+  //   }
+
+
+    
+   
+
+}, [boqDetails,materials, unitOfMeasures]); // Runs when boqDetails updates
 
  
   
@@ -1272,6 +1395,8 @@ const EditBoqSub = ({
                           </tr>
                         </thead>
                         <tbody>
+
+                          
                           {materials.length > 0 ? (
                             materials.map((material, index) => (
                               <tr>

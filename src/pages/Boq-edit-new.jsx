@@ -1762,7 +1762,7 @@ const EditBOQNew = () => {
   const handleUnitChangeForRow = (index, selectedOption, prevSelectedUnits) => {
     // Ensure to update the correct row's uom_id
     const updatedBoq = [...boqSubItems];
-    updatedBoq[index].uom_id = selectedOption ? selectedOption.value : null; // If no selection, set to null
+    updatedBoq[index].unit_of_measure_id = selectedOption ? selectedOption.value : null; // If no selection, set to null
     setBoqSubItems(updatedBoq);
     // setSelectedUnit(selectedOption)
     setSelectedUnitSubRow((prevSelectedUnits) => {
@@ -1815,31 +1815,57 @@ const EditBOQNew = () => {
 
 
   // Modified addRowToTable1 function
+//   const addRowToTable1 = () => {
+//     setCounter((prevCounter) => {
+//       const newId = prevCounter + 1;
+
+//       // Create a new BOQ sub-item row with proper structure
+//       const newBoqSubItem = {
+//         id: newId,
+//         name: "",
+//         description: "",
+//         notes: "",
+//         remarks: "",
+//         cost_quantity: 0,
+//         uom_id: null,
+//         materials: [], // Initialize empty materials array
+//         assets: []    // Initialize empty assets array
+//       };
+
+//       // Update count state
+//       setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
+
+//       // Update boqSubItems state
+//       setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
+
+//       return newId;
+//     });
+//   };
+
+
   const addRowToTable1 = () => {
-    setCounter((prevCounter) => {
-      const newId = prevCounter + 1;
-
-      // Create a new BOQ sub-item row with proper structure
-      const newBoqSubItem = {
-        id: newId,
-        name: "",
-        description: "",
-        notes: "",
-        remarks: "",
-        cost_quantity: 0,
-        uom_id: null,
-        materials: [], // Initialize empty materials array
-        assets: []    // Initialize empty assets array
-      };
-
-      // Update count state
-      setcount((prevCount) => [...prevCount, { id: newId, value: "" }]);
-
-      // Update boqSubItems state
-      setBoqSubItems((prevItems) => [...prevItems, newBoqSubItem]);
-
-      return newId;
-    });
+    // Generate a unique ID (using timestamp for better uniqueness)
+    const newId = Date.now();
+    
+    // Create a new BOQ sub-item with proper structure
+    const newBoqSubItem = {
+      id: newId,
+      name: "",
+      description: "",
+      notes: "",
+      remarks: "",
+      cost_quantity: 0,
+      unit_of_measure_id: null,  // Changed from uom_id to match your API structure
+      materials: [],
+      assets: [],
+      isNew: true  // Flag to identify newly added rows
+    };
+  
+    // Update the boqSubItems state (single source of truth)
+    setBoqSubItems(prevItems => [...prevItems, newBoqSubItem]);
+    
+    // If you still need counter for other purposes
+    setcounter(prev => prev + 1);
   };
 
 
@@ -2062,6 +2088,9 @@ const EditBOQNew = () => {
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
+
+
+  console.log("boqsub items:",boqSubItems)
 
   const handleLevel5Change = (selectedOption) =>
     setSelectedSubCategoryLevel5(selectedOption);
@@ -3789,13 +3818,19 @@ const EditBOQNew = () => {
                                                 selectedOption
                                               )
                                             }
-                                            value={selectedUnitSubRow[index] ||
-                                              (subItem.unit_of_measure_id ?
+                                            value={(subItem.unit_of_measure_id ?
                                                 unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id) :
-                                                null)}
+                                                null)||selectedUnitSubRow[index] 
+                                              }
                                             options={unitOfMeasures}
                                             placeholder={`Select UOM`}
                                           />
+
+{console.log('Current subItem:', subItem)}
+{console.log(' subItem unit:', subItem.unit_of_measure_id)}
+{console.log('Available units:', unitOfMeasures)}
+{console.log('Matched unit:', unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id))}
+{console.log("boq sub item" , boqSubItems)}
                                         </td>
                                         <td colSpan={2}>
                                           <input
@@ -3849,7 +3884,7 @@ const EditBOQNew = () => {
                                       {expandedRows.includes(subItem.id) && (
                                         <tr>
                                           <td colSpan={11}>
-                                            <BOQSubItemTable
+                                            <EditBoqSub
                                               materials={materials2[subItem.id] || subItem.materials || []}
                                               handleAddMaterials={(newMaterials) =>
                                                 handleAddMaterials2(
