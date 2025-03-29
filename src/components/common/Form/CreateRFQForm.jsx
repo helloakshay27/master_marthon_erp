@@ -13,6 +13,7 @@ export default function CreateRFQForm({
   isService,
   existingData,
   deliveryData,
+  templateData,
   updateSelectedTemplate, // Rename this prop
   updateBidTemplateFields, // Rename this prop
   updateAdditionalFields, // Rename this prop
@@ -298,10 +299,49 @@ export default function CreateRFQForm({
     fetchMaterials();
     fetchTemplates(); // Fetch templates
   }, []);
+  console.log("templateData", templateData);
+  
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
+
+  useEffect(() => {
+    // Ensure all field_name keys from additionalFields are included in sectionData
+    const updatedSections = sections.map((section) => ({
+      ...section,
+      sectionData: section.sectionData.map((row) => ({
+        ...row,
+        ...additionalFields.reduce((acc, field) => {
+          if (!(field.field_name in row)) {
+            acc[field.field_name] = ""; // Initialize missing field_name with an empty string
+          }
+          return acc;
+        }, {}),
+      })),
+    }));
+    setSections(updatedSections);
+  }, [additionalFields]);
+
+  useEffect(() => {
+    if (templateData) {
+      // Set the selected template based on templateData
+      setSelectedTemplate(templateData.event_template_id);
+
+      // Update additionalFields and bidTemplateFields from templateData
+      const updatedAdditionalFields =
+        templateData.applied_bid_material_template_fields || [];
+      const updatedBidTemplateFields =
+        templateData.applied_bid_template_fields || [];
+
+      setAdditionalFields(updatedAdditionalFields);
+      setBidTemplateFields(updatedBidTemplateFields);
+
+      // Update parent component's state
+      updateAdditionalFields(updatedAdditionalFields);
+      updateBidTemplateFields(updatedBidTemplateFields);
+    }
+  }, [templateData]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
@@ -356,8 +396,29 @@ export default function CreateRFQForm({
   const handleInputChange = (value, rowIndex, key, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
-    setSections(updatedSections);
-    setData(updatedSections.flatMap((section) => section.sectionData));
+    setSections(updatedSections); // Update the sections state
+
+    // Update the parent data with all attributes, including dynamic fields
+    const updatedData = updatedSections.flatMap((section) =>
+      section.sectionData.map((row) => ({
+        id: row.id || null,
+        inventory_id: Number(row.inventory_id),
+        quantity: Number(row.quantity),
+        uom: row.unit,
+        location: row.location,
+        rate: Number(row.rate),
+        amount: row.amount,
+        section_name: row.section_id,
+        inventory_type_id: row.inventory_type_id,
+        inventory_sub_type_id: row.inventory_sub_type_id,
+        ...additionalFields.reduce((acc, field) => {
+          acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
+          return acc;
+        }, {}),
+        _destroy: row._destroy || false,
+      }))
+    );
+    setData(updatedData); // Update the parent data
   };
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
@@ -555,15 +616,37 @@ export default function CreateRFQForm({
       { label: "Actions", key: "actions" },
     ];
 
-    const additionalColumns = additionalFields
-      .filter((field) => field.field_name !== "Sr no.")
-      .map((field) => ({
-        label: field.field_name,
-        key: field.field_name,
-      }));
+    const additionalColumns = additionalFields.map((field) => ({
+      label: field.field_name,
+      key: field.field_name,
+    }));
 
     return [...defaultColumns, ...additionalColumns];
   };
+  
+  const renderAdminFields = (field, rowIndex, sectionIndex) => (
+    <input
+      className="form-control"
+      type={field.field_type === "integer" ? "number" : "text"}
+      value={sections[sectionIndex]?.sectionData[rowIndex]?.[field.field_name] || ""}
+      onChange={(e) =>
+        handleInputChange(e.target.value, rowIndex, field.field_name, sectionIndex)
+      }
+      // readOnly={field.is_read_only}
+      // required={field.is_required}
+    />
+  );
+
+  const renderGenericField = (fieldName, rowIndex, sectionIndex) => (
+    <input
+      className="form-control"
+      type="text"
+      value={sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || ""}
+      onChange={(e) =>
+        handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
+      }
+    />
+  );
 
   return (
     <div className="row px-3">
@@ -579,7 +662,7 @@ export default function CreateRFQForm({
               label={"Select Template"}
               options={templateOptions}
               onChange={handleTemplateChange}
-              defaultValue={""}
+              defaultValue={templateData?.event_template_id || ""} // Set default value from templateData
             />
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
@@ -787,51 +870,20 @@ export default function CreateRFQForm({
                     </button>
                   ),
                   ...additionalFields.reduce((acc, field) => {
-                    acc[field.field_name] = (cell, rowIndex) => (
-                      <div className="d-flex align-items-center">
-                        {/* <input
-                          className="form-control"
-                          type="text"
-                          value={cell}
-                          onChange={(e) =>
-                            handleInputChange(
-                              e.target.value,
-                              rowIndex,
-                              field.field_name,
-                              sectionIndex
-                            )
-                          }
-                          readOnly={field.is_read_only}
-                          required={field.is_required}
-                        /> */}
-                        <button
-                          className="purple-btn2 ms-2 rounded-circle p-0"
-                          style={{
-                            border: "none",
-                            color: "white",
-                            width: "25px",
-                            height: "25px",
-                          }}
-                          onClick={() => handleEditAdditionalField(field)}
-                        >
-                          <i className="bi bi-pencil" style={{ border: 0 }}></i>
-                        </button>
-                        <button
-                          className="purple-btn2 ms-2 rounded-circle p-0"
-                          style={{
-                            border: "none",
-                            color: "white",
-                            width: "25px",
-                            height: "25px",
-                          }}
-                          onClick={() => handleDeleteAdditionalField(field)}
-                        >
-                          <i className="bi bi-trash" style={{ border: 0 }}></i>
-                        </button>
-                      </div>
-                    );
+                    acc[field.field_name] = (cell, rowIndex) =>
+                      renderAdminFields(field, rowIndex, sectionIndex);
                     return acc;
                   }, {}),
+                  ...Object.keys(sections[sectionIndex]?.sectionData[0] || {}).reduce(
+                    (acc, fieldName) => {
+                      if (!additionalFields.some((field) => field.field_name === fieldName)) {
+                        acc[fieldName] = (cell, rowIndex) =>
+                          renderGenericField(fieldName, rowIndex, sectionIndex);
+                      }
+                      return acc;
+                    },
+                    {}
+                  ),
                 }}
                 onRowSelect={undefined}
                 handleCheckboxChange={undefined}

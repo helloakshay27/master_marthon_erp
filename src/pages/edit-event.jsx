@@ -382,19 +382,34 @@ export default function EditEvent() {
           eventDetails?.end_time
         ).toLocaleString()}`
       );
+
       setMaterialFormData(
-        eventDetails?.event_materials?.map((material) => ({
-          descriptionOfItem: material.inventory_name,
-          inventory_id: material.inventory_id,
-          quantity: material.quantity,
-          unit: material.uom,
-          location: material.location,
-          rate: material.rate,
-          amount: material.amount,
-          inventory_type_id: material.inventory_type_id, // Add inventory_type_id
-          inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
-        }))
+        eventDetails?.event_materials?.map((material) => {
+          // Dynamically include all fields from the payload
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            if (!["id", "inventory_id", "quantity", "uom", "location", "rate", "amount", "section_name", "inventory_type_id", "inventory_sub_type_id", "_destroy"].includes(key)) {
+              acc[key] = material[key] || ""; // Default to an empty string if null
+            }
+            return acc;
+          }, {});
+
+          return {
+            id: material.id,
+            descriptionOfItem: material.descriptionOfItem || material.inventory_name || "",
+            inventory_id: material.inventory_id,
+            quantity: material.quantity,
+            unit: material.uom,
+            location: material.location,
+            rate: material.rate,
+            amount: material.amount,
+            section_id: material.section_name || material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            ...dynamicFields, // Include all dynamic fields
+          };
+        })
       );
+
       setSelectedVendors(
         eventDetails?.event_vendors?.map((vendor) => ({
           id: vendor.id,
@@ -683,6 +698,7 @@ export default function EditEvent() {
       return;
     }
     setSubmitted(true);
+
     const eventData = {
       event: {
         event_title: eventName,
@@ -690,30 +706,23 @@ export default function EditEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time:
-            onLoadScheduleData?.start_time || scheduleData?.start_time,
+          start_time: onLoadScheduleData?.start_time || scheduleData?.start_time,
           end_time:
             onLoadScheduleData?.end_time_duration ||
             scheduleData?.end_time_duration,
           evaluation_time:
-            onLoadScheduleData?.evaluation_time ||
-            scheduleData?.evaluation_time,
+            onLoadScheduleData?.evaluation_time || scheduleData?.evaluation_time,
         },
         event_type_detail_attributes: {
-          event_type: eventType
-            ? eventType
-            : eventDetails?.event_type_detail?.event_type,
-          award_scheme: awardType
-            ? awardType
-            : eventDetails?.event_type_detail?.award_scheme,
-          event_configuration: selectedStrategy
-            ? selectedStrategy
-            : eventDetails?.event_type_detail?.event_configuration,
+          event_type: eventType || eventDetails?.event_type_detail?.event_type,
+          award_scheme:
+            awardType || eventDetails?.event_type_detail?.award_scheme,
+          event_configuration:
+            selectedStrategy || eventDetails?.event_type_detail?.event_configuration,
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type || "",
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
-            "",
+            dynamicExtensionConfigurations.triggered_time_extension_on_last || "",
           extend_event_time_by:
             Number(dynamicExtensionConfigurations.extend_event_time_by) || 0,
           enable_english_auction: true,
@@ -725,20 +734,29 @@ export default function EditEvent() {
             dynamicExtensionConfigurations.delivery_date ||
             eventDetails?.event_type_detail?.delivery_date,
         },
-        event_materials_attributes: materialFormData.map((material) => ({
-          id: material.id || null, // Set id to null for new rows
-          inventory_id: Number(material.inventory_id),
-          quantity: Number(material.quantity),
-          uom: material.unit,
-          location: material.location,
-          rate: Number(material.rate),
-          amount: material.amount,
-          sub_section_name: material.sub_section_id,
-          section_name: material.section_id,
-          inventory_type_id: material.inventory_type_id, // Add inventory_type_id
-          inventory_sub_type_id: material.inventory_sub_type_id, // Add inventory_sub_type_id
-          _destroy: material._destroy || false,
-        })),
+        event_materials_attributes: materialFormData.map((material) => {
+          // Dynamically include all fields from materialFormData
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            acc[key] = material[key] || null; // Include all fields, default to null if undefined
+            return acc;
+          }, {});
+
+          return {
+            ...dynamicFields, // Include all dynamic fields
+            id: material.id || null, // Ensure id is included
+            inventory_id: Number(material.inventory_id),
+            quantity: Number(material.quantity),
+            uom: material.unit,
+            location: material.location,
+            rate: Number(material.rate),
+            amount: material.amount,
+            sub_section_name: material.sub_section_id,
+            section_name: material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            _destroy: material._destroy || false,
+          };
+        }),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           id: vendor.id === null ? null : vendor.id,
           status: "invited",
@@ -787,18 +805,19 @@ export default function EditEvent() {
         },
       },
     };
-    console.log("eventData paylaod", eventData);
+
+    console.log("eventData payload", eventData);
 
     try {
-        const data = await updateEvent(id, eventData);
-        toast.success("Event updated successfully!", {
-          autoClose: 1000,
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 1500); // Increase the delay to 1.5 seconds before navigating
+      const data = await updateEvent(id, eventData);
+      toast.success("Event updated successfully!", {
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        navigate(
+          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1500); // Increase the delay to 1.5 seconds before navigating
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {
@@ -996,10 +1015,12 @@ export default function EditEvent() {
                   />
                 </div>
               </div>
+              {console.log("materialFormData :------",materialFormData)}
               <CreateRFQForm
                 data={materialFormData}
                 setData={setMaterialFormData}
                 isService={isService}
+                templateData={eventDetails?.applied_event_template}
                 existingData={eventDetails?.grouped_event_materials}
                 deliveryData={eventDetails?.delivery_schedules}
                 updateSelectedTemplate={setSelectedTemplate}
