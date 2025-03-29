@@ -64,7 +64,7 @@ export default function CreateRFQForm({
 
     return fields.map((field) => ({
       label: field.field_name,
-      value: "", // Initialize with empty value or any default value
+      value: field.field_name, // Initialize with empty value or any default value
       field_name: field.field_name,
       is_required: field.is_required,
       is_read_only: field.is_read_only,
@@ -131,23 +131,29 @@ export default function CreateRFQForm({
 
   const fetchSubSections = async (inventoryTypeId) => {
     try {
-      const url = inventoryTypeId
-        ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        : `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      // const url = inventoryTypeId
+      //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
+        const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+  
+      console.log("Fetching sub-sections with URL:", url);
+  
       const response = await axios.get(url);
+      console.log("API Response for sub-sections:", response.data);
+  
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
-        setSubSectionOptions(
-          response.data.inventory_sub_types.map((subSection) => ({
-            label: subSection.name,
-            value: subSection.value,
-          }))
-        );
-        console.log("subSectionOptions :----", subSectionOptions);
+        const options = response.data.inventory_sub_types.map((subSection) => ({
+          label: subSection.name,
+          value: subSection.value,
+        }));
+        setSubSectionOptions(options);
+        console.log("Fetched subSectionOptions:", options);
       } else {
         console.error("Unexpected response structure:", response.data);
+        setSubSectionOptions((prevOptions) => [...prevOptions]); // Retain previous options
       }
     } catch (error) {
       console.error("Error fetching sub-sections:", error);
+      setSubSectionOptions((prevOptions) => [...prevOptions]); // Retain previous options
     }
   };
 
@@ -178,12 +184,20 @@ export default function CreateRFQForm({
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
           console.log("materialsArray:----", materialsArray);
-
+  
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
-          fetchMaterials(inventoryTypeId);
-          fetchSubSections(inventorySubTypeId);
+  
+          if (inventoryTypeId) {
+            console.log("Fetching materials for inventoryTypeId:", inventoryTypeId);
+            fetchMaterials(inventoryTypeId);
+          }
+          if (inventorySubTypeId) {
+            console.log("Fetching sub-sections for inventorySubTypeId:", inventorySubTypeId);
+            fetchSubSections(inventorySubTypeId);
+          }
+  
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
@@ -200,13 +214,12 @@ export default function CreateRFQForm({
               section_id: material.inventory_type_id || material.section_id,
               inventory_type_id: material.inventory_type_id,
               inventory_sub_type_id: material.inventory_sub_type_id,
-              subMaterialType: material.inventory_sub_type, // Correctly map subMaterialType
+              subMaterialType: material.inventory_sub_type,
               _destroy: false,
             })),
           };
         }
       );
-      // @ts-ignore
       setSections(updatedSections);
       setData(updatedSections.flatMap((section) => section.sectionData));
     } else {
@@ -279,7 +292,7 @@ export default function CreateRFQForm({
     };
 
     fetchSections();
-    fetchSubSections();
+    // fetchSubSections();
     fetchLocations();
     fetchUoms();
     fetchMaterials();
@@ -599,21 +612,14 @@ export default function CreateRFQForm({
                   </div>
                   <div className="flex-grow-1">
                     {
-                      console.log((section?.sectionData[0]?.subMaterialType)
-                        ?.value,
+                      console.log("subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",subTypeId,
                       subSectionOptions)
                     }
                     <SelectBox
                       label={"Select Sub Material Type"}
                       options={subSectionOptions}
                       defaultValue={
-                        section?.sectionData?.some((row) => row?._destroy)
-                          ? "Select Sub Material Type"
-                          : subSectionOptions?.find(
-                              (option) =>
-                                option.value ===
-                                subTypeId
-                            )?.value || "Select Sub Material Type"
+                        subSectionOptions?.find((option) => option.value === subTypeId)?.value || ""
                       }
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)

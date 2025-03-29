@@ -250,7 +250,55 @@ const BOQEdit = () => {
             }
         }
 
+
+
+        // if (boqDetails?.boq_sub_items?.length > 0) {
+        //     const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem =>
+        //         (subItem.materials || []).map(material => ({
+        //             ...material,
+        //             boqSubItemId: subItem.id // Attach subItem.id to each material
+        //         }))
+        //     );
+        
+        //     if (subItemMaterials.length > 0) {
+        //         setMaterials(subItemMaterials);
+        
+        //         setSelectedSubTypes(subItemMaterials.map(m => ({
+        //             value: m.pms_inventory_sub_type_id,
+        //             label: m.material_sub_type
+        //         })));
+        
+        //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
+        //             value: m.pms_generic_info_id,
+        //             label: m.generic_info
+        //         })));
+        
+        //         setSelectedColors(subItemMaterials.map(m => ({
+        //             value: m.pms_colour_id,
+        //             label: m.color
+        //         })));
+        
+        //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
+        //             value: m.pms_inventory_brand_id,
+        //             label: m.brand
+        //         })));
+        
+        //         setSelectedUnit2(subItemMaterials.map(m => ({
+        //             value: m.unit_of_measure_id,
+        //             label: m.uom
+        //         })));
+        
+        //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
+        //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
+        //         setWastages(subItemMaterials.map(m => m.wastage));
+        //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
+        //     }
+        // }
+        
+
     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
+
+    console.log("boq sub materials:",materials)
 
     // unit
 
@@ -1132,6 +1180,15 @@ const BOQEdit = () => {
         validateDuplicateAssets();
     }, [validateDuplicateAssets]);
 
+    const handleInputChangeCostQuantity = (id, newValue) => {
+        setBoqDetails((prevDetails) => ({
+          ...prevDetails,
+          boq_sub_items: prevDetails.boq_sub_items.map((subItem) =>
+            subItem.id === id ? { ...subItem, cost_quantity: newValue } : subItem
+          ),
+        }));
+      };
+
 
     // Loading, error, and data display logic
     if (loading) {
@@ -1472,9 +1529,13 @@ const BOQEdit = () => {
                                                                             <input
                                                                                 className="ms-5"
                                                                                 type="checkbox"
+                                                                                // disabled={!material.can_delete === false} // Ensure it evaluates to a Boolean
+                                                                                disabled={!material.can_delete} // Disable when can_delete is false
                                                                                 checked={selectedMaterials.includes(index)} // Use index instead of material.id
                                                                                 onChange={() => handleSelectRow(index)} // Pass index to function
+                                                                               
                                                                             />
+                                                                            {console.log("delete mt:", !material.can_delete)}
                                                                         </td>
                                                                         <td style={{ width: "300px" }}>{material.material_type || material.inventory_type_name}</td>
                                                                         <td style={{ width: "300px" }}>{material.material_name || material.name}</td>
@@ -1679,17 +1740,6 @@ const BOQEdit = () => {
                                                                 Assets.map((assets, index) => (
                                                                     <tr>
                                                                         <td>
-                                                                            {/* <input
-                                                                                                                          className="ms-5"
-                                                                                                                          type="checkbox"
-                                                                                                                          checked={selectedAssets.includes(
-                                                                                                                            assets.id
-                                                                                                                          )} // Check if material is selected
-                                                                                                                          onChange={() =>
-                                                                                                                            handleSelectRowAssets(assets.id)
-                                                                                                                          } // Toggle selection
-                                                                                                                        /> */}
-
                                                                             <input
                                                                                 key={index}
                                                                                 className="ms-5"
@@ -1972,7 +2022,18 @@ const BOQEdit = () => {
                                                                 <td className="text-start">{boqDetail2.remarks}</td>
                                                                 <td className="text-start">{boqDetail2.uom}</td>
                                                                 <td className="text-start">
-                                                                    {boqDetail2.cost_quantity}
+                                                                    {/* {boqDetail2.cost_quantity} */}
+                                                                    <input
+                                                className="form-control"
+                                                type="text"
+                                                placeholder=""
+                                                fdprocessedid="qv9ju9"
+                                                value={boqDetail2.cost_quantity}
+                                                onChange={(e) => handleInputChangeCostQuantity(boqDetail2.id, e.target.value)}
+                                                // onChange={(e) =>
+                                                //     handleInputChange("itemName", e.target.value)
+                                                // }
+                                            />
                                                                 </td>
                                                                 {/* <td></td> */}
                                                                 {/* <td></td> */}
@@ -1990,7 +2051,30 @@ const BOQEdit = () => {
                                                                                             <table>
                                                                                                 <thead>
                                                                                                     <tr>
-                                                                                                        <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}></th>
+                                                                                                        <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
+                                                                                                        <input
+                                                                        type="checkbox"
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setSelectedMaterials(materials.map((_, index) => index)); // Select all using indexes
+                                                                            } else {
+                                                                                setSelectedMaterials([]); // Deselect all
+                                                                            }
+                                                                        }}
+                                                                        checked={selectedMaterials.length === materials.length && materials.length > 0}
+                                                                    />
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width={14}
+                                                                        height={14}
+                                                                        fill="currentColor"
+                                                                        className="bi bi-trash3-fill ms-2"
+                                                                        viewBox="0 0 16 16"
+                                                                        onClick={handleDeleteAll} // Delete selected rows on click
+                                                                    >
+                                                                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+                                                                    </svg>
+                                                                                                        </th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
                                                                                                         <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>

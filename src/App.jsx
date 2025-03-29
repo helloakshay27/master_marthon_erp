@@ -75,6 +75,9 @@ import MaterialRejctionSlip from "./pages/material-rejction-slip";
 import MaterialReconciliationCreate from "./pages/material-reconciliation -create";
 import MaterialReconciliationDetail from "./pages/material-reconciliation -detail";
 import MaterialReconciliationList from "./pages/material-reconciliation -list";
+import EditBOQNew from "./pages/Boq-edit-new";
+import EventTemplateList from "./pages/event-template-list";
+import EventTemplateDetails from "./pages/event-template-details";
 
 function App() {
   return (
@@ -89,6 +92,7 @@ function App() {
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />
+          <Route path="/boq-edit-new" element={<EditBOQNew />} />
           {/* <Route path="/boq-edit/:id" element={<BOQEdit />} /> */}
           {/* <Route
               path="/boq-details-page-master"
@@ -141,6 +145,8 @@ function App() {
           />
           <Route path="/create-rfq" element={<CreateRfq />} />
           <Route path="/create-template" element={<CreateTemplate />} />
+          <Route path="/event-template-list" element={<EventTemplateList />} />
+          <Route path="/event-template-details/:id" element={<EventTemplateDetails />} />
           {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
           <Route path="/event-list" element={<EventListPage />} />
           <Route path="/contract-invitation" element={<ContractInvitation />} />

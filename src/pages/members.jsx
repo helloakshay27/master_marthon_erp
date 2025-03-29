@@ -262,9 +262,14 @@ function Members() {
                 <li>
                   <Link to="/view-BOQ">View BOQ</Link>
                 </li>
+
+                <li>
+                  <Link to="/boq-Edit-New">BOQ Edit</Link>
+                </li>
                 <li>
                   <Link to="/boq-approval-list">BOQ Approval List</Link>
                 </li>
+                
                 <li>
                   {/* <Link to="/boq-details-page-master">
                     BOQ Details Page Master
@@ -483,6 +488,9 @@ function Members() {
                 </li>
                 <li>
                   <Link to="/create-template">create_template</Link>
+                </li>
+                <li>
+                  <Link to="/event-template-list">event_template_list</Link>
                 </li>
                 <li>
                   <Link to="/erp-rfq-detail-price-trends4h">
