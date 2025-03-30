@@ -693,10 +693,28 @@ export default function EditEvent() {
   };
 
   const handleSubmit = async (event) => {
+    setLoading(true);
     event.preventDefault();
-    if (!validateForm()) {
+
+    if (
+      !eventName ||
+      !createdOn ||
+      !scheduleData.start_time ||
+      !scheduleData.end_time_duration ||
+      !scheduleData.evaluation_time ||
+      selectedVendors.length === 0
+    ) {
+      scrollToTop();
+      toast.error("Please fill all the required fields.", {
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+
       return;
     }
+
     setSubmitted(true);
 
     const eventData = {
@@ -706,81 +724,63 @@ export default function EditEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: onLoadScheduleData?.start_time || scheduleData?.start_time,
-          end_time:
-            onLoadScheduleData?.end_time_duration ||
-            scheduleData?.end_time_duration,
-          evaluation_time:
-            onLoadScheduleData?.evaluation_time || scheduleData?.evaluation_time,
+          start_time: scheduleData.start_time,
+          end_time: scheduleData.end_time_duration,
+          evaluation_time: scheduleData.evaluation_time,
         },
         event_type_detail_attributes: {
-          event_type: eventType || eventDetails?.event_type_detail?.event_type,
-          award_scheme:
-            awardType || eventDetails?.event_type_detail?.award_scheme,
-          event_configuration:
-            selectedStrategy || eventDetails?.event_type_detail?.event_configuration,
+          event_type: eventType,
+          award_scheme: awardType,
+          event_configuration: selectedStrategy,
           time_extension_type:
-            dynamicExtensionConfigurations.time_extension_type || "",
+            dynamicExtensionConfigurations.time_extension_type,
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last || "",
-          extend_event_time_by:
-            Number(dynamicExtensionConfigurations.extend_event_time_by) || 0,
+            dynamicExtensionConfigurations.triggered_time_extension_on_last,
+          extend_event_time_by: Number(
+            dynamicExtensionConfigurations.extend_event_time_by
+          ),
           enable_english_auction: true,
           extension_time_min: 5,
           extend_time_min: 10,
           time_extension_change:
-            dynamicExtensionConfigurations.time_extension_on_change_in || "",
-          delivery_date:
-            dynamicExtensionConfigurations.delivery_date ||
-            eventDetails?.event_type_detail?.delivery_date,
+            dynamicExtensionConfigurations.time_extension_on_change_in,
+          delivery_date: dynamicExtensionConfigurations.delivery_date,
         },
-        event_materials_attributes: materialFormData.map((material) => {
-          // Dynamically include all fields from materialFormData
-          const dynamicFields = Object.keys(material).reduce((acc, key) => {
-            acc[key] = material[key] || null; // Include all fields, default to null if undefined
-            return acc;
-          }, {});
-
-          return {
-            ...dynamicFields, // Include all dynamic fields
-            id: material.id || null, // Ensure id is included
-            inventory_id: Number(material.inventory_id),
-            quantity: Number(material.quantity),
-            uom: material.unit,
-            location: material.location,
-            rate: Number(material.rate),
-            amount: material.amount,
-            sub_section_name: material.sub_section_id,
-            section_name: material.section_id,
-            inventory_type_id: material.inventory_type_id,
-            inventory_sub_type_id: material.inventory_sub_type_id,
-            _destroy: material._destroy || false,
-          };
-        }),
+        event_materials_attributes: materialFormData.map((material) => ({
+          id: material.id || null,
+          inventory_id: Number(material.inventory_id),
+          quantity: Number(material.quantity),
+          uom: material.unit,
+          location: material.location,
+          rate: Number(material.rate),
+          amount: material.amount,
+          sub_section_name: material.sub_section_id,
+          section_name: material.section_id,
+          inventory_type_id: material.inventory_type_id,
+          inventory_sub_type_id: material.inventory_sub_type_id,
+          pms_brand: material.brand || null, // Include brand
+          pms_colour: material.pms_colour || null, // Include PMS color
+          generic_info: material.generic_info || null, // Include generic info
+          _destroy: material._destroy || false,
+        })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
-          id: vendor.id === null ? null : vendor.id,
-          status: "invited",
-          pms_supplier_id: vendor.pms_supplier_id || vendor.id,
+          status: 1,
+          pms_supplier_id: vendor.id,
         })),
         status_logs_attributes: [
           {
             status: "pending",
             created_by_id: 2,
             remarks: "Initial status",
+            comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) => {
-          const existingCondition = eventDetails.resource_term_conditions.find(
-            (condition) => condition.term_condition_id === textarea.id
-          );
-          return {
-            id: existingCondition ? existingCondition.id : null,
-            term_condition_id: textarea.textareaId || textarea.id,
-            condition_type: "general",
-            condition: textarea.value,
-          };
-        }),
-        attachments: documentRows?.map((row) => row?.upload),
+        resource_term_conditions_attributes: textareas.map((textarea) => ({
+          term_condition_id: textarea.textareaId,
+          condition_type: "general",
+          condition: textarea.value,
+        })),
+        attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
           event_template_id: selectedTemplate,
           applied_bid_template_fields_attributes: bidTemplateFields.map(
@@ -806,18 +806,24 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData payload", eventData);
+    console.log("payload:-", eventData);
 
     try {
-      const data = await updateEvent(id, eventData);
-      toast.success("Event updated successfully!", {
-        autoClose: 1000,
-      });
-      setTimeout(() => {
-        navigate(
-          "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500); // Increase the delay to 1.5 seconds before navigating
+      const response = await fetch(
+        `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        }
+      );
+      if (response.ok) {
+        // ...existing code...
+      } else {
+        // ...existing code...
+      }
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("Failed to update event.", {

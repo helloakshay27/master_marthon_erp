@@ -518,6 +518,9 @@ export default function CreateEvent() {
             section_name: material.section_id,
             inventory_type_id: material.inventory_type_id,
             inventory_sub_type_id: material.inventory_sub_type_id,
+            pms_brand: material.pms_brand || null, // Use only pms_brand
+            pms_colour: material.pms_colour || null, // Include PMS color
+            generic_info: material.generic_info || null, // Include generic info
             _destroy: material._destroy || false,
           };
         }),
