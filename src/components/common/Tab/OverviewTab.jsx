@@ -191,6 +191,9 @@ export default function OverviewTab({
     amount: item.rate * item.quantity || "_",
     sectionName: item.material_type || "_",
     subSectionName: item.inventory_sub_type || "_",
+    pmsBrand: item.pms_brand_id || "_",
+    pmsColour: item.pms_colour_id || "_",
+    genericInfo: item.generic_info || "_",
   }));
 
   const formatValue = (value) => {
@@ -214,6 +217,9 @@ export default function OverviewTab({
     { label: "Location", key: "location" },
     { label: "Rate", key: "rate" },
     { label: "Amount", key: "amount" },
+    { label: "PMS Brand", key: "pmsBrand" },
+    { label: "PMS Colour", key: "pmsColour" },
+    { label: "Generic Info", key: "genericInfo" },
     ...additionalFields
   ];
 

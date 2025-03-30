@@ -11,7 +11,7 @@ import AssetModal from "../components/AssestModal";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import axios from "axios";
 import { prepareDataForValidation } from "formik";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,Link } from "react-router-dom";
 // import { ToastContainer, toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
@@ -20,10 +20,12 @@ import { baseURL } from "../confi/apiDomain";
 import Select from "react-select";
 // import EditBoqSub from "./EditBoqSub";
 import EditBoqSub from "./EditBoqSub";
+import { useParams } from 'react-router-dom';
 
 const EditBOQNew = () => {
-  const [showMaterialLabour, setShowMaterialLabour] = useState(false);
-  const [showBOQSubItem, setShowBOQSubItem] = useState(false);
+     const { id } = useParams()
+  const [showMaterialLabour, setShowMaterialLabour] = useState(null);
+  const [showBOQSubItem, setShowBOQSubItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [materialErrors, setMaterialErrors] = useState({});
@@ -33,11 +35,12 @@ const EditBOQNew = () => {
   const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   const [remark, setRemark] = useState("");
+  const [deletedMaterialIds, setDeletedMaterialIds] = useState([]);
 
   const fetchData = async () => {
 
     try {
-      const response = await axios.get(`${baseURL}boq_details/260.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+      const response = await axios.get(`${baseURL}boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
       console.log("responce:", response.data)
       // Assuming the API returns data based on the id (you may need to adjust based on your response)
       setBoqDetails(response.data);
@@ -47,6 +50,11 @@ const EditBOQNew = () => {
       // setBoqDetailsSub(response.data.uom)
       if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
         setBoqDetailsSub(false); // Set to true if uom is not null
+        setShowBOQSubItem(true)
+        setShowMaterialLabour(false)
+      } else{
+        setShowBOQSubItem(false)
+        setShowMaterialLabour(true)
       }
 
     } catch (error) {
@@ -60,7 +68,7 @@ const EditBOQNew = () => {
 
     // console.log("id in useeffect:", id)
     fetchData();
-  }, []);  // Dependency array ensures fetch is triggered when 'id' changes
+  }, [id]);  // Dependency array ensures fetch is triggered when 'id' changes
 
 
   // Group categories by level
@@ -71,6 +79,13 @@ const EditBOQNew = () => {
     acc[category.level].push(category);
     return acc;
   }, {});
+
+  const categories = boqDetails?.categories || [];
+
+    const lastCategory = categories.length > 0 ? categories[categories.length - 1].id : null;
+
+    // console.log(lastCategory);
+
 
   const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ details visibility
   const [openBoqDetailId1, setOpenBoqDetailId1] = useState(null); // Track BOQ details visibility
@@ -174,216 +189,15 @@ const EditBOQNew = () => {
     setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
   };
 
-  //   useEffect(() => {
-  //         if (boqDetails?.materials?.length > 0) {
-  //             setMaterials(boqDetails.materials); // Store materials from boqDetails
-
-  //             setSelectedSubTypes(boqDetails.materials.map(m => ({
-  //                 value: m.pms_inventory_sub_type_id,
-  //                 label: m.material_sub_type
-  //             })));
-
-  //             setSelectedGenericSpecifications(boqDetails.materials.map(m => ({
-  //                 value: m.pms_generic_info_id,
-  //                 label: m.generic_info
-  //             })));
-
-  //             setSelectedColors(boqDetails.materials.map(m => ({
-  //                 value: m.pms_colour_id,
-  //                 label: m.color
-  //             })));
-
-  //             setSelectedInventoryBrands(boqDetails.materials.map(m => ({
-  //                 value: m.pms_inventory_brand_id,
-  //                 label: m.brand
-  //             })));
-
-  //             setSelectedUnit2(boqDetails.materials.map(m => ({
-  //                 value: m.unit_of_measure_id,
-  //                 label: m.uom
-  //             })));
-  //             // ✅ Correct way to set coefficient factors
-  //             setCoefficientFactors(boqDetails.materials.map(m => m.co_efficient_factor));
-  //             setEstimatedQuantities(boqDetails.materials.map(m => m.estimated_quantity));
-  //             setWastages(boqDetails.materials.map(m => m.wastage));
-  //             setTotalEstimatedQtyWastages(boqDetails.materials.map(m => m.estimated_quantity_wastage));
-  //         }
-
-  //         if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
-  //             const preselectedUnit = unitOfMeasures.find(
-  //                 (unit) => unit.value === boqDetails.unit_of_measure_id
-  //             );
-  //             setSelectedUnit(preselectedUnit || null);
-  //         }
-  //         setBoqQuantity(boqDetails?.quantity)
-
-  //         // ✅ Handling assets in the same way
-  //         if (boqDetails?.assets?.length > 0) {
-  //             setAssets(boqDetails.assets); // Store assets from boqDetails
-
-  //             setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
-  //                 value: a.pms_inventory_sub_type_id,
-  //                 label: a.asset_sub_type
-  //             })));
-
-  //             setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
-  //                 value: a.pms_generic_info_id,
-  //                 label: a.generic_info
-  //             })));
-
-  //             setSelectedAssetColors(boqDetails.assets.map(a => ({
-  //                 value: a.pms_colour_id,
-  //                 label: a.color
-  //             })));
-
-  //             setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
-  //                 value: a.pms_inventory_brand_id,
-  //                 label: a.brand
-  //             })));
-
-  //             setSelectedUnit3(boqDetails.assets.map(a => ({
-  //                 value: a.unit_of_measure_id,
-  //                 label: a.uom
-  //             })));
-
-  //             // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
-  //             setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
-  //             setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
-  //             setAssetWastages(boqDetails.assets.map(a => a.wastage));
-  //             setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
-  //         }
-
-
-  //         // sub item
-
-  //         if (boqDetails?.boq_sub_items?.length > 0) {
-  //             const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem => subItem.materials || []);
-
-  //             if (subItemMaterials.length > 0) {
-  //                 setMaterials(subItemMaterials);
-
-  //                 setSelectedSubTypes(subItemMaterials.map(m => ({
-  //                     value: m.pms_inventory_sub_type_id,
-  //                     label: m.material_sub_type
-  //                 })));
-
-  //                 setSelectedGenericSpecifications(subItemMaterials.map(m => ({
-  //                     value: m.pms_generic_info_id,
-  //                     label: m.generic_info
-  //                 })));
-
-  //                 setSelectedColors(subItemMaterials.map(m => ({
-  //                     value: m.pms_colour_id,
-  //                     label: m.color
-  //                 })));
-
-  //                 setSelectedInventoryBrands(subItemMaterials.map(m => ({
-  //                     value: m.pms_inventory_brand_id,
-  //                     label: m.brand
-  //                 })));
-
-  //                 setSelectedUnit2(subItemMaterials.map(m => ({
-  //                     value: m.unit_of_measure_id,
-  //                     label: m.uom
-  //                 })));
-
-  //                 setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
-  //                 setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
-  //                 setWastages(subItemMaterials.map(m => m.wastage));
-  //                 setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
-  //             }
-  //         }
-
-
-
-  //         // if (boqDetails?.boq_sub_items?.length > 0) {
-  //         //     const subItemMaterials = boqDetails.boq_sub_items.flatMap(subItem =>
-  //         //         (subItem.materials || []).map(material => ({
-  //         //             ...material,
-  //         //             boqSubItemId: subItem.id // Attach subItem.id to each material
-  //         //         }))
-  //         //     );
-
-  //         //     if (subItemMaterials.length > 0) {
-  //         //         setMaterials(subItemMaterials);
-
-  //         //         setSelectedSubTypes(subItemMaterials.map(m => ({
-  //         //             value: m.pms_inventory_sub_type_id,
-  //         //             label: m.material_sub_type
-  //         //         })));
-
-  //         //         setSelectedGenericSpecifications(subItemMaterials.map(m => ({
-  //         //             value: m.pms_generic_info_id,
-  //         //             label: m.generic_info
-  //         //         })));
-
-  //         //         setSelectedColors(subItemMaterials.map(m => ({
-  //         //             value: m.pms_colour_id,
-  //         //             label: m.color
-  //         //         })));
-
-  //         //         setSelectedInventoryBrands(subItemMaterials.map(m => ({
-  //         //             value: m.pms_inventory_brand_id,
-  //         //             label: m.brand
-  //         //         })));
-
-  //         //         setSelectedUnit2(subItemMaterials.map(m => ({
-  //         //             value: m.unit_of_measure_id,
-  //         //             label: m.uom
-  //         //         })));
-
-  //         //         setCoefficientFactors(subItemMaterials.map(m => m.co_efficient_factor));
-  //         //         setEstimatedQuantities(subItemMaterials.map(m => m.estimated_quantity));
-  //         //         setWastages(subItemMaterials.map(m => m.wastage));
-  //         //         setTotalEstimatedQtyWastages(subItemMaterials.map(m => m.estimated_quantity_wastage));
-  //         //     }
-  //         // }
-
-
-  //     }, [boqDetails, unitOfMeasures]); // Runs when boqDetails updates
-
-  //     console.log("boq sub materials:",materials)
-
-
-  //boq edit end ....
-
-
-
-  // const [errors, setErrors] = useState({
-  //   project: false,
-  //   itemName: false,
-  //   boqQuantity: false,
-  //   unit: false,
-  // });
-
+  
   const [errors, setErrors] = useState({});
-  // const options = [
-  //   { value: "option1", label: "Option 1" },
-  //   { value: "option2", label: "Option 2" },
-  //   { value: "option3", label: "Option 3" },
-  // ];
 
-  const handleCheckboxChange = (e) => {
-    const { id, checked } = e.target;
-    if (id === "checkbox1") {
-      setShowMaterialLabour(checked);
-      setShowBOQSubItem(false);
-      // Uncheck the other checkbox (checkbox2)
-      document.getElementById("checkbox2").checked = false;
-    } else if (id === "checkbox2") {
-      setShowBOQSubItem(checked);
-      setShowMaterialLabour(false);
-      // Uncheck the other checkbox (checkbox1)
-      document.getElementById("checkbox1").checked = false;
-    }
-  };
   // bootstrap collaps
   const [expandedRows, setExpandedRows] = useState([]);
   const [table1Rows, setTable1Rows] = useState([{ id: 1, value: "" }]);
   const [table2Rows, setTable2Rows] = useState([{ id: 1, value: "" }]);
   const [count, setcount] = useState([]);
   const [counter, setCounter] = useState(0);
-
 
   
   useEffect(() => {
@@ -516,25 +330,7 @@ const EditBOQNew = () => {
     setTable2Rows(updatedRows);
   };
 
-  // Function to delete a row from Table 1
-  //   const deleteRowFromTable1 = (id) => {
-  //     // const newValue = count.pop()
-  //     // console.log("aa", newValue)
-  //     // setcount(newValue)
-  //     // setTable1Rows(table1Rows.filter((row) => row.id !== id));
-  //     // setcount(count.filter((row) => row.id !== id));
-  //     // setCounter(counter - 1);
-
-  //     // Remove the row from count
-  //     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
-
-  //     // Remove the corresponding BOQ sub-item
-  //     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
-
-  //     // Decrement the counter safely
-  //     setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
-  //   };
-
+  
   // Function to delete a row from Table 2
   const deleteRowFromTable2 = (id) => {
     setTable2Rows(table2Rows.filter((row) => row.id !== id));
@@ -566,86 +362,46 @@ const EditBOQNew = () => {
     );
   };
 
-  // const handleDeleteAll = () => {
-  //   setMaterials((prev) =>
-  //     prev.filter((material) => !selectedMaterials.includes(material.id))
-  //   );
-  //   setSelectedMaterials([]); // Reset selected materials
-  // };
 
-  // const handleDeleteAll = () => {
-  //   setMaterials((prev) =>
-  //     prev.filter((_, index) => !selectedMaterials.includes(index)) // Filter using index
-  //   );
-  //   setSelectedMaterials([]); // Reset selection
-  // };
-
-
-  // const handleDeleteAll = () => {
-  //   setMaterials((prev) => {
-  //     // Filter out selected materials
-  //     const updatedMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
-
-  //     // Reset selected materials because indexes are shifting
-  //     setSelectedMaterials([]);
-
-  //     return updatedMaterials;
-  //   });
-  // };
   const handleDeleteAll = () => {
     setMaterials((prev) => {
-      // Get the new materials after deletion
-      const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
+        // Get IDs of materials being deleted
+        const deletedIds = prev
+            .filter((_, index) => selectedMaterials.includes(index))
+            .map((material) => material.id)
+            .filter((id) => id !== undefined); // Ensure only valid IDs are stored
 
-      // Function to update selections after deletion
-      const updateSelection = (selectionArray = []) =>
-        selectedMaterials.reduce((acc, index) => {
-          acc.splice(index, 1); // Remove the selected index
-          return acc;
-        }, [...selectionArray]);
+        // Store deleted material IDs
+        setDeletedMaterialIds((prevDeletedIds) => [...prevDeletedIds, ...deletedIds]);
 
-      // Update all related state variables
-      setSelectedSubTypes(updateSelection(selectedSubTypes));
-      setGenericSpecifications(updateSelection(genericSpecifications));
-      setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
-      setSelectedColors(updateSelection(selectedColors));
-      setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
-      setSelectedUnit2(updateSelection(selectedUnit2));
-      setCoefficientFactors(updateSelection(coefficientFactors));
-      setEstimatedQuantities(updateSelection(estimatedQuantities));
-      setWastages(updateSelection(wastages));
-      setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+        // Get the new materials after deletion
+        const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
 
-      // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
-      // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
+        // Function to update selections after deletion
+        const updateSelection = (selectionArray = []) =>
+            selectedMaterials.reduce((acc, index) => {
+                acc.splice(index, 1); // Remove the selected index
+                return acc;
+            }, [...selectionArray]);
 
-      return newMaterials;
+        // Update all related state variables
+        setSelectedSubTypes(updateSelection(selectedSubTypes));
+        setGenericSpecifications(updateSelection(genericSpecifications));
+        setSelectedGenericSpecifications(updateSelection(selectedGenericSpecifications));
+        setSelectedColors(updateSelection(selectedColors));
+        setSelectedInventoryBrands(updateSelection(selectedInventoryBrands));
+        setSelectedUnit2(updateSelection(selectedUnit2));
+        setCoefficientFactors(updateSelection(coefficientFactors));
+        setEstimatedQuantities(updateSelection(estimatedQuantities));
+        setWastages(updateSelection(wastages));
+        setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
+
+        return newMaterials;
     });
 
     setSelectedMaterials([]); // Clear selected materials
-  };
-
-
-
-
-
-
-  // const handleSelectRow = (materialName) => {
-  //   setSelectedMaterials(
-  //     (prev) =>
-  //       prev.includes(materialName)
-  //         ? prev.filter((name) => name !== materialName) // Unselect the material
-  //         : [...prev, materialName] // Select the material
-  //   );
-  // };
-
-  // const handleSelectRow = (materialIndex) => {
-  //   setSelectedMaterials((prev) =>
-  //     prev.includes(materialIndex)
-  //       ? prev.filter((index) => index !== materialIndex) // Unselect
-  //       : [...prev, materialIndex] // Select
-  //   );
-  // };
+};
+// console.log("deleted materil ids", deletedMaterialIds)
 
   const handleSelectRow = (materialIndex) => {
     setSelectedMaterials((prev) =>
@@ -663,9 +419,6 @@ const EditBOQNew = () => {
   const [selectedMaterials2, setSelectedMaterials2] = useState([]); // To track selected rows
   const handleOpenModal2 = () => setShowModal2(true);
   const handleCloseModal2 = () => setShowModal2(false);
-
-
-  
 
 
   // const handleAddMaterials2 = (newMaterials) => {
@@ -713,13 +466,6 @@ const EditBOQNew = () => {
   };
 
 
-  // const handleDeleteAllAssets = () => {
-  //   setAssets((prev) =>
-  //     prev.filter((asset) => !selectedAssets.includes(asset.id))
-  //   );
-  //   setSelectedAssets([]); // Reset selected materials
-  // };
-
   const handleDeleteAllAssets = () => {
     // setAssets((prev) => prev.filter((_, index) => !selectedAssets.includes(index))); // Filter using index
 
@@ -754,15 +500,6 @@ const EditBOQNew = () => {
     setSelectedAssets([]); // Reset selection
   };
 
-  // const handleSelectRowAssets = (assetType) => {
-  //   setSelectedAssets(
-  //     (prev) =>
-  //       prev.includes(assetType)
-  //         ? prev.filter((type) => type !== assetType) // Unselect the material
-  //         : [...prev, assetType] // Select the material
-  //   );
-  // };
-
   const handleSelectRowAssets = (assetIndex) => {
     setSelectedAssets((prev) =>
       prev.includes(assetIndex)
@@ -779,14 +516,6 @@ const EditBOQNew = () => {
   const handleOpenModalAsset2 = () => setShowModalAsset2(true);
   const handleCloseModalAsset2 = () => setShowModalAsset2(false);
 
-  // const handleAddAssets2 = (newAsset) => {
-  //   setAssets2((prev) => [
-  //     ...prev,
-  //     ...newAsset.filter(
-  //       (asset) => !prev.some((a) => a.id === asset.id)
-  //     ),
-  //   ]);
-  // };
   const handleAddAssets2 = (id, newAssets) => {
     setAssets2((prev) => {
       const updatedAssets = { ...prev };
@@ -1193,20 +922,6 @@ const EditBOQNew = () => {
               value: specification.id,
               label: specification.generic_info,
             }));
-
-            // setGenericSpecifications((prevSpecifications) => {
-            //   // Update only if the data has changed
-            //   if (JSON.stringify(prevSpecifications[material.id]) !== JSON.stringify(options)) {
-            //     return { ...prevSpecifications, [material.id]: options };
-            //   }
-            //   return prevSpecifications; // No update needed
-            // });
-
-            // setGenericSpecifications((prevSpecifications) => {
-            //   // Avoid index-based issues. We want to push the new options.
-            //   return [...prevSpecifications, options];
-            // });
-
             setGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
@@ -1234,19 +949,6 @@ const EditBOQNew = () => {
               value: specification.id,
               label: specification.generic_info,
             }));
-
-            // setAssetGenericSpecifications((prevSpecifications) => {
-            //   // Update only if the data has changed
-            //   if (JSON.stringify(prevSpecifications[asset.id]) !== JSON.stringify(options)) {
-            //     return { ...prevSpecifications, [asset.id]: options };
-            //   }
-            //   return prevSpecifications; // No update needed
-            // });
-
-            // setAssetGenericSpecifications((prevSpecifications) => {
-            //   // Avoid index-based issues. We want to push the new options.
-            //   return [...prevSpecifications, options];
-            // });
             setAssetGenericSpecifications((prevSpecifications) => {
               // Avoid index-based issues. We want to push the new options.
               const newColors = [...prevSpecifications];
@@ -1594,29 +1296,37 @@ const EditBOQNew = () => {
   };
   const [localMaterialErrors, setLocalMaterialErrors] = useState({});
   const [localAssetErrors, setLocalAssetErrors] = useState({});
+
   // Example predefined materials data (replace with actual data from your source)
-  const predefinedMaterials = materials.map((material, index) => ({
-    material_id: material.id,
-    material_sub_type_id: selectedSubTypes[index]
-      ? selectedSubTypes[index].value
-      : "",
-    generic_info_id: selectedGenericSpecifications[index]
-      ? selectedGenericSpecifications[index].value
-      : "", // Safe access with fallback
-    colour_id: selectedColors[index] ? selectedColors[index].value : "", // Safe access with fallback
-    brand_id: selectedInventoryBrands[index]
-      ? selectedInventoryBrands[index].value
-      : "", // Safe access with fallback
-    uom_id: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
-    co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
-    estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
-    wastage: parseFloat(wastages[index]) || 0,
-    estimated_quantity_wastage:
-      parseFloat(totalEstimatedQtyWastages[index]) || 0,
-  }));
+  const predefinedMaterials = [
+    ...materials.map((material, index) => ({
+        id: material.pms_inventory_id ? material.id : null,
+        material_id: material.pms_inventory_id || material.id,
+        material_sub_type_id: selectedSubTypes[index]
+            ? selectedSubTypes[index].value
+            : "",
+        generic_info_id: selectedGenericSpecifications[index]
+            ? selectedGenericSpecifications[index].value
+            : "", // Safe access with fallback
+        colour_id: selectedColors[index] ? selectedColors[index].value : "", // Safe access with fallback
+        brand_id: selectedInventoryBrands[index]
+            ? selectedInventoryBrands[index].value
+            : "", // Safe access with fallback
+        uom_id: selectedUnit2[index] ? selectedUnit2[index].value : "", // Safe access with optional chaining
+        co_efficient_factor: parseFloat(coefficientFactors[index]) || 0,
+        estimated_quantity: parseFloat(estimatedQuantities[index]) || 0,
+        wastage: parseFloat(wastages[index]) || 0,
+        estimated_quantity_wastage:
+            parseFloat(totalEstimatedQtyWastages[index]) || 0,
+    })),
+    {
+        deleted: deletedMaterialIds, // Store deleted material IDs in a separate object
+    },
+];
 
 
-  // console.log("pre mtL...", predefinedMaterials)
+
+console.log("pre mtL...", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -1762,7 +1472,7 @@ const EditBOQNew = () => {
   const handleUnitChangeForRow = (index, selectedOption, prevSelectedUnits) => {
     // Ensure to update the correct row's uom_id
     const updatedBoq = [...boqSubItems];
-    updatedBoq[index].unit_of_measure_id = selectedOption ? selectedOption.value : null; // If no selection, set to null
+    updatedBoq[index].uom_id = selectedOption ? selectedOption.value : null; // If no selection, set to null
     setBoqSubItems(updatedBoq);
     // setSelectedUnit(selectedOption)
     setSelectedUnitSubRow((prevSelectedUnits) => {
@@ -1882,124 +1592,100 @@ const EditBOQNew = () => {
   };
 
 
-
-
-
-  const payloadData2 = {
+  const payload = {
     boq_detail: {
-      project_id: selectedProject ? selectedProject.value : null,
-      pms_site_id: selectedSite ? selectedSite.value : null,
-      pms_wing_id: selectedWing ? selectedWing.value : null,
-      item_name: itemName,
-      description: description,
-      note: note,
-
-      sub_categories: [
-        // Always include main category (level 1)
-        {
-          category_id: selectedCategory?.value,
-          level: 1,
-        },
-        // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
-        ...(selectedSubCategory
-          ? [
+        id: boqDetails?.id,
+        item_name: boqDetails?.item_name,
+        description: boqDetails?.description,
+        quantity: boqDetails?.quantity,
+        note: boqDetails?.note,
+        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+        sub_categories: [
             {
-              category_id: selectedSubCategory?.value,
-              level: 2,
-              boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [], // Filter for level 2
-            },
-          ]
-          : []),
+                id: lastCategory,
+                materials: predefinedMaterials
+            }
+        ]
+    }
+}
 
-        // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
-        ...(selectedSubCategoryLevel3
-          ? [
-            {
-              category_id: selectedSubCategoryLevel3?.value,
-              level: 3,
-              boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [], // Filter for level 3
-            },
-          ]
-          : []),
 
-        // Only include materials for level 4 if it is selected
-        ...(selectedSubCategoryLevel4
-          ? [
-            {
-              category_id: selectedSubCategoryLevel4?.value,
-              level: 4,
-              boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [], // Filter for level 4
-            },
-          ]
-          : []),
+console.log("boq data payload 1  edit:", payload)
 
-        // Only include materials for level 5 if it is selected
-        ...(selectedSubCategoryLevel5
-          ? [
+
+
+  const payload2 = {
+    boq_detail: {
+        id: boqDetails?.id,
+        item_name: boqDetails?.item_name,
+        description: boqDetails?.description,
+        quantity: boqDetails?.quantity,
+        note: boqDetails?.note,
+        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+        sub_categories: [
             {
-              category_id: selectedSubCategoryLevel5?.value,
-              level: 5,
-              boq_sub_items: boqSubItems || [], // Filter for level 5
-            },
-          ]
-          : []),
-      ],
-    },
-  };
+                id: lastCategory,
+                boq_sub_items:boqSubItems || []
+                
+            }
+        ]
+    }
+}
+
+
+console.log("boq data payload 2 edit sub: ", payload2)
+
   // console.log("predefine data 2", predefinedMaterialsData)
   // console.log("boq sub payload", payloadData2);
 
   // Handle input changes
   const handleInputChange = (field, value) => {
     if (field === "itemName") {
-      setItemName(value);
+        setBoqDetails(prev => ({
+            ...prev,
+            item_name: value ? value : ""  // Ensure it's a number or empty string
+        }));
+        setItemName(value);
     } else if (field === "description") {
-      setDescription(value);
-    } else if (field === "boqQuantity") {
-      // Only allow non-negative values, including decimals (e.g., "0", "10", "10.5")
-      if (value === "" || /^[+]?\d*\.?\d*$/.test(value)) {
-        if (parseFloat(value) >= 0) {
-          // setBoqQuantity(value); // Update state if value is valid
-          setBoqQuantity(value ? Number(value) : "");
-          calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
-          calculateTotalEstimatedQtyWastages();
-          calculateAssetEstimatedQuantities();
-          calculateAssetTotalEstimatedQtyWastages();
-        } else {
-          setBoqQuantity(""); // Clear the value if it is negative
-        }
-      }
-
-      // // Ensure the value is a positive number or an empty string
-      // const validValue = value === '' || /^\d+(\.\d+)?$/.test(value); // Allow numbers only, including decimals
-      // if ( value >= 0) {
-      //   setBoqQuantity(value); // Set the value to state if it's valid
-      // } else {
-      //   setBoqQuantity(''); // Otherwise, reset it or set it to empty
-      // }
-
-      // setBoqQuantity(value);
-      //   setBoqQuantity(value ? Number(value) : '')
-      // calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
-      // calculateTotalEstimatedQtyWastages();
-    } else if (field === "note") {
-      setNote(value);
+        setDescription(value);
+        setBoqDetails(prev => ({
+            ...prev,
+            description: value ? value : ""  // Ensure it's a number or empty string
+        }));
+    } else if (field === "remark") {
+        setRemark(value);
     }
-  };
+    else if (field === "boqQuantity") {
+        // Only allow non-negative values, including decimals (e.g., "0", "10", "10.5")
+        if (value === "" || /^[+]?\d*\.?\d*$/.test(value)) {
 
-  // const handleInputChangeBOQQty = (field, value) => {
-  //   if (field === 'boqQuantity') {
-  //     // Only allow non-negative values, including decimals (e.g., "0", "10", "10.5")
-  //     if (value === '' || /^[+]?\d*\.?\d*$/.test(value)) {
-  //       if (parseFloat(value) >= 0) {
-  //         setBoqQuantity(value); // Update state if value is valid
-  //       } else {
-  //         setBoqQuantity(''); // Clear the value if it is negative
-  //       }
-  //     }
-  //   }
-  // };
+            if (value === "" || /^[+]?\d*\.?\d*$/.test(value)) {
+                setBoqDetails(prev => ({
+                    ...prev,
+                    quantity: value ? parseFloat(value) : ""  // Ensure it's a number or empty string
+                }));
+                setBoqQuantity(value ? Number(value) : "");
+                calculateEstimatedQuantities(); // Recalculate estimated quantities on boqQuantity change
+                calculateTotalEstimatedQtyWastages();
+                calculateAssetEstimatedQuantities();
+                calculateAssetTotalEstimatedQtyWastages();
+            }
 
+            else {
+                setBoqQuantity(""); // Clear the value if it is negative
+            }
+        }
+
+    } else if (field === "note") {
+        setNote(value);
+        setBoqDetails(prev => ({
+            ...prev,
+            note: value ? value : ""  // Ensure it's a number or empty string
+        }));
+    }
+};
+
+ 
   useEffect(() => {
     calculateEstimatedQuantities();
     calculateTotalEstimatedQtyWastages();
@@ -2096,23 +1782,9 @@ const EditBOQNew = () => {
     setSelectedSubCategoryLevel5(selectedOption);
 
   const handleSubmitMaterialLabour = async () => {
-    // Validate mandatory fields
-    // Track validation errors
-    // const newErrors = {
-    //   project: !selectedProject,
-    //   itemName: !itemName,
-    //   boqQuantity: !boqQuantity,
-    //   unit: !selectedUnit,
-    // };
+    let validationErrors = {};
 
     // setErrors(newErrors);
-    let validationErrors = {};
-    // Validate required fields
-    if (!selectedProject) validationErrors.project = "Project is required.";
-    if (!itemName) validationErrors.itemName = "Item Name is required.";
-    if (!selectedUnit) validationErrors.unit = "UOM is required.";
-    if (!boqQuantity)
-      validationErrors.boqQuantity = "BOQ Quantity is required.";
 
     // If predefinedMaterials is empty, show a toast error
     if (predefinedMaterials.length === 0 && predefinedAssets.length === 0) {
@@ -2163,20 +1835,6 @@ const EditBOQNew = () => {
     }
 
 
-    // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
-    //   toast.error("Please resolve duplicate materials or assets before submitting.");
-    //   return;
-    // }
-
-
-    // Show toast messages for each missing field
-    //  if (!selectedProject) toast.error("Project is required.");
-    //  if (!itemName) toast.error("Item Name is required.");
-    //  if (!boqQuantity) toast.error("BOQ Quantity is required.");
-    //  if (!selectedUnit) toast.error("UOM is required.");
-
-    // if (!newErrors.project && !newErrors.itemName && !newErrors.boqQuantity && !newErrors.unit) {
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
@@ -2185,106 +1843,40 @@ const EditBOQNew = () => {
         // Prepare the payload data
         // setLoading(false);
 
-        const payloadData = {
-          boq_detail: {
-            project_id: selectedProject ? selectedProject.value : null,
-            pms_site_id: selectedSite ? selectedSite.value : null,
-            pms_wing_id: selectedWing ? selectedWing.value : null,
-            item_name: itemName,
-            description: description,
-            unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
-            quantity: boqQuantity,
-            note: note,
-
-            sub_categories: [
-              // Always include main category (level 1)
-              {
-                category_id: selectedCategory?.value,
-                level: 1,
-              },
-
-              // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
-              ...(selectedSubCategory
-                ? [
-                  {
-                    category_id: selectedSubCategory?.value,
-                    level: 2,
-                    materials: !selectedSubCategoryLevel3
-                      ? predefinedMaterials
-                      : [], // Filter for level 2
-                    assets: !selectedSubCategoryLevel3
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
-              ...(selectedSubCategoryLevel3
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel3?.value,
-                    level: 3,
-                    materials: !selectedSubCategoryLevel4
-                      ? predefinedMaterials
-                      : [], // Filter for level 3
-                    assets: !selectedSubCategoryLevel4
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 4 if it is selected
-              ...(selectedSubCategoryLevel4
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel4?.value,
-                    level: 4,
-                    materials: !selectedSubCategoryLevel5
-                      ? predefinedMaterials
-                      : [], // Filter for level 4
-                    assets: !selectedSubCategoryLevel5
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 5 if it is selected
-              ...(selectedSubCategoryLevel5
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel5?.value,
-                    level: 5,
-                    materials: predefinedMaterials, // Filter for level 5
-                    assets: predefinedAssets || [],
-                  },
-                ]
-                : []),
-            ],
-          },
-        };
-
+        const payload = {
+            boq_detail: {
+                id: boqDetails?.id,
+                item_name: boqDetails?.item_name,
+                description: boqDetails?.description,
+                quantity: boqDetails?.quantity,
+                note: boqDetails?.note,
+                unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+                sub_categories: [
+                    {
+                        id: lastCategory, // Ensure lastCategory is set correctly
+                        materials: predefinedMaterials,
+                    },
+                ],
+            }
+        }
+        console.log("payload submission:", payload)
         // console.log("boq data payload 1 ", payloadData)
 
-        // Axios POST request
-        const response = await axios.post(
-          `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-          payloadData
-        );
+         const response = await axios.patch(
+                        `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                        payload,
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+        
+                    if (response.status === 200) {
+                        alert("BOQ updated successfully!");
+                        navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    }
 
-        // Handle successful response
-        if (response.data) {
-          navigate("/view-BOQ"); // Navigate to BOQ list on success
-        } else {
-          toast.error("Failed to create BOQ.", { position: "top-right" });
-        }
-        // alert("BOQ created successfully")
-        // navigate('/view-BOQ');
-        console.log("Data posted successfully:", response.data);
-        // You can also display a success message or perform other actions after a successful request
-        // setLoading(false);
       } catch (error) {
         // Handle error if the request fails
         console.error("Error posting data:", error);
@@ -2296,24 +1888,27 @@ const EditBOQNew = () => {
     }
   };
 
+
+  console.log("boq sub item submit>>>")
+  console.log("sub item: show",showBOQSubItem)
+
   // Handle submit for BOQ SubItem
   const handleSubmitBOQSubItem = async () => {
+    console.log("boq sub item>>>", boqSubItems)
     let validationErrors = {};
 
-    // Validate required fields
-    if (!selectedProject) validationErrors.project = "Project is required.";
-    if (!itemName) validationErrors.itemName = "Item Name is required.";
+    
 
-    if (boqSubItems.length === 0) {
-      toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
-      return;
-    }
+    // if (boqSubItems.length === 0) {
+    //   toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
+    //   return;
+    // }
 
-    // Check for validation errors in materials and assets
-    if (Object.keys(materialErrors).length > 0 || Object.keys(assetsErrors).length > 0) {
-      toast.error("Please resolve duplicate materials or assets before submitting.");
-      return;
-    }
+    // // Check for validation errors in materials and assets
+    // if (Object.keys(materialErrors).length > 0 || Object.keys(assetsErrors).length > 0) {
+    //   toast.error("Please resolve duplicate materials or assets before submitting.");
+    //   return;
+    // }
 
 
     // Iterate over each boqSubItem to validate
@@ -2334,66 +1929,6 @@ const EditBOQNew = () => {
         toast.error(`At least one material or asset must be selected for BoQ Sub Item ${i + 1}.`);
         return;
       }
-
-
-
-      // const invalidCoefficient = boqSubItem?.materials?.some((material, index) => {
-      //   // Get the coefficient factor for this material
-      //   const coefficientFactor = coefficientFactors[index];
-
-      //   // Check if the coefficient factor is invalid (NaN or empty)
-      //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
-      // });
-
-      // // Validate coefficient factors for assets
-      // const invalidAssetCoefficient =boqSubItem?.assets?.some((asset, index) => {
-      //   const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
-      //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
-      // });
-
-      // // If any coefficient factor is invalid, show a toast and stop
-      // if (invalidCoefficient || invalidAssetCoefficient) {
-      //   toast.error(
-      //     `Co-efficient factor cannot be empty or invalid for any material or asset inside BoQ Sub Item ${i + 1}.`
-      //   );
-      //   return; // Exit function if validation fails
-      // }
-
-
-      // // if(boqSubItem.materials.length>0) {
-      //   boqSubItems.forEach((boqSubItem, i) => {
-      //   console.log("boq sub mt:",boqSubItem.materials)
-      //   let hasErrors = false; // Flag to track errors
-
-      //   // boqSubItem.materials.forEach((material) => {
-      //   //   const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-
-      //   //   if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
-      //   //     toast.error(`Coefficient factor is required for material in BoQ Sub Item ${i + 1}.`, {
-      //   //       // position: "top-right",
-      //   //       // autoClose: 3000,
-      //   //       // hideProgressBar: false,
-      //   //       // closeOnClick: true,
-      //   //       // pauseOnHover: true,
-      //   //       // draggable: true,
-      //   //       // theme: "colored",
-      //   //     });
-      //   //   }
-      //   // });
-
-      //   boqSubItem.materials.forEach((material) => {
-      //     const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-
-      //     if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
-      //       hasErrors = true; // Mark that there's an error
-      //     }
-      //   });
-
-      //   if (hasErrors) {
-      //     toast.error(`Coefficient factor is required for all materials in BoQ Sub Item ${i + 1}.`);
-      //   }
-
-      // })
 
 
       let hasErrors = false; // Track global errors
@@ -2448,25 +1983,6 @@ const EditBOQNew = () => {
       if (hasErrors2) return;
 
 
-      // // if (boqSubItem.materials.length > 0) {
-      //   boqSubItems.forEach((boqSubItem, i) => {
-      //   console.log("boq sub mt:", boqSubItem.materials);
-
-      //   let hasErrors = false; // Flag to track errors
-
-      //   boqSubItem.materials.forEach((material) => {
-      //     const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
-
-      //     if (!genericInfoId) {
-      //       hasErrors = true; // Mark that there's an error
-      //     }
-      //   });
-
-      //   if (hasErrors) {
-      //     toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
-      //   }
-      // })
-
 
     }
 
@@ -2476,48 +1992,48 @@ const EditBOQNew = () => {
       setLoading(true);
 
       try {
-        const payloadData2 = {
-          boq_detail: {
-            project_id: selectedProject ? selectedProject.value : null,
-            pms_site_id: selectedSite ? selectedSite.value : null,
-            pms_wing_id: selectedWing ? selectedWing.value : null,
-            item_name: itemName,
-            description: description,
-            note: note,
 
-            sub_categories: [
-              { category_id: selectedCategory?.value, level: 1 },
-              ...(selectedSubCategory
-                ? [{ category_id: selectedSubCategory?.value, level: 2, boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel3
-                ? [{ category_id: selectedSubCategoryLevel3?.value, level: 3, boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel4
-                ? [{ category_id: selectedSubCategoryLevel4?.value, level: 4, boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel5
-                ? [{ category_id: selectedSubCategoryLevel5?.value, level: 5, boq_sub_items: boqSubItems || [] }]
-                : []),
-            ],
-          },
-        };
-
-        const response = await axios.post(
-          `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-          payloadData2
-        );
-
-        if (response.data) {
-          navigate("/view-BOQ");
-        } else {
-          toast.error("Failed to create BOQ Sub Item.", { position: "top-right" });
+        const payload2 = {
+            boq_detail: {
+                id: boqDetails?.id,
+                item_name: boqDetails?.item_name,
+                description: boqDetails?.description,
+                quantity: boqDetails?.quantity,
+                note: boqDetails?.note,
+                unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+                sub_categories: [
+                    {
+                        id: lastCategory,
+                        boq_sub_items:boqSubItems || []
+                        
+                    }
+                ]
+            }
         }
+        
+        console.log("payload submission edit sub:", payload2)
+        // console.log("boq data payload 1 ", payloadData)
 
-        console.log("Data posted successfully:", response.data);
+         const response = await axios.patch(
+                        `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                        payload2,
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+        
+                    if (response.status === 200) {
+                        alert("BOQ updated successfully!");
+                        navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    }
+      
+                    setLoading(false);
       } catch (error) {
+        setLoading(false);
         console.error("Error posting data:", error);
-        toast.error("Something went wrong.", { position: "top-right" });
+        // toast.error("Something went wrong.", { position: "top-right" });
       } finally {
         setLoading(false);
       }
@@ -2527,9 +2043,11 @@ const EditBOQNew = () => {
 
   // Handle general submit
   const handleSubmit = () => {
+    console.log("sunbmit:")
     if (showMaterialLabour) {
       handleSubmitMaterialLabour();
     } else if (showBOQSubItem) {
+        console.log("handle submit:",showBOQSubItem)
       handleSubmitBOQSubItem();
     } else {
       // console.log('No option selected');
@@ -2554,8 +2072,6 @@ const EditBOQNew = () => {
   const handleIconClick = () => {
     document.getElementById("file-input").click();
   };
-
-
 
 
   useEffect(() => {
@@ -3024,13 +2540,14 @@ const EditBOQNew = () => {
 
                     <div className="row mt-2">
                       {/* Checkboxes */}
-                      <div className="col-md-6 d-flex align-items-center">
+                      {/* <div className="col-md-6 d-flex align-items-center">
                         <div className="form-check me-3">
                           <input
                             type="checkbox"
                             className="form-check-input"
                             id="checkbox1"
                             onChange={handleCheckboxChange}
+                            checked={showMaterialLabour}
                           />
                           <label
                           // className="form-check-label" htmlFor="checkbox1"
@@ -3044,6 +2561,7 @@ const EditBOQNew = () => {
                             className="form-check-input"
                             id="checkbox2"
                             onChange={handleCheckboxChange}
+                            checked={showBOQSubItem}
                           />
                           <label
                           // className="form-check-label" htmlFor="checkbox2"
@@ -3051,7 +2569,7 @@ const EditBOQNew = () => {
                             Add BOQ Sub-Item
                           </label>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
 
                   </div>
@@ -3474,8 +2992,8 @@ const EditBOQNew = () => {
                                         />
                                       </td>
 
-                                      <td>{assets.inventory_type_name}</td>
-                                      <td>{assets.name}</td>
+                                      <td>{assets.material_type ||assets.inventory_type_name}</td>
+                                      <td>{assets.material_name ||assets.name}</td>
                                       <td>
                                         <SingleSelector
                                           options={assetSubTypes[index] || []} // Get the sub-types for the specific material
@@ -3676,7 +3194,7 @@ const EditBOQNew = () => {
                 <>
 
 
-                  <pre>{JSON.stringify(materials2, null, 2)}</pre>
+                  {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 
                   <CollapsibleCard title="BOQ Sub-Item">
                     <div className="card mx-3 mt-2">
@@ -4203,13 +3721,24 @@ const EditBOQNew = () => {
                   fdprocessedid="u33pye"
                   onClick={handleSubmit}
                 >
-                  Create
+                  Update
                 </button>
               </div>
               <div className="col-md-2">
-                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                {/* <button className="purple-btn1 w-100" fdprocessedid="u33pye">
                   Cancel
-                </button>
+                </button> */}
+
+                <Link to={`/boq-details-page-master/${boqDetails?.id}`}>
+                                                    <button
+                                                        className="purple-btn1 w-100"
+                                                        fdprocessedid="u33pye"
+                                                    >
+                                                    
+                                                        Cancel
+                
+                                                    </button>
+                                                </Link>
               </div>
             </div>
           </div>

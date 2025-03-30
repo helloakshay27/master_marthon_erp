@@ -84,15 +84,16 @@ function App() {
     <BrowserRouter>
       <div>
         <Routes>
-          <Route path="/" element={<Members />} />
+          <Route path="/" element={<Members />} />  
           <Route path="/approvals-list" element={<ApprovalsList />} />
           <Route path="/edit-approvals" element={<EditApprovals />} />
           <Route path="/add-approvals" element={<AddApprovals />} />
           <Route path="/create-BOQ" element={<CreateBOQ />} />
+          <Route path="/boq-edit-new/:id" element={<EditBOQNew />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />
-          <Route path="/boq-edit-new" element={<EditBOQNew />} />
+          
           {/* <Route path="/boq-edit/:id" element={<BOQEdit />} /> */}
           {/* <Route
               path="/boq-details-page-master"

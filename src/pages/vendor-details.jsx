@@ -123,7 +123,7 @@ export default function VendorDetails() {
         const formattedData = response.data.applied_bid_template_fields.map(
           (item) => ({
             label: item.field_name,
-            value: {firstBid:"", counterBid:""}  ,
+            value: { firstBid: "", counterBid: "" },
             isRequired: item.is_required,
             isReadOnly: item.is_read_only,
             fieldOwner: item.field_owner,
@@ -239,34 +239,41 @@ export default function VendorDetails() {
       const realisedGst = parseFloat(row.realisedGst) || 0;
       return sum + realisedGst;
     }, 0);
-  
+
     // Add realised GST from freight data
     const freightRealisedGst = freightData.reduce((sum, row) => {
       if (row.label === "GST on Freight") {
-        const gstValue = parseFloat(row.value.firstBid || row.value.counterBid || 0);
-        const freightCharge = parseFloat(freightData.find(f => f.label === "Freight Charge")?.value.firstBid || 0);
-        return sum + (freightCharge * gstValue / 100);
+        const gstValue = parseFloat(
+          row.value.firstBid || row.value.counterBid || 0
+        );
+        const freightCharge = parseFloat(
+          freightData.find((f) => f.label === "Freight Charge")?.value
+            .firstBid || 0
+        );
+        return sum + (freightCharge * gstValue) / 100;
       }
       return sum;
     }, 0);
-  
+
     const totalRealisedGst = sum + freightRealisedGst;
     setRealisedGstVal(totalRealisedGst);
     return parseFloat(totalRealisedGst.toFixed(2)); // Ensure two decimal places
   };
-  
+
   const calculateSumTotal = (updatedFreightData = freightData) => {
     const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
-    const freightTotal = parseFloat(calculateFreightTotal(updatedFreightData)) || 0; // Total from freight data
+    const freightTotal =
+      parseFloat(calculateFreightTotal(updatedFreightData)) || 0; // Total from freight data
     const realisedGstTotal = parseFloat(calculateRealisedGstTotal()) || 0; // Total from realised GST
-  
+
     // Ensure realisedGstTotal is included in the total calculation
     const totalBeforeFreight = Math.round(dataSum * 100) / 100;
-    const totalWithFreightAndGst = Math.round((dataSum + freightTotal + realisedGstTotal) * 100) / 100;
-  
+    const totalWithFreightAndGst =
+      Math.round((dataSum + freightTotal + realisedGstTotal) * 100) / 100;
+
     console.log("Total before Freight:", totalBeforeFreight);
     console.log("Total with Freight and GST:", totalWithFreightAndGst);
-  
+
     return totalWithFreightAndGst;
   };
 
@@ -473,6 +480,9 @@ export default function VendorDetails() {
           // console.log("material type", materialType);
 
           return {
+            pmsBrand: item.pms_brand_id,
+            pmsColour: item.pms_colour_id,
+            genericInfo: item.generic_info,
             eventMaterialId: item.id,
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
@@ -724,7 +734,7 @@ export default function VendorDetails() {
     const loadingUnloadingClause =
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
-    
+
     // Construct the payload
     const payload = {
       bid: {
@@ -739,7 +749,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra:{},
+        extra: {},
         bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -892,7 +902,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra:{},
+        extra: {},
         revised_bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -1877,7 +1887,6 @@ export default function VendorDetails() {
     console.log("Received Data in Table:", data);
   }, [data]);
 
-
   return (
     <div className="">
       <div className="styles_projectTabsHeader__148No" id="project-header">
@@ -2089,6 +2098,7 @@ export default function VendorDetails() {
                     )} */}
 
                     <div className="card-body">
+                      {console.log("Linked Event Data:", linkedEventData)}
                       {linkedEventData.length > 0 ? (
                         <div style={tableContainerStyle}>
                           <Table
@@ -2097,6 +2107,9 @@ export default function VendorDetails() {
                               { label: "Material Sub Type", key: "subSection" },
                               { label: "Material", key: "descriptionOfItem" },
                               { label: "Quantity Requested", key: "quantity" },
+                              { label: "Delivery Location", key: "location" },
+                              { label: "Brand", key: "brand" },
+                              { label: "Delivery Location", key: "location" },
                               { label: "Delivery Location", key: "location" },
                               // {
                               //   label: "Creator Attachment",
@@ -2897,6 +2910,9 @@ export default function VendorDetails() {
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
+                                        <th className="text-start">Brand</th>
+                                        <th className="text-start">Colour</th>
+                                        <th className="text-start">Generic Info</th>
                                         {/* <th className="text-start">
                                           Material Type 
                                         </th>
@@ -2968,6 +2984,15 @@ export default function VendorDetails() {
                                               // style={{ color: "#777777" }}
                                             >
                                               {data.amount}
+                                            </td>
+                                            <td>
+                                              {data.pms_brand_id || "N/A"}
+                                            </td>
+                                            <td>
+                                              {data.pms_colour_id || "N/A"}
+                                            </td>
+                                            <td>
+                                              {data.generic_info_id || "N/A"}
                                             </td>
                                           </tr>
                                         )
@@ -3146,7 +3171,7 @@ export default function VendorDetails() {
                     <div className="card-header4">
                       <div className="d-flex justify-content-between">
                         <h4>
-                          Submission Sheet
+                          Submission Sheetdasdasxasdasdasdsdas
                           <span
                             style={{
                               backgroundColor: "#fff2e8",
@@ -3222,25 +3247,29 @@ export default function VendorDetails() {
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
-                        {/* {console.log("data", data)} */}
+                        {console.log("data", data)}
                         <Table
                           columns={[
+
                             { label: " Material Type ", key: "section" },
                             {
                               label: "Material Sub Type",
                               key: "subSection",
                             },
-
+                            
                             { label: "Material", key: "descriptionOfItem" },
                             // { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
                             // { label: " Material Type ", key: "section" },
                             // {
-                            //   label: "Material Sub Type",
-                            //   key: "subSection",
-                            // },
-
-                            { label: "Delivery Location", key: "location" },
+                              //   label: "Material Sub Type",
+                              //   key: "subSection",
+                              // },
+                              
+                              { label: "Delivery Location", key: "location" },
+                              { label: " Brand ", key: "pmsBrand" },
+                              { label: " Colour ", key: "pmsColour" },
+                              { label: " Generic Info ", key: "genericInfo" },
                             // { label: "Creator Attachment", key: "attachment" },
                             {
                               label: "Quantity Available *",
@@ -3265,6 +3294,37 @@ export default function VendorDetails() {
                           ]}
                           data={data}
                           customRender={{
+                            
+                            pmsBrand: (cell, rowIndex) => (
+                              <input
+                                className="form-control"
+                                type="text"
+                                value={cell}
+                                readOnly
+                                style={otherColumnsStyle}
+                                disabled={isBid}
+                              />
+                            ),
+                            pmsColour: (cell, rowIndex) => (
+                              <input
+                                className="form-control"
+                                type="text"
+                                value={cell}
+                                readOnly
+                                style={otherColumnsStyle}
+                                disabled={isBid}
+                              />
+                            ),
+                            genericInfo: (cell, rowIndex) => (
+                              <input
+                                className="form-control"
+                                type="text"
+                                value={cell}
+                                readOnly
+                                style={otherColumnsStyle}
+                                disabled={isBid}
+                              />
+                            ),
                             descriptionOfItem: (cell, rowIndex) => (
                               <input
                                 className="form-control"
