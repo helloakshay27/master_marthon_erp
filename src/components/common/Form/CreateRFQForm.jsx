@@ -13,6 +13,7 @@ export default function CreateRFQForm({
   isService,
   existingData,
   deliveryData,
+  templateData,
   updateSelectedTemplate, // Rename this prop
   updateBidTemplateFields, // Rename this prop
   updateAdditionalFields, // Rename this prop
@@ -58,9 +59,28 @@ export default function CreateRFQForm({
     fieldOwner: "",
     fieldType: "string",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [taxRateData, setTaxRateData] = useState({
+    material: "CEMENT-CEMENT-P.P.C GENERIC NAME-43 GRADE",
+    hsnCode: "25232930",
+    ratePerNos: 200.0,
+    totalPoQty: 0,
+    discount: 16.0,
+    materialCost: 200.0,
+    discountRate: 16.0,
+    afterDiscountValue: 25200.0,
+    remark: "",
+    additionalInfo: "",
+    additionTaxCharges: [],
+    deductionTax: [],
+  });
+  const [brandOptions, setBrandOptions] = useState([]);
+  const [materialId, setMaterialId] = useState(0); // New state for materialId
+  const [pmsColours, setPmsColours] = useState([]); // State for PMS colors
+  const [genericInfoOptions, setGenericInfoOptions] = useState([]); // State for generic info
 
   const mapBidTemplateFields = (fields) => {
-    console.log("fields", fields);
+    // console.log("fields", fields);
 
     return fields.map((field) => ({
       label: field.field_name,
@@ -78,7 +98,7 @@ export default function CreateRFQForm({
   const handleTemplateChange = async (event) => {
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
-    console.log("selectedTemplate", selectedTemplate, event);
+    // console.log("selectedTemplate", selectedTemplate, event);
 
     try {
       const response = await axios.get(
@@ -97,6 +117,19 @@ export default function CreateRFQForm({
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );
         setAdditionalFields(updatedAdditionalFields);
+
+        // Reset sections to ensure compatibility with the new template
+        const updatedSections = sections.map((section) => ({
+          ...section,
+          sectionData: section.sectionData.map((row) => ({
+            ...row,
+            ...updatedAdditionalFields.reduce((acc, field) => {
+              acc[field.field_name] = row[field.field_name] || ""; // Initialize missing fields
+              return acc;
+            }, {}),
+          })),
+        }));
+        setSections(updatedSections);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -120,7 +153,7 @@ export default function CreateRFQForm({
           uom: material.uom,
         }));
         setMaterials(materialOptions);
-        console.log("materials :----", materials);
+        // console.log("materials :----", materials);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -133,20 +166,20 @@ export default function CreateRFQForm({
     try {
       // const url = inventoryTypeId
       //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-  
-      console.log("Fetching sub-sections with URL:", url);
-  
+      const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+      // console.log("Fetching sub-sections with URL:", url);
+
       const response = await axios.get(url);
-      console.log("API Response for sub-sections:", response.data);
-  
+      // console.log("API Response for sub-sections:", response.data);
+
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
         const options = response.data.inventory_sub_types.map((subSection) => ({
           label: subSection.name,
           value: subSection.value,
         }));
         setSubSectionOptions(options);
-        console.log("Fetched subSectionOptions:", options);
+        // console.log("Fetched subSectionOptions:", options);
       } else {
         console.error("Unexpected response structure:", response.data);
         setSubSectionOptions((prevOptions) => [...prevOptions]); // Retain previous options
@@ -178,33 +211,84 @@ export default function CreateRFQForm({
     }
   };
 
+  const fetchPmsColours = async (materialId) => {
+    try {
+      let url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
+      if(!materialId){
+        url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      }
+      const response = await axios.get(url);
+
+      if (response.data && Array.isArray(response.data.pms_colours)) {
+        const options = response.data.pms_colours.map((colour) => ({
+          label: colour.name,
+          value: colour.value,
+        }));
+        setPmsColours(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching PMS colors:", error);
+    }
+  };
+
+  const fetchGenericInfo = async (materialId) => {
+    try {
+      const url = materialId
+        ? `${baseURL}rfq/events/generic_infos?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`
+        : `${baseURL}rfq/events/generic_infos?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+      const response = await axios.get(url);
+
+      if (response.data && Array.isArray(response.data.generic_info)) {
+        const options = response.data.generic_info.map((info) => ({
+          label: info.name,
+          value: info.value,
+        }));
+        setGenericInfoOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching generic info:", error);
+    }
+  };
+
   useEffect(() => {
     if (existingData) {
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
-          console.log("materialsArray:----", materialsArray);
-  
+          // console.log("materialsArray:----", materialsArray);
+
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
-  
+
           if (inventoryTypeId) {
-            console.log("Fetching materials for inventoryTypeId:", inventoryTypeId);
+            // console.log(
+            //   "Fetching materials for inventoryTypeId:",
+            //   inventoryTypeId
+            // );
             fetchMaterials(inventoryTypeId);
           }
           if (inventorySubTypeId) {
-            console.log("Fetching sub-sections for inventorySubTypeId:", inventorySubTypeId);
+            // console.log(
+            //   "Fetching sub-sections for inventorySubTypeId:",
+            //   inventorySubTypeId
+            // );
             fetchSubSections(inventorySubTypeId);
           }
-  
+          console.log("materials", materialsArray);
+          
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
               id: material.id,
               descriptionOfItem:
                 material.inventory_name || material.descriptionOfItem,
-              inventory_id: material.inventory_id,
+              inventory_id: material.descriptionOfItem,
               quantity: material.quantity,
               unit: material.uom,
               location: material.location,
@@ -226,10 +310,11 @@ export default function CreateRFQForm({
       fetchMaterials();
       fetchSubSections(); // Fetch sub-sections without inventory_type_id
     }
+    fetchBrands();
   }, [existingData]);
 
   useEffect(() => {
-    console.log("Existing data:", existingData);
+    // console.log("Existing data:", existingData);
 
     const fetchSections = async () => {
       try {
@@ -292,31 +377,87 @@ export default function CreateRFQForm({
     };
 
     fetchSections();
-    // fetchSubSections();
     fetchLocations();
     fetchUoms();
     fetchMaterials();
+    fetchBrands(); // Fetch brands
     fetchTemplates(); // Fetch templates
+    fetchPmsColours(); // Fetch PMS colors on component mount
+    fetchGenericInfo(); // Fetch generic info on component mount
   }, []);
 
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
 
+  useEffect(() => {
+    // Ensure all field_name keys from additionalFields are included in sectionData
+    const updatedSections = sections.map((section) => ({
+      ...section,
+      sectionData: section.sectionData.map((row) => ({
+        ...row,
+        ...additionalFields.reduce((acc, field) => {
+          if (!(field.field_name in row)) {
+            acc[field.field_name] = ""; // Initialize missing field_name with an empty string
+          }
+          return acc;
+        }, {}),
+      })),
+    }));
+    setSections(updatedSections);
+  }, [additionalFields]);
+
+  useEffect(() => {
+    if (templateData) {
+      // Set the selected template based on templateData
+      setSelectedTemplate(templateData.event_template_id);
+
+      // Update additionalFields and bidTemplateFields from templateData
+      const updatedAdditionalFields =
+        templateData.applied_bid_material_template_fields || [];
+      const updatedBidTemplateFields =
+        templateData.applied_bid_template_fields || [];
+
+      setAdditionalFields(updatedAdditionalFields);
+      setBidTemplateFields(updatedBidTemplateFields);
+
+      // Update parent component's state
+      updateAdditionalFields(updatedAdditionalFields);
+      updateBidTemplateFields(updatedBidTemplateFields);
+    }
+  }, [templateData]);
+
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
+    // console.log("handleUnitChange called with:", {
+    //   selected,
+    //   rowIndex,
+    //   sectionIndex,
+    // });
+
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
+
     setSections(updatedSections);
+    // console.log("Updated sections after unit change:", updatedSections);
   };
 
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
+    // console.log("handleLocationChange called with:", {
+    //   selected,
+    //   rowIndex,
+    //   sectionIndex,
+    // });
+
     const updatedSections = [...sections];
     const selectedLocation = locationOptions.find(
       (location) => location.value === selected
     );
+
     updatedSections[sectionIndex].sectionData[rowIndex].location =
       selectedLocation ? selectedLocation.label : selected;
+
     setSections(updatedSections);
+    // console.log("Updated sections after location change:", updatedSections);
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
@@ -344,6 +485,9 @@ export default function CreateRFQForm({
       inventory_sub_type_id:
         sections[sectionIndex].sectionData[0]?.inventory_sub_type_id || "", // Add inventory_sub_type_id
       _destroy: false,
+      pms_brand: [],
+      pms_colour: pmsColours[0]?.value || "", // Default PMS color
+      generic_info: [], // Default generic info
     };
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData = [
@@ -356,30 +500,125 @@ export default function CreateRFQForm({
   const handleInputChange = (value, rowIndex, key, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
-    setSections(updatedSections);
-    setData(updatedSections.flatMap((section) => section.sectionData));
+    if(key==='descriptionOfItem'){
+      updatedSections[sectionIndex].sectionData[rowIndex]['inventory_id'] = value;
+    }
+    setSections(updatedSections); // Update the sections state
+    
+
+    // Update the parent data with all attributes, including dynamic fields
+    const updatedData = updatedSections.flatMap((section) => {
+      
+      section.sectionData.map((row) => ({
+        id: row.id || null,
+        inventory_id: Number(row.inventory_id),
+        quantity: Number(row.quantity),
+        uom: row.unit,
+        location: row.location,
+        rate: Number(row.rate),
+        amount: row.amount,
+        section_name: row.section_id,
+        inventory_type_id: row.inventory_type_id,
+        inventory_sub_type_id: row.inventory_sub_type_id,
+        pms_brand: row.brand || null, // Include brand
+        pms_colour: row.pms_colour || null, // Include PMS color
+        generic_info: row.generic_info || null, // Include generic info
+        ...additionalFields.reduce((acc, field) => {
+          acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
+          return acc;
+        }, {}),
+        _destroy: row._destroy || false,
+      }))
+  });
+  
+    setData(updatedData); // Update the parent data
+    fetchBrands(value);
+    fetchPmsColours(value);
+    fetchGenericInfo(value);
   };
 
+  const fetchBrands = async (materialId) => {
+    
+
+    try {
+      let url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
+      if(!materialId){
+        url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      }
+      const response = await axios.get(url);
+
+      if (response.data && Array.isArray(response.data.brands)) {
+        const options = response.data.brands.map((brand) => ({
+          label: brand.name,
+          value: brand.value,
+        }));
+        setBrandOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (materialId) {
+      fetchBrands(materialId);
+      fetchPmsColours(materialId);
+      fetchGenericInfo(materialId); // Fetch generic info when material changes
+    }
+  }, [materialId]);
+
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
+    console.log("called", selected, rowIndex, sectionIndex);
+    
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
       (material) => material.value === selected
     );
 
-    updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
-      selected;
+    if (!selectedMaterial) {
+      console.error("Selected material not found in materials list:", selected);
+      return;
+    }
+    console.log(selectedMaterial, "selectedMaterial");
+    
 
-    if (selectedMaterial && selectedMaterial.uom) {
+    updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
+    selectedMaterial.label;
+
+    if (selectedMaterial.uom) {
       updatedSections[sectionIndex].sectionData[rowIndex].unit =
         selectedMaterial.uom.uom_short_name;
     } else {
       updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
     }
+
     updatedSections[sectionIndex].sectionData[rowIndex].type =
-      selectedMaterial?.type || "N/A";
+      selectedMaterial.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial?.value || "";
-    setSections(updatedSections);
+      selectedMaterial.label
+console.log('updatedSections',updatedSections);
+
+    // Update materialId state
+    setMaterialId(selectedMaterial.value);
+
+    // Fetch brands, PMS colors, and generic info based on the selected material ID
+    fetchBrands(selectedMaterial.value);
+    fetchPmsColours(selectedMaterial.value);
+    fetchGenericInfo(selectedMaterial.value);
+
+    setSections((prevSections) => {
+      const updatedSections = [...prevSections];
+      const selectedSection = updatedSections[sectionIndex];
+      const selectedRow = selectedSection.sectionData[rowIndex];
+
+      // Update descriptionOfItem and inventory_id
+      selectedRow.descriptionOfItem = selected;
+      selectedRow.inventory_id = selected || ""; // Set inventory_id based on selected value
+
+      return updatedSections;
+    });
   };
 
   const handleAddSection = () => {
@@ -391,10 +630,12 @@ export default function CreateRFQForm({
           quantity: "",
           unit: [],
           type: materials[0]?.type || "",
+          pms_brand: [], // Add brand field
+          pms_colour: pmsColours[0]?.value || "", // Default PMS color
           location: [],
           rate: 0,
           amount: 0,
-          inventory_id: "",
+          inventory_id: [],
           sub_section_id: subSectionOptions[0]?.value || "",
           section_id: sectionOptions[0]?.value || "",
           inventory_type_id: sectionOptions[0]?.value || "", // Add inventory_type_id
@@ -459,7 +700,7 @@ export default function CreateRFQForm({
 
     setAdditionalFields(updatedFields);
     updateAdditionalFields(updatedFields); // Update the parent component's state
-    console.log("Updated additional fields:", updatedFields, editField);
+    // console.log("Updated additional fields:", updatedFields, editField);
 
     setShowEditModal(false);
     setSections((prevSections) => {
@@ -549,22 +790,415 @@ export default function CreateRFQForm({
       { label: "Quantity", key: "quantity" },
       { label: "UOM", key: "unit" },
       { label: "Type", key: "type" },
+      { label: "Brand", key: "brand" }, // Add brand column
+      { label: "PMS Colour", key: "pms_colour" }, // Add PMS Colour column
+      { label: "Generic Info", key: "generic_info" }, // Add Generic Info column
       { label: "Location", key: "location" },
       { label: "Rate", key: "rate" },
       { label: "Amount", key: "amount" },
       { label: "Actions", key: "actions" },
     ];
 
-    const additionalColumns = additionalFields
-      .filter((field) => field.field_name !== "Sr no.")
-      .map((field) => ({
-        label: field.field_name,
-        key: field.field_name,
-      }));
+    const additionalColumns = additionalFields.map((field) => ({
+      label: field.field_name,
+      key: field.field_name,
+    }));
 
     return [...defaultColumns, ...additionalColumns];
   };
 
+  const renderAdminFields = (field, rowIndex, sectionIndex) => {
+    const fieldValue =
+      sections[sectionIndex]?.sectionData[rowIndex]?.[field.field_name] || "";
+    const inputList = [
+      "srNo",
+      "descriptionOfItem",
+      "quantity",
+      "unit",
+      "type",
+      "brand",
+      "location",
+      "rate",
+      "amount",
+      "actions",
+    ];
+
+    // Explicitly handle SelectBox for specific fields
+    if (field.field_name === "descriptionOfItem") {
+      return (
+        <SelectBox
+          options={materials}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "unit") {
+      return (
+        <SelectBox
+          options={uomOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "location") {
+      return (
+        <SelectBox
+          options={locationOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "pms_colour") {
+      return (
+        <SelectBox
+          options={pmsColours}
+          defaultValue={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "generic_info") {
+      return (
+        <SelectBox
+          options={genericInfoOptions}
+          defaultValue={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "brand") {
+      return (
+        <SelectBox
+          options={brandOptions}
+          defaultValue={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (field.field_name === "amount") {
+      return (
+        <input
+          className="form-control"
+          type="number"
+          value={fieldValue}
+          onChange={(e) =>
+            handleInputChange(
+              e.target.value,
+              rowIndex,
+              field.field_name,
+              sectionIndex
+            )
+          }
+          disabled
+        />
+      );
+    }
+
+
+
+    // Default input for other fields
+    return (
+      <div className="input-group">
+        {field.field_owner === "admin" && (
+          <input
+            className="form-control"
+            type={field.field_type === "integer" ? "number" : "text"}
+            value={fieldValue}
+            onChange={(e) =>
+              handleInputChange(
+                e.target.value,
+                rowIndex,
+                field.field_name,
+                sectionIndex
+              )
+            }
+          />
+        )}
+        {/* {!inputList.includes(field.field_name) && ( */}
+        <div
+        // style={{
+        //   display: inputList.includes(field.field_name) ? "block" : "none",
+        // }}
+        >
+          {/* <button
+              className="btn btn-outline-secondary"
+              onClick={() => handleEditAdditionalField(field)}
+            >
+              <i className="material-icons">edit</i>
+            </button> */}
+          <button
+            className="purple-btn2 ms-2 rounded-circle p-0"
+            style={{
+              border: "none",
+              color: "white",
+              width: "25px",
+              height: "25px",
+            }}
+            onClick={() => handleEditAdditionalField(field)}
+          >
+            <i className="bi bi-pencil" style={{ border: 0 }}></i>
+          </button>
+          {/* <button
+              className="btn btn-outline-danger"
+              onClick={() => handleDeleteAdditionalField(field)}
+            >
+              <i className="material-icons">delete</i>
+            </button> */}
+          <button
+            className="purple-btn2 ms-2 rounded-circle p-0"
+            style={{
+              border: "none",
+              color: "white",
+              width: "25px",
+              height: "25px",
+            }}
+            onClick={() => handleDeleteAdditionalField(field)}
+          >
+            <i className="bi bi-trash" style={{ border: 0 }}></i>
+          </button>
+        </div>
+        {/* )} */}
+      </div>
+    );
+  };
+
+  const renderGenericField = (fieldName, rowIndex, sectionIndex) => {
+    const fieldValue =
+      sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
+
+    // console.log(fieldValue, "fieldValue:----", fieldName);
+
+    // Explicitly handle SelectBox for specific fields
+    if (fieldName === "descriptionOfItem") {
+      return (
+        <>
+          <SelectBox
+            options={materials}
+            // value={fieldValue}
+            defaultValue={
+              materials.find((option) => option.label === fieldValue)?.value
+            }
+            onChange={(value) =>
+              handleInputChange(value, rowIndex, fieldName, sectionIndex)
+            }
+          />
+          {/* <p>{materials.find((option) => option.label === fieldValue).value}</p> */}
+        </>
+      );
+    }
+
+    if (fieldName === "unit") {
+      return (
+        <SelectBox
+          options={uomOptions}
+          defaultValue={
+            uomOptions.find((option) => option.label === fieldValue)?.value
+          }
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "location") {
+      console.log("locationOptions:----", locationOptions, fieldValue);
+
+      return (
+        <SelectBox
+          options={locationOptions}
+          defaultValue={
+            locationOptions.find((option) => option.label === fieldValue)?.value
+          }
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "brand") {
+      console.log("brandOptions:----", brandOptions, fieldValue);
+      return (
+        <SelectBox
+          options={brandOptions}
+          defaultValue={brandOptions.find((option) => option.label === fieldValue)?.value}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "pms_colour") {
+      console.log("pmsColours:----", pmsColours, fieldValue);
+      return (
+        <SelectBox
+          options={pmsColours}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    if (fieldName === "generic_info") {
+      console.log("genericInfoOptions:----", genericInfoOptions, fieldValue);
+      return (
+        <SelectBox
+          options={genericInfoOptions}
+          value={fieldValue}
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
+    // Default input for other fields
+    return (
+      <div className="input-group">
+        <input
+          className="form-control"
+          type="text"
+          value={fieldValue}
+          onChange={(e) =>
+            handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+        {/* {!inputList.includes(fieldName) && ( */}
+        {/* <>
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() =>
+                handleEditAdditionalField({ field_name: fieldName })
+              }
+            >
+              <i className="bi bi-pencil" style={{ border: 0 }}></i>
+            </button>
+            <button
+              className="purple-btn2 ms-2 rounded-circle p-0"
+              style={{
+                border: "none",
+                color: "white",
+                width: "25px",
+                height: "25px",
+              }}
+              onClick={() =>
+                handleDeleteAdditionalField({ field_name: fieldName })
+              }
+            >
+              <i className="bi bi-trash" style={{ border: 0 }}></i>
+            </button>
+          </> */}
+        {/* )} */}
+      </div>
+    );
+  };
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  // Function to add a new addition tax charge row
+  const addAdditionTaxCharge = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      additionTaxCharges: [...taxRateData.additionTaxCharges, newItem],
+    });
+  };
+
+  // Function to add a new deduction tax row
+  const addDeductionTax = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      deductionTax: [...taxRateData.deductionTax, newItem],
+    });
+  };
+
+  // Function to remove a tax charge item
+  const removeTaxChargeItem = (id, type) => {
+    if (type === "addition") {
+      setTaxRateData({
+        ...taxRateData,
+        additionTaxCharges: taxRateData.additionTaxCharges.filter(
+          (item) => item.id !== id
+        ),
+      });
+    } else {
+      setTaxRateData({
+        ...taxRateData,
+        deductionTax: taxRateData.deductionTax.filter((item) => item.id !== id),
+      });
+    }
+  };
+
+  // Function to handle changes in tax charge items
+  const handleTaxChargeChange = (id, field, value, type) => {
+    if (type === "addition") {
+      setTaxRateData({
+        ...taxRateData,
+        additionTaxCharges: taxRateData.additionTaxCharges.map((item) =>
+          item.id === id ? { ...item, [field]: value } : item
+        ),
+      });
+    } else {
+      setTaxRateData({
+        ...taxRateData,
+        deductionTax: taxRateData.deductionTax.map((item) =>
+          item.id === id ? { ...item, [field]: value } : item
+        ),
+      });
+    }
+  };
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -579,7 +1213,7 @@ export default function CreateRFQForm({
               label={"Select Template"}
               options={templateOptions}
               onChange={handleTemplateChange}
-              defaultValue={""}
+              defaultValue={selectedTemplate} // Set value instead of defaultValue
             />
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
@@ -611,15 +1245,18 @@ export default function CreateRFQForm({
                     />
                   </div>
                   <div className="flex-grow-1">
-                    {
-                      console.log("subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",subTypeId,
-                      subSectionOptions)
-                    }
+                    {/* {console.log(
+                      "subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",
+                      subTypeId,
+                      subSectionOptions
+                    )} */}
                     <SelectBox
                       label={"Select Sub Material Type"}
                       options={subSectionOptions}
                       defaultValue={
-                        subSectionOptions?.find((option) => option.value === subTypeId)?.value || ""
+                        subSectionOptions?.find(
+                          (option) => option.value === subTypeId
+                        )?.value || ""
                       }
                       onChange={(selected) =>
                         handleSubSectionChange(selected, sectionIndex)
@@ -654,10 +1291,15 @@ export default function CreateRFQForm({
                 data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
-                  descriptionOfItem: (cell, rowIndex) => (
-                    <>
+                  descriptionOfItem: (cell, rowIndex) => {
+                    // console.log("Materials options:", materials);
+                    // console.log(
+                    //   "Selected value for descriptionOfItem:",
+                    //   section?.sectionData[rowIndex]?.descriptionOfItem
+                    // );
+                    return (
                       <SelectBox
-                        options={materials}
+                        options={materials} // Ensure materials is an array of objects with `label` and `value`
                         onChange={(value) =>
                           handleDescriptionOfItemChange(
                             value,
@@ -665,36 +1307,66 @@ export default function CreateRFQForm({
                             sectionIndex
                           )
                         }
-                        defaultValue={
-                          section?.sectionData[rowIndex]?._destroy
-                            ? ""
-                            : materials?.find(
-                                (option) =>
-                                  option?.value ===
-                                  section?.sectionData[rowIndex]?.inventory_id
-                              )?.value || ""
+                        value={
+                          section?.sectionData[rowIndex]?.descriptionOfItem ||
+                          ""
                         }
                       />
-                      {/* {console.log(cell,"this is cell",rowIndex)} */}
-                    </>
-                  ),
-                  unit: (cell, rowIndex) => (
-                    <SelectBox
-                      options={uomOptions}
-                      onChange={(value) =>
-                        handleUnitChange(value, rowIndex, sectionIndex)
-                      }
-                      defaultValue={
-                        section?.sectionData[rowIndex]?._destroy
-                          ? ""
-                          : uomOptions?.find(
-                              (option) =>
-                                option?.value ===
-                                section?.sectionData[rowIndex]?.unit
-                            )?.value || ""
-                      }
-                    />
-                  ),
+                    );
+                  },
+                  unit: (cell, rowIndex) => {
+                    // console.log("UOM options:", uomOptions);
+                    // console.log(
+                    //   "Selected value for unit:",
+                    //   section?.sectionData[rowIndex]?.unit
+                    // );
+                    return (
+                      <SelectBox
+                        options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleUnitChange(value, rowIndex, sectionIndex)
+                        }
+                        value={section?.sectionData[rowIndex]?.unit || ""}
+                      />
+                    );
+                  },
+                  location: (cell, rowIndex) => {
+                    // console.log("Location options:", locationOptions);
+                    // console.log(
+                    //   "Selected value for location:",
+                    //   section?.sectionData[rowIndex]?.location
+                    // );
+                    return (
+                      <SelectBox
+                        options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleLocationChange(value, rowIndex, sectionIndex)
+                        }
+                        value={section?.sectionData[rowIndex]?.location || ""}
+                      />
+                    );
+                  },
+                  brand: (cell, rowIndex) => {
+                    console.log("Brand options:", brandOptions);
+                    console.log(
+                      "Selected value for brand:",
+                      section?.sectionData[rowIndex]?.brand
+                    );
+                    return (
+                      <SelectBox
+                        options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
+                        onChange={(value) =>
+                          handleInputChange(
+                            value,
+                            rowIndex,
+                            "brand",
+                            sectionIndex
+                          )
+                        }
+                        defaultValue={section?.sectionData[rowIndex]?.brand || ""}
+                      />
+                    );
+                  },
                   type: (cell, rowIndex) => (
                     <input
                       className="form-control"
@@ -710,25 +1382,6 @@ export default function CreateRFQForm({
                       }
                     />
                   ),
-                  location: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={locationOptions}
-                        onChange={(value) =>
-                          handleLocationChange(value, rowIndex, sectionIndex)
-                        }
-                        defaultValue={
-                          section.sectionData[rowIndex]._destroy
-                            ? ""
-                            : locationOptions.find(
-                                (option) =>
-                                  option.label ===
-                                  section.sectionData[rowIndex]?.location
-                              )?.value || ""
-                        }
-                      />
-                    );
-                  },
                   quantity: (cell, rowIndex) => (
                     <input
                       className="form-control"
@@ -765,7 +1418,7 @@ export default function CreateRFQForm({
                     <input
                       className="form-control"
                       type="number"
-                      value={""}
+                      value={cell}
                       onChange={(e) =>
                         handleInputChange(
                           e.target.value,
@@ -776,6 +1429,7 @@ export default function CreateRFQForm({
                       }
                       placeholder="Enter Amount"
                       disabled
+                      
                     />
                   ),
                   actions: (_, rowIndex) => (
@@ -787,51 +1441,51 @@ export default function CreateRFQForm({
                     </button>
                   ),
                   ...additionalFields.reduce((acc, field) => {
-                    acc[field.field_name] = (cell, rowIndex) => (
-                      <div className="d-flex align-items-center">
-                        {/* <input
-                          className="form-control"
-                          type="text"
-                          value={cell}
-                          onChange={(e) =>
-                            handleInputChange(
-                              e.target.value,
-                              rowIndex,
-                              field.field_name,
-                              sectionIndex
-                            )
-                          }
-                          readOnly={field.is_read_only}
-                          required={field.is_required}
-                        /> */}
-                        <button
-                          className="purple-btn2 ms-2 rounded-circle p-0"
-                          style={{
-                            border: "none",
-                            color: "white",
-                            width: "25px",
-                            height: "25px",
-                          }}
-                          onClick={() => handleEditAdditionalField(field)}
-                        >
-                          <i className="bi bi-pencil" style={{ border: 0 }}></i>
-                        </button>
-                        <button
-                          className="purple-btn2 ms-2 rounded-circle p-0"
-                          style={{
-                            border: "none",
-                            color: "white",
-                            width: "25px",
-                            height: "25px",
-                          }}
-                          onClick={() => handleDeleteAdditionalField(field)}
-                        >
-                          <i className="bi bi-trash" style={{ border: 0 }}></i>
-                        </button>
-                      </div>
-                    );
+                    acc[field.field_name] = (cell, rowIndex) =>
+                      renderAdminFields(field, rowIndex, sectionIndex);
                     return acc;
                   }, {}),
+                  ...Object.keys(
+                    sections[sectionIndex]?.sectionData[0] || {}
+                  ).reduce((acc, fieldName) => {
+                    if (
+                      !additionalFields.some(
+                        (field) => field.field_name === fieldName
+                      )
+                    ) {
+                      acc[fieldName] = (cell, rowIndex) =>
+                        renderGenericField(fieldName, rowIndex, sectionIndex);
+                    }
+                    return acc;
+                  }, {}),
+                  pms_colour: (cell, rowIndex) => (
+                    <SelectBox
+                      options={pmsColours}
+                      // defaultValue={pmsColours.find((option) => option.value === ).value || ""}
+                      onChange={(value) =>
+                        handleInputChange(
+                          value,
+                          rowIndex,
+                          "pms_colour",
+                          sectionIndex
+                        )
+                      }
+                    />
+                  ),
+                  generic_info: (cell, rowIndex) => (
+                    <SelectBox
+                      options={genericInfoOptions}
+                      value={section?.sectionData[rowIndex]?.generic_info || ""}
+                      onChange={(value) =>
+                        handleInputChange(
+                          value,
+                          rowIndex,
+                          "generic_info",
+                          sectionIndex
+                        )
+                      }
+                    />
+                  ),
                 }}
                 onRowSelect={undefined}
                 handleCheckboxChange={undefined}
@@ -867,6 +1521,11 @@ export default function CreateRFQForm({
             </span>
             <span>Add Section</span>
           </button>
+          <button className="purple-btn2" onClick={handleOpenModal}>
+            <span className="material-symbols-outlined align-text-top">
+              Modal
+            </span>
+          </button>
         </div>
       </div>
       <DynamicModalBox
@@ -892,7 +1551,7 @@ export default function CreateRFQForm({
             value={editField.fieldName}
             onChange={(e) => {
               setEditField({ ...editField, fieldName: e.target.value });
-              console.log("inputVal", e.target.value);
+              // console.log("inputVal", e.target.value);
             }}
             placeholder="Enter Field Name"
           />
@@ -1093,6 +1752,426 @@ export default function CreateRFQForm({
             defaultValue={newField.fieldType}
             onChange={(value) => setNewField({ ...newField, fieldType: value })}
           />
+        </div>
+      </DynamicModalBox>
+      <DynamicModalBox
+        show={showModal}
+        onHide={handleCloseModal}
+        size="lg"
+        title="View Tax & Rate"
+        centered={true}
+      >
+        <div className="container-fluid p-0">
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.material}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      material: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">HSN Code</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.hsnCode}
+                  onChange={(e) => {
+                    setTaxRateData({ ...taxRateData, hsnCode: e.target.value });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">
+                  Rate per Nos<span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData.ratePerNos}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      ratePerNos: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Total PO Qty</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.totalPoQty}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      totalPoQty: e.target.value,
+                    });
+                  }}
+                  ly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount(%)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData.discount}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      discount: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material Cost</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.materialCost}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      materialCost: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount Rate</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.discountRate}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      discountRate: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">
+                  After Discount Value
+                </label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.afterDiscountValue}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      afterDiscountValue: parseInt(e.target.value),
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Remark</label>
+                <textarea
+                  className="form-control bg-light"
+                  rows={3}
+                  value={taxRateData.remark}
+                  onChange={(e) => {
+                    setTaxRateData({ ...taxRateData, remark: e.target.value });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Additional Info.</label>
+                <textarea
+                  className="form-control bg-light"
+                  rows={3}
+                  value={taxRateData.additionalInfo}
+                  onChange={(e) => {
+                    setTaxRateData({
+                      ...taxRateData,
+                      additionalInfo: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Charges Table */}
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="table-responsive">
+                <table className="table table-bordered">
+                  <thead className="tax-table-header">
+                    <tr>
+                      <th>Tax / Charge Type</th>
+                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Inclusive</th>
+                      <th>Amount</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Total Base Cost Row */}
+                    <tr>
+                      <td>Total Base Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control bg-light"
+                          value={taxRateData.afterDiscountValue.toFixed(1)}
+                          readOnly
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+
+                    {/* Addition Tax & Charges Row */}
+                    <tr>
+                      <td>Addition Tax & Charges</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={addAdditionTaxCharge}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Addition Tax & Charges Items */}
+                    {taxRateData.additionTaxCharges.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargeType}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargeType",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax & Charges</option>
+                            <option value="GST">GST</option>
+                            <option value="CGST">CGST</option>
+                            <option value="SGST">SGST</option>
+                            <option value="IGST">IGST</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargePerUom}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="5%">5%</option>
+                            <option value="12%">12%</option>
+                            <option value="18%">18%</option>
+                            <option value="28%">28%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "addition"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "amount",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
+                              removeTaxChargeItem(item.id, "addition")
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Deduction Tax Row */}
+                    <tr>
+                      <td>Deduction Tax</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={addDeductionTax}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Deduction Tax Items */}
+                    {taxRateData.deductionTax.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargeType}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargeType",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax & Charges</option>
+                            <option value="TDS">TDS</option>
+                            <option value="TCS">TCS</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargePerUom}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="1%">1%</option>
+                            <option value="2%">2%</option>
+                            <option value="10%">10%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "amount",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
+                              removeTaxChargeItem(item.id, "deduction")
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </DynamicModalBox>
     </div>

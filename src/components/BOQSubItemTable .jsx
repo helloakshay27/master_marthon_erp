@@ -12,6 +12,7 @@ import _ from "lodash"; // Install using `npm install lodash`
 
 
 const BOQSubItemTable = ({
+  boqDetails,
   setBoqSubItems,
   materials,
   setMaterials,
@@ -1012,10 +1013,10 @@ const BOQSubItemTable = ({
       colour_id: selectedColors[i]?.value || "",
       brand_id: selectedInventoryBrands[i]?.value || "",
       uom_id: selectedUnit2[i]?.value || "",
-      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
-      estimated_quantity: parseFloat(estimatedQuantities[i]) || 0,
-      wastage: parseFloat(wastages[i]) || 0,
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) || 0,
+      co_efficient_factor: parseFloat(coefficientFactors[i]) || "",
+      estimated_quantity: parseFloat(estimatedQuantities[i]) ||  "",
+      wastage: parseFloat(wastages[i]) || "",
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  "",
     }));
   }, [
     materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
@@ -1070,23 +1071,58 @@ const BOQSubItemTable = ({
   const assetErrors = useMemo(() => validateDuplicates(predefinedAssets), [predefinedAssets, validateDuplicates]);
 
   useEffect(() => {
-    // console.log("boq sub id vaidation:", boqSubItemId)
     if (!boqSubItemId) return;
-
-    // Only update state if there is a real change
-    if (!_.isEqual(materialErrors, localMaterialErrors)) {
-      setLocalMaterialErrors(materialErrors);
-    }
-
-    setBoqSubItems((prev) => {
-      return prev.map((item) =>
+  
+    setBoqSubItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== boqSubItemId) return item;
+  
+        const existingMaterials = item.materials || [];
+        const newMaterials = predefinedMaterials || [];
+  
+        // Normalize material IDs
+        const normalizedExistingMaterials = existingMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id,
+        }));
+        const normalizedNewMaterials = newMaterials.map((m) => ({
+          ...m,
+          material_id: m.material_id || m.id,
+        }));
+  
+        // Use Set to remove duplicates
+        const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+        const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+  
+        // Merge materials correctly
+        const mergedMaterials = [...normalizedExistingMaterials, ...filteredNewMaterials];
+  
+        return _.isEqual(item.materials, mergedMaterials)
+          ? item
+          : { ...item, materials: mergedMaterials };
+      })
+    );
+  
+    // ✅ Prevent unnecessary material error updates
+    setLocalMaterialErrors((prev) =>
+      _.isEqual(prev, materialErrors) ? prev : materialErrors
+    );
+  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+  
+  // ✅ Force replace only when `predefinedMaterials` changes drastically
+  useEffect(() => {
+    if (!boqSubItemId) return;
+  
+    setBoqSubItems((prev) =>
+      prev.map((item) =>
         item.id === boqSubItemId && !_.isEqual(item.materials, predefinedMaterials)
           ? { ...item, materials: predefinedMaterials }
           : item
-      );
-    });
-
-  }, [boqSubItemId, predefinedMaterials, materialErrors]);
+      )
+    );
+  
+  }, [boqSubItemId, predefinedMaterials]);
+  
 
   // ✅ Updating asset errors and BoqSubItems (Fixed infinite loop)
   useEffect(() => {
@@ -1269,6 +1305,8 @@ const BOQSubItemTable = ({
                           </tr>
                         </thead>
                         <tbody>
+
+                          
                           {materials.length > 0 ? (
                             materials.map((material, index) => (
                               <tr>
