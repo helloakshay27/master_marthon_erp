@@ -92,7 +92,7 @@ function App() {
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />
-          <Route path="/boq-edit-new" element={<EditBOQNew />} />
+          <Route path="/boq-edit-new/:id" element={<EditBOQNew />} />
           {/* <Route path="/boq-edit/:id" element={<BOQEdit />} /> */}
           {/* <Route
               path="/boq-details-page-master"

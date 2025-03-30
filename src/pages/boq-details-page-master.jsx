@@ -377,7 +377,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
           <div className="d-flex justify-content-end m-4">
           {boqDetails.status === "draft" && (
             <Link 
-            to={`/boq-edit/${id}`} 
+            to={`/boq-edit-new/${id}`} 
             className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
