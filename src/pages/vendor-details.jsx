@@ -482,7 +482,7 @@ export default function VendorDetails() {
           return {
             pmsBrand: item.pms_brand_id,
             pmsColour: item.pms_colour_id,
-            genericInfo: item.generic_info,
+            genericInfo: item.generic_info_id,
             eventMaterialId: item.id,
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,

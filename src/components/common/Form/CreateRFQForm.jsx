@@ -280,7 +280,7 @@ export default function CreateRFQForm({
             // );
             fetchSubSections(inventorySubTypeId);
           }
-          console.log("materials", materialsArray);
+          console.log("materials", materialsArray, materialsArray[0].inventory_id);
           
           return {
             materialType,
@@ -288,7 +288,7 @@ export default function CreateRFQForm({
               id: material.id,
               descriptionOfItem:
                 material.inventory_name || material.descriptionOfItem,
-              inventory_id: material.descriptionOfItem,
+              inventory_id: material?.inventory_id,
               quantity: material.quantity,
               unit: material.uom,
               location: material.location,

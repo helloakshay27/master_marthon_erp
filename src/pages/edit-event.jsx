@@ -26,6 +26,7 @@ export default function EditEvent() {
   const [isService, setIsService] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
   const [publishEventModal, setPublishEventModal] = useState(false);
+  const [inventoryId, setInventoryId] = useState(0);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
   const [eventType, setEventType] = useState("");
@@ -79,6 +80,7 @@ export default function EditEvent() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [eventNo, setEventNo] = useState("");
   const [eventName, seteventName] = useState("");
+  const [textareaId, setTextareaId] = useState(0);
   const [textareas, setTextareas] = useState([{ id: Date.now(), value: "" }]);
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
@@ -160,39 +162,39 @@ export default function EditEvent() {
     setEventScheduleModal(false);
   };
 
-  const handleSaveSchedule = (data) => {
-    setScheduleData(data);
-    handleEventScheduleModalClose();
-
-    const timeZone = "Asia/Kolkata";
-
-    const formatDateTime = (dateTime) => {
-      const date = new Date(dateTime);
-      return new Intl.DateTimeFormat("en-GB", {
-        timeZone,
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }).format(date);
+   const handleSaveSchedule = (data) => {
+      setScheduleData(data);
+      handleEventScheduleModalClose();
+    
+      const timeZone = "Asia/Kolkata";
+    
+      const formatDateTime = (dateTime) => {
+        const date = new Date(dateTime);
+        return new Intl.DateTimeFormat("en-GB", {
+          timeZone,
+          day: "2-digit",
+          month: "2-digit",
+          year: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }).format(date);
+      };
+    
+      const adjustTimeZone = (dateTime) => {
+        const date = new Date(dateTime);
+        const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
+        const localDate = new Date(utcDate.toLocaleString("en-US", { timeZone }));
+        return localDate;
+      };
+    
+      const startDateTime = formatDateTime(data.start_time);
+      const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
+    
+      const scheduleText = `${startDateTime} to ${endDateTime}`;
+      setEventScheduleText(scheduleText);
+      // console.log("scheduleText", scheduleText, data.end_time_duration);
     };
-
-    const adjustTimeZone = (dateTime) => {
-      const date = new Date(dateTime);
-      date.setHours(date.getHours() - 5);
-      date.setMinutes(date.getMinutes() - 30);
-      return date;
-    };
-
-    const startDateTime = formatDateTime(data.start_time);
-    const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
-
-    const scheduleText = `${startDateTime} to ${endDateTime}`;
-    setEventScheduleText(scheduleText);
-    // console.log("scheduleText", scheduleText, data.end_time_duration);
-  };
 
   const [eventScheduleText, setEventScheduleText] = useState("");
 
@@ -373,7 +375,9 @@ export default function EditEvent() {
 
   useEffect(() => {
     if (eventDetails) {
+
       seteventName(eventDetails?.event_title);
+      // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
@@ -424,9 +428,10 @@ export default function EditEvent() {
   useEffect(() => {
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        // console.log("term:---", term);
+        console.log("term:---", term);
 
         return {
+          textareaId: term.term_condition_id,
           id: term.term_condition_id,
           value: term.term_condition.condition,
           defaultOption: matchedTerm
@@ -638,6 +643,8 @@ export default function EditEvent() {
       myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
     }
   };
+  console.log("materialFormData",materialFormData);
+  
 
   const validateForm = () => {
     console.log(
@@ -748,7 +755,7 @@ export default function EditEvent() {
         },
         event_materials_attributes: materialFormData.map((material) => ({
           id: material.id || null,
-          inventory_id: Number(material.inventory_id),
+          inventory_id: Number(material.inventory_id) || null,
           quantity: Number(material.quantity),
           uom: material.unit,
           location: material.location,
@@ -765,7 +772,8 @@ export default function EditEvent() {
         })),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
-          pms_supplier_id: vendor.id,
+          pms_supplier_id: vendor.pms_supplier_id,
+          id: vendor.id,
         })),
         status_logs_attributes: [
           {
@@ -819,14 +827,25 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
+
       if (response.ok) {
-        // ...existing code...
+        const data = await response.json();
+        toast.success("Event updated successfully!", { autoClose: 1000 });
+        setTimeout(() => {
+          navigate(
+            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+        }, 1500);
       } else {
-        // ...existing code...
+        const errorData = await response.json();
+        toast.error(
+          errorData.message || "Failed to update event. Please try again.",
+          { autoClose: 1000 }
+        );
       }
     } catch (error) {
       console.error("Error updating event:", error);
-      toast.error("Failed to update event.", {
+      toast.error("An unexpected error occurred. Please try again.", {
         autoClose: 1000,
       });
     } finally {
