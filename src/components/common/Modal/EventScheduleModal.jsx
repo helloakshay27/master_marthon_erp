@@ -75,7 +75,6 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     } else {
       setIsLater(false);
       const currentTime = new Date();
-      currentTime.setMinutes(currentTime.getMinutes() + 30);
       setLaterDate(currentTime.toISOString().split("T")[0]);
       setLaterTime(currentTime.toTimeString().split(" ")[0].substring(0, 5));
       setEndDate("");
@@ -146,6 +145,8 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
   
     handleSaveSchedule(data);
   };
+
+ 
 
   return (
     <DynamicModalBox

@@ -12,6 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FormatDate from "../components/FormatDate"; // Import the default styles
 import { baseURL } from "../confi/apiDomain";
+import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
@@ -21,6 +22,22 @@ export default function VendorDetails() {
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
   const [linkedData, setLinkedData] = useState({});
   const [realisedGstVal, setRealisedGstVal] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [taxRateData, setTaxRateData] = useState({
+    material: "CEMENT-CEMENT-P.P.C GENERIC NAME-43 GRADE",
+    hsnCode: "25232930",
+    ratePerNos: 0,
+    totalPoQty: 0,
+    discount: 0,
+    materialCost: 0,
+    discountRate: 0,
+    afterDiscountValue: 0,
+    remark: "",
+    additionalInfo: "",
+    additionTaxCharges: [],
+    deductionTax: [],
+    netCost: 0,
+  });
 
   const { eventId } = useParams();
 
@@ -482,7 +499,7 @@ export default function VendorDetails() {
           return {
             pmsBrand: item.pms_brand_id,
             pmsColour: item.pms_colour_id,
-            genericInfo: item.generic_info,
+            genericInfo: item.generic_info_id,
             eventMaterialId: item.id,
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
@@ -1887,6 +1904,147 @@ export default function VendorDetails() {
     console.log("Received Data in Table:", data);
   }, [data]);
 
+  const handleOpenModal = (rowIndex) => {
+    const selectedRow = data[rowIndex]; // Get data for the selected row
+    setTaxRateData({
+      material: selectedRow.section || "", // Material Type
+      hsnCode: selectedRow.hsnCode || "", // HSN Code
+      ratePerNos: selectedRow.price || "", // Price
+      totalPoQty: selectedRow.quantityAvail || "", // Quantity Available
+      discount: selectedRow.discount || "", // Discount
+      materialCost: selectedRow.price || "", // Price
+      discountRate: selectedRow.realisedDiscount || "", // Discount Realised
+      afterDiscountValue: grossTotal || selectedRow.total || "", // Sum Total or Total
+      remark: selectedRow.vendorRemark || "", // Remark
+      additionalInfo: selectedRow.additionalInfo || "", // Additional Info
+      additionTaxCharges: [],
+      deductionTax: [],
+    });
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  // Function to add a new addition tax charge row
+  const addAdditionTaxCharge = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      additionTaxCharges: [...taxRateData.additionTaxCharges, newItem],
+    });
+  };
+
+  // Function to add a new deduction tax row
+  const addDeductionTax = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      deductionTax: [...taxRateData.deductionTax, newItem],
+    });
+  };
+
+  // Function to remove a tax charge item
+  const removeTaxChargeItem = (id, type) => {
+    if (type === "addition") {
+      setTaxRateData({
+        ...taxRateData,
+        additionTaxCharges: taxRateData.additionTaxCharges.filter(
+          (item) => item.id !== id
+        ),
+      });
+    } else {
+      setTaxRateData({
+        ...taxRateData,
+        deductionTax: taxRateData.deductionTax.filter((item) => item.id !== id),
+      });
+    }
+  };
+
+  const calculateTaxAmount = (percentage, baseAmount) => {
+    const parsedPercentage = parseFloat(percentage.replace('%', '')) || 0;
+    const parsedBaseAmount = parseFloat(baseAmount) || 0;
+    return (parsedPercentage / 100) * parsedBaseAmount;
+  };
+  
+  const calculateNetCost = () => {
+    let additionTaxTotal = 0;
+    let deductionTaxTotal = 0;
+  
+    taxRateData.additionTaxCharges.forEach((item) => {
+      const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
+      additionTaxTotal += taxAmount;
+    });
+  
+    taxRateData.deductionTax.forEach((item) => {
+      const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
+      deductionTaxTotal += taxAmount;
+    });
+  
+    const netCost = taxRateData.afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+    return netCost.toFixed(2);
+  };
+  
+  const calculateGrossTotal = () => {
+    const netCost = parseFloat(taxRateData.netCost) || 0;
+    const freightTotal = parseFloat(calculateFreightTotal()) || 0;
+    const realisedGstTotal = parseFloat(calculateRealisedGstTotal()) || 0;
+  
+    return (netCost + freightTotal + realisedGstTotal).toFixed(2);
+  };
+  
+  const handleTaxChargeChange = (id, field, value, type) => {
+    const updatedTaxCharges = type === "addition" 
+      ? [...taxRateData.additionTaxCharges] 
+      : [...taxRateData.deductionTax];
+  
+    const index = updatedTaxCharges.findIndex((item) => item.id === id);
+    if (index !== -1) {
+      updatedTaxCharges[index][field] = field === "amount" ? parseFloat(value) || "" : value;
+  
+      if (field === "taxChargePerUom" || field === "amount") {
+        const taxAmount = calculateTaxAmount(updatedTaxCharges[index].taxChargePerUom, taxRateData.afterDiscountValue);
+        updatedTaxCharges[index].amount = taxAmount.toFixed(2);
+      }
+    }
+  
+    setTaxRateData({
+      ...taxRateData,
+      additionTaxCharges: type === "addition" ? updatedTaxCharges : taxRateData.additionTaxCharges,
+      deductionTax: type === "deduction" ? updatedTaxCharges : taxRateData.deductionTax,
+      netCost: calculateNetCost(),
+    });
+    setGrossTotal(calculateGrossTotal());
+  };
+
+  const handleSaveTaxChanges = () => {
+    const updatedNetCost = calculateNetCost();
+    const updatedGrossTotal = calculateGrossTotal();
+
+    setTaxRateData((prevState) => ({
+      ...prevState,
+      netCost: updatedNetCost,
+    }));
+
+    setGrossTotal(updatedGrossTotal);
+    handleCloseModal();
+  };
+
   return (
     <div className="">
       <div className="styles_projectTabsHeader__148No" id="project-header">
@@ -2912,7 +3070,9 @@ export default function VendorDetails() {
                                         <th className="text-start">Amount</th>
                                         <th className="text-start">Brand</th>
                                         <th className="text-start">Colour</th>
-                                        <th className="text-start">Generic Info</th>
+                                        <th className="text-start">
+                                          Generic Info
+                                        </th>
                                         {/* <th className="text-start">
                                           Material Type 
                                         </th>
@@ -3171,7 +3331,7 @@ export default function VendorDetails() {
                     <div className="card-header4">
                       <div className="d-flex justify-content-between">
                         <h4>
-                          Submission Sheetdasdasxasdasdasdsdas
+                          Submission Sheet.
                           <span
                             style={{
                               backgroundColor: "#fff2e8",
@@ -3250,26 +3410,25 @@ export default function VendorDetails() {
                         {console.log("data", data)}
                         <Table
                           columns={[
-
                             { label: " Material Type ", key: "section" },
                             {
                               label: "Material Sub Type",
                               key: "subSection",
                             },
-                            
+
                             { label: "Material", key: "descriptionOfItem" },
                             // { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
                             // { label: " Material Type ", key: "section" },
                             // {
-                              //   label: "Material Sub Type",
-                              //   key: "subSection",
-                              // },
-                              
-                              { label: "Delivery Location", key: "location" },
-                              { label: " Brand ", key: "pmsBrand" },
-                              { label: " Colour ", key: "pmsColour" },
-                              { label: " Generic Info ", key: "genericInfo" },
+                            //   label: "Material Sub Type",
+                            //   key: "subSection",
+                            // },
+
+                            { label: "Delivery Location", key: "location" },
+                            { label: " Brand ", key: "pmsBrand" },
+                            { label: " Colour ", key: "pmsColour" },
+                            { label: " Generic Info ", key: "genericInfo" },
                             // { label: "Creator Attachment", key: "attachment" },
                             {
                               label: "Quantity Available *",
@@ -3290,11 +3449,20 @@ export default function VendorDetails() {
                             },
                             { label: "Vendor Remark", key: "vendorRemark" },
                             { label: "Total", key: "total" },
+                            { label: "Tax Rate", key: "taxRate" },
+
                             ...additionalColumns, // Append additional columns here
                           ]}
                           data={data}
                           customRender={{
-                            
+                            taxRate: (cell, rowIndex) => (
+                              <button
+                                className="purple-btn2"
+                                onClick={() => handleOpenModal(rowIndex)}
+                              >
+                                <span className="align-text-top">Select</span>
+                              </button>
+                            ),
                             pmsBrand: (cell, rowIndex) => (
                               <input
                                 className="form-control"
@@ -4142,22 +4310,17 @@ export default function VendorDetails() {
                           freightData,
                           bidTemplate
                         )} */}
+                        <>
                         <ShortDataTable
                           data={bidTemplate}
                           editable={true}
                           onValueChange={handleFreightDataChange}
                         />
+                        </>
                       </div>
 
-                      {/* </div> */}
                       <div className="d-flex justify-content-end mt-2 mx-2">
-                        {/* <span style={{ fontSize: "16px" }}>
-                          Sum Total : ₹{calculateSumTotal()}
-                        </span> */}
                         <h4>
-                          {/* Sum Total : ₹{calculateSumTotal()} */}
-                          {/* Sum Total : ₹
-                           {revisedBid ? grossTotal : calculateSumTotal()}  */}
                           Sum Total: ₹{grossTotal}
                         </h4>
                       </div>
@@ -4425,6 +4588,409 @@ export default function VendorDetails() {
         </div>
       </div>
       <ToastContainer />
+      <DynamicModalBox
+        show={showModal}
+        onHide={handleCloseModal}
+        size="lg"
+        title="View Tax & Rate"
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleCloseModal,
+            props: {
+              className: "purple-btn1",
+            },
+          },
+          {
+            label: "Save Changes",
+            onClick: handleSaveTaxChanges,
+            props: {
+              className: "purple-btn2",
+            },
+          },
+        ]}
+        centered={true}
+      >
+        <div className="container-fluid p-0">
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.material}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">HSN Code</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.hsnCode}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">
+                  Rate per Nos<span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData.ratePerNos}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Total PO Qty</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.totalPoQty}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount(%)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData.discount}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material Cost</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.materialCost}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount Rate</label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.discountRate}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">
+                  After Discount Value
+                </label>
+                <input
+                  type="text"
+                  className="form-control bg-light"
+                  value={taxRateData.afterDiscountValue}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Remark</label>
+                <textarea
+                  className="form-control bg-light"
+                  rows={3}
+                  value={taxRateData.remark}
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Additional Info.</label>
+                <textarea
+                  className="form-control bg-light"
+                  rows={3}
+                  value={taxRateData.additionalInfo}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Charges Table */}
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="table-responsive">
+                <table className="table table-bordered">
+                  <thead className="tax-table-header">
+                    <tr>
+                      <th>Tax / Charge Type</th>
+                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Inclusive</th>
+                      <th>Amount</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Total Base Cost Row */}
+                    <tr>
+                      <td>Total Base Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control bg-light"
+                          value={taxRateData.afterDiscountValue.toFixed(1)}
+                          readOnly
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+
+                    {/* Addition Tax & Charges Row */}
+                    <tr>
+                      <td>Addition Tax & Charges</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={addAdditionTaxCharge}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Addition Tax & Charges Items */}
+                    {taxRateData.additionTaxCharges.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargeType}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargeType",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax & Charges</option>
+                            <option value="GST">GST</option>
+                            <option value="CGST">CGST</option>
+                            <option value="SGST">SGST</option>
+                            <option value="IGST">IGST</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargePerUom}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="5%">5%</option>
+                            <option value="12%">12%</option>
+                            <option value="18%">18%</option>
+                            <option value="28%">28%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "addition"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "amount",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
+                              removeTaxChargeItem(item.id, "addition")
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    <tr>
+                      <td>Deduction Tax</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={addDeductionTax}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+                    
+
+                    {taxRateData.deductionTax.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargeType}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargeType",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax & Charges</option>
+                            <option value="TDS">TDS</option>
+                            <option value="TCS">TCS</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargePerUom}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="1%">1%</option>
+                            <option value="2%">2%</option>
+                            <option value="10%">10%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                item.id,
+                                "amount",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
+                              removeTaxChargeItem(item.id, "deduction")
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td>Net Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <input type="text"
+                        className="form-control bg-light"
+                        value={taxRateData.netCost}
+                        readOnly
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DynamicModalBox>
     </div>
   );
 }
