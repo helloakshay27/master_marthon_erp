@@ -816,7 +816,7 @@ export default function CreateEvent() {
                     defaultValue={eventStatus}
                   />
                 </div>
-                <div className="col-md-4 col-sm-6 mt-2">
+                {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">
                       Savings Summary<span style={{ color: "red" }}>*</span>
@@ -829,7 +829,7 @@ export default function CreateEvent() {
                     value={savingsSummary}
                     onClick={handleSavingsSummaryModalShow}
                   />
-                </div>
+                </div> */}
               </div>
               <CreateRFQForm
                 data={materialFormData}

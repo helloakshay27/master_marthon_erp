@@ -1124,81 +1124,7 @@ console.log('updatedSections',updatedSections);
     );
   };
 
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
-  // Function to add a new addition tax charge row
-  const addAdditionTaxCharge = () => {
-    const newItem = {
-      id: Date.now().toString(),
-      taxChargeType: "",
-      taxChargePerUom: "",
-      inclusive: false,
-      amount: "",
-    };
-
-    setTaxRateData({
-      ...taxRateData,
-      additionTaxCharges: [...taxRateData.additionTaxCharges, newItem],
-    });
-  };
-
-  // Function to add a new deduction tax row
-  const addDeductionTax = () => {
-    const newItem = {
-      id: Date.now().toString(),
-      taxChargeType: "",
-      taxChargePerUom: "",
-      inclusive: false,
-      amount: "",
-    };
-
-    setTaxRateData({
-      ...taxRateData,
-      deductionTax: [...taxRateData.deductionTax, newItem],
-    });
-  };
-
-  // Function to remove a tax charge item
-  const removeTaxChargeItem = (id, type) => {
-    if (type === "addition") {
-      setTaxRateData({
-        ...taxRateData,
-        additionTaxCharges: taxRateData.additionTaxCharges.filter(
-          (item) => item.id !== id
-        ),
-      });
-    } else {
-      setTaxRateData({
-        ...taxRateData,
-        deductionTax: taxRateData.deductionTax.filter((item) => item.id !== id),
-      });
-    }
-  };
-
-  // Function to handle changes in tax charge items
-  const handleTaxChargeChange = (id, field, value, type) => {
-    if (type === "addition") {
-      setTaxRateData({
-        ...taxRateData,
-        additionTaxCharges: taxRateData.additionTaxCharges.map((item) =>
-          item.id === id ? { ...item, [field]: value } : item
-        ),
-      });
-    } else {
-      setTaxRateData({
-        ...taxRateData,
-        deductionTax: taxRateData.deductionTax.map((item) =>
-          item.id === id ? { ...item, [field]: value } : item
-        ),
-      });
-    }
-  };
+  
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -1521,11 +1447,7 @@ console.log('updatedSections',updatedSections);
             </span>
             <span>Add Section</span>
           </button>
-          <button className="purple-btn2" onClick={handleOpenModal}>
-            <span className="material-symbols-outlined align-text-top">
-              Modal
-            </span>
-          </button>
+          
         </div>
       </div>
       <DynamicModalBox
