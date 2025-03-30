@@ -150,11 +150,40 @@ export default function CreateTemplate() {
   console.log("shortTableData :---",shortTableData, editShortTableRow)
 
   const handleShortTableEditModalSubmit = () => {
-    const updatedShortTableData = shortTableData.map((row) =>
-      row.label === editShortTableRow.label ? { ...editShortTableRow, label: editShortTableRow.fieldName, value: editShortTableRow.value } : row
-    );
-    setShortTableData(updatedShortTableData);
+    if (editShortTableRow.label === "") {
+      // Add new row
+      setShortTableData([
+        ...shortTableData,
+        {
+          label: editShortTableRow.fieldName,
+          value: editShortTableRow.value,
+          isRequired: editShortTableRow.isRequired,
+          isReadOnly: editShortTableRow.isReadOnly,
+          fieldOwner: editShortTableRow.fieldOwner,
+        },
+      ]);
+    } else {
+      // Update existing row
+      const updatedShortTableData = shortTableData.map((row) =>
+        row.label === editShortTableRow.label
+          ? { ...editShortTableRow, label: editShortTableRow.fieldName, value: editShortTableRow.value }
+          : row
+      );
+      setShortTableData(updatedShortTableData);
+    }
     setShowShortTableEditModal(false);
+  };
+
+  const handleAddShortTableRow = () => {
+    setShowShortTableEditModal(true);
+    setEditShortTableRow({
+      label: "",
+      value: "",
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+    });
   };
 
   const handleSubmit = async () => {
@@ -309,6 +338,12 @@ export default function CreateTemplate() {
                 amount: (cell) => cell,
               }}
             />
+            <div className="d-flex justify-content-end align-items-center">
+              <button className="purple-btn2 mt-3" onClick={handleAddShortTableRow}>
+                <span className="material-symbols-outlined align-text-top">add</span>
+                <span>Add Row</span>
+              </button>
+            </div>
             <div className="d-flex justify-content-end align-items-center">
               <ShortTable
                 data={shortTableData}
