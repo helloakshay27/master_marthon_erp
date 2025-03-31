@@ -1631,6 +1631,7 @@ const CreateBOQ = () => {
     // Validate required fields
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
+    if (!selectedCategory) validationErrors.main = "Main Category is required.";
     if (!selectedUnit) validationErrors.unit = "UOM is required.";
     if (!boqQuantity)
       validationErrors.boqQuantity = "BOQ Quantity is required.";
@@ -2137,7 +2138,7 @@ if (hasErrors2) return;
                   <div className="row">
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label>Main Category</label>
+                        <label>Main Category <span>*</span></label>
                         <SingleSelector
                           options={workCategories.map((category) => ({
                             value: category.id,
@@ -2148,6 +2149,9 @@ if (hasErrors2) return;
                           value={selectedCategory}
                           placeholder={`Select Main category`}
                         />
+                        {errors.main && (
+                          <div className="error-message">{errors.main}</div>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-4 mt-2">

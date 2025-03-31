@@ -378,21 +378,15 @@ console.log(boqDetails.assets);   // Should contain an array of assets
           {boqDetails.status === "draft" && (
             <Link 
             to={`/boq-edit-new/${id}`} 
-            className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="#6c757d"
-                className="bi bi-pencil-square me-2"
-                viewBox="0 0 16 16"
-              >
-                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                <path
-                  fillRule="evenodd"
-                  d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                />
-              </svg>
+            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+             
+              <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203"/>
+        <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203"/>
+    </svg>
+</button>
+              
             </Link>
 )}
           </div>
@@ -658,7 +652,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                                <th rowSpan={2}>UOM</th>
                                {/* <th rowSpan={2}>Cost QTY</th> */}
                                <th colSpan={2}>Cost</th>
-                               <th rowSpan={2}>Wastage</th>
+                               <th rowSpan={2}>Wastage%</th>
                                <th rowSpan={2}>
                                  Total Estimated Qty Wastage
                                </th>
@@ -710,7 +704,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
              <th rowSpan={2}>UOM</th>
              {/* <th rowSpan={2}>Cost QTY</th> */}
              <th colSpan={2}>Cost</th>
-             <th rowSpan={2}>Wastage</th>
+             <th rowSpan={2}>Wastage%</th>
              <th rowSpan={2}>Total Estimated Qty Wastage</th>
            </tr>
            <tr>
@@ -857,7 +851,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                                     <th rowSpan={2}>UOM</th>
                                     {/* <th rowSpan={2}>Cost QTY</th> */}
                                     <th colSpan={3}>Cost</th>
-                                    <th rowSpan={2}>Wastage</th>
+                                    <th rowSpan={2}>Wastage%</th>
                                     <th rowSpan={2}>Total Estimated Qty Wastage</th>
                                   </tr>
                                   <tr>
@@ -906,7 +900,7 @@ console.log(boqDetails.assets);   // Should contain an array of assets
                                     <th rowSpan={2}>UOM</th>
                                     {/* <th rowSpan={2}>Asset QTY</th> */}
                                     <th colSpan={3}>Cost</th>
-                                    <th rowSpan={2}>Wastage</th>
+                                    <th rowSpan={2}>Wastage%</th>
                                     <th rowSpan={2}>Total Estimated Qty Wastage</th>
                                   </tr>
                                   <tr>
