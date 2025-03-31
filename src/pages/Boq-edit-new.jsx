@@ -22,6 +22,7 @@ import Select from "react-select";
 import EditBoqSub from "./EditBoqSub";
 import { useParams } from 'react-router-dom';
 
+
 const EditBOQNew = () => {
      const { id } = useParams()
   const [showMaterialLabour, setShowMaterialLabour] = useState(null);
@@ -1579,6 +1580,9 @@ console.log("pre mtL...", predefinedMaterials)
   };
 
 
+
+
+
   // Modified deleteRowFromTable1 function
   const deleteRowFromTable1 = (id) => {
     // Remove from count state
@@ -1633,7 +1637,8 @@ console.log("boq data payload 1  edit:", payload)
 }
 
 
-console.log("boq data payload 2 edit sub: ", payload2)
+console.log("boq data payload 2 edit sub: ", payload2 )
+console.log("sub item boq needed:",boqSubItems)
 
   // console.log("predefine data 2", predefinedMaterialsData)
   // console.log("boq sub payload", payloadData2);
@@ -1993,6 +1998,11 @@ console.log("boq data payload 2 edit sub: ", payload2)
 
       try {
 
+        const processedSubItems = boqSubItems.map(item => ({
+            ...item,
+            id: item.isNew ? null : item.id // Set ID to null for new items
+          }));
+
         const payload2 = {
             boq_detail: {
                 id: boqDetails?.id,
@@ -2004,14 +2014,14 @@ console.log("boq data payload 2 edit sub: ", payload2)
                 sub_categories: [
                     {
                         id: lastCategory,
-                        boq_sub_items:boqSubItems || []
+                        boq_sub_items:processedSubItems || []
                         
                     }
                 ]
             }
         }
         
-        console.log("payload submission edit sub:", payload2)
+        console.log("payload submission edit sub item:", payload2)
         // console.log("boq data payload 1 ", payloadData)
 
          const response = await axios.patch(
@@ -3192,7 +3202,8 @@ console.log("boq data payload 2 edit sub: ", payload2)
 
               {showBOQSubItem && (
                 <>
-
+                  
+                  {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
                   {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 

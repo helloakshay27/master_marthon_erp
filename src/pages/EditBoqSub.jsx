@@ -57,6 +57,93 @@ const EditBoqSub = ({
     );
   };
 
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+
+  useEffect(() => {
+    if (materials?.length > 0) {
+      //   setMaterials(boqDetails.materials); // Store materials from boqDetails
+
+        setSelectedSubTypes(materials.map(m => ({
+            value: m.pms_inventory_sub_type_id,
+            label: m.material_sub_type
+        })));
+
+        setSelectedGenericSpecifications(materials.map(m => ({
+            value: m.pms_generic_info_id,
+            label: m.generic_info
+        })));
+
+        setSelectedColors(materials.map(m => ({
+            value: m.pms_colour_id,
+            label: m.color
+        })));
+
+        setSelectedInventoryBrands(materials.map(m => ({
+            value: m.pms_inventory_brand_id,
+            label: m.brand
+        })));
+
+        setSelectedUnit2(materials.map(m => ({
+            value: m.unit_of_measure_id,
+            label: m.uom
+        })));
+        // ✅ Correct way to set coefficient factors
+        setCoefficientFactors(materials.map(m => m.co_efficient_factor));
+        setEstimatedQuantities(materials.map(m => m.estimated_quantity));
+        setWastages(materials.map(m => m.wastage));
+        setTotalEstimatedQtyWastages(materials.map(m => m.estimated_quantity_wastage));
+    }
+
+  //   if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
+  //       const preselectedUnit = unitOfMeasures.find(
+  //           (unit) => unit.value === boqDetails.unit_of_measure_id
+  //       );
+  //       setSelectedUnit(preselectedUnit || null);
+  //   }
+  //   setBoqQuantity(boqDetails?.quantity)
+
+    // ✅ Handling assets in the same way
+  //   if (boqDetails?.assets?.length > 0) {
+  //       setAssets(boqDetails.assets); // Store assets from boqDetails
+
+  //       setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
+  //           value: a.pms_inventory_sub_type_id,
+  //           label: a.asset_sub_type
+  //       })));
+
+  //       setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
+  //           value: a.pms_generic_info_id,
+  //           label: a.generic_info
+  //       })));
+
+  //       setSelectedAssetColors(boqDetails.assets.map(a => ({
+  //           value: a.pms_colour_id,
+  //           label: a.color
+  //       })));
+
+  //       setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
+  //           value: a.pms_inventory_brand_id,
+  //           label: a.brand
+  //       })));
+
+  //       setSelectedUnit3(boqDetails.assets.map(a => ({
+  //           value: a.unit_of_measure_id,
+  //           label: a.uom
+  //       })));
+
+  //       // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
+  //       setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
+  //       setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
+  //       setAssetWastages(boqDetails.assets.map(a => a.wastage));
+  //       setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
+  //   }
+
+
+    
+   
+
+}, [boqDetails,materials, unitOfMeasures]); // Runs when boqDetails updates
+
 
   
   // const handleDeleteAllMaterial = () => {
@@ -104,31 +191,105 @@ const EditBoqSub = ({
     });
   };
 
-  const handleDeleteAllMaterial = () => {
-    setMaterials((prev) => {
-      // Clone the previous state to avoid mutation
-      const newMaterials = { ...prev };
+  const [deletedMaterialIds, setDeletedMaterialIds] = useState([]);
+//   const handleDeleteAllMaterial = () => {
+//     setMaterials((prev) => {
+//       // Clone the previous state to avoid mutation
+//       const newMaterials = { ...prev };
       
-      // Only process the current boqSubItemId
+//       // Only process the current boqSubItemId
+//       if (newMaterials[boqSubItemId]) {
+//         newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
+//           !selectedMaterials.some(
+//             selected => 
+//               selected.materialId === material.id &&
+//               selected.rowIndex === index &&
+//               selected.boqSubItemId === boqSubItemId
+//           )
+//         );
+//       }
+      
+//       // console.log("Updated materials:", newMaterials);
+//       return newMaterials;
+//     });
+  
+//     // Update dependent states with boqSubItemId-aware cleanup
+//     const updateSelection = (selectionArray = []) =>
+//       selectedMaterials
+//         .filter(selected => selected.boqSubItemId === boqSubItemId)
+//         .reduce((acc, selected) => {
+//           const indexToRemove = selected.rowIndex;
+//           if (indexToRemove >= 0 && indexToRemove < acc.length) {
+//             acc.splice(indexToRemove, 1);
+//           }
+//           return acc;
+//         }, [...selectionArray]);
+  
+//     // Update all dependent states
+//     setSelectedSubTypes(prev => updateSelection(prev));
+//     setSelectedColors(prev => updateSelection(prev));
+//     setSelectedInventoryBrands(prev => updateSelection(prev));
+//     setSelectedUnit2(prev => updateSelection(prev));
+//     setCoefficientFactors(prev => updateSelection(prev));
+//     setEstimatedQuantities(prev => updateSelection(prev));
+//     setWastages(prev => updateSelection(prev));
+//     setTotalEstimatedQtyWastages(prev => updateSelection(prev));
+//     setSelectedGenericSpecifications(prev => updateSelection(prev));
+  
+//     // Clean up selected materials for this boqSubItemId
+//     setSelectedMaterials(prev =>
+//       prev.filter(selected => 
+//         !prev.some(s => 
+//           s.boqSubItemId === boqSubItemId &&
+//           ![boqSubItemId]?.some(
+//             (material, index) => 
+//               material.id === s.materialId && 
+//               index === s.rowIndex
+//           )
+//         )
+//       )
+//     );
+//   };
+  
+
+const handleDeleteAllMaterial = () => {
+    setMaterials((prevMaterials) => {
+      const newMaterials = { ...prevMaterials };
       if (newMaterials[boqSubItemId]) {
-        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
-          !selectedMaterials.some(
-            selected => 
-              selected.materialId === material.id &&
-              selected.rowIndex === index &&
-              selected.boqSubItemId === boqSubItemId
-          )
+        const remainingMaterials = newMaterials[boqSubItemId].filter(
+          (material, index) =>
+            !selectedMaterials.some(
+              (selected) =>
+                selected.materialId === material.id &&
+                selected.rowIndex === index &&
+                selected.boqSubItemId === boqSubItemId
+            )
         );
+  
+        // Collect IDs of materials being deleted
+        const idsToDelete = newMaterials[boqSubItemId]
+          .filter((material, index) =>
+            selectedMaterials.some(
+              (selected) =>
+                selected.materialId === material.id &&
+                selected.rowIndex === index &&
+                selected.boqSubItemId === boqSubItemId
+            )
+          )
+          .map((material) => material.id);
+  
+        // Update the deletedMaterialIds state
+        setDeletedMaterialIds((prevIds) => [...prevIds, ...idsToDelete]);
+  
+        newMaterials[boqSubItemId] = remainingMaterials;
       }
-      
-      // console.log("Updated materials:", newMaterials);
       return newMaterials;
     });
   
-    // Update dependent states with boqSubItemId-aware cleanup
+    // Update dependent states as previously implemented
     const updateSelection = (selectionArray = []) =>
       selectedMaterials
-        .filter(selected => selected.boqSubItemId === boqSubItemId)
+        .filter((selected) => selected.boqSubItemId === boqSubItemId)
         .reduce((acc, selected) => {
           const indexToRemove = selected.rowIndex;
           if (indexToRemove >= 0 && indexToRemove < acc.length) {
@@ -137,34 +298,31 @@ const EditBoqSub = ({
           return acc;
         }, [...selectionArray]);
   
-    // Update all dependent states
-    setSelectedSubTypes(prev => updateSelection(prev));
-    setSelectedColors(prev => updateSelection(prev));
-    setSelectedInventoryBrands(prev => updateSelection(prev));
-    setSelectedUnit2(prev => updateSelection(prev));
-    setCoefficientFactors(prev => updateSelection(prev));
-    setEstimatedQuantities(prev => updateSelection(prev));
-    setWastages(prev => updateSelection(prev));
-    setTotalEstimatedQtyWastages(prev => updateSelection(prev));
-    setSelectedGenericSpecifications(prev => updateSelection(prev));
+    setSelectedSubTypes((prev) => updateSelection(prev));
+    setSelectedColors((prev) => updateSelection(prev));
+    setSelectedInventoryBrands((prev) => updateSelection(prev));
+    setSelectedUnit2((prev) => updateSelection(prev));
+    setCoefficientFactors((prev) => updateSelection(prev));
+    setEstimatedQuantities((prev) => updateSelection(prev));
+    setWastages((prev) => updateSelection(prev));
+    setTotalEstimatedQtyWastages((prev) => updateSelection(prev));
+    setSelectedGenericSpecifications((prev) => updateSelection(prev));
   
-    // Clean up selected materials for this boqSubItemId
-    setSelectedMaterials(prev =>
-      prev.filter(selected => 
-        !prev.some(s => 
-          s.boqSubItemId === boqSubItemId &&
-          ![boqSubItemId]?.some(
-            (material, index) => 
-              material.id === s.materialId && 
-              index === s.rowIndex
+    setSelectedMaterials((prev) =>
+      prev.filter(
+        (selected) =>
+          !prev.some(
+            (s) =>
+              s.boqSubItemId === boqSubItemId &&
+              ![boqSubItemId]?.some(
+                (material, index) =>
+                  material.id === s.materialId && index === s.rowIndex
+              )
           )
-        )
       )
     );
   };
   
-
-
 
 
 
@@ -715,7 +873,7 @@ const EditBoqSub = ({
 
   // umo api
 
-  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+//   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
   const [selectedUnit2, setSelectedUnit2] = useState([]);
   const [selectedUnit3, setSelectedUnit3] = useState([]);
 
@@ -1011,7 +1169,9 @@ const EditBoqSub = ({
   // ✅ Memoizing predefinedMaterials
   const predefinedMaterials = useMemo(() => {
     return materials.map((m, i) => ({
-      material_id: m.id,
+        id:m.pms_inventory_id ? m.id : null,
+        material_id: m.pms_inventory_id || m.id,
+    //   material_id: m.id,
       material_sub_type_id: selectedSubTypes[i]?.value || "",
       generic_info_id: selectedGenericSpecifications[i]?.value || "",
       colour_id: selectedColors[i]?.value || "",
@@ -1022,11 +1182,13 @@ const EditBoqSub = ({
       wastage: parseFloat(wastages[i]) || "",
       estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  "",
     }));
+    
   }, [
     materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
     selectedInventoryBrands, selectedUnit2, coefficientFactors,
     estimatedQuantities, wastages, totalEstimatedQtyWastages
   ]);
+  console.log("predefimned Materials in sub:",predefinedMaterials)
 
   const predefinedAssets = useMemo(() => {
     return Assets.map((a, i) => ({
@@ -1147,90 +1309,7 @@ const EditBoqSub = ({
   }, [boqSubItemId, predefinedAssets, assetErrors]);
 
 
-  useEffect(() => {
-    if (materials?.length > 0) {
-      //   setMaterials(boqDetails.materials); // Store materials from boqDetails
-
-        setSelectedSubTypes(materials.map(m => ({
-            value: m.pms_inventory_sub_type_id,
-            label: m.material_sub_type
-        })));
-
-        setSelectedGenericSpecifications(materials.map(m => ({
-            value: m.pms_generic_info_id,
-            label: m.generic_info
-        })));
-
-        setSelectedColors(materials.map(m => ({
-            value: m.pms_colour_id,
-            label: m.color
-        })));
-
-        setSelectedInventoryBrands(materials.map(m => ({
-            value: m.pms_inventory_brand_id,
-            label: m.brand
-        })));
-
-        setSelectedUnit2(materials.map(m => ({
-            value: m.unit_of_measure_id,
-            label: m.uom
-        })));
-        // ✅ Correct way to set coefficient factors
-        setCoefficientFactors(materials.map(m => m.co_efficient_factor));
-        setEstimatedQuantities(materials.map(m => m.estimated_quantity));
-        setWastages(materials.map(m => m.wastage));
-        setTotalEstimatedQtyWastages(materials.map(m => m.estimated_quantity_wastage));
-    }
-
-  //   if (boqDetails?.unit_of_measure_id && unitOfMeasures.length > 0) {
-  //       const preselectedUnit = unitOfMeasures.find(
-  //           (unit) => unit.value === boqDetails.unit_of_measure_id
-  //       );
-  //       setSelectedUnit(preselectedUnit || null);
-  //   }
-  //   setBoqQuantity(boqDetails?.quantity)
-
-    // ✅ Handling assets in the same way
-  //   if (boqDetails?.assets?.length > 0) {
-  //       setAssets(boqDetails.assets); // Store assets from boqDetails
-
-  //       setSelectedSubTypesAssets(boqDetails.assets.map(a => ({
-  //           value: a.pms_inventory_sub_type_id,
-  //           label: a.asset_sub_type
-  //       })));
-
-  //       setSelectedAssetGenericSpecifications(boqDetails.assets.map(a => ({
-  //           value: a.pms_generic_info_id,
-  //           label: a.generic_info
-  //       })));
-
-  //       setSelectedAssetColors(boqDetails.assets.map(a => ({
-  //           value: a.pms_colour_id,
-  //           label: a.color
-  //       })));
-
-  //       setSelectedAssetInventoryBrands(boqDetails.assets.map(a => ({
-  //           value: a.pms_inventory_brand_id,
-  //           label: a.brand
-  //       })));
-
-  //       setSelectedUnit3(boqDetails.assets.map(a => ({
-  //           value: a.unit_of_measure_id,
-  //           label: a.uom
-  //       })));
-
-  //       // ✅ Setting coefficient factors, estimated quantities, wastages, and total estimated qty for assets
-  //       setAssetCoefficientFactors(boqDetails.assets.map(a => a.co_efficient_factor));
-  //       setAssetEstimatedQuantities(boqDetails.assets.map(a => a.estimated_quantity));
-  //       setAssetWastages(boqDetails.assets.map(a => a.wastage));
-  //       setAssetTotalEstimatedQtyWastages(boqDetails.assets.map(a => a.estimated_quantity_wastage));
-  //   }
-
-
-    
-   
-
-}, [boqDetails,materials, unitOfMeasures]); // Runs when boqDetails updates
+ 
 
  
   
