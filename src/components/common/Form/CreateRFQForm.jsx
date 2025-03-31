@@ -773,6 +773,38 @@ console.log('updatedSections',updatedSections);
     setShowShortTableEditModal(true);
   };
 
+  const addAdditionTaxCharge = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      additionTaxCharges: [...taxRateData.additionTaxCharges, newItem],
+    });
+  };
+
+  // Function to add a new deduction tax row
+  const addDeductionTax = () => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    setTaxRateData({
+      ...taxRateData,
+      deductionTax: [...taxRateData.deductionTax, newItem],
+    });
+  };
+
+
   const handleShortTableEditModalSubmit = () => {
     const updatedFields = bidTemplateFields.map((field) =>
       field.label === editShortTableRow.label
