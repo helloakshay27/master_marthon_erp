@@ -15,14 +15,65 @@ const MaterialRejctionSlipCreate = () => {
   const [submitting, setSubmitting] = useState(false); // For loading state during API call
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       const fetchedData = response.data;
+  //       setData(fetchedData);
+
+  //       // Setting default values based on API response
+  //       if (fetchedData.status) {
+  //         setDecision(fetchedData.status); // 'accepted' or 'rejected'
+  //         if (fetchedData.status === "rejected") {
+  //           setReason(fetchedData.rejection_reason || ""); // Set rejection reason if exists
+  //         } else if (fetchedData.status === "accepted") {
+  //           setReason(fetchedData.acceptance_reason || ""); // Set acceptance reason if exists
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching rejection slip data:", error);
+  //       setError("Failed to fetch data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (id) {
+  //     fetchData();
+  //   }
+  // }, [id]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
-          `
+          `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        setData(response.data);
+        const fetchedData = response.data;
+        setData(fetchedData);
+
+        if (fetchedData.status) {
+          setDecision(fetchedData.status); // 'accepted' or 'rejected'
+        }
+
+        // Set both rejection and acceptance reasons if available
+        if (fetchedData.rejection_reason) {
+          setReason(fetchedData.rejection_reason);
+        }
+        if (fetchedData.acceptance_reason) {
+          setReason(fetchedData.acceptance_reason);
+        }
+
+        // Disable Submit if status is already accepted/rejected
+        if (
+          fetchedData.status === "accepted" ||
+          fetchedData.status === "rejected"
+        ) {
+          setSubmitting(true); // Disable submit button
+        }
       } catch (error) {
         console.error("Error fetching rejection slip data:", error);
         setError("Failed to fetch data");
@@ -35,52 +86,6 @@ const MaterialRejctionSlipCreate = () => {
       fetchData();
     }
   }, [id]);
-
-  // const handleSubmit = async () => {
-  //   setLoading(true);
-  //   if (!decision) {
-  //     alert("Please select either 'Accept' or 'Reject' before submitting.");
-  //     return;
-
-  //   }
-  //   // Validation: If rejecting, reason must be provided
-  //   if (decision === "reject" && reason.trim() === "") {
-  //     alert("Rejection reason is required.");
-  //     return;
-  //   }
-
-  //   setSubmitting(true);
-
-  //   try {
-  //     const payload = {
-  //       status: decision,
-  //       rejection_reason: decision === "reject" ? reason : "",
-  //       acceptance_reason: decision === "accept" ? reason : "",
-  //     };
-
-  //     const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Add token if required
-  //     const response = await axios.put(
-  //       `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`,
-  //       payload,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     console.log("Update successful:", response.data);
-  //     alert("Status updated successfully!");
-  //     setReason("");
-  //     navigate("/material-rejction-slip");
-  //   } catch (error) {
-  //     console.error("Error updating rejection slip:", error);
-  //     alert("Failed to update status. Please try again.");
-  //   } finally {
-  //     // setSubmitting(false);
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -250,7 +255,7 @@ const MaterialRejctionSlipCreate = () => {
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
                     <div className="col-6">
-                      <label>Rejection Remark</label>
+                      <label>Defective Reason</label>
                     </div>
                     <div className="col-6">
                       <span>: {data.rejection_reason}</span>
@@ -329,8 +334,8 @@ const MaterialRejctionSlipCreate = () => {
                               className="form-check-input"
                               id="accept"
                               name="decision"
-                              value="accept"
-                              checked={decision === "accept"}
+                              value="accepted"
+                              checked={decision === "accepted"}
                               onChange={(e) => setDecision(e.target.value)}
                             />
                             <label
@@ -342,7 +347,7 @@ const MaterialRejctionSlipCreate = () => {
                           </div>
 
                           <div className="form-check">
-                            <input
+                            {/* <input
                               type="radio"
                               className="form-check-input"
                               id="reject"
@@ -356,13 +361,29 @@ const MaterialRejctionSlipCreate = () => {
                               htmlFor="reject"
                             >
                               Reject
+                            </label> */}
+                            <input
+                              type="radio"
+                              className="form-check-input"
+                              id="reject"
+                              name="decision"
+                              value="rejected"
+                              checked={decision === "rejected"}
+                              onChange={(e) => setDecision(e.target.value)}
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="reject"
+                            >
+                              Reject
                             </label>
                           </div>
                         </div>
                       </div>
 
                       {/* Reason for Rejection */}
-                      {decision === "reject" && (
+                      {/* Reason for Rejection */}
+                      {decision === "rejected" && (
                         <div className="col-md-6">
                           <div className="form-group mt-2">
                             <label>
@@ -374,7 +395,7 @@ const MaterialRejctionSlipCreate = () => {
                             <input
                               className="form-control"
                               type="text"
-                              placeholder="Enter reason"
+                              placeholder="Enter rejection reason"
                               value={reason}
                               onChange={(e) => setReason(e.target.value)}
                             />
@@ -383,20 +404,22 @@ const MaterialRejctionSlipCreate = () => {
                       )}
 
                       {/* Reason for Acceptance */}
-                      {decision === "accept" && (
+                      {decision === "accepted" && (
                         <div className="col-md-6">
                           <div className="form-group mt-2">
                             <label>Reason for Acceptance</label>
                             <input
                               className="form-control"
                               type="text"
-                              placeholder="Enter reason"
+                              placeholder="Enter acceptance reason"
                               value={reason}
                               onChange={(e) => setReason(e.target.value)}
                             />
                           </div>
                         </div>
                       )}
+
+                      {/* Show both reasons if available */}
                     </div>
                   </div>
                   {/* /.col */}
@@ -440,9 +463,13 @@ const MaterialRejctionSlipCreate = () => {
                       </div>
                     )}
                     <button
-                      className="purple-btn2 w-100"
+                      // className="purple-btn2 w-100"
+                      className={`purple-btn2 w-100 ${
+                        submitting ? "disabled-btn" : ""
+                      }`}
                       onClick={handleSubmit}
                       // disabled={submitting}
+                      disabled={submitting} // Disable when status is accepted/rejected
                     >
                       Submit
                     </button>
