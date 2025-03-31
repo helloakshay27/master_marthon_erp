@@ -131,6 +131,7 @@ const MaterialRejctionSlip = () => {
     total: 0,
     accepted: 0,
     rejected: 0,
+    draft: 0,
   });
 
   const [pagination, setPagination] = useState({
@@ -186,6 +187,7 @@ const MaterialRejctionSlip = () => {
         total: response.data.total_count || 0,
         accepted: response.data.accepted_count || 0,
         rejected: response.data.rejected_count || 0,
+        draft: response.data.draft_count || 0, // Add draft count
       });
 
       setPagination({
@@ -430,6 +432,24 @@ const MaterialRejctionSlip = () => {
                       <p className="content-box-sub ">{counts.rejected}</p>
                     </div>
                   </div>
+
+                  <div
+                    className="col-md-2 text-center"
+                    style={{
+                      backgroundColor:
+                        activeTab === "draft" ? "#8b0203" : "transparent",
+                      color: activeTab === "draft" ? "#fff" : "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                    onClick={() => handleTabClick("draft", "draft")}
+                  >
+                    <div className="content-box">
+                      <h4 className="content-box-title">Draft</h4>
+                      <p className="content-box-sub">{counts.draft}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -665,7 +685,7 @@ const MaterialRejctionSlip = () => {
                           {columnVisibility.grnNo && <th>GRN No.</th>}
                           {columnVisibility.grnDate && <th>GRN Date</th>}
                           {columnVisibility.rejectionSlipDate && (
-                            <th>Rejection Slip Date</th>
+                            <th>Rejection Date</th>
                           )}
                           {columnVisibility.createdOn && <th>Created On</th>}
                           {columnVisibility.morNo && <th>MOR No.</th>}
@@ -704,9 +724,27 @@ const MaterialRejctionSlip = () => {
                               {columnVisibility.subProject && (
                                 <td>{item.sub_project}</td>
                               )}
-                              {columnVisibility.rejectionSlipNo && (
+                              {/* {columnVisibility.rejectionSlipNo && (
                                 <td>{item.rejection_slip_number}</td>
+                              )} */}
+
+                              {columnVisibility.rejectionSlipNo && (
+                                <td
+                                  style={{
+                                    cursor: "pointer",
+                                    color: "#8b0203",
+                                    textDecoration: "underline",
+                                  }}
+                                  onClick={() =>
+                                    navigate(
+                                      `/material-rejection-slip-create/${item.id}`
+                                    )
+                                  }
+                                >
+                                  {item.rejection_slip_number}
+                                </td>
                               )}
+
                               {columnVisibility.poNo && (
                                 <td>{item.po_number}</td>
                               )}
@@ -737,23 +775,21 @@ const MaterialRejctionSlip = () => {
                                 //   ).toLocaleDateString()}
                                 // </td>
                                 <td>
-                                  <FormatDate
-                                    timestamp={item.rejection_slip_date}
-                                  />
+                                  <FormatDate timestamp={item.created_on} />
                                 </td>
                               )}
                               {columnVisibility.morNo && (
                                 <td
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#8b0203",
-                                    textDecoration: "underline",
-                                  }}
-                                  onClick={() =>
-                                    navigate(
-                                      `/material-rejection-slip-create/${item.id}`
-                                    )
-                                  }
+                                // style={{
+                                //   cursor: "pointer",
+                                //   color: "#8b0203",
+                                //   textDecoration: "underline",
+                                // }}
+                                // onClick={() =>
+                                //   navigate(
+                                //     `/material-rejection-slip-create/${item.id}`
+                                //   )
+                                // }
                                 >
                                   {item.mor_number}
                                 </td>
