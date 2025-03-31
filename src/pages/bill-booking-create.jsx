@@ -30,7 +30,7 @@ const BillBookingCreate = () => {
   };
   //   modal
   const openSelectPOModal = () => setselectPOModal(true);
-  const closeSelectPOModal = () => setselectPOModal(false);
+  // const closeSelectPOModal = () => setselectPOModal(false);
 
   const openSelectGRNModal = () => setselectGRNModal(true);
   const closeSelectGRNModal = () => setselectGRNModal(false);
@@ -103,6 +103,11 @@ const BillBookingCreate = () => {
     setShowRows((prev) => !prev);
   };
 
+  const closeSelectPOModal = () => {
+    console.log("Close button clicked");
+    setselectPOModal(false);
+  };
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -116,41 +121,65 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
                         isDisabled={true}
-                      ></SingleSelector>
+                      ></SingleSelector> */}
+                      <input
+                        type="text"
+                        className="form-control"
+                        // placeholder="Enter Company"
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Project</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
                         isDisabled={true}
-                      ></SingleSelector>
+                      ></SingleSelector> */}
+                      <input
+                        type="text"
+                        className="form-control"
+                        // placeholder="Enter Company"
+                        disabled
+                      />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-4 ">
                     <div className="form-group">
                       <label>Sub Project</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
                         isDisabled={true}
-                      ></SingleSelector>
+                      ></SingleSelector> */}
+                      <input
+                        type="text"
+                        className="form-control"
+                        // placeholder="Enter Company"
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
                         isDisabled={true}
-                      ></SingleSelector>
+                      ></SingleSelector> */}
+                      <input
+                        type="text"
+                        className="form-control"
+                        // placeholder="Enter Company"
+                        disabled
+                      />
                     </div>
                   </div>
                   <div className="col-md-1 pt-2 mt-4">
@@ -307,7 +336,7 @@ const BillBookingCreate = () => {
                     </div>
                   </div>
 
-                  <div className="col-md-4 mt-3">
+                  {/* <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Department</label>
                       <SingleSelector
@@ -315,7 +344,7 @@ const BillBookingCreate = () => {
                         className="form-control form-select"
                       ></SingleSelector>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">GRN Details</h5>
@@ -800,7 +829,7 @@ const BillBookingCreate = () => {
                       <label>Payment Mode</label>
                       <input
                         className="form-control"
-                        type="number"
+                        type="text"
                         placeholder=""
                         fdprocessedid="qv9ju9"
                       />
@@ -1314,7 +1343,10 @@ const BillBookingCreate = () => {
                 </button>
               </div>
               <div className="col-md-3">
-                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={closeSelectPOModal}
+                >
                   Close
                 </button>
               </div>
@@ -1363,7 +1395,11 @@ const BillBookingCreate = () => {
 
           <div className="row mt-2 justify-content-center">
             <div className="col-md-2">
-              <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+              <button
+                className="purple-btn1 w-100"
+                fdprocessedid="u33pye"
+                onClick={closeSelectPOModal}
+              >
                 Close
               </button>
             </div>
