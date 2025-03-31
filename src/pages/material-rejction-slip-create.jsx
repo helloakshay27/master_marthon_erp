@@ -323,6 +323,60 @@ const MaterialRejctionSlipCreate = () => {
                         </tbody>
                       </table>
                     </div>
+
+                    {/* <div className="row mt-3 justify-content-between align-items-end">
+                      <h5 className="col-md-3"> Document Attachment</h5>
+                    </div> */}
+                    {/* <div className="tbl-container  mt-2">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Document Name</th>
+                            {/* <th>
+                              Material Description<htd></htd>
+                            </th> */}
+                    {/* <th>File Name</th>
+                            <th>File Type</th>
+                            <th>Upload Date</th>
+                            <th>Action</th> */}
+                    {/* <th>Accepted Qty</th> */}
+                    {/* </tr>
+                        </thead>
+                        <tbody>
+                          {data.rejection_materials.length > 0 ? (
+                            data.rejection_materials.map((item, index) => (
+                              <tr key={item.id}>
+                                <td>{index + 1}</td>
+                                <td>
+                                  {item.grn_material.material_type || "N/A"}
+                                </td>
+                                <td>{item.grn_material.uom || "N/A"}</td>
+                                <td> */}
+                    {/* {item.grn_material.good_receive_note
+                                    .grn_date || "N/A"} */}
+                    {/* <FormatDate
+                                    timestamp={
+                                      item.grn_material.good_receive_note
+                                        .grn_date || "N/A"
+                                    }
+                                  />
+                                </td> */}
+                    {/* <td>{item.grn_material.received}</td>
+                                <td>{item.grn_material.defective}</td>
+                                <td>{item.grn_material.accepted}</td>
+                              </tr>
+                            ))
+                          ) : ( */}
+                    {/* <tr>
+                              <td colSpan="7" className="text-center">
+                                No materials found
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table> */}
+                    {/* </div>  */}
                     <div className="row mt-3">
                       {/* Radio Buttons */}
                       <div className="col-md-12">
@@ -424,6 +478,7 @@ const MaterialRejctionSlipCreate = () => {
                   </div>
                   {/* /.col */}
                 </div>
+
                 {/* /.row */}
                 {/* /.row */}
               </div>

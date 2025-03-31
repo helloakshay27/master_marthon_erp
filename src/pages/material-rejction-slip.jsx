@@ -141,7 +141,12 @@ const MaterialRejctionSlip = () => {
   });
   const pageSize = 10; // Adjust as needed
 
-  const fetchData = async (status = "", filters = {}, page = 1) => {
+  const fetchData = async (
+    status = "",
+    filters = {},
+    page = 1,
+    search = ""
+  ) => {
     setLoading(true);
     setError(null);
 
@@ -170,6 +175,10 @@ const MaterialRejctionSlip = () => {
       }
       if (page) {
         queryParams.push(`page=${page}`);
+      }
+
+      if (search) {
+        queryParams.push(`search=${search}`);
       }
 
       // Append query parameters if any
@@ -289,6 +298,8 @@ const MaterialRejctionSlip = () => {
   };
 
   const handleFilterSubmit = () => {
+    // Set the active tab to "rejection_slip"
+    setActiveTab("rejection_slip");
     fetchData("", filters);
   };
 
@@ -324,7 +335,11 @@ const MaterialRejctionSlip = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+    const searchValue = event.target.value;
+    setSearchTerm(searchValue);
+
+    // Trigger the fetchData function with the search term
+    fetchData(activeTab, filters, pagination.current_page, searchValue);
   };
 
   // const filteredData = tableData.filter((item) =>
@@ -395,6 +410,24 @@ const MaterialRejctionSlip = () => {
                     </div>
                   </div>
 
+                  <div
+                    className="col-md-2 text-center"
+                    style={{
+                      backgroundColor:
+                        activeTab === "draft" ? "#8b0203" : "transparent",
+                      color: activeTab === "draft" ? "#fff" : "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                    onClick={() => handleTabClick("draft", "draft")}
+                  >
+                    <div className="content-box">
+                      <h4 className="content-box-title">Draft</h4>
+                      <p className="content-box-sub">{counts.draft}</p>
+                    </div>
+                  </div>
+
                   {/* Accepted */}
                   <div
                     className="col-md-2 text-center"
@@ -430,24 +463,6 @@ const MaterialRejctionSlip = () => {
                     <div className="content-box">
                       <h4 className="content-box-title">Rejected</h4>
                       <p className="content-box-sub ">{counts.rejected}</p>
-                    </div>
-                  </div>
-
-                  <div
-                    className="col-md-2 text-center"
-                    style={{
-                      backgroundColor:
-                        activeTab === "draft" ? "#8b0203" : "transparent",
-                      color: activeTab === "draft" ? "#fff" : "#000",
-                      cursor: "pointer",
-                      borderRadius: "5px",
-                      padding: "10px",
-                    }}
-                    onClick={() => handleTabClick("draft", "draft")}
-                  >
-                    <div className="content-box">
-                      <h4 className="content-box-title">Draft</h4>
-                      <p className="content-box-sub">{counts.draft}</p>
                     </div>
                   </div>
                 </div>
@@ -544,7 +559,7 @@ const MaterialRejctionSlip = () => {
                 </div>
               </CollapsibleCard>
               {/* <div className="card mx-3 collapsed-card"> */}
-              <CollapsibleCard title="Bulk Action">
+              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
                 <div className="card-body mt-0 pt-0">
                   <div className="row align-items-center">
                     <div className="col-md-4">
@@ -620,6 +635,14 @@ const MaterialRejctionSlip = () => {
                         type="button"
                         className="btn btn-md btn-default"
                         //  onClick={() => handleSearch()}
+                        onClick={() =>
+                          fetchData(
+                            activeTab,
+                            filters,
+                            pagination.current_page,
+                            searchTerm
+                          )
+                        }
                       >
                         <SearchIcon />
                       </button>
