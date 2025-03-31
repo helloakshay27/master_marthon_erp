@@ -250,7 +250,7 @@ const MaterialRejctionSlipCreate = () => {
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
                     <div className="col-6">
-                      <label>Rejection Reason</label>
+                      <label>Rejection Remark</label>
                     </div>
                     <div className="col-6">
                       <span>: {data.rejection_reason}</span>

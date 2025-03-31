@@ -779,9 +779,16 @@ const MaterialRejctionSlip = () => {
                               {columnVisibility.store && (
                                 <td>{item.store || "N/A"}</td>
                               )}
-                              {columnVisibility.status && (
+                              {/* {columnVisibility.status && (
                                 <td>{item.status}</td>
+                              )} */}
+                              {columnVisibility.status && (
+                                <td>
+                                  {item.status.charAt(0).toUpperCase() +
+                                    item.status.slice(1)}
+                                </td>
                               )}
+
                               {columnVisibility.dueDate && (
                                 // <td>{item.due_date || "N/A"}</td>
                                 <td>
