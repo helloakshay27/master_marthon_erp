@@ -191,105 +191,31 @@ const EditBoqSub = ({
     });
   };
 
-  const [deletedMaterialIds, setDeletedMaterialIds] = useState([]);
-//   const handleDeleteAllMaterial = () => {
-//     setMaterials((prev) => {
-//       // Clone the previous state to avoid mutation
-//       const newMaterials = { ...prev };
+  const handleDeleteAllMaterial = () => {
+    setMaterials((prev) => {
+      // Clone the previous state to avoid mutation
+      const newMaterials = { ...prev };
       
-//       // Only process the current boqSubItemId
-//       if (newMaterials[boqSubItemId]) {
-//         newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
-//           !selectedMaterials.some(
-//             selected => 
-//               selected.materialId === material.id &&
-//               selected.rowIndex === index &&
-//               selected.boqSubItemId === boqSubItemId
-//           )
-//         );
-//       }
-      
-//       // console.log("Updated materials:", newMaterials);
-//       return newMaterials;
-//     });
-  
-//     // Update dependent states with boqSubItemId-aware cleanup
-//     const updateSelection = (selectionArray = []) =>
-//       selectedMaterials
-//         .filter(selected => selected.boqSubItemId === boqSubItemId)
-//         .reduce((acc, selected) => {
-//           const indexToRemove = selected.rowIndex;
-//           if (indexToRemove >= 0 && indexToRemove < acc.length) {
-//             acc.splice(indexToRemove, 1);
-//           }
-//           return acc;
-//         }, [...selectionArray]);
-  
-//     // Update all dependent states
-//     setSelectedSubTypes(prev => updateSelection(prev));
-//     setSelectedColors(prev => updateSelection(prev));
-//     setSelectedInventoryBrands(prev => updateSelection(prev));
-//     setSelectedUnit2(prev => updateSelection(prev));
-//     setCoefficientFactors(prev => updateSelection(prev));
-//     setEstimatedQuantities(prev => updateSelection(prev));
-//     setWastages(prev => updateSelection(prev));
-//     setTotalEstimatedQtyWastages(prev => updateSelection(prev));
-//     setSelectedGenericSpecifications(prev => updateSelection(prev));
-  
-//     // Clean up selected materials for this boqSubItemId
-//     setSelectedMaterials(prev =>
-//       prev.filter(selected => 
-//         !prev.some(s => 
-//           s.boqSubItemId === boqSubItemId &&
-//           ![boqSubItemId]?.some(
-//             (material, index) => 
-//               material.id === s.materialId && 
-//               index === s.rowIndex
-//           )
-//         )
-//       )
-//     );
-//   };
-  
-
-const handleDeleteAllMaterial = () => {
-    setMaterials((prevMaterials) => {
-      const newMaterials = { ...prevMaterials };
+      // Only process the current boqSubItemId
       if (newMaterials[boqSubItemId]) {
-        const remainingMaterials = newMaterials[boqSubItemId].filter(
-          (material, index) =>
-            !selectedMaterials.some(
-              (selected) =>
-                selected.materialId === material.id &&
-                selected.rowIndex === index &&
-                selected.boqSubItemId === boqSubItemId
-            )
-        );
-  
-        // Collect IDs of materials being deleted
-        const idsToDelete = newMaterials[boqSubItemId]
-          .filter((material, index) =>
-            selectedMaterials.some(
-              (selected) =>
-                selected.materialId === material.id &&
-                selected.rowIndex === index &&
-                selected.boqSubItemId === boqSubItemId
-            )
+        newMaterials[boqSubItemId] = newMaterials[boqSubItemId].filter((material, index) => 
+          !selectedMaterials.some(
+            selected => 
+              selected.materialId === material.id &&
+              selected.rowIndex === index &&
+              selected.boqSubItemId === boqSubItemId
           )
-          .map((material) => material.id);
-  
-        // Update the deletedMaterialIds state
-        setDeletedMaterialIds((prevIds) => [...prevIds, ...idsToDelete]);
-  
-        newMaterials[boqSubItemId] = remainingMaterials;
+        );
       }
+      
+      // console.log("Updated materials:", newMaterials);
       return newMaterials;
     });
   
-    // Update dependent states as previously implemented
+    // Update dependent states with boqSubItemId-aware cleanup
     const updateSelection = (selectionArray = []) =>
       selectedMaterials
-        .filter((selected) => selected.boqSubItemId === boqSubItemId)
+        .filter(selected => selected.boqSubItemId === boqSubItemId)
         .reduce((acc, selected) => {
           const indexToRemove = selected.rowIndex;
           if (indexToRemove >= 0 && indexToRemove < acc.length) {
@@ -298,31 +224,34 @@ const handleDeleteAllMaterial = () => {
           return acc;
         }, [...selectionArray]);
   
-    setSelectedSubTypes((prev) => updateSelection(prev));
-    setSelectedColors((prev) => updateSelection(prev));
-    setSelectedInventoryBrands((prev) => updateSelection(prev));
-    setSelectedUnit2((prev) => updateSelection(prev));
-    setCoefficientFactors((prev) => updateSelection(prev));
-    setEstimatedQuantities((prev) => updateSelection(prev));
-    setWastages((prev) => updateSelection(prev));
-    setTotalEstimatedQtyWastages((prev) => updateSelection(prev));
-    setSelectedGenericSpecifications((prev) => updateSelection(prev));
+    // Update all dependent states
+    setSelectedSubTypes(prev => updateSelection(prev));
+    setSelectedColors(prev => updateSelection(prev));
+    setSelectedInventoryBrands(prev => updateSelection(prev));
+    setSelectedUnit2(prev => updateSelection(prev));
+    setCoefficientFactors(prev => updateSelection(prev));
+    setEstimatedQuantities(prev => updateSelection(prev));
+    setWastages(prev => updateSelection(prev));
+    setTotalEstimatedQtyWastages(prev => updateSelection(prev));
+    setSelectedGenericSpecifications(prev => updateSelection(prev));
   
-    setSelectedMaterials((prev) =>
-      prev.filter(
-        (selected) =>
-          !prev.some(
-            (s) =>
-              s.boqSubItemId === boqSubItemId &&
-              ![boqSubItemId]?.some(
-                (material, index) =>
-                  material.id === s.materialId && index === s.rowIndex
-              )
+    // Clean up selected materials for this boqSubItemId
+    setSelectedMaterials(prev =>
+      prev.filter(selected => 
+        !prev.some(s => 
+          s.boqSubItemId === boqSubItemId &&
+          ![boqSubItemId]?.some(
+            (material, index) => 
+              material.id === s.materialId && 
+              index === s.rowIndex
           )
+        )
       )
     );
   };
   
+
+
 
 
 
@@ -1182,7 +1111,6 @@ const handleDeleteAllMaterial = () => {
       wastage: parseFloat(wastages[i]) || "",
       estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  "",
     }));
-    
   }, [
     materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
     selectedInventoryBrands, selectedUnit2, coefficientFactors,

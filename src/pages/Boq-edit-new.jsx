@@ -1581,20 +1581,38 @@ console.log("pre mtL...", predefinedMaterials)
 
 
 
-
+  const [selectedRows, setSelectedRows] = useState([]);
 
   // Modified deleteRowFromTable1 function
-  const deleteRowFromTable1 = (id) => {
+//   const deleteRowFromTable1 = (id) => {
+//     // Remove from count state
+//     setcount((prevCount) => prevCount.filter((row) => row.id !== id));
+
+//     // Remove from boqSubItems state
+//     setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
+
+//     // Decrement counter
+//     setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+//   };
+
+  const deleteRowFromTable1 = () => {
+    if (selectedRows.length === 0) {
+      alert("Please select at least one row to delete");
+      return;
+    }
+  
     // Remove from count state
-    setcount((prevCount) => prevCount.filter((row) => row.id !== id));
-
+    setcount(prevCount => prevCount.filter(row => !selectedRows.includes(row.id)));
+  
     // Remove from boqSubItems state
-    setBoqSubItems((prevItems) => prevItems.filter((item) => item.id !== id));
-
-    // Decrement counter
-    setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
+    setBoqSubItems(prevItems => prevItems.filter(item => !selectedRows.includes(item.id)));
+  
+    // Clear selection
+    setSelectedRows([]);
+  
+    // Update counter if needed
+    setCounter(prev => Math.max(0, prev - selectedRows.length));
   };
-
 
   const payload = {
     boq_detail: {
@@ -1790,6 +1808,11 @@ console.log("sub item boq needed:",boqSubItems)
     let validationErrors = {};
 
     // setErrors(newErrors);
+    // if (!itemName) validationErrors.itemName = "Item Name is required.";
+    if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
+    if (!selectedUnit) validationErrors.unit = "UOM is required.";
+    if (!boqQuantity)
+      validationErrors.boqQuantity = "BOQ Quantity is required.";
 
     // If predefinedMaterials is empty, show a toast error
     if (predefinedMaterials.length === 0 && predefinedAssets.length === 0) {
@@ -2345,7 +2368,7 @@ console.log("sub item boq needed:",boqSubItems)
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label>Project</label>
+                        <label>Project <span>*</span></label>
                         <input
                           className="form-control"
                           type="text"
@@ -2383,7 +2406,7 @@ console.log("sub item boq needed:",boqSubItems)
                     </div>
                     <div className="col-md-3 mt-2">
                       <div className="form-group">
-                        <label>Main Category</label>
+                        <label>Main Category <span>*</span></label>
 
                         <input
                           className="form-control"
@@ -2452,7 +2475,7 @@ console.log("sub item boq needed:",boqSubItems)
                     </div>
                     <div className="col-md-3 mt-2">
                       <div className="form-group">
-                        <label>BOQ Item Name</label>
+                        <label>BOQ Item Name <span>*</span></label>
                         <input
                           className="form-control"
                           type="text"
@@ -2463,6 +2486,9 @@ console.log("sub item boq needed:",boqSubItems)
                             handleInputChange("itemName", e.target.value)
                           }
                         />
+                         {errors.itemName && (
+                          <div className="error-message">{errors.itemName}</div>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-6 mt-2">
@@ -2483,19 +2509,22 @@ console.log("sub item boq needed:",boqSubItems)
                     </div>
                     <div className="col-md-3 mt-2">
                       <div className="form-group">
-                        <label>UOM</label>
+                        <label>UOM <span>*</span></label>
                         <SingleSelector
                           options={unitOfMeasures} // Providing the options to the select component
                           onChange={handleUnitChange} // Setting the handler when an option is selected
                           value={selectedUnit} // Setting the selected value
                           placeholder={`Select UOM`} // Dynamic placeholder
-                        //   isDisabled={showBOQSubItem}
+                          isDisabled={showBOQSubItem}
                         />
+                        {errors.unit && (
+                          <div className="error-message">{errors.unit}</div>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-3 mt-2">
                       <div className="form-group">
-                        <label>BOQ Qty (Cost)</label>
+                        <label>BOQ Qty (Cost) <span>*</span></label>
                         <input
                           className="form-control"
                           type="number"
@@ -2517,6 +2546,11 @@ console.log("sub item boq needed:",boqSubItems)
                           //   disabled={showBOQSubItem}
                           min="0"
                         />
+                         {errors.boqQuantity && (
+                          <div className="error-message">
+                            {errors.boqQuantity}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -2535,7 +2569,7 @@ console.log("sub item boq needed:",boqSubItems)
                         />
                       </div>
                     </div>
-                    <div className="col-md-6 mt-2">
+                    {/* <div className="col-md-6 mt-2">
                       <div className="form-group">
                         <label>Remark</label>
                         <textarea
@@ -2546,7 +2580,7 @@ console.log("sub item boq needed:",boqSubItems)
                           onChange={(e) => handleInputChange("remark", e.target.value)}
                         />
                       </div>
-                    </div>
+                    </div> */}
 
                     <div className="row mt-2">
                       {/* Checkboxes */}
@@ -3195,11 +3229,6 @@ console.log("sub item boq needed:",boqSubItems)
                 </>
               )}
 
-
-
-
-
-
               {showBOQSubItem && (
                 <>
                   
@@ -3217,7 +3246,23 @@ console.log("sub item boq needed:",boqSubItems)
                                 <thead style={{ zIndex: "1" }}>
                                   <tr>
                                     <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>
-                                      <input type="checkbox" />
+                                      {/* <input type="checkbox" /> */}
+                                      <input 
+    type="checkbox"
+    checked={selectedRows.length === boqSubItems.length + count.length}
+    onChange={(e) => {
+      if (e.target.checked) {
+        // Select all rows (both existing and new)
+        const allRowIds = [
+          ...boqSubItems.map(item => item.id),
+          ...count.map(item => item.id)
+        ];
+        setSelectedRows(allRowIds);
+      } else {
+        setSelectedRows([]);
+      }
+    }}
+  />
                                     </th>
                                     <th rowSpan={2} style={{ width: "100px", whiteSpace: "nowrap" }}>Expand</th>
                                     <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>
@@ -3237,7 +3282,18 @@ console.log("sub item boq needed:",boqSubItems)
                                     <React.Fragment key={subItem.id}>
                                       <tr>
                                         <td>
-                                          <input type="checkbox" />
+                                          {/* <input type="checkbox" /> */}
+                                          <input 
+        type="checkbox"
+        checked={selectedRows.includes(subItem.id)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setSelectedRows(prev => [...prev, subItem.id]);
+          } else {
+            setSelectedRows(prev => prev.filter(id => id !== subItem.id));
+          }
+        }}
+      />
                                         </td>
                                         <td className="text-center">
                                           <button
@@ -3355,11 +3411,11 @@ console.log("sub item boq needed:",boqSubItems)
                                             placeholder={`Select UOM`}
                                           />
 
-{console.log('Current subItem:', subItem)}
+{/* {console.log('Current subItem:', subItem)}
 {console.log(' subItem unit:', subItem.unit_of_measure_id)}
 {console.log('Available units:', unitOfMeasures)}
 {console.log('Matched unit:', unitOfMeasures.find(uom => uom.value === subItem.unit_of_measure_id))}
-{console.log("boq sub item" , boqSubItems)}
+{console.log("boq sub item" , boqSubItems)} */}
                                         </td>
                                         <td colSpan={2}>
                                           <input
@@ -3461,7 +3517,18 @@ console.log("sub item boq needed:",boqSubItems)
                                       <React.Fragment key={index}>
                                         <tr>
                                           <td>
-                                            <input type="checkbox" />
+                                            {/* <input type="checkbox" /> */}
+                                            <input 
+          type="checkbox"
+          checked={selectedRows.includes(el.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedRows(prev => [...prev, el.id]);
+            } else {
+              setSelectedRows(prev => prev.filter(id => id !== el.id));
+            }
+          }}
+        />
                                           </td>
                                           <td className="text-center">
                                             <button
