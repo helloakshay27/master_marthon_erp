@@ -34,7 +34,11 @@ export default function VendorDetails() {
     afterDiscountValue: 0,
     remark: "",
     additionalInfo: "",
-    additionTaxCharges: [],
+    additionTaxCharges: [
+      { id: 1, taxChargeType: "GST", taxChargePerUom: "", inclusive: false, amount: "" },
+      { id: 2, taxChargeType: "SGST", taxChargePerUom: "", inclusive: false, amount: "" },
+      { id: 3, taxChargeType: "CGST", taxChargePerUom: "", inclusive: false, amount: "" },
+    ],
     deductionTax: [],
     netCost: 0,
   });
@@ -4765,7 +4769,7 @@ export default function VendorDetails() {
                         <input
                           type="number"
                           className="form-control bg-light"
-                          value={taxRateData.afterDiscountValue.toFixed(1)}
+                          value={taxRateData.afterDiscountValue}
                           readOnly
                         />
                       </td>

@@ -35,6 +35,7 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
+    console.log("segregated data", eventVendors);
   }, [eventVendors]);
 
   const { eventId } = useParams();
@@ -75,6 +76,8 @@ export default function ResponseTab({ isCounterOffer }) {
         }
 
         const responseData = await response.json();
+        console.log("responseData", responseData);
+        
 
         let data = Array.isArray(responseData.vendors)
           ? responseData.vendors.find((vendor) => vendor.id === vendorId)
@@ -96,6 +99,8 @@ export default function ResponseTab({ isCounterOffer }) {
           `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
         );
         data = response.data;
+        console.log("data :-----",data);
+        
         const updatedEventVendors = eventVendors.map((vendor) => {
           if (vendor.id === vendorId) {
             return {
@@ -119,6 +124,8 @@ export default function ResponseTab({ isCounterOffer }) {
       setLoading(false);
     }
   };
+  console.log("eventVendors", eventVendors);
+  
 
   const handleCarouselChange = async (vendorId, selectedIndex) => {
     setActiveIndexes((prevIndexes) => ({
@@ -169,7 +176,7 @@ export default function ResponseTab({ isCounterOffer }) {
         const data = await response.json();
         setResponse(data);
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
-        console.log("data of get fetch remarks", eventVendors);
+        // console.log("data of get fetch remarks", eventVendors);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -375,7 +382,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
-                          console.log("format", vendor?.bids?.[0]?.created_at);
+                          // console.log("format", vendor?.bids?.[0]?.created_at);
                           
                           return (
                             <td

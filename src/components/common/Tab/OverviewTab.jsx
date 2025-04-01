@@ -179,7 +179,7 @@ export default function OverviewTab({
     },
   ];
 
-  console.log("materialData", materialData);
+  // console.log("materialData", materialData);
   
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
@@ -483,7 +483,7 @@ export default function OverviewTab({
                 <i className="bi bi-plus-lg"></i>
               )}
             </span>
-            Product Sheet
+            Material Sheet
           </a>
           {productOpen && (
             <div id="product-sheet" className="mx-5">
