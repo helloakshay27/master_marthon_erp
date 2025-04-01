@@ -867,7 +867,7 @@ const EventTypeModal = ({
                 }
               />
             )}
-            <div className="d-flex align-items-center gap-2 my-3">
+            {/* <div className="d-flex align-items-center gap-2 my-3">
               <input
                 type="checkbox"
                 checked={dynamicExtension[3]}
@@ -892,7 +892,7 @@ const EventTypeModal = ({
                   })
                 }
               />
-            )}
+            )} */}
           </div>
         </form>
       </div>

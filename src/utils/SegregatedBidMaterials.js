@@ -1,5 +1,5 @@
 export const SegregatedBidMaterials = (inputArray) => {
-console.log("inputArray----",inputArray);
+// console.log("inputArray----",inputArray);
   const materialMap = new Map();
   inputArray.forEach((vendor) => {
     const bid = vendor.bids[0];
@@ -20,7 +20,7 @@ console.log("inputArray----",inputArray);
         });
       }
       const materialData = materialMap.get(material.event_material_id);
-      console.log("materialData:-------",materialData);
+      // console.log("materialData:-------",materialData);
       
       materialData.bids_values.push({
         ...material,

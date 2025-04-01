@@ -1600,6 +1600,24 @@ export default function EditEvent() {
                         placeholder="Enter Phone Number"
                       />
                     </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">GST Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        inputMode="tel"
+                        placeholder="Enter GST Number"
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">PAN Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        inputMode="tel"
+                        placeholder="Enter PAN Number"
+                      />
+                    </div>
                   </form>
                 </>
               }
