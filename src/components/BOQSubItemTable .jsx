@@ -1234,13 +1234,13 @@ const BOQSubItemTable = ({
 
                             <th
                               rowSpan={2}
-                              style={{ width: "350px", whiteSpace: "nowrap" }}
+                              style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
                               Material Type
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "350px", whiteSpace: "nowrap" }}
+                              style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
                               Material
                             </th>
@@ -1258,19 +1258,19 @@ const BOQSubItemTable = ({
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "350px", whiteSpace: "nowrap" }}
+                              style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
                               Colour{" "}
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "350px", whiteSpace: "nowrap" }}
+                              style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
                               Brand{" "}
                             </th>
                             <th
                               rowSpan={2}
-                              style={{ width: "350px", whiteSpace: "nowrap" }}
+                              style={{ width: "300px", whiteSpace: "nowrap" }}
                             >
                               UOM
                             </th>
@@ -1610,14 +1610,14 @@ const BOQSubItemTable = ({
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "350px", whiteSpace: "nowrap" }}
+                            style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
                             Assest Type
                           </th>
 
                           <th
                             rowSpan={2}
-                            style={{ width: "350px", whiteSpace: "nowrap" }}
+                            style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
                             Assest
                           </th>
@@ -1635,19 +1635,19 @@ const BOQSubItemTable = ({
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "350px", whiteSpace: "nowrap" }}
+                            style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
                             Colour{" "}
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "350px", whiteSpace: "nowrap" }}
+                            style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
                             Brand{" "}
                           </th>
                           <th
                             rowSpan={2}
-                            style={{ width: "350px", whiteSpace: "nowrap" }}
+                            style={{ width: "300px", whiteSpace: "nowrap" }}
                           >
                             UOM
                           </th>
