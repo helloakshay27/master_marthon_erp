@@ -90,14 +90,14 @@ const MaterialRejctionSlipCreate = () => {
   const handleSubmit = async () => {
     setLoading(true);
 
-    if (!decision) {
+    if (decision !== "accepted" && decision !== "rejected") {
       alert("Please select either 'Accept' or 'Reject' before submitting.");
-      setLoading(false); // ✅ Ensure loader stops
+      setLoading(false);
       return;
     }
 
     // Validation: If rejecting, reason must be provided
-    if (decision === "reject" && reason.trim() === "") {
+    if (decision === "rejected" && reason.trim() === "") {
       alert("Rejection reason is required.");
       setLoading(false); // ✅ Ensure loader stops
       return;
@@ -108,8 +108,8 @@ const MaterialRejctionSlipCreate = () => {
     try {
       const payload = {
         status: decision,
-        rejection_reason: decision === "reject" ? reason : "",
-        acceptance_reason: decision === "accept" ? reason : "",
+        rejection_reason: decision === "rejected" ? reason : "",
+        acceptance_reason: decision === "accepted" ? reason : "",
       };
 
       const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Add token if required
@@ -253,14 +253,6 @@ const MaterialRejctionSlipCreate = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="col-lg-6 col-md-6 row px-3">
-                    <div className="col-6">
-                      <label>Defective Reason</label>
-                    </div>
-                    <div className="col-6">
-                      <span>: {data.rejection_reason}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -278,7 +270,7 @@ const MaterialRejctionSlipCreate = () => {
                         <thead>
                           <tr>
                             <th>Sr.No.</th>
-                            <th>Material Type</th>
+                            <th>Material Description</th>
                             {/* <th>
                               Material Description<htd></htd>
                             </th> */}
@@ -287,6 +279,7 @@ const MaterialRejctionSlipCreate = () => {
                             <th>Received Qty</th>
                             <th>Defective Qty</th>
                             <th>Accepted Qty</th>
+                            <th>Defective Reason</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -311,6 +304,7 @@ const MaterialRejctionSlipCreate = () => {
                                 <td>{item.grn_material.received}</td>
                                 <td>{item.grn_material.defective}</td>
                                 <td>{item.grn_material.accepted}</td>
+                                <td>{item.grn_material.defective_reason}</td>
                               </tr>
                             ))
                           ) : (
@@ -381,7 +375,13 @@ const MaterialRejctionSlipCreate = () => {
                       {/* Radio Buttons */}
                       <div className="col-md-12">
                         <div className="form-group d-flex align-items-center">
-                          <label className="me-3">Select Decision:</label>
+                          <label className="me-3">
+                            Select Decision:
+                            <span className="ms-1" color="#8b0203">
+                              *
+                            </span>
+                          </label>
+
                           <div className="form-check me-3">
                             <input
                               type="radio"
@@ -482,18 +482,6 @@ const MaterialRejctionSlipCreate = () => {
                 {/* /.row */}
                 {/* /.row */}
               </div>
-              {/* <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="mb-0">Status</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                >
-                  <option value="draft">PO Draft</option>
-                  <option value="accept">Accept</option>
-                  <option value="reject">Reject</option>
-                  <option value="submit">Submit</option>
-                </select>
-              </div> */}
 
               <div className="row mt-2 justify-content-end">
                 {/* <div className="col-md-2">
