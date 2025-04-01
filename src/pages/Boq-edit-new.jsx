@@ -21,6 +21,7 @@ import Select from "react-select";
 // import EditBoqSub from "./EditBoqSub";
 import EditBoqSub from "./EditBoqSub";
 import { useParams } from 'react-router-dom';
+// import { ToastContainer, toast } from "react-toastify";
 
 
 const EditBOQNew = () => {
@@ -1815,7 +1816,8 @@ console.log("sub item boq needed:",boqSubItems)
       validationErrors.boqQuantity = "BOQ Quantity is required.";
 
     // If predefinedMaterials is empty, show a toast error
-    if (predefinedMaterials.length === 0 && predefinedAssets.length === 0) {
+    console.log(predefinedMaterials.length)
+    if (predefinedMaterials.length === 1 && predefinedAssets.length === 0) {
       toast.error("Select at least one material or asset.");
       return; // Exit function if validation fails
     }
@@ -2543,7 +2545,7 @@ console.log("sub item boq needed:",boqSubItems)
                               e.preventDefault(); // Prevent entering "-" or "e" or "E"
                             }
                           }}
-                          //   disabled={showBOQSubItem}
+                            disabled={showBOQSubItem}
                           min="0"
                         />
                          {errors.boqQuantity && (
