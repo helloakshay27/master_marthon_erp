@@ -222,13 +222,41 @@ const EditBOQNew = () => {
         setBoqSubItems(existingBoqItems);
 
         // ✅ Merge API materials with existing ones in `materials2`
+        // setMaterials2((prev) => {
+        //     const updatedMaterials = { ...prev };
+
+        //     existingBoqItems.forEach((item) => {
+        //         const existingMaterials = updatedMaterials[item.id] || [];
+        //         const newMaterials = item.materials || [];
+
+        //         // Ensure all materials use `material_id`
+        //         const normalizedExistingMaterials = existingMaterials.map((m) => ({
+        //             ...m,
+        //             material_id: m.material_id || m.id, // Normalize material_id
+        //         }));
+        //         const normalizedNewMaterials = newMaterials.map((m) => ({
+        //             ...m,
+        //             material_id: m.material_id || m.id, // Normalize material_id
+        //         }));
+
+        //         // Avoid duplicates using `Set`
+        //         const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+        //         const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+
+        //         updatedMaterials[item.id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
+        //     });
+
+        //     return updatedMaterials;
+        // });
+
+
         setMaterials2((prev) => {
             const updatedMaterials = { ...prev };
-
+        
             existingBoqItems.forEach((item) => {
                 const existingMaterials = updatedMaterials[item.id] || [];
                 const newMaterials = item.materials || [];
-
+        
                 // Ensure all materials use `material_id`
                 const normalizedExistingMaterials = existingMaterials.map((m) => ({
                     ...m,
@@ -238,16 +266,14 @@ const EditBOQNew = () => {
                     ...m,
                     material_id: m.material_id || m.id, // Normalize material_id
                 }));
-
-                // Avoid duplicates using `Set`
-                const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
-                const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
-
-                updatedMaterials[item.id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
+        
+                // **Allow duplicate materials** by directly merging the lists
+                updatedMaterials[item.id] = [...normalizedExistingMaterials, ...normalizedNewMaterials];
             });
-
+        
             return updatedMaterials;
         });
+        
     }, [boqDetails]); // Runs when API data updates
 
     // ✅ Function to add new materials dynamically
@@ -1333,7 +1359,7 @@ const EditBOQNew = () => {
 
 
 
-    console.log("pre mtL...", predefinedMaterials)
+    // console.log("pre mtL...", predefinedMaterials)
 
     const predefinedAssets = Assets.map((asset, index) => ({
         material_id: asset.id,
@@ -1638,7 +1664,7 @@ const EditBOQNew = () => {
     }
 
 
-    console.log("boq data payload 1  edit:", payload)
+    // console.log("boq data payload 1  edit:", payload)
 
 
 
@@ -1661,8 +1687,8 @@ const EditBOQNew = () => {
     }
 
 
-    console.log("boq data payload 2 edit sub: ", payload2)
-    console.log("sub item boq needed:", boqSubItems)
+    // console.log("boq data payload 2 edit sub: ", payload2)
+    // console.log("sub item boq needed:", boqSubItems)
 
     // console.log("predefine data 2", predefinedMaterialsData)
     // console.log("boq sub payload", payloadData2);
@@ -1805,7 +1831,7 @@ const EditBOQNew = () => {
     };
 
 
-    console.log("boqsub items:", boqSubItems)
+    // console.log("boqsub items:", boqSubItems)
 
     const handleLevel5Change = (selectedOption) =>
         setSelectedSubCategoryLevel5(selectedOption);
@@ -1925,19 +1951,19 @@ const EditBOQNew = () => {
 
 
     console.log("boq sub item submit>>>")
-    console.log("sub item: show", showBOQSubItem)
+    // console.log("sub item: show", showBOQSubItem)
 
     // Handle submit for BOQ SubItem
     const handleSubmitBOQSubItem = async () => {
         console.log("boq sub item>>>", boqSubItems)
         let validationErrors = {};
 
+        if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
 
-
-        // if (boqSubItems.length === 0) {
-        //   toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
-        //   return;
-        // }
+        if (boqSubItems.length === 0) {
+          toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
+          return;
+        }
 
         // // Check for validation errors in materials and assets
         // if (Object.keys(materialErrors).length > 0 || Object.keys(assetsErrors).length > 0) {
@@ -1945,10 +1971,12 @@ const EditBOQNew = () => {
         //   return;
         // }
 
-
+        console.log("validation sub item:",boqSubItems)
         // Iterate over each boqSubItem to validate
-        for (let i = 0; i < count.length; i++) {
+        for (let i = 0; i < boqSubItems.length; i++) {
             const boqSubItem = boqSubItems[i];
+            console.log("validation sub item:",boqSubItem)
+            
 
             if (!boqSubItem.name || boqSubItem.name.trim() === "") {
                 toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
