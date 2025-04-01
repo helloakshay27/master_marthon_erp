@@ -32,6 +32,8 @@ const BOQList = () => {
     navigate('/create-BOQ');
   };
 
+  const handleModalShow = () => setShow(true);
+
 
   const [copyModal, setcopyModal] = useState(false);
 
@@ -510,30 +512,30 @@ const BOQList = () => {
   return (
     <>
 
-{loading2 ? (
+      {loading2 ? (
         // <div className="loading-container">
         //   <div className="spinner"></div> {/* Spinner element */}
         //   <p style={{ fontSize:"18px",fontWeight:"400px"}}>Loading...</p>
         // </div>
         <div id="full-screen-loader" className="full-screen-loader">
-        <div className="loader-container">
-          <img
-            src="https://newerp.marathonrealty.com/assets/loader.gif"
-            alt="Loading..."
-            width={50}
-          />
-          <h5>Please wait</h5>
+          <div className="loader-container">
+            <img
+              src="https://newerp.marathonrealty.com/assets/loader.gif"
+              alt="Loading..."
+              width={50}
+            />
+            <h5>Please wait</h5>
+          </div>
         </div>
-      </div>
-        
+
       ) : (
 
         <div className="website-content">
-        <div className="module-data-section p-4">
-          <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
-          {/* <h5 className="mt-4">BOQ</h5> */}
-          <div className="d-flex justify-content-end mt-4">
-            {/* <button className="purple-btn2" onClick={handleClick}>
+          <div className="module-data-section p-4">
+            <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
+            {/* <h5 className="mt-4">BOQ</h5> */}
+            <div className="d-flex justify-content-end mt-4">
+              {/* <button className="purple-btn2" onClick={handleClick}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -546,10 +548,10 @@ const BOQList = () => {
               </svg>
               <span> Create BOQ</span>
             </button> */}
-            {/* <button className="purple-btn2">Import</button>
+              {/* <button className="purple-btn2">Import</button>
             <button className="purple-btn2">Export</button>
             <button className="purple-btn2">Delete</button> */}
-            {/* <button
+              {/* <button
               className="purple-btn2"
               // data-bs-toggle="modal"
               // data-bs-target="#copyModal"
@@ -558,58 +560,58 @@ const BOQList = () => {
             >
               Copy
             </button> */}
-          </div>
-          {/* <div className="tab-content1 active" id="total-content"> */}
-          {/* Total Content Here */}
+            </div>
+            {/* <div className="tab-content1 active" id="total-content"> */}
+            {/* Total Content Here */}
 
 
-          <div className="card mt-2 There is no selected portion. The entire code file is provided. If you could specify the portion of the code you would like me to improve, I can help you with that.mb-5 ">
-            <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-              <div className="card-body mt-0 pt-0">
-                <div className="row">
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Project <span>*</span></label>
-                      <SingleSelector
-                        options={projectOptions}
-                        onChange={handleProjectChange}
-                        value={selectedProject}
-                        placeholder={`Select Project`} // Dynamic placeholder
-                      />
-                      {errors.project && (
-                        <div className="error-message">{errors.project}</div>
-                      )}
+            <div className="card mt-2 There is no selected portion. The entire code file is provided. If you could specify the portion of the code you would like me to improve, I can help you with that.mb-5 ">
+              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
+                <div className="card-body mt-0 pt-0">
+                  <div className="row">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project <span>*</span></label>
+                        <SingleSelector
+                          options={projectOptions}
+                          onChange={handleProjectChange}
+                          value={selectedProject}
+                          placeholder={`Select Project`} // Dynamic placeholder
+                        />
+                        {errors.project && (
+                          <div className="error-message">{errors.project}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-project</label>
+                        <SingleSelector
+                          options={siteOptions}
+                          onChange={handleSiteChange}
+                          value={selectedSite}
+                          placeholder={`Select Sub-project`} // Dynamic placeholder
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Wing</label>
+                        <SingleSelector
+                          options={wingsOptions}
+                          value={selectedWing}
+                          onChange={handleWingChange}
+                          placeholder={`Select Wing`} // Dynamic placeholder
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <button type="" className="purple-btn2 mt-4" onClick={handleGoClick}>
+                        Go
+                      </button>
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Sub-project</label>
-                      <SingleSelector
-                        options={siteOptions}
-                        onChange={handleSiteChange}
-                        value={selectedSite}
-                        placeholder={`Select Sub-project`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Wing</label>
-                      <SingleSelector
-                        options={wingsOptions}
-                        value={selectedWing}
-                        onChange={handleWingChange}
-                        placeholder={`Select Wing`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-3">
-                    <button type="" className="purple-btn2 mt-4" onClick={handleGoClick}>
-                      Go
-                    </button>
-                  </div>
-                </div>
-                {/* <div className="row">
+                  {/* <div className="row">
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Main Category</label>
@@ -666,7 +668,7 @@ const BOQList = () => {
                     </div>
                   </div>
                 </div> */}
-                {/* <div className="row">
+                  {/* <div className="row">
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>BOQ Name</label>
@@ -757,21 +759,21 @@ const BOQList = () => {
                     </div>
                   </div>
                 </div> */}
-              </div>
+                </div>
 
-              {/* <BulkAction /> */}
+                {/* <BulkAction /> */}
 
-            </CollapsibleCard>
+              </CollapsibleCard>
 
-            <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
-              <form
-                onSubmit={handleSubmit}
-              >
-                <div className="row align-items-center">
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>From Status</label>
-                      {/* <select
+              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
+                <form
+                  onSubmit={handleSubmit}
+                >
+                  <div className="row align-items-center">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>From Status</label>
+                        {/* <select
                         name="fromStatus"
                         className="form-control form-select"
                          classNamePrefix="react-select"
@@ -785,26 +787,26 @@ const BOQList = () => {
                         <option value="submitted">Submitted</option>
                         <option value="approved">Approved</option>
                       </select> */}
-                      {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
+                        {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
 
-                      <SingleSelector
-                        options={options}
-                        // value={options.value}
-                        value={options.find(option => option.value === fromStatus)} 
-                        onChange={handleStatusChange}
-                        // onChange={handleStatusChange}
-                        // options.find(option => option.value === status)
-                        // value={filteredOptions.find(option => option.value === status)}
-                        // value={options.find(option => option.value === status)}
-                        // value={selectedSite}
-                        placeholder={`Select Status`} // Dynamic placeholder
-                        classNamePrefix="react-select"
-                      />
-                      {console.log("options:", options.value)}
-                    </div>
-                    <div className="form-group mt-3">
-                      <label>To Status</label>
-                      {/* <select
+                        <SingleSelector
+                          options={options}
+                          // value={options.value}
+                          value={options.find(option => option.value === fromStatus)}
+                          onChange={handleStatusChange}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
+                        />
+                        {console.log("options:", options.value)}
+                      </div>
+                      <div className="form-group mt-3">
+                        <label>To Status</label>
+                        {/* <select
                         name="toStatus"
                         className="form-control form-select"
                         value={toStatus}
@@ -816,1865 +818,2110 @@ const BOQList = () => {
                         <option value="approved">Approved</option>
                       </select> */}
 
-                      <SingleSelector
-                        options={options}
-                        // value={options.value}
-                        onChange={handleToStatusChange}
-                        value={options.find(option => option.value === toStatus)}
-                        // onChange={handleStatusChange}
-                        // options.find(option => option.value === status)
-                        // value={filteredOptions.find(option => option.value === status)}
-                        // value={options.find(option => option.value === status)}
-                        // value={selectedSite}
-                        placeholder={`Select Status`} // Dynamic placeholder
-                        classNamePrefix="react-select"
-                      />
+                        <SingleSelector
+                          options={options}
+                          // value={options.value}
+                          onChange={handleToStatusChange}
+                          value={options.find(option => option.value === toStatus)}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>Remark</label>
+                        <textarea
+                          name="remark"
+                          className="form-control"
+                          rows={4}
+                          placeholder="Enter ..."
+                          value={remark}
+                          onChange={handleRemarkChange}
+                        />
+                      </div>
+                    </div>
+                    <div className="offset-md-1 col-md-2">
+                      <button type="submit" className="purple-btn2 m-0">
+                        Submit
+                      </button>
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Remark</label>
-                      <textarea
-                        name="remark"
-                        className="form-control"
-                        rows={4}
-                        placeholder="Enter ..."
-                        value={remark}
-                        onChange={handleRemarkChange}
+                </form>
+              </CollapsibleCard>
+
+              {/* <BOQListTable boqList={boqList} setBoqList={setBoqList} /> */}
+
+              {/* boq list table is here  start */}
+
+
+              <div className="d-flex justify-content-end me-2 mt-4">
+                <div className="col-md-6 ps-2">
+                  <form>
+                    <div className="input-group">
+                      <input
+                        type="search"
+                        id="searchInput"
+                        className="form-control tbl-search"
+                        placeholder="Type your keywords here"
+                      // value={searchTerm}
+                      // onChange={(e) => setSearchTerm(e.target.value)}
                       />
+                      <div className="input-group-append">
+                        <button type="button" className="btn btn-md btn-default">
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="offset-md-1 col-md-2">
-                    <button type="submit" className="purple-btn2 m-0">
-                      Submit
-                    </button>
+                  </form>
+                </div>
+
+                <div className="col-md-4 pe-5">
+                  <div className="row justify-content-end">
+                    <div className="col-md-5">
+                      <div className="row justify-content-end px-3">
+                        <div className="col-md-3">
+                          <button
+                            className="btn btn-md"
+                            onClick={handleModalShow}
+                          >
+                            <svg
+                              width={28}
+                              height={28}
+                              viewBox="0 0 32 32"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                                fill="#8B0203"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+
+
+                      </div>
+                    </div>
+                    {/* <div className="col-md-4">
+                  <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
+                  </div> */}
                   </div>
                 </div>
-              </form>
-            </CollapsibleCard>
 
-            {/* <BOQListTable boqList={boqList} setBoqList={setBoqList} /> */}
+                <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
 
-            {/* boq list table is here  start */}
-            <div className="d-flex justify-content-end me-2">
-              <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
-              {/* <a herf="/create-BOQ">
-              <button className="purple-btn2" >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="white"
-                className="bi bi-plus"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-              </svg>
-              <span> Create BOQ</span>
-            </button>
-            </a> */}
-              <button className="purple-btn2" onClick={handleClick}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  fill="white"
-                  className="bi bi-plus"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                </svg>
-                <span> Create BOQ</span>
-              </button>
-            </div>
-            <div className="mx-3">
-              <div className="tbl-container mt-1">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th className="text-start"> <input className="ms-1 me-1 mb-1" type="checkbox" /></th>
-                      <th className="text-start">Expand</th>
-                      <th className="text-start">Project/Sub-Project</th>
-                      <th className="text-start">BOQ ID</th>
-                      <th className="text-start">Unit</th>
-                      <th className="text-start">Cost Qty</th>
-                      <th className="text-start">Cost Rate</th>
-                      <th className="text-start">Cost Value</th>
-                      <th className="text-start">
+                <button className="purple-btn2" onClick={handleClick}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="white"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span> Create BOQ</span>
+                </button>
+              </div>
+              <div className="mx-3">
+                <div className="tbl-container mt-1">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th className="text-start"> <input className="ms-1 me-1 mb-1" type="checkbox" /></th>
+                        <th className="text-start">Expand</th>
+                        <th className="text-start">Project/Sub-Project</th>
+                        <th className="text-start">BOQ ID</th>
+                        <th className="text-start">Unit</th>
+                        <th className="text-start">Cost Qty</th>
+                        <th className="text-start">Cost Rate</th>
+                        <th className="text-start">Cost Value</th>
+                        <th className="text-start">
 
-                        Status
+                          Status
 
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {boqList && boqList.projects && boqList.projects.map((project, index) => (
-                      <React.Fragment key={project.id}>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {boqList && boqList.projects && boqList.projects.map((project, index) => (
+                        <React.Fragment key={project.id}>
 
-                        <tr>
-                          <td>{index + 1}</td>
-                          <td>
-                            {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-link p-0"
-                              // onClick={handleSubProject}
-                              onClick={() => toggleProject(project.id)}
-                              aria-label="Toggle row visibility"
-                            >
-                              {openProjectId === project.id ?
-                                (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill=" #e0e0e0"
-                                    stroke="black"
-                                    strokeWidth="1"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
+                          <tr>
+                            <td>{index + 1}</td>
+                            <td>
+                              {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                            </td>
+                            <td>
+                              <button
+                                className="btn btn-link p-0"
+                                // onClick={handleSubProject}
+                                onClick={() => toggleProject(project.id)}
+                                aria-label="Toggle row visibility"
+                              >
+                                {openProjectId === project.id ?
+                                  (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill=" #e0e0e0"
+                                      stroke="black"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      {/* Square */}
+                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                      {/* Minus Icon */}
+                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                  ) : (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill=" #e0e0e0"
+                                      stroke="black"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      {/* Square */}
+                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                      {/* Plus Icon */}
+                                      <line x1="12" y1="8" x2="12" y2="16" />
+                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                  )
+                                }
+                              </button>
+                            </td>
+                            <td className="text-start">{project.name}</td>
+                            <td className="text-start"></td>
+                            <td className="text-start"></td>
+                            <td className="text-start"></td>
+                            <td className="text-start"></td>
+                            <td className="text-start"></td>
+
+                          </tr>
+                          {/* subProject  start */}
+
+                          {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
+                            <React.Fragment key={subProject.id}>
+                              <tr>
+                                <td></td>
+                                <td>
+                                  {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                </td>
+
+                                <td>
+                                  <button
+                                    className="btn btn-link p-0"
+
+                                    onClick={() => toggleSubProject(subProject.id)}
+                                    aria-label="Toggle row visibility"
                                   >
-                                    {/* Square */}
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                    {/* Minus Icon */}
-                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                  </svg>
-                                ) : (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill=" #e0e0e0"
-                                    stroke="black"
-                                    strokeWidth="1"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  >
-                                    {/* Square */}
-                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                    {/* Plus Icon */}
-                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                  </svg>
-                                )
-                              }
-                            </button>
-                          </td>
-                          <td className="text-start">{project.name}</td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
+                                    {openSubProjectId === subProject.id ?
+                                      (
 
-                        </tr>
-                        {/* subProject  start */}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                          {/* Square */}
+                                          <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                          {/* Circle */}
+                                          {/* <circle cx="12" cy="12" r="9" /> */}
+                                          {/* Minus Icon (for when toggled) */}
+                                          <line x1="8" y1="12" x2="16" y2="12" />
+                                        </svg>
+                                        //   <svg
+                                        //   xmlns="http://www.w3.org/2000/svg"
+                                        //   width="16"
+                                        //   height="16"
+                                        //   fill="black"
+                                        //   className="bi bi-caret-up"
+                                        //   viewBox="0 0 16 16"
+                                        // >
+                                        //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
 
-                        {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
-                          <React.Fragment key={subProject.id}>
-                            <tr>
-                              <td></td>
-                              <td>
-                                {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                              </td>
+                                        // </svg>
+                                      ) : (
 
-                              <td>
-                                <button
-                                  className="btn btn-link p-0"
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                          {/* Square */}
+                                          <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                          {/* Circle */}
+                                          {/* <circle cx="12" cy="12" r="9" /> */}
+                                          {/* Plus Icon */}
+                                          <line x1="12" y1="8" x2="12" y2="16" />
+                                          <line x1="8" y1="12" x2="16" y2="12" />
+                                        </svg>
 
-                                  onClick={() => toggleSubProject(subProject.id)}
-                                  aria-label="Toggle row visibility"
-                                >
-                                  {openSubProjectId === subProject.id ?
-                                    (
-
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                        {/* Square */}
-                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                        {/* Circle */}
-                                        {/* <circle cx="12" cy="12" r="9" /> */}
-                                        {/* Minus Icon (for when toggled) */}
-                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                      </svg>
-                                      //   <svg
-                                      //   xmlns="http://www.w3.org/2000/svg"
-                                      //   width="16"
-                                      //   height="16"
-                                      //   fill="black"
-                                      //   className="bi bi-caret-up"
-                                      //   viewBox="0 0 16 16"
-                                      // >
-                                      //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-
-                                      // </svg>
-                                    ) : (
-
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                        {/* Square */}
-                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                        {/* Circle */}
-                                        {/* <circle cx="12" cy="12" r="9" /> */}
-                                        {/* Plus Icon */}
-                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                      </svg>
-
-                                      //   <svg
-                                      //   xmlns="http://www.w3.org/2000/svg"
-                                      //   width="16"
-                                      //   height="16"
-                                      //   fill="black"
-                                      //   className="bi bi-caret-up"
-                                      //   viewBox="0 0 16 16"
-                                      // >
-                                      //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                      // </svg>
-                                    )
-                                  }
-                                </button>
-                              </td>
-                              <td className="text-start">{subProject.name}</td>
-                              <td className="text-start"></td>
-                              <td className="text-start"></td>
-                              <td className="text-start"></td>
-                              <td className="text-start"></td>
-                              <td className="text-start"></td>
-                              {/* <td className="text-start">
+                                        //   <svg
+                                        //   xmlns="http://www.w3.org/2000/svg"
+                                        //   width="16"
+                                        //   height="16"
+                                        //   fill="black"
+                                        //   className="bi bi-caret-up"
+                                        //   viewBox="0 0 16 16"
+                                        // >
+                                        //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                        // </svg>
+                                      )
+                                    }
+                                  </button>
+                                </td>
+                                <td className="text-start">{subProject.name}</td>
+                                <td className="text-start"></td>
+                                <td className="text-start"></td>
+                                <td className="text-start"></td>
+                                <td className="text-start"></td>
+                                <td className="text-start"></td>
+                                {/* <td className="text-start">
                                
                               </td> */}
-                              <td></td>
+                                <td></td>
 
-                            </tr>
+                              </tr>
 
-                            {/* Conditional rendering for categories under sub-project start */}
-                            {openSubProjectId === subProject.id && subProject.categories && subProject.categories.length > 0 && (
-                              subProject.categories.map((category) => (
-                                <React.Fragment key={category.id}>
-                                  <tr>
-                                    <td></td>
-                                    <td>
-                                      {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                    </td>
-                                    <td></td>
+                              {/* Conditional rendering for categories under sub-project start */}
+                              {openSubProjectId === subProject.id && subProject.categories && subProject.categories.length > 0 && (
+                                subProject.categories.map((category) => (
+                                  <React.Fragment key={category.id}>
+                                    <tr>
+                                      <td></td>
+                                      <td>
+                                        {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                      </td>
+                                      <td></td>
 
-                                    <td>
-                                      <button
-                                        className="btn btn-link p-0"
-                                        onClick={() => toggleCategory(category.id)}
-                                        aria-label="Toggle category visibility"
-                                      >
-                                        {openCategoryId === category.id ? (
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            fill="black"
-                                            className="bi bi-caret-up"
-                                            viewBox="0 0 16 16"
-                                          >
-                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-
-                                          </svg>
-                                        ) : (
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            fill="black"
-                                            className="bi bi-caret-up"
-                                            viewBox="0 0 16 16"
-                                          >
-                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                          </svg>
-                                        )}
-                                      </button>
-                                      {category.name}
-                                    </td>
-
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-                                    <td className="text-start">
-                                      <div className="d-flex justify-content-center">
-                                        {/* <input className="pe-2" type="checkbox" /> */}
-                                        <img
-                                          data-bs-toggle="modal"
-                                          data-bs-target="#addnewModal"
-                                          className="pe-1"
-                                          src="../Data_Mapping/img/Edit.svg"
-                                          alt=""
-                                        />
-                                        <img
-                                          className="pe-1"
-                                          src="../Data_Mapping/img/Delete_red.svg"
-                                          alt=""
-                                        />
-                                      </div>
-                                    </td>
-                                  </tr>
-
-                                  {/* sub level 2 start */}
-                                  {openCategoryId === category.id && category.sub_categories_2 && category.sub_categories_2.length > 0 && (
-                                    category.sub_categories_2.map((subCategory) => (
-                                      <React.Fragment key={subCategory.id}>
-                                        <tr>
-                                          <td></td>
-                                          <td>
-                                            {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                          </td>
-                                          <td></td>
-
-                                          <td style={{ paddingLeft: '40px' }}>
-                                            <button
-                                              className="btn btn-link p-0"
-                                              onClick={() => toggleSubCategory2(subCategory.id)}
-                                              aria-label="Toggle sub-category 2 visibility"
+                                      <td>
+                                        <button
+                                          className="btn btn-link p-0"
+                                          onClick={() => toggleCategory(category.id)}
+                                          aria-label="Toggle category visibility"
+                                        >
+                                          {openCategoryId === category.id ? (
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="16"
+                                              height="16"
+                                              fill="black"
+                                              className="bi bi-caret-up"
+                                              viewBox="0 0 16 16"
                                             >
-                                              {openSubCategory2Id === subCategory.id ? (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                  <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                </svg>
-                                              ) : (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="16"
-                                                  height="16"
-                                                  fill="black"
-                                                  className="bi bi-caret-up"
-                                                  viewBox="0 0 16 16"
-                                                >
-                                                  <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                </svg>
-                                              )}
-                                            </button>
-                                            {subCategory.name}
-                                          </td>
+                                              <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
 
-                                          <td className="text-start"></td>
-                                          <td className="text-start"></td>
-                                          <td className="text-start"></td>
-                                          <td className="text-start"></td>
-                                          <td className="text-start"></td>
-                                          <td className="text-start">
-                                            <div className="d-flex justify-content-center">
-                                              {/* <input className="pe-2" type="checkbox" /> */}
-                                              <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                              <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                            </div>
-                                          </td>
-                                        </tr>
+                                            </svg>
+                                          ) : (
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width="16"
+                                              height="16"
+                                              fill="black"
+                                              className="bi bi-caret-up"
+                                              viewBox="0 0 16 16"
+                                            >
+                                              <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                            </svg>
+                                          )}
+                                        </button>
+                                        {category.name}
+                                      </td>
 
+                                      <td className="text-start"></td>
+                                      <td className="text-start"></td>
+                                      <td className="text-start"></td>
+                                      <td className="text-start"></td>
+                                      <td className="text-start"></td>
+                                      <td className="text-start">
+                                        <div className="d-flex justify-content-center">
+                                          {/* <input className="pe-2" type="checkbox" /> */}
+                                          <img
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#addnewModal"
+                                            className="pe-1"
+                                            src="../Data_Mapping/img/Edit.svg"
+                                            alt=""
+                                          />
+                                          <img
+                                            className="pe-1"
+                                            src="../Data_Mapping/img/Delete_red.svg"
+                                            alt=""
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
 
-                                        {openSubCategory2Id === subCategory.id && subCategory.boq_details && subCategory.boq_details.length > 0 && (
-                                          subCategory.boq_details.map((boqDetail2) => (
-                                            <React.Fragment key={boqDetail2.id}>
-                                              <tr>
-                                                <td></td>
-                                                <td>
-                                                  {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                  <input
-                                                    className="ms-1 me-1 mb-1"
-                                                    type="checkbox"
-                                                    checked={selectedBoqDetails.includes(boqDetail2.id)} // Check if this ID is selected
-                                                    onChange={() => handleCheckboxChange(boqDetail2.id)} // Handle checkbox change
-                                                  />
-                                                </td>
-                                                <td></td>
+                                    {/* sub level 2 start */}
+                                    {openCategoryId === category.id && category.sub_categories_2 && category.sub_categories_2.length > 0 && (
+                                      category.sub_categories_2.map((subCategory) => (
+                                        <React.Fragment key={subCategory.id}>
+                                          <tr>
+                                            <td></td>
+                                            <td>
+                                              {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                            </td>
+                                            <td></td>
 
-                                                <td style={{ paddingLeft: '80px' }}>
-                                                  <button
-                                                    className="btn btn-link p-0"
-                                                    onClick={() => toggleBoqDetail(boqDetail2.id)}
-                                                    aria-label="Toggle BOQ detail visibility"
+                                            <td style={{ paddingLeft: '40px' }}>
+                                              <button
+                                                className="btn btn-link p-0"
+                                                onClick={() => toggleSubCategory2(subCategory.id)}
+                                                aria-label="Toggle sub-category 2 visibility"
+                                              >
+                                                {openSubCategory2Id === subCategory.id ? (
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                    <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                  </svg>
+                                                ) : (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="black"
+                                                    className="bi bi-caret-up"
+                                                    viewBox="0 0 16 16"
                                                   >
-                                                    {openBoqDetailId === boqDetail2.id ? (
-                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                        <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                      </svg>
-                                                    ) : (
-                                                      <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        fill="black"
-                                                        className="bi bi-caret-up"
-                                                        viewBox="0 0 16 16"
-                                                      >
-                                                        <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                      </svg>
-                                                    )}
-                                                  </button>
-                                                  {boqDetail2.item_name}
-                                                </td>
+                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                  </svg>
+                                                )}
+                                              </button>
+                                              {subCategory.name}
+                                            </td>
 
-                                                <td className="text-start">
-
-                                                  <Link to={`/boq-details-page-master/${boqDetail2.id}`}>
-                                                    <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail2.id}</span>
-                                                  </Link>
-                                                </td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start">
-                                                  <div className="d-flex justify-content-center">
-                                                    {/* <input className="pe-2" type="checkbox" /> */}
-                                                    <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                    <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                    {boqDetail2.status}
-                                                  </div>
-                                                </td>
-                                              </tr>
+                                            <td className="text-start"></td>
+                                            <td className="text-start"></td>
+                                            <td className="text-start"></td>
+                                            <td className="text-start"></td>
+                                            <td className="text-start"></td>
+                                            <td className="text-start">
+                                              <div className="d-flex justify-content-center">
+                                                {/* <input className="pe-2" type="checkbox" /> */}
+                                                <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                              </div>
+                                            </td>
+                                          </tr>
 
 
-                                              {/* Render Materials Table for BOQ Detail in Sub-Category  */}
-                                              {/* sub start  */}
+                                          {openSubCategory2Id === subCategory.id && subCategory.boq_details && subCategory.boq_details.length > 0 && (
+                                            subCategory.boq_details.map((boqDetail2) => (
+                                              <React.Fragment key={boqDetail2.id}>
+                                                <tr>
+                                                  <td></td>
+                                                  <td>
+                                                    {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                    <input
+                                                      className="ms-1 me-1 mb-1"
+                                                      type="checkbox"
+                                                      checked={selectedBoqDetails.includes(boqDetail2.id)} // Check if this ID is selected
+                                                      onChange={() => handleCheckboxChange(boqDetail2.id)} // Handle checkbox change
+                                                    />
+                                                  </td>
+                                                  <td></td>
 
-
-
-
-                                              {/* Render Materials Table for BOQ Detail in Sub-Category */}
-                                              {openBoqDetailId === boqDetail2.id && (
-                                                <React.Fragment>
-                                                  <tr>
-                                                    <td colSpan={13}>
-                                                      <div className="m-3">
-                                                        {/* Check if BOQ Sub Items are present */}
-                                                        {boqDetail2?.boq_sub_items && boqDetail2.boq_sub_items.length > 0 ? (
-                                                          <div className="tbl-container mt-1">
-                                                            <table className="w-100">
-                                                              <thead>
-                                                                <tr colSpan={13}>
-                                                                  <th className="text-start">Sr.No.</th>
-                                                                  <th className="text-start">Expand</th>
-                                                                  <th className="text-start">Sub Item Name</th>
-                                                                  <th className="text-start">Description</th>
-                                                                  <th className="text-start">Notes</th>
-                                                                  <th className="text-start">Remarks</th>
-                                                                  <th className="text-start">UOM</th>
-                                                                  <th className="text-start">Quantity</th>
-                                                                </tr>
-                                                              </thead>
-                                                              <tbody>
-                                                                {boqDetail2.boq_sub_items.map((boqSubItem, index) => (
-                                                                  <React.Fragment key={boqSubItem.id}>
-                                                                    <tr>
-                                                                      <td className="text-start">{index + 1}</td>
-                                                                      <td className="text-start">
-                                                                        <button
-                                                                          className="btn btn-link p-0"
-                                                                          onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
-                                                                        >
-                                                                          {openBoqDetailIdSub === boqSubItem.id ? (
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                              <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                              <line x1="8" y1="12" x2="16" y2="12" />
-                                                                            </svg>
-                                                                          ) : (
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                              <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                              <line x1="12" y1="8" x2="12" y2="16" />
-                                                                              <line x1="8" y1="12" x2="16" y2="12" />
-                                                                            </svg>
-                                                                          )}
-                                                                        </button>
-                                                                      </td>
-                                                                      <td className="text-start">{boqSubItem.name}</td>
-                                                                      <td className="text-start">{boqSubItem.description}</td>
-                                                                      <td className="text-start">{boqSubItem.notes}</td>
-                                                                      <td className="text-start">{boqSubItem.remarks}</td>
-                                                                      <td className="text-start">{boqSubItem.uom}</td>
-                                                                      <td className="text-start">{boqSubItem.cost_quantity}</td>
-                                                                    </tr>
-
-                                                                    {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
-                                                                    {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
-                                                                      <React.Fragment>
-                                                                        <tr>
-                                                                          <td colSpan={13}>
-                                                                            <div>
-                                                                              <CollapsibleCard title="Materials">
-                                                                                <div className="card-body mt-0 pt-0">
-                                                                                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                                    <table className="w-100">
-                                                                                      <thead>
-                                                                                        <tr>
-                                                                                          <th rowSpan={2}>Sr.No</th>
-                                                                                          <th rowSpan={2}>Material Type</th>
-                                                                                          <th rowSpan={2}>Material</th>
-                                                                                          <th rowSpan={2}>Material Sub-Type</th>
-                                                                                          <th rowSpan={2}>Generic Specification</th>
-                                                                                          <th rowSpan={2}>Colour</th>
-                                                                                          <th rowSpan={2}>Brand</th>
-                                                                                          <th rowSpan={2}>UOM</th>
-                                                                                          <th colSpan={3}>Cost</th>
-                                                                                          <th rowSpan={2}>Wastage</th>
-                                                                                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                                                        </tr>
-                                                                                        <tr>
-                                                                                          <th>Co-Efficient Factor</th>
-                                                                                          <th colSpan={2}>Estimated Qty</th>
-                                                                                        </tr>
-                                                                                      </thead>
-                                                                                      <tbody>
-                                                                                        {boqSubItem?.materials?.map((material, index) => (
-                                                                                          <tr key={material.id}>
-                                                                                            <td>{index + 1}</td>
-                                                                                            <td>{material.material_type}</td>
-                                                                                            <td>{material.material_name}</td>
-                                                                                            <td>{material.material_sub_type}</td>
-                                                                                            <td>{material.generic_info}</td>
-                                                                                            <td>{material.color}</td>
-                                                                                            <td>{material.brand}</td>
-                                                                                            <td>{material.uom}</td>
-                                                                                            <td>{material.co_efficient_factor}</td>
-                                                                                            <td colSpan={2}>{material.estimated_quantity}</td>
-                                                                                            <td>{material.wastage}</td>
-                                                                                            <td>{material.estimated_quantity_wastage}</td>
-                                                                                          </tr>
-                                                                                        ))}
-                                                                                      </tbody>
-                                                                                    </table>
-                                                                                  </div>
-                                                                                </div>
-                                                                              </CollapsibleCard>
-
-                                                                              <CollapsibleCard title="Assets">
-                                                                                <div className="card-body mt-0 pt-0">
-                                                                                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                                    <table className="w-100">
-                                                                                      <thead>
-                                                                                        <tr>
-                                                                                          <th rowSpan={2}>Sr.No</th>
-                                                                                          <th rowSpan={2}>Asset Type</th>
-                                                                                          <th rowSpan={2}>Asset</th>
-                                                                                          <th rowSpan={2}>Asset Sub-Type</th>
-                                                                                          <th rowSpan={2}>Generic Specification</th>
-                                                                                          <th rowSpan={2}>Colour</th>
-                                                                                          <th rowSpan={2}>Brand</th>
-                                                                                          <th rowSpan={2}>UOM</th>
-                                                                                          <th colSpan={3}>Cost</th>
-                                                                                          <th rowSpan={2}>Wastage</th>
-                                                                                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                                                        </tr>
-                                                                                        <tr>
-                                                                                          <th>Co-Efficient Factor</th>
-                                                                                          <th colSpan={2}>Estimated Qty</th>
-                                                                                        </tr>
-                                                                                      </thead>
-                                                                                      <tbody>
-                                                                                        {boqSubItem.assets?.map((asset, index) => (
-                                                                                          <tr key={asset.id}>
-                                                                                            <td>{index + 1}</td>
-                                                                                            <td>{asset.material_type}</td>
-                                                                                            <td>{asset.material_name}</td>
-                                                                                            <td>{asset.material_sub_type}</td>
-                                                                                            <td>{asset.generic_info}</td>
-                                                                                            <td>{asset.color}</td>
-                                                                                            <td>{asset.brand}</td>
-                                                                                            <td>{asset.uom}</td>
-                                                                                            <td>{asset.co_efficient_factor}</td>
-                                                                                            <td colSpan={2}>{asset.estimated_quantity}</td>
-                                                                                            <td>{asset.wastage}</td>
-                                                                                            <td>{asset.estimated_quantity_wastage}</td>
-                                                                                          </tr>
-                                                                                        ))}
-                                                                                      </tbody>
-                                                                                    </table>
-                                                                                  </div>
-                                                                                </div>
-                                                                              </CollapsibleCard>
-                                                                            </div>
-                                                                          </td>
-                                                                        </tr>
-                                                                      </React.Fragment>
-                                                                    )}
-                                                                  </React.Fragment>
-                                                                ))}
-                                                              </tbody>
-                                                            </table>
-                                                          </div>
-                                                        ) : (
-                                                          <div>
-                                                            {/* Render Materials and Assets Card when no Sub Items */}
-                                                            <CollapsibleCard title="Materials">
-                                                              <div className="card-body mt-0 pt-0">
-                                                                <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                  <table className="w-100">
-                                                                    <thead>
-                                                                      <tr>
-                                                                        <th rowSpan={2}>Sr.No</th>
-                                                                        <th rowSpan={2}>Material Type</th>
-                                                                        <th rowSpan={2}>Material</th>
-                                                                        <th rowSpan={2}>Material Sub-Type</th>
-                                                                        <th rowSpan={2}>Generic Specification</th>
-                                                                        <th rowSpan={2}>Colour</th>
-                                                                        <th rowSpan={2}>Brand</th>
-                                                                        <th rowSpan={2}>UOM</th>
-                                                                        <th colSpan={3}>Cost</th>
-                                                                        <th rowSpan={2}>Wastage</th>
-                                                                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                                      </tr>
-                                                                      <tr>
-                                                                        <th>Co-Efficient Factor</th>
-                                                                        <th colSpan={2}>Estimated Qty</th>
-                                                                      </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                      {boqDetail2?.materials?.map((material, index) => (
-                                                                        <tr key={material.id}>
-                                                                          <td>{index + 1}</td>
-                                                                          <td>{material.material_type}</td>
-                                                                          <td>{material.material_name}</td>
-                                                                          <td>{material.material_sub_type}</td>
-                                                                          <td>{material.generic_info}</td>
-                                                                          <td>{material.color}</td>
-                                                                          <td>{material.brand}</td>
-                                                                          <td>{material.uom}</td>
-                                                                          <td>{material.co_efficient_factor}</td>
-                                                                          <td colSpan={2}>{material.estimated_quantity}</td>
-                                                                          <td>{material.wastage}</td>
-                                                                          <td>{material.estimated_quantity_wastage}</td>
-                                                                        </tr>
-                                                                      ))}
-                                                                    </tbody>
-                                                                  </table>
-                                                                </div>
-                                                              </div>
-                                                            </CollapsibleCard>
-
-                                                            <CollapsibleCard title="Assets">
-                                                              <div className="card-body mt-0 pt-0">
-                                                                <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                                                  <table className="w-100">
-                                                                    <thead>
-                                                                      <tr>
-                                                                        <th rowSpan={2}>Sr.No</th>
-                                                                        <th rowSpan={2}>Asset Type</th>
-                                                                        <th rowSpan={2}>Asset</th>
-                                                                        <th rowSpan={2}>Asset Sub-Type</th>
-                                                                        <th rowSpan={2}>Generic Specification</th>
-                                                                        <th rowSpan={2}>Colour</th>
-                                                                        <th rowSpan={2}>Brand</th>
-                                                                        <th rowSpan={2}>UOM</th>
-                                                                        <th colSpan={3}>Cost</th>
-                                                                        <th rowSpan={2}>Wastage</th>
-                                                                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                                                      </tr>
-                                                                      <tr>
-                                                                        <th>Co-Efficient Factor</th>
-                                                                        <th colSpan={2}>Estimated Qty</th>
-                                                                      </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                      {boqDetail2?.assets?.map((asset, index) => (
-                                                                        <tr key={asset.id}>
-                                                                          <td>{index + 1}</td>
-                                                                          <td>{asset.material_type}</td>
-                                                                          <td>{asset.material_name}</td>
-                                                                          <td>{asset.material_sub_type}</td>
-                                                                          <td>{asset.generic_info}</td>
-                                                                          <td>{asset.color}</td>
-                                                                          <td>{asset.brand}</td>
-                                                                          <td>{asset.uom}</td>
-                                                                          <td>{asset.co_efficient_factor}</td>
-                                                                          <td colSpan={2}>{asset.estimated_quantity}</td>
-                                                                          <td>{asset.wastage}</td>
-                                                                          <td>{asset.estimated_quantity_wastage}</td>
-                                                                        </tr>
-                                                                      ))}
-                                                                    </tbody>
-                                                                  </table>
-                                                                </div>
-                                                              </div>
-                                                            </CollapsibleCard>
-                                                          </div>
-                                                        )}
-                                                      </div>
-                                                    </td>
-                                                  </tr>
-                                                </React.Fragment>
-                                              )}
-                                              {/* Render Materials Table for BOQ Detail in Sub-Category */}
-
-
-
-
-
-                                            </React.Fragment>
-                                          ))
-                                        )}
-
-                                        {/* ................. */}
-
-
-                                        {/* Render Sub-Category 3 for each Sub-Category 2 */}
-                                        {openSubCategory2Id === subCategory.id && subCategory.sub_categories_3 && subCategory.sub_categories_3.length > 0 && (
-                                          subCategory.sub_categories_3.map((subCategory3) => (
-                                            <React.Fragment key={subCategory3.id}>
-                                              <tr>
-                                                <td></td>
-                                                <td>
-                                                  {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                </td>
-                                                <td></td>
-                                                <td style={{ paddingLeft: '60px' }}>
-                                                  <button
-                                                    className="btn btn-link p-0"
-                                                    onClick={() => toggleSubCategory3(subCategory3.id)}
-                                                    aria-label="Toggle sub-category 3 visibility"
-                                                  >
-                                                    {openSubCategory3Id === subCategory3.id ? (
-                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                        <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                      </svg>
-                                                    ) : (
-                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                        <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                      </svg>
-                                                    )}
-                                                  </button>
-                                                  {subCategory3.name}
-                                                </td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start"></td>
-                                                <td className="text-start">
-                                                  <div className="d-flex justify-content-center">
-                                                    {/* <input className="pe-2" type="checkbox" /> */}
-                                                    <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                    <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                  </div>
-                                                </td>
-                                              </tr>
-
-                                              {/* Render BOQ Details for Sub-Category 3 */}
-                                              {openSubCategory3Id === subCategory3.id && subCategory3.boq_details && subCategory3.boq_details.length > 0 && (
-                                                subCategory3.boq_details.map((boqDetail3) => (
-                                                  <React.Fragment key={boqDetail3.id}>
-                                                    <tr>
-                                                      {console.log("sub3:", subCategory3)}
-                                                      <td></td>
-                                                      <td>
-                                                        {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                        <input
-                                                          className="ms-1 me-1 mb-1"
-                                                          type="checkbox"
-                                                          checked={selectedBoqDetails.includes(boqDetail3.id)} // Check if this ID is selected
-                                                          onChange={() => handleCheckboxChange(boqDetail3.id)} // Handle checkbox change
-                                                        />
-                                                      </td>
-                                                      <td></td>
-                                                      <td style={{ paddingLeft: '80px' }}>
-                                                        <button
-                                                          className="btn btn-link p-0"
-                                                          onClick={() => toggleBoqDetail1(boqDetail3.id)}
-                                                          aria-label="Toggle BOQ detail visibility"
+                                                  <td style={{ paddingLeft: '80px' }}>
+                                                    <button
+                                                      className="btn btn-link p-0"
+                                                      onClick={() => toggleBoqDetail(boqDetail2.id)}
+                                                      aria-label="Toggle BOQ detail visibility"
+                                                    >
+                                                      {openBoqDetailId === boqDetail2.id ? (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                          <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                        </svg>
+                                                      ) : (
+                                                        <svg
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                          width="16"
+                                                          height="16"
+                                                          fill="black"
+                                                          className="bi bi-caret-up"
+                                                          viewBox="0 0 16 16"
                                                         >
-                                                          {openBoqDetailId1 === boqDetail3.id ? (
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                              <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                            </svg>
-                                                          ) : (
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                              <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                            </svg>
-                                                          )}
-                                                        </button>
-                                                        {boqDetail3.item_name}
-                                                      </td>
-                                                      <td className="text-start" >
-                                                        <Link to={`/boq-details-page-master/${boqDetail3.id}`}>
-                                                          <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail3.id}</span>
-                                                        </Link>
-                                                      </td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start">
-                                                        <div className="d-flex justify-content-center">
-                                                          {/* <input className="pe-2" type="checkbox" /> */}
-                                                          <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                          <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                          {boqDetail3.status}
-                                                        </div>
-                                                      </td>
-                                                    </tr>
+                                                          <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                        </svg>
+                                                      )}
+                                                    </button>
+                                                    {boqDetail2.item_name}
+                                                  </td>
 
-                                                    {/* Render Materials Table for BOQ Detail in Sub-Category 3 */}
+                                                  <td className="text-start">
+
+                                                    <Link to={`/boq-details-page-master/${boqDetail2.id}`}>
+                                                      <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail2.id}</span>
+                                                    </Link>
+                                                  </td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start">
+                                                    <div className="d-flex justify-content-center">
+                                                      {/* <input className="pe-2" type="checkbox" /> */}
+                                                      <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                      <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                      {boqDetail2.status}
+                                                    </div>
+                                                  </td>
+                                                </tr>
 
 
-       {/* Render Materials Table for BOQ Detail in Sub-Category */}
-       {openBoqDetailId1 === boqDetail3.id && (
-  <React.Fragment>
-    <tr>
-      <td colSpan={13}>
-        <div className="m-3">
-          {/* Check if BOQ Sub Items are present */}
-          {boqDetail3?.boq_sub_items && boqDetail3.boq_sub_items.length > 0 ? (
-            <div className="tbl-container mt-1">
-              <table className="w-100">
-                <thead>
-                  <tr colSpan={13}>
-                    <th className="text-start">Sr.No.</th>
-                    <th className="text-start">Expand</th>
-                    <th className="text-start">Sub Item Name</th>
-                    <th className="text-start">Description</th>
-                    <th className="text-start">Notes</th>
-                    <th className="text-start">Remarks</th>
-                    <th className="text-start">UOM</th>
-                    <th className="text-start">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boqDetail3.boq_sub_items.map((boqSubItem, index) => (
-                    <React.Fragment key={boqSubItem.id}>
-                      <tr>
-                        <td className="text-start">{index + 1}</td>
-                        <td className="text-start">
-                          <button
-                            className="btn btn-link p-0"
-                            onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
-                          >
-                            {openBoqDetailIdSub === boqSubItem.id ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            ) : (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="12" y1="8" x2="12" y2="16" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="text-start">{boqSubItem.name}</td>
-                        <td className="text-start">{boqSubItem.description}</td>
-                        <td className="text-start">{boqSubItem.notes}</td>
-                        <td className="text-start">{boqSubItem.remarks}</td>
-                        <td className="text-start">{boqSubItem.uom}</td>
-                        <td className="text-start">{boqSubItem.cost_quantity}</td>
-                      </tr>
-
-                      {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
-                      {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
-                        <React.Fragment>
-                          <tr>
-                            <td colSpan={13}>
-                              <div>
-                                <CollapsibleCard title="Materials">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Material Type</th>
-                                            <th rowSpan={2}>Material</th>
-                                            <th rowSpan={2}>Material Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem?.materials?.map((material, index) => (
-                                            <tr key={material.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{material.material_type}</td>
-                                              <td>{material.material_name}</td>
-                                              <td>{material.material_sub_type}</td>
-                                              <td>{material.generic_info}</td>
-                                              <td>{material.color}</td>
-                                              <td>{material.brand}</td>
-                                              <td>{material.uom}</td>
-                                              <td>{material.co_efficient_factor}</td>
-                                              <td colSpan={2}>{material.estimated_quantity}</td>
-                                              <td>{material.wastage}</td>
-                                              <td>{material.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-
-                                <CollapsibleCard title="Assets">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Asset Type</th>
-                                            <th rowSpan={2}>Asset</th>
-                                            <th rowSpan={2}>Asset Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem.assets?.map((asset, index) => (
-                                            <tr key={asset.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{asset.material_type}</td>
-                                              <td>{asset.material_name}</td>
-                                              <td>{asset.material_sub_type}</td>
-                                              <td>{asset.generic_info}</td>
-                                              <td>{asset.color}</td>
-                                              <td>{asset.brand}</td>
-                                              <td>{asset.uom}</td>
-                                              <td>{asset.co_efficient_factor}</td>
-                                              <td colSpan={2}>{asset.estimated_quantity}</td>
-                                              <td>{asset.wastage}</td>
-                                              <td>{asset.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-                              </div>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div>
-              {/* Render Materials and Assets Card when no Sub Items */}
-              <CollapsibleCard title="Materials">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Material Type</th>
-                          <th rowSpan={2}>Material</th>
-                          <th rowSpan={2}>Material Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail3?.materials?.map((material, index) => (
-                          <tr key={material.id}>
-                            <td>{index + 1}</td>
-                            <td>{material.material_type}</td>
-                            <td>{material.material_name}</td>
-                            <td>{material.material_sub_type}</td>
-                            <td>{material.generic_info}</td>
-                            <td>{material.color}</td>
-                            <td>{material.brand}</td>
-                            <td>{material.uom}</td>
-                            <td>{material.co_efficient_factor}</td>
-                            <td colSpan={2}>{material.estimated_quantity}</td>
-                            <td>{material.wastage}</td>
-                            <td>{material.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-
-              <CollapsibleCard title="Assets">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Asset Type</th>
-                          <th rowSpan={2}>Asset</th>
-                          <th rowSpan={2}>Asset Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail3?.assets?.map((asset, index) => (
-                          <tr key={asset.id}>
-                            <td>{index + 1}</td>
-                            <td>{asset.material_type}</td>
-                            <td>{asset.material_name}</td>
-                            <td>{asset.material_sub_type}</td>
-                            <td>{asset.generic_info}</td>
-                            <td>{asset.color}</td>
-                            <td>{asset.brand}</td>
-                            <td>{asset.uom}</td>
-                            <td>{asset.co_efficient_factor}</td>
-                            <td colSpan={2}>{asset.estimated_quantity}</td>
-                            <td>{asset.wastage}</td>
-                            <td>{asset.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  </React.Fragment>
-)}
+                                                {/* Render Materials Table for BOQ Detail in Sub-Category  */}
+                                                {/* sub start  */}
 
 
 
 
-                                                   
-                                                  </React.Fragment>
-                                                ))
-                                              )}
-
-
-                                              {/* level4 start */}
-
-                                              {/* Render Sub-Category 4 for each Sub-Category 3*/}
-                                              {openSubCategory3Id === subCategory3.id && subCategory3.sub_categories_4 && subCategory3.sub_categories_4.length > 0 && (
-                                                subCategory3.sub_categories_4.map((subCategory4) => (
-                                                  <React.Fragment key={subCategory4.id}>
+                                                {/* Render Materials Table for BOQ Detail in Sub-Category */}
+                                                {openBoqDetailId === boqDetail2.id && (
+                                                  <React.Fragment>
                                                     <tr>
-                                                      <td></td>
-                                                      <td>
-                                                        {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                      </td>
-                                                      <td></td>
-                                                      <td style={{ paddingLeft: '80px' }}>
-                                                        <button
-                                                          className="btn btn-link p-0"
-                                                          onClick={() => toggleSubCategory4(subCategory4.id)}
-                                                          aria-label="Toggle sub-category 3 visibility"
-                                                        >
-                                                          {openSubCategory4Id === subCategory4.id ? (
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                              <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                            </svg>
-                                                          ) : (
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                              <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                            </svg>
-                                                          )}
-                                                        </button>
-                                                        {subCategory4.name}
-                                                      </td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start"></td>
-                                                      <td className="text-start">
-                                                        <div className="d-flex justify-content-center">
-                                                          {/* <input className="pe-2" type="checkbox" /> */}
-                                                          <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                          <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                        </div>
-                                                      </td>
-                                                    </tr>
+                                                      <td colSpan={13}>
+                                                        <div className="m-3">
+                                                          {/* Check if BOQ Sub Items are present */}
+                                                          {boqDetail2?.boq_sub_items && boqDetail2.boq_sub_items.length > 0 ? (
+                                                            <div className="tbl-container mt-1">
+                                                              <table className="w-100">
+                                                                <thead>
+                                                                  <tr colSpan={13}>
+                                                                    <th className="text-start">Sr.No.</th>
+                                                                    <th className="text-start">Expand</th>
+                                                                    <th className="text-start">Sub Item Name</th>
+                                                                    <th className="text-start">Description</th>
+                                                                    <th className="text-start">Notes</th>
+                                                                    <th className="text-start">Remarks</th>
+                                                                    <th className="text-start">UOM</th>
+                                                                    <th className="text-start">Quantity</th>
+                                                                  </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                  {boqDetail2.boq_sub_items.map((boqSubItem, index) => (
+                                                                    <React.Fragment key={boqSubItem.id}>
+                                                                      <tr>
+                                                                        <td className="text-start">{index + 1}</td>
+                                                                        <td className="text-start">
+                                                                          <button
+                                                                            className="btn btn-link p-0"
+                                                                            onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
+                                                                          >
+                                                                            {openBoqDetailIdSub === boqSubItem.id ? (
+                                                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                              </svg>
+                                                                            ) : (
+                                                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                              </svg>
+                                                                            )}
+                                                                          </button>
+                                                                        </td>
+                                                                        <td className="text-start">{boqSubItem.name}</td>
+                                                                        <td className="text-start">{boqSubItem.description}</td>
+                                                                        <td className="text-start">{boqSubItem.notes}</td>
+                                                                        <td className="text-start">{boqSubItem.remarks}</td>
+                                                                        <td className="text-start">{boqSubItem.uom}</td>
+                                                                        <td className="text-start">{boqSubItem.cost_quantity}</td>
+                                                                      </tr>
 
-                                                    {/* Render BOQ Details for Sub-Category 4 */}
-                                                    {openSubCategory4Id === subCategory4.id && subCategory4.boq_details && subCategory4.boq_details.length > 0 && (
-                                                      subCategory4.boq_details.map((boqDetail4) => (
-                                                        <React.Fragment key={boqDetail4.id}>
-                                                          <tr>
-                                                            {console.log("sub4:", subCategory4)}
-                                                            <td></td>
-                                                            <td>
-                                                              {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                              <input
-                                                                className="ms-1 me-1 mb-1"
-                                                                type="checkbox"
-                                                                checked={selectedBoqDetails.includes(boqDetail4.id)} // Check if this ID is selected
-                                                                onChange={() => handleCheckboxChange(boqDetail4.id)} // Handle checkbox change
-                                                              />
-                                                            </td>
-                                                            <td></td>
-                                                            <td style={{ paddingLeft: '100px' }}>
-                                                              <button
-                                                                className="btn btn-link p-0"
-                                                                onClick={() => toggleBoqDetail2(boqDetail4.id)}
-                                                                aria-label="Toggle BOQ detail visibility"
-                                                              >
-                                                                {openBoqDetailId2 === boqDetail4.id ? (
-                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                    <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                  </svg>
-                                                                ) : (
-                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                  </svg>
-                                                                )}
-                                                              </button>
-                                                              {boqDetail4.item_name}
-                                                            </td>
-                                                            <td className="text-start" >
-                                                              <Link to={`/boq-details-page-master/${boqDetail4.id}`}>
-                                                                <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail4.id}</span>
-                                                              </Link>
-                                                            </td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start">
-                                                              <div className="d-flex justify-content-center">
-                                                                {/* <input className="pe-2" type="checkbox" /> */}
-                                                                <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                                <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                                {boqDetail4.status}
-                                                              </div>
-                                                            </td>
-                                                          </tr>
+                                                                      {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
+                                                                      {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
+                                                                        <React.Fragment>
+                                                                          <tr>
+                                                                            <td colSpan={13}>
+                                                                              <div>
+                                                                                <CollapsibleCard title="Materials">
+                                                                                  <div className="card-body mt-0 pt-0">
+                                                                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                      <table className="w-100">
+                                                                                        <thead>
+                                                                                          <tr>
+                                                                                            <th rowSpan={2}>Sr.No</th>
+                                                                                            <th rowSpan={2}>Material Type</th>
+                                                                                            <th rowSpan={2}>Material</th>
+                                                                                            <th rowSpan={2}>Material Sub-Type</th>
+                                                                                            <th rowSpan={2}>Generic Specification</th>
+                                                                                            <th rowSpan={2}>Colour</th>
+                                                                                            <th rowSpan={2}>Brand</th>
+                                                                                            <th rowSpan={2}>UOM</th>
+                                                                                            <th colSpan={3}>Cost</th>
+                                                                                            <th rowSpan={2}>Wastage</th>
+                                                                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                          </tr>
+                                                                                          <tr>
+                                                                                            <th>Co-Efficient Factor</th>
+                                                                                            <th colSpan={2}>Estimated Qty</th>
+                                                                                          </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                          {boqSubItem?.materials?.map((material, index) => (
+                                                                                            <tr key={material.id}>
+                                                                                              <td>{index + 1}</td>
+                                                                                              <td>{material.material_type}</td>
+                                                                                              <td>{material.material_name}</td>
+                                                                                              <td>{material.material_sub_type}</td>
+                                                                                              <td>{material.generic_info}</td>
+                                                                                              <td>{material.color}</td>
+                                                                                              <td>{material.brand}</td>
+                                                                                              <td>{material.uom}</td>
+                                                                                              <td>{material.co_efficient_factor}</td>
+                                                                                              <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                              <td>{material.wastage}</td>
+                                                                                              <td>{material.estimated_quantity_wastage}</td>
+                                                                                            </tr>
+                                                                                          ))}
+                                                                                        </tbody>
+                                                                                      </table>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </CollapsibleCard>
 
-                                                          {/* Render Materials Table for BOQ Detail in Sub-Category 4 */}
- {/* Render Materials Table for BOQ Detail in Sub-Category */}
- {openBoqDetailId2 === boqDetail4.id && (
-  <React.Fragment>
-    <tr>
-      <td colSpan={13}>
-        <div className="m-3">
-          {/* Check if BOQ Sub Items are present */}
-          {boqDetail4?.boq_sub_items && boqDetail4.boq_sub_items.length > 0 ? (
-            <div className="tbl-container mt-1">
-              <table className="w-100">
-                <thead>
-                  <tr colSpan={13}>
-                    <th className="text-start">Sr.No.</th>
-                    <th className="text-start">Expand</th>
-                    <th className="text-start">Sub Item Name</th>
-                    <th className="text-start">Description</th>
-                    <th className="text-start">Notes</th>
-                    <th className="text-start">Remarks</th>
-                    <th className="text-start">UOM</th>
-                    <th className="text-start">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boqDetail4.boq_sub_items.map((boqSubItem, index) => (
-                    <React.Fragment key={boqSubItem.id}>
-                      <tr>
-                        <td className="text-start">{index + 1}</td>
-                        <td className="text-start">
-                          <button
-                            className="btn btn-link p-0"
-                            onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
-                          >
-                            {openBoqDetailIdSub === boqSubItem.id ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            ) : (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="12" y1="8" x2="12" y2="16" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="text-start">{boqSubItem.name}</td>
-                        <td className="text-start">{boqSubItem.description}</td>
-                        <td className="text-start">{boqSubItem.notes}</td>
-                        <td className="text-start">{boqSubItem.remarks}</td>
-                        <td className="text-start">{boqSubItem.uom}</td>
-                        <td className="text-start">{boqSubItem.cost_quantity}</td>
-                      </tr>
-
-                      {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
-                      {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
-                        <React.Fragment>
-                          <tr>
-                            <td colSpan={13}>
-                              <div>
-                                <CollapsibleCard title="Materials">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Material Type</th>
-                                            <th rowSpan={2}>Material</th>
-                                            <th rowSpan={2}>Material Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem?.materials?.map((material, index) => (
-                                            <tr key={material.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{material.material_type}</td>
-                                              <td>{material.material_name}</td>
-                                              <td>{material.material_sub_type}</td>
-                                              <td>{material.generic_info}</td>
-                                              <td>{material.color}</td>
-                                              <td>{material.brand}</td>
-                                              <td>{material.uom}</td>
-                                              <td>{material.co_efficient_factor}</td>
-                                              <td colSpan={2}>{material.estimated_quantity}</td>
-                                              <td>{material.wastage}</td>
-                                              <td>{material.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-
-                                <CollapsibleCard title="Assets">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Asset Type</th>
-                                            <th rowSpan={2}>Asset</th>
-                                            <th rowSpan={2}>Asset Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem.assets?.map((asset, index) => (
-                                            <tr key={asset.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{asset.material_type}</td>
-                                              <td>{asset.material_name}</td>
-                                              <td>{asset.material_sub_type}</td>
-                                              <td>{asset.generic_info}</td>
-                                              <td>{asset.color}</td>
-                                              <td>{asset.brand}</td>
-                                              <td>{asset.uom}</td>
-                                              <td>{asset.co_efficient_factor}</td>
-                                              <td colSpan={2}>{asset.estimated_quantity}</td>
-                                              <td>{asset.wastage}</td>
-                                              <td>{asset.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-                              </div>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div>
-              {/* Render Materials and Assets Card when no Sub Items */}
-              <CollapsibleCard title="Materials">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Material Type</th>
-                          <th rowSpan={2}>Material</th>
-                          <th rowSpan={2}>Material Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail4?.materials?.map((material, index) => (
-                          <tr key={material.id}>
-                            <td>{index + 1}</td>
-                            <td>{material.material_type}</td>
-                            <td>{material.material_name}</td>
-                            <td>{material.material_sub_type}</td>
-                            <td>{material.generic_info}</td>
-                            <td>{material.color}</td>
-                            <td>{material.brand}</td>
-                            <td>{material.uom}</td>
-                            <td>{material.co_efficient_factor}</td>
-                            <td colSpan={2}>{material.estimated_quantity}</td>
-                            <td>{material.wastage}</td>
-                            <td>{material.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-
-              <CollapsibleCard title="Assets">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Asset Type</th>
-                          <th rowSpan={2}>Asset</th>
-                          <th rowSpan={2}>Asset Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail4?.assets?.map((asset, index) => (
-                          <tr key={asset.id}>
-                            <td>{index + 1}</td>
-                            <td>{asset.material_type}</td>
-                            <td>{asset.material_name}</td>
-                            <td>{asset.material_sub_type}</td>
-                            <td>{asset.generic_info}</td>
-                            <td>{asset.color}</td>
-                            <td>{asset.brand}</td>
-                            <td>{asset.uom}</td>
-                            <td>{asset.co_efficient_factor}</td>
-                            <td colSpan={2}>{asset.estimated_quantity}</td>
-                            <td>{asset.wastage}</td>
-                            <td>{asset.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  </React.Fragment>
-)}
-
-
-
-                                                          
-                                                        
-                                                        </React.Fragment>
-                                                      ))
-                                                    )}
-
-
-                                                    {/* 5 start */}
-
-                                                    {/* Render Sub-Category 5 for each Sub-Category 4*/}
-                                                    {openSubCategory4Id === subCategory4.id && subCategory4.sub_categories_5 && subCategory4.sub_categories_5.length > 0 && (
-                                                      subCategory4.sub_categories_5.map((subCategory5) => (
-                                                        <React.Fragment key={subCategory5.id}>
-                                                          <tr>
-                                                            <td></td>
-                                                            <td>
-                                                              {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                            </td>
-                                                            <td></td>
-                                                            <td style={{ paddingLeft: '100px' }}>
-                                                              <button
-                                                                className="btn btn-link p-0"
-                                                                onClick={() => toggleSubCategory5(subCategory5.id)}
-                                                                aria-label="Toggle sub-category 3 visibility"
-                                                              >
-                                                                {openSubCategory5Id === subCategory5.id ? (
-                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                    <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                  </svg>
-                                                                ) : (
-                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                    <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                  </svg>
-                                                                )}
-                                                              </button>
-                                                              {subCategory5.name}
-                                                            </td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start"></td>
-                                                            <td className="text-start">
-                                                              <div className="d-flex justify-content-center">
-                                                                {/* <input className="pe-2" type="checkbox" /> */}
-                                                                <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                                <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                              </div>
-                                                            </td>
-                                                          </tr>
-
-                                                          {/* Render BOQ Details for Sub-Category 5*/}
-                                                          {openSubCategory5Id === subCategory5.id && subCategory5.boq_details && subCategory5.boq_details.length > 0 && (
-                                                            subCategory5.boq_details.map((boqDetail5) => (
-                                                              <React.Fragment key={boqDetail5.id}>
-                                                                <tr>
-                                                                  {console.log("sub5:", subCategory5)}
-                                                                  <td></td>
-                                                                  <td>
-                                                                    {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                                                    <input
-                                                                      className="ms-1 me-1 mb-1"
-                                                                      type="checkbox"
-                                                                      checked={selectedBoqDetails.includes(boqDetail5.id)} // Check if this ID is selected
-                                                                      onChange={() => handleCheckboxChange(boqDetail5.id)} // Handle checkbox change
-                                                                    />
-                                                                  </td>
-                                                                  <td></td>
-                                                                  <td style={{ paddingLeft: '110px' }}>
-                                                                    <button
-                                                                      className="btn btn-link p-0"
-                                                                      onClick={() => toggleBoqDetail3(boqDetail5.id)}
-                                                                      aria-label="Toggle BOQ detail visibility"
-                                                                    >
-                                                                      {openBoqDetailId3 === boqDetail5.id ? (
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                          <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-                                                                        </svg>
-                                                                      ) : (
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
-                                                                          <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                                                        </svg>
+                                                                                <CollapsibleCard title="Assets">
+                                                                                  <div className="card-body mt-0 pt-0">
+                                                                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                      <table className="w-100">
+                                                                                        <thead>
+                                                                                          <tr>
+                                                                                            <th rowSpan={2}>Sr.No</th>
+                                                                                            <th rowSpan={2}>Asset Type</th>
+                                                                                            <th rowSpan={2}>Asset</th>
+                                                                                            <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                            <th rowSpan={2}>Generic Specification</th>
+                                                                                            <th rowSpan={2}>Colour</th>
+                                                                                            <th rowSpan={2}>Brand</th>
+                                                                                            <th rowSpan={2}>UOM</th>
+                                                                                            <th colSpan={3}>Cost</th>
+                                                                                            <th rowSpan={2}>Wastage</th>
+                                                                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                          </tr>
+                                                                                          <tr>
+                                                                                            <th>Co-Efficient Factor</th>
+                                                                                            <th colSpan={2}>Estimated Qty</th>
+                                                                                          </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                          {boqSubItem.assets?.map((asset, index) => (
+                                                                                            <tr key={asset.id}>
+                                                                                              <td>{index + 1}</td>
+                                                                                              <td>{asset.material_type}</td>
+                                                                                              <td>{asset.material_name}</td>
+                                                                                              <td>{asset.material_sub_type}</td>
+                                                                                              <td>{asset.generic_info}</td>
+                                                                                              <td>{asset.color}</td>
+                                                                                              <td>{asset.brand}</td>
+                                                                                              <td>{asset.uom}</td>
+                                                                                              <td>{asset.co_efficient_factor}</td>
+                                                                                              <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                              <td>{asset.wastage}</td>
+                                                                                              <td>{asset.estimated_quantity_wastage}</td>
+                                                                                            </tr>
+                                                                                          ))}
+                                                                                        </tbody>
+                                                                                      </table>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </CollapsibleCard>
+                                                                              </div>
+                                                                            </td>
+                                                                          </tr>
+                                                                        </React.Fragment>
                                                                       )}
-                                                                    </button>
-                                                                    {boqDetail5.item_name}
-                                                                  </td>
-                                                                  <td className="text-start" >
-                                                                    <Link to={`/boq-details-page-master/${boqDetail5.id}`}>
-                                                                      <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail5.id}</span>
-                                                                    </Link>
-                                                                  </td>
-                                                                  <td className="text-start"></td>
-                                                                  <td className="text-start"></td>
-                                                                  <td className="text-start"></td>
-                                                                  <td className="text-start"></td>
-                                                                  <td className="text-start">
-                                                                    <div className="d-flex justify-content-center">
-                                                                      {/* <input className="pe-2" type="checkbox" /> */}
-                                                                      <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
-                                                                      <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                                      {boqDetail5.status}
+                                                                    </React.Fragment>
+                                                                  ))}
+                                                                </tbody>
+                                                              </table>
+                                                            </div>
+                                                          ) : (
+                                                            <div>
+                                                              {/* Render Materials and Assets Card when no Sub Items */}
+                                                              <CollapsibleCard title="Materials">
+                                                                <div className="card-body mt-0 pt-0">
+                                                                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                    <table className="w-100">
+                                                                      <thead>
+                                                                        <tr>
+                                                                          <th rowSpan={2}>Sr.No</th>
+                                                                          <th rowSpan={2}>Material Type</th>
+                                                                          <th rowSpan={2}>Material</th>
+                                                                          <th rowSpan={2}>Material Sub-Type</th>
+                                                                          <th rowSpan={2}>Generic Specification</th>
+                                                                          <th rowSpan={2}>Colour</th>
+                                                                          <th rowSpan={2}>Brand</th>
+                                                                          <th rowSpan={2}>UOM</th>
+                                                                          <th colSpan={3}>Cost</th>
+                                                                          <th rowSpan={2}>Wastage</th>
+                                                                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                          <th>Co-Efficient Factor</th>
+                                                                          <th colSpan={2}>Estimated Qty</th>
+                                                                        </tr>
+                                                                      </thead>
+                                                                      <tbody>
+                                                                        {boqDetail2?.materials?.map((material, index) => (
+                                                                          <tr key={material.id}>
+                                                                            <td>{index + 1}</td>
+                                                                            <td>{material.material_type}</td>
+                                                                            <td>{material.material_name}</td>
+                                                                            <td>{material.material_sub_type}</td>
+                                                                            <td>{material.generic_info}</td>
+                                                                            <td>{material.color}</td>
+                                                                            <td>{material.brand}</td>
+                                                                            <td>{material.uom}</td>
+                                                                            <td>{material.co_efficient_factor}</td>
+                                                                            <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                            <td>{material.wastage}</td>
+                                                                            <td>{material.estimated_quantity_wastage}</td>
+                                                                          </tr>
+                                                                        ))}
+                                                                      </tbody>
+                                                                    </table>
+                                                                  </div>
+                                                                </div>
+                                                              </CollapsibleCard>
+
+                                                              <CollapsibleCard title="Assets">
+                                                                <div className="card-body mt-0 pt-0">
+                                                                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                    <table className="w-100">
+                                                                      <thead>
+                                                                        <tr>
+                                                                          <th rowSpan={2}>Sr.No</th>
+                                                                          <th rowSpan={2}>Asset Type</th>
+                                                                          <th rowSpan={2}>Asset</th>
+                                                                          <th rowSpan={2}>Asset Sub-Type</th>
+                                                                          <th rowSpan={2}>Generic Specification</th>
+                                                                          <th rowSpan={2}>Colour</th>
+                                                                          <th rowSpan={2}>Brand</th>
+                                                                          <th rowSpan={2}>UOM</th>
+                                                                          <th colSpan={3}>Cost</th>
+                                                                          <th rowSpan={2}>Wastage</th>
+                                                                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                          <th>Co-Efficient Factor</th>
+                                                                          <th colSpan={2}>Estimated Qty</th>
+                                                                        </tr>
+                                                                      </thead>
+                                                                      <tbody>
+                                                                        {boqDetail2?.assets?.map((asset, index) => (
+                                                                          <tr key={asset.id}>
+                                                                            <td>{index + 1}</td>
+                                                                            <td>{asset.material_type}</td>
+                                                                            <td>{asset.material_name}</td>
+                                                                            <td>{asset.material_sub_type}</td>
+                                                                            <td>{asset.generic_info}</td>
+                                                                            <td>{asset.color}</td>
+                                                                            <td>{asset.brand}</td>
+                                                                            <td>{asset.uom}</td>
+                                                                            <td>{asset.co_efficient_factor}</td>
+                                                                            <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                            <td>{asset.wastage}</td>
+                                                                            <td>{asset.estimated_quantity_wastage}</td>
+                                                                          </tr>
+                                                                        ))}
+                                                                      </tbody>
+                                                                    </table>
+                                                                  </div>
+                                                                </div>
+                                                              </CollapsibleCard>
+                                                            </div>
+                                                          )}
+                                                        </div>
+                                                      </td>
+                                                    </tr>
+                                                  </React.Fragment>
+                                                )}
+                                                {/* Render Materials Table for BOQ Detail in Sub-Category */}
+
+
+
+
+
+                                              </React.Fragment>
+                                            ))
+                                          )}
+
+                                          {/* ................. */}
+
+
+                                          {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                          {openSubCategory2Id === subCategory.id && subCategory.sub_categories_3 && subCategory.sub_categories_3.length > 0 && (
+                                            subCategory.sub_categories_3.map((subCategory3) => (
+                                              <React.Fragment key={subCategory3.id}>
+                                                <tr>
+                                                  <td></td>
+                                                  <td>
+                                                    {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                  </td>
+                                                  <td></td>
+                                                  <td style={{ paddingLeft: '60px' }}>
+                                                    <button
+                                                      className="btn btn-link p-0"
+                                                      onClick={() => toggleSubCategory3(subCategory3.id)}
+                                                      aria-label="Toggle sub-category 3 visibility"
+                                                    >
+                                                      {openSubCategory3Id === subCategory3.id ? (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                          <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                        </svg>
+                                                      ) : (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                          <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                        </svg>
+                                                      )}
+                                                    </button>
+                                                    {subCategory3.name}
+                                                  </td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start"></td>
+                                                  <td className="text-start">
+                                                    <div className="d-flex justify-content-center">
+                                                      {/* <input className="pe-2" type="checkbox" /> */}
+                                                      <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                      <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                    </div>
+                                                  </td>
+                                                </tr>
+
+                                                {/* Render BOQ Details for Sub-Category 3 */}
+                                                {openSubCategory3Id === subCategory3.id && subCategory3.boq_details && subCategory3.boq_details.length > 0 && (
+                                                  subCategory3.boq_details.map((boqDetail3) => (
+                                                    <React.Fragment key={boqDetail3.id}>
+                                                      <tr>
+                                                        {console.log("sub3:", subCategory3)}
+                                                        <td></td>
+                                                        <td>
+                                                          {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                          <input
+                                                            className="ms-1 me-1 mb-1"
+                                                            type="checkbox"
+                                                            checked={selectedBoqDetails.includes(boqDetail3.id)} // Check if this ID is selected
+                                                            onChange={() => handleCheckboxChange(boqDetail3.id)} // Handle checkbox change
+                                                          />
+                                                        </td>
+                                                        <td></td>
+                                                        <td style={{ paddingLeft: '80px' }}>
+                                                          <button
+                                                            className="btn btn-link p-0"
+                                                            onClick={() => toggleBoqDetail1(boqDetail3.id)}
+                                                            aria-label="Toggle BOQ detail visibility"
+                                                          >
+                                                            {openBoqDetailId1 === boqDetail3.id ? (
+                                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                              </svg>
+                                                            ) : (
+                                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                              </svg>
+                                                            )}
+                                                          </button>
+                                                          {boqDetail3.item_name}
+                                                        </td>
+                                                        <td className="text-start" >
+                                                          <Link to={`/boq-details-page-master/${boqDetail3.id}`}>
+                                                            <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail3.id}</span>
+                                                          </Link>
+                                                        </td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start">
+                                                          <div className="d-flex justify-content-center">
+                                                            {/* <input className="pe-2" type="checkbox" /> */}
+                                                            <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                            <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                            {boqDetail3.status}
+                                                          </div>
+                                                        </td>
+                                                      </tr>
+
+                                                      {/* Render Materials Table for BOQ Detail in Sub-Category 3 */}
+
+
+                                                      {/* Render Materials Table for BOQ Detail in Sub-Category */}
+                                                      {openBoqDetailId1 === boqDetail3.id && (
+                                                        <React.Fragment>
+                                                          <tr>
+                                                            <td colSpan={13}>
+                                                              <div className="m-3">
+                                                                {/* Check if BOQ Sub Items are present */}
+                                                                {boqDetail3?.boq_sub_items && boqDetail3.boq_sub_items.length > 0 ? (
+                                                                  <div className="tbl-container mt-1">
+                                                                    <table className="w-100">
+                                                                      <thead>
+                                                                        <tr colSpan={13}>
+                                                                          <th className="text-start">Sr.No.</th>
+                                                                          <th className="text-start">Expand</th>
+                                                                          <th className="text-start">Sub Item Name</th>
+                                                                          <th className="text-start">Description</th>
+                                                                          <th className="text-start">Notes</th>
+                                                                          <th className="text-start">Remarks</th>
+                                                                          <th className="text-start">UOM</th>
+                                                                          <th className="text-start">Quantity</th>
+                                                                        </tr>
+                                                                      </thead>
+                                                                      <tbody>
+                                                                        {boqDetail3.boq_sub_items.map((boqSubItem, index) => (
+                                                                          <React.Fragment key={boqSubItem.id}>
+                                                                            <tr>
+                                                                              <td className="text-start">{index + 1}</td>
+                                                                              <td className="text-start">
+                                                                                <button
+                                                                                  className="btn btn-link p-0"
+                                                                                  onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
+                                                                                >
+                                                                                  {openBoqDetailIdSub === boqSubItem.id ? (
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                  ) : (
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                      <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                  )}
+                                                                                </button>
+                                                                              </td>
+                                                                              <td className="text-start">{boqSubItem.name}</td>
+                                                                              <td className="text-start">{boqSubItem.description}</td>
+                                                                              <td className="text-start">{boqSubItem.notes}</td>
+                                                                              <td className="text-start">{boqSubItem.remarks}</td>
+                                                                              <td className="text-start">{boqSubItem.uom}</td>
+                                                                              <td className="text-start">{boqSubItem.cost_quantity}</td>
+                                                                            </tr>
+
+                                                                            {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
+                                                                            {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
+                                                                              <React.Fragment>
+                                                                                <tr>
+                                                                                  <td colSpan={13}>
+                                                                                    <div>
+                                                                                      <CollapsibleCard title="Materials">
+                                                                                        <div className="card-body mt-0 pt-0">
+                                                                                          <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                            <table className="w-100">
+                                                                                              <thead>
+                                                                                                <tr>
+                                                                                                  <th rowSpan={2}>Sr.No</th>
+                                                                                                  <th rowSpan={2}>Material Type</th>
+                                                                                                  <th rowSpan={2}>Material</th>
+                                                                                                  <th rowSpan={2}>Material Sub-Type</th>
+                                                                                                  <th rowSpan={2}>Generic Specification</th>
+                                                                                                  <th rowSpan={2}>Colour</th>
+                                                                                                  <th rowSpan={2}>Brand</th>
+                                                                                                  <th rowSpan={2}>UOM</th>
+                                                                                                  <th colSpan={3}>Cost</th>
+                                                                                                  <th rowSpan={2}>Wastage</th>
+                                                                                                  <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                  <th>Co-Efficient Factor</th>
+                                                                                                  <th colSpan={2}>Estimated Qty</th>
+                                                                                                </tr>
+                                                                                              </thead>
+                                                                                              <tbody>
+                                                                                                {boqSubItem?.materials?.map((material, index) => (
+                                                                                                  <tr key={material.id}>
+                                                                                                    <td>{index + 1}</td>
+                                                                                                    <td>{material.material_type}</td>
+                                                                                                    <td>{material.material_name}</td>
+                                                                                                    <td>{material.material_sub_type}</td>
+                                                                                                    <td>{material.generic_info}</td>
+                                                                                                    <td>{material.color}</td>
+                                                                                                    <td>{material.brand}</td>
+                                                                                                    <td>{material.uom}</td>
+                                                                                                    <td>{material.co_efficient_factor}</td>
+                                                                                                    <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                                    <td>{material.wastage}</td>
+                                                                                                    <td>{material.estimated_quantity_wastage}</td>
+                                                                                                  </tr>
+                                                                                                ))}
+                                                                                              </tbody>
+                                                                                            </table>
+                                                                                          </div>
+                                                                                        </div>
+                                                                                      </CollapsibleCard>
+
+                                                                                      <CollapsibleCard title="Assets">
+                                                                                        <div className="card-body mt-0 pt-0">
+                                                                                          <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                            <table className="w-100">
+                                                                                              <thead>
+                                                                                                <tr>
+                                                                                                  <th rowSpan={2}>Sr.No</th>
+                                                                                                  <th rowSpan={2}>Asset Type</th>
+                                                                                                  <th rowSpan={2}>Asset</th>
+                                                                                                  <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                                  <th rowSpan={2}>Generic Specification</th>
+                                                                                                  <th rowSpan={2}>Colour</th>
+                                                                                                  <th rowSpan={2}>Brand</th>
+                                                                                                  <th rowSpan={2}>UOM</th>
+                                                                                                  <th colSpan={3}>Cost</th>
+                                                                                                  <th rowSpan={2}>Wastage</th>
+                                                                                                  <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                </tr>
+                                                                                                <tr>
+                                                                                                  <th>Co-Efficient Factor</th>
+                                                                                                  <th colSpan={2}>Estimated Qty</th>
+                                                                                                </tr>
+                                                                                              </thead>
+                                                                                              <tbody>
+                                                                                                {boqSubItem.assets?.map((asset, index) => (
+                                                                                                  <tr key={asset.id}>
+                                                                                                    <td>{index + 1}</td>
+                                                                                                    <td>{asset.material_type}</td>
+                                                                                                    <td>{asset.material_name}</td>
+                                                                                                    <td>{asset.material_sub_type}</td>
+                                                                                                    <td>{asset.generic_info}</td>
+                                                                                                    <td>{asset.color}</td>
+                                                                                                    <td>{asset.brand}</td>
+                                                                                                    <td>{asset.uom}</td>
+                                                                                                    <td>{asset.co_efficient_factor}</td>
+                                                                                                    <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                                    <td>{asset.wastage}</td>
+                                                                                                    <td>{asset.estimated_quantity_wastage}</td>
+                                                                                                  </tr>
+                                                                                                ))}
+                                                                                              </tbody>
+                                                                                            </table>
+                                                                                          </div>
+                                                                                        </div>
+                                                                                      </CollapsibleCard>
+                                                                                    </div>
+                                                                                  </td>
+                                                                                </tr>
+                                                                              </React.Fragment>
+                                                                            )}
+                                                                          </React.Fragment>
+                                                                        ))}
+                                                                      </tbody>
+                                                                    </table>
+                                                                  </div>
+                                                                ) : (
+                                                                  <div>
+                                                                    {/* Render Materials and Assets Card when no Sub Items */}
+                                                                    <CollapsibleCard title="Materials">
+                                                                      <div className="card-body mt-0 pt-0">
+                                                                        <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                          <table className="w-100">
+                                                                            <thead>
+                                                                              <tr>
+                                                                                <th rowSpan={2}>Sr.No</th>
+                                                                                <th rowSpan={2}>Material Type</th>
+                                                                                <th rowSpan={2}>Material</th>
+                                                                                <th rowSpan={2}>Material Sub-Type</th>
+                                                                                <th rowSpan={2}>Generic Specification</th>
+                                                                                <th rowSpan={2}>Colour</th>
+                                                                                <th rowSpan={2}>Brand</th>
+                                                                                <th rowSpan={2}>UOM</th>
+                                                                                <th colSpan={3}>Cost</th>
+                                                                                <th rowSpan={2}>Wastage</th>
+                                                                                <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <th>Co-Efficient Factor</th>
+                                                                                <th colSpan={2}>Estimated Qty</th>
+                                                                              </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                              {boqDetail3?.materials?.map((material, index) => (
+                                                                                <tr key={material.id}>
+                                                                                  <td>{index + 1}</td>
+                                                                                  <td>{material.material_type}</td>
+                                                                                  <td>{material.material_name}</td>
+                                                                                  <td>{material.material_sub_type}</td>
+                                                                                  <td>{material.generic_info}</td>
+                                                                                  <td>{material.color}</td>
+                                                                                  <td>{material.brand}</td>
+                                                                                  <td>{material.uom}</td>
+                                                                                  <td>{material.co_efficient_factor}</td>
+                                                                                  <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                  <td>{material.wastage}</td>
+                                                                                  <td>{material.estimated_quantity_wastage}</td>
+                                                                                </tr>
+                                                                              ))}
+                                                                            </tbody>
+                                                                          </table>
+                                                                        </div>
+                                                                      </div>
+                                                                    </CollapsibleCard>
+
+                                                                    <CollapsibleCard title="Assets">
+                                                                      <div className="card-body mt-0 pt-0">
+                                                                        <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                          <table className="w-100">
+                                                                            <thead>
+                                                                              <tr>
+                                                                                <th rowSpan={2}>Sr.No</th>
+                                                                                <th rowSpan={2}>Asset Type</th>
+                                                                                <th rowSpan={2}>Asset</th>
+                                                                                <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                <th rowSpan={2}>Generic Specification</th>
+                                                                                <th rowSpan={2}>Colour</th>
+                                                                                <th rowSpan={2}>Brand</th>
+                                                                                <th rowSpan={2}>UOM</th>
+                                                                                <th colSpan={3}>Cost</th>
+                                                                                <th rowSpan={2}>Wastage</th>
+                                                                                <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                              </tr>
+                                                                              <tr>
+                                                                                <th>Co-Efficient Factor</th>
+                                                                                <th colSpan={2}>Estimated Qty</th>
+                                                                              </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                              {boqDetail3?.assets?.map((asset, index) => (
+                                                                                <tr key={asset.id}>
+                                                                                  <td>{index + 1}</td>
+                                                                                  <td>{asset.material_type}</td>
+                                                                                  <td>{asset.material_name}</td>
+                                                                                  <td>{asset.material_sub_type}</td>
+                                                                                  <td>{asset.generic_info}</td>
+                                                                                  <td>{asset.color}</td>
+                                                                                  <td>{asset.brand}</td>
+                                                                                  <td>{asset.uom}</td>
+                                                                                  <td>{asset.co_efficient_factor}</td>
+                                                                                  <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                  <td>{asset.wastage}</td>
+                                                                                  <td>{asset.estimated_quantity_wastage}</td>
+                                                                                </tr>
+                                                                              ))}
+                                                                            </tbody>
+                                                                          </table>
+                                                                        </div>
+                                                                      </div>
+                                                                    </CollapsibleCard>
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            </td>
+                                                          </tr>
+                                                        </React.Fragment>
+                                                      )}
+
+
+
+
+
+                                                    </React.Fragment>
+                                                  ))
+                                                )}
+
+
+                                                {/* level4 start */}
+
+                                                {/* Render Sub-Category 4 for each Sub-Category 3*/}
+                                                {openSubCategory3Id === subCategory3.id && subCategory3.sub_categories_4 && subCategory3.sub_categories_4.length > 0 && (
+                                                  subCategory3.sub_categories_4.map((subCategory4) => (
+                                                    <React.Fragment key={subCategory4.id}>
+                                                      <tr>
+                                                        <td></td>
+                                                        <td>
+                                                          {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                        </td>
+                                                        <td></td>
+                                                        <td style={{ paddingLeft: '80px' }}>
+                                                          <button
+                                                            className="btn btn-link p-0"
+                                                            onClick={() => toggleSubCategory4(subCategory4.id)}
+                                                            aria-label="Toggle sub-category 3 visibility"
+                                                          >
+                                                            {openSubCategory4Id === subCategory4.id ? (
+                                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                              </svg>
+                                                            ) : (
+                                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                              </svg>
+                                                            )}
+                                                          </button>
+                                                          {subCategory4.name}
+                                                        </td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start"></td>
+                                                        <td className="text-start">
+                                                          <div className="d-flex justify-content-center">
+                                                            {/* <input className="pe-2" type="checkbox" /> */}
+                                                            <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                            <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                          </div>
+                                                        </td>
+                                                      </tr>
+
+                                                      {/* Render BOQ Details for Sub-Category 4 */}
+                                                      {openSubCategory4Id === subCategory4.id && subCategory4.boq_details && subCategory4.boq_details.length > 0 && (
+                                                        subCategory4.boq_details.map((boqDetail4) => (
+                                                          <React.Fragment key={boqDetail4.id}>
+                                                            <tr>
+                                                              {console.log("sub4:", subCategory4)}
+                                                              <td></td>
+                                                              <td>
+                                                                {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                                <input
+                                                                  className="ms-1 me-1 mb-1"
+                                                                  type="checkbox"
+                                                                  checked={selectedBoqDetails.includes(boqDetail4.id)} // Check if this ID is selected
+                                                                  onChange={() => handleCheckboxChange(boqDetail4.id)} // Handle checkbox change
+                                                                />
+                                                              </td>
+                                                              <td></td>
+                                                              <td style={{ paddingLeft: '100px' }}>
+                                                                <button
+                                                                  className="btn btn-link p-0"
+                                                                  onClick={() => toggleBoqDetail2(boqDetail4.id)}
+                                                                  aria-label="Toggle BOQ detail visibility"
+                                                                >
+                                                                  {openBoqDetailId2 === boqDetail4.id ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                      <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                    </svg>
+                                                                  ) : (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                      <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                    </svg>
+                                                                  )}
+                                                                </button>
+                                                                {boqDetail4.item_name}
+                                                              </td>
+                                                              <td className="text-start" >
+                                                                <Link to={`/boq-details-page-master/${boqDetail4.id}`}>
+                                                                  <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail4.id}</span>
+                                                                </Link>
+                                                              </td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start">
+                                                                <div className="d-flex justify-content-center">
+                                                                  {/* <input className="pe-2" type="checkbox" /> */}
+                                                                  <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                                  <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                                  {boqDetail4.status}
+                                                                </div>
+                                                              </td>
+                                                            </tr>
+
+                                                            {/* Render Materials Table for BOQ Detail in Sub-Category 4 */}
+                                                            {/* Render Materials Table for BOQ Detail in Sub-Category */}
+                                                            {openBoqDetailId2 === boqDetail4.id && (
+                                                              <React.Fragment>
+                                                                <tr>
+                                                                  <td colSpan={13}>
+                                                                    <div className="m-3">
+                                                                      {/* Check if BOQ Sub Items are present */}
+                                                                      {boqDetail4?.boq_sub_items && boqDetail4.boq_sub_items.length > 0 ? (
+                                                                        <div className="tbl-container mt-1">
+                                                                          <table className="w-100">
+                                                                            <thead>
+                                                                              <tr colSpan={13}>
+                                                                                <th className="text-start">Sr.No.</th>
+                                                                                <th className="text-start">Expand</th>
+                                                                                <th className="text-start">Sub Item Name</th>
+                                                                                <th className="text-start">Description</th>
+                                                                                <th className="text-start">Notes</th>
+                                                                                <th className="text-start">Remarks</th>
+                                                                                <th className="text-start">UOM</th>
+                                                                                <th className="text-start">Quantity</th>
+                                                                              </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                              {boqDetail4.boq_sub_items.map((boqSubItem, index) => (
+                                                                                <React.Fragment key={boqSubItem.id}>
+                                                                                  <tr>
+                                                                                    <td className="text-start">{index + 1}</td>
+                                                                                    <td className="text-start">
+                                                                                      <button
+                                                                                        className="btn btn-link p-0"
+                                                                                        onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
+                                                                                      >
+                                                                                        {openBoqDetailIdSub === boqSubItem.id ? (
+                                                                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                          </svg>
+                                                                                        ) : (
+                                                                                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                          </svg>
+                                                                                        )}
+                                                                                      </button>
+                                                                                    </td>
+                                                                                    <td className="text-start">{boqSubItem.name}</td>
+                                                                                    <td className="text-start">{boqSubItem.description}</td>
+                                                                                    <td className="text-start">{boqSubItem.notes}</td>
+                                                                                    <td className="text-start">{boqSubItem.remarks}</td>
+                                                                                    <td className="text-start">{boqSubItem.uom}</td>
+                                                                                    <td className="text-start">{boqSubItem.cost_quantity}</td>
+                                                                                  </tr>
+
+                                                                                  {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
+                                                                                  {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
+                                                                                    <React.Fragment>
+                                                                                      <tr>
+                                                                                        <td colSpan={13}>
+                                                                                          <div>
+                                                                                            <CollapsibleCard title="Materials">
+                                                                                              <div className="card-body mt-0 pt-0">
+                                                                                                <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                                  <table className="w-100">
+                                                                                                    <thead>
+                                                                                                      <tr>
+                                                                                                        <th rowSpan={2}>Sr.No</th>
+                                                                                                        <th rowSpan={2}>Material Type</th>
+                                                                                                        <th rowSpan={2}>Material</th>
+                                                                                                        <th rowSpan={2}>Material Sub-Type</th>
+                                                                                                        <th rowSpan={2}>Generic Specification</th>
+                                                                                                        <th rowSpan={2}>Colour</th>
+                                                                                                        <th rowSpan={2}>Brand</th>
+                                                                                                        <th rowSpan={2}>UOM</th>
+                                                                                                        <th colSpan={3}>Cost</th>
+                                                                                                        <th rowSpan={2}>Wastage</th>
+                                                                                                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                      </tr>
+                                                                                                      <tr>
+                                                                                                        <th>Co-Efficient Factor</th>
+                                                                                                        <th colSpan={2}>Estimated Qty</th>
+                                                                                                      </tr>
+                                                                                                    </thead>
+                                                                                                    <tbody>
+                                                                                                      {boqSubItem?.materials?.map((material, index) => (
+                                                                                                        <tr key={material.id}>
+                                                                                                          <td>{index + 1}</td>
+                                                                                                          <td>{material.material_type}</td>
+                                                                                                          <td>{material.material_name}</td>
+                                                                                                          <td>{material.material_sub_type}</td>
+                                                                                                          <td>{material.generic_info}</td>
+                                                                                                          <td>{material.color}</td>
+                                                                                                          <td>{material.brand}</td>
+                                                                                                          <td>{material.uom}</td>
+                                                                                                          <td>{material.co_efficient_factor}</td>
+                                                                                                          <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                                          <td>{material.wastage}</td>
+                                                                                                          <td>{material.estimated_quantity_wastage}</td>
+                                                                                                        </tr>
+                                                                                                      ))}
+                                                                                                    </tbody>
+                                                                                                  </table>
+                                                                                                </div>
+                                                                                              </div>
+                                                                                            </CollapsibleCard>
+
+                                                                                            <CollapsibleCard title="Assets">
+                                                                                              <div className="card-body mt-0 pt-0">
+                                                                                                <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                                  <table className="w-100">
+                                                                                                    <thead>
+                                                                                                      <tr>
+                                                                                                        <th rowSpan={2}>Sr.No</th>
+                                                                                                        <th rowSpan={2}>Asset Type</th>
+                                                                                                        <th rowSpan={2}>Asset</th>
+                                                                                                        <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                                        <th rowSpan={2}>Generic Specification</th>
+                                                                                                        <th rowSpan={2}>Colour</th>
+                                                                                                        <th rowSpan={2}>Brand</th>
+                                                                                                        <th rowSpan={2}>UOM</th>
+                                                                                                        <th colSpan={3}>Cost</th>
+                                                                                                        <th rowSpan={2}>Wastage</th>
+                                                                                                        <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                      </tr>
+                                                                                                      <tr>
+                                                                                                        <th>Co-Efficient Factor</th>
+                                                                                                        <th colSpan={2}>Estimated Qty</th>
+                                                                                                      </tr>
+                                                                                                    </thead>
+                                                                                                    <tbody>
+                                                                                                      {boqSubItem.assets?.map((asset, index) => (
+                                                                                                        <tr key={asset.id}>
+                                                                                                          <td>{index + 1}</td>
+                                                                                                          <td>{asset.material_type}</td>
+                                                                                                          <td>{asset.material_name}</td>
+                                                                                                          <td>{asset.material_sub_type}</td>
+                                                                                                          <td>{asset.generic_info}</td>
+                                                                                                          <td>{asset.color}</td>
+                                                                                                          <td>{asset.brand}</td>
+                                                                                                          <td>{asset.uom}</td>
+                                                                                                          <td>{asset.co_efficient_factor}</td>
+                                                                                                          <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                                          <td>{asset.wastage}</td>
+                                                                                                          <td>{asset.estimated_quantity_wastage}</td>
+                                                                                                        </tr>
+                                                                                                      ))}
+                                                                                                    </tbody>
+                                                                                                  </table>
+                                                                                                </div>
+                                                                                              </div>
+                                                                                            </CollapsibleCard>
+                                                                                          </div>
+                                                                                        </td>
+                                                                                      </tr>
+                                                                                    </React.Fragment>
+                                                                                  )}
+                                                                                </React.Fragment>
+                                                                              ))}
+                                                                            </tbody>
+                                                                          </table>
+                                                                        </div>
+                                                                      ) : (
+                                                                        <div>
+                                                                          {/* Render Materials and Assets Card when no Sub Items */}
+                                                                          <CollapsibleCard title="Materials">
+                                                                            <div className="card-body mt-0 pt-0">
+                                                                              <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                <table className="w-100">
+                                                                                  <thead>
+                                                                                    <tr>
+                                                                                      <th rowSpan={2}>Sr.No</th>
+                                                                                      <th rowSpan={2}>Material Type</th>
+                                                                                      <th rowSpan={2}>Material</th>
+                                                                                      <th rowSpan={2}>Material Sub-Type</th>
+                                                                                      <th rowSpan={2}>Generic Specification</th>
+                                                                                      <th rowSpan={2}>Colour</th>
+                                                                                      <th rowSpan={2}>Brand</th>
+                                                                                      <th rowSpan={2}>UOM</th>
+                                                                                      <th colSpan={3}>Cost</th>
+                                                                                      <th rowSpan={2}>Wastage</th>
+                                                                                      <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                      <th>Co-Efficient Factor</th>
+                                                                                      <th colSpan={2}>Estimated Qty</th>
+                                                                                    </tr>
+                                                                                  </thead>
+                                                                                  <tbody>
+                                                                                    {boqDetail4?.materials?.map((material, index) => (
+                                                                                      <tr key={material.id}>
+                                                                                        <td>{index + 1}</td>
+                                                                                        <td>{material.material_type}</td>
+                                                                                        <td>{material.material_name}</td>
+                                                                                        <td>{material.material_sub_type}</td>
+                                                                                        <td>{material.generic_info}</td>
+                                                                                        <td>{material.color}</td>
+                                                                                        <td>{material.brand}</td>
+                                                                                        <td>{material.uom}</td>
+                                                                                        <td>{material.co_efficient_factor}</td>
+                                                                                        <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                        <td>{material.wastage}</td>
+                                                                                        <td>{material.estimated_quantity_wastage}</td>
+                                                                                      </tr>
+                                                                                    ))}
+                                                                                  </tbody>
+                                                                                </table>
+                                                                              </div>
+                                                                            </div>
+                                                                          </CollapsibleCard>
+
+                                                                          <CollapsibleCard title="Assets">
+                                                                            <div className="card-body mt-0 pt-0">
+                                                                              <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                <table className="w-100">
+                                                                                  <thead>
+                                                                                    <tr>
+                                                                                      <th rowSpan={2}>Sr.No</th>
+                                                                                      <th rowSpan={2}>Asset Type</th>
+                                                                                      <th rowSpan={2}>Asset</th>
+                                                                                      <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                      <th rowSpan={2}>Generic Specification</th>
+                                                                                      <th rowSpan={2}>Colour</th>
+                                                                                      <th rowSpan={2}>Brand</th>
+                                                                                      <th rowSpan={2}>UOM</th>
+                                                                                      <th colSpan={3}>Cost</th>
+                                                                                      <th rowSpan={2}>Wastage</th>
+                                                                                      <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                      <th>Co-Efficient Factor</th>
+                                                                                      <th colSpan={2}>Estimated Qty</th>
+                                                                                    </tr>
+                                                                                  </thead>
+                                                                                  <tbody>
+                                                                                    {boqDetail4?.assets?.map((asset, index) => (
+                                                                                      <tr key={asset.id}>
+                                                                                        <td>{index + 1}</td>
+                                                                                        <td>{asset.material_type}</td>
+                                                                                        <td>{asset.material_name}</td>
+                                                                                        <td>{asset.material_sub_type}</td>
+                                                                                        <td>{asset.generic_info}</td>
+                                                                                        <td>{asset.color}</td>
+                                                                                        <td>{asset.brand}</td>
+                                                                                        <td>{asset.uom}</td>
+                                                                                        <td>{asset.co_efficient_factor}</td>
+                                                                                        <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                        <td>{asset.wastage}</td>
+                                                                                        <td>{asset.estimated_quantity_wastage}</td>
+                                                                                      </tr>
+                                                                                    ))}
+                                                                                  </tbody>
+                                                                                </table>
+                                                                              </div>
+                                                                            </div>
+                                                                          </CollapsibleCard>
+                                                                        </div>
+                                                                      )}
                                                                     </div>
                                                                   </td>
                                                                 </tr>
-
-                                                                {/* Render Materials Table for BOQ Detail in Sub-Category 5 */}
-
- {/* Render Materials Table for BOQ Detail in Sub-Category */}
- {openBoqDetailId3 === boqDetail5.id && (
-  <React.Fragment>
-    <tr>
-      <td colSpan={13}>
-        <div className="m-3">
-          {/* Check if BOQ Sub Items are present */}
-          {boqDetail5?.boq_sub_items && boqDetail5.boq_sub_items.length > 0 ? (
-            <div className="tbl-container mt-1">
-              <table className="w-100">
-                <thead>
-                  <tr colSpan={13}>
-                    <th className="text-start">Sr.No.</th>
-                    <th className="text-start">Expand</th>
-                    <th className="text-start">Sub Item Name</th>
-                    <th className="text-start">Description</th>
-                    <th className="text-start">Notes</th>
-                    <th className="text-start">Remarks</th>
-                    <th className="text-start">UOM</th>
-                    <th className="text-start">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boqDetail5.boq_sub_items.map((boqSubItem, index) => (
-                    <React.Fragment key={boqSubItem.id}>
-                      <tr>
-                        <td className="text-start">{index + 1}</td>
-                        <td className="text-start">
-                          <button
-                            className="btn btn-link p-0"
-                            onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
-                          >
-                            {openBoqDetailIdSub === boqSubItem.id ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            ) : (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                <line x1="12" y1="8" x2="12" y2="16" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="text-start">{boqSubItem.name}</td>
-                        <td className="text-start">{boqSubItem.description}</td>
-                        <td className="text-start">{boqSubItem.notes}</td>
-                        <td className="text-start">{boqSubItem.remarks}</td>
-                        <td className="text-start">{boqSubItem.uom}</td>
-                        <td className="text-start">{boqSubItem.cost_quantity}</td>
-                      </tr>
-
-                      {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
-                      {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
-                        <React.Fragment>
-                          <tr>
-                            <td colSpan={13}>
-                              <div>
-                                <CollapsibleCard title="Materials">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Material Type</th>
-                                            <th rowSpan={2}>Material</th>
-                                            <th rowSpan={2}>Material Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem?.materials?.map((material, index) => (
-                                            <tr key={material.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{material.material_type}</td>
-                                              <td>{material.material_name}</td>
-                                              <td>{material.material_sub_type}</td>
-                                              <td>{material.generic_info}</td>
-                                              <td>{material.color}</td>
-                                              <td>{material.brand}</td>
-                                              <td>{material.uom}</td>
-                                              <td>{material.co_efficient_factor}</td>
-                                              <td colSpan={2}>{material.estimated_quantity}</td>
-                                              <td>{material.wastage}</td>
-                                              <td>{material.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-
-                                <CollapsibleCard title="Assets">
-                                  <div className="card-body mt-0 pt-0">
-                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                                      <table className="w-100">
-                                        <thead>
-                                          <tr>
-                                            <th rowSpan={2}>Sr.No</th>
-                                            <th rowSpan={2}>Asset Type</th>
-                                            <th rowSpan={2}>Asset</th>
-                                            <th rowSpan={2}>Asset Sub-Type</th>
-                                            <th rowSpan={2}>Generic Specification</th>
-                                            <th rowSpan={2}>Colour</th>
-                                            <th rowSpan={2}>Brand</th>
-                                            <th rowSpan={2}>UOM</th>
-                                            <th colSpan={3}>Cost</th>
-                                            <th rowSpan={2}>Wastage</th>
-                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                                          </tr>
-                                          <tr>
-                                            <th>Co-Efficient Factor</th>
-                                            <th colSpan={2}>Estimated Qty</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {boqSubItem.assets?.map((asset, index) => (
-                                            <tr key={asset.id}>
-                                              <td>{index + 1}</td>
-                                              <td>{asset.material_type}</td>
-                                              <td>{asset.material_name}</td>
-                                              <td>{asset.material_sub_type}</td>
-                                              <td>{asset.generic_info}</td>
-                                              <td>{asset.color}</td>
-                                              <td>{asset.brand}</td>
-                                              <td>{asset.uom}</td>
-                                              <td>{asset.co_efficient_factor}</td>
-                                              <td colSpan={2}>{asset.estimated_quantity}</td>
-                                              <td>{asset.wastage}</td>
-                                              <td>{asset.estimated_quantity_wastage}</td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </CollapsibleCard>
-                              </div>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div>
-              {/* Render Materials and Assets Card when no Sub Items */}
-              <CollapsibleCard title="Materials">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Material Type</th>
-                          <th rowSpan={2}>Material</th>
-                          <th rowSpan={2}>Material Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail5?.materials?.map((material, index) => (
-                          <tr key={material.id}>
-                            <td>{index + 1}</td>
-                            <td>{material.material_type}</td>
-                            <td>{material.material_name}</td>
-                            <td>{material.material_sub_type}</td>
-                            <td>{material.generic_info}</td>
-                            <td>{material.color}</td>
-                            <td>{material.brand}</td>
-                            <td>{material.uom}</td>
-                            <td>{material.co_efficient_factor}</td>
-                            <td colSpan={2}>{material.estimated_quantity}</td>
-                            <td>{material.wastage}</td>
-                            <td>{material.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-
-              <CollapsibleCard title="Assets">
-                <div className="card-body mt-0 pt-0">
-                  <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th rowSpan={2}>Sr.No</th>
-                          <th rowSpan={2}>Asset Type</th>
-                          <th rowSpan={2}>Asset</th>
-                          <th rowSpan={2}>Asset Sub-Type</th>
-                          <th rowSpan={2}>Generic Specification</th>
-                          <th rowSpan={2}>Colour</th>
-                          <th rowSpan={2}>Brand</th>
-                          <th rowSpan={2}>UOM</th>
-                          <th colSpan={3}>Cost</th>
-                          <th rowSpan={2}>Wastage</th>
-                          <th rowSpan={2}>Total Estimated Qty Wastage</th>
-                        </tr>
-                        <tr>
-                          <th>Co-Efficient Factor</th>
-                          <th colSpan={2}>Estimated Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {boqDetail5?.assets?.map((asset, index) => (
-                          <tr key={asset.id}>
-                            <td>{index + 1}</td>
-                            <td>{asset.material_type}</td>
-                            <td>{asset.material_name}</td>
-                            <td>{asset.material_sub_type}</td>
-                            <td>{asset.generic_info}</td>
-                            <td>{asset.color}</td>
-                            <td>{asset.brand}</td>
-                            <td>{asset.uom}</td>
-                            <td>{asset.co_efficient_factor}</td>
-                            <td colSpan={2}>{asset.estimated_quantity}</td>
-                            <td>{asset.wastage}</td>
-                            <td>{asset.estimated_quantity_wastage}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleCard>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  </React.Fragment>
-)}
-
-                                                                
                                                               </React.Fragment>
-                                                            ))
-                                                          )}
-
-                                                        </React.Fragment>
-                                                      ))
-                                                    )}
+                                                            )}
 
 
-                                                    {/* 5 end */}
-                                                  </React.Fragment>
-                                                ))
-                                              )}
-
-                                              {/* level4 end */}
-                                            </React.Fragment>
-                                          ))
-                                        )}
-
-                                        {/* .. */}
-
-                                      </React.Fragment>
-                                    ))
-                                  )}
-                                  {/* sub level 2 end*/}
-
-                                </React.Fragment>
-                              ))
-                            )}
-                            {/* Conditional rendering for categories under sub-project  end*/}
-                          </React.Fragment>
-                        ))}
-
-                      </React.Fragment>
 
 
-                    ))}
-                    {/* subProject end */}
 
-                  </tbody>
-                </table>
+                                                          </React.Fragment>
+                                                        ))
+                                                      )}
+
+
+                                                      {/* 5 start */}
+
+                                                      {/* Render Sub-Category 5 for each Sub-Category 4*/}
+                                                      {openSubCategory4Id === subCategory4.id && subCategory4.sub_categories_5 && subCategory4.sub_categories_5.length > 0 && (
+                                                        subCategory4.sub_categories_5.map((subCategory5) => (
+                                                          <React.Fragment key={subCategory5.id}>
+                                                            <tr>
+                                                              <td></td>
+                                                              <td>
+                                                                {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                              </td>
+                                                              <td></td>
+                                                              <td style={{ paddingLeft: '100px' }}>
+                                                                <button
+                                                                  className="btn btn-link p-0"
+                                                                  onClick={() => toggleSubCategory5(subCategory5.id)}
+                                                                  aria-label="Toggle sub-category 3 visibility"
+                                                                >
+                                                                  {openSubCategory5Id === subCategory5.id ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                      <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                    </svg>
+                                                                  ) : (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                      <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                    </svg>
+                                                                  )}
+                                                                </button>
+                                                                {subCategory5.name}
+                                                              </td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start"></td>
+                                                              <td className="text-start">
+                                                                <div className="d-flex justify-content-center">
+                                                                  {/* <input className="pe-2" type="checkbox" /> */}
+                                                                  <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                                  <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                                </div>
+                                                              </td>
+                                                            </tr>
+
+                                                            {/* Render BOQ Details for Sub-Category 5*/}
+                                                            {openSubCategory5Id === subCategory5.id && subCategory5.boq_details && subCategory5.boq_details.length > 0 && (
+                                                              subCategory5.boq_details.map((boqDetail5) => (
+                                                                <React.Fragment key={boqDetail5.id}>
+                                                                  <tr>
+                                                                    {console.log("sub5:", subCategory5)}
+                                                                    <td></td>
+                                                                    <td>
+                                                                      {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+                                                                      <input
+                                                                        className="ms-1 me-1 mb-1"
+                                                                        type="checkbox"
+                                                                        checked={selectedBoqDetails.includes(boqDetail5.id)} // Check if this ID is selected
+                                                                        onChange={() => handleCheckboxChange(boqDetail5.id)} // Handle checkbox change
+                                                                      />
+                                                                    </td>
+                                                                    <td></td>
+                                                                    <td style={{ paddingLeft: '110px' }}>
+                                                                      <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => toggleBoqDetail3(boqDetail5.id)}
+                                                                        aria-label="Toggle BOQ detail visibility"
+                                                                      >
+                                                                        {openBoqDetailId3 === boqDetail5.id ? (
+                                                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                            <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
+                                                                          </svg>
+                                                                        ) : (
+                                                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" className="bi bi-caret-up" viewBox="0 0 16 16">
+                                                                            <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
+                                                                          </svg>
+                                                                        )}
+                                                                      </button>
+                                                                      {boqDetail5.item_name}
+                                                                    </td>
+                                                                    <td className="text-start" >
+                                                                      <Link to={`/boq-details-page-master/${boqDetail5.id}`}>
+                                                                        <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail5.id}</span>
+                                                                      </Link>
+                                                                    </td>
+                                                                    <td className="text-start"></td>
+                                                                    <td className="text-start"></td>
+                                                                    <td className="text-start"></td>
+                                                                    <td className="text-start"></td>
+                                                                    <td className="text-start">
+                                                                      <div className="d-flex justify-content-center">
+                                                                        {/* <input className="pe-2" type="checkbox" /> */}
+                                                                        <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
+                                                                        <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
+                                                                        {boqDetail5.status}
+                                                                      </div>
+                                                                    </td>
+                                                                  </tr>
+
+                                                                  {/* Render Materials Table for BOQ Detail in Sub-Category 5 */}
+
+                                                                  {/* Render Materials Table for BOQ Detail in Sub-Category */}
+                                                                  {openBoqDetailId3 === boqDetail5.id && (
+                                                                    <React.Fragment>
+                                                                      <tr>
+                                                                        <td colSpan={13}>
+                                                                          <div className="m-3">
+                                                                            {/* Check if BOQ Sub Items are present */}
+                                                                            {boqDetail5?.boq_sub_items && boqDetail5.boq_sub_items.length > 0 ? (
+                                                                              <div className="tbl-container mt-1">
+                                                                                <table className="w-100">
+                                                                                  <thead>
+                                                                                    <tr colSpan={13}>
+                                                                                      <th className="text-start">Sr.No.</th>
+                                                                                      <th className="text-start">Expand</th>
+                                                                                      <th className="text-start">Sub Item Name</th>
+                                                                                      <th className="text-start">Description</th>
+                                                                                      <th className="text-start">Notes</th>
+                                                                                      <th className="text-start">Remarks</th>
+                                                                                      <th className="text-start">UOM</th>
+                                                                                      <th className="text-start">Quantity</th>
+                                                                                    </tr>
+                                                                                  </thead>
+                                                                                  <tbody>
+                                                                                    {boqDetail5.boq_sub_items.map((boqSubItem, index) => (
+                                                                                      <React.Fragment key={boqSubItem.id}>
+                                                                                        <tr>
+                                                                                          <td className="text-start">{index + 1}</td>
+                                                                                          <td className="text-start">
+                                                                                            <button
+                                                                                              className="btn btn-link p-0"
+                                                                                              onClick={() => toggleBoqDetailSub1(boqSubItem.id)}
+                                                                                            >
+                                                                                              {openBoqDetailIdSub === boqSubItem.id ? (
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                </svg>
+                                                                                              ) : (
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                  <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                  <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                  <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                </svg>
+                                                                                              )}
+                                                                                            </button>
+                                                                                          </td>
+                                                                                          <td className="text-start">{boqSubItem.name}</td>
+                                                                                          <td className="text-start">{boqSubItem.description}</td>
+                                                                                          <td className="text-start">{boqSubItem.notes}</td>
+                                                                                          <td className="text-start">{boqSubItem.remarks}</td>
+                                                                                          <td className="text-start">{boqSubItem.uom}</td>
+                                                                                          <td className="text-start">{boqSubItem.cost_quantity}</td>
+                                                                                        </tr>
+
+                                                                                        {/* Render Materials and Assets Table if BOQ Sub Item is Expanded */}
+                                                                                        {openBoqDetailIdSub === boqSubItem.id && (boqSubItem?.materials || boqSubItem?.assets) && (
+                                                                                          <React.Fragment>
+                                                                                            <tr>
+                                                                                              <td colSpan={13}>
+                                                                                                <div>
+                                                                                                  <CollapsibleCard title="Materials">
+                                                                                                    <div className="card-body mt-0 pt-0">
+                                                                                                      <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                                        <table className="w-100">
+                                                                                                          <thead>
+                                                                                                            <tr>
+                                                                                                              <th rowSpan={2}>Sr.No</th>
+                                                                                                              <th rowSpan={2}>Material Type</th>
+                                                                                                              <th rowSpan={2}>Material</th>
+                                                                                                              <th rowSpan={2}>Material Sub-Type</th>
+                                                                                                              <th rowSpan={2}>Generic Specification</th>
+                                                                                                              <th rowSpan={2}>Colour</th>
+                                                                                                              <th rowSpan={2}>Brand</th>
+                                                                                                              <th rowSpan={2}>UOM</th>
+                                                                                                              <th colSpan={3}>Cost</th>
+                                                                                                              <th rowSpan={2}>Wastage</th>
+                                                                                                              <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                            </tr>
+                                                                                                            <tr>
+                                                                                                              <th>Co-Efficient Factor</th>
+                                                                                                              <th colSpan={2}>Estimated Qty</th>
+                                                                                                            </tr>
+                                                                                                          </thead>
+                                                                                                          <tbody>
+                                                                                                            {boqSubItem?.materials?.map((material, index) => (
+                                                                                                              <tr key={material.id}>
+                                                                                                                <td>{index + 1}</td>
+                                                                                                                <td>{material.material_type}</td>
+                                                                                                                <td>{material.material_name}</td>
+                                                                                                                <td>{material.material_sub_type}</td>
+                                                                                                                <td>{material.generic_info}</td>
+                                                                                                                <td>{material.color}</td>
+                                                                                                                <td>{material.brand}</td>
+                                                                                                                <td>{material.uom}</td>
+                                                                                                                <td>{material.co_efficient_factor}</td>
+                                                                                                                <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                                                <td>{material.wastage}</td>
+                                                                                                                <td>{material.estimated_quantity_wastage}</td>
+                                                                                                              </tr>
+                                                                                                            ))}
+                                                                                                          </tbody>
+                                                                                                        </table>
+                                                                                                      </div>
+                                                                                                    </div>
+                                                                                                  </CollapsibleCard>
+
+                                                                                                  <CollapsibleCard title="Assets">
+                                                                                                    <div className="card-body mt-0 pt-0">
+                                                                                                      <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                                        <table className="w-100">
+                                                                                                          <thead>
+                                                                                                            <tr>
+                                                                                                              <th rowSpan={2}>Sr.No</th>
+                                                                                                              <th rowSpan={2}>Asset Type</th>
+                                                                                                              <th rowSpan={2}>Asset</th>
+                                                                                                              <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                                              <th rowSpan={2}>Generic Specification</th>
+                                                                                                              <th rowSpan={2}>Colour</th>
+                                                                                                              <th rowSpan={2}>Brand</th>
+                                                                                                              <th rowSpan={2}>UOM</th>
+                                                                                                              <th colSpan={3}>Cost</th>
+                                                                                                              <th rowSpan={2}>Wastage</th>
+                                                                                                              <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                                            </tr>
+                                                                                                            <tr>
+                                                                                                              <th>Co-Efficient Factor</th>
+                                                                                                              <th colSpan={2}>Estimated Qty</th>
+                                                                                                            </tr>
+                                                                                                          </thead>
+                                                                                                          <tbody>
+                                                                                                            {boqSubItem.assets?.map((asset, index) => (
+                                                                                                              <tr key={asset.id}>
+                                                                                                                <td>{index + 1}</td>
+                                                                                                                <td>{asset.material_type}</td>
+                                                                                                                <td>{asset.material_name}</td>
+                                                                                                                <td>{asset.material_sub_type}</td>
+                                                                                                                <td>{asset.generic_info}</td>
+                                                                                                                <td>{asset.color}</td>
+                                                                                                                <td>{asset.brand}</td>
+                                                                                                                <td>{asset.uom}</td>
+                                                                                                                <td>{asset.co_efficient_factor}</td>
+                                                                                                                <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                                                <td>{asset.wastage}</td>
+                                                                                                                <td>{asset.estimated_quantity_wastage}</td>
+                                                                                                              </tr>
+                                                                                                            ))}
+                                                                                                          </tbody>
+                                                                                                        </table>
+                                                                                                      </div>
+                                                                                                    </div>
+                                                                                                  </CollapsibleCard>
+                                                                                                </div>
+                                                                                              </td>
+                                                                                            </tr>
+                                                                                          </React.Fragment>
+                                                                                        )}
+                                                                                      </React.Fragment>
+                                                                                    ))}
+                                                                                  </tbody>
+                                                                                </table>
+                                                                              </div>
+                                                                            ) : (
+                                                                              <div>
+                                                                                {/* Render Materials and Assets Card when no Sub Items */}
+                                                                                <CollapsibleCard title="Materials">
+                                                                                  <div className="card-body mt-0 pt-0">
+                                                                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                      <table className="w-100">
+                                                                                        <thead>
+                                                                                          <tr>
+                                                                                            <th rowSpan={2}>Sr.No</th>
+                                                                                            <th rowSpan={2}>Material Type</th>
+                                                                                            <th rowSpan={2}>Material</th>
+                                                                                            <th rowSpan={2}>Material Sub-Type</th>
+                                                                                            <th rowSpan={2}>Generic Specification</th>
+                                                                                            <th rowSpan={2}>Colour</th>
+                                                                                            <th rowSpan={2}>Brand</th>
+                                                                                            <th rowSpan={2}>UOM</th>
+                                                                                            <th colSpan={3}>Cost</th>
+                                                                                            <th rowSpan={2}>Wastage</th>
+                                                                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                          </tr>
+                                                                                          <tr>
+                                                                                            <th>Co-Efficient Factor</th>
+                                                                                            <th colSpan={2}>Estimated Qty</th>
+                                                                                          </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                          {boqDetail5?.materials?.map((material, index) => (
+                                                                                            <tr key={material.id}>
+                                                                                              <td>{index + 1}</td>
+                                                                                              <td>{material.material_type}</td>
+                                                                                              <td>{material.material_name}</td>
+                                                                                              <td>{material.material_sub_type}</td>
+                                                                                              <td>{material.generic_info}</td>
+                                                                                              <td>{material.color}</td>
+                                                                                              <td>{material.brand}</td>
+                                                                                              <td>{material.uom}</td>
+                                                                                              <td>{material.co_efficient_factor}</td>
+                                                                                              <td colSpan={2}>{material.estimated_quantity}</td>
+                                                                                              <td>{material.wastage}</td>
+                                                                                              <td>{material.estimated_quantity_wastage}</td>
+                                                                                            </tr>
+                                                                                          ))}
+                                                                                        </tbody>
+                                                                                      </table>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </CollapsibleCard>
+
+                                                                                <CollapsibleCard title="Assets">
+                                                                                  <div className="card-body mt-0 pt-0">
+                                                                                    <div className="tbl-container mx-3 mt-1" style={{ height: "200px" }}>
+                                                                                      <table className="w-100">
+                                                                                        <thead>
+                                                                                          <tr>
+                                                                                            <th rowSpan={2}>Sr.No</th>
+                                                                                            <th rowSpan={2}>Asset Type</th>
+                                                                                            <th rowSpan={2}>Asset</th>
+                                                                                            <th rowSpan={2}>Asset Sub-Type</th>
+                                                                                            <th rowSpan={2}>Generic Specification</th>
+                                                                                            <th rowSpan={2}>Colour</th>
+                                                                                            <th rowSpan={2}>Brand</th>
+                                                                                            <th rowSpan={2}>UOM</th>
+                                                                                            <th colSpan={3}>Cost</th>
+                                                                                            <th rowSpan={2}>Wastage</th>
+                                                                                            <th rowSpan={2}>Total Estimated Qty Wastage</th>
+                                                                                          </tr>
+                                                                                          <tr>
+                                                                                            <th>Co-Efficient Factor</th>
+                                                                                            <th colSpan={2}>Estimated Qty</th>
+                                                                                          </tr>
+                                                                                        </thead>
+                                                                                        <tbody>
+                                                                                          {boqDetail5?.assets?.map((asset, index) => (
+                                                                                            <tr key={asset.id}>
+                                                                                              <td>{index + 1}</td>
+                                                                                              <td>{asset.material_type}</td>
+                                                                                              <td>{asset.material_name}</td>
+                                                                                              <td>{asset.material_sub_type}</td>
+                                                                                              <td>{asset.generic_info}</td>
+                                                                                              <td>{asset.color}</td>
+                                                                                              <td>{asset.brand}</td>
+                                                                                              <td>{asset.uom}</td>
+                                                                                              <td>{asset.co_efficient_factor}</td>
+                                                                                              <td colSpan={2}>{asset.estimated_quantity}</td>
+                                                                                              <td>{asset.wastage}</td>
+                                                                                              <td>{asset.estimated_quantity_wastage}</td>
+                                                                                            </tr>
+                                                                                          ))}
+                                                                                        </tbody>
+                                                                                      </table>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </CollapsibleCard>
+                                                                              </div>
+                                                                            )}
+                                                                          </div>
+                                                                        </td>
+                                                                      </tr>
+                                                                    </React.Fragment>
+                                                                  )}
+
+
+                                                                </React.Fragment>
+                                                              ))
+                                                            )}
+
+                                                          </React.Fragment>
+                                                        ))
+                                                      )}
+
+
+                                                      {/* 5 end */}
+                                                    </React.Fragment>
+                                                  ))
+                                                )}
+
+                                                {/* level4 end */}
+                                              </React.Fragment>
+                                            ))
+                                          )}
+
+                                          {/* .. */}
+
+                                        </React.Fragment>
+                                      ))
+                                    )}
+                                    {/* sub level 2 end*/}
+
+                                  </React.Fragment>
+                                ))
+                              )}
+                              {/* Conditional rendering for categories under sub-project  end*/}
+                            </React.Fragment>
+                          ))}
+
+                        </React.Fragment>
+
+
+                      ))}
+                      {/* subProject end */}
+
+                    </tbody>
+                  </table>
+                </div>
               </div>
+
+              {/* boq list table is here  end*/}
+
             </div>
 
-            {/* boq list table is here  end*/}
-
+            {/* <CopyBudgetModal show={show} handleClose={handleClose} /> */}
           </div>
-
-          <CopyBudgetModal show={show} handleClose={handleClose} />
         </div>
-      </div>
 
       )}
-      
+      {/* advance fiter Modal */}
+      <Modal
+        show={show}
+        onHide={handleClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 1L1 9L9 17"
+                      stroke="#8B0203"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                  Filter
+                </h3>
+              </div>
+              <Link
+                className="resetCSS"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+                to="#"
+              >
+                Reset
+              </Link>
+            </div>
+          </div>
+        </Modal.Header>
+        <div className="modal-body" style={{ overflowY: scroll }}>
+          <div className="row">
+            <div className="row mt-2 px-2">
+              <div className="col-md-12 card mx-3">
+                <div className="card-header2">
+                  <h3 className="card-title2">
+                    <div className="form-group form-control">
+                      Applied Filter
+                    </div>
+                  </h3>
+                </div>
+
+                <div className="card-body">
+                  <div className="row align-items-center">
+                    <div className="col-md-4">
+                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
+                        <label className="px-1" htmlFor="company">
+                          Company
+                        </label>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
+                        <label className="px-1" htmlFor="project">
+                          Project
+                        </label>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
+                        <p className="px-1">Sub-project</p>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row mt-3 align-items-end">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Work Category</label>
+
+                  <SingleSelector
+                    options={[
+                      { value: "Alabama", label: "Alabama" },
+                      { value: "Alaska", label: "Alaska" },
+                      { value: "California", label: "California" },
+                      { value: "Delaware", label: "Delaware" }
+                    ]}
+                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
+                    // value={selectedWorkCategory}
+                    placeholder="Select Work Category"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Work SubCategory</label>
+                  <SingleSelector
+                    options={[
+                      { value: "Alabama", label: "Alabama" },
+                      { value: "Alaska", label: "Alaska" },
+                      { value: "California", label: "California" },
+                      { value: "Delaware", label: "Delaware" }
+                    ]}
+                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
+                    // value={selectedWorkCategory}
+                    placeholder="Select Work SubCategory"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            <div className="row mt-3 align-items-end">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Status</label>
+                  <SingleSelector
+                    options={[
+                      { value: "Alabama", label: "Alabama" },
+                      { value: "Alaska", label: "Alaska" },
+                      { value: "California", label: "California" },
+                      { value: "Delaware", label: "Delaware" }
+                    ]}
+                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
+                    // value={selectedWorkCategory}
+                    placeholder="Select Status"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Unit</label>
+
+                  <SingleSelector
+                    options={[
+                      { value: "Alabama", label: "Alabama" },
+                      { value: "Alaska", label: "Alaska" },
+                      { value: "California", label: "California" },
+                      { value: "Delaware", label: "Delaware" }
+                    ]}
+                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
+                    // value={selectedWorkCategory}
+                    placeholder="Select Unit"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer justify-content-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            onClick={handleClose}
+          >
+            Go
+          </button>
+        </div>
+      </Modal>
+
       {/* copy modal */}
       {/* <Modal
         size="m"
