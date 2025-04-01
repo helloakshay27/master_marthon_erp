@@ -2442,10 +2442,10 @@ if (hasErrors2) return;
                                   </th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
-                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
-                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
-                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour </th>
-                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Colour </th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Brand </th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
                                   {/* <th rowSpan={2}>Cost QTY</th> */}
                                   <th className="text-center" colSpan={2}>Cost</th>
@@ -2489,7 +2489,7 @@ if (hasErrors2) return;
                                           placeholder={`Select Sub-Type`}
                                         />
                                       </td>
-                                      <td style={{ width: "200px" }}>
+                                      <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={Array.isArray(genericSpecifications[index]) ? genericSpecifications[index] : []}
                                           onChange={(selectedOption) =>
@@ -2503,7 +2503,7 @@ if (hasErrors2) return;
                                         )}
                                       </td>
 
-                                      <td style={{ width: "200px" }}>
+                                      <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={colors[index] || []}
                                           onChange={(selectedOption) =>
@@ -2517,7 +2517,7 @@ if (hasErrors2) return;
                                         )}
                                       </td>
 
-                                      <td style={{ width: "200px" }}>
+                                      <td style={{ width: "300px" }}>
                                         <SingleSelector
                                           options={inventoryBrands[index] || []}
                                           onChange={(selectedOption) =>
@@ -2679,11 +2679,11 @@ if (hasErrors2) return;
                                       </svg>
                                     </div>
                                   </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Assest Type
                                   </th>
 
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Assest
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
@@ -2698,24 +2698,24 @@ if (hasErrors2) return;
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     Brand
                                   </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     UOM
                                   </th>
                                   <th className="text-center" colSpan={2}>
                                     Cost
                                   </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Wastage%
                                   </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Total Estimated Quantity Wastage
                                   </th>
                                 </tr>
                                 <tr>
-                                  <th style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Co-efficient Factor <span>*</span>
                                   </th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
                                     Estimated Qty
                                   </th>
                                 </tr>
