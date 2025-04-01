@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
@@ -6,7 +6,8 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import SingleSelector from "../components/base/Select/SingleSelector";
-
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -14,15 +15,15 @@ const BillBookingCreate = () => {
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
-  const companyOptions = [
-    { value: "alabama", label: "Alabama" },
-    { value: "alaska", label: "Alaska" },
-    { value: "california", label: "California" },
-    { value: "delaware", label: "Delaware" },
-    { value: "tennessee", label: "Tennessee" },
-    { value: "texas", label: "Texas" },
-    { value: "washington", label: "Washington" },
-  ];
+  // const companyOptions = [
+  //   { value: "alabama", label: "Alabama" },
+  //   { value: "alaska", label: "Alaska" },
+  //   { value: "california", label: "California" },
+  //   { value: "delaware", label: "Delaware" },
+  //   { value: "tennessee", label: "Tennessee" },
+  //   { value: "texas", label: "Texas" },
+  //   { value: "washington", label: "Washington" },
+  // ];
 
   // action dropdown
   const actionDropdown = () => {
@@ -84,13 +85,13 @@ const BillBookingCreate = () => {
   // Add New Row
   const handleAddRow = () => {
     const newRow = {
-      id: new Date().getTime(), // Unique ID
-      type: "New Type",
+      id: Date.now(),
+      type: "",
       charges: "0",
       inclusive: false,
-      amount: 0.0,
+      amount: 0,
     };
-    setRows((prevRows) => [...prevRows, newRow]); // Ensure correct state update
+    setRows((prevRows) => [...prevRows, newRow]);
   };
 
   // Delete Row
@@ -108,6 +109,207 @@ const BillBookingCreate = () => {
     setselectPOModal(false);
   };
 
+  // Add new state variables for API data
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [selectedPO, setSelectedPO] = useState(null);
+  const [selectedGRN, setSelectedGRN] = useState(null);
+  const [formData, setFormData] = useState({
+    poNumber: "",
+    poDate: "",
+    poValue: "",
+    gstin: "",
+    pan: "",
+    invoiceNumber: "",
+    invoiceDate: "",
+    invoiceAmount: "",
+    baseCost: "",
+    netTaxes: "",
+    netCharges: "",
+    allInclusiveCost: "",
+    charges: [],
+    deductions: [],
+  });
+
+  // Fetch purchase orders on component mount
+  useEffect(() => {
+    const fetchPurchaseOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          "https://marathon.lockated.com//purchase_orders/grn_details.json?q[company_id_eq]=36&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        setPurchaseOrders(response.data.purchase_orders);
+      } catch (err) {
+        setError("Failed to fetch purchase orders");
+        console.error("Error fetching purchase orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPurchaseOrders();
+  }, []);
+
+  // Handle PO selection
+  const handlePOSelect = (po) => {
+    setSelectedPO(po);
+    setFormData((prev) => ({
+      ...prev,
+      poNumber: po.po_number,
+      poDate: po.po_date,
+      poValue: po.total_value,
+      gstin: po.gstin,
+      pan: po.pan,
+    }));
+    closeSelectPOModal();
+  };
+
+  // Handle GRN selection
+  const handleGRNSelect = (grn) => {
+    setSelectedGRN(grn);
+    setFormData((prev) => ({
+      ...prev,
+      baseCost: grn.base_cost,
+      netTaxes: grn.net_taxes,
+      netCharges: grn.net_charges,
+      allInclusiveCost: grn.all_inc_tax,
+      charges: grn.addition_tax_charges || [],
+      deductions: grn.deduction_taxes || [],
+    }));
+    closeSelectGRNModal();
+  };
+
+  // Render PO table in modal
+  const renderPOTable = () => {
+    return (
+      <div className="tbl-container mx-3 mt-3">
+        <table className="w-100">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" />
+              </th>
+              <th className="text-start">Sr.No</th>
+              <th className="text-start">PO Number</th>
+              <th className="text-start">PO Date</th>
+              <th className="text-start">PO Value</th>
+              <th className="text-start">PO Type</th>
+              <th className="text-start">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {purchaseOrders.map((po, index) => (
+              <tr key={po.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedPO?.id === po.id}
+                    onChange={() => handlePOSelect(po)}
+                  />
+                </td>
+                <td className="text-start">{index + 1}</td>
+                <td className="text-start">{po.po_number}</td>
+                <td className="text-start">{po.po_date}</td>
+                <td className="text-start">{po.total_value}</td>
+                <td className="text-start">{po.po_type}</td>
+                <td>
+                  <button
+                    className="btn btn-light p-0 border-0"
+                    onClick={() => handlePOSelect(po)}
+                  >
+                    Select
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // Render GRN table in modal
+  const renderGRNTable = () => {
+    if (!selectedPO) return null;
+
+    return (
+      <div className="tbl-container mx-3 mt-3">
+        <table className="w-100">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" />
+              </th>
+              <th>Material Name</th>
+              <th>Material GRN Amount</th>
+              <th>Certified Till Date</th>
+              <th>Base cost</th>
+              <th>Net Taxes</th>
+              <th>Net Charges</th>
+              <th>Qty</th>
+              <th>All Inclusive Cost</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedPO.grn_materials.map((grn, index) => (
+              <tr key={grn.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedGRN?.id === grn.id}
+                    onChange={() => handleGRNSelect(grn)}
+                  />
+                </td>
+                <td>{grn.material_name}</td>
+                <td>{grn.all_inc_tax}</td>
+                <td>{grn.certified_till_date || "-"}</td>
+                <td>{grn.base_cost}</td>
+                <td>{grn.net_taxes}</td>
+                <td>{grn.net_charges}</td>
+                <td>{grn.quantity || "-"}</td>
+                <td>{grn.all_inc_tax}</td>
+                <td>
+                  <button
+                    className="btn btn-light p-0 border-0"
+                    onClick={() => {
+                      handleGRNSelect(grn);
+                      setattachThreeModal(true);
+                    }}
+                  >
+                    Taxes
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
+  const [companies, setCompanies] = useState([]);
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -121,65 +323,28 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      {/* <SingleSelector
+                      <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
-                        isDisabled={true}
-                      ></SingleSelector> */}
-                      <input
+                        value={selectedCompany}
+                        // isDisabled={true}
+                      ></SingleSelector>
+                      {/* <input
                         type="text"
                         className="form-control"
                         // placeholder="Enter Company"
                         disabled
-                      />
+                      /> */}
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Project</label>
-                      {/* <SingleSelector
-                        options={companyOptions}
-                        className="form-control form-select"
-                        isDisabled={true}
-                      ></SingleSelector> */}
-                      <input
-                        type="text"
-                        className="form-control"
-                        // placeholder="Enter Company"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 ">
-                    <div className="form-group">
-                      <label>Sub Project</label>
-                      {/* <SingleSelector
-                        options={companyOptions}
-                        className="form-control form-select"
-                        isDisabled={true}
-                      ></SingleSelector> */}
-                      <input
-                        type="text"
-                        className="form-control"
-                        // placeholder="Enter Company"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
+
+                  <div className="col-md-4 s">
                     <div className="form-group">
                       <label>Supplier</label>
-                      {/* <SingleSelector
+                      <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
-                        isDisabled={true}
-                      ></SingleSelector> */}
-                      <input
-                        type="text"
-                        className="form-control"
-                        // placeholder="Enter Company"
-                        disabled
-                      />
+                      ></SingleSelector>
                     </div>
                   </div>
                   <div className="col-md-1 pt-2 mt-4">
@@ -202,9 +367,9 @@ const BillBookingCreate = () => {
                       <label>PO Number</label>
                       <input
                         className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        type="text"
+                        value={formData.poNumber}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -235,11 +400,20 @@ const BillBookingCreate = () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="text-start"> 1</td>
-                          <td className="text-start" />
-                          <td className="text-start"> </td>
-                          <td className="text-start" />
-                          <td className="text-start text-decoration-underline" />
+                          <td className="text-start">1</td>
+                          <td className="text-start">
+                            {selectedPO?.po_number || "-"}
+                          </td>
+                          <td className="text-start">
+                            {selectedPO?.po_date || "-"}
+                          </td>
+                          <td className="text-start">
+                            {selectedPO?.total_value || "-"}
+                          </td>
+                          <td className="text-start">
+                            {selectedPO?.po_type || "-"}
+                          </td>
+                          <td className="text-start">-</td>
                         </tr>
                       </tbody>
                     </table>
@@ -249,9 +423,14 @@ const BillBookingCreate = () => {
                       <label>Invoice Number</label>
                       <input
                         className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        type="text"
+                        value={formData.invoiceNumber}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceNumber: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -271,8 +450,13 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="date"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        value={formData.invoiceDate}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceDate: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -282,8 +466,13 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        value={formData.invoiceAmount}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceAmount: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -293,9 +482,8 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
+                        value={formData.poValue}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -304,10 +492,9 @@ const BillBookingCreate = () => {
                       <label>GSTIN</label>
                       <input
                         className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
+                        type="text"
+                        value={formData.gstin}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -320,9 +507,8 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
+                        value={formData.pan}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -390,27 +576,45 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start"> 1</td>
-                        <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start" />
-                        <td className="text-start text-decoration-underline" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+                      {selectedGRN && (
+                        <tr>
+                          <td className="text-start">1</td>
+                          <td className="text-start">
+                            {selectedGRN.material_name}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.all_inc_tax}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.certified_till_date || "-"}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.base_cost}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.net_taxes}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.net_charges}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.quantity || "-"}
+                          </td>
+                          <td className="text-start">
+                            {selectedGRN.all_inc_tax}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <th className="text-start">Total</th>
                         <td />
+                        <td>{selectedGRN?.all_inc_tax || 0}</td>
                         <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
-                        <td />
+                        <td>{selectedGRN?.base_cost || 0}</td>
+                        <td>{selectedGRN?.net_taxes || 0}</td>
+                        <td>{selectedGRN?.net_charges || 0}</td>
+                        <td>{selectedGRN?.quantity || 0}</td>
+                        <td>{selectedGRN?.all_inc_tax || 0}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1213,7 +1417,7 @@ const BillBookingCreate = () => {
               </div>
             </div>
             <div className="row">
-              <div className="col-md-6">
+              {/* <div className="col-md-6">
                 <div className="form-group">
                   <label>Project</label>
                   <input
@@ -1224,8 +1428,8 @@ const BillBookingCreate = () => {
                     disabled
                   />
                 </div>
-              </div>
-              <div className="col-md-6">
+              </div> */}
+              {/* <div className="col-md-6">
                 <div className="form-group">
                   <label>Sub Project</label>
                   <input
@@ -1236,7 +1440,7 @@ const BillBookingCreate = () => {
                     disabled
                   />
                 </div>
-              </div>
+              </div> */}
 
               <div className="col-md-6">
                 <div className="form-group">
@@ -1351,46 +1555,7 @@ const BillBookingCreate = () => {
                 </button>
               </div>
             </div>
-            <div className="d-flex justify-content-between mt-3 me-2">
-              <h5 className=" ">Search Result</h5>
-            </div>
-            <div className="tbl-container mx-3 mt-3">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>
-                      <input type="checkbox" />
-                    </th>
-                    <th className="text-start">Sr.No</th>
-                    <th className="text-start">PO Number</th>
-                    <th className="text-start">PO Date</th>
-                    <th className="text-start">Upload Date</th>
-                    <th className="text-start">Uploaded By</th>
-                    <th className="text-start">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <input type="checkbox" />
-                    </td>
-                    <td className="text-start">1</td>
-                    <td className="text-start">MTC</td>
-                    <td className="text-start">Material test Cert 1.pdf</td>
-                    <td className="text-start">01-04-2024</td>
-                    <td className="text-start">vendor user</td>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#remark-modal"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {renderPOTable()}
           </div>
 
           <div className="row mt-2 justify-content-center">
@@ -1427,117 +1592,16 @@ const BillBookingCreate = () => {
                 <input
                   className="form-control"
                   type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
+                  value={selectedPO?.po_number || ""}
                   disabled
                 />
               </div>
             </div>
-            {/* <div className="col-md-4">
-              <div className="form-group">
-                <label>GRN Number</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Delivery Challan No</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Amount (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Certified Till Date (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>All Inclusive Cost (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div> */}
           </div>
           <div className=" mt-3 me-2">
             <h5 className=" ">GRN Details</h5>
           </div>
-          <div className="tbl-container mx-3 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Material Name</th>
-                  <th>Material GRN Amount</th>
-                  <th>Certified Till Date</th>
-                  <th>Base cost</th>
-                  <th>Net Taxes</th>
-                  <th>Net Charges</th>
-                  <th>Qty</th>
-                  <th>All Inclusive Cost</th>
-                  <th>Taxes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-
-                  <td>
-                    <button
-                      className=" btn text-decoration-underline"
-                      data-bs-toggle="modal"
-                      data-bs-target="#taxesModal"
-                      onClick={openAttachThreeModal}
-                    >
-                      Taxes
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {renderGRNTable()}
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
               <button className="purple-btn2 w-100" fdprocessedid="u33pye">
@@ -1838,16 +1902,15 @@ const BillBookingCreate = () => {
                   <td />
                   <td />
                   <td />
-                  <td />
+
                   <td>
                     <button
                       className=" btn text-decoration-underline"
                       data-bs-toggle="modal"
                       data-bs-target="#taxesModal"
-                      data-bs-dismiss="modal"
                       onClick={openAttachThreeModal}
                     >
-                      Taxesss
+                      Taxes
                     </button>
                   </td>
                 </tr>
@@ -1899,7 +1962,7 @@ const BillBookingCreate = () => {
                   <th>Total Base Cost</th>
                   <td></td>
                   <td></td>
-                  <td>3000</td>
+                  <td>{selectedGRN?.base_cost || 0}</td>
                   <td></td>
                 </tr>
 
@@ -1909,81 +1972,49 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td>
-                    <button
-                      className="btn btn-light p-0 border-0"
-                      // onClick={addCharge}
-                    >
-                      {/* <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        className="bi bi-plus-circle"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                      </svg> */}
-                    </button>
-                  </td>
+                  <td></td>
                 </tr>
 
-                {/* {/* {charges.map((charge) => ( */}
-                <tr
-                // key={charge.id}>
-                >
-                  <td>
-                    {/* <select className="form-control">
-                      <option value="">Select</option>
-                      <option value="IGST">IGST</option>
-                      <option value="SGCT">SGCT</option>
-                      <option value="CGST">CGST</option>
-                    </select> */}
-                    <input type="number" className="form-control" />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      className="form-control"
-                      // value={charge.amount}
-                      readOnly
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="checkbox"
-                      // checked={charge.inclusive}
-                      readOnly
-                    />
-                  </td>
-                  <td></td>
-                  <td>
-                    <button
-                      className="btn btn-light p-0 border-0"
-                      // onClick={() => removeCharge(charge.id)}
-                    >
-                      {/* <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={20}
-                          height={20}
-                          fill="currentColor"
-                          className="bi bi-dash-circle"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                          <path d="M5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 8" />
-                        </svg> */}
-                    </button>
-                  </td>
-                </tr>
-                {/* ))} */}
+                {formData.charges.map((charge) => (
+                  <tr key={charge.id}>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={charge.tax_name}
+                        readOnly
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={charge.tax_charge_per_uom}
+                        readOnly
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={charge.inclusive}
+                        readOnly
+                      />
+                    </td>
+                    <td>{charge.amount}</td>
+                    <td></td>
+                  </tr>
+                ))}
 
                 <tr>
                   <th>Sub Total A (Addition)</th>
                   <td></td>
                   <td></td>
-                  <td>{charges.reduce((acc, curr) => acc + curr.amount, 0)}</td>
+                  <td>
+                    {formData.charges.reduce(
+                      (acc, curr) => acc + curr.amount,
+                      0
+                    )}
+                  </td>
                   <td></td>
                 </tr>
 
@@ -1993,7 +2024,11 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td>
-                    {3000 + charges.reduce((acc, curr) => acc + curr.amount, 0)}
+                    {(selectedGRN?.base_cost || 0) +
+                      formData.charges.reduce(
+                        (acc, curr) => acc + curr.amount,
+                        0
+                      )}
                   </td>
                   <td></td>
                 </tr>
@@ -2004,61 +2039,36 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td>
-                    <button
-                      className="btn btn-light p-0 border-0"
-                      onClick={addDeduction}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        className="bi bi-plus-circle"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                      </svg>
-                    </button>
-                  </td>
+                  <td></td>
                 </tr>
 
-                {deductions.map((deduction) => (
+                {formData.deductions.map((deduction) => (
                   <tr key={deduction.id}>
                     <td>
-                      <select className="form-control">
-                        <option value="TDS">TDS</option>
-                      </select>
-                    </td>
-                    <td>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
-                        value={deduction.amount}
+                        value={deduction.tax_name}
                         readOnly
                       />
                     </td>
-                    <td></td>
-                    <td>{deduction.amount}</td>
                     <td>
-                      <button
-                        className="btn btn-light p-0 border-0"
-                        onClick={() => removeDeduction(deduction.id)}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={20}
-                          height={20}
-                          fill="currentColor"
-                          className="bi bi-dash-circle"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                          <path d="M5 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 8" />
-                        </svg>
-                      </button>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={deduction.tax_charge_per_uom}
+                        readOnly
+                      />
                     </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={deduction.inclusive}
+                        readOnly
+                      />
+                    </td>
+                    <td>{deduction.amount}</td>
+                    <td></td>
                   </tr>
                 ))}
 
@@ -2067,7 +2077,10 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td>
-                    {deductions.reduce((acc, curr) => acc + curr.amount, 0)}
+                    {formData.deductions.reduce(
+                      (acc, curr) => acc + curr.amount,
+                      0
+                    )}
                   </td>
                   <td></td>
                 </tr>
@@ -2078,9 +2091,15 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td>
-                    {3000 +
-                      charges.reduce((acc, curr) => acc + curr.amount, 0) -
-                      deductions.reduce((acc, curr) => acc + curr.amount, 0)}
+                    {(selectedGRN?.base_cost || 0) +
+                      formData.charges.reduce(
+                        (acc, curr) => acc + curr.amount,
+                        0
+                      ) -
+                      formData.deductions.reduce(
+                        (acc, curr) => acc + curr.amount,
+                        0
+                      )}
                   </td>
                   <td></td>
                 </tr>
