@@ -15,6 +15,7 @@ import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust
 
 
 import { baseURL, baseURL1 } from "../confi/apiDomain";
+import MultiSelector from "../components/base/Select/MultiSelector";
 
 
 
@@ -178,6 +179,12 @@ const ErpStockRegister13B = () => {
   const [selectedCompany, setSelectedCompany] = useState([]);
   const [selectedProject, setSelectedProject] = useState([]);
   const [selectedSubProject, setSelectedSubProject] = useState([]);
+  const [selectedIds, setSelectedIds] = useState({
+    genericInfos: [],
+    materialSubTypes: [],
+    materialTypes: [],
+    unitOfMeasures: []
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,7 +195,7 @@ const ErpStockRegister13B = () => {
         const token = urlParams.get('token');
 
         const response = await fetch(
-          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(searchTerm)}&q[material_order_request_company_id_eq]=${selectedCompany}&q[material_order_request_project_id_eq]=${selectedProject}&page=${page}&per_page=${pageSize}`
+          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(searchTerm)}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${selectedIds.genericInfos}&q[material_type_id]=${selectedIds.materialTypes}&q[material_sub_type_id]=${selectedIds.materialSubTypes}&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures}&page=${page}&per_page=${pageSize}`
         ); // Replace with your API endpoint
 
 
@@ -246,7 +253,7 @@ const ErpStockRegister13B = () => {
     fetchData(); // Call the fetch function
 
 
-  }, [location.search, selectedCompany, selectedProject, page, searchTerm]); // Empty dependency array to run once on mount
+  }, [location.search, selectedCompany, selectedProject, page, searchTerm, selectedIds,selectedSubProject]); // Empty dependency array to run once on mount
 
   const handleResets = () => {
     setSelectedCompany([]);
@@ -342,6 +349,55 @@ const ErpStockRegister13B = () => {
     setSelectedSubProject(option);
   };
 
+  const [genericInfos, setGenericInfos] = useState([]);
+  const [materialSubTypes, setMaterialSubTypes] = useState([]);
+  const [materialTypes, setMaterialTypes] = useState([]);
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+
+
+  const fetchData = async (url, setState) => {
+    try {
+      const response = await axios.get(url);
+      setState(response.data);
+    } catch (error) {
+      console.error("Error fetching data from", url, error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(
+      "https://marathon.lockated.com//pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      setGenericInfos
+    );
+    fetchData(
+      "https://marathon.lockated.com//pms/inventory_sub_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      setMaterialSubTypes
+    );
+    fetchData(
+      "https://marathon.lockated.com//pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      setMaterialTypes
+    );
+    fetchData(
+      "https://marathon.lockated.com//unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      setUnitOfMeasures
+    );
+  }, []);
+
+  const formatOptions = (data) => {
+    return data.map((item) => ({ label: item.name || item.title || item.generic_info, value: item.id }));
+  };
+
+  const handleChange = (key, selectedOptions) => {
+    setSelectedIds((prev) => ({
+      ...prev,
+      [key]: selectedOptions.map(option => option.value) // Persist selected values
+    }));
+  };
+
+  // Helper function to get selected options for MultiSelector
+  const getSelectedOptions = (key, options) => {
+    return options.filter(option => selectedIds[key].includes(option.value));
+  };
 
   if (loading) return <div>Loading...</div>;
   return (
@@ -627,277 +683,45 @@ const ErpStockRegister13B = () => {
           </div>
         </Modal.Header>
         <div className="modal-body" style={{ overflowY: scroll }}>
-          <div className="row">
-            <div className="row mt-2 px-2">
-              <div className="col-md-12 card mx-3">
-                <div className="card-header2">
-                  <h3 className="card-title2">
-                    <div className="form-group form-control">
-                      Applied Filter
-                    </div>
-                  </h3>
-                </div>
-
-                <div className="card-body">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <label className="px-1" htmlFor="company">
-                          Company
-                        </label>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <label className="px-1" htmlFor="project">
-                          Project
-                        </label>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <p className="px-1">Sub-project</p>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="row justify-content-between align-items-center mt-2">
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">Material Type</label>
+              <MultiSelector
+                options={formatOptions(materialTypes)}
+                isMulti
+                value={getSelectedOptions("materialTypes", formatOptions(materialTypes))} // Show selected options
+                onChange={(selected) => handleChange("materialTypes", selected)}
+              />
             </div>
 
-            <div className="col-md-12">
-              <div className="form-group">
-                <label
-                  htmlFor="mor-date"
-                  style={{ fontSize: "16px", fontWeight: 600 }}
-                >
-                  MOR Date
-                </label>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="mor-date-from">From</label>
-                      <input
-                        id="mor-date-from"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="mor-date-to">To</label>
-                      <input
-                        id="mor-date-to"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">Material Sub Type</label>
+              <MultiSelector
+                options={formatOptions(materialSubTypes)}
+                isMulti
+                value={getSelectedOptions("materialSubTypes", formatOptions(materialSubTypes))}
+                onChange={(selected) => handleChange("materialSubTypes", selected)}
+              />
             </div>
 
-            <div className="col-md-12 mt-4">
-              <div className="form-group">
-                <label
-                  htmlFor="approval-date"
-                  style={{ fontSize: "16px", fontWeight: 600 }}
-                >
-                  Approval Date
-                </label>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="approval-date-from">From</label>
-                      <input
-                        id="approval-date-from"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="approval-date-to">To</label>
-                      <input
-                        id="approval-date-to"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">Generic Info</label>
+              <MultiSelector
+                options={formatOptions(genericInfos)}
+                isMulti
+                value={getSelectedOptions("genericInfos", formatOptions(genericInfos))}
+                onChange={(selected) => handleChange("genericInfos", selected)}
+              />
             </div>
 
-            <div className="col-md-12 mt-4">
-              <div className="form-group">
-                <label
-                  htmlFor="due-date"
-                  style={{ fontSize: "16px", fontWeight: 600 }}
-                >
-                  Due Date
-                </label>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="due-date-from">From</label>
-                      <input
-                        id="due-date-from"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-group">
-                      <label htmlFor="due-date-to">To</label>
-                      <input
-                        id="due-date-to"
-                        className="form-control"
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-12 mt-4">
-              <div className="form-group">
-                <label
-                  htmlFor="created-on"
-                  style={{ fontSize: "16px", fontWeight: 600 }}
-                >
-                  Created On
-                </label>
-                <input id="created-on" className="form-control" type="date" />
-              </div>
-            </div>
-
-            <div className="row mt-3 align-items-end">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="material-type">Material Type</label>
-                  <select
-                    id="material-type"
-                    className="form-control form-select"
-                  >
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="material-sub-type">Material Sub Type</label>
-                  <select
-                    id="material-sub-type"
-                    className="form-control form-select"
-                  >
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="material">Material</label>
-                  <select id="material" className="form-control form-select">
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="row mt-3 align-items-end">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="activity">Activity</label>
-                  <select id="activity" className="form-control form-select">
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="status">Status</label>
-                  <select id="status" className="form-control form-select">
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="mor-no">MOR No.</label>
-                  <select id="mor-no" className="form-control form-select">
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="row mt-3 align-items-end">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label htmlFor="overdue">Overdue</label>
-                  <select id="overdue" className="form-control form-select">
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label htmlFor="requisition-department">
-                    Requisition Department
-                  </label>
-                  <select
-                    id="requisition-department"
-                    className="form-control form-select"
-                  >
-                    <option value="Alabama">Alabama</option>
-                    <option value="Alaska">Alaska</option>
-                    <option value="California">California</option>
-                    <option value="Delaware">Delaware</option>
-                  </select>
-                </div>
-              </div>
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">Unit of Measures</label>
+              <MultiSelector
+                options={formatOptions(unitOfMeasures)}
+                isMulti
+                value={getSelectedOptions("unitOfMeasures", formatOptions(unitOfMeasures))}
+                onChange={(selected) => handleChange("unitOfMeasures", selected)}
+              />
             </div>
           </div>
         </div>
