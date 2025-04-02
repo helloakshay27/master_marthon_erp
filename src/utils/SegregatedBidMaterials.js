@@ -30,6 +30,7 @@ export const SegregatedBidMaterials = (inputArray) => {
         material_name: material.material_name,
         vendor_id: vendor.id,
         pms_supplier_id: vendor.pms_supplier_id,
+        extra: bid.extra // Pass the extra object from the bid
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);

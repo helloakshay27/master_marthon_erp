@@ -63,9 +63,9 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     const currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() + 30);
     const minEndDate = currentTime.toISOString().split("T")[0];
-    if (selectedDate >= minEndDate && selectedDate <= formattedDeliveryDate) {
+    // if (selectedDate >= minEndDate && selectedDate <= formattedDeliveryDate) {
       setEndDate(selectedDate);
-    }
+    // }
   };
 
   const handleStartTimeChange = (value) => {
@@ -105,11 +105,17 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     const currentTime = new Date();
     currentTime.setMinutes(currentTime.getMinutes() + 30);
     const minEndTime = currentTime.toTimeString().split(" ")[0].substring(0, 5);
-    if (endDate === currentTime.toISOString().split("T")[0] && selectedTime < minEndTime) {
-      toast.warning("End time must be at least 30 minutes after the current time.");
-    } else {
+
+    const deliveryDateTime = new Date(`${formattedDeliveryDate}T23:59`);
+    const selectedDateTime = new Date(`${endDate}T${selectedTime}`);
+
+    // if (endDate === currentTime.toISOString().split("T")[0] && selectedTime < minEndTime) {
+    //   toast.warning("End time must be at least 30 minutes after the current time.");
+    // } else if (selectedDateTime > deliveryDateTime) {
+    //   toast.warning("End time cannot exceed the delivery date and time.");
+    // } else {
       setEndTime(selectedTime);
-    }
+    // }
   };
 
   const handleEvaluationChange = (value) => {
@@ -127,7 +133,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     const currentTime = new Date();
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
-      : existingData?.start_time || new Date(currentTime.getTime() + 30 * 60000).toISOString();
+      : existingData?.start_time || currentTime.toISOString();
   
     const endTimeFormatted = endDate && endTime
       ? `${endDate}T${endTime}:00Z`
@@ -181,7 +187,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
             <SelectBox
               label={""}
               options={[
-                { value: "Start Now", label: "Start Now In 30 Mins" },
+                { value: "Start Now", label: "Start Now" },
                 { value: "Schedule for later", label: "Schedule for later" },
               ]}
               defaultValue={isLater ? "Schedule for later" : "Start Now"}

@@ -15,33 +15,34 @@ export default function CreateTemplate() {
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [columns, setColumns] = useState([
     { label: "Sr no.", key: "srNo", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Material Name", key: "descriptionOfItem", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Material Type", key: "material_type", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Material Sub type", key: "material_sub_type", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Quantity requested", key: "quantity_requested", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Creator Attachment", key: "creator_attachment", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Discount", key: "discount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Realised Discount", key: "realised_discount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "GST", key: "gst", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Realised GST", key: "realised_gst", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Landed Amount", key: "landed_amount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Participant Attachment", key: "participant_attachment", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Vendor Remark", key: "vendor_remark", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Total", key: "total", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Quantity", key: "quantity", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "UOM", key: "unit", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Location", key: "location", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Rate", key: "rate", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
-    { label: "Amount", key: "amount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Material Name", key: "descriptionOfItem", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Material Type", key: "material_type", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Material Sub type", key: "material_sub_type", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Quantity requested", key: "quantity_requested", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Creator Attachment", key: "creator_attachment", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Discount", key: "discount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Realised Discount", key: "realised_discount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "GST", key: "gst", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Realised GST", key: "realised_gst", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Landed Amount", key: "landed_amount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Participant Attachment", key: "participant_attachment", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Vendor Remark", key: "vendor_remark", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Total", key: "total", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Quantity", key: "quantity", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "UOM", key: "unit", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Location", key: "location", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Rate", key: "rate", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
+    // { label: "Amount", key: "amount", isRequired: true, isReadOnly: true, fieldOwner: "admin" },
   ]);
 
   const [shortTableData, setShortTableData] = useState([
-    { label: "Freight Charge", value: "" },
-    { label: "GST on Freight", value: "" },
-    { label: "Realised GST", value: "" },
-    { label: "Warranty Clause", value: "" },
-    { label: "Payment Terms", value: "" },
-    { label: "Loading/Unloading", value: "" },
+    // { label: "Freight Charge", value: "" },
+    // { label: "GST on Freight", value: "" },
+    // { label: "Realised GST", value: "" },
+    // { label: "Warranty Clause", value: "" },
+    // { label: "Payment Terms", value: "" },
+    // { label: "Loading/Unloading", value: "" },
+
   ]);
 
   const [showModal, setShowModal] = useState(false);
@@ -277,7 +278,7 @@ export default function CreateTemplate() {
                 <span className="material-symbols-outlined align-text-top">
                   add{" "}
                 </span>
-                <span>Add Column</span>
+                <span>Add Column for Bid Material</span>
               </button>
             </div>
             <Table
@@ -341,7 +342,7 @@ export default function CreateTemplate() {
             <div className="d-flex justify-content-end align-items-center">
               <button className="purple-btn2 mt-3" onClick={handleAddShortTableRow}>
                 <span className="material-symbols-outlined align-text-top">add</span>
-                <span>Add Row</span>
+                <span>Add Row for bid template</span>
               </button>
             </div>
             <div className="d-flex justify-content-end align-items-center">

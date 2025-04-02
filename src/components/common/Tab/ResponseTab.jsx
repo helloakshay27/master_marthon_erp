@@ -502,8 +502,11 @@ export default function ResponseTab({ isCounterOffer }) {
                           key: "participantAttachment",
                         },
                         { label: "Total Amount", key: "totalAmount" },
+                        { label: "Extra", key: "extra" },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
+                        // console.log("material on table:------",material);
+                        
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -513,8 +516,9 @@ export default function ResponseTab({ isCounterOffer }) {
                           gst: material.gst || "_",
                           realisedGST: material.realised_gst || "_",
                           landedAmount: material.landed_amount || "_",
-                          participantAttachment: "_",
+                          participantAttachment: material.participant_attachment || "_",
                           totalAmount: material.total_amount || "_",
+                          extra: material.extra?.remark || "_",
                         };
                       })}
                     />

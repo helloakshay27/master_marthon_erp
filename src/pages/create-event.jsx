@@ -121,11 +121,11 @@ export default function CreateEvent() {
     setPublishEventModal(false);
   };
   const handleEventScheduleModalShow = () => {
-    if (!dynamicExtensionConfigurations.delivery_date) {
-      toast.warn("Please fill the delivery date on Event Type");
-    } else {
+    // if (!dynamicExtensionConfigurations.delivery_date) {
+    //   toast.warn("Please fill the delivery date on Event Type");
+    // } else {
       setEventScheduleModal(true);
-    }
+    
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);

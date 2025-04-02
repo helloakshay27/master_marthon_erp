@@ -222,41 +222,13 @@ const EditBOQNew = () => {
         setBoqSubItems(existingBoqItems);
 
         // ✅ Merge API materials with existing ones in `materials2`
-        // setMaterials2((prev) => {
-        //     const updatedMaterials = { ...prev };
-
-        //     existingBoqItems.forEach((item) => {
-        //         const existingMaterials = updatedMaterials[item.id] || [];
-        //         const newMaterials = item.materials || [];
-
-        //         // Ensure all materials use `material_id`
-        //         const normalizedExistingMaterials = existingMaterials.map((m) => ({
-        //             ...m,
-        //             material_id: m.material_id || m.id, // Normalize material_id
-        //         }));
-        //         const normalizedNewMaterials = newMaterials.map((m) => ({
-        //             ...m,
-        //             material_id: m.material_id || m.id, // Normalize material_id
-        //         }));
-
-        //         // Avoid duplicates using `Set`
-        //         const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
-        //         const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
-
-        //         updatedMaterials[item.id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
-        //     });
-
-        //     return updatedMaterials;
-        // });
-
-
         setMaterials2((prev) => {
             const updatedMaterials = { ...prev };
-        
+
             existingBoqItems.forEach((item) => {
                 const existingMaterials = updatedMaterials[item.id] || [];
                 const newMaterials = item.materials || [];
-        
+
                 // Ensure all materials use `material_id`
                 const normalizedExistingMaterials = existingMaterials.map((m) => ({
                     ...m,
@@ -266,14 +238,17 @@ const EditBOQNew = () => {
                     ...m,
                     material_id: m.material_id || m.id, // Normalize material_id
                 }));
-        
-                // **Allow duplicate materials** by directly merging the lists
-                updatedMaterials[item.id] = [...normalizedExistingMaterials, ...normalizedNewMaterials];
+
+                // Avoid duplicates using `Set`
+                const existingMaterialIds = new Set(normalizedExistingMaterials.map((m) => m.material_id));
+                const filteredNewMaterials = normalizedNewMaterials.filter((m) => !existingMaterialIds.has(m.material_id));
+
+                updatedMaterials[item.id] = [...normalizedExistingMaterials, ...filteredNewMaterials];
             });
-        
+
             return updatedMaterials;
         });
-        
+
     }, [boqDetails]); // Runs when API data updates
 
     // ✅ Function to add new materials dynamically
@@ -1502,6 +1477,19 @@ const EditBOQNew = () => {
         setBoqSubItems(updatedBoq);
     };
 
+    // const handleInputChange2 = (index, field, value) => {
+    //     setBoqSubItems((prevBoqSubItems) => {
+    //         // Create a new array (immutability)
+    //         const updatedBoq = [...prevBoqSubItems];
+    
+    //         // Create a new object for the specific subItem
+    //         updatedBoq[index] = { ...updatedBoq[index], [field]: value };
+    
+    //         return updatedBoq;
+    //     });
+    // };
+    console.log("sub item name here :",boqSubItems)
+
     const handleUnitChangeForRow = (index, selectedOption, prevSelectedUnits) => {
         // Ensure to update the correct row's uom_id
         const updatedBoq = [...boqSubItems];
@@ -1687,7 +1675,7 @@ const EditBOQNew = () => {
     }
 
 
-    // console.log("boq data payload 2 edit sub: ", payload2)
+    console.log("boq data payload 2 edit sub: ", payload2)
     // console.log("sub item boq needed:", boqSubItems)
 
     // console.log("predefine data 2", predefinedMaterialsData)
