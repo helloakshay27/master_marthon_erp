@@ -867,7 +867,7 @@ const EditBOQNew = () => {
     useEffect(() => {
         Assets.forEach((asset, index) => {
             if (asset.inventory_type_id) {
-                console.log("Assets inventory id:", asset.inventory_type_id);
+                // console.log("Assets inventory id:", asset.inventory_type_id);
                 axios
                     .get(
                         `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -1488,7 +1488,7 @@ const EditBOQNew = () => {
     //         return updatedBoq;
     //     });
     // };
-    console.log("sub item name here :",boqSubItems)
+    // console.log("sub item name here :",boqSubItems)
 
     const handleUnitChangeForRow = (index, selectedOption, prevSelectedUnits) => {
         // Ensure to update the correct row's uom_id
@@ -1675,7 +1675,7 @@ const EditBOQNew = () => {
     }
 
 
-    console.log("boq data payload 2 edit sub: ", payload2)
+    // console.log("boq data payload 2 edit sub: ", payload2)
     // console.log("sub item boq needed:", boqSubItems)
 
     // console.log("predefine data 2", predefinedMaterialsData)
@@ -1728,18 +1728,22 @@ const EditBOQNew = () => {
         }
     };
 
+    
+
 
     useEffect(() => {
         calculateEstimatedQuantities();
         calculateTotalEstimatedQtyWastages();
         calculateAssetEstimatedQuantities();
         calculateAssetTotalEstimatedQtyWastages();
+        
     }, [
         boqQuantity,
         coefficientFactors,
         wastages,
         assetCoefficientFactors,
         assetWastages,
+        estimatedQuantities
     ]); // Recalculate when boqQuantity or coefficientFactors change
 
     // useEffect(() => {
@@ -1806,7 +1810,7 @@ const EditBOQNew = () => {
 
     // Function to calculate total estimated quantities with wastage
     const calculateTotalEstimatedQtyWastages = () => {
-        if (boqQuantity && estimatedQuantities.length > 0) {
+        if (boqQuantity && estimatedQuantities.length > 0 && wastages.length>0) {
             const newTotalEstimatedQtyWastages = materials.map((material, index) => {
                 const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
                 const wastagePercentage = parseFloat(wastages[index]) || 0;
@@ -1938,12 +1942,12 @@ const EditBOQNew = () => {
     };
 
 
-    console.log("boq sub item submit>>>")
+    // console.log("boq sub item submit>>>")
     // console.log("sub item: show", showBOQSubItem)
 
     // Handle submit for BOQ SubItem
     const handleSubmitBOQSubItem = async () => {
-        console.log("boq sub item>>>", boqSubItems)
+        // console.log("boq sub item>>>", boqSubItems)
         let validationErrors = {};
 
         if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
@@ -3262,7 +3266,7 @@ const EditBOQNew = () => {
                             {showBOQSubItem && (
                                 <>
 
-                                    {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
+                                    <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
 
                                     {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 
@@ -3378,6 +3382,7 @@ const EditBOQNew = () => {
                                                                                                 e.target.value
                                                                                             )
                                                                                         }
+                                                                                        disabled
                                                                                     />
                                                                                 </td>
                                                                                 <td>

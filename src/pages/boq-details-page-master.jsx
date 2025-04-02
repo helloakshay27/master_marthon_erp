@@ -14,9 +14,13 @@ import {
   Table,
 } from "../components"
 import { baseURL } from "../confi/apiDomain";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BOQDetailsPageMaster = () => {
   const { id } = useParams()
+  const navigate = useNavigate(); // Initialize the navigate function
   const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   const [loading, setLoading] = useState(true);  // State for loading indicator
@@ -178,8 +182,10 @@ console.log(boqDetails.assets);   // Should contain an array of assets
         setRemark("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
+        toast.success("Status updated successfully!");
       } else {
         console.log('Error updating status:', response.data);
+        toast.error("Failed to update status.");
         // Handle error (e.g., show an error message)
       }
     } catch (error) {
@@ -192,8 +198,9 @@ console.log(boqDetails.assets);   // Should contain an array of assets
 
 
   const handleCancel = () => {
-    setStatus(initialStatus); // Reset status to the initial value
-    setRemark(''); // Optionally reset the remark as well
+    // setStatus(initialStatus); // Reset status to the initial value
+    // setRemark(''); // Optionally reset the remark as well
+    navigate("/view-BOQ"); // 🔥 Redirect to the /view-BOQ page
   };
 
   //status 
@@ -1134,8 +1141,10 @@ console.log(boqDetails.assets);   // Should contain an array of assets
               </div>
 
               )}
+              {/* ✅ Toast Container */}
+    <ToastContainer />
               <button className="purple-btn2" onClick={handleSubmit}>Submit</button>
-              <button className="purple-btn1" onClick={handleCancel}>Cancel</button>
+              <button className="purple-btn1" onClick={handleCancel}>Close</button>
             </div>
           </CollapsibleCard>
 

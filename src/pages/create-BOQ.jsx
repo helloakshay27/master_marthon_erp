@@ -1798,7 +1798,10 @@ const CreateBOQ = () => {
 
         // Handle successful response
         if (response.data) {
-          navigate("/view-BOQ"); // Navigate to BOQ list on success
+          // navigate("/view-BOQ"); // Navigate to BOQ list on success
+           
+          navigate(`/boq-details-page-master/${response.data.id}`);  // Redirect with ID
+          // console.log("id in create responce:",response.data.id)
         } else {
           toast.error("Failed to create BOQ.", { position: "top-right" });
         }
@@ -2031,7 +2034,9 @@ if (hasErrors2) return;
         );
 
         if (response.data) {
-          navigate("/view-BOQ");
+          // navigate("/view-BOQ");
+          navigate(`/boq-details-page-master/${response.data.id}`);  // Redirect with ID
+          // console.log("id in create responce:",response.data.id)
         } else {
           toast.error("Failed to create BOQ Sub Item.", { position: "top-right" });
         }
