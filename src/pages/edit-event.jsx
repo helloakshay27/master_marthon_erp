@@ -152,11 +152,11 @@ export default function EditEvent() {
     setPublishEventModal(false);
   };
   const handleEventScheduleModalShow = () => {
-    if (!dynamicExtensionConfigurations.delivery_date) {
-      toast.warn("Please fill the delivery date on Event Type");
-    } else {
+    // if (!dynamicExtensionConfigurations.delivery_date) {
+    //   toast.warn("Please fill the delivery date on Event Type");
+    // } else {
       setEventScheduleModal(true);
-    }
+    
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -432,7 +432,7 @@ export default function EditEvent() {
 
         return {
           textareaId: term.term_condition_id,
-          id: term.term_condition_id,
+          id: term.id,
           value: term.term_condition.condition,
           defaultOption: matchedTerm
             ? { label: matchedTerm?.label, value: matchedTerm?.value }
@@ -784,6 +784,7 @@ export default function EditEvent() {
           },
         ],
         resource_term_conditions_attributes: textareas.map((textarea) => ({
+          id: textarea.id || null,
           term_condition_id: textarea.textareaId,
           condition_type: "general",
           condition: textarea.value,

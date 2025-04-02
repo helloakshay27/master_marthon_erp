@@ -179,7 +179,7 @@ export default function OverviewTab({
     },
   ];
 
-  // console.log("materialData", materialData);
+  console.log("materialData", materialData);
   
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
@@ -191,9 +191,9 @@ export default function OverviewTab({
     amount: item.rate * item.quantity || "_",
     sectionName: item.material_type || "_",
     subSectionName: item.inventory_sub_type || "_",
-    pmsBrand: item.pms_brand_id || "_",
-    pmsColour: item.pms_colour_id || "_",
-    genericInfo: item.generic_info || "_",
+    pmsBrand: item.brand?.brand_name || "_",
+    pmsColour: item.colour?.colour || "_",
+    genericInfo: item.generic_info?.generic_info || "_",
   }));
 
   const formatValue = (value) => {
