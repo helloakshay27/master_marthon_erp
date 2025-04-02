@@ -8,6 +8,7 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import MultiSelector from "../components/base/Select/MultiSelector";
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -30,7 +31,13 @@ const BillBookingCreate = () => {
     setactionDetails(!actionDetails);
   };
   //   modal
-  const openSelectPOModal = () => setselectPOModal(true);
+  const openSelectPOModal = () => {
+    if (!selectedCompany) {
+      alert("Please select a company first");
+      return;
+    }
+    setselectPOModal(true);
+  };
   // const closeSelectPOModal = () => setselectPOModal(false);
 
   const openSelectGRNModal = () => setselectGRNModal(true);
@@ -84,13 +91,6 @@ const BillBookingCreate = () => {
 
   // Add New Row
   const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      type: "",
-      charges: "0",
-      inclusive: false,
-      amount: 0,
-    };
     setRows((prevRows) => [...prevRows, newRow]);
   };
 
@@ -115,6 +115,7 @@ const BillBookingCreate = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
   const [selectedGRN, setSelectedGRN] = useState(null);
+  const [selectedGRNs, setSelectedGRNs] = useState([]);
   const [formData, setFormData] = useState({
     poNumber: "",
     poDate: "",
@@ -132,29 +133,113 @@ const BillBookingCreate = () => {
     deductions: [],
   });
 
+  const [filterParams, setFilterParams] = useState({
+    startDate: "",
+    endDate: "",
+    poType: "",
+    poNumber: "",
+    selectedPOIds: [], // Ensure this is initialized as an empty array
+  });
+
+  const fetchPurchaseOrders = async (
+    companyId,
+    projectId,
+    siteId,
+    filters = {
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+      supplierId: "", // Add supplierId to filters
+    }
+  ) => {
+    try {
+      setLoading(true);
+      let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+      // Add base filters
+      url += `&q[company_id_eq]=${companyId}`;
+      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
+      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+      if (filters?.supplierId)
+        url += `&q[supplier_id_eq]=${filters.supplierId}`;
+
+      // Add additional filters with null checks
+      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
+      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
+      if (filters?.poType) url += `&q[po_type_eq]=${filters.poType}`;
+      if (filters?.selectedPOIds?.length > 0) {
+        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+      }
+
+      const response = await axios.get(url);
+      setPurchaseOrders(response.data.purchase_orders);
+    } catch (err) {
+      setError("Failed to fetch purchase orders");
+      console.error("Error fetching purchase orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle search button click
+  const handleSearch = () => {
+    if (!selectedCompany) {
+      alert("Please select a company first");
+      return;
+    }
+
+    fetchPurchaseOrders(
+      selectedCompany.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        startDate: filterParams.startDate,
+        endDate: filterParams.endDate,
+        poType: filterParams.poType,
+        selectedPOIds: filterParams.selectedPOIds,
+        supplierId: selectedSupplier?.value || "", // Add selected supplier ID
+      }
+    );
+  };
+
+  // Handle reset button click
+  const handleReset = () => {
+    setFilterParams({
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+    });
+
+    // Reset selections
+    setSelectedPO(null);
+    setSelectedSupplier(null);
+
+    // Fetch all POs for the selected company
+    if (selectedCompany) {
+      fetchPurchaseOrders(
+        selectedCompany.value,
+        selectedProject?.value,
+        selectedSite?.value
+      );
+    }
+  };
+
   // Fetch purchase orders on component mount
   useEffect(() => {
-    const fetchPurchaseOrders = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          "https://marathon.lockated.com//purchase_orders/grn_details.json?q[company_id_eq]=36&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        setPurchaseOrders(response.data.purchase_orders);
-      } catch (err) {
-        setError("Failed to fetch purchase orders");
-        console.error("Error fetching purchase orders:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPurchaseOrders();
   }, []);
 
   // Handle PO selection
   const handlePOSelect = (po) => {
     setSelectedPO(po);
+    setFilterParams((prev) => ({
+      ...prev,
+      selectedPOIds: [po.id],
+    }));
     setFormData((prev) => ({
       ...prev,
       poNumber: po.po_number,
@@ -178,6 +263,23 @@ const BillBookingCreate = () => {
       charges: grn.addition_tax_charges || [],
       deductions: grn.deduction_taxes || [],
     }));
+  };
+
+  // Handle GRN checkbox selection
+  const handleGRNCheckboxSelect = (grn) => {
+    setSelectedGRNs((prev) => {
+      const isSelected = prev.some((g) => g.id === grn.id);
+      if (isSelected) {
+        return prev.filter((g) => g.id !== grn.id);
+      } else {
+        return [...prev, grn];
+      }
+    });
+  };
+
+  // Handle GRN submission
+  const handleGRNSubmit = () => {
+    setSelectedGRN(selectedGRNs[0]); // Set the first selected GRN as the main selected GRN
     closeSelectGRNModal();
   };
 
@@ -259,17 +361,17 @@ const BillBookingCreate = () => {
                 <td>
                   <input
                     type="checkbox"
-                    checked={selectedGRN?.id === grn.id}
-                    onChange={() => handleGRNSelect(grn)}
+                    checked={selectedGRNs.some((g) => g.id === grn.id)}
+                    onChange={() => handleGRNCheckboxSelect(grn)}
                   />
                 </td>
                 <td>{grn.material_name}</td>
-                <td>{grn.all_inc_tax}</td>
+                <td>{grn.material_grn_amount}</td>
                 <td>{grn.certified_till_date || "-"}</td>
                 <td>{grn.base_cost}</td>
                 <td>{grn.net_taxes}</td>
                 <td>{grn.net_charges}</td>
-                <td>{grn.quantity || "-"}</td>
+                <td>{grn.qty || "-"}</td>
                 <td>{grn.all_inc_tax}</td>
                 <td>
                   <button
@@ -289,7 +391,6 @@ const BillBookingCreate = () => {
       </div>
     );
   };
-  const [selectedCompany, setSelectedCompany] = useState(null);
 
   const [companies, setCompanies] = useState([]);
   const companyOptions = companies.map((company) => ({
@@ -297,18 +398,136 @@ const BillBookingCreate = () => {
     label: company.company_name,
   }));
 
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  // const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  // const [wingsOptions, setWingsOptions] = useState([]);
+
+  // Fetch company data on component mount
   useEffect(() => {
     axios
       .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         setCompanies(response.data.companies);
+        // setData(response.data); // Set the data from the API to state
+        setLoading(false); // Update the loading state
       })
       .catch((error) => {
         console.error("Error fetching company data:", error);
+        setLoading(false);
       });
   }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+    // setSelectedWing(null); // Reset wing selection
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      fetchPurchaseOrders(selectedOption.value);
+
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+    // setSelectedWing(null); // Reset wing selection
+    setSiteOptions([]); // Reset site options
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
+  // Add PO Type options
+  const poTypeOptions = [
+    { value: "Domestic", label: "Domestic" },
+    { value: "ROPO", label: "ROPO" },
+    { value: "Import", label: "Import" },
+  ];
+
+  const [selectedPOType, setSelectedPOType] = useState(null);
+
+  // Add E-Invoice options
+  const eInvoiceOptions = [
+    { value: "yes", label: "Yes" },
+    { value: "no", label: "No" },
+  ];
+
+  const [selectedEInvoice, setSelectedEInvoice] = useState(null);
+
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  // Add this useEffect to fetch suppliers
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setSuppliers(response.data);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
+
+    fetchSuppliers();
+  }, []);
+
+  // Convert suppliers data to options format
+  const supplierOptions = suppliers.map((supplier) => ({
+    value: supplier.id,
+    label: supplier.organization_name,
+  }));
 
   return (
     <>
@@ -327,24 +546,45 @@ const BillBookingCreate = () => {
                         options={companyOptions}
                         className="form-control form-select"
                         value={selectedCompany}
-                        // isDisabled={true}
-                      ></SingleSelector>
-                      {/* <input
-                        type="text"
-                        className="form-control"
-                        // placeholder="Enter Company"
-                        disabled
-                      /> */}
+                        onChange={handleCompanyChange}
+                      />
                     </div>
                   </div>
 
-                  <div className="col-md-4 s">
+                  <div className="col-md-4">
+                    <label htmlFor="event-no-select">Project</label>
+                    <div className="form-group">
+                      <SingleSelector
+                        options={projects}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder={`Select Project`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <label htmlFor="event-no-select"> SubProject</label>
+                    <div className="form-group">
+                      <SingleSelector
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4  mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
                       <SingleSelector
-                        options={companyOptions}
+                        options={supplierOptions}
                         className="form-control form-select"
-                      ></SingleSelector>
+                        value={selectedSupplier}
+                        onChange={(selected) => setSelectedSupplier(selected)}
+                        placeholder="Select Supplier"
+                      />
                     </div>
                   </div>
                   <div className="col-md-1 pt-2 mt-4">
@@ -357,19 +597,44 @@ const BillBookingCreate = () => {
                     <div className="form-group">
                       <label>PO Type</label>
                       <SingleSelector
-                        options={companyOptions}
+                        options={poTypeOptions}
                         className="form-control form-select"
-                      ></SingleSelector>
+                        value={selectedPOType}
+                        onChange={(selected) => setSelectedPOType(selected)}
+                      />
                     </div>
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Number</label>
+                      {/* <SingleSelector
+                        options={purchaseOrders.map((po) => ({
+                          value: po.id,
+                          label: po.po_number,
+                        }))}
+                        className="form-control form-select"
+                        value={
+                          selectedPO
+                            ? {
+                                value: selectedPO.id,
+                                label: selectedPO.po_number,
+                              }
+                            : null
+                        }
+                        onChange={(selected) => {
+                          const selectedPO = purchaseOrders.find(
+                            (po) => po.id === selected.value
+                          );
+                          if (selectedPO) {
+                            handlePOSelect(selectedPO);
+                          }
+                        }}
+                      /> */}
                       <input
                         className="form-control"
                         type="text"
-                        value={formData.poNumber}
-                        readOnly
+                        value={selectedPO?.po_number || ""}
+                        disabled
                       />
                     </div>
                   </div>
@@ -438,10 +703,11 @@ const BillBookingCreate = () => {
                     <div className="form-group">
                       <label>E-Invoice</label>
                       <SingleSelector
-                        options={companyOptions}
+                        options={eInvoiceOptions}
                         className="form-control form-select"
-                        fdprocessedid="3x7jfv"
-                      ></SingleSelector>
+                        value={selectedEInvoice}
+                        onChange={(selected) => setSelectedEInvoice(selected)}
+                      />
                     </div>
                   </div>
                   <div className="col-md-4 mt-3">
@@ -483,6 +749,7 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="number"
                         value={formData.poValue}
+                        disabled
                         readOnly
                       />
                     </div>
@@ -494,6 +761,7 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="text"
                         value={formData.gstin}
+                        disabled
                         readOnly
                       />
                     </div>
@@ -508,6 +776,7 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="text"
                         value={formData.pan}
+                        disabled
                         readOnly
                       />
                     </div>
@@ -576,45 +845,66 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedGRN && (
-                        <tr>
-                          <td className="text-start">1</td>
+                      {selectedGRNs.map((grn, index) => (
+                        <tr key={grn.id}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{grn.material_name}</td>
+                          <td className="text-start">{grn.all_inc_tax}</td>
                           <td className="text-start">
-                            {selectedGRN.material_name}
+                            {grn.certified_till_date || "-"}
                           </td>
-                          <td className="text-start">
-                            {selectedGRN.all_inc_tax}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.certified_till_date || "-"}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.base_cost}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.net_taxes}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.net_charges}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.quantity || "-"}
-                          </td>
-                          <td className="text-start">
-                            {selectedGRN.all_inc_tax}
-                          </td>
+                          <td className="text-start">{grn.base_cost}</td>
+                          <td className="text-start">{grn.net_taxes}</td>
+                          <td className="text-start">{grn.net_charges}</td>
+                          <td className="text-start">{grn.qty || "-"}</td>
+                          <td className="text-start">{grn.all_inc_tax}</td>
                         </tr>
-                      )}
+                      ))}
                       <tr>
                         <th className="text-start">Total</th>
                         <td />
-                        <td>{selectedGRN?.all_inc_tax || 0}</td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) =>
+                              acc + (parseFloat(grn.all_inc_tax) || 0),
+                            0
+                          )}
+                        </td>
                         <td />
-                        <td>{selectedGRN?.base_cost || 0}</td>
-                        <td>{selectedGRN?.net_taxes || 0}</td>
-                        <td>{selectedGRN?.net_charges || 0}</td>
-                        <td>{selectedGRN?.quantity || 0}</td>
-                        <td>{selectedGRN?.all_inc_tax || 0}</td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) =>
+                              acc + (parseFloat(grn.base_cost) || 0),
+                            0
+                          )}
+                        </td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) =>
+                              acc + (parseFloat(grn.net_taxes) || 0),
+                            0
+                          )}
+                        </td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) =>
+                              acc + (parseFloat(grn.net_charges) || 0),
+                            0
+                          )}
+                        </td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) => acc + (parseFloat(grn.qty) || 0),
+                            0
+                          )}
+                        </td>
+                        <td>
+                          {selectedGRNs.reduce(
+                            (acc, grn) =>
+                              acc + (parseFloat(grn.all_inc_tax) || 0),
+                            0
+                          )}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -670,30 +960,30 @@ const BillBookingCreate = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Tax / Charge Type</th>
-                        <th className="text-start">
+                        {/* <th className="text-start">
                           Tax / Charges per UOM (INR)
-                        </th>
-                        <th className="text-start">Inclusive / Exclusive</th>
+                        </th> */}
+                        {/* <th className="text-start">Inclusive / Exclusive</th> */}
                         <th className="text-start">Amount</th>
-                        <th className="text-start">Action</th>
+                        {/* <th className="text-start">Action</th> */}
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <th className="text-start">Taxable Amount</th>
-                        <td className="text-start" />
-                        <td className="text-start" />
+                        {/* <td className="text-start" />
+                        <td className="text-start" /> */}
                         <td className="text-start">3000</td>
-                        <td />
+                        {/* <td /> */}
                       </tr>
-                      <tr>
+                      {/* <tr>
                         <th className="text-start">Deduction Tax</th>
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
                         <td>
                           {/* Add Row Using Plus Icon */}
-                          <svg
+                      {/* <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="20"
                             height="20"
@@ -707,10 +997,10 @@ const BillBookingCreate = () => {
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                           </svg>
                         </td>
-                      </tr>
+                      </tr> */}
 
                       {/* Dynamic Rows */}
-                      {rows.map((row) => (
+                      {/* {rows.map((row) => (
                         <tr key={row.id}>
                           <td className="text-start">
                             <select className="form-control form-select">
@@ -724,7 +1014,14 @@ const BillBookingCreate = () => {
                               <option>Other Charges</option>
                             </select>
                           </td>
-                          <td className="text-start"></td>
+                          <td className="text-start">
+                            <input
+                              type="checkbox"
+                              checked={row.inclusive}
+                              disabled={row.inclusive}
+                              readOnly
+                            />
+                          </td>
                           <td className="text-start"></td>
                           <td
                             className="text-start"
@@ -744,21 +1041,21 @@ const BillBookingCreate = () => {
                             </svg>
                           </td>
                         </tr>
-                      ))}
+                      ))} */}
 
                       <tr>
                         <th className="text-start">Total Deduction</th>
                         <td className="text-start" />
-                        <td className="" />
-                        <td className="text-start">3540</td>
-                        <td />
+                        {/* <td className="" /> */}
+                        {/* <td className="text-start">3540</td> */}
+                        {/* <td /> */}
                       </tr>
                       <tr>
                         <th className="text-start">Payable Amount</th>
                         <td className="text-start" />
-                        <td className="" />
-                        <td className="text-start" />
-                        <td />
+                        {/* <td className="" /> */}
+                        {/* <td className="text-start" /> */}
+                        {/* <td /> */}
                       </tr>
                     </tbody>
                   </table>
@@ -1417,7 +1714,7 @@ const BillBookingCreate = () => {
               </div>
             </div>
             <div className="row">
-              {/* <div className="col-md-6">
+              <div className="col-md-6">
                 <div className="form-group">
                   <label>Project</label>
                   <input
@@ -1425,22 +1722,24 @@ const BillBookingCreate = () => {
                     type="text"
                     placeholder=""
                     fdprocessedid="qv9ju9"
+                    value={selectedProject?.label || ""}
                     disabled
                   />
                 </div>
-              </div> */}
-              {/* <div className="col-md-6">
+              </div>
+              <div className="col-md-6">
                 <div className="form-group">
                   <label>Sub Project</label>
                   <input
                     className="form-control"
                     type="text"
+                    value={selectedSite?.label || ""}
                     placeholder=""
                     fdprocessedid="qv9ju9"
                     disabled
                   />
                 </div>
-              </div> */}
+              </div>
 
               <div className="col-md-6">
                 <div className="form-group">
@@ -1448,6 +1747,7 @@ const BillBookingCreate = () => {
                   <input
                     className="form-control"
                     type="text"
+                    value={selectedSupplier?.label || ""}
                     placeholder=""
                     fdprocessedid="qv9ju9"
                     disabled
@@ -1460,8 +1760,13 @@ const BillBookingCreate = () => {
                   <input
                     className="form-control"
                     type="date"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
+                    value={filterParams.startDate}
+                    onChange={(e) =>
+                      setFilterParams((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -1471,78 +1776,160 @@ const BillBookingCreate = () => {
                   <input
                     className="form-control"
                     type="date"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
+                    value={filterParams.endDate}
+                    onChange={(e) =>
+                      setFilterParams((prev) => ({
+                        ...prev,
+                        endDate: e.target.value,
+                      }))
+                    }
                   />
                 </div>
               </div>
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>PO Number</label>
+                  <label>PO Type</label>
                   <SingleSelector
-                    options={companyOptions}
+                    options={poTypeOptions}
                     className="form-control form-select"
-                  ></SingleSelector>
+                    value={
+                      filterParams.poType
+                        ? {
+                            value: filterParams.poType,
+                            label: filterParams.poType,
+                          }
+                        : null
+                    }
+                    onChange={(selected) =>
+                      setFilterParams((prev) => ({
+                        ...prev,
+                        poType: selected ? selected.value : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
               {/* <div className="col-md-6">
                 <div className="form-group">
-                  <label>Indent</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Work Order</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Work Catogery</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Contractor</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
+                  <label>PO Number</label>
+                  <SingleSelector
+                    options={purchaseOrders.map((po) => ({
+                      value: po.id,
+                      label: po.po_number,
+                    }))}
+                    className="form-control form-select"
+                    value={
+                      selectedPO
+                        ? {
+                            value: selectedPO.id,
+                            label: selectedPO.po_number,
+                          }
+                        : null
+                    }
+                    onChange={(selected) => 
+                      {
+                      const selectedPO = purchaseOrders.find(
+                        (po) => po.id === selected.value
+                      );
+                      if (selectedPO) {
+                        setSelectedPO(selectedPO);
+                        setFilterParams((prev) => ({
+                          ...prev,
+                          selectedPOIds: [selectedPO.id],
+                        }));
+                        setFormData((prev) => ({
+                          ...prev,
+                          poNumber: selectedPO.po_number,
+                          poDate: selectedPO.po_date,
+                          poValue: selectedPO.total_value,
+                          gstin: selectedPO.gstin,
+                          pan: selectedPO.pan,
+                        }));
+                      }
+
+                    }}
                   />
                 </div>
               </div> */}
+              {/* <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO Number</label>
+                  <SingleSelector
+                    
+                    options={purchaseOrders.map((po) => ({
+                      value: po.id,
+                      label: po.po_number,
+                    }))}
+                    className="form-control form-select"
+                    value={
+                      filterParams.selectedPOIds.length > 0
+                        ? {
+                            value: filterParams.selectedPOIds[0],
+                            label:
+                              purchaseOrders.find(
+                                (po) => po.id === filterParams.selectedPOIds[0]
+                              )?.po_number || "",
+                          }
+                        : null
+                    }
+                    onChange={(selected) =>
+                      setFilterParams((prev) => ({
+                        ...prev,
+                        selectedPOIds: selected ? [selected.value] : [],
+                      }))
+                    }
+                    placeholder="Select PO Number"
+                  />
+                </div>
+              </div> */}
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>PO Number</label>
+                  <MultiSelector
+                    options={purchaseOrders.map((po) => ({
+                      value: po.id,
+                      label: po.po_number,
+                    }))}
+                    value={filterParams.selectedPOIds.map((id) => {
+                      const po = purchaseOrders.find((po) => po.id === id);
+                      return po ? { value: po.id, label: po.po_number } : null;
+                    })}
+                    onChange={(selected) =>
+                      setFilterParams((prev) => ({
+                        ...prev,
+                        selectedPOIds: selected
+                          ? selected.map((item) => item.value)
+                          : [],
+                      }))
+                    }
+                    placeholder="Select PO Numbers"
+                    isDisabled={false}
+                  />
+                </div>
+              </div>
             </div>
             <div className="row mt-2 justify-content-center">
               <div className="col-md-3">
-                <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                <button className="purple-btn2 w-100" onClick={handleSearch}>
                   Search
                 </button>
               </div>
               <div className="col-md-3">
-                <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                <button
+                  className="purple-btn2 w-100"
+                  onClick={() => {
+                    const allPOIds = purchaseOrders.map((po) => po.id);
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      selectedPOIds: allPOIds,
+                    }));
+                  }}
+                >
                   Select All
                 </button>
               </div>
               <div className="col-md-3">
-                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                <button className="purple-btn1 w-100" onClick={handleReset}>
                   Reset
                 </button>
               </div>
@@ -1604,12 +1991,19 @@ const BillBookingCreate = () => {
           {renderGRNTable()}
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleGRNSubmit}
+                disabled={selectedGRNs.length === 0}
+              >
                 Submit
               </button>
             </div>
             <div className="col-md-3">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeSelectGRNModal}
+              >
                 Cancel
               </button>
             </div>
@@ -1997,10 +2391,44 @@ const BillBookingCreate = () => {
                       <input
                         type="checkbox"
                         checked={charge.inclusive}
-                        readOnly
+                        disabled={charge.tax_type !== "Charge"}
+                        onChange={(e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            charges: prev.charges.map((c) =>
+                              c.id === charge.id
+                                ? { ...c, inclusive: e.target.checked }
+                                : c
+                            ),
+                          }));
+                        }}
                       />
                     </td>
-                    <td>{charge.amount}</td>
+                    <td>
+                      {charge.tax_type === "Charge" ? (
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={charge.amount || ""}
+                          onChange={(e) => {
+                            const newAmount =
+                              e.target.value === ""
+                                ? ""
+                                : parseFloat(e.target.value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              charges: prev.charges.map((c) =>
+                                c.id === charge.id
+                                  ? { ...c, amount: newAmount }
+                                  : c
+                              ),
+                            }));
+                          }}
+                        />
+                      ) : (
+                        charge.amount || ""
+                      )}
+                    </td>
                     <td></td>
                   </tr>
                 ))}
@@ -2010,10 +2438,13 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td>
-                    {formData.charges.reduce(
-                      (acc, curr) => acc + curr.amount,
-                      0
-                    )}
+                    {formData.charges.reduce((acc, curr) => {
+                      // Only add non-inclusive charges to the total
+                      if (curr.tax_type === "Charge" && curr.inclusive) {
+                        return acc;
+                      }
+                      return acc + (parseFloat(curr.amount) || 0);
+                    }, 0)}
                   </td>
                   <td></td>
                 </tr>
@@ -2025,10 +2456,13 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td>
                     {(selectedGRN?.base_cost || 0) +
-                      formData.charges.reduce(
-                        (acc, curr) => acc + curr.amount,
-                        0
-                      )}
+                      formData.charges.reduce((acc, curr) => {
+                        // Only add non-inclusive charges to the total
+                        if (curr.tax_type === "Charge" && curr.inclusive) {
+                          return acc;
+                        }
+                        return acc + (parseFloat(curr.amount) || 0);
+                      }, 0)}
                   </td>
                   <td></td>
                 </tr>
@@ -2039,7 +2473,40 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td></td>
+                  <td>
+                    <button
+                      className="btn btn-light p-0 border-0"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          deductions: [
+                            ...prev.deductions,
+                            {
+                              id: Date.now(),
+                              tax_name: "",
+                              tax_charge_per_uom: "",
+                              inclusive: false,
+                              amount: "",
+                              tax_type: "Charge",
+                            },
+                          ],
+                        }));
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        className="bi bi-plus-circle"
+                        viewBox="0 0 16 16"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                      </svg>
+                    </button>
+                  </td>
                 </tr>
 
                 {formData.deductions.map((deduction) => (
@@ -2064,11 +2531,70 @@ const BillBookingCreate = () => {
                       <input
                         type="checkbox"
                         checked={deduction.inclusive}
-                        readOnly
+                        disabled={deduction.tax_type !== "Charge"}
+                        onChange={(e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            deductions: prev.deductions.map((d) =>
+                              d.id === deduction.id
+                                ? { ...d, inclusive: e.target.checked }
+                                : d
+                            ),
+                          }));
+                        }}
                       />
                     </td>
-                    <td>{deduction.amount}</td>
-                    <td></td>
+                    <td>
+                      {deduction.tax_type === "Charge" ? (
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={deduction.amount || ""}
+                          onChange={(e) => {
+                            const newAmount =
+                              e.target.value === ""
+                                ? ""
+                                : parseFloat(e.target.value);
+                            setFormData((prev) => ({
+                              ...prev,
+                              deductions: prev.deductions.map((d) =>
+                                d.id === deduction.id
+                                  ? { ...d, amount: newAmount }
+                                  : d
+                              ),
+                            }));
+                          }}
+                        />
+                      ) : (
+                        deduction.amount || ""
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-light p-0 border-0"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            deductions: prev.deductions.filter(
+                              (d) => d.id !== deduction.id
+                            ),
+                          }));
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          className="bi bi-dash-circle"
+                          viewBox="0 0 16 16"
+                          style={{ cursor: "pointer" }}
+                        >
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
 
@@ -2077,10 +2603,13 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td></td>
                   <td>
-                    {formData.deductions.reduce(
-                      (acc, curr) => acc + curr.amount,
-                      0
-                    )}
+                    {formData.deductions.reduce((acc, curr) => {
+                      // Only add non-inclusive deductions to the total
+                      if (curr.tax_type === "Charge" && curr.inclusive) {
+                        return acc;
+                      }
+                      return acc + (parseFloat(curr.amount) || 0);
+                    }, 0)}
                   </td>
                   <td></td>
                 </tr>
@@ -2092,14 +2621,20 @@ const BillBookingCreate = () => {
                   <td></td>
                   <td>
                     {(selectedGRN?.base_cost || 0) +
-                      formData.charges.reduce(
-                        (acc, curr) => acc + curr.amount,
-                        0
-                      ) -
-                      formData.deductions.reduce(
-                        (acc, curr) => acc + curr.amount,
-                        0
-                      )}
+                      formData.charges.reduce((acc, curr) => {
+                        // Only add non-inclusive charges to the total
+                        if (curr.tax_type === "Charge" && curr.inclusive) {
+                          return acc;
+                        }
+                        return acc + (parseFloat(curr.amount) || 0);
+                      }, 0) -
+                      formData.deductions.reduce((acc, curr) => {
+                        // Only subtract non-inclusive deductions from the total
+                        if (curr.tax_type === "Charge" && curr.inclusive) {
+                          return acc;
+                        }
+                        return acc + (parseFloat(curr.amount) || 0);
+                      }, 0)}
                   </td>
                   <td></td>
                 </tr>
