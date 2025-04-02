@@ -3238,13 +3238,13 @@ export default function VendorDetails() {
                                               {data.amount}
                                             </td>
                                             <td>
-                                              {data.pms_brand_id || "N/A"}
+                                              {data.brand?.brand_name || "N/A"}
                                             </td>
                                             <td>
-                                              {data.pms_colour_id || "N/A"}
+                                              {data.colour?.colour || "N/A"}
                                             </td>
                                             <td>
-                                              {data.generic_info_id || "N/A"}
+                                              {data.generic_info?.generic_info || "N/A"}
                                             </td>
                                           </tr>
                                         )
