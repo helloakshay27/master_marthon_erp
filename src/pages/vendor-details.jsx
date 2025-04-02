@@ -34,14 +34,12 @@ export default function VendorDetails() {
     afterDiscountValue: 0,
     remark: "",
     additionalInfo: "",
-    additionTaxCharges: [
-      { id: 1, taxChargeType: "GST", taxChargePerUom: "", inclusive: false, amount: "" },
-      { id: 2, taxChargeType: "SGST", taxChargePerUom: "", inclusive: false, amount: "" },
-      { id: 3, taxChargeType: "CGST", taxChargePerUom: "", inclusive: false, amount: "" },
-    ],
+    additionTaxCharges: [],
     deductionTax: [],
     netCost: 0,
   });
+  const [taxOptions, setTaxOptions] = useState([]);
+  const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
 
   const { eventId } = useParams();
 
@@ -1921,7 +1919,30 @@ export default function VendorDetails() {
       afterDiscountValue: grossTotal || selectedRow.total || "", // Sum Total or Total
       remark: selectedRow.vendorRemark || "", // Remark
       additionalInfo: selectedRow.additionalInfo || "", // Additional Info
-      additionTaxCharges: [],
+      // additionTaxCharges: [],
+      additionTaxCharges: [
+        {
+          id: 1,
+          taxChargeType: "Handling Charges",
+          taxChargePerUom: "",
+          inclusive: false,
+          amount: "",
+        },
+        {
+          id: 2,
+          taxChargeType: "Other charges",
+          taxChargePerUom: "",
+          inclusive: false,
+          amount: "",
+        },
+        {
+          id: 3,
+          taxChargeType: "Freight",
+          taxChargePerUom: "",
+          inclusive: false,
+          amount: "",
+        },
+      ],
       deductionTax: [],
     });
     setShowModal(true);
@@ -1980,19 +2001,26 @@ export default function VendorDetails() {
     }
   };
 
-  const calculateTaxAmount = (percentage, baseAmount) => {
-    const parsedPercentage = parseFloat(percentage.replace('%', '')) || 0;
+  const calculateTaxAmount = (percentage, baseAmount, inclusive) => {
+    if (inclusive) return 0; // If inclusive, tax amount should not be calculated
+
+    const parsedPercentage = parseFloat(percentage.replace("%", "")) || 0;
     const parsedBaseAmount = parseFloat(baseAmount) || 0;
     return (parsedPercentage / 100) * parsedBaseAmount;
   };
-  
+
   const calculateNetCost = () => {
     let additionTaxTotal = 0;
     let deductionTaxTotal = 0;
+    let directChargesTotal = 0; // Sum of direct amounts entered
   
     taxRateData.additionTaxCharges.forEach((item) => {
-      const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
-      additionTaxTotal += taxAmount;
+      if (["Handling Charges", "Other Charges", "Freight"].includes(item.taxChargeType)) {
+        directChargesTotal += parseFloat(item.amount) || 0; // Add directly to net cost
+      } else {
+        const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
+        additionTaxTotal += taxAmount;
+      }
     });
   
     taxRateData.deductionTax.forEach((item) => {
@@ -2000,28 +2028,34 @@ export default function VendorDetails() {
       deductionTaxTotal += taxAmount;
     });
   
-    const netCost = taxRateData.afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+    // Calculate Net Cost: Base + Addition Charges (Tax + Direct) - Deduction Tax
+    const netCost = taxRateData.afterDiscountValue + additionTaxTotal + directChargesTotal - deductionTaxTotal;
     return netCost.toFixed(2);
-  };
-  
+  };  
+
   const calculateGrossTotal = () => {
     const netCost = parseFloat(taxRateData.netCost) || 0;
     const freightTotal = parseFloat(calculateFreightTotal()) || 0;
     const realisedGstTotal = parseFloat(calculateRealisedGstTotal()) || 0;
-  
+
     return (netCost + freightTotal + realisedGstTotal).toFixed(2);
   };
-  
+
   const handleTaxChargeChange = (id, field, value, type) => {
-    const updatedTaxCharges = type === "addition" 
-      ? [...taxRateData.additionTaxCharges] 
+    const updatedTaxCharges = type === "addition"
+      ? [...taxRateData.additionTaxCharges]
       : [...taxRateData.deductionTax];
   
     const index = updatedTaxCharges.findIndex((item) => item.id === id);
     if (index !== -1) {
-      updatedTaxCharges[index][field] = field === "amount" ? parseFloat(value) || "" : value;
+      updatedTaxCharges[index][field] =
+        field === "amount" ? parseFloat(value) || "" : value;
   
-      if (field === "taxChargePerUom" || field === "amount") {
+      // Check if taxChargeType allows manual input
+      const isManualInputAllowed = ["Handling Charges", "Other charges", "Freight"].includes(updatedTaxCharges[index].taxChargeType);
+  
+      // Only calculate tax if it's not manually entered
+      if (field === "taxChargePerUom" || (!isManualInputAllowed && field === "amount")) {
         const taxAmount = calculateTaxAmount(updatedTaxCharges[index].taxChargePerUom, taxRateData.afterDiscountValue);
         updatedTaxCharges[index].amount = taxAmount.toFixed(2);
       }
@@ -2035,6 +2069,7 @@ export default function VendorDetails() {
     });
     setGrossTotal(calculateGrossTotal());
   };
+  
 
   const handleSaveTaxChanges = () => {
     const updatedNetCost = calculateNetCost();
@@ -2048,6 +2083,59 @@ export default function VendorDetails() {
     setGrossTotal(updatedGrossTotal);
     handleCloseModal();
   };
+
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+          }));
+
+          // Adding default option at the top
+          setTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching tax data:", error);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
+
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+          }));
+
+          setDeductionTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching deduction tax data:", error);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
 
   return (
     <div className="">
@@ -4315,18 +4403,16 @@ export default function VendorDetails() {
                           bidTemplate
                         )} */}
                         <>
-                        <ShortDataTable
-                          data={bidTemplate}
-                          editable={true}
-                          onValueChange={handleFreightDataChange}
-                        />
+                          <ShortDataTable
+                            data={bidTemplate}
+                            editable={true}
+                            onValueChange={handleFreightDataChange}
+                          />
                         </>
                       </div>
 
                       <div className="d-flex justify-content-end mt-2 mx-2">
-                        <h4>
-                          Sum Total: ₹{grossTotal}
-                        </h4>
+                        <h4>Sum Total: ₹{grossTotal}</h4>
                       </div>
                     </div>
                   </div>
@@ -4796,24 +4882,21 @@ export default function VendorDetails() {
                     {taxRateData.additionTaxCharges.map((item) => (
                       <tr key={item.id}>
                         <td>
-                          <select
-                            className="form-select"
-                            value={item.taxChargeType}
-                            onChange={(e) =>
+                          <SelectBox
+                            // label="Tax & Charges"
+                            options={taxOptions}
+                            defaultValue={item.taxChargeType}
+                            onChange={(value) =>
                               handleTaxChargeChange(
                                 item.id,
                                 "taxChargeType",
-                                e.target.value,
+                                value,
                                 "addition"
                               )
                             }
-                          >
-                            <option value="">Select Tax & Charges</option>
-                            <option value="GST">GST</option>
-                            <option value="CGST">CGST</option>
-                            <option value="SGST">SGST</option>
-                            <option value="IGST">IGST</option>
-                          </select>
+                            className="custom-select"
+                            isDisableFirstOption={true} // Disable the first option (default)
+                          />
                         </td>
                         <td>
                           <select
@@ -4827,6 +4910,7 @@ export default function VendorDetails() {
                                 "addition"
                               )
                             }
+                            disabled={["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)}
                           >
                             <option value="">Select Tax</option>
                             <option value="5%">5%</option>
@@ -4836,7 +4920,7 @@ export default function VendorDetails() {
                           </select>
                         </td>
                         <td className="text-center">
-                          <input
+                        <input
                             type="checkbox"
                             className="form-check-input"
                             checked={item.inclusive}
@@ -4892,27 +4976,22 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    
 
                     {taxRateData.deductionTax.map((item) => (
                       <tr key={item.id}>
                         <td>
-                          <select
-                            className="form-select"
-                            value={item.taxChargeType}
-                            onChange={(e) =>
+                          <SelectBox
+                            options={deductionTaxOptions}
+                            defaultValue={item.taxChargeType}
+                            onChange={(value) =>
                               handleTaxChargeChange(
                                 item.id,
                                 "taxChargeType",
-                                e.target.value,
+                                value,
                                 "deduction"
                               )
                             }
-                          >
-                            <option value="">Select Tax & Charges</option>
-                            <option value="TDS">TDS</option>
-                            <option value="TCS">TCS</option>
-                          </select>
+                          />
                         </td>
                         <td>
                           <select
@@ -4943,7 +5022,7 @@ export default function VendorDetails() {
                                 item.id,
                                 "inclusive",
                                 e.target.checked,
-                                "deduction"
+                                "deduction" // Pass either "addition" or "deduction"
                               )
                             }
                           />
@@ -4980,10 +5059,11 @@ export default function VendorDetails() {
                       <td></td>
                       <td></td>
                       <td className="text-center">
-                        <input type="text"
-                        className="form-control bg-light"
-                        value={taxRateData.netCost}
-                        readOnly
+                        <input
+                          type="text"
+                          className="form-control bg-light"
+                          value={taxRateData.netCost}
+                          readOnly
                         />
                       </td>
                       <td></td>
