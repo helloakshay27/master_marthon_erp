@@ -106,7 +106,7 @@ export default function CreateRFQForm({
       );
       if (response.data) {
         const templateData = response.data;
-        console.log("Template Data:", templateData);
+        // console.log("Template Data:", templateData);
         const updatedAdditionalFields =
           templateData.bid_material_template_fields || [];
         updateAdditionalFields(updatedAdditionalFields);
@@ -280,7 +280,7 @@ export default function CreateRFQForm({
             // );
             fetchSubSections(inventorySubTypeId);
           }
-          console.log("materials", materialsArray, materialsArray[0].inventory_id);
+          // console.log("materials", materialsArray, materialsArray[0].inventory_id);
           
           return {
             materialType,
@@ -1058,7 +1058,7 @@ console.log('updatedSections',updatedSections);
     }
 
     if (fieldName === "location") {
-      console.log("locationOptions:----", locationOptions, fieldValue);
+      // console.log("locationOptions:----", locationOptions, fieldValue);
 
       return (
         <SelectBox
@@ -1308,11 +1308,6 @@ console.log('updatedSections',updatedSections);
                     );
                   },
                   brand: (cell, rowIndex) => {
-                    console.log("Brand options:", brandOptions);
-                    console.log(
-                      "Selected value for brand:",
-                      section?.sectionData[rowIndex]?.brand
-                    );
                     return (
                       <SelectBox
                         options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`

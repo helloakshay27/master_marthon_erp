@@ -40,6 +40,7 @@ export default function EditEvent() {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [bidTemplateFields, setBidTemplateFields] = useState([]);
   const [additionalFields, setAdditionalFields] = useState([]);
+  const [isTextId, setIsTextId] = useState(false);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -155,46 +156,47 @@ export default function EditEvent() {
     // if (!dynamicExtensionConfigurations.delivery_date) {
     //   toast.warn("Please fill the delivery date on Event Type");
     // } else {
-      setEventScheduleModal(true);
-    
+    setEventScheduleModal(true);
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
   };
 
-   const handleSaveSchedule = (data) => {
-      setScheduleData(data);
-      handleEventScheduleModalClose();
-    
-      const timeZone = "Asia/Kolkata";
-    
-      const formatDateTime = (dateTime) => {
-        const date = new Date(dateTime);
-        return new Intl.DateTimeFormat("en-GB", {
-          timeZone,
-          day: "2-digit",
-          month: "2-digit",
-          year: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }).format(date);
-      };
-    
-      const adjustTimeZone = (dateTime) => {
-        const date = new Date(dateTime);
-        const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
-        const localDate = new Date(utcDate.toLocaleString("en-US", { timeZone }));
-        return localDate;
-      };
-    
-      const startDateTime = formatDateTime(data.start_time);
-      const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
-    
-      const scheduleText = `${startDateTime} to ${endDateTime}`;
-      setEventScheduleText(scheduleText);
-      // console.log("scheduleText", scheduleText, data.end_time_duration);
+  const handleSaveSchedule = (data) => {
+    setScheduleData(data);
+    handleEventScheduleModalClose();
+
+    const timeZone = "Asia/Kolkata";
+
+    const formatDateTime = (dateTime) => {
+      const date = new Date(dateTime);
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone,
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }).format(date);
     };
+
+    const adjustTimeZone = (dateTime) => {
+      const date = new Date(dateTime);
+      const utcDate = new Date(
+        date.toLocaleString("en-US", { timeZone: "UTC" })
+      );
+      const localDate = new Date(utcDate.toLocaleString("en-US", { timeZone }));
+      return localDate;
+    };
+
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
+
+    const scheduleText = `${startDateTime} to ${endDateTime}`;
+    setEventScheduleText(scheduleText);
+    // console.log("scheduleText", scheduleText, data.end_time_duration);
+  };
 
   const [eventScheduleText, setEventScheduleText] = useState("");
 
@@ -375,7 +377,6 @@ export default function EditEvent() {
 
   useEffect(() => {
     if (eventDetails) {
-
       seteventName(eventDetails?.event_title);
       // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
       setEventStatus(eventDetails?.status);
@@ -391,7 +392,21 @@ export default function EditEvent() {
         eventDetails?.event_materials?.map((material) => {
           // Dynamically include all fields from the payload
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
-            if (!["id", "inventory_id", "quantity", "uom", "location", "rate", "amount", "section_name", "inventory_type_id", "inventory_sub_type_id", "_destroy"].includes(key)) {
+            if (
+              ![
+                "id",
+                "inventory_id",
+                "quantity",
+                "uom",
+                "location",
+                "rate",
+                "amount",
+                "section_name",
+                "inventory_type_id",
+                "inventory_sub_type_id",
+                "_destroy",
+              ].includes(key)
+            ) {
               acc[key] = material[key] || ""; // Default to an empty string if null
             }
             return acc;
@@ -399,7 +414,8 @@ export default function EditEvent() {
 
           return {
             id: material.id,
-            descriptionOfItem: material.descriptionOfItem || material.inventory_name || "",
+            descriptionOfItem:
+              material.descriptionOfItem || material.inventory_name || "",
             inventory_id: material.inventory_id,
             quantity: material.quantity,
             unit: material.uom,
@@ -426,13 +442,14 @@ export default function EditEvent() {
   }, [eventDetails, termsOptions]);
 
   useEffect(() => {
+    setIsTextId(true);
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
         console.log("term:---", term);
 
         return {
           textareaId: term.term_condition_id,
-          id: term.id,
+          id: term.id || null, // Ensure id is null if it doesn't exist
           value: term.term_condition.condition,
           defaultOption: matchedTerm
             ? { label: matchedTerm?.label, value: matchedTerm?.value }
@@ -440,7 +457,7 @@ export default function EditEvent() {
         };
       })
     );
-    eventDetails?.resource_term_conditions?.map((term) => {
+    eventDetails?.resource_term_conditions?.forEach((term) => {
       setMatchedTerm(
         termsOptions.find((option) => option.value === term.term_condition_id)
       );
@@ -643,8 +660,7 @@ export default function EditEvent() {
       myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
     }
   };
-  console.log("materialFormData",materialFormData);
-  
+  // console.log("materialFormData", materialFormData);
 
   const validateForm = () => {
     console.log(
@@ -702,6 +718,8 @@ export default function EditEvent() {
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
+    console.log(eventDetails);
+    
 
     if (
       !eventName ||
@@ -783,12 +801,20 @@ export default function EditEvent() {
             comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) => ({
-          id: textarea.id || null,
-          term_condition_id: textarea.textareaId,
-          condition_type: "general",
-          condition: textarea.value,
-        })),
+        resource_term_conditions_attributes: textareas.map((textarea) =>
+          isTextId
+            ? {
+                id: textarea?.id || null,
+                term_condition_id: textarea.textareaId,
+                condition_type: "general",
+                condition: textarea.value,
+              }
+            : {
+                term_condition_id: textarea.textareaId,
+                condition_type: "general",
+                condition: textarea.value,
+              }
+        ),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
           event_template_id: selectedTemplate,

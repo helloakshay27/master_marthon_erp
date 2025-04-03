@@ -40,6 +40,9 @@ export default function VendorDetails() {
   });
   const [taxOptions, setTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
+  const [terms, setTerms] = useState([]); // To store terms and
+  // conditions
+  const [timeRemaining, setTimeRemaining] = useState("");
 
   const { eventId } = useParams();
 
@@ -700,6 +703,23 @@ export default function VendorDetails() {
       const landedAmount = rowTotal - discountAmount; // Discounted total, before GST
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100); // GST applied on landed amount
       const finalTotal = landedAmount + gstAmount; // Landed amount + GST
+      const taxDetails = [
+        ...taxRateData.additionTaxCharges.map((charge) => ({
+          resource_id: 1,
+          inclusive: charge.inclusive,
+          resource_type: "TaxCharge",
+          amount: charge.amount,
+          addition: true,
+        })),
+        ...taxRateData.deductionTax.map((charge) => ({
+          resource_id: 1,
+          inclusive: charge.inclusive,
+          resource_type: "TaxCharge",
+          amount: charge.amount,
+          addition: false,
+        })),
+      ];
+
       return {
         event_material_id: row.eventMaterialId,
         quantity_available: row.quantityAvail || 0,
@@ -712,6 +732,7 @@ export default function VendorDetails() {
         realised_gst: gstAmount.toFixed(2), // Realised GST for the row
         landed_amount: landedAmount.toFixed(2), // Landed amount for the row
         total_amount: finalTotal.toFixed(2), // Row-specific total amount
+        bid_material_tax_details: taxDetails,
         ...additionalColumns.reduce((acc, col) => {
           acc[col.key] = row[col.key] || "";
           return acc;
@@ -773,7 +794,7 @@ export default function VendorDetails() {
       },
     };
 
-    // console.log("Prepared Payload:", payload);
+    console.log("Prepared Payload:", payload);
     return payload;
   };
 
@@ -792,7 +813,7 @@ export default function VendorDetails() {
 
       const payload = preparePayload();
 
-      // console.log("payloadssss", payload);
+      console.log("payloadssss", payload);
 
       // console.log("vendor ID", vendorId);
 
@@ -848,6 +869,22 @@ export default function VendorDetails() {
       const landedAmount = rowTotal - discountAmount; // Discounted total, before GST
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100); // GST applied on landed amount
       const finalTotal = landedAmount + gstAmount; // Landed amount + GST
+      const taxDetails = [
+        ...taxRateData.additionTaxCharges.map((charge) => ({
+          resource_id: 1,
+          inclusive: charge.inclusive,
+          resource_type: "TaxCharge",
+          amount: charge.amount,
+          addition: true,
+        })),
+        ...taxRateData.deductionTax.map((charge) => ({
+          resource_id: 1,
+          inclusive: charge.inclusive,
+          resource_type: "TaxCharge",
+          amount: charge.amount,
+          addition: false,
+        })),
+      ];
 
       return {
         event_material_id: row.eventMaterialId,
@@ -861,6 +898,7 @@ export default function VendorDetails() {
         realised_gst: gstAmount.toFixed(2), // Realised GST for the row
         landed_amount: landedAmount.toFixed(2), // Landed amount for the row
         total_amount: finalTotal.toFixed(2), // Row-specific total amount
+        bid_material_tax_details: taxDetails,
         ...additionalColumns.reduce((acc, col) => {
           acc[col.key] = row[col.key] || "";
           return acc;
@@ -931,10 +969,6 @@ export default function VendorDetails() {
   };
 
   const handleReviseBid = async () => {
-    // Logic for revising an existing bid
-    // console.log("Revising the existing bid...");
-
-    // Example: API call to revise the bid
     setLoading(true);
     setSubmitted(true);
 
@@ -943,27 +977,69 @@ export default function VendorDetails() {
     );
 
     if (!userConfirmed) {
-      setLoading(false); // Ensure loader is removed if user cancels
+      setLoading(false);
       setSubmitted(false);
-      return; // Exit if the user selects "No"
+      return;
     }
 
     try {
-      // Send POST request
+      const revisedBidMaterials = data.map((row) => {
+        const taxDetails = [
+          ...taxRateData.additionTaxCharges.map((charge) => ({
+            resource_id: 1,
+            inclusive: charge.inclusive,
+            resource_type: "TaxCharge",
+            amount: charge.amount,
+            addition: true,
+          })),
+          ...taxRateData.deductionTax.map((charge) => ({
+            resource_id: 1,
+            inclusive: charge.inclusive,
+            resource_type: "TaxCharge",
+            amount: charge.amount,
+            addition: false,
+          })),
+        ];
 
-      // Validate mandatory fields
-      // if (!validateMandatoryFields() || !validateTableData()) {
-      //   setLoading(false);
-      //   return; // Stop further execution if validation fails
-      // }
+        return {
+          event_material_id: row.eventMaterialId,
+          quantity_available: row.quantityAvail,
+          price: row.price,
+          discount: row.discount,
+          vendor_remark: row.vendorRemark,
+          gst: row.gst,
+          realised_discount: row.realisedDiscount,
+          realised_gst: row.realisedGst,
+          landed_amount: row.landedAmount,
+          total_amount: row.total,
+          bid_material_tax_details: taxDetails,
+        };
+      });
 
-      const payload2 = preparePayload2();
-      // console.log("payloadssss2 revised", payload2);
-      // console.log("bidsID", bidIds);
+      const payload = {
+        revised_bid: {
+          event_vendor_id: vendorId,
+          price: 500.0,
+          discount: 10.0,
+          freight_charge_amount: freightCharge21,
+          gst_on_freight: gstOnFreightt,
+          realised_freight_charge_amount: realisedFreightChargeAmount,
+          gross_total: grossTotal,
+          warranty_clause: warrantyClause,
+          payment_terms: paymentTerms,
+          loading_unloading_clause: loadingUnloadingClause,
+          remark: remark,
+          extra: {},
+          revised_bid_materials_attributes: revisedBidMaterials,
+        },
+      };
 
+      console.log("Revised Bid Payload:", payload);
+
+      // Submit the payload to the API
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-        payload2,
+        payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -996,72 +1072,7 @@ export default function VendorDetails() {
     } finally {
       setLoading(false);
       setSubmitted(false);
-    }
-  };
-
-  const [terms, setTerms] = useState([]); // To store terms and
-  // conditions
-  const [timeRemaining, setTimeRemaining] = useState("");
-
-  // Fetch data from the API
-  //   useEffect(() => {
-  //     const fetchTerms = async () => {
-  //       try {
-  //         const response = await axios.get(
-  //           `https://marathon.lockated.com/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-  //         );
-  //         const data = response.data;
-  //         console.log("my data", data.state);
-
-  //         if (data.state == "expired") {
-  //           setIsBid(true);
-  //           console.log("isBid", isBid);
-  //         } else {
-  //           setIsBid(false);
-  //         }
-
-  //         const endTime = new Date(data.event_schedule.end_time); // Event end time
-  //         const currentTime = new Date(); // Current time
-  //         const remainingTime = endTime - currentTime; // Time difference in milliseconds
-
-  //         if (remainingTime > 0) {
-  //           const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
-  //           const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
-  //           const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
-  //           const seconds = Math.floor((remainingTime / 1000) % 60);
-
-  //           setTimeRemaining(`${days}d:
-  // ${hours}h:
-  // ${minutes}m:
-  // ${seconds}s`);
-  //         } else {
-  //           setTimeRemaining("Expired");
-  //           setIsBid(true); // Disable bidding if expired
-  //         }
-
-  //         // setTerms(response.data.terms_and_conditions || []);
-
-  //         const extractedTerms = response.data.resource_term_conditions.map(
-  //           (item) => ({
-  //             id: item.term_condition.id,
-  //             condition: item.term_condition.condition,
-  //           })
-  //         );
-
-  //         setTerms(extractedTerms || []); // Set the mapped terms
-  //       } catch (error) {
-  //         console.error("Error fetching terms and conditions:", error);
-  //       }
-  //     };
-
-  //     fetchTerms();
-
-  //     const interval = setInterval(() => {
-  //       fetchTerms();
-  //     }, 1000);
-
-  //     return () => clearInterval(interval); // Cleanup the interval
-  //   }, [eventId]);
+    }}
 
   useEffect(() => {
     if (!endTime) return;
@@ -2013,9 +2024,11 @@ export default function VendorDetails() {
     let additionTaxTotal = 0;
     let deductionTaxTotal = 0;
     let directChargesTotal = 0; // Sum of direct amounts entered
-  
+    
     taxRateData.additionTaxCharges.forEach((item) => {
-      if (["Handling Charges", "Other Charges", "Freight"].includes(item.taxChargeType)) {
+      if (item.inclusive) return; // Skip calculation if inclusive is checked
+  
+      if (["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)) {
         directChargesTotal += parseFloat(item.amount) || 0; // Add directly to net cost
       } else {
         const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
@@ -2024,6 +2037,8 @@ export default function VendorDetails() {
     });
   
     taxRateData.deductionTax.forEach((item) => {
+      if (item.inclusive) return; // Skip calculation if inclusive is checked
+  
       const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
       deductionTaxTotal += taxAmount;
     });
@@ -2031,7 +2046,8 @@ export default function VendorDetails() {
     // Calculate Net Cost: Base + Addition Charges (Tax + Direct) - Deduction Tax
     const netCost = taxRateData.afterDiscountValue + additionTaxTotal + directChargesTotal - deductionTaxTotal;
     return netCost.toFixed(2);
-  };  
+  };
+  
 
   const calculateGrossTotal = () => {
     const netCost = parseFloat(taxRateData.netCost) || 0;
@@ -2051,13 +2067,14 @@ export default function VendorDetails() {
       updatedTaxCharges[index][field] =
         field === "amount" ? parseFloat(value) || "" : value;
   
-      // Check if taxChargeType allows manual input
-      const isManualInputAllowed = ["Handling Charges", "Other charges", "Freight"].includes(updatedTaxCharges[index].taxChargeType);
+      // Check if inclusive is checked, then don't calculate tax
+      if (!updatedTaxCharges[index].inclusive) {
+        const isManualInputAllowed = ["Handling Charges", "Other charges", "Freight"].includes(updatedTaxCharges[index].taxChargeType);
   
-      // Only calculate tax if it's not manually entered
-      if (field === "taxChargePerUom" || (!isManualInputAllowed && field === "amount")) {
-        const taxAmount = calculateTaxAmount(updatedTaxCharges[index].taxChargePerUom, taxRateData.afterDiscountValue);
-        updatedTaxCharges[index].amount = taxAmount.toFixed(2);
+        if (field === "taxChargePerUom" || (!isManualInputAllowed && field === "amount")) {
+          const taxAmount = calculateTaxAmount(updatedTaxCharges[index].taxChargePerUom, taxRateData.afterDiscountValue);
+          updatedTaxCharges[index].amount = taxAmount;
+        }
       }
     }
   
@@ -2069,6 +2086,7 @@ export default function VendorDetails() {
     });
     setGrossTotal(calculateGrossTotal());
   };
+  
   
 
   const handleSaveTaxChanges = () => {
@@ -2348,7 +2366,7 @@ export default function VendorDetails() {
                     )} */}
 
                     <div className="card-body">
-                      {console.log("Linked Event Data:", linkedEventData)}
+                      {/* {console.log("Linked Event Data:", linkedEventData)} */}
                       {linkedEventData.length > 0 ? (
                         <div style={tableContainerStyle}>
                           <Table
