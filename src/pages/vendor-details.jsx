@@ -1021,13 +1021,13 @@ export default function VendorDetails() {
           event_vendor_id: vendorId,
           price: 500.0,
           discount: 10.0,
-          freight_charge_amount: freightCharge21,
-          gst_on_freight: gstOnFreightt,
-          realised_freight_charge_amount: realisedFreightChargeAmount,
+          freight_charge_amount: 0,
+          gst_on_freight: 0,
+          realised_freight_charge_amount: 0,
           gross_total: grossTotal,
-          warranty_clause: warrantyClause,
-          payment_terms: paymentTerms,
-          loading_unloading_clause: loadingUnloadingClause,
+          warranty_clause: "",
+          payment_terms: "",
+          loading_unloading_clause: "",
           remark: remark,
           extra: {},
           revised_bid_materials_attributes: revisedBidMaterials,
@@ -1048,15 +1048,8 @@ export default function VendorDetails() {
         }
       );
 
-      // console.log("API Response revised....:", response.data);
-
-      // alert("Bid revised successfully!");
-
-      // setData(response.data.bid_materials_attributes);
-      // console.log("Triggering success toast");
-
       toast.success("Bid revised successfully!", {
-        autoClose: 1000, // Close after 3 seconds
+        autoClose: 1000, // Close after 1 second
       });
 
       setTimeout(() => {
@@ -1072,7 +1065,8 @@ export default function VendorDetails() {
     } finally {
       setLoading(false);
       setSubmitted(false);
-    }}
+    }
+  };
 
   useEffect(() => {
     if (!endTime) return;
