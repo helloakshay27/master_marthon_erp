@@ -3382,9 +3382,13 @@ const EditBOQNew = () => {
                                                                                                 e.target.value
                                                                                             )
                                                                                         }
-                                                                                        // disabled={true}
+                                                                                        
+                                                                                        disabled={!subItem.hasOwnProperty('isNew')} 
+                                                                                        // disabled={subItem.cost_quantity}
                                                                                     />
+                                                                                    
                                                                                 </td>
+                                                                                {console.log("subitem", subItem)}
                                                                                 <td>
                                                                                     <input
                                                                                         type="text"
@@ -3621,6 +3625,7 @@ const EditBOQNew = () => {
                                                                                             }
                                                                                         />
                                                                                     </td>
+                                                                                    {/* {console.log("subitem for new", boqSubItems)} */}
                                                                                     <td>
                                                                                         <input
                                                                                             type="text"
