@@ -1266,7 +1266,9 @@ const BOQList = () => {
                                                       {/* <input className="pe-2" type="checkbox" /> */}
                                                       <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
                                                       <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                      {boqDetail2.status}
+                                                      {/* {boqDetail2.status} */}
+                                                      {boqDetail2.status ? boqDetail2.status.charAt(0).toUpperCase() + boqDetail2.status.slice(1) : ""}
+
                                                     </div>
                                                   </td>
                                                 </tr>
@@ -1644,7 +1646,9 @@ const BOQList = () => {
                                                             {/* <input className="pe-2" type="checkbox" /> */}
                                                             <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
                                                             <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                            {boqDetail3.status}
+                                                            {/* {boqDetail3.status} */}
+                                                            {boqDetail3.status ? boqDetail3.status.charAt(0).toUpperCase() + boqDetail3.status.slice(1) : ""}
+
                                                           </div>
                                                         </td>
                                                       </tr>
@@ -2017,7 +2021,9 @@ const BOQList = () => {
                                                                   {/* <input className="pe-2" type="checkbox" /> */}
                                                                   <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
                                                                   <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                                  {boqDetail4.status}
+                                                                  {/* {boqDetail4.status} */}
+                                                                  {boqDetail4.status ? boqDetail4.status.charAt(0).toUpperCase() + boqDetail4.status.slice(1) : ""}
+
                                                                 </div>
                                                               </td>
                                                             </tr>
@@ -2388,7 +2394,9 @@ const BOQList = () => {
                                                                         {/* <input className="pe-2" type="checkbox" /> */}
                                                                         <img data-bs-toggle="modal" data-bs-target="#addnewModal" className="pe-1" src="../Data_Mapping/img/Edit.svg" alt="" />
                                                                         <img className="pe-1" src="../Data_Mapping/img/Delete_red.svg" alt="" />
-                                                                        {boqDetail5.status}
+                                                                        {/* {boqDetail5.status} */}
+                                                                        {boqDetail5.status ? boqDetail5.status.charAt(0).toUpperCase() + boqDetail5.status.slice(1) : ""}
+
                                                                       </div>
                                                                     </td>
                                                                   </tr>
