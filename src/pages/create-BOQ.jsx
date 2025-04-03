@@ -1632,6 +1632,7 @@ const CreateBOQ = () => {
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
     if (!selectedCategory) validationErrors.main = "Main Category is required.";
+    if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
     if (!selectedUnit) validationErrors.unit = "UOM is required.";
     if (!boqQuantity)
       validationErrors.boqQuantity = "BOQ Quantity is required.";
@@ -1828,6 +1829,8 @@ const CreateBOQ = () => {
     // Validate required fields
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
+    if (!selectedCategory) validationErrors.main = "Main Category is required.";
+    if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
 
     if (boqSubItems.length === 0) {
       toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
@@ -2161,13 +2164,16 @@ if (hasErrors2) return;
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label> Sub-category Level 2</label>
+                        <label> Sub-category Level 2 <span>*</span></label>
                         <SingleSelector
                           options={subCategoryOptions}
                           onChange={handleSubCategoryChange}
                           value={selectedSubCategory}
                           placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
                         />
+                         {errors.sub && (
+                          <div className="error-message">{errors.sub}</div>
+                        )}
                       </div>
                     </div>
                     <div className="col-md-4 mt-2">
@@ -2974,7 +2980,7 @@ if (hasErrors2) return;
                                     <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
                                     <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
                                     <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost  Quantity <span>*</span></th>
-                                    <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
+                                    {/* <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th> */}
                                   </tr>
                                   <tr>
                                     {/* <th colSpan={3} style={{ width: "500px", whiteSpace: "nowrap" }}>
@@ -3170,7 +3176,7 @@ if (hasErrors2) return;
                                           />
                                         </td>
 
-                                        <td>
+                                        {/* <td>
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width={16}
@@ -3182,19 +3188,19 @@ if (hasErrors2) return;
                                           >
                                             <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                             <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
-                                          </svg>
+                                          </svg> */}
                                           {/* Hidden file input */}
-                                          <input
+                                          {/* <input
                                             id="file-input"
                                             type="file"
                                             style={{ display: "none" }} // Hide the file input
                                             onChange={handleFileChange} // Handle file change
-                                          />
+                                          /> */}
                                           {/* Display the selected file name */}
-                                          {file && (
+                                          {/* {file && (
                                             <div>Selected File: {file.name}</div>
                                           )}
-                                        </td>
+                                        </td> */}
                                       </tr>
                                       {expandedRows.includes(el.id) && (
                                         <tr>

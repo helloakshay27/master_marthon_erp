@@ -3307,7 +3307,7 @@ const EditBOQNew = () => {
                                                                         <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Remarks</th>
                                                                         <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>UOM</th>
                                                                         <th colSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Cost Quantity <span>*</span></th>
-                                                                        <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th>
+                                                                        {/* <th rowSpan={2} style={{ width: "500px", whiteSpace: "nowrap" }}>Document</th> */}
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -3382,7 +3382,7 @@ const EditBOQNew = () => {
                                                                                                 e.target.value
                                                                                             )
                                                                                         }
-                                                                                        disabled
+                                                                                        // disabled={true}
                                                                                     />
                                                                                 </td>
                                                                                 <td>
@@ -3478,7 +3478,7 @@ const EditBOQNew = () => {
                                                                                         }
                                                                                     />
                                                                                 </td>
-                                                                                <td>
+                                                                                {/* <td>
                                                                                     <svg
                                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                                         width={16}
@@ -3500,7 +3500,7 @@ const EditBOQNew = () => {
                                                                                     {file && (
                                                                                         <div>Selected File: {file.name}</div>
                                                                                     )}
-                                                                                </td>
+                                                                                </td> */}
                                                                             </tr>
                                                                             {expandedRows.includes(subItem.id) && (
                                                                                 <tr>
@@ -3704,7 +3704,7 @@ const EditBOQNew = () => {
                                                                                             }
                                                                                         />
                                                                                     </td>
-                                                                                    <td>
+                                                                                    {/* <td>
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                                             width={16}
@@ -3726,7 +3726,7 @@ const EditBOQNew = () => {
                                                                                         {file && (
                                                                                             <div>Selected File: {file.name}</div>
                                                                                         )}
-                                                                                    </td>
+                                                                                    </td> */}
                                                                                 </tr>
                                                                                 {expandedRows.includes(el.id) && (
                                                                                     <tr>
