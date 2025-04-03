@@ -524,16 +524,35 @@ export default function CreateEvent() {
           delivery_date: dynamicExtensionConfigurations.delivery_date,
         },
         event_materials_attributes: materialFormData.map((material) => {
-          // Dynamically include all fields from materialFormData
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
-            acc[key] = material[key] || null; // Include all fields, default to null if undefined
+            if (
+              ![
+                "id",
+                "inventory_id",
+                "quantity",
+                "unit",
+                "location",
+                "rate",
+                "amount",
+                "section_id",
+                "inventory_type_id",
+                "inventory_sub_type_id",
+                "_destroy",
+                "descriptionOfItem",
+                "subMaterialType",
+                "brand_id",
+                "generic_info_id",
+                "colour_id",
+              ].includes(key)
+            ) {
+              acc[key] = material[key] || null; // Include dynamic fields
+            }
             return acc;
           }, {});
 
           return {
-            ...dynamicFields, // Include all dynamic fields
-            id: material.id || null, // Ensure id is included
-            inventory_id: Number(material.inventory_id),
+            id: material.id || null,
+            inventory_id: Number(material.inventory_id) || null,
             quantity: Number(material.quantity),
             uom: material.unit,
             location: material.location,
@@ -543,15 +562,17 @@ export default function CreateEvent() {
             section_name: material.section_id,
             inventory_type_id: material.inventory_type_id,
             inventory_sub_type_id: material.inventory_sub_type_id,
-            pms_brand: material.pms_brand || null, // Use only pms_brand
-            pms_colour: material.pms_colour || null, // Include PMS color
-            generic_info: material.generic_info || null, // Include generic info
+            pms_brand: material.brand_id || null,
+            pms_colour: material.colour_id || null,
+            generic_info: material.generic_info_id || null,
             _destroy: material._destroy || false,
+            ...dynamicFields, // Add dynamic fields
           };
         }),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
-          pms_supplier_id: vendor.id,
+          pms_supplier_id: vendor.pms_supplier_id,
+          id: vendor.id,
         })),
         status_logs_attributes: [
           {

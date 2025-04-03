@@ -472,7 +472,23 @@ export default function ResponseTab({ isCounterOffer }) {
                   </table>
                 </div>
 
-                {segeregatedMaterialData?.map((materialData, ind) => {                  
+                {segeregatedMaterialData?.map((materialData, ind) => {
+                  console.log("materialData :------de w", materialData);
+                
+                  // Extract unique extra columns from bids_values
+                  const extraColumns = Array.from(
+                    new Set(
+                      materialData.bids_values?.flatMap((material) => material.extra_columns) || []
+                    )
+                  );
+                
+                  // Extract keys from the extra object dynamically
+                  const extraKeys = Array.from(
+                    new Set(
+                      materialData.bids_values?.flatMap((material) => Object.keys(material.extra || {})) || []
+                    )
+                  );
+                
                   return (
                     <Accordion
                       key={ind}
@@ -480,33 +496,28 @@ export default function ResponseTab({ isCounterOffer }) {
                       amount={materialData.total_amounts}
                       isDefault={true}
                       tableColumn={[
-                        {
-                          label: "Best Total Amount",
-                          key: "bestTotalAmount",
-                        },
-                        {
-                          label: "Quantity Available",
-                          key: "quantityAvailable",
-                        },
+                        { label: "Best Total Amount", key: "bestTotalAmount" },
+                        { label: "Quantity Available", key: "quantityAvailable" },
                         { label: "Price", key: "price" },
                         { label: "Discount", key: "discount" },
-                        {
-                          label: "Realised Discount",
-                          key: "realisedDiscount",
-                        },
+                        { label: "Realised Discount", key: "realisedDiscount" },
                         { label: "GST", key: "gst" },
                         { label: "Realised GST", key: "realisedGST" },
                         { label: "Landed Amount", key: "landedAmount" },
-                        {
-                          label: "Participant Attachment",
-                          key: "participantAttachment",
-                        },
+                        { label: "Participant Attachment", key: "participantAttachment" },
                         { label: "Total Amount", key: "totalAmount" },
-                        { label: "Extra", key: "extra" },
+                        // Dynamically add keys from the extra object
+                        ...extraKeys.map((key) => ({
+                          label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                          key: key,
+                        })),
+                        // Dynamically add extra columns
+                        ...extraColumns.map((column) => ({
+                          label: column.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                          key: column,
+                        })),
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
-                        // console.log("material on table:------",material);
-                        
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -518,7 +529,16 @@ export default function ResponseTab({ isCounterOffer }) {
                           landedAmount: material.landed_amount || "_",
                           participantAttachment: material.participant_attachment || "_",
                           totalAmount: material.total_amount || "_",
-                          extra: material.extra?.remark || "_",
+                          // Map keys from the extra object dynamically
+                          ...extraKeys.reduce((acc, key) => {
+                            acc[key] = material.extra?.[key] || "_";
+                            return acc;
+                          }, {}),
+                          // Map extra columns dynamically
+                          ...material.extra_columns.reduce((acc, column) => {
+                            acc[column] = material[column] || "_";
+                            return acc;
+                          }, {}),
                         };
                       })}
                     />

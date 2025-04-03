@@ -179,7 +179,7 @@ export default function OverviewTab({
     },
   ];
 
-  console.log("materialData", materialData);
+  // console.log("materialData", materialData);
   
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",

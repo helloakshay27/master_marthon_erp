@@ -299,6 +299,9 @@ export default function CreateRFQForm({
               inventory_type_id: material.inventory_type_id,
               inventory_sub_type_id: material.inventory_sub_type_id,
               subMaterialType: material.inventory_sub_type,
+              brand_id:material.pms_brand_id,
+              generic_info_id:material.generic_info_id,
+              colour_id:material.pms_colour_id,
               _destroy: false,
             })),
           };
@@ -839,18 +842,38 @@ export default function CreateRFQForm({
   const renderAdminFields = (field, rowIndex, sectionIndex) => {
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[field.field_name] || "";
-    const inputList = [
-      "srNo",
-      "descriptionOfItem",
-      "quantity",
-      "unit",
-      "type",
-      "brand",
-      "location",
-      "rate",
-      "amount",
-      "actions",
-    ];
+
+    const handleFieldChange = (value) => {
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex].sectionData[rowIndex][field.field_name] = value;
+
+      // Update parent data with all attributes, including dynamic fields
+      const updatedData = updatedSections.flatMap((section) =>
+        section.sectionData.map((row) => ({
+          id: row.id || null,
+          inventory_id: Number(row.inventory_id),
+          quantity: Number(row.quantity),
+          uom: row.unit,
+          location: row.location,
+          rate: Number(row.rate),
+          amount: row.amount,
+          section_name: row.section_id,
+          inventory_type_id: row.inventory_type_id,
+          inventory_sub_type_id: row.inventory_sub_type_id,
+          pms_brand: row.brand_id || null,
+          pms_colour: row.colour_id || null,
+          generic_info: row.generic_info_id || null,
+          ...additionalFields.reduce((acc, field) => {
+            acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
+            return acc;
+          }, {}),
+          _destroy: row._destroy || false,
+        }))
+      );
+
+      setSections(updatedSections);
+      setData(updatedData);
+    };
 
     // Explicitly handle SelectBox for specific fields
     if (field.field_name === "descriptionOfItem") {
@@ -858,9 +881,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={materials}
           value={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -870,9 +891,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={uomOptions}
           value={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -882,9 +901,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={locationOptions}
           value={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -894,9 +911,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={pmsColours}
           defaultValue={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -906,9 +921,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={genericInfoOptions}
           defaultValue={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -918,9 +931,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={brandOptions}
           defaultValue={fieldValue}
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, field.field_name, sectionIndex)
-          }
+          onChange={(value) => handleFieldChange(value)}
         />
       );
     }
@@ -931,20 +942,11 @@ export default function CreateRFQForm({
           className="form-control"
           type="number"
           value={fieldValue}
-          onChange={(e) =>
-            handleInputChange(
-              e.target.value,
-              rowIndex,
-              field.field_name,
-              sectionIndex
-            )
-          }
+          onChange={(e) => handleFieldChange(e.target.value)}
           disabled
         />
       );
     }
-
-    console.log("field.field_name:----", field, field.field_name, fieldValue);
 
     // Default input for other fields
     return (
@@ -954,14 +956,7 @@ export default function CreateRFQForm({
             className="form-control rounded-2"
             type={field.field_type === "string" ? "text" : "number"}
             value={fieldValue}
-            onChange={(e) =>
-              handleInputChange(
-                e.target.value,
-                rowIndex,
-                field.field_name,
-                sectionIndex
-              )
-            }
+            onChange={(e) => handleFieldChange(e.target.value)}
           />
         )}
         <div>
@@ -1073,7 +1068,7 @@ export default function CreateRFQForm({
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
-        />
+          />
       );
     }
 
@@ -1282,9 +1277,9 @@ export default function CreateRFQForm({
                           )
                         }
                         defaultValue={
-                          section?.sectionData[rowIndex]?.brand || ""
+                          section?.sectionData[rowIndex].brand_id
                         }
-                      />
+                        />
                     );
                   },
                   type: (cell, rowIndex) => (
@@ -1380,7 +1375,7 @@ export default function CreateRFQForm({
                   pms_colour: (cell, rowIndex) => (
                     <SelectBox
                       options={pmsColours}
-                      // defaultValue={pmsColours.find((option) => option.value === ).value || ""}
+                      defaultValue={section?.sectionData[rowIndex].colour_id}
                       onChange={(value) =>
                         handleInputChange(
                           value,
@@ -1389,12 +1384,12 @@ export default function CreateRFQForm({
                           sectionIndex
                         )
                       }
-                    />
+                      />
                   ),
                   generic_info: (cell, rowIndex) => (
                     <SelectBox
                       options={genericInfoOptions}
-                      value={section?.sectionData[rowIndex]?.generic_info || ""}
+                      defaultValue={section?.sectionData[rowIndex]?.generic_info_id || ""}
                       onChange={(value) =>
                         handleInputChange(
                           value,

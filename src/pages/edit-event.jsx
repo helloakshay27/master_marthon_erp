@@ -62,6 +62,9 @@ export default function EditEvent() {
     },
   ]);
 
+  console.log("materialFormData edit page-------------",materialFormData);
+  
+
   const Loader = () => (
     <div className="loader-container">
       <div className="lds-ring">
@@ -785,23 +788,52 @@ export default function EditEvent() {
             dynamicExtensionConfigurations.time_extension_on_change_in,
           delivery_date: dynamicExtensionConfigurations.delivery_date,
         },
-        event_materials_attributes: materialFormData.map((material) => ({
-          id: material.id || null,
-          inventory_id: Number(material.inventory_id) || null,
-          quantity: Number(material.quantity),
-          uom: material.unit,
-          location: material.location,
-          rate: Number(material.rate),
-          amount: material.amount,
-          sub_section_name: material.sub_section_id,
-          section_name: material.section_id,
-          inventory_type_id: material.inventory_type_id,
-          inventory_sub_type_id: material.inventory_sub_type_id,
-          pms_brand: material.brand || null, // Include brand
-          pms_colour: material.pms_colour || null, // Include PMS color
-          generic_info: material.generic_info || null, // Include generic info
-          _destroy: material._destroy || false,
-        })),
+        event_materials_attributes: materialFormData.map((material) => {
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            if (
+              ![
+                "id",
+                "inventory_id",
+                "quantity",
+                "unit",
+                "location",
+                "rate",
+                "amount",
+                "section_id",
+                "inventory_type_id",
+                "inventory_sub_type_id",
+                "_destroy",
+                "descriptionOfItem",
+                "subMaterialType",
+                "brand_id",
+                "generic_info_id",
+                "colour_id",
+              ].includes(key)
+            ) {
+              acc[key] = material[key] || null; // Include dynamic fields
+            }
+            return acc;
+          }, {});
+
+          return {
+            id: material.id || null,
+            inventory_id: Number(material.inventory_id) || null,
+            quantity: Number(material.quantity),
+            uom: material.unit,
+            location: material.location,
+            rate: Number(material.rate),
+            amount: material.amount,
+            sub_section_name: material.sub_section_id,
+            section_name: material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            pms_brand: material.brand_id || null,
+            pms_colour: material.colour_id || null,
+            generic_info: material.generic_info_id || null,
+            _destroy: material._destroy || false,
+            ...dynamicFields, // Add dynamic fields
+          };
+        }),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
