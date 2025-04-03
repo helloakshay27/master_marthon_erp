@@ -313,16 +313,41 @@ export default function CreateEvent() {
   };
 
   const handleSaveButtonClick = () => {
-    const updatedTableData = tableData.filter(
-      (vendor) =>
-        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
+    setSelectedVendors((prev) => {
+      const newVendors = selectedRows.filter(
+        (vendor) => !prev.some((existingVendor) => existingVendor.id === vendor.id)
+      );
+
+      return [
+        ...prev,
+        ...newVendors.map((vendor) => ({
+          ...vendor,
+          id: vendor.id,
+          pms_supplier_id: vendor.id,
+        })),
+      ];
+    });
+
+    setTableData((prevTableData) =>
+      prevTableData.filter(
+        (vendor) =>
+          !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
+      )
     );
 
-    setTableData(updatedTableData);
-    setSelectedVendors((prev) => [...prev, ...selectedRows]);
     setVendorModal(false);
     setSelectedRows([]);
     setResetSelectedRows(true);
+  };
+
+  const handleRemoveVendor = (id) => {
+    const removedVendor = selectedVendors.find((vendor) => vendor.id === id);
+
+    setSelectedVendors((prev) => prev.filter((vendor) => vendor.id !== id));
+
+    if (removedVendor) {
+      setTableData((prevTableData) => [...prevTableData, removedVendor]); // Restore vendor to main table
+    }
   };
 
   const isVendorSelected = (vendorId) => {
@@ -898,12 +923,8 @@ export default function CreateEvent() {
                               <td>
                                 <button
                                   className="btn btn-danger"
-                                  onClick={() =>
-                                    setSelectedVendors((prev) =>
-                                      prev.filter((v) => v.id !== vendor.id)
-                                    )
-                                  }
-                                >
+                                  onClick={() => handleRemoveVendor(vendor.id)}
+                              >
                                   Remove
                                 </button>
                               </td>
@@ -1319,12 +1340,11 @@ export default function CreateEvent() {
                     )}
                   </div>
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                    <ul className="pagination justify-content-center d-flex ">
+                  <ul className="pagination justify-content-center d-flex ">
                       {/* First Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1336,9 +1356,8 @@ export default function CreateEvent() {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1353,9 +1372,8 @@ export default function CreateEvent() {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === pageNumber ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1368,9 +1386,8 @@ export default function CreateEvent() {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1383,9 +1400,8 @@ export default function CreateEvent() {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1401,12 +1417,9 @@ export default function CreateEvent() {
                     {/* Showing entries count */}
                     <div>
                       <p>
-                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                        {Math.min(
-                          currentPage * pageSize,
-                          totalPages * pageSize
-                        )}{" "}
-                        of {totalPages * pageSize} entries
+                      Showing {filteredTableData.length > 0 ? (currentPage * pageSize - (pageSize - 1)) : 0} to{" "}
+                        {filteredTableData.length > 0 ? Math.min(currentPage * pageSize, filteredTableData.length) : 0}{" "}
+                        of {filteredTableData.length} entries
                       </p>
                     </div>
                   </div>
