@@ -496,25 +496,7 @@ export default function EditEvent() {
     }
   };
 
-  const handleSaveButtonClick = () => {
-    const updatedTableData = tableData.filter(
-      (vendor) =>
-        !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
-    );
 
-    setTableData(updatedTableData);
-    setSelectedVendors((prev) => [
-      ...prev,
-      ...selectedRows.map((vendor) => ({
-        ...vendor,
-        id: null,
-        pms_supplier_id: vendor.id,
-      })),
-    ]);
-    setVendorModal(false);
-    setSelectedRows([]);
-    setResetSelectedRows(true);
-  };
 
   const isVendorSelected = (vendorId) => {
     return (
@@ -555,17 +537,17 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                // ...textarea,
-                // id: selectedCondition.value,
-                // value: selectedCondition.condition,
-                // defaultOption: {
-                //   label: selectedCondition.label,
-                //   value: selectedCondition.value,
-                // },
-                id: textarea.id,
-                value: selectedCondition.condition,
-                textareaId: selectedCondition.value,
-              }
+              // ...textarea,
+              // id: selectedCondition.value,
+              // value: selectedCondition.condition,
+              // defaultOption: {
+              //   label: selectedCondition.label,
+              //   value: selectedCondition.value,
+              // },
+              id: textarea.id,
+              value: selectedCondition.condition,
+              textareaId: selectedCondition.value,
+            }
             : textarea
         )
       );
@@ -715,11 +697,43 @@ export default function EditEvent() {
     return true;
   };
 
+
+
+  const eventData2 = {
+    event: {
+
+
+
+      event_vendors_attributes: selectedVendors || [].map((vendor) => ({
+        status: 1,
+        pms_supplier_id: vendor.pms_supplier_id,
+        id: vendor.id,
+      })),
+      status_logs_attributes: [
+        {
+          status: "pending",
+          created_by_id: 2,
+          remarks: "Initial status",
+          comments: "No comments",
+        },
+      ],
+
+
+    },
+  };
+
+
+  const [eventData1, setEventData1] = useState(eventData2);
+  useEffect(() => {
+    console.log("Event Data Debug:", JSON.stringify(selectedVendors, null, 2));
+  }, [eventData1, selectedVendors]);
+
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
     console.log(eventDetails);
-    
+
 
     if (
       !eventName ||
@@ -804,16 +818,16 @@ export default function EditEvent() {
         resource_term_conditions_attributes: textareas.map((textarea) =>
           isTextId
             ? {
-                id: textarea?.id || null,
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              id: textarea?.id || null,
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
             : {
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
         ),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
@@ -841,7 +855,7 @@ export default function EditEvent() {
       },
     };
 
-    console.log("payload:-", eventData);
+    console.log("payload:-", JSON.stringify(eventData));
 
     try {
       const response = await fetch(
@@ -946,14 +960,48 @@ export default function EditEvent() {
     }
   };
 
-  useEffect(() => {}, [eventType, awardType]);
+  useEffect(() => { }, [eventType, awardType]);
 
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
   };
 
+  const handleSaveButtonClick = () => {
+    setSelectedVendors((prev) => {
+      const newVendors = selectedRows.filter(
+        (vendor) => !prev.some((existingVendor) => existingVendor.id === vendor.id)
+      );
+
+      return [
+        ...prev,
+        ...newVendors.map((vendor) => ({
+          ...vendor,
+          id: vendor.id,
+          pms_supplier_id: vendor.id,
+        })),
+      ];
+    });
+
+    setTableData((prevTableData) =>
+      prevTableData.filter(
+        (vendor) =>
+          !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
+      )
+    );
+
+    setVendorModal(false);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
+  };
+
   const handleRemoveVendor = (id) => {
+    const removedVendor = selectedVendors.find((vendor) => vendor.id === id);
+
     setSelectedVendors((prev) => prev.filter((vendor) => vendor.id !== id));
+
+    if (removedVendor) {
+      setTableData((prevTableData) => [...prevTableData, removedVendor]); // Restore vendor to main table
+    }
   };
 
   return (
@@ -1068,6 +1116,7 @@ export default function EditEvent() {
                 </div>
               </div>
               {/* {console.log("materialFormData :------",materialFormData)} */}
+
               <CreateRFQForm
                 data={materialFormData}
                 setData={setMaterialFormData}
@@ -1487,9 +1536,8 @@ export default function EditEvent() {
                     <ul className="pagination justify-content-center d-flex ">
                       {/* First Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1501,9 +1549,8 @@ export default function EditEvent() {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1518,9 +1565,8 @@ export default function EditEvent() {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === pageNumber ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1533,9 +1579,8 @@ export default function EditEvent() {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1548,9 +1593,8 @@ export default function EditEvent() {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1566,14 +1610,12 @@ export default function EditEvent() {
                     {/* Showing entries count */}
                     <div>
                       <p>
-                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                        {Math.min(
-                          currentPage * pageSize,
-                          totalPages * pageSize
-                        )}{" "}
-                        of {totalPages * pageSize} entries
+                        Showing {filteredTableData.length > 0 ? (currentPage * pageSize - (pageSize - 1)) : 0} to{" "}
+                        {filteredTableData.length > 0 ? Math.min(currentPage * pageSize, filteredTableData.length) : 0}{" "}
+                        of {filteredTableData.length} entries
                       </p>
                     </div>
+
                   </div>
                 </>
               }
