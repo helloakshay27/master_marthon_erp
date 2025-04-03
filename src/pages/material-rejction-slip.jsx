@@ -47,7 +47,7 @@ const MaterialRejctionSlip = () => {
     material: true,
     supplierName: true,
     defectiveQty: true,
-    defectiveRemark: true,
+    Remark: true,
     store: true,
     status: true,
     dueDate: true,
@@ -74,7 +74,7 @@ const MaterialRejctionSlip = () => {
       material: true,
       supplierName: true,
       defectiveQty: true,
-      defectiveRemark: true,
+      Remark: true,
       store: true,
       status: true,
       dueDate: true,
@@ -723,9 +723,7 @@ const MaterialRejctionSlip = () => {
                           {columnVisibility.defectiveQty && (
                             <th>Defective Qty</th>
                           )}
-                          {columnVisibility.defectiveRemark && (
-                            <th>Defective Remark</th>
-                          )}
+                          {columnVisibility.Remark && <th> Remark</th>}
                           {columnVisibility.store && <th>Store</th>}
                           {columnVisibility.status && <th>Status</th>}
                           {columnVisibility.dueDate && <th>Due Date</th>}
@@ -737,7 +735,12 @@ const MaterialRejctionSlip = () => {
                         {tableData.length > 0 ? (
                           tableData.map((item, index) => (
                             <tr key={item.id}>
-                              {columnVisibility.srNo && <td>{index + 1}</td>}
+                              {/* {columnVisibility.srNo && <td>{index + 1}</td>} */}
+                              <td>
+                                {(pagination.current_page - 1) * pageSize +
+                                  index +
+                                  1}
+                              </td>
                               {columnVisibility.company && (
                                 <td>{item.company}</td>
                               )}
@@ -832,7 +835,7 @@ const MaterialRejctionSlip = () => {
                               {columnVisibility.defectiveQty && (
                                 <td>{item.defective_qty}</td>
                               )}
-                              {columnVisibility.defectiveRemark && (
+                              {columnVisibility.Remark && (
                                 <td>{item.defective_remark}</td>
                               )}
                               {columnVisibility.store && (
