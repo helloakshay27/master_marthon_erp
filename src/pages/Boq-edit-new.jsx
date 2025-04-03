@@ -3502,8 +3502,8 @@ const EditBOQNew = () => {
                                                                                     )}
                                                                                 </td> */}
                                                                             </tr>
-                                                                            {expandedRows.includes(subItem.id) && (
-                                                                                <tr>
+                                                                            {/* {!expandedRows.includes(subItem.id) && ( */}
+                                                                                <tr style={{ display: expandedRows.includes(subItem.id) ? "table-row" : "none" }}>
                                                                                     <td colSpan={11}>
                                                                                         <EditBoqSub
                                                                                             materials={materials2[subItem.id] || subItem.materials || []}
@@ -3539,7 +3539,7 @@ const EditBOQNew = () => {
                                                                                         />
                                                                                     </td>
                                                                                 </tr>
-                                                                            )}
+                                                                            {/* )} */}
                                                                         </React.Fragment>
                                                                     ))}
 
