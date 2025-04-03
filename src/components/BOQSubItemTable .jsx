@@ -1013,10 +1013,10 @@ const BOQSubItemTable = ({
       colour_id: selectedColors[i]?.value || "",
       brand_id: selectedInventoryBrands[i]?.value || "",
       uom_id: selectedUnit2[i]?.value || "",
-      co_efficient_factor: parseFloat(coefficientFactors[i]) || "",
-      estimated_quantity: parseFloat(estimatedQuantities[i]) ||  "",
-      wastage: parseFloat(wastages[i]) || "",
-      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  "",
+      co_efficient_factor: parseFloat(coefficientFactors[i]) || 0,
+      estimated_quantity: parseFloat(estimatedQuantities[i]) ||  0,
+      wastage: parseFloat(wastages[i]) || 0,
+      estimated_quantity_wastage: parseFloat(totalEstimatedQtyWastages[i]) ||  0,
     }));
   }, [
     materials, selectedSubTypes, selectedGenericSpecifications, selectedColors,
