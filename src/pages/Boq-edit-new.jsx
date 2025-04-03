@@ -3266,7 +3266,7 @@ const EditBOQNew = () => {
                             {showBOQSubItem && (
                                 <>
 
-                                    <pre>{JSON.stringify(boqSubItems, null, 2)}</pre>
+                                    {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
                                     {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 
