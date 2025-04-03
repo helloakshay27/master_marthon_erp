@@ -151,7 +151,8 @@ const ApprovalMatrics = () => {
 
         // Include pagination params
         queryParams.append("page", pagination.current_page);
-        queryParams.append("page_size", 10);
+        // queryParams.append("page_size", 10);
+        queryParams.append("page_size", pageSize);
 
         const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
@@ -360,7 +361,7 @@ const ApprovalMatrics = () => {
 
     // Add pagination parameters (always fetch from page 1 when applying filters)
     queryParams.append("page", 1);
-    queryParams.append("page_size", 8); // Adjust page size as needed
+    queryParams.append("page_size", pageSize); // Adjust page size as needed
 
     // API URL with query params
     const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
@@ -475,8 +476,57 @@ const ApprovalMatrics = () => {
     );
   };
 
+  // const handlePageChange = async (page) => {
+  //   if (page < 1 || page > pagination.total_pages) return;
+
+  //   setPagination((prev) => ({ ...prev, current_page: page }));
+
+  //   let queryParams = new URLSearchParams();
+
+  //   // Preserve filters
+  //   if (filters.company)
+  //     queryParams.append("q[company_id_eq]", filters.company);
+  //   if (filters.project)
+  //     queryParams.append("q[project_id_eq]", filters.project);
+  //   if (filters.site) queryParams.append("q[site_id_eq]", filters.site);
+  //   if (filters.department)
+  //     queryParams.append("q[department_id_eq]", filters.department);
+  //   if (filters.materialtypes)
+  //     queryParams.append("q[pms_inventory_type_id_eq]", filters.materialtypes);
+  //   if (filters.modules)
+  //     queryParams.append("q[approval_type_eq]", filters.modules);
+
+  //   // Update the page number
+  //   queryParams.append("page", page);
+  //   queryParams.append("page_size", pageSize);
+
+  //   const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+  //   console.log("API URL (Pagination):", apiUrl);
+
+  //   try {
+  //     const response = await fetch(apiUrl);
+  //     if (!response.ok) throw new Error("Failed to fetch page data");
+
+  //     const data = await response.json();
+  //     setApprovals(data.invoice_approvals || []);
+
+  //     // Update pagination info
+  //     setPagination((prev) => ({
+  //       ...prev,
+  //       total_count: data.total_records || 0,
+  //       total_pages: Math.ceil((data.total_records || 0) / 8),
+  //       current_page: page,
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error fetching page data:", error);
+  //   }
+  // };
+
   const handlePageChange = async (page) => {
-    if (page < 1 || page > pagination.total_pages) return;
+    if (loading || page < 1 || page > pagination.total_pages) return; // Prevent multiple calls
+
+    setLoading(true); // Set loading to true before making the API call
 
     setPagination((prev) => ({ ...prev, current_page: page }));
 
@@ -497,7 +547,7 @@ const ApprovalMatrics = () => {
 
     // Update the page number
     queryParams.append("page", page);
-    queryParams.append("page_size", 8);
+    queryParams.append("page_size", pageSize);
 
     const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
@@ -514,14 +564,15 @@ const ApprovalMatrics = () => {
       setPagination((prev) => ({
         ...prev,
         total_count: data.total_records || 0,
-        total_pages: Math.ceil((data.total_records || 0) / 8),
+        total_pages: Math.ceil((data.total_records || 0) / pageSize),
         current_page: page,
       }));
     } catch (error) {
       console.error("Error fetching page data:", error);
+    } finally {
+      setLoading(false); // Reset loading state after the API call
     }
   };
-
   return (
     <div>
       <div className="website-content" style={{ overflowY: "auto" }}>
@@ -733,8 +784,11 @@ const ApprovalMatrics = () => {
                             edit
                           </span>
                         </td>
-                        <td>{index + 1}</td>
+                        {/* <td>{index + 1}</td> */}
                         {/* <td>{record.site_id}</td> */}
+                        <td>
+                          {(pagination.current_page - 1) * pageSize + index + 1}
+                        </td>
                         <td>{record.approval_type}</td>
                         <td>{record.company_name}</td>
                         <td>{record.project_name}</td>
