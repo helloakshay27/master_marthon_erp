@@ -8,13 +8,14 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { baseURL } from "../confi/apiDomain";
-import {useNavigate} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function CreateTemplate() {
+export default function EditTemplate() {
   const [templateName, setTemplateName] = useState("");
   const [departmentName, setDepartmentName] = useState("");
   const [departmentOptions, setDepartmentOptions] = useState([]);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [columns, setColumns] = useState([
     {
       label: "Sr no.",
@@ -207,6 +208,53 @@ export default function CreateTemplate() {
     fetchDepartments();
   }, []);
 
+  useEffect(() => {
+    const fetchTemplateData = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/rfq/event_templates/${id}`);
+        const templateData = response.data;
+
+        setTemplateName(templateData.name);
+        setDepartmentName(templateData.department_id);
+
+        // Ensure no duplicate columns are added
+        const updatedColumns = [
+          ...columns.filter((col) => !templateData.bid_material_template_fields.some((field) => field.field_name.toLowerCase().replace(/\s+/g, "_") === col.key)),
+          ...templateData.bid_material_template_fields.map((field) => ({
+            id: field.id,
+            label: field.field_name,
+            key: field.field_name.toLowerCase().replace(/\s+/g, "_"),
+            isRequired: field.is_required,
+            isReadOnly: field.is_read_only,
+            fieldOwner: field.field_owner,
+            fieldType: "string",
+          })),
+        ];
+
+        setColumns(updatedColumns);
+
+        // Ensure no duplicate rows are added to shortTableData
+        const updatedShortTableData = [
+          ...shortTableData.filter((row) => !templateData.bid_template_fields.some((field) => field.field_name === row.label)),
+          ...templateData.bid_template_fields.map((field) => ({
+            id: field.id,
+            label: field.field_name,
+            value: "",
+            isRequired: field.is_required,
+            isReadOnly: field.is_read_only,
+            fieldOwner: field.field_owner,
+          })),
+        ];
+
+        setShortTableData(updatedShortTableData);
+      } catch (error) {
+        console.error("Error fetching template data:", error);
+      }
+    };
+
+    fetchTemplateData();
+  }, [id]);
+
   const handleAddColumn = () => {
     setShowModal(true);
   };
@@ -320,76 +368,45 @@ export default function CreateTemplate() {
 
   const handleSubmit = async () => {
     try {
-      const bidTemplateFields = shortTableData
-        .filter(
-          (row) =>
-            !["Freight Charge", "GST on Freight", "Realised GST","Warranty Clause","Payment Terms","Loading/Unloading"].includes(
-              row.label
-            )
-        )
-        .map((row) => ({
-          field_name: row.label,
-          is_required: row.isRequired || false,
-          is_read_only: row.isReadOnly || false,
-          field_owner: row.fieldOwner || "admin",
-          field_type: row.fieldType || "string",
-          extra_fields: {},
-        }));
+      const bidTemplateFields = shortTableData.map((row) => ({
+        id: row.id, // Include ID for existing rows
+        field_name: row.label,
+        is_required: row.isRequired || false,
+        is_read_only: row.isReadOnly || false,
+        field_owner: row.fieldOwner || "admin",
+        extra_fields: row.extra_fields || [],
+      }));
 
-      const bidMaterialTemplateFields = columns
-        .filter(
-          (col) =>
-            ![
-              "srNo",
-              "descriptionOfItem",
-              "material_type",
-              "material_sub_type",
-              "quantity_requested",
-              "creator_attachment",
-              "discount",
-              "realised_discount",
-              "gst",
-              "realised_gst",
-              "landed_amount",
-              "participant_attachment",
-              "vendor_remark",
-              "total",
-              "quantity",
-              "unit",
-              "location",
-              "rate",
-              "amount",
-            ].includes(col.key)
-        )
-        .map((col) => ({
-          field_name: col.label,
-          is_required: col.isRequired || false,
-          is_read_only: col.isReadOnly || false,
-          field_owner: col.fieldOwner || "user",
-          field_type: col.fieldType || "string",
-          extra_fields: {},
-        }));
+      const bidMaterialTemplateFields = columns.map((col) => ({
+        id: col.id, // Include ID for existing columns
+        field_name: col.label,
+        is_required: col.isRequired || false,
+        is_read_only: col.isReadOnly || false,
+        field_owner: col.fieldOwner || "user",
+        extra_fields: col.extra_fields || {},
+      }));
 
-      const response = await axios.post(`${baseURL}/rfq/event_templates`, {
+      const payload = {
         event_template: {
           name: templateName,
           department_id: departmentName,
           bid_template_fields_attributes: bidTemplateFields,
           bid_material_template_fields_attributes: bidMaterialTemplateFields,
         },
-      });
-      if (response.status == 201) {
-        toast.success("Template created successfully!", { autoClose: 1000 });
+      };
+
+      const response = await axios.put(`${baseURL}/rfq/event_templates/${id}`, payload);
+
+      if (response.status === 200) {
+        toast.success("Template updated successfully!", { autoClose: 1000 });
         setTimeout(() => {
-          navigate(
-            "/event-template-list"
-          );
+          navigate("/event-template-list");
         }, 1500);
       }
 
-      console.log("Template created successfully:", response.data);
+      console.log("Template updated successfully:", response.data);
     } catch (error) {
-      console.error("Error creating template:", error);
+      console.error("Error updating template:", error);
     }
   };
 
@@ -453,7 +470,7 @@ export default function CreateTemplate() {
             <Table
               columns={columns}
               data={[
-                columns.reduce((acc, col, index) => {
+                columns.reduce((acc, col) => {
                   acc[col.key] = (
                     <div className="d-flex align-items-center">
                       <button
@@ -485,28 +502,6 @@ export default function CreateTemplate() {
                   return acc;
                 }, {}),
               ]}
-              isMinWidth={true}
-              customRender={{
-                srno: (cell) => cell,
-                descriptionOfItem: (cell) => cell,
-                material_type: (cell) => cell,
-                material_sub_type: (cell) => cell,
-                quantity_requested: (cell) => cell,
-                creator_attachment: (cell) => cell,
-                discount: (cell) => cell,
-                realised_discount: (cell) => cell,
-                gst: (cell) => cell,
-                realised_gst: (cell) => cell,
-                landed_amount: (cell) => cell,
-                participant_attachment: (cell) => cell,
-                vendor_remark: (cell) => cell,
-                total: (cell) => cell,
-                quantity: (cell) => cell,
-                unit: (cell) => cell,
-                location: (cell) => cell,
-                rate: (cell) => cell,
-                amount: (cell) => cell,
-              }}
             />
             <div className="d-flex justify-content-end align-items-center">
               <button
@@ -529,10 +524,10 @@ export default function CreateTemplate() {
             </div>
             <div className="d-flex justify-content-end align-items-center">
               <button className="purple-btn2 mt-3 " onClick={handleSubmit}>
-                <span className="material-symbols-outlined align-text-top">
+                {/* <span className="material-symbols-outlined align-text-top">
                   save{" "}
-                </span>
-                <span>Save Template</span>
+                </span> */}
+                <span>Update Template</span>
               </button>
             </div>
             <DynamicModalBox

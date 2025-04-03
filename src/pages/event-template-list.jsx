@@ -4,7 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 
 export default function EventTemplateList() {
   const [eventTemplates, setEventTemplates] = useState([]);
-  const [pagination, setPagination] = useState({ total_count: 0, current_page: 1, total_pages: 1 });
+  const [pagination, setPagination] = useState({
+    total_count: 0,
+    current_page: 1,
+    total_pages: 1,
+  });
   const navigate = useNavigate();
   const id = useParams();
 
@@ -50,6 +54,18 @@ export default function EventTemplateList() {
               <div style={{ width: "15%" }}></div>
             </div>
 
+            <div className="d-flex justify-content-end align-items-center px-4 py-2 bg-light border-bottom">
+              <button
+                className="purple-btn2"
+                onClick={() => navigate("/event-template-create")}
+              >
+                <span className="material-symbols-outlined align-text-top">
+                  add
+                </span>
+                Create Event Template
+              </button>
+            </div>
+
             <div className="material-boxes mt-3">
               <div className="container-fluid">
                 <div className="tbl-container mt-3 px-3">
@@ -59,6 +75,7 @@ export default function EventTemplateList() {
                         <th>Sr No.</th>
                         <th>Event Template Name</th>
                         <th>Action</th>
+                        <th>Edit</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -69,12 +86,18 @@ export default function EventTemplateList() {
                       ) : (
                         eventTemplates.map((template, index) => (
                           <tr key={template.id}>
-                            <td>{(pagination.current_page - 1) * 10 + index + 1}</td>
+                            <td>
+                              {(pagination.current_page - 1) * 10 + index + 1}
+                            </td>
                             <td>{template.name || "N/A"}</td>
                             <td>
                               <button
                                 className="btn"
-                                onClick={() => navigate(`/event-template-details/${template.id}`)}
+                                onClick={() =>
+                                  navigate(
+                                    `/event-template-details/${template.id}`
+                                  )
+                                }
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -89,6 +112,32 @@ export default function EventTemplateList() {
                                 </svg>
                               </button>
                             </td>
+                            <td>
+                              <button
+                                className="btn"
+                                onClick={() =>
+                                  navigate(
+                                    `/edit-template/${template.id}`
+                                  )
+                                }
+                              >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-pencil-square"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                    />
+                                  </svg>
+                              </button>
+                            </td>
+                            
                           </tr>
                         ))
                       )}
@@ -98,18 +147,27 @@ export default function EventTemplateList() {
                 <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                   <ul className="pagination justify-content-center d-flex">
                     <li
-                      className={`page-item ${pagination.current_page === 1 ? "disabled" : ""}`}
+                      className={`page-item ${
+                        pagination.current_page === 1 ? "disabled" : ""
+                      }`}
                     >
-                      <button className="page-link" onClick={() => handlePageChange(1)}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(1)}
+                      >
                         First
                       </button>
                     </li>
                     <li
-                      className={`page-item ${pagination.current_page === 1 ? "disabled" : ""}`}
+                      className={`page-item ${
+                        pagination.current_page === 1 ? "disabled" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pagination.current_page - 1)}
+                        onClick={() =>
+                          handlePageChange(pagination.current_page - 1)
+                        }
                       >
                         Prev
                       </button>
@@ -121,26 +179,35 @@ export default function EventTemplateList() {
                           pagination.current_page === i + 1 ? "active" : ""
                         }`}
                       >
-                        <button className="page-link" onClick={() => handlePageChange(i + 1)}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(i + 1)}
+                        >
                           {i + 1}
                         </button>
                       </li>
                     ))}
                     <li
                       className={`page-item ${
-                        pagination.current_page === pagination.total_pages ? "disabled" : ""
+                        pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
                       }`}
                     >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pagination.current_page + 1)}
+                        onClick={() =>
+                          handlePageChange(pagination.current_page + 1)
+                        }
                       >
                         Next
                       </button>
                     </li>
                     <li
                       className={`page-item ${
-                        pagination.current_page === pagination.total_pages ? "disabled" : ""
+                        pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
                       }`}
                     >
                       <button

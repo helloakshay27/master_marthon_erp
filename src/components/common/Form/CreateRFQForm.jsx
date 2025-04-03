@@ -214,8 +214,8 @@ export default function CreateRFQForm({
   const fetchPmsColours = async (materialId) => {
     try {
       let url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
-      if(!materialId){
-        url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      if (!materialId) {
+        url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       }
       const response = await axios.get(url);
 
@@ -281,7 +281,7 @@ export default function CreateRFQForm({
             fetchSubSections(inventorySubTypeId);
           }
           // console.log("materials", materialsArray, materialsArray[0].inventory_id);
-          
+
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
@@ -500,15 +500,14 @@ export default function CreateRFQForm({
   const handleInputChange = (value, rowIndex, key, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
-    if(key==='descriptionOfItem'){
-      updatedSections[sectionIndex].sectionData[rowIndex]['inventory_id'] = value;
+    if (key === "descriptionOfItem") {
+      updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] =
+        value;
     }
     setSections(updatedSections); // Update the sections state
-    
 
     // Update the parent data with all attributes, including dynamic fields
     const updatedData = updatedSections.flatMap((section) => {
-      
       section.sectionData.map((row) => ({
         id: row.id || null,
         inventory_id: Number(row.inventory_id),
@@ -528,9 +527,9 @@ export default function CreateRFQForm({
           return acc;
         }, {}),
         _destroy: row._destroy || false,
-      }))
-  });
-  
+      }));
+    });
+
     setData(updatedData); // Update the parent data
     fetchBrands(value);
     fetchPmsColours(value);
@@ -538,12 +537,10 @@ export default function CreateRFQForm({
   };
 
   const fetchBrands = async (materialId) => {
-    
-
     try {
       let url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
-      if(!materialId){
-        url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      if (!materialId) {
+        url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
       }
       const response = await axios.get(url);
 
@@ -571,7 +568,7 @@ export default function CreateRFQForm({
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     console.log("called", selected, rowIndex, sectionIndex);
-    
+
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
       (material) => material.value === selected
@@ -582,10 +579,9 @@ export default function CreateRFQForm({
       return;
     }
     console.log(selectedMaterial, "selectedMaterial");
-    
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
-    selectedMaterial.label;
+      selectedMaterial.label;
 
     if (selectedMaterial.uom) {
       updatedSections[sectionIndex].sectionData[rowIndex].unit =
@@ -597,8 +593,8 @@ export default function CreateRFQForm({
     updatedSections[sectionIndex].sectionData[rowIndex].type =
       selectedMaterial.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial.label
-console.log('updatedSections',updatedSections);
+      selectedMaterial.label;
+    console.log("updatedSections", updatedSections);
 
     // Update materialId state
     setMaterialId(selectedMaterial.value);
@@ -772,8 +768,6 @@ console.log('updatedSections',updatedSections);
     });
     setShowShortTableEditModal(true);
   };
-
-
 
   const handleShortTableEditModalSubmit = () => {
     const updatedFields = bidTemplateFields.map((field) =>
@@ -950,15 +944,15 @@ console.log('updatedSections',updatedSections);
       );
     }
 
-
+    console.log("field.field_name:----", field, field.field_name, fieldValue);
 
     // Default input for other fields
     return (
       <div className="input-group">
-        {field.field_owner === "admin" && (
+        {field.field_owner === "Admin" && (
           <input
-            className="form-control"
-            type={field.field_type === "integer" ? "number" : "text"}
+            className="form-control rounded-2"
+            type={field.field_type === "string" ? "text" : "number"}
             value={fieldValue}
             onChange={(e) =>
               handleInputChange(
@@ -970,18 +964,7 @@ console.log('updatedSections',updatedSections);
             }
           />
         )}
-        {/* {!inputList.includes(field.field_name) && ( */}
-        <div
-        // style={{
-        //   display: inputList.includes(field.field_name) ? "block" : "none",
-        // }}
-        >
-          {/* <button
-              className="btn btn-outline-secondary"
-              onClick={() => handleEditAdditionalField(field)}
-            >
-              <i className="material-icons">edit</i>
-            </button> */}
+        <div>
           <button
             className="purple-btn2 ms-2 rounded-circle p-0"
             style={{
@@ -994,12 +977,6 @@ console.log('updatedSections',updatedSections);
           >
             <i className="bi bi-pencil" style={{ border: 0 }}></i>
           </button>
-          {/* <button
-              className="btn btn-outline-danger"
-              onClick={() => handleDeleteAdditionalField(field)}
-            >
-              <i className="material-icons">delete</i>
-            </button> */}
           <button
             className="purple-btn2 ms-2 rounded-circle p-0"
             style={{
@@ -1013,7 +990,6 @@ console.log('updatedSections',updatedSections);
             <i className="bi bi-trash" style={{ border: 0 }}></i>
           </button>
         </div>
-        {/* )} */}
       </div>
     );
   };
@@ -1078,7 +1054,9 @@ console.log('updatedSections',updatedSections);
       return (
         <SelectBox
           options={brandOptions}
-          defaultValue={brandOptions.find((option) => option.label === fieldValue)?.value}
+          defaultValue={
+            brandOptions.find((option) => option.label === fieldValue)?.value
+          }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
@@ -1159,7 +1137,6 @@ console.log('updatedSections',updatedSections);
     );
   };
 
-  
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -1253,11 +1230,6 @@ console.log('updatedSections',updatedSections);
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
                   descriptionOfItem: (cell, rowIndex) => {
-                    // console.log("Materials options:", materials);
-                    // console.log(
-                    //   "Selected value for descriptionOfItem:",
-                    //   section?.sectionData[rowIndex]?.descriptionOfItem
-                    // );
                     return (
                       <SelectBox
                         options={materials} // Ensure materials is an array of objects with `label` and `value`
@@ -1276,11 +1248,6 @@ console.log('updatedSections',updatedSections);
                     );
                   },
                   unit: (cell, rowIndex) => {
-                    // console.log("UOM options:", uomOptions);
-                    // console.log(
-                    //   "Selected value for unit:",
-                    //   section?.sectionData[rowIndex]?.unit
-                    // );
                     return (
                       <SelectBox
                         options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
@@ -1292,11 +1259,6 @@ console.log('updatedSections',updatedSections);
                     );
                   },
                   location: (cell, rowIndex) => {
-                    // console.log("Location options:", locationOptions);
-                    // console.log(
-                    //   "Selected value for location:",
-                    //   section?.sectionData[rowIndex]?.location
-                    // );
                     return (
                       <SelectBox
                         options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
@@ -1319,7 +1281,9 @@ console.log('updatedSections',updatedSections);
                             sectionIndex
                           )
                         }
-                        defaultValue={section?.sectionData[rowIndex]?.brand || ""}
+                        defaultValue={
+                          section?.sectionData[rowIndex]?.brand || ""
+                        }
                       />
                     );
                   },
@@ -1385,7 +1349,6 @@ console.log('updatedSections',updatedSections);
                       }
                       placeholder="Enter Amount"
                       disabled
-                      
                     />
                   ),
                   actions: (_, rowIndex) => (
@@ -1477,7 +1440,6 @@ console.log('updatedSections',updatedSections);
             </span>
             <span>Add Section</span>
           </button>
-          
         </div>
       </div>
       <DynamicModalBox

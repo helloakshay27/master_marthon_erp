@@ -78,6 +78,7 @@ import MaterialReconciliationList from "./pages/material-reconciliation -list";
 import EditBOQNew from "./pages/Boq-edit-new";
 import EventTemplateList from "./pages/event-template-list";
 import EventTemplateDetails from "./pages/event-template-details";
+import EditTemplate from "./pages/edit-template";
 
 function App() {
   return (
@@ -146,6 +147,7 @@ function App() {
           />
           <Route path="/create-rfq" element={<CreateRfq />} />
           <Route path="/create-template" element={<CreateTemplate />} />
+          <Route path="/edit-template/:id" element={<EditTemplate />} />
           <Route path="/event-template-list" element={<EventTemplateList />} />
           <Route path="/event-template-details/:id" element={<EventTemplateDetails />} />
           {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
