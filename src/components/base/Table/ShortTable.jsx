@@ -27,8 +27,8 @@ export default function ShortTable({
         (row) => row.label === "Realised Freight"
       );
       if (realisedFreightIndex !== -1) {
-        updatedData[realisedFreightIndex].value = `₹${(
-          freightCharge + realisedFreight
+        updatedData[realisedFreightIndex].value = `₹${
+          (freightCharge + realisedFreight
         ).toFixed(2)}`;
       }
     } else if (updatedData[index].label === "GST on Freight") {
@@ -46,9 +46,7 @@ export default function ShortTable({
         (row) => row.label === "Realised Freight"
       );
       if (realisedFreightIndex !== -1) {
-        updatedData[realisedFreightIndex].value = `₹${(
-          freightCharge + realisedFreight
-        ).toFixed(2)}`;
+        updatedData[realisedFreightIndex].value = `₹ ${(freightCharge + realisedFreight).toFixed(2)}`;
       }
     }
 
@@ -67,42 +65,44 @@ export default function ShortTable({
       {...rest}
     >
       <tbody>
-        {Array.isArray(data) && data.map((row, index) => (
-          <tr
-            key={index}
-            style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
-          >
-            <td
-              style={{
-                padding: "12px",
-                fontWeight: "bold",
-                background: "#8b0203",
-              }}
+        {Array.isArray(data) &&
+          data.map((row, index) => (
+            <tr
+              key={index}
+              style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
             >
-              {row.label || row.field_name} {/* Ensure field_name is displayed */}
-            </td>
-            <td style={{ padding: "12px", color: "#777" }}>
-              {editable ? (
-                <>
-                  {/* <input
-                    className="form-control"
-                    type="text"
-                    value={row.value}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                  /> */}
-                  <button
-                    className="purple-btn2 ms-2 rounded-circle p-0"
-                    style={{
-                      border: "none",
-                      color: "white",
-                      width: "25px",
-                      height: "25px",
-                    }}
-                    onClick={() => onInputClick(row)}
-                  >
-                    <i className="bi bi-pencil" style={{ border: 0 }}></i>
-                  </button>
-                  {["Freight Charge", "GST on Freight", "Realised GST"].includes(row.label || row.field_name) ? null : (
+              <td
+                style={{
+                  padding: "12px",
+                  fontWeight: "bold",
+                  background: "#8b0203",
+                }}
+              >
+                {row.label || row.field_name}{" "}
+                {/* Ensure field_name is displayed */}
+              </td>
+              <td style={{ padding: "12px", color: "#777" }}>
+                {editable && ![
+                  "Freight Charge",
+                  "GST on Freight",
+                  "Realised GST",
+                  "Warranty Clause",
+                  "Payment Terms",
+                  "Loading/Unloading",
+                ].includes(row.label) ? (
+                  <>
+                    <button
+                      className="purple-btn2 ms-2 rounded-circle p-0"
+                      style={{
+                        border: "none",
+                        color: "white",
+                        width: "25px",
+                        height: "25px",
+                      }}
+                      onClick={() => onInputClick(row)}
+                    >
+                      <i className="bi bi-pencil" style={{ border: 0 }}></i>
+                    </button>
                     <button
                       className="purple-btn2 ms-2 rounded-circle p-0"
                       style={{
@@ -115,14 +115,13 @@ export default function ShortTable({
                     >
                       <i className="bi bi-trash" style={{ border: 0 }}></i>
                     </button>
-                  )}
-                </>
-              ) : (
-                row.value
-              )}
-            </td>
-          </tr>
-        ))}
+                  </>
+                ) : (
+                  row.value
+                )}
+              </td>
+            </tr>
+          ))}
       </tbody>
     </table>
   );

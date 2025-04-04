@@ -57,7 +57,7 @@ export default function EventTemplateList() {
             <div className="d-flex justify-content-end align-items-center px-4 py-2 bg-light border-bottom">
               <button
                 className="purple-btn2"
-                onClick={() => navigate("/event-template-create")}
+                onClick={() => navigate("/create-template")}
               >
                 <span className="material-symbols-outlined align-text-top">
                   add

@@ -998,7 +998,7 @@ export default function EditEvent() {
         ...prev,
         ...newVendors.map((vendor) => ({
           ...vendor,
-          id: vendor.id,
+          id: null,
           pms_supplier_id: vendor.id,
         })),
       ];

@@ -152,9 +152,9 @@ export default function CreateTemplate() {
   ]);
 
   const [shortTableData, setShortTableData] = useState([
-    { label: "Freight Charge", value: "" },
-    { label: "GST on Freight", value: "" },
-    { label: "Realised GST", value: "" },
+    // { label: "Freight Charge", value: "" },
+    // { label: "GST on Freight", value: "" },
+    // { label: "Realised GST", value: "" },
     { label: "Warranty Clause", value: "" },
     { label: "Payment Terms", value: "" },
     { label: "Loading/Unloading", value: "" },
@@ -456,30 +456,54 @@ export default function CreateTemplate() {
                 columns.reduce((acc, col, index) => {
                   acc[col.key] = (
                     <div className="d-flex align-items-center">
-                      <button
-                        className="purple-btn2 ms-2 rounded-circle p-0"
-                        style={{
-                          border: "none",
-                          color: "white",
-                          width: "25px",
-                          height: "25px",
-                        }}
-                        onClick={() => handleEditColumn(col)}
-                      >
-                        <i className="bi bi-pencil" style={{ border: 0 }}></i>
-                      </button>
-                      <button
-                        className="purple-btn2 ms-2 rounded-circle p-0"
-                        style={{
-                          border: "none",
-                          color: "white",
-                          width: "25px",
-                          height: "25px",
-                        }}
-                        onClick={() => handleRemoveColumn(col.key)}
-                      >
-                        <i className="bi bi-trash" style={{ border: 0 }}></i>
-                      </button>
+                      {![
+                        "srNo",
+                        "descriptionOfItem",
+                        "material_type",
+                        "material_sub_type",
+                        "quantity_requested",
+                        "creator_attachment",
+                        "discount",
+                        "realised_discount",
+                        "gst",
+                        "realised_gst",
+                        "landed_amount",
+                        "participant_attachment",
+                        "vendor_remark",
+                        "total",
+                        "quantity",
+                        "unit",
+                        "location",
+                        "rate",
+                        "amount",
+                      ].includes(col.key) && (
+                        <>
+                          <button
+                            className="purple-btn2 ms-2 rounded-circle p-0"
+                            style={{
+                              border: "none",
+                              color: "white",
+                              width: "25px",
+                              height: "25px",
+                            }}
+                            onClick={() => handleEditColumn(col)}
+                          >
+                            <i className="bi bi-pencil" style={{ border: 0 }}></i>
+                          </button>
+                          <button
+                            className="purple-btn2 ms-2 rounded-circle p-0"
+                            style={{
+                              border: "none",
+                              color: "white",
+                              width: "25px",
+                              height: "25px",
+                            }}
+                            onClick={() => handleRemoveColumn(col.key)}
+                          >
+                            <i className="bi bi-trash" style={{ border: 0 }}></i>
+                          </button>
+                        </>
+                      )}
                     </div>
                   );
                   return acc;

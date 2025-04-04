@@ -488,8 +488,6 @@ export default function VendorDetails() {
 
       setRevisedBid(revisedBid);
 
-      console.log("initial data ", initialData);
-      console.log("revised data ", revisedBid);
 
 
     const uniqueAdditionalColumns = new Set();
@@ -510,6 +508,9 @@ export default function VendorDetails() {
     setAdditionalColumns(additionalColumns);
 
       if (!revisedBid) {
+        console.log("initial data ", initialData);
+        console.log("revised data ", revisedBid);
+  
         const processedData = eventMaterials.map((item) => {
           const bidMaterial = item.bid_materials?.[0]; // Assuming the first bid material
     
@@ -643,10 +644,13 @@ export default function VendorDetails() {
             gst: material.gst,
             realisedGst: material.realised_gst,
             total: material.total_amount,
-
+            unit: material.event_material.uom,
             location: material.event_material.location,
             vendorRemark: material.vendor_remark,
             landedAmount: material.landed_amount,
+            pmsBrand: material.pms_brand_name,
+            pmsColour: material.pms_colour_name,
+            genericInfo: material.generic_info_name,
           }));
 
           // Map updated data (counter_bid_materials)
@@ -654,6 +658,8 @@ export default function VendorDetails() {
             .map((material) => {
               const counterMaterial =
                 material.counter_bid_materials?.[currentIndex];
+                console.log("material", material);
+                
               return counterMaterial
                 ? {
                     bidId: counterMaterial.counter_bid_id,
@@ -673,6 +679,9 @@ export default function VendorDetails() {
                     location: material.event_material.location,
                     vendorRemark: counterMaterial.vendor_remark,
                     landedAmount: counterMaterial.landed_amount,
+                    pmsBrand: material.pms_brand_name,
+            pmsColour: material.pms_colour_name,
+            genericInfo: material.generic_info_name,
                   }
                 : null; // Handle missing counter bids
             })
@@ -841,7 +850,7 @@ export default function VendorDetails() {
       // console.log("vendor ID", vendorId);
 
       const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload,
         {
           headers: {
@@ -1203,7 +1212,7 @@ export default function VendorDetails() {
 
   const calculateDelivarydDate = (date) => {
     if (!date) {
-      console.warn("Date is undefined or null.");
+      // console.warn("Date is undefined or null.");
       return "Invalid date";
     }
 
@@ -2414,9 +2423,9 @@ export default function VendorDetails() {
                         <div style={tableContainerStyle}>
                           <Table
                             columns={[
+                              { label: "Material", key: "descriptionOfItem" },
                               { label: "Material Type", key: "section" },
                               { label: "Material Sub Type", key: "subSection" },
-                              { label: "Material", key: "descriptionOfItem" },
                               { label: "Quantity Requested", key: "quantity" },
                               { label: "Delivery Location", key: "location" },
                               { label: "Brand", key: "brand" },
@@ -3561,34 +3570,36 @@ export default function VendorDetails() {
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
-                        {console.log("data", data)}
+                        {/* {console.log("data", data)} */}
                         <Table
                           columns={[
+                            { label: "Sr No", key: "srNo" },
+                            { label: "Material Name", key: "descriptionOfItem" },
                             { label: "Material Type", key: "section" },
                             { label: "Material Sub Type", key: "subSection" },
-                            { label: "Material", key: "descriptionOfItem" },
-                            { label: "Quantity Requested", key: "quantity" },
-                            { label: "Delivery Location", key: "location" },
+                            { label: "UOM", key: "unit" },
                             { label: "Brand", key: "pmsBrand" },
                             { label: "Colour", key: "pmsColour" },
                             { label: "Generic Info", key: "genericInfo" },
+                            { label: "Delivery Location", key: "location" },
+                            { label: "Quantity Requested", key: "quantity" },
+                            { label: "Price *", key: "price" },
                             {
                               label: "Quantity Available *",
                               key: "quantityAvail",
                             },
-                            { label: "Price *", key: "price" },
                             { label: "Discount *", key: "discount" },
                             {
                               label: "Realised Discount",
                               key: "realisedDiscount",
                             },
                             { label: "Landed Amount", key: "landedAmount" },
+                            { label: "Total", key: "total" },
                             {
                               label: "Participant Attachment",
                               key: "attachment",
                             },
                             { label: "Vendor Remark", key: "vendorRemark" },
-                            { label: "Total", key: "total" },
                             { label: "Tax Rate", key: "taxRate" },
                             ...additionalColumns, // Dynamically add extra columns
                           ]}
@@ -3676,9 +3687,9 @@ export default function VendorDetails() {
                               />
                             ),
                             unit: (cell, rowIndex) => (
-                              <SelectBox
+                              <>
+                              {/* <SelectBox
                                 isDisableFirstOption={true}
-                                label={""}
                                 options={unitMeasure}
                                 defaultValue={cell}
                                 onChange={(selected) =>
@@ -3686,7 +3697,9 @@ export default function VendorDetails() {
                                 }
                                 style={otherColumnsStyle} // Other columns are scrollable
                                 disabled={isBid}
-                              />
+                                /> */}
+                                <p>{cell}</p>
+                                </>
                             ),
 
                             location: (cell, rowIndex) => (
