@@ -166,7 +166,7 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Company</label>
                     </div>
                     <div className="col-6">
-                      <span>: {data.company}</span>
+                      <span style={{ color: "#8b0203" }}>: {data.company}</span>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
@@ -174,7 +174,7 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Project</label>
                     </div>
                     <div className="col-6">
-                      <span>: {data.project}</span>
+                      <span style={{ color: "#8b0203" }}>: {data.project}</span>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
@@ -182,7 +182,9 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Sub-Project</label>
                     </div>
                     <div className="col-6">
-                      <span>: {data.sub_project}</span>
+                      <span style={{ color: "#8b0203" }}>
+                        : {data.sub_project}
+                      </span>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
@@ -190,7 +192,9 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Rejection Slip No</label>
                     </div>
                     <div className="col-6">
-                      <span>: {data.rejection_slip_number}</span>
+                      <span style={{ color: "#8b0203" }}>
+                        : {data.rejection_slip_number}
+                      </span>
                     </div>
                   </div>
                   <div className="col-lg-6 col-md-6 row px-3">
@@ -199,7 +203,7 @@ const MaterialRejctionSlipCreate = () => {
                     </div>
                     <div className="col-6">
                       {/* <span>:{data.rejection_date}</span> */}
-                      <span>
+                      <span style={{ color: "#8b0203" }}>
                         :{" "}
                         {new Date(data.rejection_date).toLocaleDateString(
                           "en-GB"
@@ -212,7 +216,7 @@ const MaterialRejctionSlipCreate = () => {
                       <label>Supplier</label>
                     </div>
                     <div className="col-6">
-                      <span>
+                      <span style={{ color: "#8b0203" }}>
                         :{" "}
                         {data.rejection_materials[0]?.grn_material
                           ?.good_receive_note?.supplier || "N/A"}
@@ -224,7 +228,7 @@ const MaterialRejctionSlipCreate = () => {
                       <label>PO No</label>
                     </div>
                     <div className="col-6">
-                      <span>
+                      <span style={{ color: "#8b0203" }}>
                         :{" "}
                         {data.rejection_materials[0]?.grn_material
                           ?.good_receive_note?.po_number || "N/A"}
@@ -242,7 +246,7 @@ const MaterialRejctionSlipCreate = () => {
                           ?.good_receive_note?.po_date || "N/A"}
                       </span> */}
 
-                      <span>
+                      <span style={{ color: "#8b0203" }}>
                         :{" "}
                         {data.rejection_materials[0]?.grn_material
                           ?.good_receive_note?.po_date

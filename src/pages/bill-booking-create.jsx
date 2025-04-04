@@ -248,6 +248,20 @@ const BillBookingCreate = () => {
       gstin: po.gstin,
       pan: po.pan,
     }));
+
+    // Reset GRN-related state when a different PO is selected
+    setSelectedGRN(null);
+    setSelectedGRNs([]);
+    setFormData((prev) => ({
+      ...prev,
+      baseCost: 0,
+      netTaxes: 0,
+      netCharges: 0,
+      allInclusiveCost: 0,
+      charges: [],
+      deductions: [],
+    }));
+
     closeSelectPOModal();
   };
 
@@ -2377,6 +2391,7 @@ const BillBookingCreate = () => {
                         className="form-control"
                         value={charge.tax_name}
                         readOnly
+                        disabled
                       />
                     </td>
                     <td>
@@ -2385,6 +2400,7 @@ const BillBookingCreate = () => {
                         className="form-control"
                         value={charge.tax_charge_per_uom}
                         readOnly
+                        disabled
                       />
                     </td>
                     <td>
