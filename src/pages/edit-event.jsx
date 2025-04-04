@@ -41,6 +41,9 @@ export default function EditEvent() {
   const [bidTemplateFields, setBidTemplateFields] = useState([]);
   const [additionalFields, setAdditionalFields] = useState([]);
   const [isTextId, setIsTextId] = useState(false);
+  const [end_time, setEnd_time] = useState("");
+  const [start_time, setStart_time] = useState("");
+  const [evaluation_time, setEvaluation_time] = useState("");
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -379,6 +382,8 @@ export default function EditEvent() {
 
   useEffect(() => {
     if (eventDetails) {
+      console.log("eventDetails:----", eventDetails);
+      
       seteventName(eventDetails?.event_title);
       // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
       setEventStatus(eventDetails?.status);
@@ -388,7 +393,11 @@ export default function EditEvent() {
         `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
           eventDetails?.end_time
         ).toLocaleString()}`
+
       );
+      setStart_time(eventDetails?.event_schedule?.start_time);
+      setEnd_time(eventDetails?.event_schedule?.end_time);
+      setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
 
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => {
@@ -631,6 +640,8 @@ export default function EditEvent() {
       end_time_duration: endTime,
       evaluation_time: evaluationTime,
     });
+    console.log("onLoadScheduleData", startTime, "endtime-----",endTime, "||||||",evaluationTime);
+    
   };
 
   // ("eventDetails:----", eventDetails);
@@ -675,7 +686,7 @@ export default function EditEvent() {
       return false;
     }
     if (
-      !onLoadScheduleData?.end_time_duration &&
+      !onLoadScheduleData?.end_time_duration ||
       !scheduleData?.end_time_duration
     ) {
       toast.error("End time duration is required");
@@ -725,14 +736,11 @@ export default function EditEvent() {
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
-    console.log(eventDetails);
+    console.log(eventDetails);    
 
     if (
       !eventName ||
       !createdOn ||
-      !scheduleData.start_time ||
-      !scheduleData.end_time_duration ||
-      !scheduleData.evaluation_time ||
       selectedVendors.length === 0
     ) {
       scrollToTop();
@@ -755,9 +763,9 @@ export default function EditEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: scheduleData.start_time,
-          end_time: scheduleData.end_time_duration,
-          evaluation_time: scheduleData.evaluation_time,
+          start_time: scheduleData.start_time || start_time,
+          end_time: scheduleData.end_time_duration || end_time,
+          evaluation_time: scheduleData.evaluation_time || evaluation_time,
         },
         event_type_detail_attributes: {
           event_type: eventType,

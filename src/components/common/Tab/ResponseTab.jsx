@@ -531,7 +531,7 @@ export default function ResponseTab({ isCounterOffer }) {
                           totalAmount: material.total_amount || "_",
                           // Map keys from the extra object dynamically
                           ...extraKeys.reduce((acc, key) => {
-                            acc[key] = material.extra?.[key] || "_";
+                            acc[key] = material[key] || "_";
                             return acc;
                           }, {}),
                           // Map extra columns dynamically
