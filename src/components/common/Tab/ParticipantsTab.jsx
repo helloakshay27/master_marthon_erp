@@ -39,9 +39,10 @@ export default function ParticipantsTab({ data, id }) {
     name: "",
     email: "",
     mobile: "",
+    gstNumber: "",
+    panNumber: "",
   });
   const [formErrors, setFormErrors] = useState({});
-
 
   const validateForm = () => {
     const errors = {};
@@ -121,7 +122,6 @@ export default function ParticipantsTab({ data, id }) {
     }));
     setVendorData(formattedData);
   }, [data, vendorData]);
-
 
   useEffect(() => {
     setFilteredData(
@@ -741,6 +741,28 @@ export default function ParticipantsTab({ data, id }) {
                 {formErrors.mobile && (
                   <small className="text-danger">{formErrors.mobile}</small>
                 )}
+              </div>
+              <div className="form-group mb-3">
+                <label className="po-fontBold">GST Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  name="gstNumber"
+                  placeholder="Enter GST Number"
+                  value={inviteForm.gstNumber || ""}
+                  onChange={handleInviteInputChange}
+                />
+              </div>
+              <div className="form-group mb-3">
+                <label className="po-fontBold">PAN Number</label>
+                <input
+                  className="form-control"
+                  type="text"
+                  name="panNumber"
+                  placeholder="Enter PAN Number"
+                  value={inviteForm.panNumber || ""}
+                  onChange={handleInviteInputChange}
+                />
               </div>
             </form>
           </>

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import ShortTable from "../../base/Table/ShortTable";
-import { productTableColumns } from "../../../constant/data";
 import { baseURL } from "../../../confi/apiDomain";
 
 export default function BulkCounterOfferModal({
@@ -14,6 +13,8 @@ export default function BulkCounterOfferModal({
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
   const [loading, setLoading] = useState(false); // Add loading state
+  console.log("bidCounterData", bidCounterData);
+  
 
   useEffect(() => {
     if (bidCounterData) {
@@ -148,7 +149,34 @@ export default function BulkCounterOfferModal({
     setFormData(updatedFormData);
     setSumTotal(totalSum);
   };
-  
+
+  // Dynamically generate productTableColumns based on extra_columns
+  const extraColumns = formData?.bid_materials?.[0]?.extra_columns || [];
+  const dynamicColumns = extraColumns.map((col) => ({
+    label: col.replace(/_/g, " ").toUpperCase(),
+    key: col,
+  }));
+
+  const productTableColumns = [
+    { label: "Sr no.*", key: "SrNo" },
+    { label: "Material*", key: "product" },
+    { label: "Quantity Requested*", key: "quantityRequested" },
+    { label: "Quantity Available", key: "quantityAvailable" },
+    { label: "Price*", key: "price" },
+    { label: "Delivery location*", key: "deliveryLocation" },
+    { label: "Creator Attachment", key: "creatorAttachment" },
+    { label: "Discount", key: "discount" },
+    { label: "Realised Discount*", key: "realisedDiscount" },
+    { label: "GST*", key: "gst" },
+    { label: "Realised GST", key: "realisedGst" },
+    { label: "Participant Attachment", key: "participantAttachment" },
+    { label: "Vendor Remark*", key: "vendorRemark" },
+    { label: "Landed Amount*", key: "landedAmount" },
+    { label: "Total Amount*", key: "totalAmount" },
+    ...dynamicColumns, // Add dynamic columns
+  ];
+
+  // Update productTableData to include dynamic column data
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
       const productName = item.material_name || "_";
@@ -175,7 +203,6 @@ export default function BulkCounterOfferModal({
           }
         />
       );
-      const bestTotalAmount = item.best_total_amount || "_";
       const price = (
         <input
           type="number"
@@ -194,7 +221,6 @@ export default function BulkCounterOfferModal({
           readOnly
         />
       );
-      const sno = item.sno || "_";
       const discount = (
         <input
           type="number"
@@ -231,8 +257,6 @@ export default function BulkCounterOfferModal({
           disabled
         />
       );
-      const landedAmount = item.landed_amount || "_";
-      const remark = item.remark || "_";
       const vendorRemark = (
         <input
           type="text"
@@ -243,38 +267,25 @@ export default function BulkCounterOfferModal({
         />
       );
 
-      const deliveryLocation =
-        bidCounterData?.event?.delivary_location || "N/A";
+      // Map dynamic extra columns
+      const extraColumnData = {};
+      extraColumns.forEach((col) => {
+        extraColumnData[col] = item[col] || "_";
+      });
 
       return {
         Sno: index + 1,
         product: <span>{productName}</span>,
         quantityRequested,
         quantityAvailable,
-        bestTotalAmount,
         price,
-        deliveryLocation,
-        creatorAttachment: (
-          <input
-            type="file"
-            className="form-control"
-            style={{ width: "auto" }}
-          />
-        ),
         discount,
         realisedDiscount,
         gst,
         realisedGst,
-        participantAttachment: (
-          <input
-            type="file"
-            className="form-control"
-            style={{ width: "auto" }}
-          />
-        ),
         vendorRemark,
-        landedAmount,
         totalAmount,
+        ...extraColumnData, // Include dynamic column data
       };
     }) || [];
 

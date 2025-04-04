@@ -699,7 +699,7 @@ export const freightData = [
   { label: "Loading / Unloading", value: "under buyer" },
 ];
 export  const productTableColumns = [
-  { label: "S no.*", key: "Sno" },
+  { label: "Sr no.*", key: "SrNo" },
   { label: "Material*", key: "product" },
   { label: "Quantity Requested*", key: "quantityRequested" },
   { label: "Quantity Available", key: "quantityAvailable" },

@@ -481,54 +481,77 @@ export default function VendorDetails() {
       );
 
       const initialData = initialResponse.data;
-
+      const eventMaterials = initialData.event_materials || [];
       const revisedBid = initialData.revised_bid; // Extract
 
       // revisedBid from the response
 
       setRevisedBid(revisedBid);
 
-      // console.log("initial data ", initialData);
-      // console.log("revised data ", revisedBid);
+      console.log("initial data ", initialData);
+      console.log("revised data ", revisedBid);
+
+
+    const uniqueAdditionalColumns = new Set();
+    eventMaterials.forEach((item) => {
+      item.bid_materials?.forEach((bidMaterial) => {
+        const extraKeys = Object.keys(bidMaterial.extra || {});
+        extraKeys.forEach((key) => {
+          uniqueAdditionalColumns.add(key);
+        });
+      });
+    });
+
+    const additionalColumns = Array.from(uniqueAdditionalColumns).map((key) => ({
+      key,
+      label: key.replace(/_/g, " ").toUpperCase(), 
+    }));
+
+    setAdditionalColumns(additionalColumns);
 
       if (!revisedBid) {
-        // If revisedBid is false, format the event materials data
-        const formattedData = initialData.event_materials.map((item) => {
-          const materialType =
-            item.bid_materials && item.bid_materials.length > 0
-              ? item.bid_materials[0].material_type
-              : null;
-
-          // console.log("material type", materialType);
-
-          return {
-            pmsBrand: item.pms_brand_id,
-            pmsColour: item.pms_colour_id,
-            genericInfo: item.generic_info_id,
+        const processedData = eventMaterials.map((item) => {
+          const bidMaterial = item.bid_materials?.[0]; // Assuming the first bid material
+    
+          // Map the row data
+          const rowData = {
+            pmsBrand: item.pms_brand_name,
+            pmsColour: item.pms_colour_name,
+            genericInfo: item.generic_info_name,
             eventMaterialId: item.id,
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
-            quantityAvail: "", // Placeholder for user input
+            quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
             unit: item.uom,
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
             subSection: item.inventory_sub_type,
             amount: item.amount,
-            totalAmt: "", // Placeholder for calculated total amount
+            totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
             attachment: null, // Placeholder for attachment
             varient: item.material_type, // Use extracted material_type
           };
+    
+          // Add `extra` data dynamically to the row
+          additionalColumns.forEach((col) => {
+            rowData[col.key] = bidMaterial?.extra?.[col.key] || ""; // Add extra column data
+          });
+    
+          return rowData;
         });
-
-        setData(formattedData);
+    
+        console.log("Processed Data: ", processedData);
+        
+        setData(processedData);
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
           `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
 
-        // console.log("bidResponce", bidResponse.data);
+
+        console.log("bidResponce", bidResponse.data);
 
         setCounterData(
           bidResponse.data?.bids[currentIndex]?.counter_bids.length
@@ -2018,30 +2041,43 @@ export default function VendorDetails() {
     let additionTaxTotal = 0;
     let deductionTaxTotal = 0;
     let directChargesTotal = 0; // Sum of direct amounts entered
-    
+
     taxRateData.additionTaxCharges.forEach((item) => {
       if (item.inclusive) return; // Skip calculation if inclusive is checked
-  
-      if (["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)) {
+
+      if (
+        ["Handling Charges", "Other charges", "Freight"].includes(
+          item.taxChargeType
+        )
+      ) {
         directChargesTotal += parseFloat(item.amount) || 0; // Add directly to net cost
       } else {
-        const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
+        const taxAmount = calculateTaxAmount(
+          item.taxChargePerUom,
+          taxRateData.afterDiscountValue
+        );
         additionTaxTotal += taxAmount;
       }
     });
-  
+
     taxRateData.deductionTax.forEach((item) => {
       if (item.inclusive) return; // Skip calculation if inclusive is checked
-  
-      const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateData.afterDiscountValue);
+
+      const taxAmount = calculateTaxAmount(
+        item.taxChargePerUom,
+        taxRateData.afterDiscountValue
+      );
       deductionTaxTotal += taxAmount;
     });
-  
+
     // Calculate Net Cost: Base + Addition Charges (Tax + Direct) - Deduction Tax
-    const netCost = taxRateData.afterDiscountValue + additionTaxTotal + directChargesTotal - deductionTaxTotal;
+    const netCost =
+      taxRateData.afterDiscountValue +
+      additionTaxTotal +
+      directChargesTotal -
+      deductionTaxTotal;
     return netCost.toFixed(2);
   };
-  
 
   const calculateGrossTotal = () => {
     const netCost = parseFloat(taxRateData.netCost) || 0;
@@ -2052,36 +2088,49 @@ export default function VendorDetails() {
   };
 
   const handleTaxChargeChange = (id, field, value, type) => {
-    const updatedTaxCharges = type === "addition"
-      ? [...taxRateData.additionTaxCharges]
-      : [...taxRateData.deductionTax];
-  
+    const updatedTaxCharges =
+      type === "addition"
+        ? [...taxRateData.additionTaxCharges]
+        : [...taxRateData.deductionTax];
+
     const index = updatedTaxCharges.findIndex((item) => item.id === id);
     if (index !== -1) {
       updatedTaxCharges[index][field] =
         field === "amount" ? parseFloat(value) || "" : value;
-  
+
       // Check if inclusive is checked, then don't calculate tax
       if (!updatedTaxCharges[index].inclusive) {
-        const isManualInputAllowed = ["Handling Charges", "Other charges", "Freight"].includes(updatedTaxCharges[index].taxChargeType);
-  
-        if (field === "taxChargePerUom" || (!isManualInputAllowed && field === "amount")) {
-          const taxAmount = calculateTaxAmount(updatedTaxCharges[index].taxChargePerUom, taxRateData.afterDiscountValue);
+        const isManualInputAllowed = [
+          "Handling Charges",
+          "Other charges",
+          "Freight",
+        ].includes(updatedTaxCharges[index].taxChargeType);
+
+        if (
+          field === "taxChargePerUom" ||
+          (!isManualInputAllowed && field === "amount")
+        ) {
+          const taxAmount = calculateTaxAmount(
+            updatedTaxCharges[index].taxChargePerUom,
+            taxRateData.afterDiscountValue
+          );
           updatedTaxCharges[index].amount = taxAmount;
         }
       }
     }
-  
+
     setTaxRateData({
       ...taxRateData,
-      additionTaxCharges: type === "addition" ? updatedTaxCharges : taxRateData.additionTaxCharges,
-      deductionTax: type === "deduction" ? updatedTaxCharges : taxRateData.deductionTax,
+      additionTaxCharges:
+        type === "addition"
+          ? updatedTaxCharges
+          : taxRateData.additionTaxCharges,
+      deductionTax:
+        type === "deduction" ? updatedTaxCharges : taxRateData.deductionTax,
       netCost: calculateNetCost(),
     });
     setGrossTotal(calculateGrossTotal());
   };
-  
-  
 
   const handleSaveTaxChanges = () => {
     const updatedNetCost = calculateNetCost();
@@ -3256,7 +3305,8 @@ export default function VendorDetails() {
                                               {data.colour?.colour || "N/A"}
                                             </td>
                                             <td>
-                                              {data.generic_info?.generic_info || "N/A"}
+                                              {data.generic_info
+                                                ?.generic_info || "N/A"}
                                             </td>
                                           </tr>
                                         )
@@ -3514,26 +3564,14 @@ export default function VendorDetails() {
                         {console.log("data", data)}
                         <Table
                           columns={[
-                            { label: " Material Type ", key: "section" },
-                            {
-                              label: "Material Sub Type",
-                              key: "subSection",
-                            },
-
+                            { label: "Material Type", key: "section" },
+                            { label: "Material Sub Type", key: "subSection" },
                             { label: "Material", key: "descriptionOfItem" },
-                            // { label: "Material Variant", key: "varient" },
                             { label: "Quantity Requested", key: "quantity" },
-                            // { label: " Material Type ", key: "section" },
-                            // {
-                            //   label: "Material Sub Type",
-                            //   key: "subSection",
-                            // },
-
                             { label: "Delivery Location", key: "location" },
-                            { label: " Brand ", key: "pmsBrand" },
-                            { label: " Colour ", key: "pmsColour" },
-                            { label: " Generic Info ", key: "genericInfo" },
-                            // { label: "Creator Attachment", key: "attachment" },
+                            { label: "Brand", key: "pmsBrand" },
+                            { label: "Colour", key: "pmsColour" },
+                            { label: "Generic Info", key: "genericInfo" },
                             {
                               label: "Quantity Available *",
                               key: "quantityAvail",
@@ -3544,8 +3582,6 @@ export default function VendorDetails() {
                               label: "Realised Discount",
                               key: "realisedDiscount",
                             },
-                            // { label: "GST *", key: "gst" },
-                            // { label: "Realised GST", key: "realisedGst" },
                             { label: "Landed Amount", key: "landedAmount" },
                             {
                               label: "Participant Attachment",
@@ -3554,8 +3590,7 @@ export default function VendorDetails() {
                             { label: "Vendor Remark", key: "vendorRemark" },
                             { label: "Total", key: "total" },
                             { label: "Tax Rate", key: "taxRate" },
-
-                            ...additionalColumns, // Append additional columns here
+                            ...additionalColumns, // Dynamically add extra columns
                           ]}
                           data={data}
                           customRender={{
@@ -4387,20 +4422,12 @@ export default function VendorDetails() {
                               );
                             },
                             ...additionalColumns.reduce((acc, col) => {
-                              acc[col.key] = (cell, rowIndex) => (
+                              acc[col.key] = (cell) => (
                                 <input
                                   className="form-control"
                                   type="text"
                                   value={cell || ""}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      col.key
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
+                                  readOnly
                                 />
                               );
                               return acc;
@@ -4922,7 +4949,11 @@ export default function VendorDetails() {
                                 "addition"
                               )
                             }
-                            disabled={["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)}
+                            disabled={[
+                              "Handling Charges",
+                              "Other charges",
+                              "Freight",
+                            ].includes(item.taxChargeType)}
                           >
                             <option value="">Select Tax</option>
                             <option value="5%">5%</option>
@@ -4932,7 +4963,7 @@ export default function VendorDetails() {
                           </select>
                         </td>
                         <td className="text-center">
-                        <input
+                          <input
                             type="checkbox"
                             className="form-check-input"
                             checked={item.inclusive}

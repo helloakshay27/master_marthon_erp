@@ -62,7 +62,9 @@ export default function CreateEvent() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [eventNo, setEventNo] = useState("");
   const [eventName, seteventName] = useState("");
-  const [textareas, setTextareas] = useState([{ id: Date.now(), value: "", textareaId:0 }]);
+  const [textareas, setTextareas] = useState([
+    { id: Date.now(), value: "", textareaId: 0 },
+  ]);
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const [eventDescription, setEventDescription] = useState("");
@@ -124,8 +126,7 @@ export default function CreateEvent() {
     // if (!dynamicExtensionConfigurations.delivery_date) {
     //   toast.warn("Please fill the delivery date on Event Type");
     // } else {
-      setEventScheduleModal(true);
-    
+    setEventScheduleModal(true);
   };
   const handleEventScheduleModalClose = () => {
     setEventScheduleModal(false);
@@ -315,7 +316,8 @@ export default function CreateEvent() {
   const handleSaveButtonClick = () => {
     setSelectedVendors((prev) => {
       const newVendors = selectedRows.filter(
-        (vendor) => !prev.some((existingVendor) => existingVendor.id === vendor.id)
+        (vendor) =>
+          !prev.some((existingVendor) => existingVendor.id === vendor.id)
       );
 
       return [
@@ -331,7 +333,9 @@ export default function CreateEvent() {
     setTableData((prevTableData) =>
       prevTableData.filter(
         (vendor) =>
-          !selectedRows.some((selectedVendor) => selectedVendor.id === vendor.id)
+          !selectedRows.some(
+            (selectedVendor) => selectedVendor.id === vendor.id
+          )
       )
     );
 
@@ -358,7 +362,7 @@ export default function CreateEvent() {
   };
 
   const handleAddTextarea = () => {
-    setTextareas([...textareas, { id: Date.now(), value: "", textareaId:0 }]);
+    setTextareas([...textareas, { id: Date.now(), value: "", textareaId: 0 }]);
   };
 
   const handleRemoveTextarea = (id) => {
@@ -381,7 +385,6 @@ export default function CreateEvent() {
       (option) => String(option.value) === String(selectedOption)
     );
     console.log("selectedCondition", selectedCondition);
-    
 
     if (selectedCondition) {
       setTextareas(
@@ -551,7 +554,7 @@ export default function CreateEvent() {
           }, {});
 
           return {
-            id: material.id || null,
+            // id: material.id || null,
             inventory_id: Number(material.inventory_id) || null,
             quantity: Number(material.quantity),
             uom: material.unit,
@@ -572,7 +575,7 @@ export default function CreateEvent() {
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
-          id: vendor.id,
+          id: null,
         })),
         status_logs_attributes: [
           {
@@ -613,10 +616,8 @@ export default function CreateEvent() {
       },
     };
 
-    console.log("payload:-",eventData);
+    console.log("payload:-", eventData);
     // console.log("bidTemplate", bidTemplateFields);
-    
-    
 
     try {
       const response = await fetch(
@@ -749,6 +750,72 @@ export default function CreateEvent() {
 
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
+  };
+
+  const handleInviteVendor = async () => {
+    if (
+      !inviteVendorData.name ||
+      !inviteVendorData.email ||
+      !inviteVendorData.mobile
+    ) {
+      toast.error("Please fill all the fields.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(inviteVendorData),
+        }
+      );
+
+      if (response.ok) {
+        const newVendor = await response.json();
+        toast.success("Vendor invited successfully!");
+
+        // Add the new vendor to the selected vendors list and trigger a state refresh
+        // setSelectedVendors((prev) => {
+        //   const updatedVendors = [
+        //     ...prev,
+        //     {
+        //       id: newVendor.id,
+        //       name: newVendor.name,
+        //       phone: newVendor.mobile,
+        //       pms_supplier_id: newVendor.id,
+        //     },
+        //   ];
+        //   return [...updatedVendors]; // Trigger state refresh
+        // });
+
+        handleInviteModalClose();
+      } else {
+        const errorData = await response.json();
+        console.error("Error inviting vendor:", errorData);
+        toast.error("Failed to invite vendor.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An error occurred while inviting the vendor.");
+    }
+  };
+
+  // State to manage invite vendor form data
+  const [inviteVendorData, setInviteVendorData] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+    gstNumber: "",
+  panNumber: "",
+  });
+
+  const handleInviteVendorChange = (e) => {
+    const { name, value } = e.target;
+    setInviteVendorData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -945,7 +1012,7 @@ export default function CreateEvent() {
                                 <button
                                   className="btn btn-danger"
                                   onClick={() => handleRemoveVendor(vendor.id)}
-                              >
+                                >
                                   Remove
                                 </button>
                               </td>
@@ -990,9 +1057,7 @@ export default function CreateEvent() {
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
                     upload: (
-                      <td
-                      style={{border:"none"}}
-                      >
+                      <td style={{ border: "none" }}>
                         {/* Hidden file input */}
                         <input
                           type="file"
@@ -1361,11 +1426,12 @@ export default function CreateEvent() {
                     )}
                   </div>
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                  <ul className="pagination justify-content-center d-flex ">
+                    <ul className="pagination justify-content-center d-flex ">
                       {/* First Button */}
                       <li
-                        className={`page-item ${currentPage === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1377,8 +1443,9 @@ export default function CreateEvent() {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${currentPage === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1393,8 +1460,9 @@ export default function CreateEvent() {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${currentPage === pageNumber ? "active" : ""
-                            }`}
+                          className={`page-item ${
+                            currentPage === pageNumber ? "active" : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -1407,8 +1475,9 @@ export default function CreateEvent() {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1421,8 +1490,9 @@ export default function CreateEvent() {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1438,8 +1508,17 @@ export default function CreateEvent() {
                     {/* Showing entries count */}
                     <div>
                       <p>
-                      Showing {filteredTableData.length > 0 ? (currentPage * pageSize - (pageSize - 1)) : 0} to{" "}
-                        {filteredTableData.length > 0 ? Math.min(currentPage * pageSize, filteredTableData.length) : 0}{" "}
+                        Showing{" "}
+                        {filteredTableData.length > 0
+                          ? currentPage * pageSize - (pageSize - 1)
+                          : 0}{" "}
+                        to{" "}
+                        {filteredTableData.length > 0
+                          ? Math.min(
+                              currentPage * pageSize,
+                              filteredTableData.length
+                            )
+                          : 0}{" "}
                         of {filteredTableData.length} entries
                       </p>
                     </div>
@@ -1462,7 +1541,7 @@ export default function CreateEvent() {
                 },
                 {
                   label: "Save Changes",
-                  onClick: handleInviteModalClose,
+                  onClick: handleInviteVendor,
                   props: {
                     className: "purple-btn2",
                   },
@@ -1476,7 +1555,10 @@ export default function CreateEvent() {
                       <input
                         className="form-control"
                         type="text"
+                        name="name"
                         placeholder="Enter POC Name"
+                        value={inviteVendorData.name}
+                        onChange={handleInviteVendorChange}
                       />
                     </div>
                     <div className="form-group mb-3">
@@ -1484,7 +1566,10 @@ export default function CreateEvent() {
                       <input
                         className="form-control"
                         type="email"
+                        name="email"
                         placeholder="Enter Email Address"
+                        value={inviteVendorData.email}
+                        onChange={handleInviteVendorChange}
                       />
                     </div>
                     <div className="form-group mb-3">
@@ -1492,8 +1577,33 @@ export default function CreateEvent() {
                       <input
                         className="form-control"
                         type="text"
+                        name="mobile"
                         inputMode="tel"
                         placeholder="Enter Phone Number"
+                        value={inviteVendorData.mobile}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">GST Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="gstNumber"
+                        placeholder="Enter GST Number"
+                        value={inviteVendorData.gstNumber || ""}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">PAN Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="panNumber"
+                        placeholder="Enter PAN Number"
+                        value={inviteVendorData.panNumber || ""}
+                        onChange={handleInviteVendorChange}
                       />
                     </div>
                   </form>
