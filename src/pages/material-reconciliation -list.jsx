@@ -1,7 +1,8 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
@@ -20,11 +21,6 @@ const MaterialReconciliationList = () => {
   const navigate = useNavigate(); // Initialize navigation
 
   // Static data for SingleSelector (this will be replaced by API data later)
-  const companyOptions = [
-    { value: "company1", label: "Company 1" },
-    { value: "company2", label: "Company 2" },
-    { value: "company3", label: "Company 3" },
-  ];
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -45,6 +41,90 @@ const MaterialReconciliationList = () => {
 
   const openLayoutModal = () => setlayoutModal(true);
   const closeLayoutModal = () => setlayoutModal(false);
+
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  // const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  // const [wingsOptions, setWingsOptions] = useState([]);
+
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios
+      .get(
+        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
+  // Map companies to options for the dropdown
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
   return (
     <>
       <div className="website-content overflow-auto">
@@ -107,8 +187,9 @@ const MaterialReconciliationList = () => {
 
                       <SingleSelector
                         options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        onChange={handleCompanyChange}
+                        value={selectedCompany}
+                        placeholder={`Select Company`} // Dynamic placeholder
                       />
                     </div>
                   </div>
@@ -119,9 +200,10 @@ const MaterialReconciliationList = () => {
                       </label>
 
                       <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        options={projects}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder={`Select Project`} // Dynamic placeholder
                       />
                     </div>
                   </div>
@@ -132,27 +214,19 @@ const MaterialReconciliationList = () => {
                       </label>
                       {/* Pass static data as options */}
                       <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
                     </div>
                   </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Last Created <span>*</span>
-                      </label>
 
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2 ">Go</button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 m-0">Go</button>
+                    <button className="purple-btn2">Reset</button>
                   </div>
                 </div>
               </CollapsibleCard>
