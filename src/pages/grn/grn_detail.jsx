@@ -37,31 +37,24 @@ const GoodReceiveNoteDetails = () => {
   const approvalLogs = [
     {
       id: 1,
-      approvalLevel: 'L 1',
-      approvedBy: 'Sachind Kale',
-      date: '13-02-2025 12:22:28',
-      status: 'Approved',
-      remark: 'Approved By Sachin',
-      users: 'Sachind Kale',
+      approvalLevel: "L 1",
+      approvedBy: "Sachind Kale",
+      date: "13-02-2025 12:22:28",
+      status: "Approved",
+      remark: "Approved By Sachin",
+      users: "Sachind Kale",
     },
     {
       id: 2,
-      approvalLevel: 'L 2',
-      approvedBy: 'Jitendra Kale',
-      date: '13-02-2025 12:24:24',
-      status: 'Approved',
-      remark: 'Approved by Jitendra',
-      users: 'Jitendra Kale',
+      approvalLevel: "L 2",
+      approvedBy: "Jitendra Kale",
+      date: "13-02-2025 12:24:24",
+      status: "Approved",
+      remark: "Approved by Jitendra",
+      users: "Jitendra Kale",
     },
     // Add more entries as needed
   ];
-
-
-
-
-
-
-
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -146,14 +139,10 @@ const GoodReceiveNoteDetails = () => {
       window.location.reload();
     } catch (error) {
       toast.error("Failed to update status. Please try another status.");
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
-
   };
-
-
 
   return (
     <>
@@ -164,7 +153,6 @@ const GoodReceiveNoteDetails = () => {
           <a href="">Home &gt; Store &gt; Store Operations &gt; GRN</a>
           <div className="row my-4 align-items-center">
             <div className="col-md-12 px-2">
-
               <div className="mor-tabs mt-4">
                 <ul
                   className="nav nav-pills mb-3 justify-content-center"
@@ -266,16 +254,17 @@ const GoodReceiveNoteDetails = () => {
                     <button
                       className="purple-btn2"
                       onClick={openModal}
-                      style={{ backgroundColor: data?.status === "approved" ? "green" : "", border: "none" }}
+                      style={{
+                        backgroundColor:
+                          data?.status === "approved" ? "green" : "",
+                        border: "none",
+                      }}
                     >
                       <span>Approval Logs</span>
                     </button>
                   </div>
                 )}
-
-
               </div>
-
 
               <div
                 className="tab-pane fade show active"
@@ -509,8 +498,9 @@ const GoodReceiveNoteDetails = () => {
                       </div>
                     </div>
                     <div
-                      className={`card-body mt-1 pt-1 ${collapsed[index] ? "d-none" : ""
-                        }`}
+                      className={`card-body mt-1 pt-1 ${
+                        collapsed[index] ? "d-none" : ""
+                      }`}
                     >
                       <div className="mt-2">
                         <h5>Materials</h5>
@@ -560,9 +550,7 @@ const GoodReceiveNoteDetails = () => {
                               <td>
                                 {item.mor_inventory?.inventory?.uom_name || "-"}
                               </td>
-                              <td>
-                                {item.mor_inventory?.ordered_quantity || "0"}
-                              </td>
+                              <td>{item.ordered_quantity || "0"}</td>
                               <td>{item.received || "0"}</td>
                               <td>{item.breakage || "0"}</td>
                               <td>{item.defective || "0"}</td>
@@ -857,9 +845,12 @@ const GoodReceiveNoteDetails = () => {
                   {/* </div> */}
 
                   <div className="col-md-2">
-                    <div >
+                    <div>
                       {loading && (
-                        <div id="full-screen-loader" className="full-screen-loader">
+                        <div
+                          id="full-screen-loader"
+                          className="full-screen-loader"
+                        >
                           <div className="loader-container">
                             <img
                               src="https://newerp.marathonrealty.com/assets/loader.gif"
@@ -869,7 +860,6 @@ const GoodReceiveNoteDetails = () => {
                             <h5>Please wait</h5>
                           </div>
                         </div>
-
                       )}
                       <button
                         onClick={handleUpdateStatus}
@@ -917,7 +907,9 @@ const GoodReceiveNoteDetails = () => {
                               <td>{item.status || "-"}</td>
 
                               <td>{item.remark || "-"}</td>
-                              <td>{item?.admin_comment || item.comment || "-"}</td>
+                              <td>
+                                {item?.admin_comment || item.comment || "-"}
+                              </td>
                             </tr>
                           ))}
                         </tbody>{" "}
@@ -931,15 +923,17 @@ const GoodReceiveNoteDetails = () => {
         </div>
       </div>
 
-
-
       {isModalOpen && (
         <div
           className="modal fade show"
           id="log"
           tabIndex={-1}
           aria-labelledby="amendModalLabel"
-          style={{ display: "block", paddingLeft: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          style={{
+            display: "block",
+            paddingLeft: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
           aria-modal="true"
           role="dialog"
         >
@@ -961,17 +955,22 @@ const GoodReceiveNoteDetails = () => {
                   <div className="col-12">
                     <div className="tbl-container me-2 mt-3">
                       {/* Check if approval_logs is empty or undefined */}
-                      {!data?.approval_logs || data.approval_logs.length === 0 ? (
+                      {!data?.approval_logs ||
+                      data.approval_logs.length === 0 ? (
                         // Display a message if no logs are available
                         <div className="text-center py-4">
-                          <p className="text-muted">No approval logs available.</p>
+                          <p className="text-muted">
+                            No approval logs available.
+                          </p>
                         </div>
                       ) : (
                         // Render the table if logs are available
                         <table className="w-100" style={{ width: "100%" }}>
                           <thead>
                             <tr>
-                              <th style={{ width: "66px !important" }}>Sr.No.</th>
+                              <th style={{ width: "66px !important" }}>
+                                Sr.No.
+                              </th>
                               <th>Approval Level</th>
                               <th>Approved By</th>
                               <th>Date</th>
@@ -991,7 +990,10 @@ const GoodReceiveNoteDetails = () => {
                                   <span
                                     className="px-2 py-1 rounded text-white"
                                     style={{
-                                      backgroundColor: log.status === "Pending" ? "red" : "green"
+                                      backgroundColor:
+                                        log.status === "Pending"
+                                          ? "red"
+                                          : "green",
                                     }}
                                   >
                                     {log.status}
@@ -1015,7 +1017,6 @@ const GoodReceiveNoteDetails = () => {
           </div>
         </div>
       )}
-
     </>
   );
 };
