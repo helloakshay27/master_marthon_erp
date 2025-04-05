@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Pagination, Typography, Stack, Button as MuiButton, Box } from "@mui/material";
+import {
+  Pagination,
+  Typography,
+  Stack,
+  Button as MuiButton,
+  Box,
+} from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import * as XLSX from "xlsx";
@@ -13,15 +19,10 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 
-
 import { baseURL, baseURL1 } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
 
-
-
-
 const ErpStockRegister13B = () => {
-
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,8 +55,9 @@ const ErpStockRegister13B = () => {
     theftMissing: true,
     uom_name: true,
     Star: true,
+    mor: true, // Added Mor Number column
+    grn_number: true, //
   });
-
 
   const location = useLocation();
 
@@ -64,12 +66,9 @@ const ErpStockRegister13B = () => {
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
 
-
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
   const endEntry = Math.min(page * pageSize, filteredData.length);
-
-
 
   const allColumns = [
     { field: "srNo", headerName: "Sr. No.", width: 100 },
@@ -78,12 +77,37 @@ const ErpStockRegister13B = () => {
       headerName: "Star",
       width: 90,
       renderCell: (params) => (
-        <button className="btn btn-sm" onClick={() => handlePinRow(params.row.id)}>
-          {pinnedRows.includes(params.row.id) ? <svg class="star-icon pinned-star" data-id="259" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#8B0203" stroke="#8B0203">
-            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-          </svg> : <svg class="star-icon" data-id="260" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#cccccc" stroke="#cccccc">
-            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-          </svg>}
+        <button
+          className="btn btn-sm"
+          onClick={() => handlePinRow(params.row.id)}
+        >
+          {pinnedRows.includes(params.row.id) ? (
+            <svg
+              class="star-icon pinned-star"
+              data-id="259"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#8B0203"
+              stroke="#8B0203"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+          ) : (
+            <svg
+              class="star-icon"
+              data-id="260"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              width="27"
+              height="27"
+              fill="#cccccc"
+              stroke="#cccccc"
+            >
+              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+            </svg>
+          )}
         </button>
       ),
     },
@@ -101,6 +125,9 @@ const ErpStockRegister13B = () => {
       ),
     },
 
+    { field: "mor", headerName: "Mor Number", width: 150 }, // Added Mor Number column
+    { field: "grn_number", headerName: "Grn Number", width: 150 }, // Added Grn Number column
+
     { field: "lastReceived", headerName: "Last Received On", width: 200 },
 
     { field: "total_received", headerName: "Total Received", width: 150 },
@@ -114,8 +141,6 @@ const ErpStockRegister13B = () => {
     { field: "theftMissing", headerName: "Theft / Missing", width: 150 },
 
     { field: "uom_name", headerName: "UOM", width: 100 },
-
-
   ];
 
   const handlePageChange = (event, newPage) => {
@@ -126,7 +151,9 @@ const ErpStockRegister13B = () => {
 
   const handlePinRow = (rowId) => {
     setPinnedRows((prev) =>
-      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
+      prev.includes(rowId)
+        ? prev.filter((id) => id !== rowId)
+        : [...prev, rowId]
     );
   };
 
@@ -134,14 +161,14 @@ const ErpStockRegister13B = () => {
     setShowOnlyPinned((prev) => !prev);
   };
 
-
-
-
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Data");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(blob, "Stock_Data.xlsx");
   };
@@ -172,7 +199,8 @@ const ErpStockRegister13B = () => {
       return acc;
     }, {});
     setColumnVisibility(defaultVisibility);
-  }; const [companies, setCompanies] = useState([]);
+  };
+  const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
   const [subProjects, setSubProjects] = useState([]);
 
@@ -183,21 +211,92 @@ const ErpStockRegister13B = () => {
     genericInfos: [],
     materialSubTypes: [],
     materialTypes: [],
-    unitOfMeasures: []
+    unitOfMeasures: [],
+    morNumbers: [],
+    grnNumbers: [],
   });
+
+  const [morOptions, setMorOptions] = useState([]);
+  const [grnOptions, setGrnOptions] = useState([]);
+
+  const fetchMorNumbers = async () => {
+    try {
+      let url = `${baseURL}material_order_requests/filter_mor_numbers`;
+
+      // Only add parameters if they have values
+      const params = [];
+      if (selectedIds.materialTypes.length > 0) {
+        params.push(
+          `pms_inventory_type_ids=${selectedIds.materialTypes.join(",")}`
+        );
+      }
+      if (selectedIds.materialSubTypes.length > 0) {
+        params.push(
+          `inventory_sub_type_ids=${selectedIds.materialSubTypes.join(",")}`
+        );
+      }
+
+      // Add parameters to URL if any exist
+      if (params.length > 0) {
+        url += `?${params.join("&")}`;
+      }
+
+      const response = await axios.get(url);
+
+      const options = response.data.map((item) => ({
+        value: item,
+        label: item,
+      }));
+      setMorOptions(options);
+    } catch (error) {
+      console.error("Error fetching MOR numbers:", error);
+    }
+  };
+
+  const fetchGrnNumbers = async () => {
+    try {
+      const url = `${baseURL}good_receive_notes/filter_grn_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`;
+      const response = await axios.get(url);
+
+      const options = response.data.grn_numbers.map((item) => ({
+        value: item,
+        label: item,
+      }));
+      setGrnOptions(options);
+    } catch (error) {
+      console.error("Error fetching GRN numbers:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      selectedIds.materialTypes.length > 0 ||
+      selectedIds.materialSubTypes.length > 0
+    ) {
+      fetchMorNumbers();
+    }
+    fetchGrnNumbers();
+  }, [selectedIds.materialTypes, selectedIds.materialSubTypes]);
 
   useEffect(() => {
     const fetchData = async () => {
-
       try {
-
         const urlParams = new URLSearchParams(location.search);
-        const token = urlParams.get('token');
+        const token = urlParams.get("token");
 
         const response = await fetch(
-          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(searchTerm)}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${selectedIds.genericInfos}&q[material_type_id]=${selectedIds.materialTypes}&q[material_sub_type_id]=${selectedIds.materialSubTypes}&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures}&page=${page}&per_page=${pageSize}`
+          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(
+            searchTerm
+          )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${
+            selectedIds.genericInfos
+          }&q[material_type_id]=${
+            selectedIds.materialTypes
+          }&q[material_sub_type_id]=${
+            selectedIds.materialSubTypes
+          }&q[brand_id]=&q[uom_id]=${
+            selectedIds.unitOfMeasures
+          }&page=${page}&per_page=${pageSize}`
         ); // Replace with your API endpoint
-
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -205,12 +304,13 @@ const ErpStockRegister13B = () => {
 
         const result = await response.json();
         const transformedData = result?.mor_inventories.map((item, index) => {
-          const materialUrl = item.id && token
-            ? `/stock_register_detail/${item.id}/?token=${token}`
-            : "#"; // Fallback if id or token is missing
+          const materialUrl =
+            item.id && token
+              ? `/stock_register_detail/${item.id}/?token=${token}`
+              : "#"; // Fallback if id or token is missing
 
           return {
-            id: item.id ?? `row-${index + 1}`,  // Ensure unique ID
+            id: item.id ?? `row-${index + 1}`, // Ensure unique ID
             srNo: index + 1,
             material: item.category || "-",
             materialUrl: materialUrl,
@@ -220,18 +320,26 @@ const ErpStockRegister13B = () => {
             total_issued: item.total_issued || "-",
             deadstockQty: item.deadstockQty || "-",
             stock_as_on: item.stock_as_on || "-",
-            stockStatus: item.stock_details?.[0]?.status || "-",  // Fix array issue
-            theftMissing: item.theftMissing !== undefined ? item.theftMissing : "-",
+            stockStatus: item.stock_details?.[0]?.status || "-", // Fix array issue
+            theftMissing:
+              item.theftMissing !== undefined ? item.theftMissing : "-",
             uom_name: item.uom_name || "-",
-            stock_details: item?.stock_details?.map((stock) => ({
-              stockId: stock.id,
-              createdAt: stock.created_at || "-",
-              mor: stock.mor || "-",
-              resourceNumber: stock.resource_number || "-",
-              receivedQty: stock.received_qty || "-",
-              issuedQty: stock.issued_qty || "-",
-              returnedQty: stock.returned_qty || "-",
-            })) || [],
+            mor:
+              item.stock_details?.map((stock) => stock.mor).join(", ") || "-", // Extract Mor Numbers
+            // mor_number: item.mor_number || "-", // Add Mor Number key
+            grn_number:
+              item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
+              "-", // Extract Mor Numbers
+            stock_details:
+              item?.stock_details?.map((stock) => ({
+                stockId: stock.id,
+                createdAt: stock.created_at || "-",
+                mor: stock.mor || "-",
+                resourceNumber: stock.resource_number || "-",
+                receivedQty: stock.received_qty || "-",
+                issuedQty: stock.issued_qty || "-",
+                returnedQty: stock.returned_qty || "-",
+              })) || [],
           };
         });
 
@@ -240,27 +348,29 @@ const ErpStockRegister13B = () => {
         setData(transformedData);
         setFilteredData(transformedData); // Initialize with full data
         setLoading(false); // Stop loading once data is ready
-        setPagination(result.pagination);  // Store API pagination
-
-
+        setPagination(result.pagination); // Store API pagination
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false); // Stop loading even if there's an error
-
       }
     };
 
     fetchData(); // Call the fetch function
-
-
-  }, [location.search, selectedCompany, selectedProject, page, searchTerm, selectedIds,selectedSubProject]); // Empty dependency array to run once on mount
+  }, [
+    location.search,
+    selectedCompany,
+    selectedProject,
+    page,
+    searchTerm,
+    selectedIds,
+    selectedSubProject,
+  ]); // Empty dependency array to run once on mount
 
   const handleResets = () => {
     setSelectedCompany([]);
     setSelectedProject([]);
     setSelectedSubProject([]);
   };
-
 
   const getTransformedRows = () => {
     let rowsToShow = showOnlyPinned
@@ -271,13 +381,12 @@ const ErpStockRegister13B = () => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
     if (normalizedSearchTerm) {
       rowsToShow = rowsToShow.filter((item) =>
-        Object.values(item).some((value) =>
-          value && String(value).toLowerCase().includes(normalizedSearchTerm)
+        Object.values(item).some(
+          (value) =>
+            value && String(value).toLowerCase().includes(normalizedSearchTerm)
         )
       );
     }
-
-
 
     return rowsToShow.map((row, index) => ({
       ...row,
@@ -285,7 +394,6 @@ const ErpStockRegister13B = () => {
       srNo: index + 1,
     }));
   };
-
 
   const bulkToggleCardBody = () => {
     setBulkIsCollapsed(!bulkIsCollapsed);
@@ -295,13 +403,13 @@ const ErpStockRegister13B = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-
-
   // Fetch Companies
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get(`${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+        const response = await axios.get(
+          `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
         setCompanies(response.data.companies || []);
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -326,7 +434,6 @@ const ErpStockRegister13B = () => {
     }
   };
 
-
   // Handle Project Selection
   const handleProjectChange = (projectId) => {
     setSelectedProject(projectId);
@@ -343,7 +450,6 @@ const ErpStockRegister13B = () => {
     }
   };
 
-
   // Handle Subproject Selection
   const handleSubProjectChange = (option) => {
     setSelectedSubProject(option);
@@ -353,7 +459,6 @@ const ErpStockRegister13B = () => {
   const [materialSubTypes, setMaterialSubTypes] = useState([]);
   const [materialTypes, setMaterialTypes] = useState([]);
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
-
 
   const fetchData = async (url, setState) => {
     try {
@@ -384,19 +489,22 @@ const ErpStockRegister13B = () => {
   }, []);
 
   const formatOptions = (data) => {
-    return data.map((item) => ({ label: item.name || item.title || item.generic_info, value: item.id }));
+    return data.map((item) => ({
+      label: item.name || item.title || item.generic_info,
+      value: item.id,
+    }));
   };
 
   const handleChange = (key, selectedOptions) => {
     setSelectedIds((prev) => ({
       ...prev,
-      [key]: selectedOptions.map(option => option.value) // Persist selected values
+      [key]: selectedOptions.map((option) => option.value), // Persist selected values
     }));
   };
 
   // Helper function to get selected options for MultiSelector
   const getSelectedOptions = (key, options) => {
-    return options.filter(option => selectedIds[key].includes(option.value));
+    return options.filter((option) => selectedIds[key].includes(option.value));
   };
 
   if (loading) return <div>Loading...</div>;
@@ -412,10 +520,27 @@ const ErpStockRegister13B = () => {
               <div className="card-header3">
                 <h3 className="card-title">Quick Filter</h3>
                 <div className="card-tools">
-                  <button type="button" className="btn btn-tool" onClick={toggleCardBody}>
-                    <svg width={32} height={32} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <button
+                    type="button"
+                    className="btn btn-tool"
+                    onClick={toggleCardBody}
+                  >
+                    <svg
+                      width={32}
+                      height={32}
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                      <path d={isCollapsed ? "M16 24L9.0718 12L22.9282 12L16 24Z" : "M16 8L22.9282 20L9.0718 20L16 8Z"} fill="white" />
+                      <path
+                        d={
+                          isCollapsed
+                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                        }
+                        fill="white"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -426,27 +551,48 @@ const ErpStockRegister13B = () => {
                   <div className="row my-2 align-items-end">
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label>Company <span>*</span></label>
+                        <label>
+                          Company <span>*</span>
+                        </label>
                         <SingleSelector
-                          options={companies.map(c => ({ value: c.id, label: c.company_name }))}
-                          onChange={(option) => handleCompanyChange(option.value)} // Pass only the ID
-                          value={companies.find(c => c.id === selectedCompany) ? { value: selectedCompany, label: companies.find(c => c.id === selectedCompany).company_name } : null}
+                          options={companies.map((c) => ({
+                            value: c.id,
+                            label: c.company_name,
+                          }))}
+                          onChange={(option) =>
+                            handleCompanyChange(option.value)
+                          } // Pass only the ID
+                          value={
+                            companies.find((c) => c.id === selectedCompany)
+                              ? {
+                                  value: selectedCompany,
+                                  label: companies.find(
+                                    (c) => c.id === selectedCompany
+                                  ).company_name,
+                                }
+                              : null
+                          }
                           placeholder="Select Company"
                         />
-
                       </div>
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label>Project <span>*</span></label>
+                        <label>
+                          Project <span>*</span>
+                        </label>
                         <SingleSelector
                           options={projects}
-                          onChange={(option) => handleProjectChange(option.value)} // Pass only the ID
-                          value={projects.find(p => p.value === selectedProject) || null} // Ensure correct value format
+                          onChange={(option) =>
+                            handleProjectChange(option.value)
+                          } // Pass only the ID
+                          value={
+                            projects.find((p) => p.value === selectedProject) ||
+                            null
+                          } // Ensure correct value format
                           placeholder="Select Project"
                           isDisabled={!selectedCompany}
                         />
-
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -454,22 +600,28 @@ const ErpStockRegister13B = () => {
                         <label>Sub-project</label>
                         <SingleSelector
                           options={subProjects}
-                          onChange={(option) => handleSubProjectChange(option.value)} // Pass only the ID
-                          value={subProjects.find(s => s.value === selectedSubProject) || null} // Ensure correct value format
+                          onChange={(option) =>
+                            handleSubProjectChange(option.value)
+                          } // Pass only the ID
+                          value={
+                            subProjects.find(
+                              (s) => s.value === selectedSubProject
+                            ) || null
+                          } // Ensure correct value format
                           placeholder="Select Sub-project"
                           isDisabled={!selectedProject}
                         />
                       </div>
                     </div>
                     <div className="col-md-2">
-                      <button className="purple-btn2 m-0" onClick={handleResets}>Reset</button>
+                      <button
+                        className="purple-btn2 m-0"
+                        onClick={handleResets}
+                      >
+                        Reset
+                      </button>
                     </div>
-
-
-
                   </div>
-
-
                 </div>
               )}
             </div>
@@ -534,13 +686,38 @@ const ErpStockRegister13B = () => {
                         </button>
                       </div>
                       <div className="col-md-3">
-                        <button type="submit" className="btn btn-md" onClick={toggleShowOnlyPinned}>
-                          {showOnlyPinned ? <svg class="star-icon pinned-star" data-id="259" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#8B0203" stroke="#8B0203">
-                            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-                          </svg> : <svg class="star-icon" data-id="260" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="#cccccc" stroke="#cccccc">
-                            <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-                          </svg>}
-
+                        <button
+                          type="submit"
+                          className="btn btn-md"
+                          onClick={toggleShowOnlyPinned}
+                        >
+                          {showOnlyPinned ? (
+                            <svg
+                              class="star-icon pinned-star"
+                              data-id="259"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="27"
+                              height="27"
+                              fill="#8B0203"
+                              stroke="#8B0203"
+                            >
+                              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+                            </svg>
+                          ) : (
+                            <svg
+                              class="star-icon"
+                              data-id="260"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="27"
+                              height="27"
+                              fill="#cccccc"
+                              stroke="#cccccc"
+                            >
+                              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
+                            </svg>
+                          )}
                         </button>
                       </div>
                       <div className="col-md-3">
@@ -601,7 +778,11 @@ const ErpStockRegister13B = () => {
 
             <div
               className="tbl-container  px-1 mt-3"
-              style={{ width: "max-congent", maxHeight: "max-content", boxShadow: "unset" }}
+              style={{
+                width: "max-congent",
+                maxHeight: "max-content",
+                boxShadow: "unset",
+              }}
             >
               <DataGrid
                 rows={getTransformedRows()}
@@ -610,7 +791,12 @@ const ErpStockRegister13B = () => {
                 autoHeight
                 getRowId={(row) => row.id}
               />
-              <Stack direction="row" alignItems="center" justifyContent="space-between" padding={2}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                padding={2}
+              >
                 <Pagination
                   count={pagination.total_pages || 1} // Use API's total pages
                   page={page}
@@ -625,15 +811,14 @@ const ErpStockRegister13B = () => {
 
                 {/* Dynamic Entries Info */}
                 <Typography variant="body2">
-                  Showing {startEntry} to {endEntry} of {pagination.total_count} entries
+                  Showing {startEntry} to {endEntry} of {pagination.total_count}{" "}
+                  entries
                 </Typography>
               </Stack>
-
-
             </div>
           </div>
         </div>
-      </div >
+      </div>
 
       <Modal
         show={show}
@@ -689,18 +874,28 @@ const ErpStockRegister13B = () => {
               <MultiSelector
                 options={formatOptions(materialTypes)}
                 isMulti
-                value={getSelectedOptions("materialTypes", formatOptions(materialTypes))} // Show selected options
+                value={getSelectedOptions(
+                  "materialTypes",
+                  formatOptions(materialTypes)
+                )} // Show selected options
                 onChange={(selected) => handleChange("materialTypes", selected)}
               />
             </div>
 
             <div className="col-12 mt-2">
-              <label className="block text-sm font-medium">Material Sub Type</label>
+              <label className="block text-sm font-medium">
+                Material Sub Type
+              </label>
               <MultiSelector
                 options={formatOptions(materialSubTypes)}
                 isMulti
-                value={getSelectedOptions("materialSubTypes", formatOptions(materialSubTypes))}
-                onChange={(selected) => handleChange("materialSubTypes", selected)}
+                value={getSelectedOptions(
+                  "materialSubTypes",
+                  formatOptions(materialSubTypes)
+                )}
+                onChange={(selected) =>
+                  handleChange("materialSubTypes", selected)
+                }
               />
             </div>
 
@@ -709,18 +904,50 @@ const ErpStockRegister13B = () => {
               <MultiSelector
                 options={formatOptions(genericInfos)}
                 isMulti
-                value={getSelectedOptions("genericInfos", formatOptions(genericInfos))}
+                value={getSelectedOptions(
+                  "genericInfos",
+                  formatOptions(genericInfos)
+                )}
                 onChange={(selected) => handleChange("genericInfos", selected)}
               />
             </div>
 
             <div className="col-12 mt-2">
-              <label className="block text-sm font-medium">Unit of Measures</label>
+              <label className="block text-sm font-medium">
+                Unit of Measures
+              </label>
               <MultiSelector
                 options={formatOptions(unitOfMeasures)}
                 isMulti
-                value={getSelectedOptions("unitOfMeasures", formatOptions(unitOfMeasures))}
-                onChange={(selected) => handleChange("unitOfMeasures", selected)}
+                value={getSelectedOptions(
+                  "unitOfMeasures",
+                  formatOptions(unitOfMeasures)
+                )}
+                onChange={(selected) =>
+                  handleChange("unitOfMeasures", selected)
+                }
+              />
+            </div>
+
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">MOR Numbers</label>
+              <MultiSelector
+                options={morOptions}
+                isMulti
+                value={getSelectedOptions("morNumbers", morOptions)}
+                onChange={(selected) => handleChange("morNumbers", selected)}
+                placeholder="Select MOR Numbers"
+              />
+            </div>
+
+            <div className="col-12 mt-2">
+              <label className="block text-sm font-medium">GRN Numbers</label>
+              <MultiSelector
+                options={grnOptions}
+                isMulti
+                value={getSelectedOptions("grnNumbers", grnOptions)}
+                onChange={(selected) => handleChange("grnNumbers", selected)}
+                placeholder="Select GRN Numbers"
               />
             </div>
           </div>
@@ -747,7 +974,6 @@ const ErpStockRegister13B = () => {
         <Modal.Header>
           <div className="container-fluid p-0">
             <div className="border-0 d-flex justify-content-between align-items-center">
-
               <div className="d-flex align-items-center">
                 <button
                   type="button"
@@ -772,7 +998,11 @@ const ErpStockRegister13B = () => {
                   </svg>
                 </button>
               </div>
-              <Button style={{ textDecoration: "underline" }} variant="alert" onClick={handleReset}>
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleReset}
+              >
                 Reset
               </Button>
             </div>
@@ -780,47 +1010,50 @@ const ErpStockRegister13B = () => {
         </Modal.Header>
 
         <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
-          {allColumns.filter((column) => column.field !== "srNo" && column.field !== "Star").map((column, index) => (
-            <div
-              className="row justify-content-between align-items-center mt-2"
-              key={column.field} // Use column.field as the key
-            >
-              <div className="col-md-6">
-                <button type="submit" className="btn btn-md">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                </button>
-                <label>{column.headerName}</label>
-              </div>
-              <div className="col-md-4">
-                <div className="form-check form-switch mt-1">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={columnVisibility[column.field]}
-                    onChange={() => handleToggleColumn(column.field)}
-                    role="switch"
-                    id={`flexSwitchCheckDefault-${column.field}`} // Unique ID for each input
-                  />
+          {allColumns
+            .filter(
+              (column) => column.field !== "srNo" && column.field !== "Star"
+            )
+            .map((column, index) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field} // Use column.field as the key
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`} // Unique ID for each input
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </Modal.Body>
 
         <Modal.Footer>
-
           <Button variant="primary" onClick={handleShowAll}>
             Show All
           </Button>

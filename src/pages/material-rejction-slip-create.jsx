@@ -126,7 +126,7 @@ const MaterialRejctionSlipCreate = () => {
       console.log("Update successful:", response.data);
       alert("Status updated successfully!");
       setReason("");
-      navigate("/material-rejction-slip");
+      navigate("/material-rejection-slip");
     } catch (error) {
       console.error("Error updating rejection slip:", error);
       alert("Failed to update status. Please try again.");
@@ -138,7 +138,7 @@ const MaterialRejctionSlipCreate = () => {
 
   const handleCancel = () => {
     // Navigate to the new route when cancel is clicked
-    navigate("/material-rejction-slip");
+    navigate("/material-rejection-slip");
   };
 
   // if (loading) return <p>Loading...</p>;
