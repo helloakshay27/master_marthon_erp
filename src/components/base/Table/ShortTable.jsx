@@ -7,8 +7,21 @@ export default function ShortTable({
   onInputClick, // New prop for handling input click
   ...rest
 }) {
+  const defaultRows = [
+    { label: "Warranty Clause", value: "" },
+    { label: "Payment Terms", value: "" },
+    { label: "Loading/Unloading", value: "" },
+  ];
+
+  const mergedData = [
+    ...defaultRows,
+    ...data.filter(
+      (row) => !defaultRows.some((defaultRow) => defaultRow.label === row.label)
+    ),
+  ];
+
   const handleInputChange = (index, newValue) => {
-    const updatedData = [...data];
+    const updatedData = [...mergedData];
     updatedData[index].value = newValue;
 
     // Custom calculation for Freight and GST
@@ -54,7 +67,7 @@ export default function ShortTable({
   };
 
   const handleDelete = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
+    const updatedData = mergedData.filter((_, i) => i !== index);
     onValueChange(updatedData);
   };
 
@@ -65,8 +78,8 @@ export default function ShortTable({
       {...rest}
     >
       <tbody>
-        {Array.isArray(data) &&
-          data.map((row, index) => (
+        {Array.isArray(mergedData) &&
+          mergedData.map((row, index) => (
             <tr
               key={index}
               style={{ borderBottom: "1px solid #ddd", color: "#fff" }}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 
 import {
@@ -453,7 +452,13 @@ export default function EditEvent() {
   }, [eventDetails, termsOptions]);
 
   useEffect(() => {
-    setIsTextId(true);
+    
+    console.log("eventDetails?.resource_term_conditions", eventDetails?.resource_term_conditions);
+
+    if(eventDetails?.resource_term_conditions?.length > 0) {
+      setIsTextId(true);
+    }
+    
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
         console.log("term:---", term);
@@ -655,20 +660,15 @@ export default function EditEvent() {
   };
   // console.log("materialFormData", materialFormData);
 
+  console.log(
+    "data from previous submit",
+    eventType,
+    awardType,
+    eventDetails?.event_type_detail?.delivery_date,
+    eventDetails?.event_type_detail?.award_scheme,
+    eventDetails?.event_type_detail?.event_type,
+  );
   const validateForm = () => {
-    console.log(
-      eventType,
-      awardType,
-      dynamicExtensionConfigurations,
-      eventDetails?.event_type_detail?.delivery_date,
-      eventDetails?.event_type_detail?.award_scheme,
-      eventDetails?.event_type_detail?.event_type,
-      eventDetails?.event_type_detail?.event_configuration,
-      eventDetails?.event_materials,
-      eventDetails?.event_vendors,
-      eventDetails?.resource_term_conditions,
-      eventDetails?.attachments
-    );
 
     if (!eventName) {
       toast.error("Event name is required");
@@ -768,8 +768,8 @@ export default function EditEvent() {
           evaluation_time: scheduleData.evaluation_time || evaluation_time,
         },
         event_type_detail_attributes: {
-          event_type: eventType,
-          award_scheme: awardType,
+          event_type: eventType || eventDetails?.event_type_detail?.event_type,
+          award_scheme: awardType || eventDetails?.event_type_detail?.award_scheme,
           event_configuration: selectedStrategy,
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type,
@@ -846,17 +846,19 @@ export default function EditEvent() {
         ],
         resource_term_conditions_attributes: textareas.map((textarea) =>
           isTextId
-            ? {
+            ? 
+            {
                 id: textarea?.id || null,
                 term_condition_id: textarea.textareaId,
                 condition_type: "general",
                 condition: textarea.value,
-              }
-            : {
+              }:
+              {
                 term_condition_id: textarea.textareaId,
                 condition_type: "general",
                 condition: textarea.value,
               }
+            
         ),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
@@ -1198,6 +1200,7 @@ export default function EditEvent() {
                       { label: "Expired", value: "expired" },
                       { label: "Closed", value: "closed" },
                       { label: "Pending", value: "pending" },
+                      { label: "Draft", value: "draft" },
                     ]}
                     onChange={handleStatusChange}
                     defaultValue={eventStatus}

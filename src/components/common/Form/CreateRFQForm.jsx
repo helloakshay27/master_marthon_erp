@@ -98,7 +98,6 @@ export default function CreateRFQForm({
   const handleTemplateChange = async (event) => {
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
-    // console.log("selectedTemplate", selectedTemplate, event);
 
     try {
       const response = await axios.get(
@@ -106,7 +105,6 @@ export default function CreateRFQForm({
       );
       if (response.data) {
         const templateData = response.data;
-        // console.log("Template Data:", templateData);
         const updatedAdditionalFields =
           templateData.bid_material_template_fields || [];
         updateAdditionalFields(updatedAdditionalFields);
@@ -117,6 +115,20 @@ export default function CreateRFQForm({
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );
         setAdditionalFields(updatedAdditionalFields);
+
+        // Ensure default rows are present in ShortTable
+        const defaultShortTableRows = [
+          { label: "Warranty Clause", value: "" },
+          { label: "Payment Terms", value: "" },
+          { label: "Loading/Unloading", value: "" },
+        ];
+        setBidTemplateFields((prevFields) => [
+          ...defaultShortTableRows,
+          ...prevFields.filter(
+            (field) =>
+              !defaultShortTableRows.some((defaultRow) => defaultRow.label === field.label)
+          ),
+        ]);
 
         // Reset sections to ensure compatibility with the new template
         const updatedSections = sections.map((section) => ({
@@ -948,16 +960,19 @@ export default function CreateRFQForm({
       );
     }
 
+    // console.log("fieldValue:----", field,fieldValue, field.field_name);
     // Default input for other fields
     return (
       <div className="input-group">
+        {/* {console.log("field:----", field)} */}
         {field.field_owner === "Admin" && (
+          <>
           <input
             className="form-control rounded-2"
-            type={field.field_type === "string" ? "text" : "number"}
+            type={field.field_type === "integer" ? "number" : "text"}
             value={fieldValue}
             onChange={(e) => handleFieldChange(e.target.value)}
-          />
+          /></>
         )}
         <div>
           <button
@@ -993,24 +1008,20 @@ export default function CreateRFQForm({
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
 
-    // console.log(fieldValue, "fieldValue:----", fieldName);
+    console.log(fieldValue, "fieldValue:----", fieldName);
 
     // Explicitly handle SelectBox for specific fields
     if (fieldName === "descriptionOfItem") {
       return (
-        <>
-          <SelectBox
-            options={materials}
-            // value={fieldValue}
-            defaultValue={
-              materials.find((option) => option.label === fieldValue)?.value
-            }
-            onChange={(value) =>
-              handleInputChange(value, rowIndex, fieldName, sectionIndex)
-            }
-          />
-          {/* <p>{materials.find((option) => option.label === fieldValue).value}</p> */}
-        </>
+        <SelectBox
+          options={materials}
+          defaultValue={
+            materials.find((option) => option.label === fieldValue)?.value
+          }
+          onChange={(value) =>
+            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+          }
+        />
       );
     }
 
@@ -1029,8 +1040,6 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "location") {
-      // console.log("locationOptions:----", locationOptions, fieldValue);
-
       return (
         <SelectBox
           options={locationOptions}
@@ -1045,7 +1054,6 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "brand") {
-      console.log("brandOptions:----", brandOptions, fieldValue);
       return (
         <SelectBox
           options={brandOptions}
@@ -1060,7 +1068,6 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "pms_colour") {
-      console.log("pmsColours:----", pmsColours, fieldValue);
       return (
         <SelectBox
           options={pmsColours}
@@ -1068,12 +1075,11 @@ export default function CreateRFQForm({
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
-          />
+        />
       );
     }
 
     if (fieldName === "generic_info") {
-      console.log("genericInfoOptions:----", genericInfoOptions, fieldValue);
       return (
         <SelectBox
           options={genericInfoOptions}
@@ -1081,6 +1087,41 @@ export default function CreateRFQForm({
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
+        />
+      );
+    }
+
+    if (fieldName === "rate") {
+      return (
+        <input
+          className="form-control"
+          type="number"
+          value={fieldValue}
+          onChange={(e) => {
+            handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex);
+
+            // Calculate amount based on rate and quantity
+            const rate = parseFloat(e.target.value) || 0;
+            const quantity =
+              parseFloat(
+                sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0
+              ) || 0;
+            const amount = rate * quantity;
+
+            // Update the amount field
+            handleInputChange(amount.toFixed(2), rowIndex, "amount", sectionIndex);
+          }}
+        />
+      );
+    }
+
+    if (fieldName === "amount") {
+      return (
+        <input
+          className="form-control"
+          type="number"
+          value={fieldValue}
+          disabled
         />
       );
     }
@@ -1096,38 +1137,6 @@ export default function CreateRFQForm({
             handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
           }
         />
-        {/* {!inputList.includes(fieldName) && ( */}
-        {/* <>
-            <button
-              className="purple-btn2 ms-2 rounded-circle p-0"
-              style={{
-                border: "none",
-                color: "white",
-                width: "25px",
-                height: "25px",
-              }}
-              onClick={() =>
-                handleEditAdditionalField({ field_name: fieldName })
-              }
-            >
-              <i className="bi bi-pencil" style={{ border: 0 }}></i>
-            </button>
-            <button
-              className="purple-btn2 ms-2 rounded-circle p-0"
-              style={{
-                border: "none",
-                color: "white",
-                width: "25px",
-                height: "25px",
-              }}
-              onClick={() =>
-                handleDeleteAdditionalField({ field_name: fieldName })
-              }
-            >
-              <i className="bi bi-trash" style={{ border: 0 }}></i>
-            </button>
-          </> */}
-        {/* )} */}
       </div>
     );
   };
