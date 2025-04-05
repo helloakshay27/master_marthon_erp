@@ -269,7 +269,7 @@ function Members() {
                 <li>
                   <Link to="/boq-approval-list">BOQ Approval List</Link>
                 </li>
-                
+
                 <li>
                   {/* <Link to="/boq-details-page-master">
                     BOQ Details Page Master
@@ -294,7 +294,7 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/material-rejction-slip">
+                  <Link to="/material-rejection-slip">
                     Material Rejection Slip
                   </Link>
                 </li>

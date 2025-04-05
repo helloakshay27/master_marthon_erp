@@ -85,7 +85,7 @@ function App() {
     <BrowserRouter>
       <div>
         <Routes>
-          <Route path="/" element={<Members />} />  
+          <Route path="/" element={<Members />} />
           <Route path="/approvals-list" element={<ApprovalsList />} />
           <Route path="/edit-approvals" element={<EditApprovals />} />
           <Route path="/add-approvals" element={<AddApprovals />} />
@@ -94,7 +94,6 @@ function App() {
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />
-          
           {/* <Route path="/boq-edit/:id" element={<BOQEdit />} /> */}
           {/* <Route
               path="/boq-details-page-master"
@@ -149,7 +148,10 @@ function App() {
           <Route path="/create-template" element={<CreateTemplate />} />
           <Route path="/edit-template/:id" element={<EditTemplate />} />
           <Route path="/event-template-list" element={<EventTemplateList />} />
-          <Route path="/event-template-details/:id" element={<EventTemplateDetails />} />
+          <Route
+            path="/event-template-details/:id"
+            element={<EventTemplateDetails />}
+          />
           {/* <Route path="/event-list" element={<ErpRfqA />} /> */}
           <Route path="/event-list" element={<EventListPage />} />
           <Route path="/contract-invitation" element={<ContractInvitation />} />
@@ -400,7 +402,7 @@ function App() {
             element={<MaterialRejctionSlipCreate />}
           />
           <Route
-            path="/material-rejction-slip"
+            path="/material-rejection-slip"
             element={<MaterialRejctionSlip />}
           />
           <Route
