@@ -9,6 +9,7 @@ export default function SelectBox({
   style = {},
   className = "",
   isDisableFirstOption = false, // New prop
+  disabled = false, // Add disabled prop
 }) {
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -25,8 +26,10 @@ export default function SelectBox({
       maxHeight: "65px",
       overflowY: "auto",
       borderColor: state.isFocused ? "#8b0203" : base.borderColor,
+      backgroundColor: disabled ? "#e9ecef" : base.backgroundColor, // Grey out when disabled
+      pointerEvents: disabled ? "none" : "auto", // Disable pointer events when disabled
       "&:hover": {
-        borderColor: "#8b0203",
+        borderColor: disabled ? base.borderColor : "#8b0203",
       },
       boxShadow: state.isFocused ? "0 0 0 1px #8b0203" : base.boxShadow,
     }),
@@ -82,6 +85,7 @@ export default function SelectBox({
         value={selectedOption}
         onChange={handleChange}
         isOptionDisabled={(option) => option.isDisabled}
+        isDisabled={disabled} // Pass disabled prop to react-select
         styles={customStyles}
         menuPortalTarget={document.body}
       />
