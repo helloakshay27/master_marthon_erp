@@ -219,37 +219,56 @@ const ErpStockRegister13B = () => {
   const [morOptions, setMorOptions] = useState([]);
   const [grnOptions, setGrnOptions] = useState([]);
 
-  const fetchMorNumbers = async () => {
+  const fetchMorNumbers = async (isFiltered = false) => {
     try {
-      let url = `${baseURL}material_order_requests/filter_mor_numbers`;
+      let url = `${baseURL}material_order_requests/filter_mor_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`;
 
-      // Only add parameters if they have values
-      const params = [];
-      if (selectedIds.materialTypes.length > 0) {
-        params.push(
-          `pms_inventory_type_ids=${selectedIds.materialTypes.join(",")}`
-        );
-      }
-      if (selectedIds.materialSubTypes.length > 0) {
-        params.push(
-          `inventory_sub_type_ids=${selectedIds.materialSubTypes.join(",")}`
-        );
+      // Only add parameters if this is a filtered request and we have values
+      if (isFiltered) {
+        const params = [];
+        if (selectedIds.materialTypes.length > 0) {
+          params.push(
+            `pms_inventory_type_ids=${selectedIds.materialTypes.join(",")}`
+          );
+        }
+        if (selectedIds.materialSubTypes.length > 0) {
+          params.push(
+            `inventory_sub_type_ids=${selectedIds.materialSubTypes.join(",")}`
+          );
+        }
+
+        // Add parameters to URL if any exist
+        if (params.length > 0) {
+          url += `&${params.join("&")}`;
+        }
       }
 
-      // Add parameters to URL if any exist
-      if (params.length > 0) {
-        url += `?${params.join("&")}`;
-      }
-
+      console.log("Fetching MOR numbers from URL:", url);
       const response = await axios.get(url);
+      console.log("MOR numbers API response:", response.data);
 
-      const options = response.data.map((item) => ({
+      // Handle different response structures
+      let morNumbers = [];
+      if (Array.isArray(response.data)) {
+        morNumbers = response.data;
+      } else if (response.data.mor_numbers) {
+        morNumbers = response.data.mor_numbers;
+      } else if (response.data.mor) {
+        morNumbers = response.data.mor;
+      }
+
+      console.log("Processed MOR numbers:", morNumbers);
+
+      const options = morNumbers.map((item) => ({
         value: item,
         label: item,
       }));
+
+      console.log("MOR options to be set:", options);
       setMorOptions(options);
     } catch (error) {
       console.error("Error fetching MOR numbers:", error);
+      setMorOptions([]);
     }
   };
 
@@ -268,14 +287,27 @@ const ErpStockRegister13B = () => {
     }
   };
 
+  // Initial load - fetch both GRN and MOR numbers
   useEffect(() => {
+    console.log("Initial load - fetching MOR and GRN numbers");
+    fetchGrnNumbers();
+    fetchMorNumbers(false);
+  }, []);
+
+  // Filter MOR numbers when material types or sub-types change
+  useEffect(() => {
+    console.log("Material types or sub-types changed:", {
+      materialTypes: selectedIds.materialTypes,
+      materialSubTypes: selectedIds.materialSubTypes,
+    });
     if (
       selectedIds.materialTypes.length > 0 ||
       selectedIds.materialSubTypes.length > 0
     ) {
-      fetchMorNumbers();
+      fetchMorNumbers(true);
+    } else {
+      fetchMorNumbers(false);
     }
-    fetchGrnNumbers();
   }, [selectedIds.materialTypes, selectedIds.materialSubTypes]);
 
   useEffect(() => {
@@ -295,8 +327,10 @@ const ErpStockRegister13B = () => {
             selectedIds.materialSubTypes
           }&q[brand_id]=&q[uom_id]=${
             selectedIds.unitOfMeasures
+          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${
+            selectedIds.grnNumbers
           }&page=${page}&per_page=${pageSize}`
-        ); // Replace with your API endpoint
+        );
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -307,10 +341,10 @@ const ErpStockRegister13B = () => {
           const materialUrl =
             item.id && token
               ? `/stock_register_detail/${item.id}/?token=${token}`
-              : "#"; // Fallback if id or token is missing
+              : "#";
 
           return {
-            id: item.id ?? `row-${index + 1}`, // Ensure unique ID
+            id: item.id ?? `row-${index + 1}`,
             srNo: index + 1,
             material: item.category || "-",
             materialUrl: materialUrl,
@@ -320,16 +354,15 @@ const ErpStockRegister13B = () => {
             total_issued: item.total_issued || "-",
             deadstockQty: item.deadstockQty || "-",
             stock_as_on: item.stock_as_on || "-",
-            stockStatus: item.stock_details?.[0]?.status || "-", // Fix array issue
+            stockStatus: item.stock_details?.[0]?.status || "-",
             theftMissing:
               item.theftMissing !== undefined ? item.theftMissing : "-",
             uom_name: item.uom_name || "-",
             mor:
-              item.stock_details?.map((stock) => stock.mor).join(", ") || "-", // Extract Mor Numbers
-            // mor_number: item.mor_number || "-", // Add Mor Number key
+              item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
             grn_number:
               item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
-              "-", // Extract Mor Numbers
+              "-",
             stock_details:
               item?.stock_details?.map((stock) => ({
                 stockId: stock.id,
@@ -343,19 +376,17 @@ const ErpStockRegister13B = () => {
           };
         });
 
-        console.log(transformedData);
-
         setData(transformedData);
-        setFilteredData(transformedData); // Initialize with full data
-        setLoading(false); // Stop loading once data is ready
-        setPagination(result.pagination); // Store API pagination
+        setFilteredData(transformedData);
+        setLoading(false);
+        setPagination(result.pagination);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setLoading(false); // Stop loading even if there's an error
+        setLoading(false);
       }
     };
 
-    fetchData(); // Call the fetch function
+    fetchData();
   }, [
     location.search,
     selectedCompany,
@@ -364,7 +395,7 @@ const ErpStockRegister13B = () => {
     searchTerm,
     selectedIds,
     selectedSubProject,
-  ]); // Empty dependency array to run once on mount
+  ]);
 
   const handleResets = () => {
     setSelectedCompany([]);
