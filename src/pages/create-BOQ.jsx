@@ -1420,10 +1420,19 @@ const CreateBOQ = () => {
 
       sub_categories: [
         // Always include main category (level 1)
-        {
-          category_id: selectedCategory?.value,
-          level: 1,
-        },
+        // {
+        //   category_id: selectedCategory?.value,
+        //   level: 1,
+        // },
+        ...(selectedCategory
+          ? [
+            {
+              category_id: selectedCategory?.value,
+              level: 1,
+              boq_sub_items: !selectedSubCategory ? boqSubItems : [], // Filter for level 2
+            },
+          ]
+          : []),
         // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
         ...(selectedSubCategory
           ? [
@@ -1632,7 +1641,7 @@ const CreateBOQ = () => {
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
     if (!selectedCategory) validationErrors.main = "Main Category is required.";
-    if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
+    // if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
     if (!selectedUnit) validationErrors.unit = "UOM is required.";
     if (!boqQuantity)
       validationErrors.boqQuantity = "BOQ Quantity is required.";
@@ -1721,10 +1730,24 @@ const CreateBOQ = () => {
 
             sub_categories: [
               // Always include main category (level 1)
-              {
-                category_id: selectedCategory?.value,
-                level: 1,
-              },
+              // {
+              //   category_id: selectedCategory?.value,
+              //   level: 1,
+              // },
+              ...(selectedCategory
+                ? [
+                  {
+                    category_id: selectedCategory?.value,
+                    level: 1,
+                    materials: !selectedSubCategory
+                      ? predefinedMaterials
+                      : [], // Filter for level 2
+                    assets: !selectedSubCategory
+                      ? predefinedAssets
+                      : [],
+                  },
+                ]
+                : []),
 
               // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
               ...(selectedSubCategory
@@ -1830,7 +1853,7 @@ const CreateBOQ = () => {
     if (!selectedProject) validationErrors.project = "Project is required.";
     if (!itemName) validationErrors.itemName = "Item Name is required.";
     if (!selectedCategory) validationErrors.main = "Main Category is required.";
-    if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
+    // if (!selectedSubCategory) validationErrors.sub = "Sub Category is required.";
 
     if (boqSubItems.length === 0) {
       toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
@@ -2014,7 +2037,10 @@ if (hasErrors2) return;
             note: note,
 
             sub_categories: [
-              { category_id: selectedCategory?.value, level: 1 },
+              // { category_id: selectedCategory?.value, level: 1 },
+              ...(selectedCategory
+                ? [{ category_id: selectedCategory?.value, level: 1, boq_sub_items: !selectedSubCategory ? boqSubItems : [] }]
+                : []),
               ...(selectedSubCategory
                 ? [{ category_id: selectedSubCategory?.value, level: 2, boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] }]
                 : []),
@@ -2164,7 +2190,7 @@ if (hasErrors2) return;
                     </div>
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
-                        <label> Sub-category Level 2 <span>*</span></label>
+                        <label> Sub-category Level 2</label>
                         <SingleSelector
                           options={subCategoryOptions}
                           onChange={handleSubCategoryChange}

@@ -1834,7 +1834,10 @@ const EditBOQNew = () => {
         // setErrors(newErrors);
         // if (!itemName) validationErrors.itemName = "Item Name is required.";
         if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
-        if (!selectedUnit) validationErrors.unit = "UOM is required.";
+        if(!boqDetails?.unit_of_measure_id){
+            if (!selectedUnit) validationErrors.unit = "UOM is required.";
+        }
+       
         if (!boqQuantity)
             validationErrors.boqQuantity = "BOQ Quantity is required.";
 
@@ -1903,7 +1906,7 @@ const EditBOQNew = () => {
                         description: boqDetails?.description,
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
-                        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+                        unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
                         sub_categories: [
                             {
                                 id: lastCategory, // Ensure lastCategory is set correctly
@@ -2060,7 +2063,7 @@ const EditBOQNew = () => {
                         description: boqDetails?.description,
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
-                        unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+                        unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
                         sub_categories: [
                             {
                                 id: lastCategory,
