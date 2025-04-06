@@ -721,41 +721,41 @@ export default function VendorDetails() {
   // console.log("Parsed freight charge:", freightCharge21);
 
   const preparePayload = () => {
-    // Calculate the total for each row individually
     console.log("taxRateData", taxRateData);
-
+  
     const bidMaterialsAttributes = data.map((row, index) => {
-      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Row total based on price and quantity
-      const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100); // Discount for the row
-      const landedAmount = rowTotal - discountAmount; // Discounted total, before GST
-      const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100); // GST applied on landed amount
-      const finalTotal = landedAmount + gstAmount; // Landed amount + GST
+      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
+      const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
+      const landedAmount = rowTotal - discountAmount;
+      const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
+      const finalTotal = landedAmount + gstAmount;
+  
       const taxDetails = [
-        ...taxRateData.map((item)=>{
-          return item.additionTaxCharges.map((charge) => ({
+        ...taxRateData.flatMap((item) =>
+          item.additionTaxCharges.map((charge) => ({
             resource_id: 1,
             inclusive: charge.inclusive,
             resource_type: "TaxCharge",
             amount: charge.amount,
             addition: true,
           }))
-        }),
-        ...taxRateData.map((item) =>{
-          return item.deductionTax.map((charge) => ({
+        ),
+        ...taxRateData.flatMap((item) =>
+          item.deductionTax.map((charge) => ({
             resource_id: 1,
             inclusive: charge.inclusive,
             resource_type: "TaxCharge",
             amount: charge.amount,
             addition: false,
           }))
-        }),
+        ),
       ];
-
-      const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
-        acc[key] = row.extra_data[key]?.value || null;
+  
+      const extra = additionalColumns.reduce((acc, col) => {
+        acc[col.key] = row.extra_data?.[col.key]?.value || "";
         return acc;
       }, {});
-
+  
       return {
         event_material_id: row.eventMaterialId,
         quantity_available: row.quantityAvail || 0,
@@ -764,48 +764,63 @@ export default function VendorDetails() {
         bid_material_id: row.id,
         vendor_remark: row.vendorRemark || "",
         gst: row.gst || 0,
-        realised_discount: discountAmount.toFixed(2), // Realised discount for the row
-        realised_gst: gstAmount.toFixed(2), // Realised GST for the row
-        landed_amount: landedAmount.toFixed(2), // Landed amount for the row
-        total_amount: finalTotal.toFixed(2), // Row-specific total amount
+        realised_discount: discountAmount.toFixed(2),
+        realised_gst: gstAmount.toFixed(2),
+        landed_amount: landedAmount.toFixed(2),
+        total_amount: finalTotal.toFixed(2),
         bid_material_tax_details: taxDetails,
-        addition_tax_charges: taxRateData[index]?.additionTaxCharges || [],
-        deduction_tax: taxRateData[index]?.deductionTax || [],
+  
+        addition_tax_charges: (taxRateData[index]?.additionTaxCharges || []).map(
+          (charge) => ({
+            id: isNaN(Number(charge.id)) ? null : charge.id,
+            taxChargeType: charge.taxChargeType,
+            taxChargePerUom: charge.taxChargePerUom,
+            inclusive: charge.inclusive,
+            amount: charge.amount,
+          })
+        ),
+  
+        deduction_tax: (taxRateData[index]?.deductionTax || []).map((charge) => ({
+          id: isNaN(Number(charge.id)) ? null : charge.id,
+          taxChargeType: charge.taxChargeType,
+          taxChargePerUom: charge.taxChargePerUom,
+          inclusive: charge.inclusive,
+          amount: charge.amount,
+        })),
+  
         ...additionalColumns.reduce((acc, col) => {
           acc[col.key] = row[col.key] || "";
           return acc;
         }, {}),
-        extra, // Include extra fields in the payload
+  
+        extra,
       };
     });
-
-    // Utility function to safely fetch and process values from freightData
+  
     const getFreightDataValue = (label, key) => {
       const item = freightData.find((entry) => entry.label === label);
       if (item?.value?.[key]) {
-        return String(item.value[key]); // Ensure the value is converted to a string
+        return String(item.value[key]);
       }
-      return ""; // Return empty string if value is not found
+      return "";
     };
-
-    // Fetch and parse Freight Charge and GST on Freight
+  
     const freightChargeRaw = getFreightDataValue("Freight Charge", "firstBid");
     const freightCharge21 =
       freightChargeRaw && freightChargeRaw.replace
         ? parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0
-        : 0; // Safeguard for invalid data
-
+        : 0;
+  
     const gstOnFreightRaw = getFreightDataValue("GST on Freight", "firstBid");
     const gstOnFreightt =
       gstOnFreightRaw && gstOnFreightRaw.replace
         ? parseFloat(gstOnFreightRaw.replace(/₹|,/g, "")) || 0
         : 0;
-
+  
     const realisedFreightChargeAmount = parseFloat(
       freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
     );
-
-    // Fetch other fields
+  
     const warrantyClause =
       getFreightDataValue("Warranty Clause *", "firstBid") || "1-year warranty";
     const paymentTerms =
@@ -813,8 +828,7 @@ export default function VendorDetails() {
     const loadingUnloadingClause =
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
-
-    // Construct the payload
+  
     const payload = {
       bid: {
         event_vendor_id: vendorId,
@@ -828,14 +842,14 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra: {}, // Additional payload fields
+        extra: {},
         bid_materials_attributes: bidMaterialsAttributes,
       },
     };
-
+  
     console.log("Prepared Payload:", payload);
     return payload;
-  };
+  }; 
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -856,36 +870,36 @@ export default function VendorDetails() {
 
       // console.log("vendor ID", vendorId);
 
-      // const response = await axios.post(
-      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-      //   payload,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-      //     },
-      //   }
-      // );
+      const response = await axios.post(
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+          },
+        }
+      );
 
-      // console.log("API Response:", response.data);
-      // console.log("API Response:", response.data); // Log response to debug
-      // toast.success("Bid Created successfully!", {
-      //   autoClose: 1000, // Close after 3 seconds
-      // });
-      // setIsBidCreated(true);
-      // setRevisedBid(true); // Update `revisedBid` to true
-      // // console.log("Updated revisedBid to true"); // Update state
+      console.log("API Response:", response.data);
+      console.log("API Response:", response.data); // Log response to debug
+      toast.success("Bid Created successfully!", {
+        autoClose: 1000, // Close after 3 seconds
+      });
+      setIsBidCreated(true);
+      setRevisedBid(true); // Update `revisedBid` to true
+      // console.log("Updated revisedBid to true"); // Update state
 
-      // // console.log("Updated isBidCreated to true.");
-      // // console.log("vendor ID2", vendorId);
+      // console.log("Updated isBidCreated to true.");
+      // console.log("vendor ID2", vendorId);
 
-      // // setData(response.data.bid_materials_attributes || []);
+      // setData(response.data.bid_materials_attributes || []);
 
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1000);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -1018,63 +1032,76 @@ export default function VendorDetails() {
   const handleReviseBid = async () => {
     setLoading(true);
     setSubmitted(true);
-
+  
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
     );
-
+  
     if (!userConfirmed) {
       setLoading(false);
       setSubmitted(false);
       return;
     }
-
+  
     try {
       const revisedBidMaterials = data.map((row) => {
-        console.log("taxRateData", taxRateData);
-
+        const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
+        const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
+        const landedAmount = rowTotal - discountAmount;
+        const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
+        const finalTotal = landedAmount + gstAmount;
+  
+        console.log("taxRateData :----", taxRateData);
+  
         const taxDetails = [
-          ...taxRateData.map((item)=>{
-            return item.additionTaxCharges.map((charge) => ({
-              resource_id: 1,
-              inclusive: charge.inclusive,
-              resource_type: "TaxCharge",
-              amount: charge.amount,
-              addition: true,
-            }))
-          }),
-          ...taxRateData.map((item) =>{
-            return item.deductionTax.map((charge) => ({
-              resource_id: 1,
-              inclusive: charge.inclusive,
-              resource_type: "TaxCharge",
-              amount: charge.amount,
-              addition: false,
-            }))
-          }),
+          ...(Array.isArray(taxRateData?.additionTaxCharges)
+            ? taxRateData.additionTaxCharges.map((charge) => ({
+                resource_id: null,
+                inclusive: charge.inclusive,
+                resource_type: "TaxCharge",
+                amount: charge.amount,
+                addition: true,
+                id: isNaN(Number(charge.id)) ? null : charge.id,
+                taxChargeType: charge.taxChargeType,
+                taxChargePerUom: charge.taxChargePerUom,
+              }))
+            : []),
+  
+          ...(Array.isArray(taxRateData?.deductionTax)
+            ? taxRateData.deductionTax.map((charge) => ({
+                resource_id: null,
+                inclusive: charge.inclusive,
+                resource_type: "TaxCharge",
+                amount: charge.amount,
+                addition: false,
+                id: isNaN(Number(charge.id)) ? null : charge.id,
+                taxChargeType: charge.taxChargeType,
+                taxChargePerUom: charge.taxChargePerUom,
+              }))
+            : []),
         ];
-
+  
         const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
-          acc[key] = row.extra_data[key]?.value || null;
+          acc[key] = row.extra_data[key]?.value || "";
           return acc;
         }, {});
-
+  
         return {
           event_material_id: row.eventMaterialId,
-          quantity_available: row.quantityAvail,
-          price: row.price,
-          discount: row.discount,
-          vendor_remark: row.vendorRemark,
-          gst: row.gst,
-          realised_discount: row.realisedDiscount,
-          realised_gst: row.realisedGst,
-          landed_amount: row.landedAmount,
-          total_amount: row.total,
+          quantity_available: row.quantityAvail || 0,
+          price: Number(row.price || 0),
+          discount: Number(row.discount || 0),
+          vendor_remark: row.vendorRemark || "",
+          gst: row.gst || 0,
+          realised_discount: discountAmount.toFixed(2),
+          realised_gst: gstAmount.toFixed(2),
+          landed_amount: landedAmount.toFixed(2),
+          total_amount: finalTotal.toFixed(2),
           bid_material_tax_details: taxDetails,
-          extra, // Include extra fields in the payload
+          extra,
         };
       });
-
+  
       const payload = {
         revised_bid: {
           event_vendor_id: vendorId,
@@ -1088,29 +1115,28 @@ export default function VendorDetails() {
           payment_terms: "",
           loading_unloading_clause: "",
           remark: remark,
-          extra: {}, // Additional payload fields
+          extra: {},
           revised_bid_materials_attributes: revisedBidMaterials,
         },
       };
-
+  
       console.log("Revised Bid Payload:", payload);
-
-      // // Submit the payload to the API
+  
       const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         payload,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
           },
         }
       );
-
+  
       toast.success("Bid revised successfully!", {
-        autoClose: 1000, // Close after 1 second
+        autoClose: 1000,
       });
-
+  
       setTimeout(() => {
         navigate(
           "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
@@ -1126,6 +1152,9 @@ export default function VendorDetails() {
       setSubmitted(false);
     }
   };
+  
+  
+  
 
   useEffect(() => {
     if (!endTime) return;
@@ -4481,7 +4510,9 @@ export default function VendorDetails() {
                             },
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
-                                const extraData = data[rowIndex]?.extra_data?.[col.key] || {};
+                                const row = data[rowIndex];
+                                const extraData = row.extra_data?.[col.key] || {};
+                            
                                 return (
                                   <input
                                     className="form-control"
@@ -4489,7 +4520,20 @@ export default function VendorDetails() {
                                     value={extraData.value || ""}
                                     onChange={(e) => {
                                       const updatedData = [...data];
+                            
+                                      // Ensure extra_data exists
+                                      if (!updatedData[rowIndex].extra_data) {
+                                        updatedData[rowIndex].extra_data = {};
+                                      }
+                            
+                                      // Ensure the specific key exists
+                                      if (!updatedData[rowIndex].extra_data[col.key]) {
+                                        updatedData[rowIndex].extra_data[col.key] = {};
+                                      }
+                            
+                                      // Update the value
                                       updatedData[rowIndex].extra_data[col.key].value = e.target.value;
+                            
                                       setData(updatedData);
                                     }}
                                     readOnly={extraData.readonly}
@@ -4498,7 +4542,8 @@ export default function VendorDetails() {
                                 );
                               };
                               return acc;
-                            }, {}),
+                            }, {})
+                            
                           }}
                         />
                       </div>
