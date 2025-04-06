@@ -64,7 +64,7 @@ export default function EditEvent() {
     },
   ]);
 
-  console.log("materialFormData edit page-------------", materialFormData);
+  // console.log("materialFormData edit page-------------", materialFormData);
 
   const Loader = () => (
     <div className="loader-container">
@@ -381,11 +381,11 @@ export default function EditEvent() {
 
   useEffect(() => {
     if (eventDetails) {
-      console.log("eventDetails:----", eventDetails);
-      
       seteventName(eventDetails?.event_title);
       // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
-      setSelectedTemplate(eventDetails?.applied_event_template?.event_template_id)
+      setSelectedTemplate(
+        eventDetails?.applied_event_template?.event_template_id
+      );
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
@@ -393,7 +393,6 @@ export default function EditEvent() {
         `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
           eventDetails?.end_time
         ).toLocaleString()}`
-
       );
       setStart_time(eventDetails?.event_schedule?.start_time);
       setEnd_time(eventDetails?.event_schedule?.end_time);
@@ -453,16 +452,15 @@ export default function EditEvent() {
   }, [eventDetails, termsOptions]);
 
   useEffect(() => {
-    
-    console.log("eventDetails?.resource_term_conditions", eventDetails?.resource_term_conditions);
+    // console.log("eventDetails?.resource_term_conditions", eventDetails?.resource_term_conditions);
 
-    if(eventDetails?.resource_term_conditions?.length > 0) {
+    if (eventDetails?.resource_term_conditions?.length > 0) {
       setIsTextId(true);
     }
-    
+
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        console.log("term:---", term);
+        // console.log("term:---", term);
 
         return {
           textareaId: term.term_condition_id,
@@ -646,8 +644,6 @@ export default function EditEvent() {
       end_time_duration: endTime,
       evaluation_time: evaluationTime,
     });
-    console.log("onLoadScheduleData", startTime, "endtime-----",endTime, "||||||",evaluationTime);
-    
   };
 
   // ("eventDetails:----", eventDetails);
@@ -659,18 +655,8 @@ export default function EditEvent() {
       myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
     }
   };
-  // console.log("materialFormData", materialFormData);
 
-  console.log(
-    "data from previous submit",
-    eventType,
-    awardType,
-    eventDetails?.event_type_detail?.delivery_date,
-    eventDetails?.event_type_detail?.award_scheme,
-    eventDetails?.event_type_detail?.event_type,
-  );
   const validateForm = () => {
-
     if (!eventName) {
       toast.error("Event name is required");
       scrollToTop();
@@ -730,20 +716,16 @@ export default function EditEvent() {
   };
 
   const [eventData1, setEventData1] = useState(eventData2);
-  useEffect(() => {
-    console.log("Event Data Debug:", JSON.stringify(selectedVendors, null, 2));
-  }, [eventData1, selectedVendors]);
+  // useEffect(() => {
+  //   console.log("Event Data Debug:", JSON.stringify(selectedVendors, null, 2));
+  // }, [eventData1, selectedVendors]);
 
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
-    console.log(eventDetails);    
+    console.log(eventDetails);
 
-    if (
-      !eventName ||
-      !createdOn ||
-      selectedVendors.length === 0
-    ) {
+    if (!eventName || !createdOn || selectedVendors.length === 0) {
       scrollToTop();
       toast.error("Please fill all the required fields.", {
         autoClose: 1000,
@@ -770,7 +752,8 @@ export default function EditEvent() {
         },
         event_type_detail_attributes: {
           event_type: eventType || eventDetails?.event_type_detail?.event_type,
-          award_scheme: awardType || eventDetails?.event_type_detail?.award_scheme,
+          award_scheme:
+            awardType || eventDetails?.event_type_detail?.award_scheme,
           event_configuration: selectedStrategy,
           time_extension_type:
             dynamicExtensionConfigurations.time_extension_type,
@@ -836,7 +819,7 @@ export default function EditEvent() {
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
           id: vendor.id,
-        })), 
+        })),
         status_logs_attributes: [
           {
             status: "pending",
@@ -847,19 +830,17 @@ export default function EditEvent() {
         ],
         resource_term_conditions_attributes: textareas.map((textarea) =>
           isTextId
-            ? 
-            {
+            ? {
                 id: textarea?.id || null,
                 term_condition_id: textarea.textareaId,
                 condition_type: "general",
                 condition: textarea.value,
-              }:
-              {
+              }
+            : {
                 term_condition_id: textarea.textareaId,
                 condition_type: "general",
                 condition: textarea.value,
               }
-            
         ),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
@@ -1029,14 +1010,49 @@ export default function EditEvent() {
     setResetSelectedRows(true);
   };
 
+
   const handleRemoveVendor = (id) => {
-    const removedVendor = selectedVendors.find((vendor) => vendor.id === id);
-
-    setSelectedVendors((prev) => prev.filter((vendor) => vendor.id !== id));
-
-      setTableData((prevTableData) => [...prevTableData]); // Restore vendor to main table
-
+    console.log("⬅️ Before Update", filteredTableData);
+  
+    setSelectedVendors((prevSelected) => {
+      const updatedSelected = prevSelected.filter(
+        (vendor) => vendor.pms_supplier_id !== id
+      );
+  
+      const removedVendor = prevSelected.find(
+        (vendor) => vendor.pms_supplier_id === id
+      );
+  
+      if (removedVendor) {
+        setFilteredTableData((prevFiltered) => {
+          const alreadyExists = prevFiltered.some(
+            (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
+          );
+  
+          if (!alreadyExists) {
+            const updated = [...prevFiltered, removedVendor];
+            console.log("✅ Updated filteredTableData:", updated.length, updated);
+            return updated;
+          }
+  
+          return prevFiltered;
+        });
+      }
+  
+      return updatedSelected;
+    });
+  
+    // Delay this log to ensure the updated state is shown
+    setTimeout(() => {
+      console.log("➡️ After Update", filteredTableData);
+    }, 100);
   };
+  
+
+  useEffect(() => {
+    console.log("🔁 filteredTableData changed: ", filteredTableData.length, filteredTableData);
+  }, [filteredTableData]);
+  
 
   const [inviteVendorData, setInviteVendorData] = useState({
     name: "",
@@ -1274,7 +1290,9 @@ export default function EditEvent() {
                             <td>
                               <button
                                 className="btn btn-danger"
-                                onClick={() => handleRemoveVendor(vendor.id)}
+                                onClick={() =>
+                                  handleRemoveVendor(vendor.pms_supplier_id)
+                                }
                               >
                                 Remove
                               </button>

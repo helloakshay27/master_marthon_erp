@@ -7,18 +7,8 @@ export default function ShortTable({
   onInputClick, // New prop for handling input click
   ...rest
 }) {
-  const defaultRows = [
-    { label: "Warranty Clause", value: "" },
-    { label: "Payment Terms", value: "" },
-    { label: "Loading/Unloading", value: "" },
-  ];
-
-  const mergedData = [
-    ...defaultRows,
-    ...data.filter(
-      (row) => !defaultRows.some((defaultRow) => defaultRow.label === row.label)
-    ),
-  ];
+  // Removed defaultRows as they are no longer needed
+  const mergedData = [...data]; // Use only the provided data
 
   const handleInputChange = (index, newValue) => {
     const updatedData = [...mergedData];
@@ -99,9 +89,6 @@ export default function ShortTable({
                   "Freight Charge",
                   "GST on Freight",
                   "Realised GST",
-                  "Warranty Clause",
-                  "Payment Terms",
-                  "Loading/Unloading",
                 ].includes(row.label) ? (
                   <>
                     <button

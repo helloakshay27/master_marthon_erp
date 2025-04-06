@@ -377,6 +377,20 @@ export default function EditTemplate() {
         extra_fields: row.extra_fields || [],
       }));
 
+      // Ensure required fields are included in the payload without duplicates
+      const requiredFields = ["Warranty Clause", "Payment Terms", "Loading/Unloading"];
+      requiredFields.forEach((field) => {
+        if (!bidTemplateFields.some((row) => row.field_name === field)) {
+          bidTemplateFields.push({
+            field_name: field,
+            is_required: false,
+            is_read_only: false,
+            field_owner: "admin",
+            extra_fields: [],
+          });
+        }
+      });
+
       const bidMaterialTemplateFields = columns.map((col) => ({
         id: col.id, // Include ID for existing columns
         field_name: col.label,

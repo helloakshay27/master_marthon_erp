@@ -320,21 +320,29 @@ export default function CreateTemplate() {
 
   const handleSubmit = async () => {
     try {
-      const bidTemplateFields = shortTableData
-        .filter(
-          (row) =>
-            !["Freight Charge", "GST on Freight", "Realised GST","Warranty Clause","Payment Terms","Loading/Unloading"].includes(
-              row.label
-            )
-        )
-        .map((row) => ({
-          field_name: row.label,
-          is_required: row.isRequired || false,
-          is_read_only: row.isReadOnly || false,
-          field_owner: row.fieldOwner || "admin",
-          field_type: row.fieldType || "string",
-          extra_fields: {},
-        }));
+      const bidTemplateFields = shortTableData.map((row) => ({
+        field_name: row.label,
+        is_required: row.isRequired || false,
+        is_read_only: row.isReadOnly || false,
+        field_owner: row.fieldOwner || "admin",
+        field_type: row.fieldType || "string",
+        extra_fields: {},
+      }));
+
+      // Ensure required fields are included in the payload without duplicates
+      const requiredFields = ["Warranty Clause", "Payment Terms", "Loading/Unloading"];
+      requiredFields.forEach((field) => {
+        if (!bidTemplateFields.some((row) => row.field_name === field)) {
+          bidTemplateFields.push({
+            field_name: field,
+            is_required: false,
+            is_read_only: false,
+            field_owner: "admin",
+            field_type: "string",
+            extra_fields: {},
+          });
+        }
+      });
 
       const bidMaterialTemplateFields = columns
         .filter(
@@ -381,9 +389,7 @@ export default function CreateTemplate() {
       if (response.status == 201) {
         toast.success("Template created successfully!", { autoClose: 1000 });
         setTimeout(() => {
-          navigate(
-            "/event-template-list"
-          );
+          navigate("/event-template-list");
         }, 1500);
       }
 

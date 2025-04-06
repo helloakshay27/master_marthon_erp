@@ -96,7 +96,7 @@ export default function CreateRFQForm({
   };
 
   const handleTemplateChange = async (event) => {
-    console.log("event :-----",event);
+    // console.log("event :-----",event);
     
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
@@ -157,7 +157,6 @@ export default function CreateRFQForm({
       const url = inventoryTypeId
         ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
         : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-      console.log(url, inventoryTypeId);
 
       const response = await axios.get(url);
       if (response.data && Array.isArray(response.data.materials)) {
@@ -1010,7 +1009,7 @@ export default function CreateRFQForm({
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
 
-    console.log(fieldValue, "fieldValue:----", fieldName);
+    // console.log(fieldValue, "fieldValue:----", fieldName);
 
     // Explicitly handle SelectBox for specific fields
     if (fieldName === "descriptionOfItem") {
