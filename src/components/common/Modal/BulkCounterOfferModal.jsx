@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
-import ShortTable from "../../base/Table/ShortTable";
+import ShortDataTable from "../../base/Table/ShortDataTable"; // Use ShortDataTable instead of ShortTable
 import { baseURL } from "../../../confi/apiDomain";
 
 export default function BulkCounterOfferModal({
@@ -13,6 +13,7 @@ export default function BulkCounterOfferModal({
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
   const [loading, setLoading] = useState(false); // Add loading state
+  const [freightData, setFreightData] = useState([]);
   console.log("bidCounterData", bidCounterData);
   
 
@@ -27,10 +28,30 @@ export default function BulkCounterOfferModal({
     }
   }, [bidCounterData]);
 
+  useEffect(() => {
+    if (bidCounterData?.applied_event_template?.applied_bid_template_fields) {
+      const fields = bidCounterData.applied_event_template.applied_bid_template_fields.map(
+        (field) => ({
+          label: field.field_name,
+          value: { firstBid: "", counterBid: "" },
+        })
+      );
+      setFreightData(fields);
+    }
+  }, [bidCounterData]);
+
   const eventId = bidCounterData?.event?.id;
   const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
 
+  
+
   const handleSubmit = async () => {
+
+    const extractShortTableData = freightData.reduce((acc, curr) => {
+      const { firstBid, counterBid } = curr.value;
+      acc[curr.label] = counterBid || firstBid;
+      return acc;
+  }, {});
     setLoading(true); // Set
     const payload = {
       counter_bid: {
@@ -58,25 +79,31 @@ export default function BulkCounterOfferModal({
             vendor_remark: item.vendor_remark,
           })
         ),
+        ...extractShortTableData
       },
     };
+
+    // console.log("Payload to be sent:", payload);
+
+    
+    
     try {
-      const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-      if (response.ok) {
-        handleClose(); // Close the modal if the request was successful
-      } else {
-        // Handle failure if the response wasn't OK
-        throw new Error("Failed to submit counter bid");
-      }
+      // const response = await fetch(
+      //   `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(payload),
+      //   }
+      // );
+      // if (response.ok) {
+      //   handleClose(); // Close the modal if the request was successful
+      // } else {
+      //   // Handle failure if the response wasn't OK
+      //   throw new Error("Failed to submit counter bid");
+      // }
     } catch (error) {
       console.error("Error during submission:", error);
       // Handle error if the request fails
@@ -150,6 +177,10 @@ export default function BulkCounterOfferModal({
     setSumTotal(totalSum);
   };
 
+  const handleFreightDataChange = (updatedData) => {
+    setFreightData(updatedData);
+  };
+
   console.log("formData", formData);
 
   // Dynamically generate productTableColumns and data using extra_data
@@ -172,10 +203,12 @@ export default function BulkCounterOfferModal({
     { label: "Brand", key: "pmsBrand" },
     { label: "Colour", key: "pmsColour" },
     { label: "Generic Info", key: "genericInfo" },
-    ...Object.keys(formData?.bid_materials?.[0]?.extra_data || {}).map((key) => ({
-      label: key.replace(/_/g, " ").toUpperCase(),
-      key,
-    })),
+    ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
+      .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
+      .map(([key]) => ({
+        label: key.replace(/_/g, " ").toUpperCase(),
+        key,
+      })),
   ];
 
   const productTableData =
@@ -294,8 +327,9 @@ export default function BulkCounterOfferModal({
         />
       );
 
-      const extraColumnData = Object.entries(item.extra_data || {}).reduce(
-        (acc, [key, { value, readonly }]) => {
+      const extraColumnData = Object.entries(item.extra_data || {})
+        .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
+        .reduce((acc, [key, { value, readonly }]) => {
           acc[key] = (
             <input
               type="text"
@@ -306,9 +340,7 @@ export default function BulkCounterOfferModal({
             />
           );
           return acc;
-        },
-        {}
-      );
+        }, {});
 
       return {
         Sno: index + 1,
@@ -328,81 +360,6 @@ export default function BulkCounterOfferModal({
         ...extraColumnData,
       };
     }) || [];
-
-  const freightData = [
-    {
-      label: "Freight Charge",
-      value: (
-        <input
-          type="number"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.freight_charge_amount || ""}
-          onChange={(e) => handleInputChange(e, "freight_charge_amount")}
-        />
-      ),
-    },
-    {
-      label: "GST on Freight",
-      value: (
-        <input
-          type="number"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.gst_on_freight || ""}
-          onChange={(e) => handleInputChange(e, "gst_on_freight")}
-        />
-      ),
-    },
-    {
-      label: "Realised Freight ",
-      value: (
-        <input
-          type="number"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.realised_freight_charge_amount}
-          disabled
-        />
-      ),
-    },
-    {
-      label: "Warranty Clause",
-      value: (
-        <input
-          type="text"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.warranty_clause || ""}
-          onChange={(e) => handleInputChange(e, "warranty_clause")}
-        />
-      ),
-    },
-    {
-      label: "Payment Terms",
-      value: (
-        <input
-          type="text"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.payment_terms || ""}
-          onChange={(e) => handleInputChange(e, "payment_terms")}
-        />
-      ),
-    },
-    {
-      label: "Loading / Unloading",
-      value: (
-        <input
-          type="text"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.loading_unloading_clause || ""}
-          onChange={(e) => handleInputChange(e, "loading_unloading_clause")}
-        />
-      ),
-    },
-  ];
 
   return (
     <DynamicModalBox
@@ -438,7 +395,11 @@ export default function BulkCounterOfferModal({
       <Table columns={productTableColumns} data={productTableData} />
 
       <div className="d-flex justify-content-end">
-        <ShortTable data={freightData} />
+        <ShortDataTable
+          data={freightData}
+          editable={true}
+          onValueChange={handleFreightDataChange}
+        />
       </div>
       <div className="d-flex justify-content-end">
         <h4>Sum Total : ₹{sumTotal}</h4>

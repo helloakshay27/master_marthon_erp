@@ -29,7 +29,9 @@ export default function VendorDetails() {
   const [taxOptions, setTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
   const [terms, setTerms] = useState([]); // To store terms and
+  const [shortTableData, setShortTableData] = useState({});
   const originalTaxRateDataRef = useRef([]);
+  const [extraData, setExtraData] = useState({});
   // conditions
   const [timeRemaining, setTimeRemaining] = useState("");
 
@@ -521,7 +523,6 @@ export default function VendorDetails() {
             varient: item.material_type, // Use extracted material_type
           };
           console.log("bidMaterial", bidMaterial);
-          
 
           // Add `extra` data dynamically to the row
           additionalColumns.forEach((col) => {
@@ -616,8 +617,19 @@ export default function VendorDetails() {
           const freightData = processFreightData(firstBid);
           // console.log("Processed Freight Data: ", freightData);
           setFreightData(freightData);
-          console.log("firstBid.bid_materials :-----------",firstBid.bid_materials);
-          
+          console.log(
+            "firstBid.bid_materials :-----------",
+            firstBid.bid_materials
+          );
+          const additionTaxCharges =
+            firstBid.bid_materials[0]?.extra?.addition_tax_charges || [];
+          const deductionTax =
+            firstBid.bid_materials[0]?.extra?.deduction_tax || [];
+          console.log("additionTaxCharges", additionTaxCharges, currentIndex);
+          console.log("deductionTax", deductionTax);
+
+          setExtraData({ additionTaxCharges, deductionTax });
+
           const previousData = firstBid.bid_materials.map((material) => ({
             bidId: material.bid_id,
             eventMaterialId: material.event_material_id,
@@ -644,14 +656,16 @@ export default function VendorDetails() {
 
           // Map updated data (counter_bid_materials)
           // console.log("firstBid.bid_materials", firstBid);
-          
+
           const updatedData = firstBid.bid_materials
             .map((material) => {
               const counterMaterial =
                 material.counter_bid_materials?.[currentIndex];
               console.log("material", material);
-              setTaxRateData({addAdditionTaxCharges:material.addition_tax_charges, deductionTax: material.deduction_tax});
-              
+              setTaxRateData({
+                addAdditionTaxCharges: material.addition_tax_charges,
+                deductionTax: material.deduction_tax,
+              });
 
               return counterMaterial
                 ? {
@@ -722,14 +736,14 @@ export default function VendorDetails() {
 
   const preparePayload = () => {
     console.log("taxRateData", taxRateData);
-  
+
     const bidMaterialsAttributes = data.map((row, index) => {
       const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
       const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
       const landedAmount = rowTotal - discountAmount;
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
       const finalTotal = landedAmount + gstAmount;
-  
+
       const taxDetails = [
         ...taxRateData.flatMap((item) =>
           item.additionTaxCharges.map((charge) => ({
@@ -750,12 +764,12 @@ export default function VendorDetails() {
           }))
         ),
       ];
-  
+
       const extra = additionalColumns.reduce((acc, col) => {
         acc[col.key] = row.extra_data?.[col.key]?.value || "";
         return acc;
       }, {});
-  
+
       return {
         event_material_id: row.eventMaterialId,
         quantity_available: row.quantityAvail || 0,
@@ -769,8 +783,18 @@ export default function VendorDetails() {
         landed_amount: landedAmount.toFixed(2),
         total_amount: finalTotal.toFixed(2),
         bid_material_tax_details: taxDetails,
-  
-        addition_tax_charges: (taxRateData[index]?.additionTaxCharges || []).map(
+
+        addition_tax_charges: (
+          taxRateData[index]?.additionTaxCharges || []
+        ).map((charge) => ({
+          id: isNaN(Number(charge.id)) ? null : charge.id,
+          taxChargeType: charge.taxChargeType,
+          taxChargePerUom: charge.taxChargePerUom,
+          inclusive: charge.inclusive,
+          amount: charge.amount,
+        })),
+
+        deduction_tax: (taxRateData[index]?.deductionTax || []).map(
           (charge) => ({
             id: isNaN(Number(charge.id)) ? null : charge.id,
             taxChargeType: charge.taxChargeType,
@@ -779,24 +803,16 @@ export default function VendorDetails() {
             amount: charge.amount,
           })
         ),
-  
-        deduction_tax: (taxRateData[index]?.deductionTax || []).map((charge) => ({
-          id: isNaN(Number(charge.id)) ? null : charge.id,
-          taxChargeType: charge.taxChargeType,
-          taxChargePerUom: charge.taxChargePerUom,
-          inclusive: charge.inclusive,
-          amount: charge.amount,
-        })),
-  
+
         ...additionalColumns.reduce((acc, col) => {
           acc[col.key] = row[col.key] || "";
           return acc;
         }, {}),
-  
+
         extra,
       };
     });
-  
+
     const getFreightDataValue = (label, key) => {
       const item = freightData.find((entry) => entry.label === label);
       if (item?.value?.[key]) {
@@ -804,23 +820,23 @@ export default function VendorDetails() {
       }
       return "";
     };
-  
+
     const freightChargeRaw = getFreightDataValue("Freight Charge", "firstBid");
     const freightCharge21 =
       freightChargeRaw && freightChargeRaw.replace
         ? parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0
         : 0;
-  
+
     const gstOnFreightRaw = getFreightDataValue("GST on Freight", "firstBid");
     const gstOnFreightt =
       gstOnFreightRaw && gstOnFreightRaw.replace
         ? parseFloat(gstOnFreightRaw.replace(/₹|,/g, "")) || 0
         : 0;
-  
+
     const realisedFreightChargeAmount = parseFloat(
       freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
     );
-  
+
     const warrantyClause =
       getFreightDataValue("Warranty Clause *", "firstBid") || "1-year warranty";
     const paymentTerms =
@@ -828,7 +844,13 @@ export default function VendorDetails() {
     const loadingUnloadingClause =
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
-  
+
+    const extractShortTableData = shortTableData.reduce((acc, curr) => {
+      const { firstBid, counterBid } = curr.value;
+      acc[curr.label] = counterBid || firstBid;
+      return acc;
+    }, {});
+
     const payload = {
       bid: {
         event_vendor_id: vendorId,
@@ -844,12 +866,13 @@ export default function VendorDetails() {
         remark: remark,
         extra: {},
         bid_materials_attributes: bidMaterialsAttributes,
+        ...extractShortTableData,
       },
     };
-  
+
     console.log("Prepared Payload:", payload);
     return payload;
-  }; 
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -1032,17 +1055,17 @@ export default function VendorDetails() {
   const handleReviseBid = async () => {
     setLoading(true);
     setSubmitted(true);
-  
+
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
     );
-  
+
     if (!userConfirmed) {
       setLoading(false);
       setSubmitted(false);
       return;
     }
-  
+
     try {
       const revisedBidMaterials = data.map((row) => {
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
@@ -1050,9 +1073,9 @@ export default function VendorDetails() {
         const landedAmount = rowTotal - discountAmount;
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
-  
+
         console.log("taxRateData :----", taxRateData);
-  
+
         const taxDetails = [
           ...(Array.isArray(taxRateData?.additionTaxCharges)
             ? taxRateData.additionTaxCharges.map((charge) => ({
@@ -1066,7 +1089,7 @@ export default function VendorDetails() {
                 taxChargePerUom: charge.taxChargePerUom,
               }))
             : []),
-  
+
           ...(Array.isArray(taxRateData?.deductionTax)
             ? taxRateData.deductionTax.map((charge) => ({
                 resource_id: null,
@@ -1080,12 +1103,12 @@ export default function VendorDetails() {
               }))
             : []),
         ];
-  
+
         const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
           acc[key] = row.extra_data[key]?.value || "";
           return acc;
         }, {});
-  
+
         return {
           event_material_id: row.eventMaterialId,
           quantity_available: row.quantityAvail || 0,
@@ -1101,7 +1124,12 @@ export default function VendorDetails() {
           extra,
         };
       });
-  
+      const extractShortTableData = shortTableData.reduce((acc, curr) => {
+        const { firstBid, counterBid } = curr.value;
+        acc[curr.label] = counterBid || firstBid;
+        return acc;
+      }, {});
+
       const payload = {
         revised_bid: {
           event_vendor_id: vendorId,
@@ -1117,31 +1145,32 @@ export default function VendorDetails() {
           remark: remark,
           extra: {},
           revised_bid_materials_attributes: revisedBidMaterials,
+          ...extractShortTableData,
         },
       };
-  
+
       console.log("Revised Bid Payload:", payload);
-  
-      const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
-          },
-        }
-      );
-  
-      toast.success("Bid revised successfully!", {
-        autoClose: 1000,
-      });
-  
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500);
+
+      // const response = await axios.post(
+      //   `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+      //   payload,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
+      //     },
+      //   }
+      // );
+
+      // toast.success("Bid revised successfully!", {
+      //   autoClose: 1000,
+      // });
+
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
@@ -1152,9 +1181,6 @@ export default function VendorDetails() {
       setSubmitted(false);
     }
   };
-  
-  
-  
 
   useEffect(() => {
     if (!endTime) return;
@@ -2000,6 +2026,8 @@ export default function VendorDetails() {
   }, [data]);
 
   const handleOpenModal = (rowIndex) => {
+    console.log("extraDAta",extraData);
+    
     if (originalTaxRateDataRef.current.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
@@ -2012,7 +2040,7 @@ export default function VendorDetails() {
         afterDiscountValue: selectedRow.total || "",
         remark: selectedRow.vendorRemark || "",
         additionalInfo: selectedRow.additionalInfo || "",
-        additionTaxCharges: [
+        additionTaxCharges: extraData?.additionTaxCharges || [
           {
             id: 1,
             taxChargeType: "Handling Charges",
@@ -2035,7 +2063,7 @@ export default function VendorDetails() {
             amount: "",
           },
         ],
-        deductionTax: [],
+        deductionTax: extraData?.deductionTax || [],
         netCost: selectedRow.total || "",
       }));
 
@@ -2113,33 +2141,42 @@ export default function VendorDetails() {
     let additionTaxTotal = 0;
     let deductionTaxTotal = 0;
     let directChargesTotal = 0;
-  
+
     taxRateRow.additionTaxCharges.forEach((item) => {
       if (item.inclusive) return;
-  
-      if (["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)) {
+
+      if (
+        ["Handling Charges", "Other charges", "Freight"].includes(
+          item.taxChargeType
+        )
+      ) {
         directChargesTotal += parseFloat(item.amount) || 0;
       } else {
-        const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateRow.afterDiscountValue);
+        const taxAmount = calculateTaxAmount(
+          item.taxChargePerUom,
+          taxRateRow.afterDiscountValue
+        );
         additionTaxTotal += taxAmount;
       }
     });
-  
+
     taxRateRow.deductionTax.forEach((item) => {
       if (item.inclusive) return;
-      const taxAmount = calculateTaxAmount(item.taxChargePerUom, taxRateRow.afterDiscountValue);
+      const taxAmount = calculateTaxAmount(
+        item.taxChargePerUom,
+        taxRateRow.afterDiscountValue
+      );
       deductionTaxTotal += taxAmount;
     });
-  
+
     const netCost =
       parseFloat(taxRateRow.afterDiscountValue || "0") +
       additionTaxTotal +
       directChargesTotal -
       deductionTaxTotal;
-  
+
     return netCost.toFixed(2);
   };
-  
 
   const calculateGrossTotal = () => {
     const total = data.reduce(
@@ -2154,61 +2191,66 @@ export default function VendorDetails() {
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     const updatedTaxRateData = structuredClone(taxRateData);
     const originalDataClone = structuredClone(originalTaxRateDataRef.current);
-  
+
     const targetRow = updatedTaxRateData[rowIndex];
     const originalRow = originalDataClone[rowIndex];
-  
+
     if (!targetRow || !originalRow) return;
-  
+
     const taxCharges =
       type === "addition"
         ? [...targetRow.additionTaxCharges]
         : [...targetRow.deductionTax];
-  
+
     const chargeIndex = taxCharges.findIndex((item) => item.id === id);
     if (chargeIndex === -1) return;
-  
+
     const charge = { ...taxCharges[chargeIndex] };
-  
+
     // Set updated field value
     charge[field] = field === "amount" ? parseFloat(value) || "" : value;
     console.log("Updated charge:", charge);
-  
-    const isManualInputAllowed = ["Handling Charges", "Other charges", "Freight"].includes(
-      charge.taxChargeType
-    );
-  
+
+    const isManualInputAllowed = [
+      "Handling Charges",
+      "Other charges",
+      "Freight",
+    ].includes(charge.taxChargeType);
+
     // 🛠️ Only auto-calculate if not inclusive, not manual, and field is taxChargePerUom
-    if (!charge.inclusive && !isManualInputAllowed && field === "taxChargePerUom") {
+    if (
+      !charge.inclusive &&
+      !isManualInputAllowed &&
+      field === "taxChargePerUom"
+    ) {
       const taxAmount = calculateTaxAmount(
         charge.taxChargePerUom,
         targetRow.afterDiscountValue
       );
       charge.amount = taxAmount;
     }
-  
+
     // Replace updated charge back
     taxCharges[chargeIndex] = charge;
-  
+
     if (type === "addition") {
       targetRow.additionTaxCharges = taxCharges;
     } else {
       targetRow.deductionTax = taxCharges;
     }
-  
+
     updatedTaxRateData[rowIndex] = targetRow;
-  
+
     // 🔁 Recalculate net cost for all rows
     const recalculated = updatedTaxRateData.map((row, idx) => ({
       ...row,
       netCost: calculateNetCost(idx, updatedTaxRateData),
     }));
-  
+
     setTaxRateData(recalculated);
     originalTaxRateDataRef.current = structuredClone(recalculated);
   };
-  
-  
+
   const handleSaveTaxChanges = () => {
     const updatedData = [...data]; // Create a copy of the data array
     const updatedNetCost = calculateNetCost(tableId);
@@ -3636,14 +3678,12 @@ export default function VendorDetails() {
                           </button>
                         </div>
                       </div>
-                    )
-
-                    }
+                    )}
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
                         {/* {console.log("data", data) */}
-                        
+
                         <Table
                           columns={[
                             { label: "Sr No", key: "srNo" },
@@ -4511,8 +4551,9 @@ export default function VendorDetails() {
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
                                 const row = data[rowIndex];
-                                const extraData = row.extra_data?.[col.key] || {};
-                            
+                                const extraData =
+                                  row.extra_data?.[col.key] || {};
+
                                 return (
                                   <input
                                     className="form-control"
@@ -4520,20 +4561,28 @@ export default function VendorDetails() {
                                     value={extraData.value || ""}
                                     onChange={(e) => {
                                       const updatedData = [...data];
-                            
+
                                       // Ensure extra_data exists
                                       if (!updatedData[rowIndex].extra_data) {
                                         updatedData[rowIndex].extra_data = {};
                                       }
-                            
+
                                       // Ensure the specific key exists
-                                      if (!updatedData[rowIndex].extra_data[col.key]) {
-                                        updatedData[rowIndex].extra_data[col.key] = {};
+                                      if (
+                                        !updatedData[rowIndex].extra_data[
+                                          col.key
+                                        ]
+                                      ) {
+                                        updatedData[rowIndex].extra_data[
+                                          col.key
+                                        ] = {};
                                       }
-                            
+
                                       // Update the value
-                                      updatedData[rowIndex].extra_data[col.key].value = e.target.value;
-                            
+                                      updatedData[rowIndex].extra_data[
+                                        col.key
+                                      ].value = e.target.value;
+
                                       setData(updatedData);
                                     }}
                                     readOnly={extraData.readonly}
@@ -4542,22 +4591,18 @@ export default function VendorDetails() {
                                 );
                               };
                               return acc;
-                            }, {})
-                            
+                            }, {}),
                           }}
                         />
                       </div>
                       <div className=" d-flex justify-content-end">
-                        {/* {console.log(
-                          "bidTemplate and frieght",
-                          freightData,
-                          bidTemplate
-                        )} */}
                         <>
                           <ShortDataTable
                             data={bidTemplate}
                             editable={true}
-                            onValueChange={handleFreightDataChange}
+                            onValueChange={(updated) =>
+                              setShortTableData(updated)
+                            }
                           />
                         </>
                       </div>
@@ -5030,6 +5075,7 @@ export default function VendorDetails() {
                     </tr>
 
                     {/* Addition Tax & Charges Items */}
+                    {console.log("taxRAteDAta", taxRateData)}
                     {taxRateData[tableId]?.additionTaxCharges.map(
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
