@@ -150,6 +150,8 @@ export default function BulkCounterOfferModal({
     setSumTotal(totalSum);
   };
 
+  console.log("formData", formData);
+
   // Dynamically generate productTableColumns based on extra_columns
   const extraColumns = formData?.bid_materials?.[0]?.extra_columns || [];
   const dynamicColumns = extraColumns.map((col) => ({
@@ -173,6 +175,10 @@ export default function BulkCounterOfferModal({
     { label: "Vendor Remark*", key: "vendorRemark" },
     { label: "Landed Amount*", key: "landedAmount" },
     { label: "Total Amount*", key: "totalAmount" },
+    { label: "Brand", key: "pmsBrand" },
+    { label: "Colour", key: "pmsColour" },
+    { label: "Generic Info", key: "genericInfo" },
+
     ...dynamicColumns, // Add dynamic columns
   ];
 
@@ -180,6 +186,7 @@ export default function BulkCounterOfferModal({
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
       const productName = item.material_name || "_";
+
       const quantityRequested = (
         <input
           type="number"
@@ -267,10 +274,53 @@ export default function BulkCounterOfferModal({
         />
       );
 
-      // Map dynamic extra columns
+      const pmsBrand = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.pms_brand_name || "_"}
+          onChange={(e) => handleMaterialInputChange(e, "pms_brand_name", index)}
+          readOnly
+        />
+      );
+      const pmsColour = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.pms_colour_name || "_"}
+          onChange={(e) => handleMaterialInputChange(e, "pms_colour_name", index)}
+          readOnly
+        />
+      );
+      const genericInfo = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.generic_info_name || "_"}
+          onChange={(e) => handleMaterialInputChange(e, "generic_info_name", index)}
+          readOnly
+        />
+      );
+
+      // Map dynamic extra columns using extra_data
       const extraColumnData = {};
       extraColumns.forEach((col) => {
-        extraColumnData[col] = item[col] || "_";
+        const extraData = item.event_material?.extra_data?.[col] || {};
+        extraColumnData[col] = (
+          <input
+            type="text"
+            className="form-control"
+            style={{ width: "auto" }}
+            value={extraData.value || "N/A"}
+            onChange={(e) =>
+              handleMaterialInputChange(e, col, index)
+            }
+            disabled={extraData.readonly}
+          />
+        );
       });
 
       return {
@@ -285,6 +335,9 @@ export default function BulkCounterOfferModal({
         realisedGst,
         vendorRemark,
         totalAmount,
+        pmsBrand, // Ensure these fields are included
+        pmsColour,
+        genericInfo,
         ...extraColumnData, // Include dynamic column data
       };
     }) || [];

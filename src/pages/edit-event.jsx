@@ -385,6 +385,7 @@ export default function EditEvent() {
       
       seteventName(eventDetails?.event_title);
       // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
+      setSelectedTemplate(eventDetails?.applied_event_template?.event_template_id)
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
@@ -835,7 +836,7 @@ export default function EditEvent() {
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
           id: vendor.id,
-        })),
+        })), 
         status_logs_attributes: [
           {
             status: "pending",
@@ -1033,9 +1034,8 @@ export default function EditEvent() {
 
     setSelectedVendors((prev) => prev.filter((vendor) => vendor.id !== id));
 
-    if (removedVendor) {
-      setTableData((prevTableData) => [...prevTableData, removedVendor]); // Restore vendor to main table
-    }
+      setTableData((prevTableData) => [...prevTableData]); // Restore vendor to main table
+
   };
 
   const [inviteVendorData, setInviteVendorData] = useState({

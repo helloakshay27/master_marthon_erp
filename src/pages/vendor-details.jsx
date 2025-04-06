@@ -479,11 +479,9 @@ export default function VendorDetails() {
 
       const uniqueAdditionalColumns = new Set();
       eventMaterials.forEach((item) => {
-        item.bid_materials?.forEach((bidMaterial) => {
-          const extraKeys = Object.keys(bidMaterial.extra || {});
-          extraKeys.forEach((key) => {
-            uniqueAdditionalColumns.add(key);
-          });
+        const extraKeys = Object.keys(item.extra_data || {});
+        extraKeys.forEach((key) => {
+          uniqueAdditionalColumns.add(key);
         });
       });
 
@@ -522,6 +520,8 @@ export default function VendorDetails() {
             attachment: null, // Placeholder for attachment
             varient: item.material_type, // Use extracted material_type
           };
+          console.log("bidMaterial", bidMaterial);
+          
 
           // Add `extra` data dynamically to the row
           additionalColumns.forEach((col) => {
@@ -616,7 +616,8 @@ export default function VendorDetails() {
           const freightData = processFreightData(firstBid);
           // console.log("Processed Freight Data: ", freightData);
           setFreightData(freightData);
-
+          console.log("firstBid.bid_materials :-----------",firstBid.bid_materials);
+          
           const previousData = firstBid.bid_materials.map((material) => ({
             bidId: material.bid_id,
             eventMaterialId: material.event_material_id,
@@ -636,13 +637,13 @@ export default function VendorDetails() {
             location: material.event_material.location,
             vendorRemark: material.vendor_remark,
             landedAmount: material.landed_amount,
-            pmsBrand: material.pms_brand_name,
-            pmsColour: material.pms_colour_name,
-            genericInfo: material.generic_info_name,
+            pmsBrand: material.event_material.pms_brand_name,
+            pmsColour: material.event_material.pms_colour_name,
+            genericInfo: material.event_material.generic_info_name,
           }));
 
           // Map updated data (counter_bid_materials)
-          console.log("firstBid.bid_materials", firstBid);
+          // console.log("firstBid.bid_materials", firstBid);
           
           const updatedData = firstBid.bid_materials
             .map((material) => {
@@ -750,6 +751,11 @@ export default function VendorDetails() {
         }),
       ];
 
+      const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
+        acc[key] = row.extra_data[key]?.value || null;
+        return acc;
+      }, {});
+
       return {
         event_material_id: row.eventMaterialId,
         quantity_available: row.quantityAvail || 0,
@@ -769,6 +775,7 @@ export default function VendorDetails() {
           acc[col.key] = row[col.key] || "";
           return acc;
         }, {}),
+        extra, // Include extra fields in the payload
       };
     });
 
@@ -821,7 +828,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra: {},
+        extra: {}, // Additional payload fields
         bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -918,6 +925,11 @@ export default function VendorDetails() {
         })),
       ];
 
+      const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
+        acc[key] = row.extra_data[key]?.value || null;
+        return acc;
+      }, {});
+
       return {
         event_material_id: row.eventMaterialId,
         quantity_available: row.quantityAvail || 0,
@@ -937,6 +949,7 @@ export default function VendorDetails() {
           acc[col.key] = row[col.key] || "";
           return acc;
         }, {}),
+        extra, // Include extra fields in the payload
       };
     });
 
@@ -993,7 +1006,7 @@ export default function VendorDetails() {
         payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra: {},
+        extra: {}, // Additional payload fields
         revised_bid_materials_attributes: bidMaterialsAttributes,
       },
     };
@@ -1041,6 +1054,11 @@ export default function VendorDetails() {
           }),
         ];
 
+        const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
+          acc[key] = row.extra_data[key]?.value || null;
+          return acc;
+        }, {});
+
         return {
           event_material_id: row.eventMaterialId,
           quantity_available: row.quantityAvail,
@@ -1053,6 +1071,7 @@ export default function VendorDetails() {
           landed_amount: row.landedAmount,
           total_amount: row.total,
           bid_material_tax_details: taxDetails,
+          extra, // Include extra fields in the payload
         };
       });
 
@@ -1069,7 +1088,7 @@ export default function VendorDetails() {
           payment_terms: "",
           loading_unloading_clause: "",
           remark: remark,
-          extra: {},
+          extra: {}, // Additional payload fields
           revised_bid_materials_attributes: revisedBidMaterials,
         },
       };
@@ -3588,12 +3607,14 @@ export default function VendorDetails() {
                           </button>
                         </div>
                       </div>
-                    )}
+                    )
+
+                    }
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
-                        {console.log("data", data)
-                        }
+                        {/* {console.log("data", data) */}
+                        
                         <Table
                           columns={[
                             { label: "Sr No", key: "srNo" },
@@ -4459,15 +4480,23 @@ export default function VendorDetails() {
                               );
                             },
                             ...additionalColumns.reduce((acc, col) => {
-                              acc[col.key] = (cell) => (
-                                <input
-                                  className="form-control disabled-btn"
-                                  type="text"
-                                  value={cell || "_"}
-                                  readOnly
-                                  disabled
-                                />
-                              );
+                              acc[col.key] = (cell, rowIndex) => {
+                                const extraData = data[rowIndex]?.extra_data?.[col.key] || {};
+                                return (
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={extraData.value || ""}
+                                    onChange={(e) => {
+                                      const updatedData = [...data];
+                                      updatedData[rowIndex].extra_data[col.key].value = e.target.value;
+                                      setData(updatedData);
+                                    }}
+                                    readOnly={extraData.readonly}
+                                    disabled={extraData.readonly}
+                                  />
+                                );
+                              };
                               return acc;
                             }, {}),
                           }}

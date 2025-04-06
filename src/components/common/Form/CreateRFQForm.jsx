@@ -96,6 +96,8 @@ export default function CreateRFQForm({
   };
 
   const handleTemplateChange = async (event) => {
+    console.log("event :-----",event);
+    
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
 
