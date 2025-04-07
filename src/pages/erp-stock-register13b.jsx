@@ -317,7 +317,7 @@ const ErpStockRegister13B = () => {
         const token = urlParams.get("token");
 
         const response = await fetch(
-          `${baseURL1}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(
+          `${baseURL}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(
             searchTerm
           )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${
             selectedIds.genericInfos
