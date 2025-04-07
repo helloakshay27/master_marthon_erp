@@ -4,6 +4,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import ShortDataTable from "../../base/Table/ShortDataTable"; // Use ShortDataTable instead of ShortTable
 import { baseURL } from "../../../confi/apiDomain";
+import { toast } from "react-toastify"; // Import toast for toaster messages
 
 export default function BulkCounterOfferModal({
   show,
@@ -116,6 +117,15 @@ export default function BulkCounterOfferModal({
   const handleMaterialInputChange = (e, field, index) => {
     const value = e.target.value;
     const updatedMaterials = [...formData.bid_materials];
+
+    if (field === "quantity_available") {
+      const quantityRequested = parseFloat(updatedMaterials[index].quantity_requested) || 0;
+      if (parseFloat(value) > quantityRequested) {
+        toast.error("Quantity available cannot exceed quantity requested."); // Display toaster message
+        return;
+      }
+    }
+
     updatedMaterials[index][field] = value;
 
     const price = parseFloat(updatedMaterials[index].price) || 0;
@@ -185,24 +195,23 @@ export default function BulkCounterOfferModal({
 
   // Dynamically generate productTableColumns and data using extra_data
   const productTableColumns = [
-    { label: "Sr no.*", key: "SrNo" },
-    { label: "Material*", key: "product" },
-    { label: "Quantity Requested*", key: "quantityRequested" },
-    { label: "Quantity Available", key: "quantityAvailable" },
-    { label: "Price*", key: "price" },
-    { label: "Delivery location*", key: "deliveryLocation" },
-    { label: "Creator Attachment", key: "creatorAttachment" },
-    { label: "Discount", key: "discount" },
-    { label: "Realised Discount*", key: "realisedDiscount" },
-    { label: "GST*", key: "gst" },
-    { label: "Realised GST", key: "realisedGst" },
-    { label: "Participant Attachment", key: "participantAttachment" },
-    { label: "Vendor Remark*", key: "vendorRemark" },
-    { label: "Landed Amount*", key: "landedAmount" },
-    { label: "Total Amount*", key: "totalAmount" },
+    { label: "Sr no.", key: "SrNo" },
+    { label: "Material Name", key: "product" },
+    { label: "Material Type", key: "materialType" },
+    { label: "Material Sub Type", key: "materialSubType" },
+    { label: "Delivery Location", key: "deliveryLocation" },
+    { label: "Quantity Requested", key: "quantityRequested" },
     { label: "Brand", key: "pmsBrand" },
     { label: "Colour", key: "pmsColour" },
     { label: "Generic Info", key: "genericInfo" },
+    { label: "Quantity Available", key: "quantityAvailable" },
+    { label: "Price", key: "price" },
+    { label: "Discount", key: "discount" },
+    { label: "Realised Discount", key: "realisedDiscount" },
+    { label: "Landed Amount", key: "landedAmount" },
+    { label: "Total Amount", key: "totalAmount" },
+    { label: "Participant Attachment", key: "participantAttachment" },
+    { label: "Vendor Remark", key: "vendorRemark" },
     ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
       .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
       .map(([key]) => ({
@@ -213,7 +222,49 @@ export default function BulkCounterOfferModal({
 
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
-      const productName = item.material_name || "_";
+      const productName = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.material_name || "_"}
+          readOnly
+          disabled={true}
+        />
+      );
+
+      const materialType = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.material_type || "_"}
+          readOnly
+          disabled={true}
+        />
+      );
+
+      const materialSubType = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.inventory_sub_type || "_"}
+          readOnly
+          disabled={true}
+        />
+      );
+
+      const deliveryLocation = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item.event_material?.location || "_"}
+          readOnly
+          disabled={true}
+        />
+      );
 
       const quantityRequested = (
         <input
@@ -221,9 +272,11 @@ export default function BulkCounterOfferModal({
           className="form-control"
           value={item.quantity_requested}
           style={{ width: "auto" }}
-          disabled
+          disabled={true}
+          readOnly
         />
       );
+
       const quantityAvailable = (
         <input
           type="number"
@@ -235,6 +288,7 @@ export default function BulkCounterOfferModal({
           }
         />
       );
+
       const price = (
         <input
           type="number"
@@ -244,6 +298,7 @@ export default function BulkCounterOfferModal({
           onChange={(e) => handleMaterialInputChange(e, "price", index)}
         />
       );
+
       const totalAmount = (
         <input
           type="number"
@@ -253,6 +308,7 @@ export default function BulkCounterOfferModal({
           readOnly
         />
       );
+
       const discount = (
         <input
           type="number"
@@ -262,6 +318,7 @@ export default function BulkCounterOfferModal({
           onChange={(e) => handleMaterialInputChange(e, "discount", index)}
         />
       );
+
       const realisedDiscount = (
         <input
           type="number"
@@ -271,6 +328,7 @@ export default function BulkCounterOfferModal({
           disabled
         />
       );
+
       const gst = (
         <input
           type="number"
@@ -280,6 +338,7 @@ export default function BulkCounterOfferModal({
           onChange={(e) => handleMaterialInputChange(e, "gst", index)}
         />
       );
+
       const realisedGst = (
         <input
           type="number"
@@ -289,6 +348,7 @@ export default function BulkCounterOfferModal({
           disabled
         />
       );
+
       const vendorRemark = (
         <input
           type="text"
@@ -306,8 +366,10 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.pms_brand_name || "_"}
           readOnly
+          disabled={true}
         />
       );
+
       const pmsColour = (
         <input
           type="text"
@@ -315,8 +377,10 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.pms_colour_name || "_"}
           readOnly
+          disabled={true} 
         />
       );
+
       const genericInfo = (
         <input
           type="text"
@@ -324,6 +388,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.generic_info_name || "_"}
           readOnly
+          disabled={true}
         />
       );
 
@@ -345,6 +410,9 @@ export default function BulkCounterOfferModal({
       return {
         Sno: index + 1,
         product: <span>{productName}</span>,
+        materialType,
+        materialSubType,
+        deliveryLocation,
         quantityRequested,
         quantityAvailable,
         price,

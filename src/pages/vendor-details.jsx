@@ -1055,17 +1055,17 @@ export default function VendorDetails() {
   const handleReviseBid = async () => {
     setLoading(true);
     setSubmitted(true);
-
+  
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
     );
-
+  
     if (!userConfirmed) {
       setLoading(false);
       setSubmitted(false);
       return;
     }
-
+  
     try {
       const revisedBidMaterials = data.map((row) => {
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
@@ -1073,9 +1073,9 @@ export default function VendorDetails() {
         const landedAmount = rowTotal - discountAmount;
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
-
+  
         console.log("taxRateData :----", taxRateData);
-
+  
         const taxDetails = [
           ...(Array.isArray(taxRateData?.additionTaxCharges)
             ? taxRateData.additionTaxCharges.map((charge) => ({
@@ -1089,7 +1089,7 @@ export default function VendorDetails() {
                 taxChargePerUom: charge.taxChargePerUom,
               }))
             : []),
-
+  
           ...(Array.isArray(taxRateData?.deductionTax)
             ? taxRateData.deductionTax.map((charge) => ({
                 resource_id: null,
@@ -1103,12 +1103,15 @@ export default function VendorDetails() {
               }))
             : []),
         ];
-
-        const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
-          acc[key] = row.extra_data[key]?.value || "";
-          return acc;
-        }, {});
-
+  
+        const extraFields = Object.keys(row.extra_data || {}).reduce(
+          (acc, key) => {
+            acc[key] = row.extra_data[key]?.value || "";
+            return acc;
+          },
+          {}
+        );
+  
         return {
           event_material_id: row.eventMaterialId,
           quantity_available: row.quantityAvail || 0,
@@ -1121,15 +1124,16 @@ export default function VendorDetails() {
           landed_amount: landedAmount.toFixed(2),
           total_amount: finalTotal.toFixed(2),
           bid_material_tax_details: taxDetails,
-          extra,
+          ...extraFields, // 🔥 Directly include extra fields
         };
       });
+  
       const extractShortTableData = shortTableData.reduce((acc, curr) => {
         const { firstBid, counterBid } = curr.value;
         acc[curr.label] = counterBid || firstBid;
         return acc;
       }, {});
-
+  
       const payload = {
         revised_bid: {
           event_vendor_id: vendorId,
@@ -1143,29 +1147,22 @@ export default function VendorDetails() {
           payment_terms: "",
           loading_unloading_clause: "",
           remark: remark,
-          extra: {},
           revised_bid_materials_attributes: revisedBidMaterials,
           ...extractShortTableData,
         },
       };
-
+  
       console.log("Revised Bid Payload:", payload);
-
+  
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
         payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
-          },
-        }
       );
-
+  
       toast.success("Bid revised successfully!", {
         autoClose: 1000,
       });
-
+  
       setTimeout(() => {
         navigate(
           "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
@@ -1181,6 +1178,7 @@ export default function VendorDetails() {
       setSubmitted(false);
     }
   };
+  
 
   useEffect(() => {
     if (!endTime) return;
@@ -3736,7 +3734,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled={isBid}
+                                disabled={true}
                               />
                             ),
                             pmsColour: (cell, rowIndex) => (
@@ -3746,7 +3744,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled={isBid}
+                                disabled={true}
                               />
                             ),
                             genericInfo: (cell, rowIndex) => (
@@ -3756,7 +3754,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled={isBid}
+                                disabled={true}
                               />
                             ),
                             descriptionOfItem: (cell, rowIndex) => (
@@ -3766,7 +3764,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled={isBid}
+                                disabled={true}
                               />
                             ),
 
@@ -3814,7 +3812,15 @@ export default function VendorDetails() {
                                 style={otherColumnsStyle} // Other columns are scrollable
                                 disabled={isBid}
                                 /> */}
-                                <p>{cell}</p>
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={true}
+                                />
+                                {/* <p>{cell}</p> */}
                               </>
                             ),
 
@@ -3825,7 +3831,7 @@ export default function VendorDetails() {
                                 value={cell}
                                 readOnly
                                 style={otherColumnsStyle}
-                                disabled={isBid}
+                                disabled={true}
                               />
                             ),
                             quantity: (cell, rowIndex) => (
@@ -3842,7 +3848,7 @@ export default function VendorDetails() {
                                   )
                                 }
                                 placeholder="Enter Quantity"
-                                disabled={isBid}
+                                disabled={true}
                                 style={otherColumnsStyle}
                               />
                             ),
@@ -4118,6 +4124,22 @@ export default function VendorDetails() {
                               const updatedQuantity =
                                 updatedData[rowIndex]?.quantityAvail ||
                                 previousQuantity;
+
+                              const handleQuantityChange = (e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                const quantityRequested =
+                                  parseFloat(data[rowIndex].quantity) || 0;
+
+                                if (value > quantityRequested) {
+                                  toast.error(
+                                    "The quantity available value cannot be greater than the quantity requested."
+                                  ); // Display toaster message
+                                  return;
+                                }
+
+                                handleInputChange(value, rowIndex, "quantityAvail");
+                              };
+
                               const showArrow =
                                 counterData &&
                                 previousQuantity !== updatedQuantity;
@@ -4182,13 +4204,7 @@ export default function VendorDetails() {
                                   className="form-control"
                                   type="number"
                                   value={previousQuantity}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "quantityAvail"
-                                    )
-                                  }
+                                  onChange={handleQuantityChange}
                                   style={otherColumnsStyle}
                                   disabled={isBid}
                                 />
@@ -5075,7 +5091,7 @@ export default function VendorDetails() {
                     </tr>
 
                     {/* Addition Tax & Charges Items */}
-                    {console.log("taxRAteDAta", taxRateData)}
+                    {/* {console.log("taxRAteDAta", taxRateData)} */}
                     {taxRateData[tableId]?.additionTaxCharges.map(
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
