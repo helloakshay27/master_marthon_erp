@@ -32,6 +32,7 @@ export default function VendorDetails() {
   const [shortTableData, setShortTableData] = useState({});
   const originalTaxRateDataRef = useRef([]);
   const [extraData, setExtraData] = useState({});
+  const [currentExtraData, setCurrentExtraData] = useState({});
   // conditions
   const [timeRemaining, setTimeRemaining] = useState("");
 
@@ -526,7 +527,7 @@ export default function VendorDetails() {
 
           // Add `extra` data dynamically to the row
           additionalColumns.forEach((col) => {
-            rowData[col.key] = bidMaterial?.extra?.[col.key] || ""; // Add extra column data
+            rowData[col.key] = bidMaterial?.extra_data?.[col.key] || ""; // Add extra column data
           });
 
           return rowData;
@@ -661,7 +662,9 @@ export default function VendorDetails() {
             .map((material) => {
               const counterMaterial =
                 material.counter_bid_materials?.[currentIndex];
+
               console.log("material", material);
+              setCurrentExtraData(material);
               setTaxRateData({
                 addAdditionTaxCharges: material.addition_tax_charges,
                 deductionTax: material.deduction_tax,
@@ -1055,17 +1058,17 @@ export default function VendorDetails() {
   const handleReviseBid = async () => {
     setLoading(true);
     setSubmitted(true);
-  
+
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
     );
-  
+
     if (!userConfirmed) {
       setLoading(false);
       setSubmitted(false);
       return;
     }
-  
+
     try {
       const revisedBidMaterials = data.map((row) => {
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
@@ -1073,9 +1076,9 @@ export default function VendorDetails() {
         const landedAmount = rowTotal - discountAmount;
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
-  
+
         console.log("taxRateData :----", taxRateData);
-  
+
         const taxDetails = [
           ...(Array.isArray(taxRateData?.additionTaxCharges)
             ? taxRateData.additionTaxCharges.map((charge) => ({
@@ -1089,7 +1092,7 @@ export default function VendorDetails() {
                 taxChargePerUom: charge.taxChargePerUom,
               }))
             : []),
-  
+
           ...(Array.isArray(taxRateData?.deductionTax)
             ? taxRateData.deductionTax.map((charge) => ({
                 resource_id: null,
@@ -1103,7 +1106,7 @@ export default function VendorDetails() {
               }))
             : []),
         ];
-  
+
         const extraFields = Object.keys(row.extra_data || {}).reduce(
           (acc, key) => {
             acc[key] = row.extra_data[key]?.value || "";
@@ -1111,7 +1114,7 @@ export default function VendorDetails() {
           },
           {}
         );
-  
+
         return {
           event_material_id: row.eventMaterialId,
           quantity_available: row.quantityAvail || 0,
@@ -1127,13 +1130,13 @@ export default function VendorDetails() {
           ...extraFields, // 🔥 Directly include extra fields
         };
       });
-  
+
       const extractShortTableData = shortTableData.reduce((acc, curr) => {
         const { firstBid, counterBid } = curr.value;
         acc[curr.label] = counterBid || firstBid;
         return acc;
       }, {});
-  
+
       const payload = {
         revised_bid: {
           event_vendor_id: vendorId,
@@ -1151,18 +1154,18 @@ export default function VendorDetails() {
           ...extractShortTableData,
         },
       };
-  
+
       console.log("Revised Bid Payload:", payload);
-  
+
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-        payload,
+        payload
       );
-  
+
       toast.success("Bid revised successfully!", {
         autoClose: 1000,
       });
-  
+
       setTimeout(() => {
         navigate(
           "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
@@ -1178,7 +1181,6 @@ export default function VendorDetails() {
       setSubmitted(false);
     }
   };
-  
 
   useEffect(() => {
     if (!endTime) return;
@@ -2024,8 +2026,8 @@ export default function VendorDetails() {
   }, [data]);
 
   const handleOpenModal = (rowIndex) => {
-    console.log("extraDAta",extraData);
-    
+    // console.log("extraDAta",extraData);
+
     if (originalTaxRateDataRef.current.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
@@ -4137,7 +4139,11 @@ export default function VendorDetails() {
                                   return;
                                 }
 
-                                handleInputChange(value, rowIndex, "quantityAvail");
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "quantityAvail"
+                                );
                               };
 
                               const showArrow =
@@ -4566,24 +4572,26 @@ export default function VendorDetails() {
                             },
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
-                                const row = data[rowIndex];
+                                const row = currentExtraData;
+
                                 const extraData =
                                   row.extra_data?.[col.key] || {};
+                                console.log("extraData:---------", row);
 
                                 return (
                                   <input
+                                    value={
+                                      data[rowIndex]?.extra_data?.[col.key]
+                                        ?.value || ""
+                                    }
                                     className="form-control"
-                                    type="text"
-                                    value={extraData.value || ""}
                                     onChange={(e) => {
                                       const updatedData = [...data];
 
-                                      // Ensure extra_data exists
                                       if (!updatedData[rowIndex].extra_data) {
                                         updatedData[rowIndex].extra_data = {};
                                       }
 
-                                      // Ensure the specific key exists
                                       if (
                                         !updatedData[rowIndex].extra_data[
                                           col.key
@@ -4594,15 +4602,11 @@ export default function VendorDetails() {
                                         ] = {};
                                       }
 
-                                      // Update the value
                                       updatedData[rowIndex].extra_data[
                                         col.key
                                       ].value = e.target.value;
-
                                       setData(updatedData);
                                     }}
-                                    readOnly={extraData.readonly}
-                                    disabled={extraData.readonly}
                                   />
                                 );
                               };

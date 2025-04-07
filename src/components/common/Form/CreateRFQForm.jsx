@@ -312,9 +312,9 @@ export default function CreateRFQForm({
               inventory_type_id: material.inventory_type_id,
               inventory_sub_type_id: material.inventory_sub_type_id,
               subMaterialType: material.inventory_sub_type,
-              brand_id:material.pms_brand_id,
+              pms_brand_id:material.pms_brand_id,
+              pms_colour_id:material.pms_colour_id,
               generic_info_id:material.generic_info_id,
-              colour_id:material.pms_colour_id,
               _destroy: false,
             })),
           };
@@ -405,6 +405,8 @@ export default function CreateRFQForm({
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
+  console.log(existingData, "existingData");
+  
 
   useEffect(() => {
     // Ensure all field_name keys from additionalFields are included in sectionData
@@ -501,9 +503,9 @@ export default function CreateRFQForm({
       inventory_sub_type_id:
         sections[sectionIndex].sectionData[0]?.inventory_sub_type_id || "", // Add inventory_sub_type_id
       _destroy: false,
-      pms_brand: [],
-      pms_colour: pmsColours[0]?.value || "", // Default PMS color
-      generic_info: [], // Default generic info
+      pms_brand_id: null,
+      pms_colour_id: null, // Default PMS color
+      generic_info_id: null, // Default generic info
     };
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData = [
@@ -524,6 +526,8 @@ export default function CreateRFQForm({
 
     // Update the parent data with all attributes, including dynamic fields
     const updatedData = updatedSections.flatMap((section) => {
+      console.log("section.sectionData", section.sectionData);
+      
       section.sectionData.map((row) => ({
         id: row.id || null,
         inventory_id: Number(row.inventory_id),
@@ -535,9 +539,9 @@ export default function CreateRFQForm({
         section_name: row.section_id,
         inventory_type_id: row.inventory_type_id,
         inventory_sub_type_id: row.inventory_sub_type_id,
-        pms_brand: row.brand || null, // Include brand
-        pms_colour: row.pms_colour || null, // Include PMS color
-        generic_info: row.generic_info || null, // Include generic info
+        pms_brand_id: row.pms_brand_id || null, // Always use pms_brand_id
+        pms_colour_id: row.pms_colour_id || null, // Always use pms_colour_id
+        generic_info_id: row.generic_info_id || null, // Include generic_info_id
         ...additionalFields.reduce((acc, field) => {
           acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
           return acc;
@@ -646,8 +650,8 @@ export default function CreateRFQForm({
           quantity: "",
           unit: [],
           type: materials[0]?.type || "",
-          pms_brand: [], // Add brand field
-          pms_colour: pmsColours[0]?.value || "", // Default PMS color
+          pms_brand_id: [], // Add brand field
+          pms_colour_id: pmsColours[0]?.value || "", // Default PMS color
           location: [],
           rate: 0,
           amount: 0,
@@ -835,9 +839,9 @@ export default function CreateRFQForm({
       { label: "Quantity", key: "quantity" },
       { label: "UOM", key: "unit" },
       { label: "Type", key: "type" },
-      { label: "Brand", key: "brand" }, // Add brand column
-      { label: "PMS Colour", key: "pms_colour" }, // Add PMS Colour column
-      { label: "Generic Info", key: "generic_info" }, // Add Generic Info column
+      { label: "PMS Brand", key: "pms_brand_id" }, // Add brand column
+      { label: "PMS Colour", key: "pms_colour_id" }, // Add PMS Colour column
+      { label: "Generic Info", key: "generic_info_id" }, // Add Generic Info column
       { label: "Location", key: "location" },
       { label: "Rate", key: "rate" },
       { label: "Amount", key: "amount" },
@@ -873,9 +877,9 @@ export default function CreateRFQForm({
           section_name: row.section_id,
           inventory_type_id: row.inventory_type_id,
           inventory_sub_type_id: row.inventory_sub_type_id,
-          pms_brand: row.brand_id || null,
-          pms_colour: row.colour_id || null,
-          generic_info: row.generic_info_id || null,
+          pms_brand_id: row.pms_brand_id || null, // Always use pms_brand_id
+          pms_colour_id: row.pms_colour_id || null, // Always use pms_colour_id
+          generic_info_id: row.generic_info_id || null,
           ...additionalFields.reduce((acc, field) => {
             acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
             return acc;
@@ -919,7 +923,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (field.field_name === "pms_colour") {
+    if (field.field_name === "pms_colour_id") {
       return (
         <SelectBox
           options={pmsColours}
@@ -929,7 +933,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (field.field_name === "generic_info") {
+    if (field.field_name === "generic_info_id") {
       return (
         <SelectBox
           options={genericInfoOptions}
@@ -939,7 +943,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (field.field_name === "brand") {
+    if (field.field_name === "pms_brand_id") {
       return (
         <SelectBox
           options={brandOptions}
@@ -1054,7 +1058,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (fieldName === "brand") {
+    if (fieldName === "pms_brand_id") {
       return (
         <SelectBox
           options={brandOptions}
@@ -1068,7 +1072,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (fieldName === "pms_colour") {
+    if (fieldName === "pms_colour_id") {
       return (
         <SelectBox
           options={pmsColours}
@@ -1080,7 +1084,7 @@ export default function CreateRFQForm({
       );
     }
 
-    if (fieldName === "generic_info") {
+    if (fieldName === "generic_info_id") {
       return (
         <SelectBox
           options={genericInfoOptions}
@@ -1274,7 +1278,7 @@ export default function CreateRFQForm({
                       />
                     );
                   },
-                  brand: (cell, rowIndex) => {
+                  pms_brand_id: (cell, rowIndex) => {
                     return (
                       <SelectBox
                         options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
@@ -1282,12 +1286,12 @@ export default function CreateRFQForm({
                           handleInputChange(
                             value,
                             rowIndex,
-                            "brand",
+                            "pms_brand_id",
                             sectionIndex
                           )
                         }
                         defaultValue={
-                          section?.sectionData[rowIndex].brand_id
+                          section?.sectionData[rowIndex].pms_brand_id
                         }
                         />
                     );
@@ -1382,21 +1386,21 @@ export default function CreateRFQForm({
                     }
                     return acc;
                   }, {}),
-                  pms_colour: (cell, rowIndex) => (
+                  pms_colour_id: (cell, rowIndex) => (
                     <SelectBox
                       options={pmsColours}
-                      defaultValue={section?.sectionData[rowIndex].colour_id}
+                      defaultValue={section?.sectionData[rowIndex].pms_colour_id}
                       onChange={(value) =>
                         handleInputChange(
                           value,
                           rowIndex,
-                          "pms_colour",
+                          "pms_colour_id",
                           sectionIndex
                         )
                       }
                       />
                   ),
-                  generic_info: (cell, rowIndex) => (
+                  generic_info_id: (cell, rowIndex) => (
                     <SelectBox
                       options={genericInfoOptions}
                       defaultValue={section?.sectionData[rowIndex]?.generic_info_id || ""}
@@ -1404,7 +1408,7 @@ export default function CreateRFQForm({
                         handleInputChange(
                           value,
                           rowIndex,
-                          "generic_info",
+                          "generic_info_id",
                           sectionIndex
                         )
                       }

@@ -47,7 +47,6 @@ export default function BulkCounterOfferModal({
   
 
   const handleSubmit = async () => {
-
     const extractShortTableData = freightData.reduce((acc, curr) => {
       const { firstBid, counterBid } = curr.value;
       acc[curr.label] = counterBid || firstBid;
@@ -84,27 +83,25 @@ export default function BulkCounterOfferModal({
       },
     };
 
-    // console.log("Payload to be sent:", payload);
-
-    
+    console.log("Payload to be sent:", payload);    
     
     try {
-      // const response = await fetch(
-      //   `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(payload),
-      //   }
-      // );
-      // if (response.ok) {
-      //   handleClose(); // Close the modal if the request was successful
-      // } else {
-      //   // Handle failure if the response wasn't OK
-      //   throw new Error("Failed to submit counter bid");
-      // }
+      const response = await fetch(
+        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (response.ok) {
+        handleClose(); // Close the modal if the request was successful
+      } else {
+        // Handle failure if the response wasn't OK
+        throw new Error("Failed to submit counter bid");
+      }
     } catch (error) {
       console.error("Error during submission:", error);
       // Handle error if the request fails

@@ -17,6 +17,7 @@ import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
+import { set } from "lodash";
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
@@ -209,6 +210,8 @@ export default function EditEvent() {
   };
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
   };
 
   const handleEventTypeChange = (e) => {
@@ -738,6 +741,8 @@ export default function EditEvent() {
     }
 
     setSubmitted(true);
+    console.log("materialFormData :-----",materialFormData);
+    
 
     const eventData = {
       event: {
@@ -786,9 +791,9 @@ export default function EditEvent() {
                 "_destroy",
                 "descriptionOfItem",
                 "subMaterialType",
-                "brand_id",
+                "pms_brand_id",
                 "generic_info_id",
-                "colour_id",
+                "pms_colour_id",
               ].includes(key)
             ) {
               acc[key] = material[key] || null; // Include dynamic fields
@@ -808,9 +813,9 @@ export default function EditEvent() {
             section_name: material.section_id,
             inventory_type_id: material.inventory_type_id,
             inventory_sub_type_id: material.inventory_sub_type_id,
-            pms_brand: material.brand_id || null,
-            pms_colour: material.colour_id || null,
-            generic_info: material.generic_info_id || null,
+            pms_brand_id: material.pms_brand_id || null, // Include pms_brand_id
+            pms_colour_id: material.pms_colour_id || null, // Include pms_colour_id
+            generic_info_id: material.generic_info_id || null, // Include generic_info_id
             _destroy: material._destroy || false,
             ...dynamicFields, // Add dynamic fields
           };
@@ -868,7 +873,7 @@ export default function EditEvent() {
       },
     };
 
-    console.log("payload:-", JSON.stringify(eventData));
+    console.log("payload:-", eventData);
 
     try {
       const response = await fetch(
@@ -916,7 +921,9 @@ export default function EditEvent() {
   }, []);
 
   useEffect(() => {
+    
     setFilteredTableData(tableData);
+    
   }, [tableData]);
 
   const handleInputChange = (e) => {
@@ -1013,33 +1020,31 @@ export default function EditEvent() {
   const handleRemoveVendor = (id) => {
     console.log("⬅️ Before Update", filteredTableData);
   
-    setSelectedVendors((prevSelected) => {
-      const updatedSelected = prevSelected.filter(
-        (vendor) => vendor.pms_supplier_id !== id
-      );
-  
-      const removedVendor = prevSelected.find(
-        (vendor) => vendor.pms_supplier_id === id
-      );
-  
-      if (removedVendor) {
-        setFilteredTableData((prevFiltered) => {
-          const alreadyExists = prevFiltered.some(
-            (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
-          );
-  
-          if (!alreadyExists) {
-            const updated = [...prevFiltered, removedVendor];
-            console.log("✅ Updated filteredTableData:", updated.length, updated);
-            return updated;
-          }
-  
-          return prevFiltered;
-        });
-      }
-  
-      return updatedSelected;
-    });
+    // Get the current selected vendors
+  const updatedSelected = selectedVendors.filter(
+    (vendor) => vendor.pms_supplier_id !== id
+  );
+
+  // Find the vendor to remove
+  const removedVendor = selectedVendors.find(
+    (vendor) => vendor.pms_supplier_id === id
+  );
+
+  // If vendor is found and not already in filteredTableData, add it
+  if (removedVendor) {
+    const alreadyExists = filteredTableData.some(
+      (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
+    );
+
+    if (!alreadyExists) {
+      const updatedFiltered = [...filteredTableData, removedVendor];
+      setFilteredTableData(updatedFiltered);
+      console.log("✅ Updated filteredTableData:", updatedFiltered.length, updatedFiltered);
+    }
+  }
+
+  // Finally update selectedVendors
+  setSelectedVendors(updatedSelected);
   
     // Delay this log to ensure the updated state is shown
     setTimeout(() => {
@@ -1049,7 +1054,7 @@ export default function EditEvent() {
   
 
   useEffect(() => {
-    console.log("🔁 filteredTableData changed: ", filteredTableData.length, filteredTableData);
+    // console.log("🔁 filteredTableData changed: ", filteredTableData.length, filteredTableData);
   }, [filteredTableData]);
   
 
@@ -1108,7 +1113,6 @@ export default function EditEvent() {
           };
   
           setSelectedVendors((prev) => [...prev, vendorData]);
-          setFilteredTableData((prev) => [...prev, vendorData]);
   
           // Clear input after success
           setInviteVendorData({
@@ -1139,15 +1143,6 @@ export default function EditEvent() {
         tags: vendor.tags || "N/A",
         pms_supplier_id: vendor.pms_supplier_id,
       }));
-
-      setFilteredTableData((prevData) => {
-        const mergedData = [...existingVendors, ...prevData];
-        const uniqueData = mergedData.filter(
-          (vendor, index, self) =>
-            index === self.findIndex((v) => v.pms_supplier_id === vendor.pms_supplier_id)
-        );
-        return uniqueData;
-      });
     }
   }, [eventDetails, tableData]);
 
@@ -1321,8 +1316,8 @@ export default function EditEvent() {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
-                            {console.log("vendor", vendor)
-                            }
+                            {/* {console.log("vendor", vendor)
+                            } */}
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             <td>{vendor.phone}</td>
@@ -1661,6 +1656,7 @@ export default function EditEvent() {
                     </div>
                   </div>
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                    {/* {console.log("filteredTableData :------",filteredTableData)} */}
                     {filteredTableData.length > 0 ? (
                       <Table
                         columns={participantsTabColumns}

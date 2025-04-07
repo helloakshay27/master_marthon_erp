@@ -9,6 +9,7 @@ import SelectBox from "../../base/Select/SelectBox";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../../../confi/apiDomain";
+import { se } from "date-fns/locale";
 
 export default function ParticipantsTab({ data, id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
@@ -86,6 +87,20 @@ export default function ParticipantsTab({ data, id }) {
       );
 
       if (response.ok) {
+        const newVendor = await response.json();
+
+        // Add the new vendor to vendorData in the specified format
+        const formattedVendor = {
+          key: newVendor.id,
+          serialNumber: vendorData.length + 1,
+          name: newVendor.full_name,
+          phone: newVendor.mobile,
+          email: newVendor.email,
+          organisation: newVendor.organization_name || "N/A",
+        };
+
+        setVendorData((prev) => [...prev, formattedVendor]);
+
         toast.success("Vendor invited successfully!", {
           autoClose: 1000,
         });
@@ -110,7 +125,11 @@ export default function ParticipantsTab({ data, id }) {
   };
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
+    setSelectedVendors([]);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
   };
+console.log("selectedVendors:---",selectedVendors);
 
   useEffect(() => {
     const formattedData = (data?.event_vendors || []).map((vendor, index) => ({
@@ -119,6 +138,7 @@ export default function ParticipantsTab({ data, id }) {
       name: vendor.pms_supplier.full_name,
       phone: vendor.pms_supplier.mobile,
       email: vendor.pms_supplier.email,
+      organisation: vendor.organization_name
     }));
     setVendorData(formattedData);
   }, [data, vendorData]);
@@ -422,10 +442,13 @@ export default function ParticipantsTab({ data, id }) {
           </button>
         </div>
         {vendorData.length > 0 ? (
+          <>
+          {console.log("vendorData:---",vendorData)}
           <Table
             columns={participantsTabColumns} // Use columns with serial number
             data={vendorData}
           />
+          </>
         ) : (
           <div className="text-center mt-4">No data found</div>
         )}

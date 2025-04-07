@@ -286,7 +286,7 @@ export const participantsTabColumns = [
   { label: "Name", key: "name" },
   { label: "Mob No.", key: "phone" },
   { label: "Email", key: "email" },
-  { label: "Organisation", key: "organisation" },
+  // { label: "Organisation", key: "organisation" },
 ];
 export const contractColumns = [
   { label: "Sr No", key: "srNo" }, 

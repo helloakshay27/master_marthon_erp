@@ -258,7 +258,7 @@ export default function Table({
                 style={{
                   whiteSpace: "nowrap",
                   textTransform: "capitalize",
-                  width: col.key === "srNo" ? "100px !important" : "auto",
+                  width: col.label === "srNo" ? "100px !important" : "70px",
                 }}
               >
                 {col.label}
@@ -297,8 +297,8 @@ export default function Table({
                       whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
                       overflow: enableOverflowScroll ? "hidden" : "visible",
                       textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
-                      width: col.key === "srNo" ? "100px !important" : "auto", // Set width for srNo column
-                      minWidth: isMinWidth && col.key !== "srNo" ? "300px" : "auto", // Set minimum width if minWidth prop is true
+                      width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
+                      minWidth: isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
                     }}
                   >
                     {cellContent}
