@@ -343,37 +343,40 @@ export default function EditEvent() {
   }, [setEventDetails]);
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
-    if (searchTerm == "") {
-    }
     setLoading(true);
     try {
       const response = await fetch(
         `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
-
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-
-      const formattedData = vendors.map((vendor) => ({
-        id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "N/A",
-        email: vendor.email || "N/A",
-        organisation: vendor.organization_name || "N/A",
-        phone: vendor.contact_number || vendor.mobile || "N/A",
-        city: vendor.city_id || "N/A",
-        tags: vendor.tags || "N/A",
-      }));
-
+  
+      // Remove already selected vendors before setting tableData
+      const formattedData = vendors
+        .map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name || "N/A",
+          email: vendor.email || "N/A",
+          organisation: vendor.organization_name || "N/A",
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+          city: vendor.city_id || "N/A",
+          tags: vendor.tags || "N/A",
+        }))
+        .filter(
+          (vendor) =>
+            !selectedVendors.some((selected) => selected.pms_supplier_id === vendor.id)
+        );
+  
       setTableData(formattedData);
-
       setCurrentPage(page);
-      setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
+      setTotalPages(data?.pagination?.total_pages || 1);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchEventData();
