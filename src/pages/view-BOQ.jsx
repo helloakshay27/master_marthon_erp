@@ -23,7 +23,7 @@ const BOQList = () => {
   const [boqList, setBoqList] = useState(null); // State to store the fetched data
   const [loading2, setLoading2] = useState(true);
 
-
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   const navigate = useNavigate(); // hook to get navigate function
 
@@ -164,8 +164,11 @@ const BOQList = () => {
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   // Fetch data from the API when the component mounts
   useEffect(() => {
+    const search = searchKeyword||"";
+    console.log("search", search)
+    
     axios
-      .get(`${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`${baseURL}boq_details.json?search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
         setLoading2(false);
@@ -180,9 +183,9 @@ const BOQList = () => {
 
       });
 
-  }, []); // Empty dependency array ensures it runs only once when the component mounts
+  }, [searchKeyword]); // Empty dependency array ensures it runs only once when the component mounts
 
-  console.log('boq list', boqList)
+  // console.log('boq list', boqList)
 
 
   // Handle Go button click
@@ -484,7 +487,7 @@ const BOQList = () => {
     });
   };
 
-  console.log("selected boq id array :", selectedBoqDetails)
+  // console.log("selected boq id array :", selectedBoqDetails)
 
 
   //bulkaction options 
@@ -507,8 +510,201 @@ const BOQList = () => {
     },
   ];
 
+//unit
+ const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  // Fetching the unit of measures data on component mount
+    useEffect(() => {
+      axios
+        .get(
+          `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          // Mapping the response to the format required by react-select
+          const options = response.data.map((unit) => ({
+            value: unit.id,
+            label: unit.name,
+          }));
+          setUnitOfMeasures(options); // Save the formatted options to state
+        })
+        .catch((error) => {
+          console.error("Error fetching unit of measures:", error);
+        });
+    }, []);
+  
+    // Handler for unit of measure selection
+    const handleUnitChange = (selectedOption) => {
+      setSelectedUnit(selectedOption); // Update selected unit state
+    };
+  
+    //work categories 
+     const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
+      const [selectedCategory, setSelectedCategory] = useState(null); // To store the selected work category
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null); // To store the selected work subcategory
+  const [subCategoryOptions, setSubCategoryOptions] = useState([]); // To
+      // / Fetching work categories on component mount
+        useEffect(() => {
+          axios
+            .get(
+              `${baseURL}work_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            ) // Replace with your API endpoint
+            .then((response) => {
+              setWorkCategories(response.data.work_categories); // Save the categories to state
+            })
+            .catch((error) => {
+              console.error("Error fetching work categories:", error);
+            });
+        }, []);
+      
+        // Handler for selecting a work category
+        const handleCategoryChange = (selectedOption) => {
+          setSelectedCategory(selectedOption);
+          // setSelectedSubCategory(null); // Clear subcategory selection when the category changes
+          // setSubCategoryOptions([]); // Reset subcategories list
+          // setSubCategoryLevel3Options([]); // Clear sub-subcategory options
+          // setSubCategoryLevel4Options([]); // Clear level 4 options
+          // setSubCategoryLevel5Options([]); // Clear level 5 options
+          // setSelectedSubCategoryLevel3(null);
+          // setSelectedSubCategoryLevel4(null);
+          // setSelectedSubCategoryLevel5(null);
+      
+          // If there are subcategories for this category, update the subcategory options
+          // if (selectedOption && selectedOption.work_sub_categories.length > 0) {
+          //   setSubCategoryOptions(
+          //     selectedOption.work_sub_categories.map((subCategory) => ({
+          //       value: subCategory.id,
+          //       label: subCategory.name,
+          //     }))
+          //   );
+          // }
+ console.log("list category to sub:",selectedOption)
+
+                      // Fetch sub-subcategories using the selected subcategory
+                      axios
+                      .get(
+                        `${baseURL}work_sub_categories.json?q[work_category_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                      )
+                      .then((response) => {
+                        console.log("sub responce:",response)
+                        const subSubCategories = response.data || [];
+                        setSubCategoryOptions(
+                          subSubCategories.map((subSubCategory) => ({
+                            value: subSubCategory.id,
+                            label: subSubCategory.formatted_name,
+                          }))
+                        );
+                      })
+                      .catch((error) => {
+                        console.error("Error fetching sub-subcategories:", error);
+                      });
+        };
 
 
+          // Handler for selecting a work subcategory
+          const handleSubCategoryChange = (selectedOption) => {
+            setSelectedSubCategory(selectedOption);
+        
+          };
+      
+          const [selectedStatus, setSelectedStatus] = useState(null);
+
+  const handleStatusChangeFilter = (selectedOption) => {
+    setSelectedStatus(selectedOption);
+    console.log('Selected Status:', selectedOption);
+  };
+
+
+  const handleApplyFilters = () => {
+    // Extract all selected filter values
+    // const categoryId = selectedCategory?.value;
+    // const subCategoryId = selectedSubCategory?.value;
+    // const status = selectedStatus?.value;
+    // const unitId = selectedUnit?.value;
+  
+    // Build query string based on selected values
+    // const queryParams = [];
+  
+    // if (categoryId) {
+    //   queryParams.push(`work_category_id=${categoryId}`);
+    // }
+    // if (subCategoryId) {
+    //   queryParams.push(`work_sub_category_id=${subCategoryId}`);
+    // }
+    // if (status) {
+    //   queryParams.push(`q[status_eq]=${status}`);
+    // }
+    // if (unitId) {
+    //   queryParams.push(`q[unit_of_measure_id_eq]=${unitId}`);
+    // }
+  
+    // Token (keep this secure in real apps)
+    // const token = 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078414';
+    // queryParams.push(`token=${token}`);
+  
+    // Build full URL
+  //   const url = `${baseURL}boq_details.json?${queryParams.join('&')}`;
+  //  console.log("url filter:",url)
+  //   // Make the API call
+  //   axios
+  //     .get(url)
+  //     .then((response) => {
+  //       console.log('Filtered Results:', response.data);
+  //       setBoqList ( response.data)
+  //       handleClose()
+  //       // TODO: handle this data (e.g. set it to a table state)
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error applying filters:', error);
+  //     });
+
+
+      // const projectId = selectedProject ? selectedProject.value : "";
+      // const siteId = selectedSite ? selectedSite.value : "";
+      // const wingId = selectedWing ? selectedWing.value : "";
+
+      const categoryId = selectedCategory?.value||"";
+      const subCategoryId = selectedSubCategory?.value ||"";
+      const status = selectedStatus?.value ||"";
+      const unitId = selectedUnit?.value ||"";
+    console.log("filter ids:", categoryId,subCategoryId,status, unitId)
+
+      setLoading(true); // Set loading to true before making the request
+
+      axios
+        .get(
+          `${baseURL}boq_details.json?work_category_id=${categoryId}&work_sub_category_id=${subCategoryId}&q[status_eq]=${status}&q[unit_of_measure_id_eq]=${unitId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          setBoqList(response.data); // Set the fetched data to state
+          console.log("filterrrrr",response.data)
+          setShow(false)
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading when request completes
+        });
+
+  };
+
+  
+  
+  // useEffect(() => {
+  //   axios
+  //     .get(
+  //       `${baseURL}work_categories.json?search=${searchKeyword}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //     ) // Replace with your API endpoint
+  //     .then((response) => {
+  //       setBoqList(response.data); // Save the categories to state
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching search", error);
+  //     });
+  // }, [searchKeyword]);
+
+ 
+  
   return (
     <>
 
@@ -802,7 +998,7 @@ const BOQList = () => {
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
-                        {console.log("options:", options.value)}
+                        {/* {console.log("options:", options.value)} */}
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
@@ -867,6 +1063,8 @@ const BOQList = () => {
         <input
           type="search"
           id="searchInput"
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
           className="form-control tbl-search"
           placeholder="Type your keywords here"
         />
@@ -3107,90 +3305,33 @@ const BOQList = () => {
         </Modal.Header>
         <div className="modal-body" style={{ overflowY: scroll }}>
           <div className="row">
-            <div className="row mt-2 px-2">
-              <div className="col-md-12 card mx-3">
-                <div className="card-header2">
-                  <h3 className="card-title2">
-                    <div className="form-group form-control">
-                      Applied Filter
-                    </div>
-                  </h3>
-                </div>
-
-                <div className="card-body">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <label className="px-1" htmlFor="company">
-                          {/* Company */}
-                        </label>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <label className="px-1" htmlFor="project">
-                          {/* Project */}
-                        </label>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                        <p className="px-1">
-                          {/* Sub-project */}
-                          </p>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <div className="row mt-3 align-items-end">
-              <div className="col-md-6">
+              <div className="col-md-12">
                 <div className="form-group">
                   <label>Work Category</label>
 
                   <SingleSelector
-                    options={[
-                      { value: "Alabama", label: "Alabama" },
-                      { value: "Alaska", label: "Alaska" },
-                      { value: "California", label: "California" },
-                      { value: "Delaware", label: "Delaware" }
-                    ]}
-                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
-                    // value={selectedWorkCategory}
-                    placeholder="Select Work Category"
+                  options={workCategories.map((category) => ({
+                    value: category.id,
+                    label: category.name,
+                    // work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
+                  }))}
+                  onChange={handleCategoryChange}
+                  value={selectedCategory}
+                  placeholder="Select Work Category"
                   />
                 </div>
-              </div>
-              <div className="col-md-6">
+              </div> 
+            </div>
+
+            <div className="row mt-3 align-items-end">
+              <div className="col-md-12">
                 <div className="form-group">
                   <label>Work SubCategory</label>
                   <SingleSelector
-                    options={[
-                      { value: "Alabama", label: "Alabama" },
-                      { value: "Alaska", label: "Alaska" },
-                      { value: "California", label: "California" },
-                      { value: "Delaware", label: "Delaware" }
-                    ]}
-                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
-                    // value={selectedWorkCategory}
+                  options={subCategoryOptions}
+                  onChange={handleSubCategoryChange}
+                  value={selectedSubCategory}
                     placeholder="Select Work SubCategory"
                   />
                 </div>
@@ -3199,36 +3340,29 @@ const BOQList = () => {
             </div>
 
             <div className="row mt-3 align-items-end">
-              <div className="col-md-6">
+              <div className="col-md-12">
                 <div className="form-group">
                   <label>Status</label>
                   <SingleSelector
-                    options={[
-                      { value: "Alabama", label: "Alabama" },
-                      { value: "Alaska", label: "Alaska" },
-                      { value: "California", label: "California" },
-                      { value: "Delaware", label: "Delaware" }
-                    ]}
-                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
-                    // value={selectedWorkCategory}
+                    options={options}
+                    value={selectedStatus}
+                    onChange={handleStatusChangeFilter}
                     placeholder="Select Status"
                   />
                 </div>
               </div>
-              <div className="col-md-6">
+            </div>
+
+            <div className="row mt-3 align-items-end">
+              <div className="col-md-12">
                 <div className="form-group">
                   <label>Unit</label>
 
                   <SingleSelector
-                    options={[
-                      { value: "Alabama", label: "Alabama" },
-                      { value: "Alaska", label: "Alaska" },
-                      { value: "California", label: "California" },
-                      { value: "Delaware", label: "Delaware" }
-                    ]}
-                    // onChange={(selectedOption) => setSelectedWorkCategory(selectedOption)}
-                    // value={selectedWorkCategory}
-                    placeholder="Select Unit"
+                  options={unitOfMeasures} // Providing the options to the select component
+                  onChange={handleUnitChange} // Setting the handler when an option is selected
+                  value={selectedUnit} // Setting the selected value
+                  placeholder="Select Unit"
                   />
                 </div>
               </div>
@@ -3240,7 +3374,8 @@ const BOQList = () => {
           <button
             className="btn"
             style={{ backgroundColor: "#8b0203", color: "#fff" }}
-            onClick={handleClose}
+            // onClick={handleClose}
+            onClick={handleApplyFilters} // Use the new handler here
           >
             Go
           </button>

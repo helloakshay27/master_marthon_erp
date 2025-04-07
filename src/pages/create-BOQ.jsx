@@ -1541,6 +1541,7 @@ const CreateBOQ = () => {
   }, [
     boqQuantity,
     coefficientFactors,
+    estimatedQuantities,
     wastages,
     assetCoefficientFactors,
     assetWastages,
