@@ -1010,7 +1010,6 @@ export default function EditEvent() {
     setResetSelectedRows(true);
   };
 
-
   const handleRemoveVendor = (id) => {
     console.log("⬅️ Before Update", filteredTableData);
   
@@ -1070,7 +1069,7 @@ export default function EditEvent() {
     }));
   };
 
-  const handleInviteVendor = async () => {
+  const handleInviteVendor = () => {
     if (
       !inviteVendorData.name ||
       !inviteVendorData.email ||
@@ -1079,37 +1078,78 @@ export default function EditEvent() {
       toast.error("Please fill all the fields.");
       return;
     }
-
-    try {
-      const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(inviteVendorData),
-        }
-      );
-
-      if (response.ok) {
-        const newVendor = await response.json();
-        toast.success("Vendor invited successfully!");
-
-        // Add the new vendor to the selected vendors list and trigger a state refresh
-        // set
-
-        handleInviteModalClose();
-      } else {
-        const errorData = await response.json();
-        console.error("Error inviting vendor:", errorData);
-        toast.error("Failed to invite vendor.");
+  
+    fetch(
+      `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(inviteVendorData),
       }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("An error occurred while inviting the vendor.");
-    }
+    )
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((errorData) => {
+            console.error("Error inviting vendor:", errorData);
+            toast.error("Failed to invite vendor.");
+          });
+        }
+  
+        return response.json().then((newVendor) => {
+          toast.success("Vendor invited successfully!");
+  
+          const vendorData = {
+            id: null,
+            pms_supplier_id: newVendor?.id,
+            name: newVendor?.full_name,
+            phone: newVendor?.mobile,
+          };
+  
+          setSelectedVendors((prev) => [...prev, vendorData]);
+          setFilteredTableData((prev) => [...prev, vendorData]);
+  
+          // Clear input after success
+          setInviteVendorData({
+            name: "",
+            email: "",
+            mobile: "",
+          });
+  
+          handleInviteModalClose();
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        toast.error("An error occurred while inviting the vendor.");
+      });
   };
+  
+
+  useEffect(() => {
+    if (eventDetails?.event_vendors?.length > 0) {
+      const existingVendors = eventDetails.event_vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.full_name || vendor.organization_name || "N/A",
+        email: vendor.email || "N/A",
+        organisation: vendor.organization_name || "N/A",
+        phone: vendor.contact_number || vendor.mobile || "N/A",
+        city: vendor.city_id || "N/A",
+        tags: vendor.tags || "N/A",
+        pms_supplier_id: vendor.pms_supplier_id,
+      }));
+
+      setFilteredTableData((prevData) => {
+        const mergedData = [...existingVendors, ...prevData];
+        const uniqueData = mergedData.filter(
+          (vendor, index, self) =>
+            index === self.findIndex((v) => v.pms_supplier_id === vendor.pms_supplier_id)
+        );
+        return uniqueData;
+      });
+    }
+  }, [eventDetails, tableData]);
 
   return (
     <>
@@ -1281,8 +1321,8 @@ export default function EditEvent() {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
-                            {/* {console.log("vendor", vendor)
-                            } */}
+                            {console.log("vendor", vendor)
+                            }
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             <td>{vendor.phone}</td>

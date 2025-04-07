@@ -778,19 +778,24 @@ export default function CreateEvent() {
         const newVendor = await response.json();
         toast.success("Vendor invited successfully!");
 
-        // Add the new vendor to the selected vendors list and trigger a state refresh
-        // setSelectedVendors((prev) => {
-        //   const updatedVendors = [
-        //     ...prev,
-        //     {
-        //       id: newVendor.id,
-        //       name: newVendor.name,
-        //       phone: newVendor.mobile,
-        //       pms_supplier_id: newVendor.id,
-        //     },
-        //   ];
-        //   return [...updatedVendors]; // Trigger state refresh
-        // });
+        const vendorData = {
+          id: null,
+          pms_supplier_id: newVendor?.id,
+          name: newVendor?.full_name,
+          phone: newVendor?.mobile,
+        };
+
+        setSelectedVendors((prev) => [...prev, vendorData]);
+        setFilteredTableData((prev) => [...prev, vendorData]);
+
+        // Clear input after success
+        setInviteVendorData({
+          name: "",
+          email: "",
+          mobile: "",
+          gstNumber: "",
+          panNumber: "",
+        });
 
         handleInviteModalClose();
       } else {
@@ -810,7 +815,7 @@ export default function CreateEvent() {
     email: "",
     mobile: "",
     gstNumber: "",
-  panNumber: "",
+    panNumber: "",
   });
 
   const handleInviteVendorChange = (e) => {
