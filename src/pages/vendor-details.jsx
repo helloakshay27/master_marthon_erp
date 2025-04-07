@@ -1151,26 +1151,26 @@ export default function VendorDetails() {
 
       console.log("Revised Bid Payload:", payload);
 
-      // const response = await axios.post(
-      //   `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-      //   payload,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
-      //     },
-      //   }
-      // );
+      const response = await axios.post(
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with actual token
+          },
+        }
+      );
 
-      // toast.success("Bid revised successfully!", {
-      //   autoClose: 1000,
-      // });
+      toast.success("Bid revised successfully!", {
+        autoClose: 1000,
+      });
 
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1500);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {

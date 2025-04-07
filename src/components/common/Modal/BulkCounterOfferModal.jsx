@@ -391,7 +391,7 @@ export default function BulkCounterOfferModal({
         },
       ]}
     >
-      <h5 className="mt-5">Product Sheet</h5>
+      <h5 className="mt-5">Material Sheet</h5>
       <Table columns={productTableColumns} data={productTableData} />
 
       <div className="d-flex justify-content-end">
