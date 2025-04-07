@@ -366,8 +366,9 @@ const MaterialReconciliationList = () => {
                       <div className="d-flex justify-content-end me-3">
                         <button
                           className="purple-btn2 m-0 p-1 px-3 mt-2"
-                          // onClick={openFilterModal}
-                          // onClick={() => navigate("/bill-booking-create")} // Redirect on click
+                          onClick={() =>
+                            navigate("/material-reconciliation-create")
+                          } // Navigate to the specified path
                         >
                           <div style={{ color: "white" }}>
                             <span className="material-symbols-outlined align-text-top me-2">

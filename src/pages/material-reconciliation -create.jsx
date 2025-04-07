@@ -290,7 +290,7 @@ const MaterialReconciliationCreate = () => {
                   <span className="material-symbols-outlined align-text-top">
                     add{" "}
                   </span>
-                  <span className="">Add </span>
+                  <span className="">Add Material </span>
                 </button>
               </div>
               <div className="tbl-container mx-2 mt-3">
@@ -667,6 +667,7 @@ const MaterialReconciliationCreate = () => {
                     <table className="w-100">
                       <thead>
                         <tr>
+                          <th>Select</th> {/* New column for checkboxes */}
                           <th>Material Type</th>
                           <th>Material Sub-Type</th>
                           <th>Material</th>
@@ -676,9 +677,17 @@ const MaterialReconciliationCreate = () => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td />
+                          <td>
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              style={{ cursor: "pointer" }}
+                            />
+                          </td>
+                          {/* <td /> */}
                           <td>PO/CDoM/MB001/3203</td>
                           <td>Feb 08, 2021</td>
+                          <td>AMBUJA CEMENTS LIMITED</td>
                           <td>AMBUJA CEMENTS LIMITED</td>
                           <td>AMBUJA CEMENTS LIMITED</td>
                         </tr>

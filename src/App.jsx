@@ -79,6 +79,7 @@ import EditBOQNew from "./pages/Boq-edit-new";
 import EventTemplateList from "./pages/event-template-list";
 import EventTemplateDetails from "./pages/event-template-details";
 import EditTemplate from "./pages/edit-template";
+import WorkSubCategory from "./pages/work-sub-category";
 
 function App() {
   return (
@@ -417,8 +418,10 @@ function App() {
             path="/material-reconciliation-list"
             element={<MaterialReconciliationList />}
           />
+          <Route path="/work-sub-category" element={<WorkSubCategory />} />
         </Routes>
       </div>
+      s
     </BrowserRouter>
   );
 }
