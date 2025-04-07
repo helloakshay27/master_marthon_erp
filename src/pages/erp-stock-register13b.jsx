@@ -125,8 +125,8 @@ const ErpStockRegister13B = () => {
       ),
     },
 
-    { field: "mor", headerName: "Mor Number", width: 150 }, // Added Mor Number column
-    { field: "grn_number", headerName: "Grn Number", width: 150 }, // Added Grn Number column
+    { field: "mor", headerName: "MOR Number", width: 150 }, // Added Mor Number column
+    { field: "grn_number", headerName: "GRN Number", width: 150 }, // Added Grn Number column
 
     { field: "lastReceived", headerName: "Last Received On", width: 200 },
 
@@ -219,96 +219,30 @@ const ErpStockRegister13B = () => {
   const [morOptions, setMorOptions] = useState([]);
   const [grnOptions, setGrnOptions] = useState([]);
 
-  const fetchMorNumbers = async (isFiltered = false) => {
-    try {
-      let url = `${baseURL}material_order_requests/filter_mor_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`;
-
-      // Only add parameters if this is a filtered request and we have values
-      if (isFiltered) {
-        const params = [];
-        if (selectedIds.materialTypes.length > 0) {
-          params.push(
-            `pms_inventory_type_ids=${selectedIds.materialTypes.join(",")}`
-          );
-        }
-        if (selectedIds.materialSubTypes.length > 0) {
-          params.push(
-            `inventory_sub_type_ids=${selectedIds.materialSubTypes.join(",")}`
-          );
-        }
-
-        // Add parameters to URL if any exist
-        if (params.length > 0) {
-          url += `&${params.join("&")}`;
-        }
-      }
-
-      console.log("Fetching MOR numbers from URL:", url);
-      const response = await axios.get(url);
-      console.log("MOR numbers API response:", response.data);
-
-      // Handle different response structures
-      let morNumbers = [];
-      if (Array.isArray(response.data)) {
-        morNumbers = response.data;
-      } else if (response.data.mor_numbers) {
-        morNumbers = response.data.mor_numbers;
-      } else if (response.data.mor) {
-        morNumbers = response.data.mor;
-      }
-
-      console.log("Processed MOR numbers:", morNumbers);
-
-      const options = morNumbers.map((item) => ({
-        value: item,
-        label: item,
-      }));
-
-      console.log("MOR options to be set:", options);
-      setMorOptions(options);
-    } catch (error) {
-      console.error("Error fetching MOR numbers:", error);
-      setMorOptions([]);
-    }
-  };
-
-  const fetchGrnNumbers = async () => {
-    try {
-      const url = `${baseURL}good_receive_notes/filter_grn_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`;
-      const response = await axios.get(url);
-
-      const options = response.data.grn_numbers.map((item) => ({
-        value: item,
-        label: item,
-      }));
-      setGrnOptions(options);
-    } catch (error) {
-      console.error("Error fetching GRN numbers:", error);
-    }
-  };
-
-  // Initial load - fetch both GRN and MOR numbers
+  // Extract unique MOR and GRN numbers from table data
   useEffect(() => {
-    console.log("Initial load - fetching MOR and GRN numbers");
-    fetchGrnNumbers();
-    fetchMorNumbers(false);
-  }, []);
+    if (data && data.length > 0) {
+      // Extract unique MOR numbers
+      const uniqueMorNumbers = [
+        ...new Set(data.map((item) => item.mor).filter(Boolean)),
+      ];
+      const morOptions = uniqueMorNumbers.map((number) => ({
+        value: number,
+        label: number,
+      }));
+      setMorOptions(morOptions);
 
-  // Filter MOR numbers when material types or sub-types change
-  useEffect(() => {
-    console.log("Material types or sub-types changed:", {
-      materialTypes: selectedIds.materialTypes,
-      materialSubTypes: selectedIds.materialSubTypes,
-    });
-    if (
-      selectedIds.materialTypes.length > 0 ||
-      selectedIds.materialSubTypes.length > 0
-    ) {
-      fetchMorNumbers(true);
-    } else {
-      fetchMorNumbers(false);
+      // Extract unique GRN numbers
+      const uniqueGrnNumbers = [
+        ...new Set(data.map((item) => item.grn_number).filter(Boolean)),
+      ];
+      const grnOptions = uniqueGrnNumbers.map((number) => ({
+        value: number,
+        label: number,
+      }));
+      setGrnOptions(grnOptions);
     }
-  }, [selectedIds.materialTypes, selectedIds.materialSubTypes]);
+  }, [data]);
 
   useEffect(() => {
     const fetchData = async () => {
