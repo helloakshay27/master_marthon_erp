@@ -334,12 +334,24 @@ const MaterialRejctionSlip = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  // const handleSearchChange = (event) => {
+  //   const searchValue = event.target.value;
+  //   setSearchTerm(searchValue);
+
+  //   // Trigger the fetchData function with the search term
+  //   fetchData(activeTab, filters, pagination.current_page, searchValue);
+  // };
   const handleSearchChange = (event) => {
     const searchValue = event.target.value;
     setSearchTerm(searchValue);
 
-    // Trigger the fetchData function with the search term
-    fetchData(activeTab, filters, pagination.current_page, searchValue);
+    if (searchValue.trim() === "") {
+      // If the search bar is empty, reset the table
+      fetchData();
+    } else {
+      // Otherwise, fetch data with the search term
+      fetchData(activeTab, filters, pagination.current_page, searchValue);
+    }
   };
 
   // const filteredData = tableData.filter((item) =>
@@ -469,519 +481,550 @@ const MaterialRejctionSlip = () => {
               </div>
             </div>
             <div className="card mt-3 pb-4">
-              <CollapsibleCard title="Quick Filter">
-                <div>
-                  <div className="row my-2 align-items-end">
-                    {/* Event Title */}
-                    <div className="col-md-2">
-                      <label htmlFor="event-title-select">Company</label>
+              <div className="card-body  mt-2">
+                <CollapsibleCard title="Quick Filter">
+                  <div>
+                    <div className="row my-2 align-items-end">
+                      {/* Event Title */}
+                      <div className="col-md-3">
+                        <div className="form-group">
+                          <label htmlFor="event-title-select">Company</label>
 
-                      <SingleSelector
-                        options={companyOptions}
-                        // onChange={(selectedOption) =>
-                        //   handleFilterChange("company", selectedOption?.value)
-                        // }
-                        // value={
-                        //   filters.company
-                        //     ? companyOptions.find(
-                        //         (opt) => opt.value === filters.company
-                        //       )
-                        //     : null
-                        // }
-                        onChange={handleCompanyChange}
-                        value={selectedCompany}
-                        placeholder="Select Company"
-                        isSearchable={true}
-                      />
-                    </div>
-
-                    {/* Event Number */}
-                    <div className="col-md-2">
-                      <label htmlFor="event-no-select">Project</label>
-
-                      <SingleSelector
-                        options={projects}
-                        // onChange={(selectedOption) =>
-                        //   handleFilterChange("project", selectedOption?.value)
-                        // }
-                        // value={
-                        //   filters.project
-                        //     ? projects.find(
-                        //         (opt) => opt.value === filters.project
-                        //       )
-                        //     : null
-                        // }
-                        onChange={handleProjectChange}
-                        value={selectedProject}
-                        placeholder="Select Project"
-                      />
-                    </div>
-
-                    <div className="col-md-2">
-                      <label htmlFor="event-no-select"> Sub Project</label>
-
-                      <SingleSelector
-                        options={siteOptions}
-                        // onChange={(selectedOption) =>
-                        //   handleFilterChange("site", selectedOption?.value)
-                        // }
-                        // value={
-                        //   filters.site
-                        //     ? siteOptions.find(
-                        //         (opt) => opt.value === filters.site
-                        //       )
-                        //     : null
-                        // }
-                        onChange={(option) => setSelectedSite(option)}
-                        value={selectedSite}
-                        placeholder="Select Sub-project"
-                      />
-                    </div>
-
-                    {/* Status */}
-
-                    <button
-                      type="submit"
-                      className="col-md-1 purple-btn2 ms-4 mt-5"
-                      onClick={handleFilterSubmit}
-                    >
-                      Go{" "}
-                    </button>
-
-                    <button
-                      className="col-md-1 purple-btn2 ms-2 mt-4"
-                      onClick={handleResetFilters}
-                    >
-                      Reset
-                    </button>
-                  </div>
-                  {/* </form> */}
-                </div>
-              </CollapsibleCard>
-              {/* <div className="card mx-3 collapsed-card"> */}
-              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
-                <div className="card-body mt-0 pt-0">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label>From Status</label>
-                        <SingleSelector
-                          name="from_status"
-                          id="from_status"
-                          className="form-control from"
-                          options={[
-                            { value: "", label: "Select Status" },
-                            { value: "draft", label: "Draft" },
-                            {
-                              value: "send_for_approval",
-                              label: "Sent For Approval",
-                            },
-                          ]}
-                          onChange={(selectedOption) =>
-                            console.log("From Status:", selectedOption)
-                          }
-                        />
-                      </div>
-                      <div className="form-group mt-3">
-                        <label>To Status</label>
-                        <SingleSelector
-                          name="to_status"
-                          id="to_status"
-                          className="form-control to"
-                          options={[
-                            { value: "", label: "Select Status" },
-                            { value: "draft", label: "Draft" },
-                            {
-                              value: "send_for_approval",
-                              label: "Sent For Approval",
-                            },
-                          ]}
-                          onChange={(selectedOption) =>
-                            console.log("To Status:", selectedOption)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label>Remark</label>
-                        <textarea
-                          className="form-control remark"
-                          rows={4}
-                          placeholder="Enter ..."
-                        />
-                      </div>
-                    </div>
-                    <div className="offset-md-1 col-md-2">
-                      <button className="purple-btn2 m-0 status">Submit</button>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleCard>
-
-              <div className="d-flex mt-3 align-items-end px-3">
-                <div className="col-md-6">
-                  <div className="input-group">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="form-control tbl-search"
-                      placeholder="Type your keywords here"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                    />
-                    <div className="input-group-append">
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        //  onClick={() => handleSearch()}
-                        onClick={() =>
-                          fetchData(
-                            activeTab,
-                            filters,
-                            pagination.current_page,
-                            searchTerm
-                          )
-                        }
-                      >
-                        <SearchIcon />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="row justify-content-end">
-                    <div className="col-md-5">
-                      <div className="row justify-content-end px-3">
-                        <div className="col-md-3">
-                          <button
-                            type="submit"
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#settings"
-                          >
-                            <SettingIcon></SettingIcon>
-                          </button>
+                          <SingleSelector
+                            options={companyOptions}
+                            // onChange={(selectedOption) =>
+                            //   handleFilterChange("company", selectedOption?.value)
+                            // }
+                            // value={
+                            //   filters.company
+                            //     ? companyOptions.find(
+                            //         (opt) => opt.value === filters.company
+                            //       )
+                            //     : null
+                            // }
+                            onChange={handleCompanyChange}
+                            value={selectedCompany}
+                            placeholder="Select Company"
+                            isSearchable={true}
+                          />
                         </div>
                       </div>
+
+                      {/* Event Number */}
+                      <div className="col-md-3">
+                        <div className="form-group">
+                          <label htmlFor="event-no-select">Project</label>
+
+                          <SingleSelector
+                            options={projects}
+                            // onChange={(selectedOption) =>
+                            //   handleFilterChange("project", selectedOption?.value)
+                            // }
+                            // value={
+                            //   filters.project
+                            //     ? projects.find(
+                            //         (opt) => opt.value === filters.project
+                            //       )
+                            //     : null
+                            // }
+                            onChange={handleProjectChange}
+                            value={selectedProject}
+                            placeholder="Select Project"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="col-md-3">
+                        <div className="form-group">
+                          <label htmlFor="event-no-select"> Sub Project</label>
+
+                          <SingleSelector
+                            options={siteOptions}
+                            // onChange={(selectedOption) =>
+                            //   handleFilterChange("site", selectedOption?.value)
+                            // }
+                            // value={
+                            //   filters.site
+                            //     ? siteOptions.find(
+                            //         (opt) => opt.value === filters.site
+                            //       )
+                            //     : null
+                            // }
+                            onChange={(option) => setSelectedSite(option)}
+                            value={selectedSite}
+                            placeholder="Select Sub-project"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status */}
+
+                      <button
+                        type="submit"
+                        className="col-md-1 purple-btn2 ms-4 mt-5"
+                        onClick={handleFilterSubmit}
+                      >
+                        Go{" "}
+                      </button>
+
+                      <button
+                        className="col-md-1 purple-btn2 ms-2 mt-4"
+                        onClick={handleResetFilters}
+                      >
+                        Reset
+                      </button>
                     </div>
-                    <div className="col-md-4"></div>
+                    {/* </form> */}
+                  </div>
+                </CollapsibleCard>
+                {/* <div className="card mx-3 collapsed-card"> */}
+                <CollapsibleCard
+                  title="Bulk Action"
+                  isInitiallyCollapsed={true}
+                >
+                  <div className="card-body mt-0 pt-0">
+                    <div className="row align-items-center">
+                      <div className="col-md-4">
+                        <div className="form-group">
+                          <label>From Status</label>
+                          <SingleSelector
+                            name="from_status"
+                            id="from_status"
+                            className="form-control from"
+                            options={[
+                              { value: "", label: "Select Status" },
+                              { value: "draft", label: "Draft" },
+                              {
+                                value: "send_for_approval",
+                                label: "Sent For Approval",
+                              },
+                            ]}
+                            onChange={(selectedOption) =>
+                              console.log("From Status:", selectedOption)
+                            }
+                          />
+                        </div>
+                        <div className="form-group mt-3">
+                          <label>To Status</label>
+                          <SingleSelector
+                            name="to_status"
+                            id="to_status"
+                            className="form-control to"
+                            options={[
+                              { value: "", label: "Select Status" },
+                              { value: "draft", label: "Draft" },
+                              {
+                                value: "send_for_approval",
+                                label: "Sent For Approval",
+                              },
+                            ]}
+                            onChange={(selectedOption) =>
+                              console.log("To Status:", selectedOption)
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="form-group">
+                          <label>Remark</label>
+                          <textarea
+                            className="form-control remark"
+                            rows={4}
+                            placeholder="Enter ..."
+                          />
+                        </div>
+                      </div>
+                      <div className="offset-md-1 col-md-2">
+                        <button className="purple-btn2 m-0 status">
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleCard>
+
+                <div className="d-flex mt-3 align-items-end px-3">
+                  <div className="col-md-6">
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        id="searchInput"
+                        className="form-control tbl-search"
+                        placeholder="Type your keywords here"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        autoComplete="off" // Disable browser's default cross button
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
+                          onClick={() =>
+                            fetchData(
+                              activeTab,
+                              filters,
+                              pagination.current_page,
+                              searchTerm
+                            )
+                          }
+                        >
+                          <SearchIcon />
+                        </button>
+                        {searchTerm && (
+                          <button
+                            type="button"
+                            className="btn btn-md btn-default"
+                            onClick={() => {
+                              setSearchTerm(""); // Clear the search term
+                              fetchData();
+                              // activeTab,
+                              // filters,
+                              // pagination.current_page,
+                              // "" // Fetch data without search
+                            }}
+                          >
+                            ✕ {/* Cross icon */}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="row justify-content-end">
+                      <div className="col-md-5">
+                        <div className="row justify-content-end px-3">
+                          <div className="col-md-3">
+                            <button
+                              type="submit"
+                              className="btn btn-md"
+                              data-bs-toggle="modal"
+                              data-bs-target="#settings"
+                            >
+                              <SettingIcon></SettingIcon>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-4"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                className="tbl-container mt-3
+                <div
+                  className="tbl-container mt-3
               
               "
-              >
-                <table className="w-100 table  ">
-                  {loading ? (
-                    <p>Loading data...</p>
-                  ) : error ? (
-                    <p className="text-danger">{error}</p>
-                  ) : (
-                    <>
-                      <thead
-                        // style={{
-                        //   maxWidth: "100%",
-                        //   overflowX: "auto",
-                        //   paddingRight: "20px",
-                        // }}
-                        style={{
-                          position: "sticky",
-                          top: "0",
-                          zIndex: 1020, // Keeps the header above the table body but below modal
-                          background: "#fff", // Ensures readability
-                          boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.1)", // Adds slight shadow for distinction
-                        }}
-                      >
-                        <tr>
-                          {columnVisibility.srNo && <th>Sr. No.</th>}
-                          {columnVisibility.company && <th>Company</th>}
-                          {columnVisibility.project && <th>Project</th>}
-                          {columnVisibility.subProject && <th>Sub Project</th>}
-                          {columnVisibility.rejectionSlipNo && (
-                            <th>Rejection Slip No.</th>
-                          )}
-                          {columnVisibility.poNo && <th>PO No.</th>}
-                          {columnVisibility.challanNo && <th>Challan No.</th>}
-                          {columnVisibility.grnNo && <th>GRN No.</th>}
-                          {columnVisibility.grnDate && <th>GRN Date</th>}
-                          {columnVisibility.rejectionSlipDate && (
-                            <th>Rejection Date</th>
-                          )}
-                          {columnVisibility.createdOn && <th>Created On</th>}
-                          {columnVisibility.morNo && <th>MOR No.</th>}
-                          {columnVisibility.materialType && (
-                            <th>Material Type</th>
-                          )}
-                          {columnVisibility.subType && <th>Sub Type</th>}
-                          {columnVisibility.material && <th>Material</th>}
-                          {columnVisibility.supplierName && (
-                            <th>Supplier Name</th>
-                          )}
-                          {columnVisibility.defectiveQty && (
-                            <th>Defective Qty</th>
-                          )}
-                          {columnVisibility.Remark && <th> Remark</th>}
-                          {columnVisibility.store && <th>Store</th>}
-                          {columnVisibility.status && <th>Status</th>}
-                          {columnVisibility.dueDate && <th>Due Date</th>}
-                          {columnVisibility.overdue && <th>Overdue</th>}
-                          {columnVisibility.dueAt && <th>Due At</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.length > 0 ? (
-                          tableData.map((item, index) => (
-                            <tr key={item.id}>
-                              {/* {columnVisibility.srNo && <td>{index + 1}</td>} */}
-                              <td>
-                                {(pagination.current_page - 1) * pageSize +
-                                  index +
-                                  1}
-                              </td>
-                              {columnVisibility.company && (
-                                <td>{item.company}</td>
-                              )}
-                              {columnVisibility.project && (
-                                <td>{item.project}</td>
-                              )}
-                              {columnVisibility.subProject && (
-                                <td>{item.sub_project}</td>
-                              )}
-                              {/* {columnVisibility.rejectionSlipNo && (
+                >
+                  <table className="w-100 table  ">
+                    {loading ? (
+                      <p>Loading data...</p>
+                    ) : error ? (
+                      <p className="text-danger">{error}</p>
+                    ) : (
+                      <>
+                        <thead
+                          // style={{
+                          //   maxWidth: "100%",
+                          //   overflowX: "auto",
+                          //   paddingRight: "20px",
+                          // }}
+                          style={{
+                            position: "sticky",
+                            top: "0",
+                            zIndex: 1020, // Keeps the header above the table body but below modal
+                            background: "#fff", // Ensures readability
+                            boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.1)", // Adds slight shadow for distinction
+                          }}
+                        >
+                          <tr>
+                            {columnVisibility.srNo && <th>Sr. No.</th>}
+                            {columnVisibility.company && <th>Company</th>}
+                            {columnVisibility.project && <th>Project</th>}
+                            {columnVisibility.subProject && (
+                              <th>Sub Project</th>
+                            )}
+                            {columnVisibility.rejectionSlipNo && (
+                              <th>Rejection Slip No.</th>
+                            )}
+                            {columnVisibility.poNo && <th>PO No.</th>}
+                            {columnVisibility.challanNo && <th>Challan No.</th>}
+                            {columnVisibility.grnNo && <th>GRN No.</th>}
+                            {columnVisibility.grnDate && <th>GRN Date</th>}
+                            {columnVisibility.rejectionSlipDate && (
+                              <th>Rejection Date</th>
+                            )}
+                            {columnVisibility.createdOn && <th>Created On</th>}
+                            {columnVisibility.morNo && <th>MOR No.</th>}
+                            {columnVisibility.materialType && (
+                              <th>Material Type</th>
+                            )}
+                            {columnVisibility.subType && <th>Sub Type</th>}
+                            {columnVisibility.material && <th>Material</th>}
+                            {columnVisibility.supplierName && (
+                              <th>Supplier Name</th>
+                            )}
+                            {columnVisibility.defectiveQty && (
+                              <th>Defective Qty</th>
+                            )}
+                            {columnVisibility.Remark && <th> Remark</th>}
+                            {columnVisibility.store && <th>Store</th>}
+                            {columnVisibility.status && <th>Status</th>}
+                            {columnVisibility.dueDate && <th>Due Date</th>}
+                            {columnVisibility.overdue && <th>Overdue</th>}
+                            {columnVisibility.dueAt && <th>Due At</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableData.length > 0 ? (
+                            tableData.map((item, index) => (
+                              <tr key={item.id}>
+                                {/* {columnVisibility.srNo && <td>{index + 1}</td>} */}
+                                <td>
+                                  {(pagination.current_page - 1) * pageSize +
+                                    index +
+                                    1}
+                                </td>
+                                {columnVisibility.company && (
+                                  <td>{item.company}</td>
+                                )}
+                                {columnVisibility.project && (
+                                  <td>{item.project}</td>
+                                )}
+                                {columnVisibility.subProject && (
+                                  <td>{item.sub_project}</td>
+                                )}
+                                {/* {columnVisibility.rejectionSlipNo && (
                                 <td>{item.rejection_slip_number}</td>
                               )} */}
 
-                              {columnVisibility.rejectionSlipNo && (
-                                <td
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#8b0203",
-                                    textDecoration: "underline",
-                                  }}
-                                  onClick={() =>
-                                    navigate(
-                                      `/material-rejection-slip-create/${item.id}`
-                                    )
-                                  }
-                                >
-                                  {item.rejection_slip_number}
-                                </td>
-                              )}
+                                {columnVisibility.rejectionSlipNo && (
+                                  <td
+                                    style={{
+                                      cursor: "pointer",
+                                      color: "#8b0203",
+                                      textDecoration: "underline",
+                                    }}
+                                    onClick={() =>
+                                      navigate(
+                                        `/material-rejection-slip-create/${item.id}`
+                                      )
+                                    }
+                                  >
+                                    {item.rejection_slip_number}
+                                  </td>
+                                )}
 
-                              {columnVisibility.poNo && (
-                                <td>{item.po_number}</td>
-                              )}
-                              {columnVisibility.challanNo && (
-                                <td>{item.challan_number}</td>
-                              )}
-                              {columnVisibility.grnNo && (
-                                <td>{item.grn_number}</td>
-                              )}
-                              {columnVisibility.grnDate && (
-                                // <td>{item.grn_date}</td>
-                                <td>
-                                  <FormatDate timestamp={item.grn_date} />
-                                </td>
-                              )}
-                              {columnVisibility.rejectionSlipDate && (
-                                // <td>{item.rejection_slip_date}</td>
-                                <td>
-                                  <FormatDate
-                                    timestamp={item.rejection_slip_date}
-                                  />
-                                </td>
-                              )}
-                              {columnVisibility.createdOn && (
-                                // <td>
-                                //   {new Date(
-                                //     item.created_on
-                                //   ).toLocaleDateString()}
-                                // </td>
-                                <td>
-                                  <FormatDate timestamp={item.created_on} />
-                                </td>
-                              )}
-                              {columnVisibility.morNo && (
-                                <td
-                                // style={{
-                                //   cursor: "pointer",
-                                //   color: "#8b0203",
-                                //   textDecoration: "underline",
-                                // }}
-                                // onClick={() =>
-                                //   navigate(
-                                //     `/material-rejection-slip-create/${item.id}`
-                                //   )
-                                // }
-                                >
-                                  {item.mor_number}
-                                </td>
-                              )}
-                              {columnVisibility.materialType && (
-                                <td>{item.material_type}</td>
-                              )}
-                              {columnVisibility.subType && (
-                                <td>{item.sub_type}</td>
-                              )}
-                              {columnVisibility.material && (
-                                <td>{item.material}</td>
-                              )}
-                              {columnVisibility.supplierName && (
-                                <td>{item.supplier_name}</td>
-                              )}
-                              {columnVisibility.defectiveQty && (
-                                <td>{item.defective_qty}</td>
-                              )}
-                              {columnVisibility.Remark && (
-                                <td>{item.defective_remark}</td>
-                              )}
-                              {columnVisibility.store && (
-                                <td>{item.store || "N/A"}</td>
-                              )}
-                              {/* {columnVisibility.status && (
+                                {columnVisibility.poNo && (
+                                  <td>{item.po_number}</td>
+                                )}
+                                {columnVisibility.challanNo && (
+                                  <td>{item.challan_number}</td>
+                                )}
+                                {columnVisibility.grnNo && (
+                                  <td>{item.grn_number}</td>
+                                )}
+                                {columnVisibility.grnDate && (
+                                  // <td>{item.grn_date}</td>
+                                  <td>
+                                    <FormatDate timestamp={item.grn_date} />
+                                  </td>
+                                )}
+                                {columnVisibility.rejectionSlipDate && (
+                                  // <td>{item.rejection_slip_date}</td>
+                                  <td>
+                                    <FormatDate
+                                      timestamp={item.rejection_slip_date}
+                                    />
+                                  </td>
+                                )}
+                                {columnVisibility.createdOn && (
+                                  // <td>
+                                  //   {new Date(
+                                  //     item.created_on
+                                  //   ).toLocaleDateString()}
+                                  // </td>
+                                  <td>
+                                    <FormatDate timestamp={item.created_on} />
+                                  </td>
+                                )}
+                                {columnVisibility.morNo && (
+                                  <td
+                                  // style={{
+                                  //   cursor: "pointer",
+                                  //   color: "#8b0203",
+                                  //   textDecoration: "underline",
+                                  // }}
+                                  // onClick={() =>
+                                  //   navigate(
+                                  //     `/material-rejection-slip-create/${item.id}`
+                                  //   )
+                                  // }
+                                  >
+                                    {item.mor_number}
+                                  </td>
+                                )}
+                                {columnVisibility.materialType && (
+                                  <td>{item.material_type}</td>
+                                )}
+                                {columnVisibility.subType && (
+                                  <td>{item.sub_type}</td>
+                                )}
+                                {columnVisibility.material && (
+                                  <td>{item.material}</td>
+                                )}
+                                {columnVisibility.supplierName && (
+                                  <td>{item.supplier_name}</td>
+                                )}
+                                {columnVisibility.defectiveQty && (
+                                  <td>{item.defective_qty}</td>
+                                )}
+                                {columnVisibility.Remark && (
+                                  <td>{item.defective_remark}</td>
+                                )}
+                                {columnVisibility.store && (
+                                  <td>{item.store || "N/A"}</td>
+                                )}
+                                {/* {columnVisibility.status && (
                                 <td>{item.status}</td>
                               )} */}
-                              {columnVisibility.status && (
-                                <td>
-                                  {item.status.charAt(0).toUpperCase() +
-                                    item.status.slice(1)}
-                                </td>
-                              )}
+                                {columnVisibility.status && (
+                                  <td>
+                                    {item.status.charAt(0).toUpperCase() +
+                                      item.status.slice(1)}
+                                  </td>
+                                )}
 
-                              {columnVisibility.dueDate && (
-                                // <td>{item.due_date || "N/A"}</td>
-                                <td>
-                                  <FormatDate timestamp={item.due_at} />
-                                </td>
-                              )}
-                              {columnVisibility.overdue && (
-                                <td>{item.overdue || "N/A"}</td>
-                              )}
-                              {columnVisibility.dueAt && (
-                                <td>{item.due_at || "N/A"}</td>
-                              )}
+                                {columnVisibility.dueDate && (
+                                  // <td>{item.due_date || "N/A"}</td>
+                                  <td>
+                                    <FormatDate timestamp={item.due_at} />
+                                  </td>
+                                )}
+                                {columnVisibility.overdue && (
+                                  <td>{item.overdue || "N/A"}</td>
+                                )}
+                                {columnVisibility.dueAt && (
+                                  <td>{item.due_at || "N/A"}</td>
+                                )}
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="23" className="text-center">
+                                No data available
+                              </td>
                             </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="23" className="text-center">
-                              No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </>
-                  )}
-                </table>
-              </div>
+                          )}
+                        </tbody>
+                      </>
+                    )}
+                  </table>
+                </div>
 
-              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                <ul className="pagination justify-content-center d-flex">
-                  {/* First Page */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(1)}
-                    >
-                      First
-                    </button>
-                  </li>
-
-                  {/* Previous Page */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page - 1)
-                      }
-                    >
-                      Prev
-                    </button>
-                  </li>
-
-                  {/* Page Numbers */}
-                  {getPageNumbers().map((pageNumber) => (
+                <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                  <ul className="pagination justify-content-center d-flex">
+                    {/* First Page */}
                     <li
-                      key={pageNumber}
                       className={`page-item ${
-                        pagination.current_page === pageNumber ? "active" : ""
+                        pagination.current_page === 1 ? "disabled" : ""
                       }`}
                     >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pageNumber)}
+                        onClick={() => handlePageChange(1)}
                       >
-                        {pageNumber}
+                        First
                       </button>
                     </li>
-                  ))}
 
-                  {/* Next Page */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page + 1)
-                      }
+                    {/* Previous Page */}
+                    <li
+                      className={`page-item ${
+                        pagination.current_page === 1 ? "disabled" : ""
+                      }`}
                     >
-                      Next
-                    </button>
-                  </li>
+                      <button
+                        className="page-link"
+                        onClick={() =>
+                          handlePageChange(pagination.current_page - 1)
+                        }
+                      >
+                        Prev
+                      </button>
+                    </li>
 
-                  {/* Last Page */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(pagination.total_pages)}
+                    {/* Page Numbers */}
+                    {getPageNumbers().map((pageNumber) => (
+                      <li
+                        key={pageNumber}
+                        className={`page-item ${
+                          pagination.current_page === pageNumber ? "active" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      </li>
+                    ))}
+
+                    {/* Next Page */}
+                    <li
+                      className={`page-item ${
+                        pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                      }`}
                     >
-                      Last
-                    </button>
-                  </li>
-                </ul>
+                      <button
+                        className="page-link"
+                        onClick={() =>
+                          handlePageChange(pagination.current_page + 1)
+                        }
+                      >
+                        Next
+                      </button>
+                    </li>
 
-                {/* Showing Entries Info */}
-                <div>
-                  <p>
-                    Showing{" "}
-                    {Math.min(
-                      (pagination.current_page - 1) * pageSize + 1,
-                      pagination.total_entries
-                    )}{" "}
-                    to{" "}
-                    {Math.min(
-                      pagination.current_page * pageSize,
-                      pagination.total_entries
-                    )}{" "}
-                    of {pagination.total_entries} entries
-                  </p>
+                    {/* Last Page */}
+                    <li
+                      className={`page-item ${
+                        pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.total_pages)}
+                      >
+                        Last
+                      </button>
+                    </li>
+                  </ul>
+
+                  {/* Showing Entries Info */}
+                  <div>
+                    <p>
+                      Showing{" "}
+                      {Math.min(
+                        (pagination.current_page - 1) * pageSize + 1,
+                        pagination.total_entries
+                      )}{" "}
+                      to{" "}
+                      {Math.min(
+                        pagination.current_page * pageSize,
+                        pagination.total_entries
+                      )}{" "}
+                      of {pagination.total_entries} entries
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          {/* filter modal */}
+          s{/* filter modal */}
         </div>
       </div>
       <div className="modal fade" id="settings" tabIndex="1" aria-hidden="true">
