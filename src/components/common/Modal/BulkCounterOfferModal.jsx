@@ -2,11 +2,10 @@
 import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
-import ShortDataTable from "../../base/Table/ShortDataTable"; // Use ShortDataTable instead of ShortTable
 import { baseURL } from "../../../confi/apiDomain";
 import { toast } from "react-toastify"; // Import toast for toaster messages
-  import axios from "axios"; // Import axios for API calls
-  import SelectBox from "../../base/Select/SelectBox"; // Import SelectBox for dropdowns
+import axios from "axios"; // Import axios for API calls
+import SelectBox from "../../base/Select/SelectBox"; // Import SelectBox for dropdowns
 
 export default function BulkCounterOfferModal({
   show,
@@ -33,7 +32,7 @@ export default function BulkCounterOfferModal({
       );
       setSumTotal(initialSumTotal);
     }
-  }, [bidCounterData]);
+  }, [bidCounterData]); // Ensure this effect only runs when bidCounterData changes
 
   useEffect(() => {
     if (bidCounterData?.applied_event_template?.applied_bid_template_fields) {
@@ -137,9 +136,6 @@ export default function BulkCounterOfferModal({
         gst_on_freight: formData.gst_on_freight,
         realised_freight_charge_amount: formData.realised_freight_charge_amount,
         gross_total: formData.gross_total,
-        warranty_clause: formData.warranty_clause,
-        payment_terms: formData.payment_terms,
-        loading_unloading_clause: formData.loading_unloading_clause,
         counter_bid_materials_attributes: formData.bid_materials.map(
           (item, index) => ({
             event_material_id: item.event_material_id,
@@ -152,7 +148,13 @@ export default function BulkCounterOfferModal({
             gst: item.gst,
             realised_gst: item.realised_gst,
             vendor_remark: item.vendor_remark,
-            ...extraFields[index], // Spread key-value pairs directly into the material object
+            extra_data: Object.entries(item.extra_data || {}).reduce(
+              (acc, [key, { value }]) => {
+                acc[key] = value;
+                return acc;
+              },
+              {}
+            ),
           })
         ),
         ...extractShortTableData,
@@ -190,7 +192,7 @@ export default function BulkCounterOfferModal({
   const handleMaterialInputChange = (e, field, index) => {
     const value = e.target.value;
     const updatedMaterials = [...formData.bid_materials];
-
+    console.log("value:-------",value)
     if (field === "quantity_available") {
       const quantityRequested =
         parseFloat(updatedMaterials[index].quantity_requested) || 0;
@@ -238,7 +240,6 @@ export default function BulkCounterOfferModal({
     });
   };
 
-  // Ensure calculations are correct when initializing or updating formData
   useEffect(() => {
     if (formData?.bid_materials) {
       const updatedMaterials = formData.bid_materials.map((item) => {
@@ -268,19 +269,22 @@ export default function BulkCounterOfferModal({
         };
       });
 
-      setSumTotal(
-        updatedMaterials.reduce(
-          (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-          0
-        )
+      const newSumTotal = updatedMaterials.reduce(
+        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+        0
       );
+
+      if (newSumTotal !== sumTotal) {
+        setSumTotal(newSumTotal); // Only update sumTotal if it has changed
+      }
 
       setFormData((prev) => ({
         ...prev,
         bid_materials: updatedMaterials,
       }));
     }
-  }, [formData?.bid_materials]);
+  }, [formData?.bid_materials]); // Ensure this effect only runs when formData.bid_materials changes
+  
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -317,6 +321,17 @@ export default function BulkCounterOfferModal({
         [key]: newValue,
       },
     }));
+
+    const updatedMaterials = [...formData.bid_materials];
+    if (!updatedMaterials[index].extra_data) {
+      updatedMaterials[index].extra_data = {};
+    }
+    updatedMaterials[index].extra_data[key] = { value: newValue === "" ? null : newValue }; // Store null for cleared values
+
+    setFormData({
+      ...formData,
+      bid_materials: updatedMaterials,
+    });
   };
 
   const handleOpenTaxModal = (index) => {
@@ -329,7 +344,6 @@ export default function BulkCounterOfferModal({
   };
 
   const handleSaveTaxChanges = () => {
-    // Save changes logic for tax rate modal
     setShowTaxModal(false);
   };
 
@@ -410,9 +424,6 @@ export default function BulkCounterOfferModal({
     setTaxRateData(updatedTaxRateData);
   };
 
-  console.log("formData", formData);
-
-  // Dynamically generate productTableColumns and data using formData.extra_data
   const productTableColumns = [
     { label: "Sr no.", key: "SrNo" },
     { label: "Material Name", key: "product" },
@@ -435,13 +446,18 @@ export default function BulkCounterOfferModal({
     ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
       .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
       .map(([key]) => ({
-      label: key.replace(/_/g, " ").toUpperCase(),
-      key,
-    })),
+        label: key.replace(/_/g, " ").toUpperCase(),
+        key,
+      })),
   ];
 
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
+      const handleInputChange = (e, field) => {
+        const value = e.target.value;
+        handleMaterialInputChange(e, field, index);
+      };
+
       const productName = (
         <input
           type="text"
@@ -449,7 +465,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.material_name || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -460,7 +476,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.material_type || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -471,7 +487,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.inventory_sub_type || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -482,7 +498,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.location || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -492,8 +508,8 @@ export default function BulkCounterOfferModal({
           className="form-control"
           value={item.quantity_requested}
           style={{ width: "auto" }}
-          disabled={true}
           readOnly
+          disabled
         />
       );
 
@@ -503,9 +519,17 @@ export default function BulkCounterOfferModal({
           className="form-control"
           value={item.quantity_available}
           style={{ width: "auto" }}
-          onChange={(e) =>
-            handleMaterialInputChange(e, "quantity_available", index)
-          }
+          onChange={(e) => {
+            const value = parseFloat(e.target.value) || 0;
+            const quantityRequested = parseFloat(item.quantity_requested) || 0;
+
+            if (value > quantityRequested) {
+              toast.error("Quantity available cannot exceed quantity requested.");
+              return;
+            }
+
+            handleMaterialInputChange(e, "quantity_available", index);
+          }}
         />
       );
 
@@ -535,7 +559,7 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.discount}
-          onChange={(e) => handleMaterialInputChange(e, "discount", index)}
+          onChange={(e) => handleInputChange(e, "discount")}
         />
       );
 
@@ -545,6 +569,7 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.realised_discount}
+          readOnly
           disabled
         />
       );
@@ -555,7 +580,7 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.gst}
-          onChange={(e) => handleMaterialInputChange(e, "gst", index)}
+          onChange={(e) => handleInputChange(e, "gst")}
         />
       );
 
@@ -565,6 +590,7 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.realised_gst}
+          readOnly
           disabled
         />
       );
@@ -575,7 +601,7 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.vendor_remark}
-          onChange={(e) => handleMaterialInputChange(e, "vendor_remark", index)}
+          onChange={(e) => handleInputChange(e, "vendor_remark")}
         />
       );
 
@@ -586,7 +612,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.pms_brand_name || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -597,7 +623,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.pms_colour_name || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -608,7 +634,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.event_material?.generic_info_name || "_"}
           readOnly
-          disabled={true}
+          disabled
         />
       );
 
@@ -621,23 +647,22 @@ export default function BulkCounterOfferModal({
         </button>
       );
 
-      const extraColumnData = Object.entries(item.extra_data || {}).reduce(
-        (acc, [key, { value }]) => {
+      const extraColumnData = Object.entries(item.extra_data || {})
+        .reduce((acc, [key, { value, readonly }]) => {
           acc[key] = (
             <input
               type="text"
               className="form-control"
               style={{ width: "auto" }}
-              value={extraFields[index]?.[key] || ""}
+              value={extraFields[index]?.[key] ?? value ?? ""}
               onChange={(e) =>
                 handleExtraDataChange(index, key, e.target.value)
               }
+              readOnly={readonly}
             />
           );
           return acc;
-        },
-        {}
-      );
+        }, {});
 
       return {
         Sno: index + 1,
@@ -661,12 +686,6 @@ export default function BulkCounterOfferModal({
         ...extraColumnData,
       };
     }) || [];
-
-  // Prepare data for ShortDataTable using formData.extra_data
-  const shortTableData = Object.keys(formData.extra_data || {}).map((key) => ({
-    label: key.replace(/_/g, " ").toUpperCase(),
-    value: extraFields[0]?.[key] || formData.extra_data[key]?.value || "", // Fetch value from extra_data
-  }));
 
   return (
     <>
@@ -703,22 +722,57 @@ export default function BulkCounterOfferModal({
         <Table columns={productTableColumns} data={productTableData} />
 
         <div className="d-flex justify-content-end">
-          {console.log("shortTableData", shortTableData)}
-          <ShortDataTable
-            data={shortTableData}
-            editable={true}
-            onValueChange={(updatedData) => {
-              const updatedExtraFields = updatedData.reduce((acc, item) => {
-                acc[item.label.toLowerCase().replace(/ /g, "_")] = item.value;
-                return acc;
-              }, {});
-              setExtraFields((prev) => ({
-                ...prev,
-                0: updatedExtraFields, // Update the first index of extraFields
-              }));
-            }}
-          />
+          <table
+            className="tbl-container mt-4 ShortTable"
+            style={{ width: "40% !important" }}
+          >
+            <tbody>
+              {Object.keys(formData.extra_data || {}).map((key, index) => {
+                const label = key.replace(/_/g, " ").toUpperCase();
+                const value =
+                  extraFields[0]?.[key] ||
+                  formData.extra_data[key]?.value ||
+                  "";
+
+                return (
+                  <tr
+                    key={index}
+                    style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
+                  >
+                    <td
+                      style={{
+                        padding: "12px",
+                        fontWeight: "bold",
+                        background: "#8b0203",
+                      }}
+                    >
+                      {label}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px",
+                        color: "#000",
+                        textAlign: "left",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={extraFields[0]?.[key] || value || ""}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          handleExtraDataChange(0, key, newValue);
+                        }}
+                        style={{ backgroundColor: "#fff", color: "#000" }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+
         <div className="d-flex justify-content-end">
           <h4>Sum Total : ₹{sumTotal}</h4>
         </div>
@@ -761,7 +815,10 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control bg-light"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.material_name || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]
+                      ?.material_name || ""
+                  }
                   readOnly
                 />
               </div>
@@ -772,13 +829,16 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control bg-light"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.event_material?.inventory_id || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]
+                      ?.event_material?.inventory_id || ""
+                  }
                   readOnly
                 />
               </div>
             </div>
           </div>
-      
+
           <div className="row mb-3">
             <div className="col-md-6">
               <div className="mb-3">
@@ -786,7 +846,10 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.price || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]?.price ||
+                    ""
+                  }
                   readOnly
                 />
               </div>
@@ -797,13 +860,16 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control bg-light"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.quantity_available || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]
+                      ?.quantity_available || ""
+                  }
                   readOnly
                 />
               </div>
             </div>
           </div>
-      
+
           <div className="row mb-3">
             <div className="col-md-6">
               <div className="mb-3">
@@ -811,7 +877,10 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.discount || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]
+                      ?.discount || ""
+                  }
                   readOnly
                 />
               </div>
@@ -822,14 +891,16 @@ export default function BulkCounterOfferModal({
                 <input
                   type="text"
                   className="form-control bg-light"
-                  value={formData?.bid_materials?.[selectedMaterialIndex]?.total_amount || ""}
+                  value={
+                    formData?.bid_materials?.[selectedMaterialIndex]
+                      ?.total_amount || ""
+                  }
                   readOnly
                 />
               </div>
             </div>
           </div>
-      
-          {/* Tax Charges Table */}
+
           <div className="row mt-4">
             <div className="col-12">
               <div className="table-responsive">
@@ -843,7 +914,6 @@ export default function BulkCounterOfferModal({
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Total Base Cost Row */}
                     <tr>
                       <td>Total Base Cost</td>
                       <td></td>
@@ -852,141 +922,125 @@ export default function BulkCounterOfferModal({
                         <input
                           type="number"
                           className="form-control bg-light"
-                          value={formData?.bid_materials?.[selectedMaterialIndex]?.total_amount || ""}
+                          value={
+                            formData?.bid_materials?.[selectedMaterialIndex]
+                              ?.total_amount || ""
+                          }
                           readOnly
                         />
                       </td>
                       <td></td>
                     </tr>
-                    
-                    {/* Addition Tax & Charges Row */}
                     <tr>
                       <td>Addition Tax & Charges</td>
                       <td></td>
                       <td></td>
                       <td></td>
                     </tr>
-                    
-                    {/* Addition Tax & Charges Items */}
-                    {formData?.bid_materials?.[selectedMaterialIndex]?.extra?.addition_tax_charges?.map(
-                      (item, rowIndex) => (
-                        <tr key={`${rowIndex}-${item.id}`}>
-                          <td>
-                            <SelectBox
-                              options={taxOptions}
-                              defaultValue={item.taxChargeType}
-                              onChange={(value) =>
-                                handleTaxChargeChange(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "taxChargeType",
-                                  value,
-                                  "addition"
-                                )
-                              }
-                              className="custom-select"
-                              isDisableFirstOption={true}
-                              disabled={true}
-                            />
-                          </td>
-                          <td>
-                            <select
-                              className="form-select"
-                              value={item.taxChargePerUom}
-                              onChange={(e) =>
-                                handleTaxChargeChange(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "taxChargePerUom",
-                                  e.target.value,
-                                  "addition"
-                                )
-                              }
-                              disabled={true}
-                            >
-                              <option value="">Select Tax</option>
-                              <option value="5%">5%</option>
-                              <option value="12%">12%</option>
-                              <option value="18%">18%</option>
-                              <option value="28%">28%</option>
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              checked={item.inclusive}
-                              onChange={(e) =>
-                                handleTaxChargeChange(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "inclusive",
-                                  e.target.checked,
-                                  "addition"
-                                )
-                              }
-                              readOnly
-                              disabled={true} 
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={item.amount}
-                              onChange={(e) => {
-                                const baseAmount =
-                                  parseFloat(
-                                    formData?.bid_materials?.[selectedMaterialIndex]?.total_amount
-                                  ) || 0;
-                                const percentage = parseFloat(e.target.value) || 0;
-                                const calculatedAmount = item.inclusive
-                                  ? baseAmount * (percentage / (100 + percentage))
-                                  : baseAmount * (percentage / 100);
-              
-                                handleTaxChargeChange(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "amount",
-                                  calculatedAmount.toFixed(2),
-                                  "addition"
-                                );
-                              }}
-                              readOnly
-                              disabled={true}
-                            />
-                          </td>
-                          {/* <td className="text-center">
-                            <button
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() =>
-                                removeTaxChargeItem(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "addition"
-                                )
-                              }
-                            >
-                              <span>×</span>
-                            </button>
-                          </td> */}
-                        </tr>
-                      )
-                    )}
+                    {formData?.bid_materials?.[
+                      selectedMaterialIndex
+                    ]?.extra?.addition_tax_charges?.map((item, rowIndex) => (
+                      <tr key={`${rowIndex}-${item.id}`}>
+                        <td>
+                          <SelectBox
+                            options={taxOptions}
+                            defaultValue={item.taxChargeType}
+                            onChange={(value) =>
+                              handleTaxChargeChange(
+                                selectedMaterialIndex,
+                                item.id,
+                                "taxChargeType",
+                                value,
+                                "addition"
+                              )
+                            }
+                            className="custom-select"
+                            isDisableFirstOption={true}
+                            disabled={true}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.taxChargePerUom}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                selectedMaterialIndex,
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "addition"
+                              )
+                            }
+                            disabled={true}
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="5%">5%</option>
+                            <option value="12%">12%</option>
+                            <option value="18%">18%</option>
+                            <option value="28%">28%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                selectedMaterialIndex,
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "addition"
+                              )
+                            }
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) => {
+                              const baseAmount =
+                                parseFloat(
+                                  formData?.bid_materials?.[
+                                    selectedMaterialIndex
+                                  ]?.total_amount
+                                ) || 0;
+                              const percentage =
+                                parseFloat(e.target.value) || 0;
+                              const calculatedAmount = item.inclusive
+                                ? baseAmount * (percentage / (100 + percentage))
+                                : baseAmount * (percentage / 100);
 
-                    
-                    {/* Deduction Tax Rows */}
+                              handleTaxChargeChange(
+                                selectedMaterialIndex,
+                                item.id,
+                                "amount",
+                                calculatedAmount.toFixed(2),
+                                "addition"
+                              );
+                            }}
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
+                      </tr>
+                    ))}
                     <tr>
                       <td>Deduction Tax</td>
                       <td></td>
                       <td></td>
                       <td></td>
                     </tr>
-
-                    {formData?.bid_materials?.[selectedMaterialIndex]?.extra?.deduction_tax?.map(
-                      (item, rowIndex) => (
-                        <>
-                        
+                    {formData?.bid_materials?.[
+                      selectedMaterialIndex
+                    ]?.extra?.deduction_tax?.map((item, rowIndex) => (
+                      <>
                         <tr key={item.id}>
                           <td>
                             <SelectBox
@@ -1059,9 +1113,8 @@ export default function BulkCounterOfferModal({
                             />
                           </td>
                         </tr>
-                        </>
-                      )
-                    )}
+                      </>
+                    ))}
                   </tbody>
                 </table>
               </div>
