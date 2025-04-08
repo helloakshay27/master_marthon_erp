@@ -74,7 +74,7 @@ export default function ResponseTab({ isCounterOffer }) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const responseData = await response.json();        
+        const responseData = await response.json();
 
         let data = Array.isArray(responseData.vendors)
           ? responseData.vendors.find((vendor) => vendor.id === vendorId)
@@ -89,14 +89,13 @@ export default function ResponseTab({ isCounterOffer }) {
             vendor.id === vendorId ? { ...vendor, ...data } : vendor
           )
         );
-        
       } else {
         // Use revision data
         const response = await axios.get(
           `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
         );
         data = response.data;
-        
+
         const updatedEventVendors = eventVendors.map((vendor) => {
           if (vendor.id === vendorId) {
             return {
@@ -112,7 +111,6 @@ export default function ResponseTab({ isCounterOffer }) {
           return vendor;
         });
         setEventVendors(updatedEventVendors);
-        
       }
     } catch (err) {
       setError(err.message);
@@ -120,7 +118,6 @@ export default function ResponseTab({ isCounterOffer }) {
       setLoading(false);
     }
   };
-  
 
   const handleCarouselChange = async (vendorId, selectedIndex) => {
     setActiveIndexes((prevIndexes) => ({
@@ -191,7 +188,6 @@ export default function ResponseTab({ isCounterOffer }) {
           `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBidCounterData(response.data);
-
       } catch (err) {
         setError(err.message);
       } finally {
@@ -211,7 +207,6 @@ export default function ResponseTab({ isCounterOffer }) {
           `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setParticipationSummary(response.data);
-        
       } catch (err) {
         setError(err.message);
       }
@@ -224,8 +219,8 @@ export default function ResponseTab({ isCounterOffer }) {
     if (!dateString) return "_";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "_";
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
   };
@@ -237,7 +232,7 @@ export default function ResponseTab({ isCounterOffer }) {
     const remainingWidth = tableWidth - occupiedWidth;
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
-  
+
   const getOrdinalSuffix = (num) => {
     if (num === 1) return "st";
     if (num === 2) return "nd";
@@ -306,25 +301,29 @@ export default function ResponseTab({ isCounterOffer }) {
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Participants"
               >
-                <i className="bi bi-check2 me-2"></i>{participationSummary.participated_vendor || 0}
+                <i className="bi bi-check2 me-2"></i>
+                {participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Emails"
               >
-                <i className="bi bi-envelope me-2"></i>{participationSummary.participated_vendor || 0}
+                <i className="bi bi-envelope me-2"></i>
+                {participationSummary.participated_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Views"
               >
-                <i className="bi bi-eye me-2"></i>{participationSummary.invited_vendor}
+                <i className="bi bi-eye me-2"></i>
+                {participationSummary.invited_vendor}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Completed"
               >
-                <i className="bi bi-check-circle me-2"></i>{participationSummary.invited_vendor}
+                <i className="bi bi-check-circle me-2"></i>
+                {participationSummary.invited_vendor}
               </div>
             </div>
           </div>
@@ -346,7 +345,6 @@ export default function ResponseTab({ isCounterOffer }) {
               }}
             ></div>
             {eventVendors.length > 0 ? (
-              
               <>
                 <div style={{ overflowX: "auto" }}>
                   <table
@@ -378,7 +376,7 @@ export default function ResponseTab({ isCounterOffer }) {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
                           // console.log("format", vendor?.bids?.[0]?.created_at);
-                          
+
                           return (
                             <td
                               key={vendor.id}
@@ -423,7 +421,9 @@ export default function ResponseTab({ isCounterOffer }) {
                                   )}
                                 </div>
                                 <button
-                                  className={`purple-btn1 d-block mt-2 ${isCounterOffer ? 'disabled-btn' : ''}`}
+                                  className={`purple-btn1 d-block mt-2 ${
+                                    isCounterOffer ? "disabled-btn" : ""
+                                  }`}
                                   onClick={() => {
                                     if (
                                       vendor?.bids?.length > 0 &&
@@ -450,7 +450,7 @@ export default function ResponseTab({ isCounterOffer }) {
                       <tr>
                         <td
                           className="viewBy-tBody1-p"
-                          style={{ minidth: "300px", textAlign:'left' }}
+                          style={{ minidth: "300px", textAlign: "left" }}
                         >
                           Gross Total
                         </td>
@@ -468,21 +468,24 @@ export default function ResponseTab({ isCounterOffer }) {
                 </div>
 
                 {segeregatedMaterialData?.map((materialData, ind) => {
-                
                   // Extract unique extra columns from bids_values
                   const extraColumns = Array.from(
                     new Set(
-                      materialData.bids_values?.flatMap((material) => material.extra_columns) || []
+                      materialData.bids_values?.flatMap(
+                        (material) => material.extra_columns
+                      ) || []
                     )
                   );
-                
+
                   // Extract keys from the extra object dynamically
                   const extraKeys = Array.from(
                     new Set(
-                      materialData.bids_values?.flatMap((material) => Object.keys(material.extra || {})) || []
+                      materialData.bids_values?.flatMap((material) =>
+                        Object.keys(material.extra || {})
+                      ) || []
                     )
                   );
-                
+
                   return (
                     <Accordion
                       key={ind}
@@ -491,42 +494,58 @@ export default function ResponseTab({ isCounterOffer }) {
                       isDefault={true}
                       tableColumn={[
                         { label: "Best Total Amount", key: "bestTotalAmount" },
-                        { label: "Quantity Available", key: "quantityAvailable" },
+                        {
+                          label: "Quantity Available",
+                          key: "quantityAvailable",
+                        },
                         { label: "Price", key: "price" },
                         { label: "Discount", key: "discount" },
-                        { label: "Realised Discount", key: "realisedDiscount" },
+                        {
+                          label: "Realised Discount",
+                          key: "realisedDiscount",
+                        },
                         { label: "GST", key: "gst" },
                         { label: "Realised GST", key: "realisedGST" },
                         { label: "Landed Amount", key: "landedAmount" },
-                        { label: "Participant Attachment", key: "participantAttachment" },
+                        {
+                          label: "Participant Attachment",
+                          key: "participantAttachment",
+                        },
                         { label: "Total Amount", key: "totalAmount" },
                         // Dynamically add keys from the extra object
                         // ...extraKeys.map((key) => ({
-                        //   label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                        //   label: key
+                        //     .replace(/_/g, " ")
+                        //     .replace(/\b\w/g, (c) => c.toUpperCase()),
                         //   key: key,
                         // })),
                         // Dynamically add extra columns
                         ...extraColumns
                           .filter((column) => /^[A-Z]/.test(column)) // Filter columns with capitalized names
                           .map((column) => ({
-                            label: column.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                            label: column
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (c) => c.toUpperCase()),
                             key: column,
                           })),
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
+                        console.log("material:----", material);
                         const extraData = material.extra_data || {};
-                        console.log("extraData", extraData);
-                        
+
                         return {
                           bestTotalAmount: material.total_amount || "_",
-                          quantityAvailable: material.quantity_available || "_",
+                          quantityAvailable:
+                            material.quantity_available || "_",
                           price: material.price || "_",
                           discount: material.discount || "_",
-                          realisedDiscount: material.realised_discount || "_",
+                          realisedDiscount:
+                            material.realised_discount || "_",
                           gst: material.gst || "_",
                           realisedGST: material.realised_gst || "_",
                           landedAmount: material.landed_amount || "_",
-                          participantAttachment: material.participant_attachment || "_",
+                          participantAttachment:
+                            material.participant_attachment || "_",
                           totalAmount: material.total_amount || "_",
                           // Map keys from the extra object dynamically
                           // ...extraKeys.reduce((acc, key) => {
@@ -541,8 +560,12 @@ export default function ResponseTab({ isCounterOffer }) {
                                 ? value
                                     .map(
                                       (item) =>
-                                        `${item.taxChargeType || ""}: ${item.amount || 0}${
-                                          item.taxChargePerUom ? ` (${item.taxChargePerUom})` : ""
+                                        `${item.taxChargeType || ""}: ${
+                                          item.amount || 0
+                                        }${
+                                          item.taxChargePerUom
+                                            ? ` (${item.taxChargePerUom})`
+                                            : ""
                                         }`
                                     )
                                     .join(", ")
@@ -558,41 +581,38 @@ export default function ResponseTab({ isCounterOffer }) {
                   );
                 })}
                 <Accordion
-                  title={"Other Charges"}
+                  title={"Other Informations"}
                   isDefault={true}
                   tableColumn={[
-                    {
-                      label: "Freight Charge Amount",
-                      key: "freightChrg",
-                    },
-                    { label: "GST on Freight", key: "freightGst" },
-                    {
-                      label: "Realised Freight Amount",
-                      key: "freightRealised",
-                    },
-                    { label: "Warranty Clause", key: "warranty" },
-                    { label: "Payment Terms", key: "payment" },
-                    {
-                      label: "Loading / Unloading Clause",
-                      key: "loading",
-                    },
-                    { label: "Gross Total", key: "grossTotal" },
+                    
+                    // Dynamically add keys from the extra object
+                    ...Array.from(
+                      new Set(
+                        eventVendors?.flatMap((vendor) =>
+                          vendor?.bids?.[0]?.extra
+                            ? Object.keys(vendor.bids[0].extra)
+                            : []
+                        ) || []
+                      )
+                    ).map((key) => ({
+                      label: key
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase()),
+                      key: key,
+                    })),
                   ]}
                   tableData={eventVendors?.flatMap((vendor) =>
                     vendor?.bids?.[0]
                       ? [
                           {
-                            freightChrg:
-                              vendor.bids[0].freight_charge_amount || "_",
-                            freightGst: vendor.bids[0].gst_on_freight || "_",
-                            freightRealised:
-                              vendor.bids[0].realised_freight_charge_amount ||
-                              "_",
-                            warranty: vendor.bids[0].warranty_clause || "_",
-                            payment: vendor.bids[0].payment_terms || "_",
-                            loading:
-                              vendor.bids[0].loading_unloading_clause || "_",
-                            grossTotal: vendor.bids[0].gross_total || "_",
+                            // Map keys from the extra object dynamically
+                            ...Object.keys(vendor.bids[0].extra || {}).reduce(
+                              (acc, key) => {
+                                acc[key] = vendor.bids[0].extra[key] || "_";
+                                return acc;
+                              },
+                              {}
+                            ),
                           },
                         ]
                       : []
