@@ -668,11 +668,14 @@ const BOQList = () => {
       const unitId = selectedUnit?.value ||"";
     console.log("filter ids:", categoryId,subCategoryId,status, unitId)
 
+    const search = searchKeyword||"";
+    console.log("search", search)
+
       setLoading(true); // Set loading to true before making the request
 
       axios
         .get(
-          `${baseURL}boq_details.json?work_category_id=${categoryId}&work_sub_category_id=${subCategoryId}&q[status_eq]=${status}&q[unit_of_measure_id_eq]=${unitId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}boq_details.json?work_category_id=${categoryId}&work_sub_category_id=${subCategoryId}&q[status_eq]=${status}&q[unit_of_measure_id_eq]=${unitId}&search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
