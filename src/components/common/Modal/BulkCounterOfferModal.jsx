@@ -227,7 +227,7 @@ export default function BulkCounterOfferModal({
 
     setSumTotal(
       updatedMaterials.reduce(
-        (acc, item) => acc + parseFloat(item.total_amount),
+        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
         0
       )
     );
@@ -237,6 +237,50 @@ export default function BulkCounterOfferModal({
       bid_materials: updatedMaterials,
     });
   };
+
+  // Ensure calculations are correct when initializing or updating formData
+  useEffect(() => {
+    if (formData?.bid_materials) {
+      const updatedMaterials = formData.bid_materials.map((item) => {
+        const price = parseFloat(item.price) || 0;
+        const quantityAvail = parseFloat(item.quantity_available) || 0;
+        const discount = parseFloat(item.discount) || 0;
+        const gst = parseFloat(item.gst) || 0;
+
+        const total = price * quantityAvail;
+
+        const realisedDiscount = (total * discount) / 100;
+
+        const landedAmount = total - realisedDiscount;
+        let realisedGst = 0;
+        if (gst > 0) {
+          realisedGst = (landedAmount * gst) / 100;
+        }
+
+        const finalTotal = landedAmount + realisedGst;
+
+        return {
+          ...item,
+          realised_discount: realisedDiscount.toFixed(2),
+          landed_amount: landedAmount.toFixed(2),
+          realised_gst: realisedGst.toFixed(2),
+          total_amount: finalTotal.toFixed(2),
+        };
+      });
+
+      setSumTotal(
+        updatedMaterials.reduce(
+          (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+          0
+        )
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        bid_materials: updatedMaterials,
+      }));
+    }
+  }, [formData?.bid_materials]);
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -368,7 +412,7 @@ export default function BulkCounterOfferModal({
 
   console.log("formData", formData);
 
-  // Dynamically generate productTableColumns and data using extra_data
+  // Dynamically generate productTableColumns and data using formData.extra_data
   const productTableColumns = [
     { label: "Sr no.", key: "SrNo" },
     { label: "Material Name", key: "product" },
@@ -391,9 +435,9 @@ export default function BulkCounterOfferModal({
     ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
       .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
       .map(([key]) => ({
-        label: key.replace(/_/g, " ").toUpperCase(),
-        key,
-      })),
+      label: key.replace(/_/g, " ").toUpperCase(),
+      key,
+    })),
   ];
 
   const productTableData =
@@ -584,7 +628,7 @@ export default function BulkCounterOfferModal({
               type="text"
               className="form-control"
               style={{ width: "auto" }}
-              value={extraFields[index]?.[key] || value}
+              value={extraFields[index]?.[key] || ""}
               onChange={(e) =>
                 handleExtraDataChange(index, key, e.target.value)
               }
@@ -617,6 +661,12 @@ export default function BulkCounterOfferModal({
         ...extraColumnData,
       };
     }) || [];
+
+  // Prepare data for ShortDataTable using formData.extra_data
+  const shortTableData = Object.keys(formData.extra_data || {}).map((key) => ({
+    label: key.replace(/_/g, " ").toUpperCase(),
+    value: extraFields[0]?.[key] || formData.extra_data[key]?.value || "", // Fetch value from extra_data
+  }));
 
   return (
     <>
@@ -653,10 +703,20 @@ export default function BulkCounterOfferModal({
         <Table columns={productTableColumns} data={productTableData} />
 
         <div className="d-flex justify-content-end">
+          {console.log("shortTableData", shortTableData)}
           <ShortDataTable
-            data={freightData}
+            data={shortTableData}
             editable={true}
-            onValueChange={handleFreightDataChange}
+            onValueChange={(updatedData) => {
+              const updatedExtraFields = updatedData.reduce((acc, item) => {
+                acc[item.label.toLowerCase().replace(/ /g, "_")] = item.value;
+                return acc;
+              }, {});
+              setExtraFields((prev) => ({
+                ...prev,
+                0: updatedExtraFields, // Update the first index of extraFields
+              }));
+            }}
           />
         </div>
         <div className="d-flex justify-content-end">
