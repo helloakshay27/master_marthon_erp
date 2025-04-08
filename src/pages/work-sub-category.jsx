@@ -27,23 +27,14 @@ const WorkSubCategory = () => {
                       "Description": "",
               "Benchmark_Lead_Time": "",
               "SAC_Code": "12345",
-                      // "material_type_details": [
-                      //     {
-                      //         "id": 69,
-                      //         "name": "CONCRETE",
-                      //         "budget": 785.2099990844727
-                      //     },
-                      //     {
-                      //         "id": 70,
-                      //         "name": "STEEL-TMT",
-                      //         "budget": 1.0
-                      //     },
-                      //     {
-                      //         "id": 72,
-                      //         "name": "COVER BLOCK",
-                      //         "budget": 367.510009765625
-                      //     }
-                      // ],
+                      "material_type_details": [
+                          {
+                              "id": 6922,
+                              "name": "Excavation",
+                              "budget": 785.2099990844727
+                          },
+                         
+                      ],
                       "sub_categories_3": [
                           {
                               "id": 33,
@@ -51,38 +42,14 @@ const WorkSubCategory = () => {
                               "Description": "",
               "Benchmark_Lead_Time": "",
               "SAC_Code": "12345",
-                              // "material_type_details": [
-                              //     {
-                              //         "id": 63,
-                              //         "name": "DOOR WORK",
-                              //         "budget": 89.77999877929688
-                              //     },
-                              //     {
-                              //         "id": 64,
-                              //         "name": "CEMENT",
-                              //         "budget": 59.0
-                              //     },
-                              //     {
-                              //         "id": 66,
-                              //         "name": "SAND",
-                              //         "budget": 185.0
-                              //     },
-                              //     {
-                              //         "id": 67,
-                              //         "name": "ADHESIVE",
-                              //         "budget": 278.489990234375
-                              //     },
-                              //     {
-                              //         "id": 75,
-                              //         "name": "TILES",
-                              //         "budget": 2355.760009765625
-                              //     },
-                              //     {
-                              //         "id": 78,
-                              //         "name": "STONE",
-                              //         "budget": 1516.219970703125
-                              //     }
-                              // ],
+                              "material_type_details": [
+                                  {
+                                      "id": 639,
+                                      "name": "Excavation",
+                                      "budget": 89.77999877929688
+                                  },
+                                  
+                              ],
                               "sub_categories_4": [
                                 {
                                   "id": 33,
@@ -92,7 +59,7 @@ const WorkSubCategory = () => {
               "SAC_Code": "12345",
                               "material_type_details": [
                                   {
-                                      "id": 63,
+                                      "id": 638,
                                       "name": "Excavation",
                                       "budget": 89.77999877929688
                                   },
@@ -122,23 +89,14 @@ const WorkSubCategory = () => {
                           "Description": "",
                   "Benchmark_Lead_Time": "",
                   "SAC_Code": "12345",
-                          // "material_type_details": [
-                          //     {
-                          //         "id": 69,
-                          //         "name": "CONCRETE",
-                          //         "budget": 785.2099990844727
-                          //     },
-                          //     {
-                          //         "id": 70,
-                          //         "name": "STEEL-TMT",
-                          //         "budget": 1.0
-                          //     },
-                          //     {
-                          //         "id": 72,
-                          //         "name": "COVER BLOCK",
-                          //         "budget": 367.510009765625
-                          //     }
-                          // ],
+                          "material_type_details": [
+                              {
+                                  "id": 693,
+                                  "name": "Plastering",
+                                  "budget": 785.2099990844727
+                              },
+                             
+                          ],
                           "sub_categories_3": [
                               {
                                   "id": 331,
@@ -146,38 +104,13 @@ const WorkSubCategory = () => {
                                   "Description": "",
                   "Benchmark_Lead_Time": "",
                   "SAC_Code": "12345",
-                                  // "material_type_details": [
-                                  //     {
-                                  //         "id": 63,
-                                  //         "name": "DOOR WORK",
-                                  //         "budget": 89.77999877929688
-                                  //     },
-                                  //     {
-                                  //         "id": 64,
-                                  //         "name": "CEMENT",
-                                  //         "budget": 59.0
-                                  //     },
-                                  //     {
-                                  //         "id": 66,
-                                  //         "name": "SAND",
-                                  //         "budget": 185.0
-                                  //     },
-                                  //     {
-                                  //         "id": 67,
-                                  //         "name": "ADHESIVE",
-                                  //         "budget": 278.489990234375
-                                  //     },
-                                  //     {
-                                  //         "id": 75,
-                                  //         "name": "TILES",
-                                  //         "budget": 2355.760009765625
-                                  //     },
-                                  //     {
-                                  //         "id": 78,
-                                  //         "name": "STONE",
-                                  //         "budget": 1516.219970703125
-                                  //     }
-                                  // ],
+                                  "material_type_details": [
+                                      {
+                                          "id": 632,
+                                          "name": "Plastering",
+                                          "budget": 89.77999877929688
+                                      },
+                                  ],
                                   "sub_categories_4": [
                                     {
                                       "id": 332,
