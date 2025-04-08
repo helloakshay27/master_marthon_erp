@@ -144,7 +144,7 @@ export default function VendorDetails() {
           })
         );
 
-        setAdditionalColumns(columns);
+        // setAdditionalColumns(columns);
         // setBidTemplate(formattedData);
         // console.log("response", response.data);
       } catch (error) {
@@ -475,20 +475,20 @@ export default function VendorDetails() {
       const initialData = initialResponse.data;
       const eventMaterials = initialData.event_materials || [];
       const revisedBid = initialData.revised_bid;
-      
+
       // Step 0: Store the revised bid in state
       setRevisedBid(revisedBid);
-      
+
       // Step 1: Collect all unique keys from extra_data
       const uniqueAdditionalColumns = new Set();
-      
+
       eventMaterials.forEach((item) => {
         const extraKeys = Object.keys(item.extra_data || {});
         extraKeys.forEach((key) => {
           uniqueAdditionalColumns.add(key);
         });
       });
-      
+
       // Step 2: Convert keys to array of { key, label } objects
       const additionalColumns = Array.from(uniqueAdditionalColumns).map((key) => ({
         key,
@@ -497,10 +497,10 @@ export default function VendorDetails() {
           .replace(/([a-z])([A-Z])/g, "$1 $2")       // Add space in camelCase
           .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize each word
       }));
-      
+
       // Step 3: Set the additional columns in state
       setAdditionalColumns(additionalColumns);
-      
+
 
       if (!revisedBid) {
         console.log("initial data ", initialData);
@@ -515,7 +515,7 @@ export default function VendorDetails() {
             },
             {}
           );
-          console.log("flatExtraData", flatExtraData);
+          console.log("initialResponse", initialResponse.data);
           const bidMaterial = item.bid_materials?.[0]; // Assuming the first bid material
           console.log
 
@@ -538,6 +538,7 @@ export default function VendorDetails() {
             attachment: null, // Placeholder for attachment
             varient: item.material_type, // Use extracted material_type
             extra_data: flatExtraData,
+            revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
           };
           console.log("bidMaterial", bidMaterial);
 
@@ -922,11 +923,14 @@ export default function VendorDetails() {
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
 
-    const extractShortTableData = shortTableData.reduce((acc, curr) => {
-      const { firstBid, counterBid } = curr.value;
-      acc[curr.label] = counterBid || firstBid;
-      return acc;
-    }, {});
+      const extractShortTableData = Array.isArray(shortTableData)
+      ? shortTableData.reduce((acc, curr) => {
+          const { firstBid, counterBid } = curr.value || {};
+          acc[curr.label] = counterBid || firstBid;
+          return acc;
+        }, {})
+      : {};
+    
 
     const payload = {
       bid: {
@@ -1206,11 +1210,14 @@ export default function VendorDetails() {
         };
       });
 
-      const extractShortTableData = shortTableData.reduce((acc, curr) => {
-        const { firstBid, counterBid } = curr.value;
-        acc[curr.label] = counterBid || firstBid;
-        return acc;
-      }, {});
+      const extractShortTableData = Array.isArray(shortTableData)
+      ? shortTableData.reduce((acc, curr) => {
+          const { firstBid, counterBid } = curr.value;
+          acc[curr.label] = counterBid || firstBid;
+          return acc;
+        }, {})
+      : {};
+    
 
       const payload = {
         revised_bid: {
@@ -4734,38 +4741,45 @@ export default function VendorDetails() {
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
                                 const row = data[rowIndex];
-
-                                console.log("row", row, "col", col);
+                            
+                                // Determine the correct key to use from extra_data
                                 const currentKey =
                                   row?.extra_data?.[col.label] !== undefined
                                     ? col.label
                                     : col.value && row?.extra_data?.[col.value] !== undefined
-                                      ? col.value
-                                      : col.key;
-
-                                const extraData = row?.extra_data?.[currentKey] ?? { value: "", readonly: false };
-
+                                    ? col.value
+                                    : col.key;
+                            
+                                const revisedBid = row?.revised_bid;
+                                const extraData = row?.extra_data?.[currentKey];
+                                console.log("row", row, "extraData", extraData);
+                            
+                                // Determine value and readonly safely
+                                const inputValue =
+                                  typeof extraData === "object" ? extraData.value ?? "" : extraData ?? "";
+                                const isReadOnly =
+                                  typeof extraData === "object" ? extraData.readonly ?? false : false;
+                            
                                 return (
                                   <input
-                                    value={extraData.value ?? ""}
+                                    value={inputValue}
                                     className="form-control"
-                                    readOnly={extraData.readonly}
+                                    readOnly={isReadOnly}
                                     onChange={(e) => {
                                       const newValue = e.target.value;
                                       setData((prevData) =>
                                         prevData.map((item, index) => {
                                           if (index === rowIndex) {
                                             const updatedRow = { ...item };
-
                                             if (!updatedRow.extra_data) updatedRow.extra_data = {};
-
+                            
                                             updatedRow.extra_data[currentKey] = {
                                               ...(typeof updatedRow.extra_data[currentKey] === "object"
                                                 ? updatedRow.extra_data[currentKey]
                                                 : {}),
                                               value: newValue,
                                             };
-
+                            
                                             return updatedRow;
                                           }
                                           return item;
@@ -4777,7 +4791,8 @@ export default function VendorDetails() {
                                 );
                               };
                               return acc;
-                            }, {}),
+                            }, {})
+                            
                           }}
                         />
                       </div>
