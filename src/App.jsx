@@ -80,6 +80,7 @@ import EventTemplateList from "./pages/event-template-list";
 import EventTemplateDetails from "./pages/event-template-details";
 import EditTemplate from "./pages/edit-template";
 import WorkSubCategory from "./pages/work-sub-category";
+import AddWorkSubCategory from "./pages/add-work-sub-category";
 
 function App() {
   return (
@@ -419,6 +420,10 @@ function App() {
             element={<MaterialReconciliationList />}
           />
           <Route path="/work-sub-category" element={<WorkSubCategory />} />
+          <Route
+            path="/add-work-sub-category"
+            element={<AddWorkSubCategory />}
+          />
         </Routes>
       </div>
       s

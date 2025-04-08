@@ -316,6 +316,12 @@ function Members() {
                 <li>
                   <Link to="/work-sub-category">Work Sub Category</Link>
                 </li>
+                <li>
+                  <Link to="/add-work-sub-category">
+                    {" "}
+                    Add Work Sub Category
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="m-3">

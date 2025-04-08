@@ -6,142 +6,128 @@ import { baseURL } from "../confi/apiDomain";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { Modal } from "react-bootstrap"; // Ensure you have react-bootstrap installed
+import { useNavigate } from "react-router-dom"; // Add this import
+
 const WorkSubCategory = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
 
+  const [projectDetails, setProjectDetails] = useState({
+    categories: [
+      {
+        id: 36,
+        name: "Civil Work",
+        Description: "Excavation and backfilling work",
+        Benchmark_Lead_Time: "15 days",
+        SAC_Code: "1234566",
+        material_type_details: [],
+        sub_categories_2: [
+          {
+            id: 32,
+            name: "Level 2 Example ",
+            Description: "",
+            Benchmark_Lead_Time: "",
+            SAC_Code: "12345",
+            material_type_details: [
+              {
+                id: 6922,
+                name: "Excavation",
+                budget: 785.2099990844727,
+              },
+            ],
+            sub_categories_3: [
+              {
+                id: 33,
+                name: "Level 3 Example",
+                Description: "",
+                Benchmark_Lead_Time: "",
+                SAC_Code: "12345",
+                material_type_details: [
+                  {
+                    id: 639,
+                    name: "Excavation",
+                    budget: 89.77999877929688,
+                  },
+                ],
+                sub_categories_4: [
+                  {
+                    id: 33,
+                    name: "Level 4 Example",
+                    Description: "",
+                    Benchmark_Lead_Time: "",
+                    SAC_Code: "12345",
+                    material_type_details: [
+                      {
+                        id: 638,
+                        name: "Excavation",
+                        budget: 89.77999877929688,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
 
-  const [projectDetails, setProjectDetails] = useState(
-    {
-      "categories": [
-
-        {
-          "id": 36,
-          "name": "Civil Work",
-          "Description": "Excavation and backfilling work",
-          "Benchmark_Lead_Time": "15 days",
-          "SAC_Code": "1234566",
-          "material_type_details": [],
-          "sub_categories_2": [
-            {
-              "id": 32,
-              "name": "Level 2 Example ",
-              "Description": "",
-              "Benchmark_Lead_Time": "",
-              "SAC_Code": "12345",
-              "material_type_details": [
-                {
-                  "id": 6922,
-                  "name": "Excavation",
-                  "budget": 785.2099990844727
-                },
-
-              ],
-              "sub_categories_3": [
-                {
-                  "id": 33,
-                  "name": "Level 3 Example",
-                  "Description": "",
-                  "Benchmark_Lead_Time": "",
-                  "SAC_Code": "12345",
-                  "material_type_details": [
-                    {
-                      "id": 639,
-                      "name": "Excavation",
-                      "budget": 89.77999877929688
-                    },
-
-                  ],
-                  "sub_categories_4": [
-                    {
-                      "id": 33,
-                      "name": "Level 4 Example",
-                      "Description": "",
-                      "Benchmark_Lead_Time": "",
-                      "SAC_Code": "12345",
-                      "material_type_details": [
-                        {
-                          "id": 638,
-                          "name": "Excavation",
-                          "budget": 89.77999877929688
-                        },
-
-                      ],
-                    }
-                  ]
-                },
-
-
-              ]
-            }
-          ]
-        },
-
-        {
-          "id": 37,
-          "name": "FINISHING WORK",
-          "Description": "Internal and external plastering",
-          "Benchmark_Lead_Time": "10 days",
-          "SAC_Code": "12345",
-          "material_type_details": [],
-          "sub_categories_2": [
-            {
-              "id": 321,
-              "name": "Level 2 Example ",
-              "Description": "",
-              "Benchmark_Lead_Time": "",
-              "SAC_Code": "12345",
-              "material_type_details": [
-                {
-                  "id": 693,
-                  "name": "Plastering",
-                  "budget": 785.2099990844727
-                },
-
-              ],
-              "sub_categories_3": [
-                {
-                  "id": 331,
-                  "name": "Level 3 Example",
-                  "Description": "",
-                  "Benchmark_Lead_Time": "",
-                  "SAC_Code": "12345",
-                  "material_type_details": [
-                    {
-                      "id": 632,
-                      "name": "Plastering",
-                      "budget": 89.77999877929688
-                    },
-                  ],
-                  "sub_categories_4": [
-                    {
-                      "id": 332,
-                      "name": "Level 4 Example",
-                      "Description": "",
-                      "Benchmark_Lead_Time": "",
-                      "SAC_Code": "12345",
-                      "material_type_details": [
-                        {
-                          "id": 631,
-                          "name": "Plastering",
-                          "budget": 89.77999877929688
-                        },
-
-                      ],
-                    }
-                  ]
-                },
-
-
-              ]
-            }
-          ]
-        },
-
-
-      ]
-    }
-  );
-
-
+      {
+        id: 37,
+        name: "FINISHING WORK",
+        Description: "Internal and external plastering",
+        Benchmark_Lead_Time: "10 days",
+        SAC_Code: "12345",
+        material_type_details: [],
+        sub_categories_2: [
+          {
+            id: 321,
+            name: "Level 2 Example ",
+            Description: "",
+            Benchmark_Lead_Time: "",
+            SAC_Code: "12345",
+            material_type_details: [
+              {
+                id: 693,
+                name: "Plastering",
+                budget: 785.2099990844727,
+              },
+            ],
+            sub_categories_3: [
+              {
+                id: 331,
+                name: "Level 3 Example",
+                Description: "",
+                Benchmark_Lead_Time: "",
+                SAC_Code: "12345",
+                material_type_details: [
+                  {
+                    id: 632,
+                    name: "Plastering",
+                    budget: 89.77999877929688,
+                  },
+                ],
+                sub_categories_4: [
+                  {
+                    id: 332,
+                    name: "Level 4 Example",
+                    Description: "",
+                    Benchmark_Lead_Time: "",
+                    SAC_Code: "12345",
+                    material_type_details: [
+                      {
+                        id: 631,
+                        name: "Plastering",
+                        budget: 89.77999877929688,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
 
   // estimation list table
   const [openCategoryId, setOpenCategoryId] = useState(null); // Track which category is open
@@ -154,7 +140,6 @@ const WorkSubCategory = () => {
   const [openBoqDetailId1, setOpenBoqDetailId1] = useState(null); // Track BOQ details visibility
   const [openBoqDetailId2, setOpenBoqDetailId2] = useState(null); // Track BOQ details visibility
   const [openBoqDetailId3, setOpenBoqDetailId3] = useState(null); // Track BOQ details visibility
-
 
   // Toggle category visibility
   const toggleCategory = (id) => {
@@ -224,7 +209,6 @@ const WorkSubCategory = () => {
   const toggleSubCategory5 = (id) => {
     setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
   };
-
 
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -306,7 +290,7 @@ const WorkSubCategory = () => {
                 <div>
                   <button
                     className="purple-btn2"
-                  // onClick={handleOpenAddUserModal}
+                    onClick={() => navigate("/add-work-sub-category")} // Use navigate
                   >
                     + Add
                   </button>
@@ -318,46 +302,24 @@ const WorkSubCategory = () => {
 
               <div className="tbl-container m-4 mt-4 ms-1">
                 <table
-
                   style={{
                     width: "max-content",
                     maxHeight: "max-content",
                     height: "auto",
                   }}
-
                   className="w-100"
                 >
                   <thead style={{ zIndex: "111 " }}>
                     <tr>
-                      <th className="text-center" >
-                        Expand
-                      </th>
-                      <th className="text-center" >
-                        Sr No.
-                      </th>
-                      <th className="text-center" >
-                        Parent Work Category
-                      </th>
-                      <th className="text-center" >
-                        Sub category Name
-                      </th>
-                      <th className="text-center" >
-                        Description
-                      </th>
-                      <th className="text-center" >
-                        Benchmark Lead Time
-                      </th>
-                      <th className="text-center" >
-                        SAC Code
-                      </th>
-                      <th className="text-center" >
-                        Action
-                      </th>
-
+                      <th className="text-center">Expand</th>
+                      <th className="text-center">Sr No.</th>
+                      <th className="text-center">Parent Work Category</th>
+                      <th className="text-center">Sub category Name</th>
+                      <th className="text-center">Description</th>
+                      <th className="text-center">Benchmark Lead Time</th>
+                      <th className="text-center">SAC Code</th>
+                      <th className="text-center">Action</th>
                     </tr>
-
-
-
                   </thead>
                   <tbody>
                     {/* Conditional rendering for categories under sub-project start */}
@@ -430,7 +392,7 @@ const WorkSubCategory = () => {
                             <td>{category.Description}</td>
                             <td>{category.Benchmark_Lead_Time}</td>
                             <td>{category.SAC_Code}</td>
-                            <td  >
+                            <td>
                               <div className="d-flex justify-content-center">
                                 <button className="btn  mt-0">
                                   <svg
@@ -451,7 +413,9 @@ const WorkSubCategory = () => {
                                     />
                                   </svg>
                                 </button>
-                                <span className="mt-2 pt-1 "><input type="checkbox" /></span>
+                                <span className="mt-2 pt-1 ">
+                                  <input type="checkbox" />
+                                </span>
                                 <button className="btn  mt-0">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -470,7 +434,13 @@ const WorkSubCategory = () => {
                                 </button>
                                 {/* dustbin add here */}
                                 <button className="btn  mt-0 ps-0">
-                                  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <svg
+                                    width="16"
+                                    height="20"
+                                    viewBox="0 0 16 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
                                     <path
                                       d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
                                       fill="#B25657"
@@ -478,12 +448,7 @@ const WorkSubCategory = () => {
                                   </svg>
                                 </button>
                               </div>
-
-
                             </td>
-
-
-
                           </tr>
 
                           {/* sub level 2 start */}
@@ -501,8 +466,7 @@ const WorkSubCategory = () => {
                                       }
                                       aria-label="Toggle sub-category 2 visibility"
                                     >
-                                      {openSubCategory2Id ===
-                                        subCategory.id ? (
+                                      {openSubCategory2Id === subCategory.id ? (
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
                                           width="24"
@@ -577,7 +541,6 @@ const WorkSubCategory = () => {
                                   <td></td>
                                   <td></td>
                                   <td></td>
-
                                 </tr>
 
                                 {openSubCategory2Id === subCategory.id &&
@@ -603,7 +566,6 @@ const WorkSubCategory = () => {
                                           <td></td>
                                           <td></td>
                                           <td></td>
-
                                         </tr>
                                       </React.Fragment>
                                     )
@@ -637,7 +599,7 @@ const WorkSubCategory = () => {
                                               aria-label="Toggle sub-category 3 visibility"
                                             >
                                               {openSubCategory3Id ===
-                                                subCategory3.id ? (
+                                              subCategory3.id ? (
                                                 <svg
                                                   xmlns="http://www.w3.org/2000/svg"
                                                   width="24"
@@ -710,12 +672,7 @@ const WorkSubCategory = () => {
                                           <td></td>
                                           <td></td>
                                           <td></td>
-                                          <td>
-
-                                          </td>
-
-
-
+                                          <td></td>
                                         </tr>
 
                                         {/* Render BOQ Details for Sub-Category 3 */}
@@ -746,10 +703,7 @@ const WorkSubCategory = () => {
                                                   <td></td>
                                                   <td></td>
                                                   <td></td>
-                                                  <td>
-
-                                                  </td>
-
+                                                  <td></td>
                                                 </tr>
                                               </React.Fragment>
                                             )
@@ -759,8 +713,8 @@ const WorkSubCategory = () => {
                                         {openSubCategory3Id ===
                                           subCategory3.id &&
                                           subCategory3.sub_categories_4 &&
-                                          subCategory3.sub_categories_4
-                                            .length > 0 &&
+                                          subCategory3.sub_categories_4.length >
+                                            0 &&
                                           subCategory3.sub_categories_4.map(
                                             (subCategory4) => (
                                               <React.Fragment
@@ -781,7 +735,7 @@ const WorkSubCategory = () => {
                                                       aria-label="Toggle sub-category 3 visibility"
                                                     >
                                                       {openSubCategory4Id ===
-                                                        subCategory4.id ? (
+                                                      subCategory4.id ? (
                                                         <svg
                                                           xmlns="http://www.w3.org/2000/svg"
                                                           width="24"
@@ -849,17 +803,12 @@ const WorkSubCategory = () => {
                                                     </button>
                                                   </td>
                                                   <td></td>
-                                                  <td>
-                                                    {subCategory4.name}
-                                                  </td>
+                                                  <td>{subCategory4.name}</td>
                                                   <td></td>
                                                   <td></td>
                                                   <td></td>
                                                   <td></td>
-                                                  <td>
-
-                                                  </td>
-
+                                                  <td></td>
                                                 </tr>
 
                                                 {/* Render BOQ Details for Sub-Category 4 */}
@@ -886,15 +835,14 @@ const WorkSubCategory = () => {
 
                                                           <td></td>
                                                           <td></td>
-                                                          <td> {boqDetail2.name}</td>
+                                                          <td>
+                                                            {" "}
+                                                            {boqDetail2.name}
+                                                          </td>
                                                           <td></td>
                                                           <td></td>
-                                                          <td>
-
-                                                          </td>
-                                                          <td>
-                                                          </td>
-
+                                                          <td></td>
+                                                          <td></td>
                                                         </tr>
                                                       </React.Fragment>
                                                     )
@@ -904,9 +852,8 @@ const WorkSubCategory = () => {
                                                 {openSubCategory4Id ===
                                                   subCategory4.id &&
                                                   subCategory4.sub_categories_5 &&
-                                                  subCategory4
-                                                    .sub_categories_5.length >
-                                                  0 &&
+                                                  subCategory4.sub_categories_5
+                                                    .length > 0 &&
                                                   subCategory4.sub_categories_5.map(
                                                     (subCategory5) => (
                                                       <React.Fragment
@@ -930,7 +877,7 @@ const WorkSubCategory = () => {
                                                               aria-label="Toggle sub-category 3 visibility"
                                                             >
                                                               {openSubCategory5Id ===
-                                                                subCategory5.id ? (
+                                                              subCategory5.id ? (
                                                                 <svg
                                                                   xmlns="http://www.w3.org/2000/svg"
                                                                   width="24"
@@ -999,20 +946,13 @@ const WorkSubCategory = () => {
                                                           </td>
                                                           <td></td>
                                                           <td>
-                                                            {
-                                                              subCategory5.name
-                                                            }
+                                                            {subCategory5.name}
                                                           </td>
                                                           <td></td>
                                                           <td></td>
                                                           <td></td>
-                                                          <td>
-
-                                                          </td>
-                                                          <td>
-
-                                                          </td>
-
+                                                          <td></td>
+                                                          <td></td>
                                                         </tr>
 
                                                         {/* Render BOQ Details for Sub-Category 3 */}
@@ -1041,18 +981,16 @@ const WorkSubCategory = () => {
 
                                                                   <td></td>
                                                                   <td></td>
-                                                                  <td> {
-                                                                    boqDetail2.name
-                                                                  }</td>
+                                                                  <td>
+                                                                    {" "}
+                                                                    {
+                                                                      boqDetail2.name
+                                                                    }
+                                                                  </td>
                                                                   <td></td>
                                                                   <td></td>
-                                                                  <td>
-
-                                                                  </td>
-                                                                  <td>
-
-                                                                  </td>
-
+                                                                  <td></td>
+                                                                  <td></td>
                                                                 </tr>
                                                               </React.Fragment>
                                                             )
@@ -1079,7 +1017,6 @@ const WorkSubCategory = () => {
                   </tbody>
                 </table>
               </div>
-
 
               {/* Pagination Controls */}
               {/* <div className="d-flex justify-content-between align-items-center px-3 mt-2">
@@ -1170,8 +1107,6 @@ const WorkSubCategory = () => {
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
   );
