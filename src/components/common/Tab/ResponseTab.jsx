@@ -414,7 +414,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                   </div>
                                   {activeIndex < bidLength - 1 && (
                                     <button
-                                      className="px-2 border-0"
+                                      class="px-2 border-0"
                                       style={{ fontSize: "1.5rem" }}
                                       onClick={() => handleNext(vendor.id)}
                                     >
@@ -501,17 +501,22 @@ export default function ResponseTab({ isCounterOffer }) {
                         { label: "Participant Attachment", key: "participantAttachment" },
                         { label: "Total Amount", key: "totalAmount" },
                         // Dynamically add keys from the extra object
-                        ...extraKeys.map((key) => ({
-                          label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-                          key: key,
-                        })),
+                        // ...extraKeys.map((key) => ({
+                        //   label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                        //   key: key,
+                        // })),
                         // Dynamically add extra columns
-                        ...extraColumns.map((column) => ({
-                          label: column.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-                          key: column,
-                        })),
+                        ...extraColumns
+                          .filter((column) => /^[A-Z]/.test(column)) // Filter columns with capitalized names
+                          .map((column) => ({
+                            label: column.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                            key: column,
+                          })),
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
+                        const extraData = material.extra_data || {};
+                        console.log("extraData", extraData);
+                        
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -524,13 +529,27 @@ export default function ResponseTab({ isCounterOffer }) {
                           participantAttachment: material.participant_attachment || "_",
                           totalAmount: material.total_amount || "_",
                           // Map keys from the extra object dynamically
-                          ...extraKeys.reduce((acc, key) => {
-                            acc[key] = material[key] || "_";
-                            return acc;
-                          }, {}),
+                          // ...extraKeys.reduce((acc, key) => {
+                          //   acc[key] = material[key] || "_";
+                          //   return acc;
+                          // }, {}),
                           // Map extra columns dynamically
                           ...material.extra_columns.reduce((acc, column) => {
-                            acc[column] = material[column] || "_";
+                            if (extraData[column]?.value) {
+                              const value = extraData[column].value;
+                              acc[column] = Array.isArray(value)
+                                ? value
+                                    .map(
+                                      (item) =>
+                                        `${item.taxChargeType || ""}: ${item.amount || 0}${
+                                          item.taxChargePerUom ? ` (${item.taxChargePerUom})` : ""
+                                        }`
+                                    )
+                                    .join(", ")
+                                : value || "_";
+                            } else {
+                              acc[column] = "_";
+                            }
                             return acc;
                           }, {}),
                         };
