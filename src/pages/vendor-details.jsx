@@ -145,7 +145,7 @@ export default function VendorDetails() {
         );
 
         setAdditionalColumns(columns);
-        setBidTemplate(formattedData);
+        // setBidTemplate(formattedData);
         // console.log("response", response.data);
       } catch (error) {
         console.error("Error fetching additional columns:", error);
@@ -474,30 +474,38 @@ export default function VendorDetails() {
 
       const initialData = initialResponse.data;
       const eventMaterials = initialData.event_materials || [];
-      const revisedBid = initialData.revised_bid; // Extract
-
-      // revisedBid from the response
-
+      const revisedBid = initialData.revised_bid;
+      
+      // Step 0: Store the revised bid in state
       setRevisedBid(revisedBid);
-
+      
+      // Step 1: Collect all unique keys from extra_data
       const uniqueAdditionalColumns = new Set();
+      
       eventMaterials.forEach((item) => {
         const extraKeys = Object.keys(item.extra_data || {});
         extraKeys.forEach((key) => {
           uniqueAdditionalColumns.add(key);
         });
       });
-
-      const additionalColumns = Array.from(uniqueAdditionalColumns).map(
-        (key) => ({
-          key,
-          label: key.replace(/_/g, " ").toUpperCase(),
-        })
-      );
+      
+      // Step 2: Convert keys to array of { key, label } objects
+      const additionalColumns = Array.from(uniqueAdditionalColumns).map((key) => ({
+        key,
+        label: key
+          .replace(/_/g, " ")                        // Convert snake_case to space
+          .replace(/([a-z])([A-Z])/g, "$1 $2")       // Add space in camelCase
+          .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize each word
+      }));
+      
+      // Step 3: Set the additional columns in state
+      setAdditionalColumns(additionalColumns);
+      
 
       if (!revisedBid) {
         console.log("initial data ", initialData);
         console.log("revised data ", revisedBid);
+        setAdditionalColumns(additionalColumns);
 
         const processedData = eventMaterials.map((item) => {
           const flatExtraData = Object.entries(item.extra_data || {}).reduce(
@@ -509,7 +517,6 @@ export default function VendorDetails() {
           );
           console.log("flatExtraData", flatExtraData);
           const bidMaterial = item.bid_materials?.[0]; // Assuming the first bid material
-          setAdditionalColumns(additionalColumns);
           console.log
 
           // Map the row data
@@ -542,6 +549,39 @@ export default function VendorDetails() {
           return rowData;
         });
 
+        const extra_data = {
+          "remark": {
+            "value": "",
+            "readonly": false
+          },
+          "Payment Terms": {
+            "value": "",
+            "readonly": false
+          },
+          "Warranty Clause": {
+            "value": "",
+            "readonly": false
+          },
+          "Loading/Unloading": {
+            "value": "",
+            "readonly": false
+          }
+        };
+
+
+
+        const formattedData = Object.entries(extra_data).map(
+          ([fieldName, fieldData]) => ({
+            label: fieldName || "",
+            value: { firstBid: fieldData.value || "", counterBid: "" },
+            isRequired: false, // or true, if you have that info elsewhere
+            isReadOnly: fieldData.readonly,
+            fieldOwner: null // or fetch from another object if needed
+          })
+        );
+        // console.log(formattedData);
+
+        setBidTemplate(formattedData);
         console.log("Processed Data: ", processedData);
 
         setData(processedData);
@@ -639,6 +679,20 @@ export default function VendorDetails() {
           console.log("deductionTax", deductionTax);
 
           setExtraData({ additionTaxCharges, deductionTax });
+          console.log("firstBid", firstBid);
+          const formattedData = Object.entries(firstBid.extra_data).map(
+            ([fieldName, fieldData]) => ({
+              label: fieldName,
+              value: { firstBid: fieldData.value || "", counterBid: "" },
+              isRequired: false, // or true, if you have that info elsewhere
+              isReadOnly: fieldData.readonly,
+              fieldOwner: null // or fetch from another object if needed
+            })
+          );
+          console.log(formattedData);
+
+          setBidTemplate(formattedData);
+
 
           const previousData = firstBid.bid_materials.map((material) => ({
             bidId: material.bid_id,
@@ -662,7 +716,10 @@ export default function VendorDetails() {
             pmsBrand: material.event_material.pms_brand_name,
             pmsColour: material.event_material.pms_colour_name,
             genericInfo: material.event_material.generic_info_name,
-            extra_data: material.event_material.extra_data || {}, // Include extra_data
+            extra_data: material.extra_data || {}, // Include extra_data
+            newField: formattedData || "", // Example of accessing a new field
+
+
           }));
 
           // Map updated data (counter_bid_materials)
@@ -682,28 +739,28 @@ export default function VendorDetails() {
 
               return counterMaterial
                 ? {
-                    bidId: counterMaterial.counter_bid_id,
-                    eventMaterialId: counterMaterial.event_material_id,
-                    descriptionOfItem: counterMaterial.material_name,
-                    varient: material.material_type,
-                    quantity: material.event_material.quantity,
-                    quantityAvail: counterMaterial.quantity_available,
-                    price: counterMaterial.price,
-                    section: material.event_material.material_type,
-                    subSection: material.event_material.inventory_sub_type,
-                    discount: counterMaterial.discount,
-                    realisedDiscount: counterMaterial.realised_discount,
-                    gst: counterMaterial.gst,
-                    realisedGst: counterMaterial.realised_gst,
-                    total: counterMaterial.total_amount,
-                    location: material.event_material.location,
-                    vendorRemark: counterMaterial.vendor_remark,
-                    landedAmount: counterMaterial.landed_amount,
-                    pmsBrand: material.pms_brand_name,
-                    pmsColour: material.pms_colour_name,
-                    genericInfo: material.generic_info_name,
-                    extra_data: material.event_material.extra_data || {}, // Include extra_data
-                  }
+                  bidId: counterMaterial.counter_bid_id,
+                  eventMaterialId: counterMaterial.event_material_id,
+                  descriptionOfItem: counterMaterial.material_name,
+                  varient: material.material_type,
+                  quantity: material.event_material.quantity,
+                  quantityAvail: counterMaterial.quantity_available,
+                  price: counterMaterial.price,
+                  section: material.event_material.material_type,
+                  subSection: material.event_material.inventory_sub_type,
+                  discount: counterMaterial.discount,
+                  realisedDiscount: counterMaterial.realised_discount,
+                  gst: counterMaterial.gst,
+                  realisedGst: counterMaterial.realised_gst,
+                  total: counterMaterial.total_amount,
+                  location: material.event_material.location,
+                  vendorRemark: counterMaterial.vendor_remark,
+                  landedAmount: counterMaterial.landed_amount,
+                  pmsBrand: material.pms_brand_name,
+                  pmsColour: material.pms_colour_name,
+                  genericInfo: material.generic_info_name,
+                  extra_data: material.event_material.extra_data || {}, // Include extra_data
+                }
                 : null; // Handle missing counter bids
             })
             .filter(Boolean); // Remove null entries if counter bids are missing
@@ -1099,28 +1156,28 @@ export default function VendorDetails() {
         const taxDetails = [
           ...(Array.isArray(taxRateData?.additionTaxCharges)
             ? taxRateData.additionTaxCharges.map((charge) => ({
-                resource_id: null,
-                inclusive: charge.inclusive,
-                resource_type: "TaxCharge",
-                amount: charge.amount,
-                addition: true,
-                id: isNaN(Number(charge.id)) ? null : charge.id,
-                taxChargeType: charge.taxChargeType,
-                taxChargePerUom: charge.taxChargePerUom,
-              }))
+              resource_id: null,
+              inclusive: charge.inclusive,
+              resource_type: "TaxCharge",
+              amount: charge.amount,
+              addition: true,
+              id: isNaN(Number(charge.id)) ? null : charge.id,
+              taxChargeType: charge.taxChargeType,
+              taxChargePerUom: charge.taxChargePerUom,
+            }))
             : []),
 
           ...(Array.isArray(taxRateData?.deductionTax)
             ? taxRateData.deductionTax.map((charge) => ({
-                resource_id: null,
-                inclusive: charge.inclusive,
-                resource_type: "TaxCharge",
-                amount: charge.amount,
-                addition: false,
-                id: isNaN(Number(charge.id)) ? null : charge.id,
-                taxChargeType: charge.taxChargeType,
-                taxChargePerUom: charge.taxChargePerUom,
-              }))
+              resource_id: null,
+              inclusive: charge.inclusive,
+              resource_type: "TaxCharge",
+              amount: charge.amount,
+              addition: false,
+              id: isNaN(Number(charge.id)) ? null : charge.id,
+              taxChargeType: charge.taxChargeType,
+              taxChargePerUom: charge.taxChargePerUom,
+            }))
             : []),
         ];
 
@@ -2496,24 +2553,24 @@ export default function VendorDetails() {
                           </h4>
                           {linkedData?.event_type_detail?.event_type ===
                             "auction" && (
-                            <span
-                              style={{
-                                backgroundColor: "#fff2e8",
-                                color: "#8b0203",
-                                padding: "5px 10px",
-                                borderRadius: "5px",
-                                marginLeft: "25px",
-                                fontSize: "0.85rem",
-                                fontWeight: "bold",
-                                borderColor: "#ffbb96",
-                              }}
-                            >
-                              {linkedData?.event_type_detail
-                                ?.event_configuration === "rank_based"
-                                ? `rank: ${linkedData?.bids?.[0]?.rank}`
-                                : `price: ${linkedData?.bids?.[0]?.min_price}`}
-                            </span>
-                          )}
+                              <span
+                                style={{
+                                  backgroundColor: "#fff2e8",
+                                  color: "#8b0203",
+                                  padding: "5px 10px",
+                                  borderRadius: "5px",
+                                  marginLeft: "25px",
+                                  fontSize: "0.85rem",
+                                  fontWeight: "bold",
+                                  borderColor: "#ffbb96",
+                                }}
+                              >
+                                {linkedData?.event_type_detail
+                                  ?.event_configuration === "rank_based"
+                                  ? `rank: ${linkedData?.bids?.[0]?.rank}`
+                                  : `price: ${linkedData?.bids?.[0]?.min_price}`}
+                              </span>
+                            )}
                         </div>
                       ) : (
                         <></>
@@ -2719,8 +2776,8 @@ export default function VendorDetails() {
                         <ShortTable
                           data={freightData2}
                           editable={false}
-                          // readOnly={isReadOnly} //// Flag to enable input fields
-                          // onValueChange={handleFreightDataChange} // Callback for changes
+                        // readOnly={isReadOnly} //// Flag to enable input fields
+                        // onValueChange={handleFreightDataChange} // Callback for changes
                         />
                       </div>
 
@@ -2785,8 +2842,8 @@ export default function VendorDetails() {
                                   index === 0
                                     ? "Current Bid"
                                     : index === bids2.length - 1
-                                    ? "Initial Bid" // The last button shows "Initial Bid"
-                                    : `${getOrdinalInText(
+                                      ? "Initial Bid" // The last button shows "Initial Bid"
+                                      : `${getOrdinalInText(
                                         bids.length - index
                                       )} Bid`; // Use the ordinal word for other buttons
 
@@ -2956,10 +3013,10 @@ export default function VendorDetails() {
 
             <div
               className="p-3 mb-2 "
-              // style={{
-              //   overflowY: "auto",
-              //   height: "calc(100vh - 100px)",
-              // }}
+            // style={{
+            //   overflowY: "auto",
+            //   height: "calc(100vh - 100px)",
+            // }}
             >
               {loading ? (
                 "Loading...."
@@ -3042,25 +3099,25 @@ export default function VendorDetails() {
                                       <tr>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           1
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           [{data1.event_no}] {data1.event_title}
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.status}
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.event_schedule?.start_time ? (
                                             <FormatDate
@@ -3074,7 +3131,7 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.event_schedule?.end_time ? (
                                             <FormatDate
@@ -3088,7 +3145,7 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {Delivarydate}
                                         </td>
@@ -3156,7 +3213,7 @@ export default function VendorDetails() {
                               <div className=" card card-body rounded-3 p-0">
                                 <ul
                                   className=" mt-3 mb-3"
-                                  // style={{ fontSize: "13px", marginLeft: "0px" }}
+                                // style={{ fontSize: "13px", marginLeft: "0px" }}
                                 >
                                   {/* {terms.map((term) => (
                                     <li key={term.id} className="mb-3 mt-3">
@@ -3246,25 +3303,25 @@ export default function VendorDetails() {
                                       <tr>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           1
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.created_by}
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.created_by_email}
                                         </td>
                                         <td
                                           className="text-start"
-                                          // style={{ color: "#777777" }}
+                                        // style={{ color: "#777777" }}
                                         >
                                           {data1.crated_by_mobile}
                                         </td>
@@ -3379,25 +3436,25 @@ export default function VendorDetails() {
                                           <tr key={data.id}>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {index + 1}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.material_type}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.inventory_sub_type}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.inventory_name}
                                             </td>
@@ -3409,31 +3466,31 @@ export default function VendorDetails() {
                                             </td> */}
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.quantity}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.uom}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.location}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.rate}
                                             </td>
                                             <td
                                               className="text-start"
-                                              // style={{ color: "#777777" }}
+                                            // style={{ color: "#777777" }}
                                             >
                                               {data.amount}
                                             </td>
@@ -3562,15 +3619,15 @@ export default function VendorDetails() {
                                           </tr>
                                         )
                                       ) || (
-                                        <tr>
-                                          <td
-                                            colSpan="5"
-                                            className="text-center"
-                                          >
-                                            No attachments available.
-                                          </td>
-                                        </tr>
-                                      )}
+                                          <tr>
+                                            <td
+                                              colSpan="5"
+                                              className="text-center"
+                                            >
+                                              No attachments available.
+                                            </td>
+                                          </tr>
+                                        )}
                                     </tbody>
                                   </table>
                                 </div>
@@ -3623,6 +3680,10 @@ export default function VendorDetails() {
                   <div className="card p-2 m-1">
                     <div className="card-header4">
                       <div className="d-flex justify-content-between">
+
+                        {/* <pre>{JSON.stringify(additionalColumns, null, 2)}</pre>
+                        <pre>{JSON.stringify(bidTemplate, null, 2)}</pre> */}
+
                         <h4>
                           Submission Sheet.
                           <span
@@ -3641,14 +3702,14 @@ export default function VendorDetails() {
                           </span>
                         </h4>
                         {isBid ||
-                        loading ||
-                        counterData > 0 ||
-                        currentIndex !== 0 ||
-                        submitted ? (
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0 ||
+                          submitted ? (
                           <></>
                         ) : (
                           data1?.event_type_detail?.event_type ===
-                            "auction" && (
+                          "auction" && (
                             <span
                               style={{
                                 backgroundColor: "#fff2e8",
@@ -3662,7 +3723,7 @@ export default function VendorDetails() {
                               }}
                             >
                               {data1?.event_type_detail?.event_configuration ===
-                              "rank_based"
+                                "rank_based"
                                 ? `Rank: ${bids[0]?.rank ?? "N/A"}`
                                 : `Price: ₹${bids[0]?.min_price ?? "N/A"}`}
                             </span>
@@ -4294,7 +4355,7 @@ export default function VendorDetails() {
                               const showArrow =
                                 counterData &&
                                 previousRealisedDiscount !==
-                                  updatedRealisedDiscount;
+                                updatedRealisedDiscount;
 
                               return showArrow ? (
                                 <div
@@ -4673,32 +4734,20 @@ export default function VendorDetails() {
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
                                 const row = data[rowIndex];
-                            
-                                // Find key in extra_data ignoring case
-                                const extraDataKey = Object.keys(row?.extra_data || {}).find(
-                                  (key) => key.toLowerCase() === col.key.toLowerCase()
-                                );
-                            
-                                const rawExtra = extraDataKey ? row.extra_data[extraDataKey] : undefined;
-                            
-                                const extraData = (typeof rawExtra === "object" && rawExtra !== null)
-                                  ? {
-                                      value: rawExtra?.value ?? "",
-                                      readonly: rawExtra?.readonly ?? false,
-                                    }
-                                  : {
-                                      value: rawExtra ?? "",
-                                      readonly: false,
-                                    };
-                            
-                                // console.log("col.key =", col.key);
-                                // console.log("extraDataKey =", extraDataKey);
-                                // console.log("rawExtra =", rawExtra);
-                                // console.log("normalized extraData =", extraData);
-                            
+
+                                console.log("row", row, "col", col);
+                                const currentKey =
+                                  row?.extra_data?.[col.label] !== undefined
+                                    ? col.label
+                                    : col.value && row?.extra_data?.[col.value] !== undefined
+                                      ? col.value
+                                      : col.key;
+
+                                const extraData = row?.extra_data?.[currentKey] ?? { value: "", readonly: false };
+
                                 return (
                                   <input
-                                    value={extraData.value}
+                                    value={extraData.value ?? ""}
                                     className="form-control"
                                     readOnly={extraData.readonly}
                                     onChange={(e) => {
@@ -4707,20 +4756,16 @@ export default function VendorDetails() {
                                         prevData.map((item, index) => {
                                           if (index === rowIndex) {
                                             const updatedRow = { ...item };
+
                                             if (!updatedRow.extra_data) updatedRow.extra_data = {};
-                            
-                                            const keyToUpdate = Object.keys(updatedRow.extra_data).find(
-                                              (key) => key.toLowerCase() === col.key.toLowerCase()
-                                            ) || col.key;
-                            
-                                            const prevColData = updatedRow.extra_data[keyToUpdate];
-                                            updatedRow.extra_data[keyToUpdate] = {
-                                              ...(typeof prevColData === "object" && prevColData !== null
-                                                ? prevColData
+
+                                            updatedRow.extra_data[currentKey] = {
+                                              ...(typeof updatedRow.extra_data[currentKey] === "object"
+                                                ? updatedRow.extra_data[currentKey]
                                                 : {}),
                                               value: newValue,
                                             };
-                            
+
                                             return updatedRow;
                                           }
                                           return item;
@@ -4732,7 +4777,7 @@ export default function VendorDetails() {
                                 );
                               };
                               return acc;
-                            }, {})                                                    
+                            }, {}),
                           }}
                         />
                       </div>
@@ -4809,8 +4854,8 @@ export default function VendorDetails() {
                                   index === 0
                                     ? "Current Bid"
                                     : index === bids.length - 1
-                                    ? "Initial Bid" // The last button shows "Initial Bid"
-                                    : `${getOrdinalInText(
+                                      ? "Initial Bid" // The last button shows "Initial Bid"
+                                      : `${getOrdinalInText(
                                         bids.length - index
                                       )} Bid`; // Use the ordinal word for other buttons
 
@@ -4958,46 +5003,45 @@ export default function VendorDetails() {
                           currentIndex !== 0 || // Disable if it's not the Current Bid
                           submitted
                         }
-                        className={`button ${
-                          isBid ||
+                        className={`button ${isBid ||
                           loading ||
                           counterData > 0 ||
                           currentIndex !== 0 ||
                           submitted
-                            ? "disabled-btn"
-                            : "button-enabled"
-                        }`}
+                          ? "disabled-btn"
+                          : "button-enabled"
+                          }`}
                         style={{
                           backgroundColor:
                             isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
                               ? "#ccc"
                               : "#8b0203",
                           color:
                             isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
                               ? "#666"
                               : "#fff",
                           border:
                             isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
                               ? "1px solid #aaa"
                               : "1px solid #8b0203",
                           cursor:
                             isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
                               ? "not-allowed"
                               : "pointer",
                           padding: "10px 20px",
