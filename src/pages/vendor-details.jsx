@@ -4672,11 +4672,30 @@ export default function VendorDetails() {
                             // }, {}),
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
-                                const row = data[rowIndex]; // Correctly reference the row
-                                const extraData = row?.extra_data?.[
-                                  col.key
-                                ] || { value: "", readonly: false }; // Ensure extra_data is initialized
-                                console.log("row",row,"extraData",extraData, typeof extraData);
+                                const row = data[rowIndex];
+                            
+                                // Find key in extra_data ignoring case
+                                const extraDataKey = Object.keys(row?.extra_data || {}).find(
+                                  (key) => key.toLowerCase() === col.key.toLowerCase()
+                                );
+                            
+                                const rawExtra = extraDataKey ? row.extra_data[extraDataKey] : undefined;
+                            
+                                const extraData = (typeof rawExtra === "object" && rawExtra !== null)
+                                  ? {
+                                      value: rawExtra?.value ?? "",
+                                      readonly: rawExtra?.readonly ?? false,
+                                    }
+                                  : {
+                                      value: rawExtra ?? "",
+                                      readonly: false,
+                                    };
+                            
+                                // console.log("col.key =", col.key);
+                                // console.log("extraDataKey =", extraDataKey);
+                                // console.log("rawExtra =", rawExtra);
+                                // console.log("normalized extraData =", extraData);
+                            
                                 return (
                                   <input
                                     value={extraData.value}
@@ -4684,37 +4703,36 @@ export default function VendorDetails() {
                                     readOnly={extraData.readonly}
                                     onChange={(e) => {
                                       const newValue = e.target.value;
-                                      setData((prevData) => {
-                                        const updatedData = prevData.map(
-                                          (item, index) => {
-                                            if (index === rowIndex) {
-                                              const updatedRow = { ...item };
-                                              if (!updatedRow.extra_data)
-                                                updatedRow.extra_data = {};
-                                              updatedRow.extra_data[col.key] = {
-                                                ...(typeof updatedRow
-                                                  .extra_data[col.key] ===
-                                                "object"
-                                                  ? updatedRow.extra_data[
-                                                      col.key
-                                                    ]
-                                                  : {}),
-                                                value: newValue,
-                                              };
-                                              return updatedRow;
-                                            }
-                                            return item;
+                                      setData((prevData) =>
+                                        prevData.map((item, index) => {
+                                          if (index === rowIndex) {
+                                            const updatedRow = { ...item };
+                                            if (!updatedRow.extra_data) updatedRow.extra_data = {};
+                            
+                                            const keyToUpdate = Object.keys(updatedRow.extra_data).find(
+                                              (key) => key.toLowerCase() === col.key.toLowerCase()
+                                            ) || col.key;
+                            
+                                            const prevColData = updatedRow.extra_data[keyToUpdate];
+                                            updatedRow.extra_data[keyToUpdate] = {
+                                              ...(typeof prevColData === "object" && prevColData !== null
+                                                ? prevColData
+                                                : {}),
+                                              value: newValue,
+                                            };
+                            
+                                            return updatedRow;
                                           }
-                                        );
-                                        return updatedData;
-                                      });
+                                          return item;
+                                        })
+                                      );
                                     }}
                                     onFocus={(e) => e.target.select()}
                                   />
                                 );
                               };
                               return acc;
-                            }, {}),
+                            }, {})                                                    
                           }}
                         />
                       </div>
