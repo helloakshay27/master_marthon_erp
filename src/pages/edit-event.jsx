@@ -1273,6 +1273,7 @@ export default function EditEvent() {
                 updateSelectedTemplate={setSelectedTemplate}
                 updateBidTemplateFields={setBidTemplateFields}
                 updateAdditionalFields={setAdditionalFields}
+                isMor={false}
               />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">

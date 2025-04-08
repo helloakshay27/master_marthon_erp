@@ -476,6 +476,9 @@ export default function CreateEvent() {
   const [bidTemplateFields, setBidTemplateFields] = useState([]);
   const [additionalFields, setAdditionalFields] = useState([]);
 
+  console.log("materialFormData:--------",materialFormData);
+  
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -559,12 +562,11 @@ export default function CreateEvent() {
           }, {});
 
           return {
-            // id: material.id || null,
             inventory_id: Number(material.inventory_id) || null,
             quantity: Number(material.quantity),
             uom: material.unit,
             location: material.location,
-            rate: Number(material.rate),
+            rate: Number(material.rate) || 0,
             amount: material.amount,
             sub_section_name: material.sub_section_id,
             section_name: material.section_id,
@@ -572,7 +574,7 @@ export default function CreateEvent() {
             inventory_sub_type_id: material.inventory_sub_type_id,
             pms_brand: material.brand_id || null,
             pms_colour: material.colour_id || null,
-            generic_info: material.generic_info_id || null,
+            generic_info_id: material.generic_info_id || null, // Use generic_info_id here
             _destroy: material._destroy || false,
             ...dynamicFields, // Add dynamic fields
           };
@@ -962,6 +964,7 @@ export default function CreateEvent() {
                 updateSelectedTemplate={setSelectedTemplate}
                 updateBidTemplateFields={setBidTemplateFields}
                 updateAdditionalFields={setAdditionalFields}
+                isMor={true}
               />
               {console.log(
                 "selectedTemplate",

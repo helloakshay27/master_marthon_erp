@@ -17,6 +17,7 @@ export default function CreateRFQForm({
   updateSelectedTemplate, // Rename this prop
   updateBidTemplateFields, // Rename this prop
   updateAdditionalFields, // Rename this prop
+  isMor
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -78,6 +79,56 @@ export default function CreateRFQForm({
   const [materialId, setMaterialId] = useState(0); // New state for materialId
   const [pmsColours, setPmsColours] = useState([]); // State for PMS colors
   const [genericInfoOptions, setGenericInfoOptions] = useState([]); // State for generic info
+  const [morOptions, setMorOptions] = useState([]); // State for MOR options
+  const [selectedMor, setSelectedMor] = useState(""); // State for selected MOR
+  const [morMaterialData, setMorMaterialData] = useState([]); // State for MOR material data
+  const [isMorChecked, setIsMorChecked] = useState(false); // State for checkbox
+
+  const fetchMorOptions = async () => {
+    try {
+      const response = await axios.get(
+        "https://marathon.lockated.com/rfq/events/mor_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      if (response.data && Array.isArray(response.data.mors)) {
+        const options = response.data.mors.map((mor) => ({
+          label: mor.name,
+          value: mor.value,
+        }));
+        setMorOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching MOR options:", error);
+    }
+  };
+
+  const fetchMorMaterialData = async (morId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/mor_inventory_payload?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_id=${morId}`
+      );
+      if (response.data && Array.isArray(response.data.materials)) {
+        setMorMaterialData(response.data.materials);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching MOR material data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedMor) {
+      fetchMorMaterialData(selectedMor);
+    }
+  }, [selectedMor]);
+
+  useEffect(() => {
+    if (isMor) {
+      fetchMorOptions();
+    }
+  }, [isMor]);
 
   const mapBidTemplateFields = (fields) => {
     // console.log("fields", fields);
@@ -273,48 +324,38 @@ export default function CreateRFQForm({
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
-          // console.log("materialsArray:----", materialsArray);
 
           const inventoryTypeId = materialsArray[0]?.inventory_type_id;
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
 
           if (inventoryTypeId) {
-            // console.log(
-            //   "Fetching materials for inventoryTypeId:",
-            //   inventoryTypeId
-            // );
             fetchMaterials(inventoryTypeId);
           }
           if (inventorySubTypeId) {
-            // console.log(
-            //   "Fetching sub-sections for inventorySubTypeId:",
-            //   inventorySubTypeId
-            // );
             fetchSubSections(inventorySubTypeId);
           }
-          // console.log("materials", materialsArray, materialsArray[0].inventory_id);
 
           return {
             materialType,
             sectionData: materialsArray.map((material) => ({
               id: material.id,
-              descriptionOfItem:
-                material.inventory_name || material.descriptionOfItem,
-              inventory_id: material?.inventory_id,
+              descriptionOfItem: material.inventory_name || material.descriptionOfItem,
+              inventory_id: material.inventory_id,
               quantity: material.quantity,
-              unit: material.uom,
-              location: material.location,
+              unit: material.uom_short_name || material.unit, // Map unit correctly
+              location: material.location, // Map location correctly
               rate: material.rate,
               amount: material.amount,
+              type: material.material_type || "N/A", // Map type correctly
               sub_section_id: material.sub_section_id,
               section_id: material.inventory_type_id || material.section_id,
               inventory_type_id: material.inventory_type_id,
               inventory_sub_type_id: material.inventory_sub_type_id,
               subMaterialType: material.inventory_sub_type,
-              pms_brand_id:material.pms_brand_id,
-              pms_colour_id:material.pms_colour_id,
-              generic_info_id:material.generic_info_id,
+              pms_brand_id: material.pms_brand_id, // Map pms_brand_id correctly
+              pms_colour_id: material.pms_colour_id,
+              generic_info_id: material.generic_info_id,
               _destroy: false,
             })),
           };
@@ -518,42 +559,38 @@ export default function CreateRFQForm({
   const handleInputChange = (value, rowIndex, key, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
+
     if (key === "descriptionOfItem") {
       updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] =
         value;
     }
-    setSections(updatedSections); // Update the sections state
 
-    // Update the parent data with all attributes, including dynamic fields
-    const updatedData = updatedSections.flatMap((section) => {
-      console.log("section.sectionData", section.sectionData);
-      
+    setSections(updatedSections);
+
+    const updatedData = updatedSections.flatMap((section) =>
       section.sectionData.map((row) => ({
         id: row.id || null,
         inventory_id: Number(row.inventory_id),
         quantity: Number(row.quantity),
         uom: row.unit,
         location: row.location,
-        rate: Number(row.rate),
-        amount: row.amount,
+        rate: row.rate || null,
+        amount: row.amount || null,
         section_name: row.section_id,
         inventory_type_id: row.inventory_type_id,
         inventory_sub_type_id: row.inventory_sub_type_id,
-        pms_brand_id: row.pms_brand_id || null, // Always use pms_brand_id
-        pms_colour_id: row.pms_colour_id || null, // Always use pms_colour_id
-        generic_info_id: row.generic_info_id || null, // Include generic_info_id
+        pms_brand_id: row.pms_brand_id || null,
+        pms_colour_id: row.pms_colour_id || null,
+        generic_info_id: row.generic_info_id || null,
         ...additionalFields.reduce((acc, field) => {
-          acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
+          acc[field.field_name] = row[field.field_name] || null;
           return acc;
         }, {}),
         _destroy: row._destroy || false,
-      }));
-    });
+      }))
+    );
 
-    setData(updatedData); // Update the parent data
-    fetchBrands(value);
-    fetchPmsColours(value);
-    fetchGenericInfo(value);
+    setData(updatedData);
   };
 
   const fetchBrands = async (materialId) => {
@@ -872,8 +909,8 @@ export default function CreateRFQForm({
           quantity: Number(row.quantity),
           uom: row.unit,
           location: row.location,
-          rate: Number(row.rate),
-          amount: row.amount,
+          rate: row.rate || null,
+          amount: row.amount || null,
           section_name: row.section_id,
           inventory_type_id: row.inventory_type_id,
           inventory_sub_type_id: row.inventory_sub_type_id,
@@ -920,6 +957,7 @@ export default function CreateRFQForm({
           value={fieldValue}
           onChange={(value) => handleFieldChange(value)}
         />
+        
       );
     }
 
@@ -1045,25 +1083,30 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "location") {
+      
       return (
         <SelectBox
           options={locationOptions}
           defaultValue={
-            locationOptions.find((option) => option.label === fieldValue)?.value
+            locationOptions.find((option) => option.value === Number(fieldValue))?.value
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
         />
+
       );
     }
 
     if (fieldName === "pms_brand_id") {
+      console.log(brandOptions, fieldValue,            brandOptions.find((option) => option.label === fieldValue)?.value
+,      "brandOptions");
+      
       return (
         <SelectBox
           options={brandOptions}
           defaultValue={
-            brandOptions.find((option) => option.label === fieldValue)?.value
+            brandOptions.find((option) => option.value === Number(fieldValue))?.value
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
@@ -1146,6 +1189,72 @@ export default function CreateRFQForm({
     );
   };
 
+  const morMaterialColumns = [
+    { label: "Material Name", key: "inventory.name" },
+    { label: "Required Quantity", key: "required_quantity" },
+    { label: "Approved Quantity", key: "approved_quantity" },
+    { label: "UOM", key: "uom_name" },
+    { label: "Priority", key: "priority" },
+    { label: "Expected Delivery Date", key: "expected_date_of_delivery" },
+    { label: "Note", key: "note" },
+  ];
+
+  const handleMorMaterialIntegration = (morMaterials) => {
+    const integratedSections = morMaterials.map((material) => ({
+      sectionData: [
+        {
+          id: material.id,
+          descriptionOfItem: material.inventory?.name || "",
+          quantity: material.required_quantity || 0,
+          unit: material.inventory?.uom_name || "",
+          type: material.inventory?.type || "",
+          pms_brand_id: material.pms_brand_id || null,
+          pms_colour_id: material.pms_colour_id || null,
+          generic_info_id: material.generic_info_id || null,
+          location: material.pms_site || "",
+          rate: null, // Rate is null and disabled
+          amount: null, // Amount is null and disabled
+          inventory_id: material.inventory_id || null,
+          sub_section_id: material.inventory_sub_type_id || null,
+          section_id: material.inventory_type_id || null,
+          inventory_type_id: material.inventory_type_id || null,
+          inventory_sub_type_id: material.inventory_sub_type_id || null,
+          _destroy: false,
+        },
+      ],
+      sectionId: Date.now(),
+    }));
+
+    setSections(integratedSections); // Replace sections with MOR materials
+  };
+
+  useEffect(() => {
+    if (selectedMor && morMaterialData.length > 0) {
+      handleMorMaterialIntegration(morMaterialData);
+    }
+  }, [morMaterialData]);
+
+  const handleMorCheckboxChange = (checked) => {
+    setIsMorChecked(checked);
+    if (!checked) {
+      // Reset table to default state
+      setSections([
+        {
+          sectionData: data,
+          sectionId: Date.now(),
+        },
+      ]);
+      setSelectedMor(""); // Clear selected MOR
+      setMorMaterialData([]); // Clear MOR material data
+    }
+  };
+
+  useEffect(() => {
+    if (!isMorChecked) {
+      setMorMaterialData([]); // Ensure MOR material data is cleared when unchecked
+    }
+  }, [isMorChecked]);
+
   return (
     <div className="row px-3">
       <div className="card p-0">
@@ -1155,6 +1264,8 @@ export default function CreateRFQForm({
           </h3>
         </div>
         <div className="d-flex justify-content-between px-3 py-3">
+          <div className="d-flex w-100 gap-3" >
+
           <div className="col-md-3">
             <SelectBox
               label={"Select Template"}
@@ -1162,6 +1273,27 @@ export default function CreateRFQForm({
               onChange={handleTemplateChange}
               defaultValue={selectedTemplate} // Set value instead of defaultValue
             />
+          </div>
+          {isMorChecked && (
+            <div className="col-md-3">
+              <SelectBox
+                label={"Select MOR"}
+                options={morOptions}
+                onChange={(value) => setSelectedMor(value)}
+                defaultValue={selectedMor}
+              />
+            </div>
+          )}
+
+          {isMor && <div className="col-md-2 d-flex align-items-center">
+            <input
+              type="checkbox"
+              className="form-check-input me-2"
+              checked={isMorChecked}
+              onChange={(e) => handleMorCheckboxChange(e.target.checked)}
+            />
+            <label className="form-check-label">Is MOR</label>
+          </div>}
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
             <span className="material-symbols-outlined align-text-top">
@@ -1171,144 +1303,20 @@ export default function CreateRFQForm({
           </button>
         </div>
         <div className="px-3 py-3">
-          {sections.map((section, sectionIndex) => (
-            <div key={section.sectionId} className="card p-4 mb-4">
-              <div className="row mt-4">
-                <div className="col-md-8 col-sm-12 d-flex gap-3">
-                  <div className="flex-grow-1">
-                    <SelectBox
-                      label={"Select Material Type"}
-                      options={sectionOptions}
-                      defaultValue={
-                        section?.sectionData?.some((row) => row?._destroy)
-                          ? "Select Material Type"
-                          : sectionOptions?.find(
-                              (option) => option.label === section?.materialType
-                            )?.value || "Select Material Type"
-                      }
-                      onChange={(selected) =>
-                        handleSectionChange(selected, sectionIndex)
-                      }
-                    />
-                  </div>
-                  <div className="flex-grow-1">
-                    {/* {console.log(
-                      "subTypeidcnjiasncasncbn:_____---____----_----_---_---_---_",
-                      subTypeId,
-                      subSectionOptions
-                    )} */}
-                    <SelectBox
-                      label={"Select Sub Material Type"}
-                      options={subSectionOptions}
-                      defaultValue={
-                        subSectionOptions?.find(
-                          (option) => option.value === subTypeId
-                        )?.value || ""
-                      }
-                      onChange={(selected) =>
-                        handleSubSectionChange(selected, sectionIndex)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
-                  <button
-                    className="purple-btn2"
-                    onClick={() => handleAddRow(sectionIndex)}
-                  >
-                    <span className="material-symbols-outlined align-text-top">
-                      add{" "}
-                    </span>
-                    <span>Add Row</span>
-                  </button>
-
-                  {sectionIndex > 0 && (
-                    <button
-                      className="purple-btn2"
-                      onClick={() => handleRemoveSection(sectionIndex)}
-                    >
-                      Remove Section
-                    </button>
-                  )}
-                </div>
-              </div>
+          {isMorChecked && selectedMor ? (
+            <div className="mt-4">
               <Table
-                columns={renderTableColumns()}
+                columns={renderTableColumns().filter((col) => col.key !== "actions")} // Exclude "actions" column
+                data={sections.flatMap((section) => section.sectionData)}
                 isMinWidth={true}
-                data={section?.sectionData?.filter((row) => !row._destroy)}
                 customRender={{
                   srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
-                  descriptionOfItem: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={materials} // Ensure materials is an array of objects with `label` and `value`
-                        onChange={(value) =>
-                          handleDescriptionOfItemChange(
-                            value,
-                            rowIndex,
-                            sectionIndex
-                          )
-                        }
-                        value={
-                          section?.sectionData[rowIndex]?.descriptionOfItem ||
-                          ""
-                        }
-                      />
-                    );
-                  },
-                  unit: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
-                        onChange={(value) =>
-                          handleUnitChange(value, rowIndex, sectionIndex)
-                        }
-                        value={section?.sectionData[rowIndex]?.unit || ""}
-                      />
-                    );
-                  },
-                  location: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
-                        onChange={(value) =>
-                          handleLocationChange(value, rowIndex, sectionIndex)
-                        }
-                        value={section?.sectionData[rowIndex]?.location || ""}
-                      />
-                    );
-                  },
-                  pms_brand_id: (cell, rowIndex) => {
-                    return (
-                      <SelectBox
-                        options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
-                        onChange={(value) =>
-                          handleInputChange(
-                            value,
-                            rowIndex,
-                            "pms_brand_id",
-                            sectionIndex
-                          )
-                        }
-                        defaultValue={
-                          section?.sectionData[rowIndex].pms_brand_id
-                        }
-                        />
-                    );
-                  },
-                  type: (cell, rowIndex) => (
+                  descriptionOfItem: (cell, rowIndex) => (
                     <input
                       className="form-control"
                       type="text"
                       value={cell}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "type",
-                          sectionIndex
-                        )
-                      }
+                      disabled
                     />
                   ),
                   quantity: (cell, rowIndex) => (
@@ -1316,15 +1324,31 @@ export default function CreateRFQForm({
                       className="form-control"
                       type="number"
                       value={cell}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "quantity",
-                          sectionIndex
-                        )
-                      }
-                      placeholder="Enter Quantity"
+                      disabled
+                    />
+                  ),
+                  unit: (cell, rowIndex) => (
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={cell}
+                      disabled
+                    />
+                  ),
+                  type: (cell, rowIndex) => (
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={cell}
+                      disabled
+                    />
+                  ),
+                  location: (cell, rowIndex) => (
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={cell}
+                      disabled
                     />
                   ),
                   rate: (cell, rowIndex) => (
@@ -1332,15 +1356,7 @@ export default function CreateRFQForm({
                       className="form-control"
                       type="number"
                       value={cell}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "rate",
-                          sectionIndex
-                        )
-                      }
-                      placeholder="Enter Rate"
+                      disabled
                     />
                   ),
                   amount: (cell, rowIndex) => (
@@ -1348,98 +1364,328 @@ export default function CreateRFQForm({
                       className="form-control"
                       type="number"
                       value={cell}
-                      onChange={(e) =>
-                        handleInputChange(
-                          e.target.value,
-                          rowIndex,
-                          "amount",
-                          sectionIndex
-                        )
-                      }
-                      placeholder="Enter Amount"
                       disabled
                     />
                   ),
-                  actions: (_, rowIndex) => (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleRemoveRow(rowIndex, sectionIndex)}
-                    >
-                      Remove
-                    </button>
+                  pms_brand_id: (cell, rowIndex) => (
+                    <SelectBox
+                      options={brandOptions}
+                      onChange={(value) =>
+                        handleInputChange(value, rowIndex, "pms_brand_id", 0)
+                      }
+                      defaultValue={cell}
+                    />
                   ),
-                  ...additionalFields.reduce((acc, field) => {
-                    acc[field.field_name] = (cell, rowIndex) =>
-                      renderAdminFields(field, rowIndex, sectionIndex);
-                    return acc;
-                  }, {}),
-                  ...Object.keys(
-                    sections[sectionIndex]?.sectionData[0] || {}
-                  ).reduce((acc, fieldName) => {
-                    if (
-                      !additionalFields.some(
-                        (field) => field.field_name === fieldName
-                      )
-                    ) {
-                      acc[fieldName] = (cell, rowIndex) =>
-                        renderGenericField(fieldName, rowIndex, sectionIndex);
-                    }
-                    return acc;
-                  }, {}),
                   pms_colour_id: (cell, rowIndex) => (
                     <SelectBox
                       options={pmsColours}
-                      defaultValue={section?.sectionData[rowIndex].pms_colour_id}
+                      defaultValue={cell}
                       onChange={(value) =>
-                        handleInputChange(
-                          value,
-                          rowIndex,
-                          "pms_colour_id",
-                          sectionIndex
-                        )
+                        handleInputChange(value, rowIndex, "pms_colour_id", 0)
                       }
-                      />
+                    />
                   ),
                   generic_info_id: (cell, rowIndex) => (
                     <SelectBox
                       options={genericInfoOptions}
-                      defaultValue={section?.sectionData[rowIndex]?.generic_info_id || ""}
+                      defaultValue={cell}
                       onChange={(value) =>
-                        handleInputChange(
-                          value,
-                          rowIndex,
-                          "generic_info_id",
-                          sectionIndex
-                        )
+                        handleInputChange(value, rowIndex, "generic_info_id", 0)
                       }
                     />
                   ),
+                  ...additionalFields.reduce((acc, field) => {
+                    acc[field.field_name] = (cell, rowIndex) =>
+                      renderAdminFields(field, rowIndex, 0); // Use renderAdminFields for template-selected fields
+                    return acc;
+                  }, {}),
                 }}
-                onRowSelect={undefined}
-                handleCheckboxChange={undefined}
-                resetSelectedRows={undefined}
-                onResetComplete={undefined}
               />
-
               <div className="d-flex justify-content-end">
-                <ShortTable
-                  data={
-                    Array.isArray(bidTemplateFields) ? bidTemplateFields : []
-                  }
-                  editable={true}
-                  onValueChange={handleShortTableChange}
-                  onInputClick={handleEditShortTableRow}
-                  onDeleteClick={(index) => {
-                    const updatedFields = bidTemplateFields.filter(
-                      (_, i) => i !== index
-                    );
-                    setBidTemplateFields(updatedFields);
-                    updateBidTemplateFields(updatedFields);
-                  }}
-                />
-              </div>
+                  <ShortTable
+                    data={
+                      Array.isArray(bidTemplateFields) ? bidTemplateFields : []
+                    }
+                    editable={true}
+                    onValueChange={handleShortTableChange}
+                    onInputClick={handleEditShortTableRow}
+                    onDeleteClick={(index) => {
+                      const updatedFields = bidTemplateFields.filter(
+                        (_, i) => i !== index
+                      );
+                      setBidTemplateFields(updatedFields);
+                      updateBidTemplateFields(updatedFields);
+                    }}
+                  />
+                </div>
+
             </div>
-          ))}
+          ) : (
+            sections.map((section, sectionIndex) => (
+              <div key={section.sectionId} className="card p-4 mb-4">
+                <div className="row mt-4">
+                  <div className="col-md-8 col-sm-12 d-flex gap-3">
+                    <div className="flex-grow-1">
+                      <SelectBox
+                        label={"Select Material Type"}
+                        options={sectionOptions}
+                        defaultValue={
+                          section?.sectionData?.some((row) => row?._destroy)
+                            ? "Select Material Type"
+                            : sectionOptions?.find(
+                                (option) => option.label === section?.materialType
+                              )?.value || "Select Material Type"
+                        }
+                        onChange={(selected) =>
+                          handleSectionChange(selected, sectionIndex)
+                        }
+                      />
+                    </div>
+                    <div className="flex-grow-1">
+                      <SelectBox
+                        label={"Select Sub Material Type"}
+                        options={subSectionOptions}
+                        defaultValue={
+                          subSectionOptions?.find(
+                            (option) => option.value === subTypeId
+                          )?.value || ""
+                        }
+                        onChange={(selected) =>
+                          handleSubSectionChange(selected, sectionIndex)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
+                    <button
+                      className="purple-btn2"
+                      onClick={() => handleAddRow(sectionIndex)}
+                    >
+                      <span className="material-symbols-outlined align-text-top">
+                        add{" "}
+                      </span>
+                      <span>Add Row</span>
+                    </button>
+
+                    {sectionIndex > 0 && (
+                      <button
+                        className="purple-btn2"
+                        onClick={() => handleRemoveSection(sectionIndex)}
+                      >
+                        Remove Section
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <Table
+                  columns={renderTableColumns()}
+                  isMinWidth={true}
+                  data={section?.sectionData?.filter((row) => !row._destroy)}
+                  customRender={{
+                    srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
+                    descriptionOfItem: (cell, rowIndex) => {
+                      return (
+                        <SelectBox
+                          options={materials} // Ensure materials is an array of objects with `label` and `value`
+                          onChange={(value) =>
+                            handleDescriptionOfItemChange(
+                              value,
+                              rowIndex,
+                              sectionIndex
+                            )
+                          }
+                          value={
+                            section?.sectionData[rowIndex]?.descriptionOfItem ||
+                            ""
+                          }
+                        />
+                      );
+                    },
+                    unit: (cell, rowIndex) => {
+                      return (
+                        <SelectBox
+                          options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
+                          onChange={(value) =>
+                            handleUnitChange(value, rowIndex, sectionIndex)
+                          }
+                          value={section?.sectionData[rowIndex]?.unit || ""}
+                        />
+                      );
+                    },
+                    location: (cell, rowIndex) => {
+                      return (
+                        <SelectBox
+                          options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
+                          onChange={(value) =>
+                            handleLocationChange(value, rowIndex, sectionIndex)
+                          }
+                          value={section?.sectionData[rowIndex]?.location || ""}
+                        />
+                      );
+                    },
+                    pms_brand_id: (cell, rowIndex) => {
+                      return (
+                        <SelectBox
+                          options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
+                          onChange={(value) =>
+                            handleInputChange(
+                              value,
+                              rowIndex,
+                              "pms_brand_id",
+                              sectionIndex
+                            )
+                          }
+                          value={
+                            section?.sectionData[rowIndex]?.pms_brand_id || "" // Use pms_brand_id from existing data
+                          }
+                        />
+                      );
+                    },
+                    type: (cell, rowIndex) => (
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={cell}
+                        onChange={(e) =>
+                          handleInputChange(
+                            e.target.value,
+                            rowIndex,
+                            "type",
+                            sectionIndex
+                          )
+                        }
+                      />
+                    ),
+                    quantity: (cell, rowIndex) => (
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={cell}
+                        onChange={(e) =>
+                          handleInputChange(
+                            e.target.value,
+                            rowIndex,
+                            "quantity",
+                            sectionIndex
+                          )
+                        }
+                        placeholder="Enter Quantity"
+                      />
+                    ),
+                    rate: (cell, rowIndex) => (
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={cell}
+                        onChange={(e) =>
+                          handleInputChange(
+                            e.target.value,
+                            rowIndex,
+                            "rate",
+                            sectionIndex
+                          )
+                        }
+                        placeholder="Enter Rate"
+                      />
+                    ),
+                    amount: (cell, rowIndex) => (
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={cell}
+                        onChange={(e) =>
+                          handleInputChange(
+                            e.target.value,
+                            rowIndex,
+                            "amount",
+                            sectionIndex
+                          )
+                        }
+                        placeholder="Enter Amount"
+                        disabled
+                      />
+                    ),
+                    actions: (_, rowIndex) => (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleRemoveRow(rowIndex, sectionIndex)}
+                      >
+                        Remove
+                      </button>
+                    ),
+                    ...additionalFields.reduce((acc, field) => {
+                      acc[field.field_name] = (cell, rowIndex) =>
+                        renderAdminFields(field, rowIndex, sectionIndex);
+                      return acc;
+                    }, {}),
+                    ...Object.keys(
+                      sections[sectionIndex]?.sectionData[0] || {}
+                    ).reduce((acc, fieldName) => {
+                      if (
+                        !additionalFields.some(
+                          (field) => field.field_name === fieldName
+                        )
+                      ) {
+                        acc[fieldName] = (cell, rowIndex) =>
+                          renderGenericField(fieldName, rowIndex, sectionIndex);
+                      }
+                      return acc;
+                    }, {}),
+                    pms_colour_id: (cell, rowIndex) => (
+                      <SelectBox
+                        options={pmsColours}
+                        defaultValue={section?.sectionData[rowIndex].pms_colour_id}
+                        onChange={(value) =>
+                          handleInputChange(
+                            value,
+                            rowIndex,
+                            "pms_colour_id",
+                            sectionIndex
+                          )
+                        }
+                        />
+                    ),
+                    generic_info_id: (cell, rowIndex) => (
+                      <SelectBox
+                        options={genericInfoOptions}
+                        defaultValue={section?.sectionData[rowIndex]?.generic_info_id || ""}
+                        onChange={(value) =>
+                          handleInputChange(
+                            value,
+                            rowIndex,
+                            "generic_info_id",
+                            sectionIndex
+                          )
+                        }
+                      />
+                    ),
+                  }}
+                  onRowSelect={undefined}
+                  handleCheckboxChange={undefined}
+                  resetSelectedRows={undefined}
+                  onResetComplete={undefined}
+                />
+
+                <div className="d-flex justify-content-end">
+                  <ShortTable
+                    data={
+                      Array.isArray(bidTemplateFields) ? bidTemplateFields : []
+                    }
+                    editable={true}
+                    onValueChange={handleShortTableChange}
+                    onInputClick={handleEditShortTableRow}
+                    onDeleteClick={(index) => {
+                      const updatedFields = bidTemplateFields.filter(
+                        (_, i) => i !== index
+                      );
+                      setBidTemplateFields(updatedFields);
+                      updateBidTemplateFields(updatedFields);
+                    }}
+                  />
+                </div>
+              </div>
+            ))
+          )}
           {deliveryData?.length > 0 && (
             <Table columns={deliveryColumns} data={deliveryData} />
           )}
@@ -1614,7 +1860,7 @@ export default function CreateRFQForm({
           },
           {
             label: "Add Column",
-            onClick: handleAddColumnSubmit,
+            onClick:{handleAddColumnSubmit},
           },
         ]}
       >
