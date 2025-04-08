@@ -495,14 +495,22 @@ export default function VendorDetails() {
         })
       );
 
-      setAdditionalColumns(additionalColumns);
-
       if (!revisedBid) {
         console.log("initial data ", initialData);
         console.log("revised data ", revisedBid);
 
         const processedData = eventMaterials.map((item) => {
+          const flatExtraData = Object.entries(item.extra_data || {}).reduce(
+            (acc, [key, valObj]) => {
+              acc[key] = valObj?.value || "";
+              return acc;
+            },
+            {}
+          );
+          console.log("flatExtraData", flatExtraData);
           const bidMaterial = item.bid_materials?.[0]; // Assuming the first bid material
+          setAdditionalColumns(additionalColumns);
+          console.log
 
           // Map the row data
           const rowData = {
@@ -522,6 +530,7 @@ export default function VendorDetails() {
             totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
             attachment: null, // Placeholder for attachment
             varient: item.material_type, // Use extracted material_type
+            extra_data: flatExtraData,
           };
           console.log("bidMaterial", bidMaterial);
 
@@ -653,6 +662,7 @@ export default function VendorDetails() {
             pmsBrand: material.event_material.pms_brand_name,
             pmsColour: material.event_material.pms_colour_name,
             genericInfo: material.event_material.generic_info_name,
+            extra_data: material.event_material.extra_data || {}, // Include extra_data
           }));
 
           // Map updated data (counter_bid_materials)
@@ -692,6 +702,7 @@ export default function VendorDetails() {
                     pmsBrand: material.pms_brand_name,
                     pmsColour: material.pms_colour_name,
                     genericInfo: material.generic_info_name,
+                    extra_data: material.event_material.extra_data || {}, // Include extra_data
                   }
                 : null; // Handle missing counter bids
             })
@@ -772,14 +783,13 @@ export default function VendorDetails() {
       //   acc[col.key] = row.extra_data?.[col.key]?.value || "";
       //   return acc;
       // }, {});
-      const extraFields = Object.keys(row.event_material.extra_data || {}).reduce(
+      const extraFields = Object.keys(row.extra_data || {}).reduce(
         (acc, key) => {
           acc[key] = row.extra_data[key]?.value || "";
           return acc;
         },
         {}
       );
-
 
       return {
         event_material_id: row.eventMaterialId,
@@ -1117,6 +1127,7 @@ export default function VendorDetails() {
         const extraFields = Object.keys(row.extra_data || {}).reduce(
           (acc, key) => {
             acc[key] = row.extra_data[key]?.value || "";
+
             return acc;
           },
           {}
@@ -4577,43 +4588,128 @@ export default function VendorDetails() {
                                 />
                               );
                             },
+                            // ...additionalColumns.reduce((acc, col) => {
+                            //   acc[col.key] = (cell, rowIndex) => {
+                            //     const row = data[rowIndex]; // Correctly reference the row
+                            //     const extraData =
+                            //       row?.extra_data?.[col.key] || {
+                            //         value: "",
+                            //         readonly: false,
+                            //       }; // Ensure extra_data is initialized
+                            //     console.log("row", row, "extraData", extraData);
+                            //     return (
+                            //       <input
+                            //         value={extraData.value || ""
+                            //           } // Use the value conditionally
+                            //         className="form-control"
+                            //         onChange={(e) => {
+                            //           // if (revisedBid) {
+                            //             // Update the value in extra_data immutably
+                            //             setData((prevData) => {
+                            //               const updatedData = prevData.map(
+                            //                 (item, index) => {
+                            //                   if (index === rowIndex) {
+                            //                     const updatedRow = { ...item };
+                            //                     if (!updatedRow.extra_data) {
+                            //                       updatedRow.extra_data = {};
+                            //                     }
+                            //                     updatedRow.extra_data[col.key] =
+                            //                       {
+                            //                         ...updatedRow.extra_data[
+                            //                           col.key
+                            //                         ],
+                            //                         value: e.target.value,
+                            //                       };
+                            //                     return updatedRow;
+                            //                   }
+                            //                   return item;
+                            //                 }
+                            //               );
+                            //               return updatedData;
+                            //             });
+
+                            //         }}
+                            //         onFocus={(e) => e.target.select()} // Ensure the input remains focused
+                            //         readOnly={!revisedBid} // Make input read-only if not revisedBid
+                            //       />
+                            //     );
+                            //   };
+                            //   return acc;
+                            // }, {}),
+                            // ...additionalColumns.reduce((acc, col) => {
+                            //   acc[col.key] = (cell, rowIndex) => {
+                            //     const row = data[rowIndex]; // Correctly reference the row
+                            //     const extraData = row?.extra_data?.[col.key] || { value: "", readonly: false }; // Ensure extra_data is initialized
+                            //     return (
+                            //       <input
+                            //         value={typeof extraData === "object" ? extraData.value || "" : extraData || ""}
+                            //         className="form-control"
+                            //         onChange={(e) => {
+                            //           // Update the value in extra_data immutably
+                            //           setData((prevData) => {
+                            //             const updatedData = prevData.map((item, index) => {
+                            //               if (index === rowIndex) {
+                            //                 const updatedRow = { ...item };
+                            //                 if (!updatedRow.extra_data) {
+                            //                   updatedRow.extra_data = {};
+                            //                 }
+                            //                 updatedRow.extra_data[col.key] = {
+                            //                   ...updatedRow.extra_data[col.key],
+                            //                   value: e.target.value,
+                            //                 };
+                            //                 return updatedRow;
+                            //               }
+                            //               return item;
+                            //             });
+                            //             return updatedData;
+                            //           });
+                            //         }}
+                            //         onFocus={(e) => e.target.select()}
+                            //       />
+                            //     );
+                            //   };
+                            //   return acc;
+                            // }, {}),
                             ...additionalColumns.reduce((acc, col) => {
                               acc[col.key] = (cell, rowIndex) => {
-                                const row = currentExtraData;
-
-                                const extraData =
-                                  row.extra_data?.[col.key] || {};
-                                console.log("extraData:---------", row);
-
+                                const row = data[rowIndex]; // Correctly reference the row
+                                const extraData = row?.extra_data?.[
+                                  col.key
+                                ] || { value: "", readonly: false }; // Ensure extra_data is initialized
+                                console.log("row",row,"extraData",extraData, typeof extraData);
                                 return (
                                   <input
-                                    value={
-                                      data[rowIndex]?.extra_data?.[col.key]
-                                        ?.value || ""
-                                    }
+                                    value={extraData.value}
                                     className="form-control"
+                                    readOnly={extraData.readonly}
                                     onChange={(e) => {
-                                      const updatedData = [...data];
-
-                                      if (!updatedData[rowIndex].extra_data) {
-                                        updatedData[rowIndex].extra_data = {};
-                                      }
-
-                                      if (
-                                        !updatedData[rowIndex].extra_data[
-                                          col.key
-                                        ]
-                                      ) {
-                                        updatedData[rowIndex].extra_data[
-                                          col.key
-                                        ] = {};
-                                      }
-
-                                      updatedData[rowIndex].extra_data[
-                                        col.key
-                                      ].value = e.target.value;
-                                      setData(updatedData);
+                                      const newValue = e.target.value;
+                                      setData((prevData) => {
+                                        const updatedData = prevData.map(
+                                          (item, index) => {
+                                            if (index === rowIndex) {
+                                              const updatedRow = { ...item };
+                                              if (!updatedRow.extra_data)
+                                                updatedRow.extra_data = {};
+                                              updatedRow.extra_data[col.key] = {
+                                                ...(typeof updatedRow
+                                                  .extra_data[col.key] ===
+                                                "object"
+                                                  ? updatedRow.extra_data[
+                                                      col.key
+                                                    ]
+                                                  : {}),
+                                                value: newValue,
+                                              };
+                                              return updatedRow;
+                                            }
+                                            return item;
+                                          }
+                                        );
+                                        return updatedData;
+                                      });
                                     }}
+                                    onFocus={(e) => e.target.select()}
                                   />
                                 );
                               };
