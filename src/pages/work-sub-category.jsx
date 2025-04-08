@@ -7,54 +7,291 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { Modal } from "react-bootstrap"; // Ensure you have react-bootstrap installed
 const WorkSubCategory = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [companies, setCompanies] = useState([]);
-  // const [tableData, setTableData] = useState([]);
-  // const [searchTerm, setSearchTerm] = useState("");
 
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedDepartments, setSelectedDepartments] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
+   const [projectDetails, setProjectDetails] = useState(
+      {
+          "categories": [
 
-  const [tableData, setTableData] = useState([
-    {
-      id: 1,
-      subCategoryName: "Excavation",
-      level4: "Level 4 Example",
-      level3: "Level 3 Example",
-      level2: "Level 2 Example",
-      parentWorkCategory: "Civil Work",
-      description: "Excavation and backfilling work",
-      benchmarkLeadTime: "10 days",
-      sacCode: "123456",
-    },
-    {
-      id: 2,
-      subCategoryName: "Plastering",
-      level4: "Level 4 Example",
-      level3: "Level 3 Example",
-      level2: "Level 2 Example",
-      parentWorkCategory: "Finishing Work",
-      description: "Internal and external plastering",
-      benchmarkLeadTime: "15 days",
-      sacCode: "654321",
-    },
-    {
-      id: 3,
-      subCategoryName: "Tiling",
-      level4: "Level 4 Example",
-      level3: "Level 3 Example",
-      level2: "Level 2 Example",
-      parentWorkCategory: "Finishing Work",
-      description: "Floor and wall tiling",
-      benchmarkLeadTime: "20 days",
-      sacCode: "789012",
-    },
-  ]);
+            {
+              "id": 36,
+              "name": "Civil Work",
+              "Description": "Excavation and backfilling work",
+              "Benchmark_Lead_Time": "15 days",
+              "SAC_Code": "1234566",
+              "material_type_details": [],
+              "sub_categories_2": [
+                  {
+                      "id": 32,
+                      "name": "Level 2 Example ",
+                      "Description": "",
+              "Benchmark_Lead_Time": "",
+              "SAC_Code": "12345",
+                      // "material_type_details": [
+                      //     {
+                      //         "id": 69,
+                      //         "name": "CONCRETE",
+                      //         "budget": 785.2099990844727
+                      //     },
+                      //     {
+                      //         "id": 70,
+                      //         "name": "STEEL-TMT",
+                      //         "budget": 1.0
+                      //     },
+                      //     {
+                      //         "id": 72,
+                      //         "name": "COVER BLOCK",
+                      //         "budget": 367.510009765625
+                      //     }
+                      // ],
+                      "sub_categories_3": [
+                          {
+                              "id": 33,
+                              "name": "Level 3 Example",
+                              "Description": "",
+              "Benchmark_Lead_Time": "",
+              "SAC_Code": "12345",
+                              // "material_type_details": [
+                              //     {
+                              //         "id": 63,
+                              //         "name": "DOOR WORK",
+                              //         "budget": 89.77999877929688
+                              //     },
+                              //     {
+                              //         "id": 64,
+                              //         "name": "CEMENT",
+                              //         "budget": 59.0
+                              //     },
+                              //     {
+                              //         "id": 66,
+                              //         "name": "SAND",
+                              //         "budget": 185.0
+                              //     },
+                              //     {
+                              //         "id": 67,
+                              //         "name": "ADHESIVE",
+                              //         "budget": 278.489990234375
+                              //     },
+                              //     {
+                              //         "id": 75,
+                              //         "name": "TILES",
+                              //         "budget": 2355.760009765625
+                              //     },
+                              //     {
+                              //         "id": 78,
+                              //         "name": "STONE",
+                              //         "budget": 1516.219970703125
+                              //     }
+                              // ],
+                              "sub_categories_4": [
+                                {
+                                  "id": 33,
+                              "name": "Level 4 Example",
+                              "Description": "",
+              "Benchmark_Lead_Time": "",
+              "SAC_Code": "12345",
+                              "material_type_details": [
+                                  {
+                                      "id": 63,
+                                      "name": "Excavation",
+                                      "budget": 89.77999877929688
+                                  },
+                                 
+                              ],
+                                }
+                              ]
+                          },
+                         
+                         
+                      ]
+                  }
+              ]
+          },
+             
+              {
+                  "id": 37,
+                  "name": "FINISHING WORK",
+                  "Description": "Internal and external plastering",
+                  "Benchmark_Lead_Time": "10 days",
+                  "SAC_Code": "12345",
+                  "material_type_details": [],
+                  "sub_categories_2": [
+                      {
+                          "id": 321,
+                          "name": "Level 2 Example ",
+                          "Description": "",
+                  "Benchmark_Lead_Time": "",
+                  "SAC_Code": "12345",
+                          // "material_type_details": [
+                          //     {
+                          //         "id": 69,
+                          //         "name": "CONCRETE",
+                          //         "budget": 785.2099990844727
+                          //     },
+                          //     {
+                          //         "id": 70,
+                          //         "name": "STEEL-TMT",
+                          //         "budget": 1.0
+                          //     },
+                          //     {
+                          //         "id": 72,
+                          //         "name": "COVER BLOCK",
+                          //         "budget": 367.510009765625
+                          //     }
+                          // ],
+                          "sub_categories_3": [
+                              {
+                                  "id": 331,
+                                  "name": "Level 3 Example",
+                                  "Description": "",
+                  "Benchmark_Lead_Time": "",
+                  "SAC_Code": "12345",
+                                  // "material_type_details": [
+                                  //     {
+                                  //         "id": 63,
+                                  //         "name": "DOOR WORK",
+                                  //         "budget": 89.77999877929688
+                                  //     },
+                                  //     {
+                                  //         "id": 64,
+                                  //         "name": "CEMENT",
+                                  //         "budget": 59.0
+                                  //     },
+                                  //     {
+                                  //         "id": 66,
+                                  //         "name": "SAND",
+                                  //         "budget": 185.0
+                                  //     },
+                                  //     {
+                                  //         "id": 67,
+                                  //         "name": "ADHESIVE",
+                                  //         "budget": 278.489990234375
+                                  //     },
+                                  //     {
+                                  //         "id": 75,
+                                  //         "name": "TILES",
+                                  //         "budget": 2355.760009765625
+                                  //     },
+                                  //     {
+                                  //         "id": 78,
+                                  //         "name": "STONE",
+                                  //         "budget": 1516.219970703125
+                                  //     }
+                                  // ],
+                                  "sub_categories_4": [
+                                    {
+                                      "id": 332,
+                                  "name": "Level 4 Example",
+                                  "Description": "",
+                  "Benchmark_Lead_Time": "",
+                  "SAC_Code": "12345",
+                                  "material_type_details": [
+                                      {
+                                          "id": 631,
+                                          "name": "Plastering",
+                                          "budget": 89.77999877929688
+                                      },
+                                     
+                                  ],
+                                    }
+                                  ]
+                              },
+                             
+                             
+                          ]
+                      }
+                  ]
+              },
+
+             
+          ]
+      }
+  );
+
+
+
+   // estimation list table
+    const [openCategoryId, setOpenCategoryId] = useState(null); // Track which category is open
+    const [openSubCategory2Id, setOpenSubCategory2Id] = useState(null); // Track sub-category 2 visibility
+    const [openSubCategory3Id, setOpenSubCategory3Id] = useState(null); // Track sub-category 3 visibility
+    const [openSubCategory4Id, setOpenSubCategory4Id] = useState(null); // Track sub-category 3 visibility
+    const [openSubCategory5Id, setOpenSubCategory5Id] = useState(null); // Track sub-category 3 visibility
+  
+    const [openBoqDetailId, setOpenBoqDetailId] = useState(null); // Track BOQ details visibility
+    const [openBoqDetailId1, setOpenBoqDetailId1] = useState(null); // Track BOQ details visibility
+    const [openBoqDetailId2, setOpenBoqDetailId2] = useState(null); // Track BOQ details visibility
+    const [openBoqDetailId3, setOpenBoqDetailId3] = useState(null); // Track BOQ details visibility
+  
+  
+    // Toggle category visibility
+    const toggleCategory = (id) => {
+      if (openCategoryId === id) {
+        setOpenCategoryId(null); // Close the category if it's already open
+      } else {
+        setOpenCategoryId(id); // Open the selected category
+      }
+    };
+  
+    // Toggle sub-category 2 visibility
+    const toggleSubCategory2 = (id) => {
+      if (openSubCategory2Id === id) {
+        setOpenSubCategory2Id(null); // Close the category if it's already open
+      } else {
+        setOpenSubCategory2Id(id); // Open the selected category
+      }
+    };
+  
+    // Toggle BOQ details visibility
+    const toggleBoqDetail = (id) => {
+      if (openBoqDetailId === id) {
+        setOpenBoqDetailId(null); // Close the category if it's already open
+      } else {
+        setOpenBoqDetailId(id); // Open the selected category
+      }
+    };
+  
+    // Toggle BOQ details 1 visibility
+    const toggleBoqDetail1 = (id) => {
+      if (openBoqDetailId1 === id) {
+        setOpenBoqDetailId1(null); // Close the category if it's already open
+      } else {
+        setOpenBoqDetailId1(id); // Open the selected category
+      }
+    };
+  
+    // Toggle BOQ details 2 visibility
+    const toggleBoqDetail2 = (id) => {
+      if (openBoqDetailId2 === id) {
+        setOpenBoqDetailId2(null); // Close the category if it's already open
+      } else {
+        setOpenBoqDetailId2(id); // Open the selected category
+      }
+    };
+  
+    // Toggle BOQ details 3 visibility
+    const toggleBoqDetail3 = (id) => {
+      if (openBoqDetailId3 === id) {
+        setOpenBoqDetailId3(null); // Close the category if it's already open
+      } else {
+        setOpenBoqDetailId3(id); // Open the selected category
+      }
+    };
+  
+    // Toggle sub-category 3 visibility
+    const toggleSubCategory3 = (id) => {
+      setOpenSubCategory3Id(openSubCategory3Id === id ? null : id);
+    };
+  
+    // Toggle sub-category 3 visibility
+    const toggleSubCategory4 = (id) => {
+      setOpenSubCategory4Id(openSubCategory4Id === id ? null : id);
+    };
+  
+    // Toggle sub-category 3 visibility
+    const toggleSubCategory5 = (id) => {
+      setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
+    };
+
 
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -93,7 +330,7 @@ const WorkSubCategory = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTableData = tableData.slice(indexOfFirstItem, indexOfLastItem);
+  // const currentTableData = tableData.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -136,105 +373,733 @@ const WorkSubCategory = () => {
                 <div>
                   <button
                     className="purple-btn2"
-                    onClick={handleOpenAddUserModal}
+                    // onClick={handleOpenAddUserModal}
                   >
                     + Add
                   </button>
                 </div>
               </div>
               {/* Table Data */}
-              <div className="tbl-container m-4 mt-4 ms-1">
-                <table className="w-100">
-                  <thead>
-                    <tr className="text-start">
-                      <th style={{ width: "5%" }}>Sr No.</th>
-                      <th>Sub category Name</th>
-                      <th>Level 4</th>
-                      <th>Level 3</th>
-                      <th>Level 2</th>
-                      <th>Parent Work Category</th>
-                      <th>Description</th>
-                      <th>Benchmark Lead Time</th>
-                      <th>SAC Code</th>
-                      <th style={{ width: "5%" }}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentTableData.length > 0 ? (
-                      currentTableData.map((item, index) => (
-                        <tr key={item.id}>
-                          <td>{indexOfFirstItem + index + 1}</td>
-                          <td>{item.subCategoryName}</td>
-                          <td>{item.level4}</td>
-                          <td>{item.level3}</td>
-                          <td>{item.level2}</td>
-                          <td>{item.parentWorkCategory}</td>
-                          <td>{item.description}</td>
-                          <td>{item.benchmarkLeadTime}</td>
-                          <td>{item.sacCode}</td>
-                          <td
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                            }}
-                          >
-                            <ShowIcon
-                              onClick={() => handleView(item)}
-                              style={{
-                                cursor: "pointer",
-                                width: "18px",
-                                height: "18px",
-                              }}
-                            />
+            
+                            {/* <ExpandableTable projectDetails={projectDetails} /> */}
+                            
+                              <div className="tbl-container m-4 mt-4 ms-1">
+                                <table
+                                 
+                                  style={{
+                                    width: "max-content",
+                                    maxHeight: "max-content",
+                                    height: "auto",
+                                  }}
 
-                            {/* Checkbox */}
-                            <input
-                              type="checkbox"
-                              style={{
-                                cursor: "pointer",
-                                width: "12px",
-                                height: "12px",
-                              }}
-                            />
-                            <span
-                              className="material-symbols-outlined"
-                              onClick={() => handleOpenEditModal(item)}
-                              style={{
-                                cursor: "pointer",
-                                fontSize: "15px",
-                              }}
-                            >
-                              edit
-                            </span>
+                                  className="w-100"
+                                >
+                                  <thead style={{ zIndex: "111 " }}>
+                                    <tr>
+                                      <th className="text-center" >
+                                        Expand
+                                      </th>
+                                      <th className="text-center" >
+                                      Sr No.
+                                      </th>
+                                      <th className="text-center" >
+                                      Parent Work Category
+                                      </th>
+                                      <th className="text-center" >
+                                      Sub category Name
+                                      </th>
+                                      <th className="text-center" >
+                                      Description
+                                      </th>
+                                      <th className="text-center" >
+                                      Benchmark Lead Time
+                                      </th>
+                                      <th className="text-center" >
+                                      SAC Code
+                                      </th>
+                                      <th className="text-center" >
+                                      Action
+                                      </th>
+                                      
+                                    </tr>
+              
+                                   
+                                    
+                                  </thead>
+                                  <tbody>
+                                    {/* Conditional rendering for categories under sub-project start */}
+                                    {projectDetails &&
+                                      projectDetails.categories &&
+                                      projectDetails.categories.map((category, index) => (
+                                        <React.Fragment key={category.id}>
+                                          <tr className="main-category">
+                                            <td>
+                                              <button
+                                                className="btn btn-link p-0"
+                                                onClick={() => toggleCategory(category.id)}
+                                                aria-label="Toggle category visibility"
+                                              >
+                                                {openCategoryId === category.id ? (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill=" #e0e0e0"
+                                                    stroke="black"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                  >
+                                                    {/* Square */}
+                                                    <rect
+                                                      x="3"
+                                                      y="3"
+                                                      width="18"
+                                                      height="20"
+                                                      rx="1"
+                                                      ry="1"
+                                                    />
+                                                    {/* Minus Icon */}
+                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                  </svg>
+                                                ) : (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill=" #e0e0e0"
+                                                    stroke="black"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                  >
+                                                    {/* Square */}
+                                                    <rect
+                                                      x="3"
+                                                      y="3"
+                                                      width="18"
+                                                      height="20"
+                                                      rx="1"
+                                                      ry="1"
+                                                    />
+                                                    {/* Plus Icon */}
+                                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                  </svg>
+                                                )}
+                                              </button>
+                                            </td>
+                                            <td>{index + 1}</td>
+                                            <td>{category.name}</td>
+                                            <td></td>
+                                            <td>{category.Description}</td>
+                                            <td>{category.Benchmark_Lead_Time}</td>
+                                            <td>{category.SAC_Code}</td>
+                                            <td></td>
+                                            
+                                            
+                                            
+                                          </tr>
+              
+                                          {/* sub level 2 start */}
+                                          {openCategoryId === category.id &&
+                                            category.sub_categories_2 &&
+                                            category.sub_categories_2.length > 0 &&
+                                            category.sub_categories_2.map((subCategory) => (
+                                              <React.Fragment key={subCategory.id}>
+                                                <tr className="category-lvl2">
+                                                  <td>
+                                                    <button
+                                                      className="btn btn-link p-0"
+                                                      onClick={() =>
+                                                        toggleSubCategory2(subCategory.id)
+                                                      }
+                                                      aria-label="Toggle sub-category 2 visibility"
+                                                    >
+                                                      {openSubCategory2Id ===
+                                                      subCategory.id ? (
+                                                        <svg
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                          width="24"
+                                                          height="24"
+                                                          viewBox="0 0 24 24"
+                                                          fill=" #e0e0e0"
+                                                          stroke="black"
+                                                          strokeWidth="1"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        >
+                                                          {/* Square */}
+                                                          <rect
+                                                            x="3"
+                                                            y="3"
+                                                            width="18"
+                                                            height="20"
+                                                            rx="1"
+                                                            ry="1"
+                                                          />
+                                                          {/* Minus Icon */}
+                                                          <line
+                                                            x1="8"
+                                                            y1="12"
+                                                            x2="16"
+                                                            y2="12"
+                                                          />
+                                                        </svg>
+                                                      ) : (
+                                                        <svg
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                          width="24"
+                                                          height="24"
+                                                          viewBox="0 0 24 24"
+                                                          fill=" #e0e0e0"
+                                                          stroke="black"
+                                                          strokeWidth="1"
+                                                          strokeLinecap="round"
+                                                          strokeLinejoin="round"
+                                                        >
+                                                          {/* Square */}
+                                                          <rect
+                                                            x="3"
+                                                            y="3"
+                                                            width="18"
+                                                            height="20"
+                                                            rx="1"
+                                                            ry="1"
+                                                          />
+                                                          {/* Plus Icon */}
+                                                          <line
+                                                            x1="12"
+                                                            y1="8"
+                                                            x2="12"
+                                                            y2="16"
+                                                          />
+                                                          <line
+                                                            x1="8"
+                                                            y1="12"
+                                                            x2="16"
+                                                            y2="12"
+                                                          />
+                                                        </svg>
+                                                      )}
+                                                    </button>
+                                                  </td>
+              
+                                                  <td></td>
+                                                  <td>{subCategory.name}</td>
+                                                  <td></td>
+                                                  <td></td>
+                                                  <td></td>
+                                                  <td></td>
+                                                  <td></td>
+                                                 
+                                                </tr>
+              
+                                                {openSubCategory2Id === subCategory.id &&
+                                                  subCategory.material_type_details &&
+                                                  subCategory.material_type_details.map(
+                                                    (boqDetail2) => (
+                                                      <React.Fragment key={boqDetail2.id}>
+                                                        <tr className="labour">
+                                                          <td>
+                                                            <button
+                                                              className="btn btn-link p-0"
+                                                              onClick={() =>
+                                                                toggleBoqDetail(boqDetail2.id)
+                                                              }
+                                                              aria-label="Toggle BOQ detail visibility"
+                                                            ></button>
+                                                          </td>
+              
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td>{boqDetail2.name}</td>
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td></td>
 
-                            <span
-                              className="material-symbols-outlined"
-                              // onClick={() => handleDelete(item.id)}
-                              style={{
-                                cursor: "pointer",
-                                fontSize: "20px",
-                                color: "red",
-                              }}
-                            >
-                              delete
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="10" className="text-center">
-                          No records found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                                                        </tr>
+                                                      </React.Fragment>
+                                                    )
+                                                  )}
+              
+                                                {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                                {openSubCategory2Id === subCategory.id &&
+                                                  subCategory.sub_categories_3 &&
+                                                  subCategory.sub_categories_3.length > 0 &&
+                                                  subCategory.sub_categories_3.map(
+                                                    (subCategory3) => (
+                                                      <React.Fragment key={subCategory3.id}>
+                                                        <tr className="sub-category-lvl3">
+                                                          {console.log("sub3", subCategory3)}
+                                                          {console.log(
+                                                            "sub4",
+                                                            subCategory3.sub_categories_4
+                                                          )}
+                                                          {console.log(
+                                                            "sub3id:",
+                                                            openSubCategory3Id
+                                                          )}
+                                                          <td>
+                                                            <button
+                                                              className="btn btn-link p-0"
+                                                              onClick={() =>
+                                                                toggleSubCategory3(
+                                                                  subCategory3.id
+                                                                )
+                                                              }
+                                                              aria-label="Toggle sub-category 3 visibility"
+                                                            >
+                                                              {openSubCategory3Id ===
+                                                              subCategory3.id ? (
+                                                                <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="24"
+                                                                  height="24"
+                                                                  viewBox="0 0 24 24"
+                                                                  fill=" #e0e0e0"
+                                                                  stroke="black"
+                                                                  strokeWidth="1"
+                                                                  strokeLinecap="round"
+                                                                  strokeLinejoin="round"
+                                                                >
+                                                                  {/* Square */}
+                                                                  <rect
+                                                                    x="3"
+                                                                    y="3"
+                                                                    width="18"
+                                                                    height="20"
+                                                                    rx="1"
+                                                                    ry="1"
+                                                                  />
+                                                                  {/* Minus Icon */}
+                                                                  <line
+                                                                    x1="8"
+                                                                    y1="12"
+                                                                    x2="16"
+                                                                    y2="12"
+                                                                  />
+                                                                </svg>
+                                                              ) : (
+                                                                <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="24"
+                                                                  height="24"
+                                                                  viewBox="0 0 24 24"
+                                                                  fill=" #e0e0e0"
+                                                                  stroke="black"
+                                                                  strokeWidth="1"
+                                                                  strokeLinecap="round"
+                                                                  strokeLinejoin="round"
+                                                                >
+                                                                  {/* Square */}
+                                                                  <rect
+                                                                    x="3"
+                                                                    y="3"
+                                                                    width="18"
+                                                                    height="20"
+                                                                    rx="1"
+                                                                    ry="1"
+                                                                  />
+                                                                  {/* Plus Icon */}
+                                                                  <line
+                                                                    x1="12"
+                                                                    y1="8"
+                                                                    x2="12"
+                                                                    y2="16"
+                                                                  />
+                                                                  <line
+                                                                    x1="8"
+                                                                    y1="12"
+                                                                    x2="16"
+                                                                    y2="12"
+                                                                  />
+                                                                </svg>
+                                                              )}
+                                                            </button>
+                                                          </td>
+                                                          <td></td>
+                                                          <td>{subCategory3.name}</td>
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td></td>
+                                                          <td>
+                                                           
+                                                          </td>
+                                                          
+                                                          
+                                                         
+                                                        </tr>
+              
+                                                        {/* Render BOQ Details for Sub-Category 3 */}
+                                                        {openSubCategory3Id ===
+                                                          subCategory3.id &&
+                                                          subCategory3.material_type_details &&
+                                                          subCategory3.material_type_details.map(
+                                                            (boqDetail2) => (
+                                                              <React.Fragment
+                                                                key={boqDetail2.id}
+                                                              >
+                                                                <tr className="labour">
+                                                                  <td>
+                                                                    <button
+                                                                      className="btn btn-link p-0"
+                                                                      onClick={() =>
+                                                                        toggleBoqDetail1(
+                                                                          boqDetail2.id
+                                                                        )
+                                                                      }
+                                                                      aria-label="Toggle BOQ detail visibility"
+                                                                    ></button>
+                                                                  </td>
+              
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td>{boqDetail2.name}</td>
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td>
+                                                                   
+                                                                  </td>
+                                                                 
+                                                                </tr>
+                                                              </React.Fragment>
+                                                            )
+                                                          )}
+              
+                                                        {/* Render Level 4 for each BOQ level 3 */}
+                                                        {openSubCategory3Id ===
+                                                          subCategory3.id &&
+                                                          subCategory3.sub_categories_4 &&
+                                                          subCategory3.sub_categories_4
+                                                            .length > 0 &&
+                                                          subCategory3.sub_categories_4.map(
+                                                            (subCategory4) => (
+                                                              <React.Fragment
+                                                                key={subCategory4.id}
+                                                              >
+                                                                <tr className="sub-category-lvl4">
+                                                                  {/* {console.log("sub3",subCategory3)}
+                                                                                                                                {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                                                {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                  <td>
+                                                                    <button
+                                                                      className="btn btn-link p-0"
+                                                                      onClick={() =>
+                                                                        toggleSubCategory4(
+                                                                          subCategory4.id
+                                                                        )
+                                                                      }
+                                                                      aria-label="Toggle sub-category 3 visibility"
+                                                                    >
+                                                                      {openSubCategory4Id ===
+                                                                      subCategory4.id ? (
+                                                                        <svg
+                                                                          xmlns="http://www.w3.org/2000/svg"
+                                                                          width="24"
+                                                                          height="24"
+                                                                          viewBox="0 0 24 24"
+                                                                          fill=" #e0e0e0"
+                                                                          stroke="black"
+                                                                          strokeWidth="1"
+                                                                          strokeLinecap="round"
+                                                                          strokeLinejoin="round"
+                                                                        >
+                                                                          {/* Square */}
+                                                                          <rect
+                                                                            x="3"
+                                                                            y="3"
+                                                                            width="18"
+                                                                            height="20"
+                                                                            rx="1"
+                                                                            ry="1"
+                                                                          />
+                                                                          {/* Minus Icon */}
+                                                                          <line
+                                                                            x1="8"
+                                                                            y1="12"
+                                                                            x2="16"
+                                                                            y2="12"
+                                                                          />
+                                                                        </svg>
+                                                                      ) : (
+                                                                        <svg
+                                                                          xmlns="http://www.w3.org/2000/svg"
+                                                                          width="24"
+                                                                          height="24"
+                                                                          viewBox="0 0 24 24"
+                                                                          fill=" #e0e0e0"
+                                                                          stroke="black"
+                                                                          strokeWidth="1"
+                                                                          strokeLinecap="round"
+                                                                          strokeLinejoin="round"
+                                                                        >
+                                                                          {/* Square */}
+                                                                          <rect
+                                                                            x="3"
+                                                                            y="3"
+                                                                            width="18"
+                                                                            height="20"
+                                                                            rx="1"
+                                                                            ry="1"
+                                                                          />
+                                                                          {/* Plus Icon */}
+                                                                          <line
+                                                                            x1="12"
+                                                                            y1="8"
+                                                                            x2="12"
+                                                                            y2="16"
+                                                                          />
+                                                                          <line
+                                                                            x1="8"
+                                                                            y1="12"
+                                                                            x2="16"
+                                                                            y2="12"
+                                                                          />
+                                                                        </svg>
+                                                                      )}
+                                                                    </button>
+                                                                  </td>
+                                                                  <td></td>
+                                                                  <td>
+                                                                  {subCategory4.name}
+                                                                  </td>
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td></td>
+                                                                  <td>
+                                                                   
+                                                                  </td>
+                                                                 
+                                                                </tr>
+              
+                                                                {/* Render BOQ Details for Sub-Category 4 */}
+                                                                {openSubCategory4Id ===
+                                                                  subCategory4.id &&
+                                                                  subCategory4.material_type_details &&
+                                                                  subCategory4.material_type_details.map(
+                                                                    (boqDetail2) => (
+                                                                      <React.Fragment
+                                                                        key={boqDetail2.id}
+                                                                      >
+                                                                        <tr className="labour">
+                                                                          <td>
+                                                                            <button
+                                                                              className="btn btn-link p-0"
+                                                                              onClick={() =>
+                                                                                toggleBoqDetail1(
+                                                                                  boqDetail2.id
+                                                                                )
+                                                                              }
+                                                                              aria-label="Toggle BOQ detail visibility"
+                                                                            ></button>
+                                                                          </td>
+              
+                                                                          <td></td>
+                                                                          <td></td>
+                                                                          <td> {boqDetail2.name}</td>
+                                                                          <td></td>
+                                                                          <td></td>
+                                                                          <td>
+                                                                           
+                                                                          </td>
+                                                                          <td>
+                                                                          </td>
+                                                                         
+                                                                        </tr>
+                                                                      </React.Fragment>
+                                                                    )
+                                                                  )}
+                                                                {/*  */}
+                                                                {/* Render Level 5 for each BOQ level 4*/}
+                                                                {openSubCategory4Id ===
+                                                                  subCategory4.id &&
+                                                                  subCategory4.sub_categories_5 &&
+                                                                  subCategory4
+                                                                    .sub_categories_5.length >
+                                                                    0 &&
+                                                                  subCategory4.sub_categories_5.map(
+                                                                    (subCategory5) => (
+                                                                      <React.Fragment
+                                                                        key={subCategory5.id}
+                                                                      >
+                                                                        <tr className="sub-category-lvl5">
+                                                                          {console.log(
+                                                                            "sub5",
+                                                                            subCategory5
+                                                                          )}
+                                                                          {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                                                {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                          <td>
+                                                                            <button
+                                                                              className="btn btn-link p-0"
+                                                                              onClick={() =>
+                                                                                toggleSubCategory5(
+                                                                                  subCategory5.id
+                                                                                )
+                                                                              }
+                                                                              aria-label="Toggle sub-category 3 visibility"
+                                                                            >
+                                                                              {openSubCategory5Id ===
+                                                                              subCategory5.id ? (
+                                                                                <svg
+                                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                                  width="24"
+                                                                                  height="24"
+                                                                                  viewBox="0 0 24 24"
+                                                                                  fill=" #e0e0e0"
+                                                                                  stroke="black"
+                                                                                  strokeWidth="1"
+                                                                                  strokeLinecap="round"
+                                                                                  strokeLinejoin="round"
+                                                                                >
+                                                                                  {/* Square */}
+                                                                                  <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                  />
+                                                                                  {/* Minus Icon */}
+                                                                                  <line
+                                                                                    x1="8"
+                                                                                    y1="12"
+                                                                                    x2="16"
+                                                                                    y2="12"
+                                                                                  />
+                                                                                </svg>
+                                                                              ) : (
+                                                                                <svg
+                                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                                  width="24"
+                                                                                  height="24"
+                                                                                  viewBox="0 0 24 24"
+                                                                                  fill=" #e0e0e0"
+                                                                                  stroke="black"
+                                                                                  strokeWidth="1"
+                                                                                  strokeLinecap="round"
+                                                                                  strokeLinejoin="round"
+                                                                                >
+                                                                                  {/* Square */}
+                                                                                  <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                  />
+                                                                                  {/* Plus Icon */}
+                                                                                  <line
+                                                                                    x1="12"
+                                                                                    y1="8"
+                                                                                    x2="12"
+                                                                                    y2="16"
+                                                                                  />
+                                                                                  <line
+                                                                                    x1="8"
+                                                                                    y1="12"
+                                                                                    x2="16"
+                                                                                    y2="12"
+                                                                                  />
+                                                                                </svg>
+                                                                              )}
+                                                                            </button>
+                                                                          </td>
+                                                                          <td></td>
+                                                                          <td>
+                                                                          {
+                                                                              subCategory5.name
+                                                                            }
+                                                                          </td>
+                                                                          <td></td>
+                                                                          <td></td>
+                                                                          <td></td>
+                                                                          <td>
+                                                                            
+                                                                          </td>
+                                                                          <td>
+                                                                           
+                                                                          </td>
+                                                                         
+                                                                        </tr>
+              
+                                                                        {/* Render BOQ Details for Sub-Category 3 */}
+                                                                        {openSubCategory5Id ===
+                                                                          subCategory5.id &&
+                                                                          subCategory5.material_type_details &&
+                                                                          subCategory5.material_type_details.map(
+                                                                            (boqDetail2) => (
+                                                                              <React.Fragment
+                                                                                key={
+                                                                                  boqDetail2.id
+                                                                                }
+                                                                              >
+                                                                                <tr className="labour">
+                                                                                  <td>
+                                                                                    <button
+                                                                                      className="btn btn-link p-0"
+                                                                                      onClick={() =>
+                                                                                        toggleBoqDetail1(
+                                                                                          boqDetail2.id
+                                                                                        )
+                                                                                      }
+                                                                                      aria-label="Toggle BOQ detail visibility"
+                                                                                    ></button>
+                                                                                  </td>
+              
+                                                                                  <td></td>
+                                                                                  <td></td>
+                                                                                  <td> {
+                                                                                      boqDetail2.name
+                                                                                    }</td>
+                                                                                  <td></td>
+                                                                                  <td></td>
+                                                                                  <td>
+                                                                                   
+                                                                                  </td>
+                                                                                  <td>
+                                                                                   
+                                                                                  </td>
+                                                                                  
+                                                                                </tr>
+                                                                              </React.Fragment>
+                                                                            )
+                                                                          )}
+                                                                      </React.Fragment>
+                                                                    )
+                                                                  )}
+                                                              </React.Fragment>
+                                                            )
+                                                          )}
+                                                      </React.Fragment>
+                                                    )
+                                                  )}
+              
+                                                {/* .. */}
+                                              </React.Fragment>
+                                            ))}
+                                          {/* sub level 2 end*/}
+                                        </React.Fragment>
+                                      ))}
+                                    {/* Conditional rendering for categories under sub-project  end*/}
+              
+                                    {/* subProject end */}
+                                  </tbody>
+                                </table>
+                              </div>
+                           
 
               {/* Pagination Controls */}
-              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+              {/* <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
                     className={`page-item ${
@@ -318,312 +1183,12 @@ const WorkSubCategory = () => {
                   {Math.min(indexOfLastItem, tableData.length)} of{" "}
                   {tableData.length} entries
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
 
-        {showAddUserModal && (
-          // <Modal
-          //   centered
-          //   size="lg"
-          //   show={showAddUserModal}
-          //   onHide={handleCloseAddUserModal}
-          //   backdrop="static"
-          //   keyboard={false}
-          // >
-          //   <Modal.Header closeButton>
-          //     <Modal.Title>Add Work Subcategory</Modal.Title>
-          //   </Modal.Header>
-          //   <Modal.Body>
-          //     <div>
-          //       <div className="row">
-          //         {/* Subcategory Name */}
-          //         <div className="col-md-4">
-          //           <div className="form-group">
-          //             <label>
-          //               Subcategory Name<span>*</span>
-          //             </label>
-          //             <input
-          //               className="form-control"
-          //               id="inv_name"
-          //               autoComplete="off"
-          //               required="required"
-          //               type="text"
-          //               name="work_sub_category[name]"
-          //               spellCheck="false"
-          //             />
-          //           </div>
-          //         </div>
-
-          //         {/* Parent Work Category */}
-          //         <div className="col-md-4">
-          //           <div className="form-group">
-          //             <label>
-          //               Parent Work Category<span>*</span>
-          //             </label>
-          //             <select
-          //               className="form-control form-select"
-          //               required="required"
-          //               name="work_sub_category[work_category_id]"
-          //             >
-          //               <option value="">Select Work Category</option>
-          //               <option value={35}>EXCAVATION & BACKFILLING</option>
-          //               <option value={36}>CIVIL WORK</option>
-          //               {/* Add more options as needed */}
-          //             </select>
-          //           </div>
-          //         </div>
-
-          //         {/* Parent Work Sub Category */}
-          //         <div className="col-md-4">
-          //           <div className="form-group">
-          //             <label>Parent Work Sub Category</label>
-          //             <select
-          //               className="form-control form-select"
-          //               name="work_sub_category[parent_id]"
-          //             >
-          //               <option value="">
-          //                 Select Parent Work Sub Category
-          //               </option>
-          //               <option value={30}>Sub structure</option>
-          //               <option value={31}>Super structure</option>
-          //               {/* Add more options as needed */}
-          //             </select>
-          //           </div>
-          //         </div>
-
-          //         {/* Description */}
-          //         <div className="col-md-4">
-          //           <div className="form-group">
-          //             <label>Description</label>
-          //             <textarea
-          //               className="form-control"
-          //               rows={1}
-          //               name="work_sub_category[description]"
-          //             />
-          //           </div>
-          //         </div>
-
-          //         {/* Benchmark Lead Time */}
-          //         <div className="col-md-4 mt-2">
-          //           <div className="form-group">
-          //             <label>
-          //               Benchmark Lead Time<span>*</span>
-          //             </label>
-          //             <input
-          //               className="form-control"
-          //               required="required"
-          //               type="number"
-          //               name="work_sub_category[benchmark_lead_time]"
-          //             />
-          //           </div>
-          //         </div>
-
-          //         {/* SAC Code */}
-          //         <div className="col-md-4 mt-2">
-          //           <div className="form-group">
-          //             <label>
-          //               SAC Code<span>*</span>
-          //             </label>
-          //             <input
-          //               placeholder="Sub-Category Code"
-          //               className="form-control"
-          //               required="required"
-          //               type="text"
-          //               name="work_sub_category[sac_code]"
-          //             />
-          //           </div>
-          //         </div>
-          //       </div>
-          //       <div className="row mt-2 justify-content-center">
-          //         <div className="col-md-4">
-          //           <button
-          //             type="submit"
-          //             className="purple-btn2 w-100"
-          //             onClick={handleCloseAddUserModal}
-          //           >
-          //             Create
-          //           </button>
-          //         </div>
-          //         <div className="col-md-4">
-          //           <button
-          //             type="button"
-          //             className="purple-btn1 w-100"
-          //             onClick={handleCloseAddUserModal}
-          //           >
-          //             Cancel
-          //           </button>
-          //         </div>
-          //       </div>
-          //     </div>
-          //   </Modal.Body>
-          // </Modal>
-          <Modal
-            centered
-            size="lg"
-            show={showAddUserModal}
-            onHide={handleCloseAddUserModal}
-            backdrop="static"
-            keyboard={false}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>
-                {modalMode === "add"
-                  ? "Add Work Subcategory"
-                  : "Edit Work Subcategory"}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div>
-                <div className="row">
-                  {/* Subcategory Name */}
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>
-                        Subcategory Name<span>*</span>
-                      </label>
-                      <input
-                        className="form-control"
-                        id="inv_name"
-                        autoComplete="off"
-                        required="required"
-                        type="text"
-                        name="work_sub_category[name]"
-                        spellCheck="false"
-                        defaultValue={
-                          modalMode === "edit"
-                            ? selectedItem?.subCategoryName
-                            : ""
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Parent Work Category */}
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>
-                        Parent Work Category<span>*</span>
-                      </label>
-                      <select
-                        className="form-control form-select"
-                        required="required"
-                        name="work_sub_category[work_category_id]"
-                        defaultValue={
-                          modalMode === "edit"
-                            ? selectedItem?.parentWorkCategory
-                            : ""
-                        }
-                      >
-                        <option value="">Select Work Category</option>
-                        <option value="Civil Work">Civil Work</option>
-                        <option value="Finishing Work">Finishing Work</option>
-                        {/* Add more options as needed */}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>
-                        Parent Work Sub Category<span>*</span>
-                      </label>
-                      <select
-                        className="form-control form-select"
-                        required="required"
-                        name="work_sub_category[work_category_id]"
-                        defaultValue={
-                          modalMode === "edit"
-                            ? selectedItem?.parentWorkCategory
-                            : ""
-                        }
-                      >
-                        <option value="">Select Work Category</option>
-                        <option value="Civil Work">Civil Work</option>
-                        <option value="Finishing Work">Finishing Work</option>
-                        {/* Add more options as needed */}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Description</label>
-                      <textarea
-                        className="form-control"
-                        rows={1}
-                        name="work_sub_category[description]"
-                        defaultValue={
-                          modalMode === "edit" ? selectedItem?.description : ""
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Benchmark Lead Time */}
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>
-                        Benchmark Lead Time<span>*</span>
-                      </label>
-                      <input
-                        className="form-control"
-                        required="required"
-                        type="number"
-                        name="work_sub_category[benchmark_lead_time]"
-                        defaultValue={
-                          modalMode === "edit"
-                            ? selectedItem?.benchmarkLeadTime
-                            : ""
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* SAC Code */}
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>
-                        SAC Code<span>*</span>
-                      </label>
-                      <input
-                        placeholder="Sub-Category Code"
-                        className="form-control"
-                        required="required"
-                        type="text"
-                        name="work_sub_category[sac_code]"
-                        defaultValue={
-                          modalMode === "edit" ? selectedItem?.sacCode : ""
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="row mt-2 justify-content-center">
-                  <div className="col-md-4">
-                    <button
-                      type="submit"
-                      className="purple-btn2 w-100"
-                      onClick={handleCloseAddUserModal}
-                    >
-                      {modalMode === "add" ? "Create" : "Update"}
-                    </button>
-                  </div>
-                  <div className="col-md-4">
-                    <button
-                      type="button"
-                      className="purple-btn1 w-100"
-                      onClick={handleCloseAddUserModal}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Modal.Body>
-          </Modal>
-        )}
+      
       </div>
     </div>
   );
