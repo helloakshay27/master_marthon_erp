@@ -768,10 +768,18 @@ export default function VendorDetails() {
         ),
       ];
 
-      const extra = additionalColumns.reduce((acc, col) => {
-        acc[col.key] = row.extra_data?.[col.key]?.value || "";
-        return acc;
-      }, {});
+      // const extra = additionalColumns.reduce((acc, col) => {
+      //   acc[col.key] = row.extra_data?.[col.key]?.value || "";
+      //   return acc;
+      // }, {});
+      const extraFields = Object.keys(row.event_material.extra_data || {}).reduce(
+        (acc, key) => {
+          acc[key] = row.extra_data[key]?.value || "";
+          return acc;
+        },
+        {}
+      );
+
 
       return {
         event_material_id: row.eventMaterialId,
@@ -786,7 +794,6 @@ export default function VendorDetails() {
         landed_amount: landedAmount.toFixed(2),
         total_amount: finalTotal.toFixed(2),
         bid_material_tax_details: taxDetails,
-
         addition_tax_charges: (
           taxRateData[index]?.additionTaxCharges || []
         ).map((charge) => ({
@@ -812,7 +819,7 @@ export default function VendorDetails() {
           return acc;
         }, {}),
 
-        extra,
+        ...extraFields,
       };
     });
 

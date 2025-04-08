@@ -35,7 +35,6 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
-    console.log("segregated data", eventVendors);
   }, [eventVendors]);
 
   const { eventId } = useParams();
@@ -75,9 +74,7 @@ export default function ResponseTab({ isCounterOffer }) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const responseData = await response.json();
-        console.log("responseData", responseData);
-        
+        const responseData = await response.json();        
 
         let data = Array.isArray(responseData.vendors)
           ? responseData.vendors.find((vendor) => vendor.id === vendorId)
@@ -99,7 +96,6 @@ export default function ResponseTab({ isCounterOffer }) {
           `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
         );
         data = response.data;
-        console.log("data :-----",data);
         
         const updatedEventVendors = eventVendors.map((vendor) => {
           if (vendor.id === vendorId) {
@@ -124,7 +120,6 @@ export default function ResponseTab({ isCounterOffer }) {
       setLoading(false);
     }
   };
-  console.log("eventVendors", eventVendors);
   
 
   const handleCarouselChange = async (vendorId, selectedIndex) => {
@@ -473,7 +468,6 @@ export default function ResponseTab({ isCounterOffer }) {
                 </div>
 
                 {segeregatedMaterialData?.map((materialData, ind) => {
-                  console.log("materialData :------de w", materialData);
                 
                   // Extract unique extra columns from bids_values
                   const extraColumns = Array.from(

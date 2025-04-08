@@ -129,7 +129,6 @@ export default function ParticipantsTab({ data, id }) {
     setSelectedRows([]);
     setResetSelectedRows(true);
   };
-console.log("selectedVendors:---",selectedVendors);
 
   useEffect(() => {
     const formattedData = (data?.event_vendors || []).map((vendor, index) => ({
@@ -449,7 +448,7 @@ console.log("selectedVendors:---",selectedVendors);
         </div>
         {vendorData.length > 0 ? (
           <>
-          {console.log("vendorData:---",vendorData)}
+          {/* {console.log("vendorData:---",vendorData)} */}
           <Table
             columns={participantsTabColumns} // Use columns with serial number
             data={vendorData}
