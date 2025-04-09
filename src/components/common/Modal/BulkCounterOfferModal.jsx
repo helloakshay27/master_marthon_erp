@@ -134,7 +134,16 @@ export default function BulkCounterOfferModal({
       extractShortTableData[key] = value || ""; // Ensure the value is included in the payload
     });
 
-    // setLoading(true);
+    const extractedExtraData = formData.bid_materials.reduce((acc, item) => {
+      if (item.extra_data) {
+        Object.entries(item.extra_data).forEach(([key, { value }]) => {
+          acc[key] = value; // Extract only the `value` property
+        });
+      }
+      return acc;
+    }, {});
+
+    setLoading(true);
 
     const payload = {
       counter_bid: {
@@ -147,27 +156,17 @@ export default function BulkCounterOfferModal({
         gross_total: formData.gross_total,
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
           const { extra_data, ...rest } = item; // Destructure to exclude shortTable values
-          const filteredExtraData = Object.entries(extra_data || {}).reduce(
-            (acc, [key, { value, readonly }]) => {
-              if(!excludedShortTableFields.includes(key)){
-                acc[key] = value; // Include only the value for non-readonly fields
-              }
-
-              return acc;
-            },
-            {}
-          );
-          console.log("filteredExtraData:-", filteredExtraData);
           return {
             ...rest,
-            extra_data: filteredExtraData, 
           };
         }),
+        ...extractedExtraData,
         ...extractShortTableData, 
         remark: formData.remark || "", 
       },
     };
-
+    console.log("payload :----",payload);
+    
     try {
       const response = await fetch(
         `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -181,6 +180,7 @@ export default function BulkCounterOfferModal({
       );
       if (response.ok) {
         handleClose(); // Close the modal if the request was successful
+        toast.success("Counter bid submitted successfully!"); // Display success message
       } else {
         // Handle failure if the response wasn't OK
         throw new Error("Failed to submit counter bid");
