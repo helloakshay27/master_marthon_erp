@@ -1523,8 +1523,9 @@ const WorkSubCategory = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            Add Level {addLocation.level} Sub-Category
-            {addLocation.parentName && ` to ${addLocation.parentName}`}
+            {/* Add Level {addLocation.level} Sub-Category
+            {addLocation.parentName && ` to ${addLocation.parentName}`} */}
+            Work Sub-Category Master
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
