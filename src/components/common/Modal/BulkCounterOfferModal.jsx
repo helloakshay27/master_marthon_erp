@@ -22,6 +22,10 @@ export default function BulkCounterOfferModal({
   const [taxRateData, setTaxRateData] = useState([]); // State for tax rate data
   const [taxOptions, setTaxOptions] = useState([]); // State for tax options
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
+  const [shortTableData, setShortTableData] = useState({});
+
+  const excludedShortTableFields = ["remark", "Payment Terms", "Warranty Clause", "Loading/Unloading"];
+
 
   useEffect(() => {
     if (bidCounterData) {
@@ -120,12 +124,17 @@ export default function BulkCounterOfferModal({
 
   const handleSubmit = async () => {
     const extractShortTableData = freightData.reduce((acc, curr) => {
-      const { firstBid, counterBid } = curr.value;
-      acc[curr.label] = counterBid || firstBid;
+      const { counterBid, firstBid } = curr.value;
+      acc[curr.label] = counterBid || firstBid || ""; // Use updated values from freightData
       return acc;
     }, {});
 
-    setLoading(true);
+    // Merge shortTableData into extractShortTableData
+    Object.entries(shortTableData).forEach(([key, value]) => {
+      extractShortTableData[key] = value || ""; // Ensure the value is included in the payload
+    });
+
+    // setLoading(true);
 
     const payload = {
       counter_bid: {
@@ -136,32 +145,28 @@ export default function BulkCounterOfferModal({
         gst_on_freight: formData.gst_on_freight,
         realised_freight_charge_amount: formData.realised_freight_charge_amount,
         gross_total: formData.gross_total,
-        counter_bid_materials_attributes: formData.bid_materials.map(
-          (item, index) => ({
-            event_material_id: item.event_material_id,
-            bid_material_id: item.id,
-            quantity_available: item.quantity_available,
-            price: item.price,
-            discount: item.discount,
-            total_amount: item.total_amount,
-            realised_discount: item.realised_discount,
-            gst: item.gst,
-            realised_gst: item.realised_gst,
-            vendor_remark: item.vendor_remark,
-            extra_data: Object.entries(item.extra_data || {}).reduce(
-              (acc, [key, { value }]) => {
-                acc[key] = value;
-                return acc;
-              },
-              {}
-            ),
-          })
-        ),
-        ...extractShortTableData,
+        counter_bid_materials_attributes: formData.bid_materials.map((item) => {
+          const { extra_data, ...rest } = item; // Destructure to exclude shortTable values
+          const filteredExtraData = Object.entries(extra_data || {}).reduce(
+            (acc, [key, { value, readonly }]) => {
+              if(!excludedShortTableFields.includes(key)){
+                acc[key] = value; // Include only the value for non-readonly fields
+              }
+
+              return acc;
+            },
+            {}
+          );
+          console.log("filteredExtraData:-", filteredExtraData);
+          return {
+            ...rest,
+            extra_data: filteredExtraData, 
+          };
+        }),
+        ...extractShortTableData, 
+        remark: formData.remark || "", 
       },
     };
-
-    console.log("Payload to be sent:", payload);
 
     try {
       const response = await fetch(
@@ -192,7 +197,7 @@ export default function BulkCounterOfferModal({
   const handleMaterialInputChange = (e, field, index) => {
     const value = e.target.value;
     const updatedMaterials = [...formData.bid_materials];
-    console.log("value:-------",value)
+    console.log("value:-------", value);
     if (field === "quantity_available") {
       const quantityRequested =
         parseFloat(updatedMaterials[index].quantity_requested) || 0;
@@ -241,6 +246,18 @@ export default function BulkCounterOfferModal({
   };
 
   useEffect(() => {
+    // Initialize shortTableData with default values from formData.extra_data
+    const initialShortTableData = Object.entries(formData.extra_data || {}).reduce(
+      (acc, [key, { value }]) => {
+        acc[key] = value || ""; // Use the default value from formData.extra_data
+        return acc;
+      },
+      {}
+    );
+    setShortTableData(initialShortTableData);
+  }, [formData.extra_data]);
+
+  useEffect(() => {
     if (formData?.bid_materials) {
       const updatedMaterials = formData.bid_materials.map((item) => {
         const price = parseFloat(item.price) || 0;
@@ -284,7 +301,6 @@ export default function BulkCounterOfferModal({
       }));
     }
   }, [formData?.bid_materials]); // Ensure this effect only runs when formData.bid_materials changes
-  
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -314,6 +330,12 @@ export default function BulkCounterOfferModal({
   };
 
   const handleExtraDataChange = (index, key, newValue) => {
+    setShortTableData((prev) => ({
+      ...prev,
+      [key]: newValue, // Store updated values in shortTableData
+    }));
+  
+    // Update extraFields for UI rendering, but do not modify formData.bid_materials
     setExtraFields((prev) => ({
       ...prev,
       [index]: {
@@ -322,16 +344,18 @@ export default function BulkCounterOfferModal({
       },
     }));
 
-    const updatedMaterials = [...formData.bid_materials];
-    if (!updatedMaterials[index].extra_data) {
-      updatedMaterials[index].extra_data = {};
-    }
-    updatedMaterials[index].extra_data[key] = { value: newValue === "" ? null : newValue }; // Store null for cleared values
+    // const updatedMaterials = [...formData.bid_materials];
+    // if (!updatedMaterials[index].extra_data) {
+    //   updatedMaterials[index].extra_data = {};
+    // }
+    // updatedMaterials[index].extra_data[key] = {
+    //   value: newValue === "" ? null : newValue,
+    // }; // Store null for cleared values
 
-    setFormData({
-      ...formData,
-      bid_materials: updatedMaterials,
-    });
+    // setFormData({
+    //   ...formData,
+    //   bid_materials: updatedMaterials,
+    // });
   };
 
   const handleOpenTaxModal = (index) => {
@@ -524,7 +548,9 @@ export default function BulkCounterOfferModal({
             const quantityRequested = parseFloat(item.quantity_requested) || 0;
 
             if (value > quantityRequested) {
-              toast.error("Quantity available cannot exceed quantity requested.");
+              toast.error(
+                "Quantity available cannot exceed quantity requested."
+              );
               return;
             }
 
@@ -646,9 +672,8 @@ export default function BulkCounterOfferModal({
           Select
         </button>
       );
-
-      const extraColumnData = Object.entries(item.extra_data || {})
-        .reduce((acc, [key, { value, readonly }]) => {
+      const extraColumnData = Object.entries(item.extra_data || {}).reduce(
+        (acc, [key, { value, readonly }]) => {
           acc[key] = (
             <input
               type="text"
@@ -659,10 +684,13 @@ export default function BulkCounterOfferModal({
                 handleExtraDataChange(index, key, e.target.value)
               }
               readOnly={readonly}
+              disabled={readonly}
             />
           );
           return acc;
-        }, {});
+        },
+        {}
+      );
 
       return {
         Sno: index + 1,
@@ -730,9 +758,7 @@ export default function BulkCounterOfferModal({
               {Object.keys(formData.extra_data || {}).map((key, index) => {
                 const label = key.replace(/_/g, " ").toUpperCase();
                 const value =
-                  extraFields[0]?.[key] ||
-                  formData.extra_data[key]?.value ||
-                  "";
+                  shortTableData[key] || formData.extra_data[key]?.value || "";
 
                 return (
                   <tr
@@ -758,7 +784,7 @@ export default function BulkCounterOfferModal({
                       <input
                         type="text"
                         className="form-control"
-                        value={extraFields[0]?.[key] || value || ""}
+                        value={shortTableData?.[key] || ""}
                         onChange={(e) => {
                           const newValue = e.target.value;
                           handleExtraDataChange(0, key, newValue);
