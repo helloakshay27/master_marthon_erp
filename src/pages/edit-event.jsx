@@ -450,7 +450,8 @@ export default function EditEvent() {
         eventDetails?.event_vendors?.map((vendor) => ({
           id: vendor.id,
           name: vendor.full_name,
-          phone: vendor.organization_name,
+          organisation: vendor.organization_name,
+          phone: vendor.phone,
           pms_supplier_id: vendor.pms_supplier_id,
         }))
       );
@@ -1088,7 +1089,7 @@ export default function EditEvent() {
     }
   
     fetch(
-      `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true`,
       {
         method: "POST",
         headers: {
@@ -1305,6 +1306,7 @@ export default function EditEvent() {
                         <th style={{ width: "100px" }}>Sr No.</th>
                         <th>Vendor Name</th>
                         <th>Organization</th>
+                        <th>Mob No.</th>
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
@@ -1324,6 +1326,7 @@ export default function EditEvent() {
                             } */}
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
+                            <td>{vendor.organisation}</td>
                             <td>{vendor.phone}</td>
                             <td>Invited</td>
                             <td>
