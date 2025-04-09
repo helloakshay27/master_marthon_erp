@@ -13,119 +13,6 @@ const WorkSubCategory = () => {
 
   const [projectDetails, setProjectDetails] = useState({
     categories: [
-      {
-        id: 36,
-        name: "Civil Work",
-        Description: "Excavation and backfilling work",
-        Benchmark_Lead_Time: "15 days",
-        SAC_Code: "1234566",
-        material_type_details: [],
-        sub_categories_2: [
-          {
-            id: 32,
-            name: "Level 2 Example ",
-            Description: "",
-            Benchmark_Lead_Time: "",
-            SAC_Code: "12345",
-            material_type_details: [
-              {
-                id: 6922,
-                name: "Excavation",
-                budget: 785.2099990844727,
-              },
-            ],
-            sub_categories_3: [
-              {
-                id: 33,
-                name: "Level 3 Example",
-                Description: "",
-                Benchmark_Lead_Time: "",
-                SAC_Code: "12345",
-                material_type_details: [
-                  {
-                    id: 639,
-                    name: "Excavation",
-                    budget: 89.77999877929688,
-                  },
-                ],
-                sub_categories_4: [
-                  {
-                    id: 33,
-                    name: "Level 4 Example",
-                    Description: "",
-                    Benchmark_Lead_Time: "",
-                    SAC_Code: "12345",
-                    material_type_details: [
-                      {
-                        id: 638,
-                        name: "Excavation",
-                        budget: 89.77999877929688,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-
-      {
-        id: 37,
-        name: "FINISHING WORK",
-        Description: "Internal and external plastering",
-        Benchmark_Lead_Time: "10 days",
-        SAC_Code: "12345",
-        material_type_details: [],
-        sub_categories_2: [
-          {
-            id: 321,
-            name: "Level 2 Example ",
-            Description: "",
-            Benchmark_Lead_Time: "",
-            SAC_Code: "12345",
-            material_type_details: [
-              {
-                id: 693,
-                name: "Plastering",
-                budget: 785.2099990844727,
-              },
-            ],
-            sub_categories_3: [
-              {
-                id: 331,
-                name: "Level 3 Example",
-                Description: "",
-                Benchmark_Lead_Time: "",
-                SAC_Code: "12345",
-                material_type_details: [
-                  {
-                    id: 632,
-                    name: "Plastering",
-                    budget: 89.77999877929688,
-                  },
-                ],
-                sub_categories_4: [
-                  {
-                    id: 332,
-                    name: "Level 4 Example",
-                    Description: "",
-                    Benchmark_Lead_Time: "",
-                    SAC_Code: "12345",
-                    material_type_details: [
-                      {
-                        id: 631,
-                        name: "Plastering",
-                        budget: 89.77999877929688,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
     ],
   });
 
@@ -222,15 +109,11 @@ const WorkSubCategory = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   // **Filter & Paginate Data**
-  // const handleOpenAddUserModal = () => {
-  //   setShowAddUserModal(true);
-  // };
-
   const handleOpenAddUserModal = () => {
-    setModalMode("add");
-    setSelectedItem(null); // Clear selected item
     setShowAddUserModal(true);
   };
+
+
 
   const handleOpenEditModal = (item) => {
     setModalMode("edit");
@@ -239,6 +122,18 @@ const WorkSubCategory = () => {
   };
   const handleCloseAddUserModal = () => {
     setShowAddUserModal(false);
+    // Reset modal inputs and selection state
+    setNewSubCategory({
+      name: "",
+      Description: "",
+      Benchmark_Lead_Time: "",
+      SAC_Code: ""
+    });
+
+    setAddLocation({
+      level: null,
+      parentId: null
+    });
   };
 
   const handleOpenAddModal = () => {
@@ -246,9 +141,7 @@ const WorkSubCategory = () => {
     // setSelectedItem(null); // Clear selected item
     setShowAddModal(true);
   };
-  const handleCloseAddModal = () => {
-    setShowAddModal(false);
-  };
+
 
   const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
   const [selectedItem, setSelectedItem] = useState(null); // Item to edit
@@ -263,6 +156,186 @@ const WorkSubCategory = () => {
     setCurrentPage(pageNumber);
   };
 
+  // State for the new category form
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    Description: "",
+    Benchmark_Lead_Time: "",
+    SAC_Code: "",
+  });
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setNewCategory({
+      name: "",
+      Description: "",
+      Benchmark_Lead_Time: "",
+      SAC_Code: "",
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCategory(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddCategory = () => {
+    const newCategoryObj = {
+      id: Date.now(), // Generate a unique ID (you might want a better ID system)
+      name: newCategory.name,
+      Description: newCategory.Description,
+      Benchmark_Lead_Time: newCategory.Benchmark_Lead_Time,
+      SAC_Code: newCategory.SAC_Code,
+      material_type_details: [],
+      sub_categories_2: []
+    };
+
+    setProjectDetails(prev => ({
+      ...prev,
+      categories: [...prev.categories, newCategoryObj]
+    }));
+
+    handleCloseAddModal();
+  };
+
+
+  // sub category
+
+  // State for tracking where to add
+  const [addLocation, setAddLocation] = useState({
+    parentId: null,
+    // parentId: "id-of-parent-category", // ID of the category to add to
+    level: 2,
+    level: 2,
+    parentName: "",
+    categoryPath: []
+  });
+
+  const [addLocation3, setAddLocation3] = useState({
+    parentId: null,
+    level: 3,
+    parentName: "",
+    categoryPath: []
+  });
+
+  // State for new sub-category form
+  const [newSubCategory, setNewSubCategory] = useState({
+    name: "",
+    Description: "",
+    Benchmark_Lead_Time: "",
+    SAC_Code: "",
+  });
+
+
+  // Function to open modal
+  const openAddSubCategoryModal = (parentId, level, parentName, categoryPath) => {
+    setAddLocation({
+      parentId,
+      level,
+      parentName,
+      categoryPath
+    });
+    setShowAddUserModal(true);
+  };
+
+  const handleInputChange2 = (e) => {
+    const { name, value } = e.target;
+
+    // Extract the field name from the input name
+    const fieldName = name.replace('work_sub_category[', '').replace(']', '');
+
+    // Map the field names to match your state structure
+    const stateFieldName = {
+      'name': 'name',
+      'description': 'Description', // Note capital D to match state
+      'benchmark_lead_time': 'Benchmark_Lead_Time',
+      'sac_code': 'SAC_Code'
+    }[fieldName] || fieldName;
+
+    setNewSubCategory(prev => ({
+      ...prev,
+      [stateFieldName]: value
+    }));
+  };
+
+
+
+  const handleAddSubCategory = () => {
+    const newSubCategoryObj = {
+      id: Date.now(),
+      name: newSubCategory.name,
+      Description: newSubCategory.Description,
+      Benchmark_Lead_Time: newSubCategory.Benchmark_Lead_Time,
+      SAC_Code: newSubCategory.SAC_Code,
+      material_type_details: [],
+      ...(addLocation.level < 4 ? { [`sub_categories_${addLocation.level + 1}`]: [] } : {})
+    };
+
+    setProjectDetails(prev => {
+      const updateCategories = (categories, currentDepth = 1) => {
+        return categories.map(category => {
+          // If we're at the parent level where we need to add
+          if (currentDepth === addLocation.level - 1) {
+            if (category.id === addLocation.parentId) {
+              const subCategoryKey = `sub_categories_${addLocation.level}`;
+              return {
+                ...category,
+                [subCategoryKey]: [
+                  ...(category[subCategoryKey] || []),
+                  newSubCategoryObj
+                ]
+              };
+            }
+            return category;
+          }
+
+          // Otherwise, go deeper if possible
+          const nextDepth = currentDepth + 1;
+          const subCategoryKey = `sub_categories_${nextDepth}`;
+
+          if (category[subCategoryKey]) {
+            return {
+              ...category,
+              [subCategoryKey]: updateCategories(
+                category[subCategoryKey],
+                nextDepth
+              )
+            };
+          }
+
+          return category;
+        });
+      };
+
+      return {
+        ...prev,
+        categories: updateCategories(prev.categories)
+      };
+    });
+
+    // Automatically open the parent category
+    if (addLocation.level === 2) {
+      setOpenCategoryId(addLocation.parentId);
+    } else if (addLocation.level === 3) {
+      setOpenSubCategory2Id(addLocation.parentId);
+    } else if (addLocation.level === 4) {
+      setOpenSubCategory3Id(addLocation.parentId);
+    }
+
+    handleCloseAddUserModal();
+  };
+
+
+  // In openAddSubCategoryModal:
+  // console.log("Opening modal for:", { parentId, level, parentName });
+
+  // In handleAddSubCategory:
+  console.log("Adding to parent ID:", addLocation.parentId);
+  console.log("Current categories:", projectDetails.categories);
+  console.log("all data :", projectDetails)
   return (
     <div>
       <div className="website-content overflow-auto">
@@ -405,11 +478,11 @@ const WorkSubCategory = () => {
                             <td>{category.SAC_Code}</td>
                             <td>
                               <div className="d-flex justify-content-center">
-
                                 <button
                                   className="btn p-0"
-
-                                  onClick={handleOpenAddUserModal} // ← Open the modal here
+                                  onClick={() =>
+                                    openAddSubCategoryModal(category.id, 2, "Main Category Name")
+                                  }
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -484,7 +557,7 @@ const WorkSubCategory = () => {
                           {/* sub level 2 start */}
                           {openCategoryId === category.id &&
                             category.sub_categories_2 &&
-                            category.sub_categories_2.length > 0 &&
+                            // category.sub_categories_2.length > 0 &&
                             category.sub_categories_2.map((subCategory) => (
                               <React.Fragment key={subCategory.id}>
                                 <tr className="category-lvl2">
@@ -567,16 +640,16 @@ const WorkSubCategory = () => {
                                   <td></td>
                                   <td>{subCategory.name}</td>
                                   <td></td>
-                                  <td></td>
-                                  <td></td>
-                                  <td></td>
+                                  <td>{subCategory.Description}</td>
+                                  <td>{subCategory.Benchmark_Lead_Time}</td>
+                                  <td>{subCategory.SAC_Code}</td>
                                   <td>
                                     <div className="d-flex justify-content-center">
-
                                       <button
                                         className="btn p-0"
-
-                                        onClick={handleOpenAddUserModal} // ← Open the modal here
+                                        onClick={() =>
+                                          openAddSubCategoryModal(subCategory.id, 3, "Sub Category Name")
+                                        }
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -679,7 +752,7 @@ const WorkSubCategory = () => {
                                 {/* Render Sub-Category 3 for each Sub-Category 2 */}
                                 {openSubCategory2Id === subCategory.id &&
                                   subCategory.sub_categories_3 &&
-                                  subCategory.sub_categories_3.length > 0 &&
+                                  // subCategory.sub_categories_3.length > 0 &&
                                   subCategory.sub_categories_3.map(
                                     (subCategory3) => (
                                       <React.Fragment key={subCategory3.id}>
@@ -774,16 +847,16 @@ const WorkSubCategory = () => {
                                           <td></td>
                                           <td>{subCategory3.name}</td>
                                           <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
+                                          <td>{subCategory3.Description}</td>
+                                          <td>{subCategory3.Benchmark_Lead_Time}</td>
+                                          <td>{subCategory3.SAC_Code}</td>
                                           <td>
                                             <div className="d-flex justify-content-center">
-
                                               <button
                                                 className="btn p-0"
-
-                                                onClick={handleOpenAddUserModal} // ← Open the modal here
+                                                onClick={() =>
+                                                  openAddSubCategoryModal(subCategory3.id, 4, "Sub Category Name")
+                                                }
                                               >
                                                 <svg
                                                   xmlns="http://www.w3.org/2000/svg"
@@ -985,9 +1058,9 @@ const WorkSubCategory = () => {
                                                   <td></td>
                                                   <td>{subCategory4.name}</td>
                                                   <td></td>
-                                                  <td></td>
-                                                  <td></td>
-                                                  <td></td>
+                                                  <td>{subCategory4.Description}</td>
+                                                  <td>{subCategory4.Benchmark_Lead_Time}</td>
+                                                  <td>{subCategory4.SAC_Code}</td>
                                                   <td>
                                                     <div className="d-flex justify-content-center">
 
@@ -1439,10 +1512,7 @@ const WorkSubCategory = () => {
         </div>
       </div>
 
-
-
-
-
+{/* sub category modal */}
       <Modal
         centered
         size="lg"
@@ -1453,31 +1523,33 @@ const WorkSubCategory = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
+            {/* Add Level {addLocation.level} Sub-Category
+            {addLocation.parentName && ` to ${addLocation.parentName}`} */}
             Work Sub-Category Master
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div>
+            {/* {renderCategoryPath()} */}
+
             <div className="row">
               {/* Subcategory Name */}
               <div className="col-md-4">
                 <div className="form-group">
-                  <label>
-                    Subcategory Name<span>*</span>
-                  </label>
+                  <label>Subcategory Name<span>*</span></label>
                   <input
                     className="form-control"
-                    id="inv_name"
                     autoComplete="off"
-                    required="required"
+                    required
                     type="text"
-                    name="work_sub_category[name]"
+                    // name="work_sub_category[name]"
+                    // value={newSubCategory.name}
+                    // onChange={handleInputChange2}
                     spellCheck="false"
-                    defaultValue={
-                      modalMode === "edit"
-                        ? selectedItem?.subCategoryName
-                        : ""
-                    }
+
+                    name="name"
+                    value={newSubCategory.name}
+                    onChange={(e) => setNewSubCategory(prev => ({ ...prev, name: e.target.value }))}
                   />
                 </div>
               </div>
@@ -1489,10 +1561,13 @@ const WorkSubCategory = () => {
                   <textarea
                     className="form-control"
                     rows={1}
-                    name="work_sub_category[description]"
-                    defaultValue={
-                      modalMode === "edit" ? selectedItem?.description : ""
-                    }
+                    // name="work_sub_category[description]"
+                    // value={newSubCategory.Description}
+                    // onChange={handleInputChange2}
+
+                    name="Description"
+                    value={newSubCategory.Description}
+                    onChange={(e) => setNewSubCategory(prev => ({ ...prev, Description: e.target.value }))}
                   />
                 </div>
               </div>
@@ -1500,19 +1575,18 @@ const WorkSubCategory = () => {
               {/* Benchmark Lead Time */}
               <div className="col-md-4 mt-2">
                 <div className="form-group">
-                  <label>
-                    Benchmark Lead Time<span>*</span>
-                  </label>
+                  <label>Benchmark Lead Time<span>*</span></label>
                   <input
                     className="form-control"
-                    required="required"
+                    required
                     type="number"
-                    name="work_sub_category[benchmark_lead_time]"
-                    defaultValue={
-                      modalMode === "edit"
-                        ? selectedItem?.benchmarkLeadTime
-                        : ""
-                    }
+                    // name="work_sub_category[benchmark_lead_time]"
+                    // value={newSubCategory.Benchmark_Lead_Time}
+                    // onChange={handleInputChange2}
+
+                    name="Benchmark_Lead_Time"
+                    value={newSubCategory.Benchmark_Lead_Time}
+                    onChange={(e) => setNewSubCategory(prev => ({ ...prev, Benchmark_Lead_Time: e.target.value }))}
                   />
                 </div>
               </div>
@@ -1520,18 +1594,19 @@ const WorkSubCategory = () => {
               {/* SAC Code */}
               <div className="col-md-4 mt-2">
                 <div className="form-group">
-                  <label>
-                    SAC Code<span>*</span>
-                  </label>
+                  <label>SAC Code<span>*</span></label>
                   <input
                     placeholder="Sub-Category Code"
                     className="form-control"
-                    required="required"
+                    required
                     type="text"
-                    name="work_sub_category[sac_code]"
-                    defaultValue={
-                      modalMode === "edit" ? selectedItem?.sacCode : ""
-                    }
+                    // name="work_sub_category[sac_code]"
+                    // value={newSubCategory.SAC_Code}
+                    // onChange={handleInputChange2}
+
+                    name="SAC_Code"
+                    value={newSubCategory.SAC_Code}
+                    onChange={(e) => setNewSubCategory(prev => ({ ...prev, SAC_Code: e.target.value }))}
                   />
                 </div>
               </div>
@@ -1541,7 +1616,7 @@ const WorkSubCategory = () => {
                 <button
                   type="submit"
                   className="purple-btn2 w-100"
-                  onClick={handleCloseAddUserModal}
+                  onClick={handleAddSubCategory}
                 >
                   {modalMode === "add" ? "Create" : "Update"}
                 </button>
@@ -1560,8 +1635,8 @@ const WorkSubCategory = () => {
         </Modal.Body>
       </Modal>
 
-
       {/* add */}
+
       <Modal
         centered
         size="m"
@@ -1571,37 +1646,30 @@ const WorkSubCategory = () => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>
-            Work Category Master
-          </Modal.Title>
+          <Modal.Title>Work Category Master</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div>
             <div className="row">
-              {/* Subcategory Name */}
+              {/* Category Name */}
               <div className="col-md-6">
                 <div className="form-group">
-                  <label>
-                    Category Name <span>*</span>
-                  </label>
+                  <label>Category Name <span>*</span></label>
                   <input
                     className="form-control"
-                    id="inv_name"
                     autoComplete="off"
-                    required="required"
+                    required
                     type="text"
-                    name="work_sub_category[name]"
+                    name="name"
+                    value={newCategory.name}
+                    onChange={handleInputChange}
                     spellCheck="false"
-                    defaultValue={
-                      modalMode === "edit"
-                        ? selectedItem?.subCategoryName
-                        : ""
-                    }
                   />
                 </div>
               </div>
 
               {/* Description */}
+
               <div className="col-md-6">
                 <div className="form-group">
                   <label>Category Code  <span>*</span></label>
@@ -1614,21 +1682,67 @@ const WorkSubCategory = () => {
                     type="text"
                     name="work_sub_category[name]"
                     spellCheck="false"
-                    defaultValue={
-                      modalMode === "edit"
-                        ? selectedItem?.subCategoryName
-                        : ""
-                    }
+
                   />
                 </div>
               </div>
+              {/* <div className="col-md-6">
+                <div className="form-group">
+                  <label>Description</label>
+                  <input
+                    className="form-control"
+                    autoComplete="off"
+                    type="text"
+                    name="Description"
+                    value={newCategory.Description}
+                    onChange={handleInputChange}
+                    spellCheck="false"
+                  />
+                </div>
+              </div> */}
             </div>
+
+            {/* <div className="row mt-2">
+            
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Benchmark Lead Time</label>
+                  <input
+                    className="form-control"
+                    autoComplete="off"
+                    type="text"
+                    name="Benchmark_Lead_Time"
+                    value={newCategory.Benchmark_Lead_Time}
+                    onChange={handleInputChange}
+                    spellCheck="false"
+                  />
+                </div>
+              </div>
+
+             
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>SAC Code <span>*</span></label>
+                  <input
+                    className="form-control"
+                    autoComplete="off"
+                    required
+                    type="text"
+                    name="SAC_Code"
+                    value={newCategory.SAC_Code}
+                    onChange={handleInputChange}
+                    spellCheck="false"
+                  />
+                </div>
+              </div>
+            </div> */}
+
             <div className="row mt-2 justify-content-center">
               <div className="col-md-4">
                 <button
                   type="submit"
                   className="purple-btn2 w-100"
-                  onClick={handleCloseAddModal}
+                  onClick={handleAddCategory}
                 >
                   {modalMode === "add" ? "Create" : "Update"}
                 </button>
@@ -1646,72 +1760,6 @@ const WorkSubCategory = () => {
           </div>
         </Modal.Body>
       </Modal>
-
-
-
-      {/* <Modal
-        size="m"
-        show={showAddModal}
-        onHide={handleCloseAddModal}
-        // show={copyModal}
-        // onHide={closeCopyModal}
-        centered
-        className="modal fade"
-      >
-        <Modal.Header closeButton>
-          <h5>Copy</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>From</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                >
-                  <option selected="selected">Select</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>To</label>
-                <select
-                  className="form-control form-select"
-                  style={{ width: "100%" }}
-                >
-                  <option selected="selected">Select</option>
-                  <option>Alaska</option>
-                  <option>California</option>
-                  <option>Delaware</option>
-                  <option>Tennessee</option>
-                  <option>Texas</option>
-                  <option>Washington</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-4">
-              <button
-                className="purple-btn2 w-100"
-                // onClick={closeCopyModal}
-                fdprocessedid="u33pye"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
 
     </div>
 

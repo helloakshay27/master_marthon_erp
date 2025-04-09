@@ -816,21 +816,26 @@ export default function VendorDetails() {
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
       const finalTotal = landedAmount + gstAmount;
 
+      console.log("taxxxXXXXxxx", taxRateData[index]);
+      
+
       const taxDetails = [
         ...taxRateData.flatMap((item) =>
+          // console.log(item, "item"),
           item.additionTaxCharges.map((charge) => ({
-            resource_id: 1,
+            resource_id: charge.id,
             inclusive: charge.inclusive,
-            resource_type: "TaxCharge",
+            resource_type: charge.type || "TaxCharge",
             amount: charge.amount,
             addition: true,
           }))
         ),
         ...taxRateData.flatMap((item) =>
+          // console.log(item, "item"),
           item.deductionTax.map((charge) => ({
-            resource_id: 1,
+            resource_id: charge.id,
             inclusive: charge.inclusive,
-            resource_type: "TaxCharge",
+            resource_type: charge.type,
             amount: charge.amount,
             addition: false,
           }))
@@ -930,6 +935,30 @@ export default function VendorDetails() {
           return acc;
         }, {})
       : {};
+
+      // const mappedBidMaterials = bid.bid_materials_attributes.map((material) => {
+      //   const mappedTaxDetails = material.addition_tax_charges.map((charge) => {
+      //     const matchedTax = dropdownData.find(
+      //       (tax) => tax.name === charge.taxChargeType
+      //     );
+  
+      //     return {
+      //       resource_id: matchedTax?.id || charge.id,
+      //       inclusive: charge.inclusive,
+      //       resource_type: matchedTax?.type || "TaxCharge",
+      //       amount: charge.amount,
+      //       addition: true,
+      //     };
+      //   });
+  
+      //   return {
+      //     ...material,
+      //     bid_material_tax_details: mappedTaxDetails,
+      //   };
+      // });
+
+      // console.log("mappedBidMaterials", mappedBidMaterials);  
+      
     
 
     const payload = {
@@ -974,36 +1003,36 @@ export default function VendorDetails() {
 
       // console.log("vendor ID", vendorId);
 
-      const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-          },
-        }
-      );
+      // const response = await axios.post(
+      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+      //   payload,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+      //     },
+      //   }
+      // );
 
-      console.log("API Response:", response.data);
-      console.log("API Response:", response.data); // Log response to debug
-      toast.success("Bid Created successfully!", {
-        autoClose: 1000, // Close after 3 seconds
-      });
-      setIsBidCreated(true);
-      setRevisedBid(true); // Update `revisedBid` to true
-      // console.log("Updated revisedBid to true"); // Update state
+      // console.log("API Response:", response.data);
+      // console.log("API Response:", response.data); // Log response to debug
+      // toast.success("Bid Created successfully!", {
+      //   autoClose: 1000, // Close after 3 seconds
+      // });
+      // setIsBidCreated(true);
+      // setRevisedBid(true); // Update `revisedBid` to true
+      // // console.log("Updated revisedBid to true"); // Update state
 
-      // console.log("Updated isBidCreated to true.");
-      // console.log("vendor ID2", vendorId);
+      // // console.log("Updated isBidCreated to true.");
+      // // console.log("vendor ID2", vendorId);
 
-      // setData(response.data.bid_materials_attributes || []);
+      // // setData(response.data.bid_materials_attributes || []);
 
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1000);
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -1017,121 +1046,6 @@ export default function VendorDetails() {
   };
 
   // console.log("Bid Created:", isBidCreated); // Debugging state
-
-  const preparePayload2 = () => {
-    const bidMaterialsAttributes = data.map((row, index) => {
-      // Calculate row-specific totals
-      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0); // Row total based on price and quantity
-      const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100); // Discount for the row
-      const landedAmount = rowTotal - discountAmount; // Discounted total, before GST
-      const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100); // GST applied on landed amount
-      const finalTotal = landedAmount + gstAmount; // Landed amount + GST
-      const taxDetails = [
-        ...taxRateData.additionTaxCharges.map((charge) => ({
-          resource_id: 1,
-          inclusive: charge.inclusive,
-          resource_type: "TaxCharge",
-          amount: charge.amount,
-          addition: true,
-        })),
-        ...taxRateData.deductionTax.map((charge) => ({
-          resource_id: 1,
-          inclusive: charge.inclusive,
-          resource_type: "TaxCharge",
-          amount: charge.amount,
-          addition: false,
-        })),
-      ];
-
-      const extra = Object.keys(row.extra_data || {}).reduce((acc, key) => {
-        acc[key] = row.extra_data[key]?.value || null;
-        return acc;
-      }, {});
-
-      return {
-        event_material_id: row.eventMaterialId,
-        quantity_available: row.quantityAvail || 0,
-        price: Number(row.price || 0),
-        discount: Number(row.discount || 0),
-        bid_material_id: row.id,
-        vendor_remark: row.vendorRemark || "",
-        gst: row.gst || 0,
-        realised_discount: discountAmount.toFixed(2), // Realised discount for the row
-        realised_gst: gstAmount.toFixed(2), // Realised GST for the row
-        landed_amount: landedAmount.toFixed(2), // Landed amount for the row
-        total_amount: finalTotal.toFixed(2), // Row-specific total amount
-        bid_material_tax_details: taxDetails,
-        addition_tax_charges: taxRateData[index]?.additionTaxCharges || [],
-        deduction_tax: taxRateData[index]?.deductionTax || [],
-        ...additionalColumns.reduce((acc, col) => {
-          acc[col.key] = row[col.key] || "";
-          return acc;
-        }, {}),
-        extra, // Include extra fields in the payload
-      };
-    });
-
-    // Utility function to safely fetch and process values from freightData
-    const getFreightDataValue = (label, key) => {
-      const item = freightData.find((entry) => entry.label === label);
-      if (item?.value?.[key]) {
-        return String(item.value[key]); // Ensure the value is converted to a string
-      }
-      return ""; // Return empty string if value is not found
-    };
-
-    // Fetch and parse Freight Charge and GST on Freight
-    const freightChargeRaw = getFreightDataValue("Freight Charge", "firstBid");
-    const freightCharge21 =
-      freightChargeRaw && freightChargeRaw.replace
-        ? parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0
-        : 0; // Safeguard for invalid data
-
-    const gstOnFreightRaw = getFreightDataValue("GST on Freight", "firstBid");
-    const gstOnFreightt =
-      gstOnFreightRaw && gstOnFreightRaw.replace
-        ? parseFloat(gstOnFreightRaw.replace(/₹|,/g, "")) || 0
-        : 0;
-
-    const realisedFreightChargeAmount = parseFloat(
-      freightCharge21 + (freightCharge21 * gstOnFreightt) / 100
-    );
-
-    // Fetch other fields
-    const warrantyClause =
-      getFreightDataValue("Warranty Clause *", "firstBid") || "1-year warranty";
-    const paymentTerms =
-      getFreightDataValue("Payment Terms *", "firstBid") || "Net 30";
-    const loadingUnloadingClause =
-      getFreightDataValue("Loading / Unloading *", "firstBid") ||
-      "Loading at supplier's location, unloading at buyer's location";
-
-    // Calculate and update the gross total
-    const updatedGrossTotal = calculateSumTotal();
-    setGrossTotal(updatedGrossTotal); // Ensure state is updated
-
-    // Construct the payload
-    const payload = {
-      revised_bid: {
-        event_vendor_id: vendorId,
-        price: 500.0,
-        discount: 10.0,
-        freight_charge_amount: freightCharge21,
-        gst_on_freight: gstOnFreightt,
-        realised_freight_charge_amount: realisedFreightChargeAmount,
-        gross_total: updatedGrossTotal, // Updated gross total
-        // warranty_clause: warrantyClause,
-        // payment_terms: paymentTerms,
-        loading_unloading_clause: loadingUnloadingClause,
-        remark: remark,
-        extra: {}, // Additional payload fields
-        revised_bid_materials_attributes: bidMaterialsAttributes,
-      },
-    };
-
-    // console.log("Prepared Payload: revised,", payload);
-    return payload;
-  };
 
   const handleReviseBid = async () => {
     setLoading(true);
@@ -2106,6 +2020,7 @@ export default function VendorDetails() {
   useEffect(() => {
     console.log("Received Data in Table:", data);
   }, [data]);
+  
 
   const handleOpenModal = (rowIndex) => {
     // console.log("extraDAta",extraData);
@@ -2271,6 +2186,8 @@ export default function VendorDetails() {
   };
 
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
+    console.log("Row Index:", rowIndex," ID:", id, "Field:", field, "Value:", value, "Type:", type);
+    
     const updatedTaxRateData = structuredClone(taxRateData);
     const originalDataClone = structuredClone(originalTaxRateDataRef.current);
 
@@ -2359,6 +2276,8 @@ export default function VendorDetails() {
           const formattedOptions = response.data.taxes.map((tax) => ({
             value: tax.name,
             label: tax.name,
+            id: tax.id,
+            taxChargeType: tax.type,
           }));
 
           // Adding default option at the top
@@ -2585,7 +2504,7 @@ export default function VendorDetails() {
                     </div>
 
                     {/* {counterData > 0 && (
-                      <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
+                      <div className="d-flex justify-content-between align-items-center mx-3  p-3 rounded-3">
                         <div className="">
                           <p>Counter Offer</p>
                           <p>
@@ -4752,7 +4671,7 @@ export default function VendorDetails() {
                             
                                 const revisedBid = row?.revised_bid;
                                 const extraData = row?.extra_data?.[currentKey];
-                                console.log("row", row, "extraData", extraData);
+                                // console.log("row", row, "extraData", extraData);
                             
                                 // Determine value and readonly safely
                                 const inputValue =
@@ -5104,9 +5023,10 @@ export default function VendorDetails() {
                 <label className="form-label fw-bold">Material</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.material}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5115,9 +5035,10 @@ export default function VendorDetails() {
                 <label className="form-label fw-bold">HSN Code</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.hsnCode}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5134,6 +5055,7 @@ export default function VendorDetails() {
                   className="form-control"
                   value={taxRateData[tableId]?.ratePerNos}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5142,9 +5064,10 @@ export default function VendorDetails() {
                 <label className="form-label fw-bold">Total PO Qty</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.totalPoQty}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5159,6 +5082,7 @@ export default function VendorDetails() {
                   className="form-control"
                   value={taxRateData[tableId]?.discount}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5167,9 +5091,10 @@ export default function VendorDetails() {
                 <label className="form-label fw-bold">Material Cost</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.materialCost}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5181,9 +5106,10 @@ export default function VendorDetails() {
                 <label className="form-label fw-bold">Discount Rate</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.discountRate}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5194,9 +5120,10 @@ export default function VendorDetails() {
                 </label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control "
                   value={taxRateData[tableId]?.afterDiscountValue}
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5207,21 +5134,11 @@ export default function VendorDetails() {
               <div className="mb-3">
                 <label className="form-label fw-bold">Remark</label>
                 <textarea
-                  className="form-control bg-light"
+                  className="form-control "
                   rows={3}
                   value={taxRateData[tableId]?.remark}
                   readOnly
-                />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="mb-3">
-                <label className="form-label fw-bold">Additional Info.</label>
-                <textarea
-                  className="form-control bg-light"
-                  rows={3}
-                  value={taxRateData[tableId]?.additionalInfo}
-                  readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -5250,9 +5167,10 @@ export default function VendorDetails() {
                       <td>
                         <input
                           type="number"
-                          className="form-control bg-light"
+                          className="form-control "
                           value={taxRateData[tableId]?.afterDiscountValue}
                           readOnly
+                          disabled={true}
                         />
                       </td>
                       <td></td>
@@ -5267,8 +5185,15 @@ export default function VendorDetails() {
                       <td className="text-center">
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => addAdditionTaxCharge(tableId)}
-                        >
+                          onClick={() => { if (taxRateData[tableId]?.additionTaxCharges.length >= 4) {
+                            toast.error("You can only add up to 4 fields for Additional Tax & Charges.", {
+                              autoClose: 2000, // Duration for the toast to disappear (in ms)
+                            });
+                          } else {
+                            addAdditionTaxCharge(tableId);
+                          }}}
+                          // disabled={taxRateData[tableId]?.additionTaxCharges.length >= 4} // Disable if 4 or more rows
+                          >
                           <span>+</span>
                         </button>
                       </td>
@@ -5280,19 +5205,21 @@ export default function VendorDetails() {
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
                           <td>
-                            <SelectBox
-                              // label="Tax & Charges"
+                          <SelectBox
                               options={taxOptions}
                               defaultValue={item.taxChargeType}
-                              onChange={(value) =>
+                              onChange={(value) =>{
+                                const selectedOption = taxOptions.find((option) => option.value === value)
+                                console.log("selectedOption", selectedOption);
+                                
                                 handleTaxChargeChange(
                                   tableId,
-                                  item.id,
-                                  "taxChargeType",
+                                  selectedOption?.id,
+                                  selectedOption?.type,
                                   value,
                                   "addition"
                                 )
-                              }
+                              }}
                               className="custom-select"
                               isDisableFirstOption={true} // Disable the first option (default)
                               disabled={[
@@ -5481,9 +5408,10 @@ export default function VendorDetails() {
                       <td className="text-center">
                         <input
                           type="text"
-                          className="form-control bg-light"
+                          className="form-control "
                           value={taxRateData[tableId]?.netCost}
                           readOnly
+                          disabled={true}
                         />
                       </td>
                       <td></td>
