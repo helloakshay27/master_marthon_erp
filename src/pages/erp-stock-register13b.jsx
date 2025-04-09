@@ -834,7 +834,7 @@ const ErpStockRegister13B = () => {
         </Modal.Header>
         <div className="modal-body" style={{ overflowY: scroll }}>
           <div className="row justify-content-between align-items-center mt-2">
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">Material Type</label>
               <MultiSelector
                 options={formatOptions(materialTypes)}
@@ -847,7 +847,7 @@ const ErpStockRegister13B = () => {
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">
                 Material Sub Type
               </label>
@@ -864,7 +864,7 @@ const ErpStockRegister13B = () => {
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">Generic Info</label>
               <MultiSelector
                 options={formatOptions(genericInfos)}
@@ -877,7 +877,7 @@ const ErpStockRegister13B = () => {
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">
                 Unit of Measures
               </label>
@@ -894,7 +894,7 @@ const ErpStockRegister13B = () => {
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">MOR Numbers</label>
               <MultiSelector
                 options={morOptions}
@@ -905,7 +905,7 @@ const ErpStockRegister13B = () => {
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-12 mt-2">
               <label className="block text-sm font-medium">GRN Numbers</label>
               <MultiSelector
                 options={grnOptions}
