@@ -860,6 +860,8 @@ export default function CreateRFQForm({
     setAdditionalFields(updatedAdditionalFields);
     updateAdditionalFields(updatedAdditionalFields);
     setShowAddColumnModal(false);
+    console.log("New field data:", newFieldData, updatedAdditionalFields, newField, "newField");
+    
   };
 
   const deliveryColumns = [
@@ -1051,9 +1053,6 @@ export default function CreateRFQForm({
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
 
-    // console.log(fieldValue, "fieldValue:----", fieldName);
-
-    // Explicitly handle SelectBox for specific fields
     if (fieldName === "descriptionOfItem") {
       return (
         <SelectBox
@@ -1083,7 +1082,6 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "location") {
-      
       return (
         <SelectBox
           options={locationOptions}
@@ -1099,9 +1097,6 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "pms_brand_id") {
-      console.log(brandOptions, fieldValue,            brandOptions.find((option) => option.label === fieldValue)?.value
-,      "brandOptions");
-      
       return (
         <SelectBox
           options={brandOptions}
@@ -1855,12 +1850,8 @@ export default function CreateRFQForm({
         title="Add New Column"
         footerButtons={[
           {
-            label: "Cancel",
-            onClick: () => setShowAddColumnModal(false),
-          },
-          {
             label: "Add Column",
-            onClick:{handleAddColumnSubmit},
+            onClick:handleAddColumnSubmit,
           },
         ]}
       >

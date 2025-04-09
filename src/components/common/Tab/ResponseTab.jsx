@@ -530,7 +530,6 @@ export default function ResponseTab({ isCounterOffer }) {
                           })),
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
-                        console.log("material:----", material);
                         const extraData = material.extra_data || {};
 
                         return {
