@@ -925,7 +925,7 @@ export default function VendorDetails() {
 
       const extractShortTableData = Array.isArray(shortTableData)
       ? shortTableData.reduce((acc, curr) => {
-          const { firstBid, counterBid } = curr.value || {};
+          const { firstBid, counterBid } = curr.value;
           acc[curr.label] = counterBid || firstBid;
           return acc;
         }, {})
@@ -941,8 +941,8 @@ export default function VendorDetails() {
         gst_on_freight: gstOnFreightt,
         realised_freight_charge_amount: realisedFreightChargeAmount,
         gross_total: grossTotal,
-        warranty_clause: warrantyClause,
-        payment_terms: paymentTerms,
+        // warranty_clause: warrantyClause,
+        // payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
         extra: {},
@@ -1120,8 +1120,8 @@ export default function VendorDetails() {
         gst_on_freight: gstOnFreightt,
         realised_freight_charge_amount: realisedFreightChargeAmount,
         gross_total: updatedGrossTotal, // Updated gross total
-        warranty_clause: warrantyClause,
-        payment_terms: paymentTerms,
+        // warranty_clause: warrantyClause,
+        // payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
         extra: {}, // Additional payload fields
@@ -1228,7 +1228,7 @@ export default function VendorDetails() {
           gst_on_freight: 0,
           realised_freight_charge_amount: 0,
           gross_total: grossTotal,
-          warranty_clause: "",
+          // warranty_clause: "",
           payment_terms: "",
           loading_unloading_clause: "",
           remark: remark,
