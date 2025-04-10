@@ -528,7 +528,7 @@ export default function VendorDetails() {
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
             quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom,
+            unit: item.uom_name,
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
@@ -710,7 +710,7 @@ export default function VendorDetails() {
             gst: material.gst,
             realisedGst: material.realised_gst,
             total: material.total_amount,
-            unit: material.event_material.uom,
+            unit: material.event_material.uom_name,
             location: material.event_material.location,
             vendorRemark: material.vendor_remark,
             landedAmount: material.landed_amount,
@@ -819,40 +819,70 @@ export default function VendorDetails() {
       console.log("taxxxXXXXxxx", taxRateData[index]);
       
 
+      // const taxDetails = [
+      //   ...taxRateData.flatMap((item) =>
+      //     // console.log(item, "item"),
+      //     item.additionTaxCharges.map((charge) => ({
+      //       resource_id: charge.id,
+      //       inclusive: charge.inclusive,
+      //       resource_type: charge.type || "TaxCharge",
+      //       amount: charge.amount,
+      //       addition: true,
+      //     }))
+      //   ),
+      //   ...taxRateData.flatMap((item) =>
+      //     // console.log(item, "item"),
+      //     item.deductionTax.map((charge) => ({
+      //       resource_id: charge.id,
+      //       inclusive: charge.inclusive,
+      //       resource_type: charge.type,
+      //       amount: charge.amount,
+      //       addition: false,
+      //     }))
+      //   ),
+      // ];
+      
       const taxDetails = [
-        ...taxRateData.flatMap((item) =>
-          // console.log(item, "item"),
-          item.additionTaxCharges.map((charge) => ({
-            resource_id: charge.id,
-            inclusive: charge.inclusive,
-            resource_type: charge.type || "TaxCharge",
+        ...(taxRateData[index]?.additionTaxCharges || []).map((charge) => {
+          const matchedTax = taxOptions?.find(
+            (tax) => tax.value?.trim().toLowerCase() === charge.taxChargeType.trim().toLowerCase()
+          );
+          
+      
+          return {
+            resource_id: matchedTax?.id || null, // or set to null if not found
+            resource_type: matchedTax?.type || "TaxCharge",
             amount: charge.amount,
-            addition: true,
-          }))
-        ),
-        ...taxRateData.flatMap((item) =>
-          // console.log(item, "item"),
-          item.deductionTax.map((charge) => ({
-            resource_id: charge.id,
             inclusive: charge.inclusive,
-            resource_type: charge.type,
+            addition: true
+          };
+        }),
+      
+        ...(taxRateData[index]?.deductionTax || []).map((charge) => {
+          const matchedTax = deductionTaxOptions?.find(
+            (tax) => tax.value?.trim().toLowerCase() === charge.taxChargeType.trim().toLowerCase()
+          );
+      
+          return {
+            resource_id: matchedTax?.id || null,
+            resource_type: matchedTax?.type || "TaxCharge",
             amount: charge.amount,
-            addition: false,
-          }))
-        ),
-      ];
+            inclusive: charge.inclusive,
+            addition: false
+          };
+        }),
+      ];      
+      
+      const extraFields = Object.keys(row.extra_data || {}).reduce((acc, key) => {
+        const field = row.extra_data[key];
+        acc[key] = typeof field === "object" && field !== null ? field.value || "" : field || "";
+        return acc;
+      }, {});
+      
+      
 
-      // const extra = additionalColumns.reduce((acc, col) => {
-      //   acc[col.key] = row.extra_data?.[col.key]?.value || "";
-      //   return acc;
-      // }, {});
-      const extraFields = Object.keys(row.extra_data || {}).reduce(
-        (acc, key) => {
-          acc[key] = row.extra_data[key]?.value || "";
-          return acc;
-        },
-        {}
-      );
+      console.log("extraFields", extraFields, "Row", row,"row extra", row.extra_data);
+      
 
       return {
         event_material_id: row.eventMaterialId,
@@ -1014,7 +1044,6 @@ export default function VendorDetails() {
         }
       );
 
-      console.log("API Response:", response.data);
       console.log("API Response:", response.data); // Log response to debug
       toast.success("Bid Created successfully!", {
         autoClose: 1000, // Close after 3 seconds
@@ -1062,41 +1091,49 @@ export default function VendorDetails() {
     }
 
     try {
-      const revisedBidMaterials = data.map((row) => {
+      const revisedBidMaterials = data.map((row,index) => {
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
         const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
         const landedAmount = rowTotal - discountAmount;
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
 
-        console.log("taxRateData :----", taxRateData);
+        console.log("taxRateData :----", taxRateData[index]);
 
         const taxDetails = [
-          ...(Array.isArray(taxRateData?.additionTaxCharges)
-            ? taxRateData.additionTaxCharges.map((charge) => ({
-              resource_id: null,
-              inclusive: charge.inclusive,
-              resource_type: "TaxCharge",
+          ...(taxRateData[index]?.additionTaxCharges || []).map((charge) => {
+            const matchedTax = taxOptions.find(
+              (tax) =>
+                tax.value.trim().toLowerCase() ===
+                charge.taxChargeType.trim().toLowerCase()
+            );
+            console.log("matchedTax", matchedTax, taxOptions, charge);
+            
+      
+            return {
+              resource_id: matchedTax?.id || null,
+              resource_type: matchedTax?.type || "TaxCharge",
               amount: charge.amount,
+              inclusive: charge.inclusive,
               addition: true,
-              id: isNaN(Number(charge.id)) ? null : charge.id,
-              taxChargeType: charge.taxChargeType,
-              taxChargePerUom: charge.taxChargePerUom,
-            }))
-            : []),
-
-          ...(Array.isArray(taxRateData?.deductionTax)
-            ? taxRateData.deductionTax.map((charge) => ({
-              resource_id: null,
-              inclusive: charge.inclusive,
-              resource_type: "TaxCharge",
+            };
+          }),
+      
+          ...(taxRateData[index]?.deductionTax || []).map((charge) => {
+            const matchedTax = deductionTaxOptions.find(
+              (tax) =>
+                tax.value.trim().toLowerCase() ===
+                charge.taxChargeType.trim().toLowerCase()
+            );
+      
+            return {
+              resource_id: matchedTax?.id || null,
+              resource_type: matchedTax?.type || "TaxCharge",
               amount: charge.amount,
+              inclusive: charge.inclusive,
               addition: false,
-              id: isNaN(Number(charge.id)) ? null : charge.id,
-              taxChargeType: charge.taxChargeType,
-              taxChargePerUom: charge.taxChargePerUom,
-            }))
-            : []),
+            };
+          }),
         ];
 
         const extraFields = Object.keys(row.extra_data || {}).reduce(
@@ -1153,20 +1190,20 @@ export default function VendorDetails() {
 
       console.log("Revised Bid Payload:", payload);
 
-      const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-        payload
-      );
+      // const response = await axios.post(
+      //   `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+      //   payload
+      // );
 
-      toast.success("Bid revised successfully!", {
-        autoClose: 1000,
-      });
+      // toast.success("Bid revised successfully!", {
+      //   autoClose: 1000,
+      // });
 
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500);
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
@@ -2305,6 +2342,8 @@ export default function VendorDetails() {
           const formattedOptions = response.data.taxes.map((tax) => ({
             value: tax.name,
             label: tax.name,
+            id: tax.id,
+            type: tax.type,
           }));
 
           setDeductionTaxOptions([
@@ -3400,7 +3439,7 @@ export default function VendorDetails() {
                                               className="text-start"
                                             // style={{ color: "#777777" }}
                                             >
-                                              {data.uom}
+                                              {data.uom_name}
                                             </td>
                                             <td
                                               className="text-start"
@@ -5227,6 +5266,12 @@ export default function VendorDetails() {
                                 "Other charges",
                                 "Freight",
                               ].includes(item.taxChargeType)}
+                              disabledOptions={
+                                taxRateData[tableId]?.additionTaxCharges.length === 4 &&
+                                rowIndex === 3 // i.e., 4th row (0-based index)
+                                  ? ["Handling Charges", "Other charges", "Freight"]
+                                  : []
+                              }
                             />
                           </td>
                           <td>

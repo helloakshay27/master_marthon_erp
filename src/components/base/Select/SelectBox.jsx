@@ -10,8 +10,9 @@ export default function SelectBox({
   className = "",
   isDisableFirstOption = false, // New prop
   disabled = false, // Add disabled prop
+  disabledOptions = [] // New prop to pass option labels to disable
 }) {
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null); 
 
   useEffect(() => {
     if (defaultValue) {
@@ -43,8 +44,21 @@ export default function SelectBox({
     }),
     option: (base, state) => ({
       ...base,
-      backgroundColor: state.isSelected ? "#ccc" : state.isFocused ? "#8b0203" : base.backgroundColor,
-      color: state.isSelected ? "#000" : state.isFocused ? "#fff" : "#000", // Set text color to black
+      backgroundColor: state.isDisabled
+        ? "#e9ecef" // Grey background for disabled options
+        : state.isSelected
+        ? "#ccc"
+        : state.isFocused
+        ? "#8b0203"
+        : base.backgroundColor,
+      color: state.isDisabled
+        ? "#6c757d" // Grey text for disabled options
+        : state.isSelected
+        ? "#000"
+        : state.isFocused
+        ? "#fff"
+        : "#000", // Set text color to black
+      cursor: state.isDisabled ? "not-allowed" : "default", // Show not-allowed cursor for disabled options
     }),
     multiValueRemove: (base, state) => ({
       ...base,
@@ -65,12 +79,12 @@ export default function SelectBox({
   };
 
   // Disable the first option if isDisableFirstOption is true
-  const formattedOptions = isDisableFirstOption
-    ? options.map((option, index) => ({
-        ...option,
-        isDisabled: index === 0,
-      }))
-    : options;
+  const formattedOptions = options.map((option, index) => ({
+    ...option,
+    isDisabled:
+      (isDisableFirstOption && index === 0) ||
+      disabledOptions.includes(option.label), // Disable if label is in the array
+  }));
 
   const handleChange = (selectedOption) => {
     setSelectedOption(selectedOption);

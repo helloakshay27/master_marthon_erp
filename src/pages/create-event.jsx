@@ -771,7 +771,7 @@ export default function CreateEvent() {
 
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true`,
         {
           method: "POST",
           headers: {
@@ -1001,12 +1001,14 @@ export default function CreateEvent() {
                       <tr>
                         <th style={{ width: "100px" }}>Sr No.</th>
                         <th>Vendor Name</th>
+                        <th>Organization</th>
                         <th>Mob No.</th>
                         <th>Status</th>
                         <th>Action</th>
                       </tr>
                     </thead>
-
+{console.log("selectedVendors:",selectedVendors)
+}
                     <tbody>
                       {selectedVendors.length > 0 ? (
                         selectedVendors
@@ -1019,6 +1021,7 @@ export default function CreateEvent() {
                             <tr key={vendor.id}>
                               <td style={{ width: "100px" }}>{index + 1}</td>
                               <td>{vendor.name}</td>
+                              <td>{vendor.organisation || "N/A"}</td>
                               <td>{vendor.phone}</td>
                               <td>Invited</td>
                               <td>
