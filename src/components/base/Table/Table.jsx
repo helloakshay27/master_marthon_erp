@@ -112,7 +112,6 @@ export default function Table({
 
   if (isHorizontal) {
     const transposedData = transposeData(data, columns);
-    console.log("transposedData", transposedData);
 
     // Extract the total amounts for the last row (e.g., "Total Amount")
     const totalAmountsRow = transposedData.find(row => row.header === "Total Amount");

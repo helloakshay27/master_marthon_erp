@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import { baseURL } from "../../../confi/apiDomain";
-import { toast } from "react-toastify"; // Import toast for toaster messages
+import { toast, ToastContainer } from "react-toastify"; // Import toast for toaster messages
 import axios from "axios"; // Import axios for API calls
 import SelectBox from "../../base/Select/SelectBox"; // Import SelectBox for dropdowns
 
@@ -148,7 +148,8 @@ export default function BulkCounterOfferModal({
     }, {});
 
     setLoading(true);
-
+    // formData
+console.log("formData:-------", formData);
     const payload = {
       counter_bid: {
         event_vendor_id: formData.event_vendor_id,
@@ -160,11 +161,25 @@ export default function BulkCounterOfferModal({
         gross_total: formData.gross_total,
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
           const { extra_data, ...rest } = item; // Destructure to exclude shortTable values
-          return {
-            ...rest,
-          };
+          // return {
+          //   ...rest,
+          //   bid_material_id: item.id,
+          // };
+          return{
+              event_material_id: item.event_material_id,
+              bid_material_id: item.id,
+              quantity_available: item.quantity_available,
+              price: item.price,
+              discount: item.discount,
+              total_amount: item.total_amount,
+              realised_discount: item.realised_discount,
+              gst: item.gst,
+              realised_gst: item.realised_gst,
+              vendor_remark: item.vendor_remark,
+              bid_material_tax_details:item.bid_material_tax_details,
+              ...extractedExtraData,
+            }
         }),
-        ...extractedExtraData,
         ...extractShortTableData, 
         remark: formData.remark || "", 
       },
@@ -731,7 +746,7 @@ export default function BulkCounterOfferModal({
       };
     }) || [];
 
-    console.log("productTableData:-------", productTableData);
+    // console.log("productTableData:-------", productTableData);
     
 
   return (
@@ -767,7 +782,7 @@ export default function BulkCounterOfferModal({
       >
         <h5 className="mt-5">Material Sheet</h5>
         <Table columns={productTableColumns} data={productTableData} />
-        {console.log("formData:-------",formData)}
+        {/* {console.log("formData:-------",formData)} */}
         <div className="d-flex justify-content-end">
           <table
             className="tbl-container mt-4 ShortTable"
@@ -1176,6 +1191,7 @@ export default function BulkCounterOfferModal({
           </div>
         </div>
       </DynamicModalBox>
+      <ToastContainer></ToastContainer>
     </>
   );
 }

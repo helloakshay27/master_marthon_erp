@@ -33,7 +33,6 @@ export default function ResponseTab({ isCounterOffer }) {
     participated_vendor: 0,
   });
 
-  console.log("segregated",eventVendors);
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
   }, [eventVendors]);

@@ -476,7 +476,7 @@ export default function CreateEvent() {
   const [bidTemplateFields, setBidTemplateFields] = useState([]);
   const [additionalFields, setAdditionalFields] = useState([]);
 
-  console.log("materialFormData:--------",materialFormData);
+  // console.log("materialFormData:--------",materialFormData);
   
 
   const handleSubmit = async (event) => {
