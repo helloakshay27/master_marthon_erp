@@ -5092,7 +5092,7 @@ export default function VendorDetails() {
           },
         ]}
         centered={true}
-      >{console.log("tax  ------------  Rate -----------  Data", taxRateData[tableId])}
+      >
         <div className="container-fluid p-0">
           <div className="row mb-3">
             <div className="col-md-6">
@@ -5276,9 +5276,10 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-
+                          
                     {taxRateData[tableId]?.addition_bid_material_tax_details.map((item, rowIndex) => (
                       <tr key={`${rowIndex}-${item.id}`}>
+                      {console.log("item:----",item,"taxOpiton",)}
                         <td>
                           <SelectBox
                             options={taxOptions}
@@ -5299,7 +5300,7 @@ export default function VendorDetails() {
                             className="custom-select"
                             isDisableFirstOption={true}
                             disabled={
-                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)
+                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType || taxOptions.find((option) => option.id === item.resource_id)?.value)
                             }
                             disabledOptions={
                               taxRateData[tableId]?.addition_bid_material_tax_details.length === 4 &&
@@ -5313,12 +5314,13 @@ export default function VendorDetails() {
                         <td>
                           <select
                             className="form-select"
-                            value={item.taxChargePerUom}
+                            // value={item.taxChargePerUom}
+                            defaultValue={item.taxChargePerUom}
                             onChange={(e) =>
                               handleTaxChargeChange(tableId, item.id, "taxChargePerUom", e.target.value, "addition")
                             }
                             disabled={
-                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType) 
+                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType) || rowIndex <= 2
                             }
                           >
                             <option value="">Select Tax</option>
@@ -5400,7 +5402,7 @@ export default function VendorDetails() {
                         <td>
                           <select
                             className="form-select"
-                            value={item.resource_id}
+                            value={item.taxChargePerUom}
                             onChange={(e) =>
                               handleTaxChargeChange(
                                 tableId,
