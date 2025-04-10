@@ -1003,36 +1003,36 @@ export default function VendorDetails() {
 
       // console.log("vendor ID", vendorId);
 
-      // const response = await axios.post(
-      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-      //   payload,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-      //     },
-      //   }
-      // );
+      const response = await axios.post(
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+          },
+        }
+      );
 
-      // console.log("API Response:", response.data);
-      // console.log("API Response:", response.data); // Log response to debug
-      // toast.success("Bid Created successfully!", {
-      //   autoClose: 1000, // Close after 3 seconds
-      // });
-      // setIsBidCreated(true);
-      // setRevisedBid(true); // Update `revisedBid` to true
-      // // console.log("Updated revisedBid to true"); // Update state
+      console.log("API Response:", response.data);
+      console.log("API Response:", response.data); // Log response to debug
+      toast.success("Bid Created successfully!", {
+        autoClose: 1000, // Close after 3 seconds
+      });
+      setIsBidCreated(true);
+      setRevisedBid(true); // Update `revisedBid` to true
+      // console.log("Updated revisedBid to true"); // Update state
 
-      // // console.log("Updated isBidCreated to true.");
-      // // console.log("vendor ID2", vendorId);
+      // console.log("Updated isBidCreated to true.");
+      // console.log("vendor ID2", vendorId);
 
-      // // setData(response.data.bid_materials_attributes || []);
+      // setData(response.data.bid_materials_attributes || []);
 
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1000);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
