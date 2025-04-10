@@ -464,9 +464,8 @@ export default function BulkCounterOfferModal({
     { label: "Realised Discount", key: "realisedDiscount" },
     { label: "Landed Amount", key: "landedAmount" },
     { label: "Total Amount", key: "totalAmount" },
-    { label: "Participant Attachment", key: "participantAttachment" },
     { label: "Vendor Remark", key: "vendorRemark" },
-    { label: "Tax Rate", key: "taxRate" },
+    // { label: "Tax Rate", key: "taxRate" },
     ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
       .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
       .map(([key]) => ({
@@ -488,6 +487,16 @@ export default function BulkCounterOfferModal({
           className="form-control"
           style={{ width: "auto" }}
           value={item.material_name || "_"}
+          readOnly
+          disabled
+        />
+      );
+      const landedAmount = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={item?.landed_amount || "_"}
           readOnly
           disabled
         />
@@ -576,6 +585,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.total_amount}
           readOnly
+          disabled={true}
         />
       );
 
@@ -628,6 +638,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.vendor_remark}
           onChange={(e) => handleInputChange(e, "vendor_remark")}
+          
         />
       );
 
@@ -664,14 +675,14 @@ export default function BulkCounterOfferModal({
         />
       );
 
-      const taxRate = (
-        <button
-          className="purple-btn2"
-          onClick={() => handleOpenTaxModal(index)}
-        >
-          Select
-        </button>
-      );
+      // const taxRate = (
+      //   <button
+      //     className="purple-btn2"
+      //     onClick={() => handleOpenTaxModal(index)}
+      //   >
+      //     Select
+      //   </button>
+      // );
       const extraColumnData = Object.entries(item.extra_data || {}).reduce(
         (acc, [key, { value, readonly }]) => {
           acc[key] = (
@@ -708,12 +719,16 @@ export default function BulkCounterOfferModal({
         vendorRemark,
         totalAmount,
         pmsBrand,
+        landedAmount,
         pmsColour,
         genericInfo,
-        taxRate,
+        // taxRate,
         ...extraColumnData,
       };
     }) || [];
+
+    console.log("productTableData:-------", productTableData);
+    
 
   return (
     <>
@@ -748,7 +763,7 @@ export default function BulkCounterOfferModal({
       >
         <h5 className="mt-5">Material Sheet</h5>
         <Table columns={productTableColumns} data={productTableData} />
-
+        {console.log("formData:-------",formData)}
         <div className="d-flex justify-content-end">
           <table
             className="tbl-container mt-4 ShortTable"
