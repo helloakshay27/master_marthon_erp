@@ -362,10 +362,10 @@ const MaterialReconciliationList = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="col-md-4">
+                    <div className="col-md-5">
                       <div className="d-flex justify-content-end me-3">
                         <button
-                          className="purple-btn2 m-0 p-1 px-3 mt-2"
+                          className="purple-btn2 m-0 p-1 px-2 mt-2"
                           onClick={() =>
                             navigate("/material-reconciliation-create")
                           } // Navigate to the specified path
@@ -374,7 +374,7 @@ const MaterialReconciliationList = () => {
                             <span className="material-symbols-outlined align-text-top me-2">
                               add{" "}
                             </span>
-                            Add
+                            Add Material Reconciliation
                           </div>
                         </button>
                       </div>

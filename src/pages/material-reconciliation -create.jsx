@@ -583,6 +583,33 @@ const MaterialReconciliationCreate = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
+                    <label>Generic Specification</label>
+                    <select name="" id="" className="form-control form-select">
+                      <option value="">Select Generic Specification</option>
+                      {/* Add options dynamically or statically */}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Colour</label>
+                    <select name="" id="" className="form-control form-select">
+                      <option value="">Select Colour</option>
+                      {/* Add options dynamically or statically */}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Brand</label>
+                    <select name="" id="" className="form-control form-select">
+                      <option value="">Select Brand</option>
+                      {/* Add options dynamically or statically */}
+                    </select>
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
                     <label>Material Code</label>
                     <select name="" id="" className="form-control form-select">
                       <option value=""></option>
@@ -599,8 +626,10 @@ const MaterialReconciliationCreate = () => {
                     />
                   </div>
                 </div>
-                <div className="col-md-2 mt-3">
-                  <button className="purple-btn2 m-0">Go</button>
+                <div className="col-md-11 mt-3 d-flex justify-content-center align-items-center gap-4">
+                  <button className="purple-btn2">Go</button>
+
+                  <button className="purple-btn2">Reset</button>
                 </div>
               </div>
               {/* <div className="d-flex justify-content-between align-items-center mt-2">
@@ -671,6 +700,9 @@ const MaterialReconciliationCreate = () => {
                           <th>Material Type</th>
                           <th>Material Sub-Type</th>
                           <th>Material</th>
+                          <th>Generic Specification</th> {/* New column */}
+                          <th>Colour</th> {/* New column */}
+                          <th>Brand</th> {/* New column */}
                           <th>Qty</th>
                           <th>Stock As on [dd/mm/yy]</th>
                         </tr>
@@ -688,8 +720,11 @@ const MaterialReconciliationCreate = () => {
                           <td>PO/CDoM/MB001/3203</td>
                           <td>Feb 08, 2021</td>
                           <td>AMBUJA CEMENTS LIMITED</td>
-                          <td>AMBUJA CEMENTS LIMITED</td>
-                          <td>AMBUJA CEMENTS LIMITED</td>
+                          <td>Specification 1</td> {/* Example value */}
+                          <td>Red</td> {/* Example value */}
+                          <td>Brand A</td> {/* Example value */}
+                          <td>100</td>
+                          <td>Feb 10, 2021</td>
                         </tr>
                       </tbody>
                     </table>
