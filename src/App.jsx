@@ -426,7 +426,6 @@ function App() {
           />
         </Routes>
       </div>
-      s
     </BrowserRouter>
   );
 }
