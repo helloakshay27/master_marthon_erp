@@ -33,6 +33,7 @@ export default function ResponseTab({ isCounterOffer }) {
     participated_vendor: 0,
   });
 
+  console.log("segregated",eventVendors);
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
   }, [eventVendors]);
@@ -469,6 +470,7 @@ export default function ResponseTab({ isCounterOffer }) {
 
                 {segeregatedMaterialData?.map((materialData, ind) => {
                   // Extract unique extra columns from bids_values
+
                   const extraColumns = Array.from(
                     new Set(
                       materialData.bids_values?.flatMap(
@@ -512,14 +514,6 @@ export default function ResponseTab({ isCounterOffer }) {
                           key: "participantAttachment",
                         },
                         { label: "Total Amount", key: "totalAmount" },
-                        // Dynamically add keys from the extra object
-                        // ...extraKeys.map((key) => ({
-                        //   label: key
-                        //     .replace(/_/g, " ")
-                        //     .replace(/\b\w/g, (c) => c.toUpperCase()),
-                        //   key: key,
-                        // })),
-                        // Dynamically add extra columns
                         ...extraColumns
                           .filter((column) => /^[A-Z]/.test(column)) // Filter columns with capitalized names
                           .map((column) => ({
@@ -546,12 +540,6 @@ export default function ResponseTab({ isCounterOffer }) {
                           participantAttachment:
                             material.participant_attachment || "_",
                           totalAmount: material.total_amount || "_",
-                          // Map keys from the extra object dynamically
-                          // ...extraKeys.reduce((acc, key) => {
-                          //   acc[key] = material[key] || "_";
-                          //   return acc;
-                          // }, {}),
-                          // Map extra columns dynamically
                           ...material.extra_columns.reduce((acc, column) => {
                             if (extraData[column]?.value) {
                               const value = extraData[column].value;
@@ -583,8 +571,6 @@ export default function ResponseTab({ isCounterOffer }) {
                   title={"Other Informations"}
                   isDefault={true}
                   tableColumn={[
-                    
-                    // Dynamically add keys from the extra object
                     ...Array.from(
                       new Set(
                         eventVendors?.flatMap((vendor) =>

@@ -78,6 +78,8 @@ export default function BulkCounterOfferModal({
           const formattedOptions = response.data.taxes.map((tax) => ({
             value: tax.name,
             label: tax.name,
+            id: tax.id,
+            taxChargeType: tax.type,
           }));
 
           setTaxOptions([
@@ -104,6 +106,8 @@ export default function BulkCounterOfferModal({
           const formattedOptions = response.data.taxes.map((tax) => ({
             value: tax.name,
             label: tax.name,
+            id: tax.id,
+            type: tax.type,
           }));
 
           setDeductionTaxOptions([
@@ -409,10 +413,10 @@ export default function BulkCounterOfferModal({
     };
 
     const updatedTaxRateData = [...formData.bid_materials];
-    if (!updatedTaxRateData[rowIndex].extra.addition_tax_charges) {
-      updatedTaxRateData[rowIndex].extra.addition_tax_charges = [];
+    if (!updatedTaxRateData[rowIndex].addition_bid_material_tax_details) {
+      updatedTaxRateData[rowIndex].addition_bid_material_tax_details = [];
     }
-    updatedTaxRateData[rowIndex].extra.addition_tax_charges.push(newItem);
+    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(newItem);
 
     setFormData({
       ...formData,
@@ -437,9 +441,9 @@ export default function BulkCounterOfferModal({
   const removeTaxChargeItem = (rowIndex, id, type) => {
     const updatedTaxRateData = [...taxRateData];
     if (type === "addition") {
-      updatedTaxRateData[rowIndex].additionTaxCharges = updatedTaxRateData[
+      updatedTaxRateData[rowIndex].addition_bid_material_tax_details = updatedTaxRateData[
         rowIndex
-      ].additionTaxCharges.filter((item) => item.id !== id);
+      ].addition_bid_material_tax_details.filter((item) => item.id !== id);
     } else {
       updatedTaxRateData[rowIndex].deductionTax = updatedTaxRateData[
         rowIndex
@@ -465,7 +469,7 @@ export default function BulkCounterOfferModal({
     { label: "Landed Amount", key: "landedAmount" },
     { label: "Total Amount", key: "totalAmount" },
     { label: "Vendor Remark", key: "vendorRemark" },
-    // { label: "Tax Rate", key: "taxRate" },
+    { label: "Tax Rate", key: "taxRate" },
     ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
       .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
       .map(([key]) => ({
@@ -675,14 +679,14 @@ export default function BulkCounterOfferModal({
         />
       );
 
-      // const taxRate = (
-      //   <button
-      //     className="purple-btn2"
-      //     onClick={() => handleOpenTaxModal(index)}
-      //   >
-      //     Select
-      //   </button>
-      // );
+      const taxRate = (
+        <button
+          className="purple-btn2"
+          onClick={() => handleOpenTaxModal(index)}
+        >
+          Select
+        </button>
+      );
       const extraColumnData = Object.entries(item.extra_data || {}).reduce(
         (acc, [key, { value, readonly }]) => {
           acc[key] = (
@@ -722,7 +726,7 @@ export default function BulkCounterOfferModal({
         landedAmount,
         pmsColour,
         genericInfo,
-        // taxRate,
+        taxRate,
         ...extraColumnData,
       };
     }) || [];
@@ -855,12 +859,13 @@ export default function BulkCounterOfferModal({
                 <label className="form-label fw-bold">Material</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control"
                   value={
                     formData?.bid_materials?.[selectedMaterialIndex]
                       ?.material_name || ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -869,12 +874,13 @@ export default function BulkCounterOfferModal({
                 <label className="form-label fw-bold">HSN Code</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control"
                   value={
                     formData?.bid_materials?.[selectedMaterialIndex]
                       ?.event_material?.inventory_id || ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -892,6 +898,7 @@ export default function BulkCounterOfferModal({
                     ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -900,12 +907,13 @@ export default function BulkCounterOfferModal({
                 <label className="form-label fw-bold">Total PO Qty</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control"
                   value={
                     formData?.bid_materials?.[selectedMaterialIndex]
                       ?.quantity_available || ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -923,6 +931,7 @@ export default function BulkCounterOfferModal({
                       ?.discount || ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -931,12 +940,13 @@ export default function BulkCounterOfferModal({
                 <label className="form-label fw-bold">Material Cost</label>
                 <input
                   type="text"
-                  className="form-control bg-light"
+                  className="form-control"
                   value={
                     formData?.bid_materials?.[selectedMaterialIndex]
                       ?.total_amount || ""
                   }
                   readOnly
+                  disabled={true}
                 />
               </div>
             </div>
@@ -980,12 +990,13 @@ export default function BulkCounterOfferModal({
                     </tr>
                     {formData?.bid_materials?.[
                       selectedMaterialIndex
-                    ]?.extra?.addition_tax_charges?.map((item, rowIndex) => (
+                    ]?.addition_bid_material_tax_details?.map((item, rowIndex) => (
                       <tr key={`${rowIndex}-${item.id}`}>
                         <td>
                           <SelectBox
                             options={taxOptions}
-                            defaultValue={item.taxChargeType}
+                            defaultValue={item.taxChargeType ||
+                              taxOptions.find((option) => option.id === item.resource_id)?.value }
                             onChange={(value) =>
                               handleTaxChargeChange(
                                 selectedMaterialIndex,
@@ -1080,13 +1091,13 @@ export default function BulkCounterOfferModal({
                     </tr>
                     {formData?.bid_materials?.[
                       selectedMaterialIndex
-                    ]?.extra?.deduction_tax?.map((item, rowIndex) => (
+                    ]?.deduction_bid_material_tax_details?.map((item, rowIndex) => (
                       <>
                         <tr key={item.id}>
                           <td>
                             <SelectBox
                               options={deductionTaxOptions}
-                              defaultValue={item.taxChargeType}
+                              defaultValue={item.taxChargeType || deductionTaxOptions.find((option) => option.id == item.resource_id).value}
                               onChange={(value) =>
                                 handleTaxChargeChange(
                                   selectedMaterialIndex,
@@ -1112,6 +1123,7 @@ export default function BulkCounterOfferModal({
                                   "deduction"
                                 )
                               }
+                              disabled={true}
                             >
                               <option value="">Select Tax</option>
                               <option value="1%">1%/</option>
@@ -1133,6 +1145,7 @@ export default function BulkCounterOfferModal({
                                   "deduction"
                                 )
                               }
+                              disabled={true}
                             />
                           </td>
                           <td>
