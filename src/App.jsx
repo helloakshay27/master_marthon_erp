@@ -81,6 +81,7 @@ import EventTemplateDetails from "./pages/event-template-details";
 import EditTemplate from "./pages/edit-template";
 import WorkSubCategory from "./pages/work-sub-category";
 import AddWorkSubCategory from "./pages/add-work-sub-category";
+import BOQAmend from "./pages/boq-amend";
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
           <Route path="/add-approvals" element={<AddApprovals />} />
           <Route path="/create-BOQ" element={<CreateBOQ />} />
           <Route path="/boq-edit-new/:id" element={<EditBOQNew />} />
+          <Route path="/boq-amend/:id" element={<BOQAmend />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />

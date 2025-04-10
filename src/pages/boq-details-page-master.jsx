@@ -396,6 +396,13 @@ console.log(boqDetails.assets);   // Should contain an array of assets
               
             </Link>
 )}
+ {boqDetails.status === "approved" && (
+   <Link 
+   to={`/boq-amend/${id}`} 
+   className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+<button className="purple-btn2">Amend</button>
+</Link>
+)}
           </div>
           <CollapsibleCard title="BOQ Details">
 
