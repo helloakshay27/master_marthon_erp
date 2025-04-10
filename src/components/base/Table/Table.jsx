@@ -112,19 +112,23 @@ export default function Table({
 
   if (isHorizontal) {
     const transposedData = transposeData(data, columns);
+    console.log("transposedData", transposedData);
 
-    // Extract the total amounts for the last row
-    const totalAmounts = transposedData[transposedData.length - 1].values;
+    // Extract the total amounts for the last row (e.g., "Total Amount")
+    const totalAmountsRow = transposedData.find(row => row.header === "Total Amount");
+    const totalAmounts = totalAmountsRow ? totalAmountsRow.values.map(value => parseFloat(value) || 0) : [];
+
+    // Sort the amounts to find the least, second least, and third least
     const sortedAmounts = [...totalAmounts].sort((a, b) => a - b);
     const leastAmount = sortedAmounts[0];
     const secondLeastAmount = sortedAmounts[1];
     const thirdLeastAmount = sortedAmounts[2];
 
     const getBackgroundColor = (amt) => {
-      if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
-      if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
-      if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
-      return "transparent";
+        if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
+        if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
+        if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
+        return "transparent";
     };
 
     return (
