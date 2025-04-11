@@ -1840,6 +1840,7 @@ console.log("sub item in delete case:,", boqSubItems)
                                     key={index}
                                     className="ms-5"
                                     type="checkbox"
+                                    disabled={material.can_delete === false}
                                     checked={selectedMaterials.some(
                                       (selected) =>
                                         selected.boqSubItemId === boqSubItemId &&
