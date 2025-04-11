@@ -2026,13 +2026,32 @@ const BoqAmend = () => {
         // Iterate over each boqSubItem to validate
         for (let i = 0; i < boqSubItems.length; i++) {
             const boqSubItem = boqSubItems[i];
-            console.log("validation sub item:", boqSubItem)
+            // console.log("validation sub item:", boqSubItem)
+              const subItemNames = boqSubItems.map(item => item.name?.trim());
+                  const nameSet = new Set();
+                  for (let i = 0; i < subItemNames.length; i++) {
+                    const name = subItemNames[i];
+            
+                    // Check if name is empty
+                    if (!name) {
+                      toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+                      return;
+                    }
+            
+                    // Check for duplicates
+                    if (nameSet.has(name.toLowerCase())) {
+                      toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
+                      return;
+                    }
+            
+                    nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
+                  }
 
 
-            if (!boqSubItem.name || boqSubItem.name.trim() === "") {
-                toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
-                return;
-            }
+            // if (!boqSubItem.name || boqSubItem.name.trim() === "") {
+            //     toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+            //     return;
+            // }
 
             if (boqSubItem.cost_quantity <= 0) {
                 toast.error(`Cost quantity is required for BoQ Sub Item ${i + 1}.`);
