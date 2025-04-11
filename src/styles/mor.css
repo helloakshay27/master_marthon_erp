@@ -18723,3 +18723,8 @@ ul.pagination.justify-content-center {
   color: var(--red) !important;
     font-weight: 500 !important;
 }
+
+.boq-id-link {
+  color: #8b0203;
+  text-decoration: underline !important;
+}

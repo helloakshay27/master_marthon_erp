@@ -22,7 +22,7 @@ import Select from "react-select";
 import EditBoqSub from "./EditBoqSub";
 import { useParams } from 'react-router-dom';
 // import BOQAmendSub from "./Boq-amend-sub";
-import BoqAmendSub from "./boq-amend-sub";
+import BoqAmendSub from "../pages/boq-amend-sub";
 // import { ToastContainer, toast } from "react-toastify";
 
 
@@ -1859,7 +1859,7 @@ const BoqAmend = () => {
             sub_categories: subCategoriesMaterial
         },
     };
-    // console.log("Material payload creation:", payloadData1)
+    console.log("Material payload creation:", payloadData1)
 
     const handleSubmitMaterialLabour = async () => {
         let validationErrors = {};
@@ -1876,7 +1876,7 @@ const BoqAmend = () => {
 
         // If predefinedMaterials is empty, show a toast error
         console.log(predefinedMaterials.length)
-        if (predefinedMaterials.length === 1 && predefinedAssets.length === 0) {
+        if (predefinedMaterials.length === 0 && predefinedAssets.length === 0) {
             toast.error("Select at least one material or asset.");
             return; // Exit function if validation fails
         }
@@ -1955,9 +1955,11 @@ const BoqAmend = () => {
                     payload
                 );
 
-                if (response.status === 200) {
+                if (response.status === 201) {
                     alert("BOQ Amendment done successfully!");
-                    // navigate(`/boq-details-page-master/${response.data.id}`); // Redirect to details page
+                    console.log("responce id:",response.data.id)
+                    navigate(`/boq-details-page-master/${response.data.id}`); // Redirect to details page
+                    
                 }
 
             } catch (error) {
@@ -1978,11 +1980,12 @@ const BoqAmend = () => {
     // sub data 2
     const processedSubItems = boqSubItems.map(item => ({
         ...item,
-        id: item.isNew ? null : item.id // Set ID to null for new items
+        id:  null // Set ID to null for new items
     }));
     const subCategories = categories.map(cat => ({
-        id: cat.id,
-        boq_sub_items: cat.id === lastCategory ? (processedSubItems || []) : []
+        category_id: cat.category_id,
+        level:cat.level,
+        boq_sub_items: cat.category_id === lastCategory ? (processedSubItems || []) : []
     }));
 
     const payloadData2 = {
@@ -2122,19 +2125,16 @@ const BoqAmend = () => {
                 console.log("payload submission edit sub item:", payload2)
                 // console.log("boq data payload 1 ", payloadData)
 
-                const response = await axios.patch(
-                    `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-                    payload2,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
+                const response = await axios.post(
+                    // `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    payload2
                 );
 
-                if (response.status === 200) {
+                if (response.status === 201) {
                     alert("BOQ Sub Item Amendment done successfully!");
-                    navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    // navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    navigate(`/boq-details-page-master/${response.data.id}`);
                 }
 
                 setLoading(false);

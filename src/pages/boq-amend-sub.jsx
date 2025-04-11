@@ -434,7 +434,7 @@ const BoqAmendSub = ({
             ? {
                 ...item,
                 materials: newMaterials[boqSubItemId] || [],
-                deleted: [...new Set([...(item.deleted || []), ...deletedIds])],
+                // deleted: [...new Set([...(item.deleted || []), ...deletedIds])],
               }
             : item
         )
@@ -1316,7 +1316,7 @@ const BoqAmendSub = ({
   // ✅ Memoizing predefinedMaterials
   const predefinedMaterials = useMemo(() => {
     return materials.map((m, i) => ({
-        id:m.pms_inventory_id ? m.id : null,
+        id: null,
         material_id: m.pms_inventory_id || m.id,
     //   material_id: m.id,
       material_sub_type_id: selectedSubTypes[i]?.value || "",

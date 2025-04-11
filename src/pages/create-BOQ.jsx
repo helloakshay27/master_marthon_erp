@@ -177,14 +177,14 @@ const CreateBOQ = () => {
     setMaterials((prev) => {
       // Get the new materials after deletion
       const newMaterials = prev.filter((_, index) => !selectedMaterials.includes(index));
-  
+
       // Function to update selections after deletion
       const updateSelection = (selectionArray = []) =>
         selectedMaterials.reduce((acc, index) => {
           acc.splice(index, 1); // Remove the selected index
           return acc;
         }, [...selectionArray]);
-  
+
       // Update all related state variables
       setSelectedSubTypes(updateSelection(selectedSubTypes));
       setGenericSpecifications(updateSelection(genericSpecifications));
@@ -196,16 +196,16 @@ const CreateBOQ = () => {
       setEstimatedQuantities(updateSelection(estimatedQuantities));
       setWastages(updateSelection(wastages));
       setTotalEstimatedQtyWastages(updateSelection(totalEstimatedQtyWastages));
-  
+
       // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
       // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
-  
+
       return newMaterials;
     });
-  
+
     setSelectedMaterials([]); // Clear selected materials
   };
-  
+
 
 
 
@@ -319,14 +319,14 @@ const CreateBOQ = () => {
     setAssets((prev) => {
       // Get the new materials after deletion
       const newMaterials = prev.filter((_, index) => !selectedAssets.includes(index));
-  
+
       // Function to update selections after deletion
       const updateSelection = (selectionArray = []) =>
         selectedAssets.reduce((acc, index) => {
           acc.splice(index, 1); // Remove the selected index
           return acc;
         }, [...selectionArray]);
-  
+
       // Update all related state variables
       setSelectedSubTypesAssets(updateSelection(selectedSubTypesAssets));
       setAssetGenericSpecifications(updateSelection(assetGenericSpecifications));
@@ -338,10 +338,10 @@ const CreateBOQ = () => {
       setAssetEstimatedQuantities(updateSelection(assetEstimatedQuantities));
       setAssetWastages(updateSelection(assetWastages));
       setAssetTotalEstimatedQtyWastages(updateSelection(assetTotalEstimatedQtyWastages));
-  
+
       // console.log("After deletion - New Materials:", JSON.stringify(newMaterials));
       // console.log("After deletion - Updated Generic Specifications:", JSON.stringify(genericSpecifications));
-  
+
       return newMaterials;
     });
     setSelectedAssets([]); // Reset selection
@@ -1209,7 +1209,7 @@ const CreateBOQ = () => {
   }));
 
 
-// console.log("pre mtL...", predefinedMaterials)
+  // console.log("pre mtL...", predefinedMaterials)
 
   const predefinedAssets = Assets.map((asset, index) => ({
     material_id: asset.id,
@@ -1678,7 +1678,7 @@ const CreateBOQ = () => {
     const invalidGenericSpecification = materials.some((material, index) => {
       // Get the selected generic specification for this material
       const genericSpecification = selectedGenericSpecifications[index];
-    
+
       // Check if the generic specification is invalid (empty or undefined)
       return !genericSpecification || genericSpecification === "";
     });
@@ -1694,7 +1694,7 @@ const CreateBOQ = () => {
       );
       return; // Exit function if validation fails
     }
-    
+
 
     // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
     //   toast.error("Please resolve duplicate materials or assets before submitting.");
@@ -1709,7 +1709,7 @@ const CreateBOQ = () => {
     //  if (!selectedUnit) toast.error("UOM is required.");
 
     // if (!newErrors.project && !newErrors.itemName && !newErrors.boqQuantity && !newErrors.unit) {
-    
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
@@ -1824,7 +1824,7 @@ const CreateBOQ = () => {
         // Handle successful response
         if (response.data) {
           // navigate("/view-BOQ"); // Navigate to BOQ list on success
-           
+
           navigate(`/boq-details-page-master/${response.data.id}`);  // Redirect with ID
           // console.log("id in create responce:",response.data.id)
         } else {
@@ -1871,11 +1871,30 @@ const CreateBOQ = () => {
     // Iterate over each boqSubItem to validate
     for (let i = 0; i < count.length; i++) {
       const boqSubItem = boqSubItems[i];
+      const subItemNames = boqSubItems.map(item => item.name?.trim());
+      const nameSet = new Set();
+      for (let i = 0; i < subItemNames.length; i++) {
+        const name = subItemNames[i];
 
-      if (!boqSubItem.name || boqSubItem.name.trim() === "") {
-        toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
-        return;
+        // Check if name is empty
+        if (!name) {
+          toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+          return;
+        }
+
+        // Check for duplicates
+        if (nameSet.has(name.toLowerCase())) {
+          toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
+          return;
+        }
+
+        nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
       }
+
+      // if (!boqSubItem.name || boqSubItem.name.trim() === "") {
+      //   toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+      //   return;
+      // }
 
       if (boqSubItem.cost_quantity <= 0) {
         toast.error(`Cost quantity is required for BoQ Sub Item ${i + 1}.`);
@@ -1887,22 +1906,22 @@ const CreateBOQ = () => {
         return;
       }
 
-      
+
 
       // const invalidCoefficient = boqSubItem?.materials?.some((material, index) => {
       //   // Get the coefficient factor for this material
       //   const coefficientFactor = coefficientFactors[index];
-  
+
       //   // Check if the coefficient factor is invalid (NaN or empty)
       //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
       // });
-  
+
       // // Validate coefficient factors for assets
       // const invalidAssetCoefficient =boqSubItem?.assets?.some((asset, index) => {
       //   const coefficientFactor = assetCoefficientFactors[index]; // Assuming a similar array for assets
       //   return isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "";
       // });
-  
+
       // // If any coefficient factor is invalid, show a toast and stop
       // if (invalidCoefficient || invalidAssetCoefficient) {
       //   toast.error(
@@ -1919,7 +1938,7 @@ const CreateBOQ = () => {
 
       //   // boqSubItem.materials.forEach((material) => {
       //   //   const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-      
+
       //   //   if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
       //   //     toast.error(`Coefficient factor is required for material in BoQ Sub Item ${i + 1}.`, {
       //   //       // position: "top-right",
@@ -1935,91 +1954,91 @@ const CreateBOQ = () => {
 
       //   boqSubItem.materials.forEach((material) => {
       //     const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
-      
+
       //     if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
       //       hasErrors = true; // Mark that there's an error
       //     }
       //   });
-      
+
       //   if (hasErrors) {
       //     toast.error(`Coefficient factor is required for all materials in BoQ Sub Item ${i + 1}.`);
       //   }
-        
+
       // })
 
 
       let hasErrors = false; // Track global errors
 
-boqSubItems.forEach((boqSubItem, i) => {
-  console.log("boq sub mt:", boqSubItem.materials);
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
 
-  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-  boqSubItem.materials.forEach((material) => {
-    const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
+        boqSubItem.materials.forEach((material) => {
+          const coefficientFactor = material.co_efficient_factor ?? ""; // Ensure it's never undefined
 
-    if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
-      subItemHasErrors = true; // Mark that there's an error for this sub-item
-    }
-  });
+          if (isNaN(parseFloat(coefficientFactor)) || coefficientFactor === "" || parseFloat(coefficientFactor) === 0) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
 
-  if (subItemHasErrors) {
-    hasErrors = true; // Mark that there are global errors
-    toast.error(`
+        if (subItemHasErrors) {
+          hasErrors = true; // Mark that there are global errors
+          toast.error(`
       Co-efficient factor cannot be empty,zero or invalid for any materials in BoQ Sub Item ${i + 1}.`);
-  }
-});
+        }
+      });
 
-// **Prevent form submission if any sub-item has errors**
-if (hasErrors) return;
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors) return;
 
 
 
-let hasErrors2 = false; // Track global errors
+      let hasErrors2 = false; // Track global errors
 
-boqSubItems.forEach((boqSubItem, i) => {
-  console.log("boq sub mt:", boqSubItem.materials);
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
 
-  let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-  boqSubItem.materials.forEach((material) => {
-    const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
+        boqSubItem.materials.forEach((material) => {
+          const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
 
-    if (!genericInfoId) {
-      subItemHasErrors = true; // Mark that there's an error for this sub-item
-    }
-  });
+          if (!genericInfoId) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
 
-  if (subItemHasErrors) {
-    hasErrors2 = true; // Mark that there are global errors
-    toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
-  }
-});
+        if (subItemHasErrors) {
+          hasErrors2 = true; // Mark that there are global errors
+          toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
+        }
+      });
 
-// **Prevent form submission if any sub-item has errors**
-if (hasErrors2) return;
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors2) return;
 
 
       // // if (boqSubItem.materials.length > 0) {
       //   boqSubItems.forEach((boqSubItem, i) => {
       //   console.log("boq sub mt:", boqSubItem.materials);
-      
+
       //   let hasErrors = false; // Flag to track errors
-      
+
       //   boqSubItem.materials.forEach((material) => {
       //     const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
-      
+
       //     if (!genericInfoId) {
       //       hasErrors = true; // Mark that there's an error
       //     }
       //   });
-      
+
       //   if (hasErrors) {
       //     toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
       //   }
       // })
 
-      
+
     }
 
     if (Object.keys(validationErrors).length > 0) {
@@ -2198,7 +2217,7 @@ if (hasErrors2) return;
                           value={selectedSubCategory}
                           placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
                         />
-                         {errors.sub && (
+                        {errors.sub && (
                           <div className="error-message">{errors.sub}</div>
                         )}
                       </div>
@@ -3216,15 +3235,15 @@ if (hasErrors2) return;
                                             <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                             <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" />
                                           </svg> */}
-                                          {/* Hidden file input */}
-                                          {/* <input
+                                        {/* Hidden file input */}
+                                        {/* <input
                                             id="file-input"
                                             type="file"
                                             style={{ display: "none" }} // Hide the file input
                                             onChange={handleFileChange} // Handle file change
                                           /> */}
-                                          {/* Display the selected file name */}
-                                          {/* {file && (
+                                        {/* Display the selected file name */}
+                                        {/* {file && (
                                             <div>Selected File: {file.name}</div>
                                           )}
                                         </td> */}
