@@ -83,6 +83,7 @@ import WorkSubCategory from "./pages/work-sub-category";
 import AddWorkSubCategory from "./pages/add-work-sub-category";
 // import BOQAmend from "./pages/boq-amend";
 import BoqAmend from "./pages/boq-amend";
+import BoqAmendSub from "./pages/boq-amend-sub";
 
 function App() {
   return (
@@ -96,6 +97,7 @@ function App() {
           <Route path="/create-BOQ" element={<CreateBOQ />} />
           <Route path="/boq-edit-new/:id" element={<EditBOQNew />} />
           <Route path="/boq-amend/:id" element={<BoqAmend />} />
+          <Route path="/create-BOQ" element={<BoqAmendSub />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />

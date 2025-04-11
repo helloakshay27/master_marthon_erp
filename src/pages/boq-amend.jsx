@@ -22,7 +22,7 @@ import Select from "react-select";
 import EditBoqSub from "./EditBoqSub";
 import { useParams } from 'react-router-dom';
 // import BOQAmendSub from "./Boq-amend-sub";
-import BoqAmendSub from "./Boq-amend-sub";
+import BoqAmendSub from "./boq-amend-sub";
 // import { ToastContainer, toast } from "react-toastify";
 
 
