@@ -13,7 +13,7 @@ import { baseURL } from "../confi/apiDomain";
 import _ from "lodash"; // Install using `npm install lodash`
 
 
-const BOQAmendSub = ({
+const BoqAmendSub = ({
   boqDetails,
   setBoqSubItems,
   materials,
@@ -2468,4 +2468,4 @@ console.log("sub item in delete case:,", boqSubItems)
   );
 };
 
-export default BOQAmendSub;
+export default BoqAmendSub;

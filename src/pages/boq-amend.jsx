@@ -21,11 +21,12 @@ import Select from "react-select";
 // import EditBoqSub from "./EditBoqSub";
 import EditBoqSub from "./EditBoqSub";
 import { useParams } from 'react-router-dom';
-import BOQAmendSub from "./Boq-amend-sub";
+// import BOQAmendSub from "./Boq-amend-sub";
+import BoqAmendSub from "./Boq-amend-sub";
 // import { ToastContainer, toast } from "react-toastify";
 
 
-const BOQAmend = () => {
+const BoqAmend = () => {
     const { id } = useParams()
     const [showMaterialLabour, setShowMaterialLabour] = useState(null);
     const [showBOQSubItem, setShowBOQSubItem] = useState(null);
@@ -85,7 +86,7 @@ const BOQAmend = () => {
 
     const categories = boqDetails?.categories || [];
 
-    const lastCategory = categories.length > 0 ? categories[categories.length - 1].id : null;
+    const lastCategory = categories.length > 0 ? categories[categories.length - 1].category_id : null;
 
     // console.log(lastCategory);
 
@@ -1309,7 +1310,7 @@ const BOQAmend = () => {
     // Example predefined materials data (replace with actual data from your source)
     const predefinedMaterials = [
         ...materials.map((material, index) => ({
-            id: material.pms_inventory_id ? material.id : null,
+            id: null,
             material_id: material.pms_inventory_id || material.id,
             material_sub_type_id: selectedSubTypes[index]
                 ? selectedSubTypes[index].value
@@ -1328,9 +1329,9 @@ const BOQAmend = () => {
             estimated_quantity_wastage:
                 parseFloat(totalEstimatedQtyWastages[index]) || 0,
         })),
-        {
-            deleted: deletedMaterialIds, // Store deleted material IDs in a separate object
-        },
+        // {
+        //     deleted: deletedMaterialIds, // Store deleted material IDs in a separate object
+        // },
     ];
 
 
@@ -1839,8 +1840,9 @@ const BOQAmend = () => {
         setSelectedSubCategoryLevel5(selectedOption);
 
     const subCategoriesMaterial = categories.map(cat => ({
-        id: cat.id,
-        materials: cat.id === lastCategory ? (predefinedMaterials || []) : []
+        category_id: cat.category_id,
+        level:cat.level,
+        materials: cat.category_id === lastCategory ? (predefinedMaterials || []) : []
     }));
 
     const payloadData1 = {
@@ -1944,22 +1946,18 @@ const BOQAmend = () => {
                         sub_categories: subCategoriesMaterial
                     },
                 }
-                console.log("payload submission:", payload)
+                // console.log("payload submission:", payload)
                 // console.log("boq data payload 1 ", payloadData)
 
-                const response = await axios.patch(
-                    `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-                    payload,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
+                const response = await axios.post(
+                    // `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    payload
                 );
 
                 if (response.status === 200) {
                     alert("BOQ Amendment done successfully!");
-                    navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    // navigate(`/boq-details-page-master/${response.data.id}`); // Redirect to details page
                 }
 
             } catch (error) {
@@ -3571,7 +3569,7 @@ const BOQAmend = () => {
                                                                             {/* {!expandedRows.includes(subItem.id) && ( */}
                                                                             <tr style={{ display: expandedRows.includes(subItem.id) ? "table-row" : "none" }}>
                                                                                 <td colSpan={11}>
-                                                                                    <BOQAmendSub
+                                                                                    <BoqAmendSub
                                                                                         materials={materials2[subItem.id] || subItem.materials || []}
                                                                                         handleAddMaterials={(newMaterials) =>
                                                                                             handleAddMaterials2(
@@ -3798,7 +3796,7 @@ const BOQAmend = () => {
                                                                                 {expandedRows.includes(el.id) && (
                                                                                     <tr>
                                                                                         <td colSpan={11}>
-                                                                                            <BOQAmendSub
+                                                                                            <BoqAmendSub
                                                                                                 materials={materials2[el.id] || []}
                                                                                                 handleAddMaterials={(newMaterials) =>
                                                                                                     handleAddMaterials2(
@@ -3933,4 +3931,4 @@ const BOQAmend = () => {
     );
 };
 
-export default BOQAmend;
+export default BoqAmend;
