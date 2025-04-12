@@ -25,8 +25,7 @@ export default function BulkCounterOfferModal({
   const [shortTableData, setShortTableData] = useState({});
 
   const excludedShortTableFields = ["remark", "Payment Terms", "Warranty Clause", "Loading/Unloading"];
-
-
+  
   useEffect(() => {
     if (bidCounterData) {
       setFormData(bidCounterData);
@@ -149,7 +148,6 @@ export default function BulkCounterOfferModal({
 
     setLoading(true);
     // formData
-console.log("formData:-------", formData);
     const payload = {
       counter_bid: {
         event_vendor_id: formData.event_vendor_id,
@@ -184,7 +182,6 @@ console.log("formData:-------", formData);
         remark: formData.remark || "", 
       },
     };
-    console.log("payload :----",payload);
     
     try {
       const response = await fetch(
@@ -216,7 +213,6 @@ console.log("formData:-------", formData);
   const handleMaterialInputChange = (e, field, index) => {
     const value = e.target.value;
     const updatedMaterials = [...formData.bid_materials];
-    console.log("value:-------", value);
     if (field === "quantity_available") {
       const quantityRequested =
         parseFloat(updatedMaterials[index].quantity_requested) || 0;
@@ -746,7 +742,6 @@ console.log("formData:-------", formData);
       };
     }) || [];
 
-    // console.log("productTableData:-------", productTableData);
     
 
   return (

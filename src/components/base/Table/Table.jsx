@@ -16,7 +16,7 @@ export default function Table({
   showCheckbox = false,
   actionIcon = null,
   isSelectCheckboxes = null,
-  customRender = {},
+  customRender = {}, // Added customRender prop
   isHorizontal = false,
   onRowSelect,
   handleCheckboxChange = (index, newSelectAll) => {}, // Provide a default function

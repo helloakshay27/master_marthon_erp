@@ -11,6 +11,7 @@ export default function Accordion({
   tableData,
   onColumnClick,
   enableHoverEffect,
+  handleTaxButtonClick
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,6 +97,16 @@ export default function Accordion({
               onResetComplete={undefined}
               onColumnClick={handleColumnClick}
               enableHoverEffect={enableHoverEffect}
+              customRender={{
+                taxRate: (value, rowIndex, rowData) => (
+                  <button
+                    className="purple-btn2"
+                    onClick={() => handleTaxButtonClick(rowData, "taxRate")}
+                  >
+                    View Tax
+                  </button>
+                ),
+              }}
             />
           </div>
         </div>

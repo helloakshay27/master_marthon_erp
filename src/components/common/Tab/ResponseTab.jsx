@@ -13,6 +13,9 @@ import { useParams } from "react-router-dom";
 import { da } from "date-fns/locale";
 import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
 import { baseURL } from "../../../confi/apiDomain";
+import DynamicModalBox from "../../base/Modal/DynamicModalBox";
+import SelectBox from "../../base/Select/SelectBox";
+import { set } from "lodash";
 
 export default function ResponseTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -28,10 +31,15 @@ export default function ResponseTab({ isCounterOffer }) {
   const [eventVendors, setEventVendors] = useState([]);
   const [segeregatedMaterialData, setSegeregatedMaterialData] = useState([]);
   const tableRef = useRef(null);
+  const [showTaxModal, setShowTaxModal] = useState(false);
+  const [taxOptions, setTaxOptions] = useState([]); // State for tax options
+  const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
   const [participationSummary, setParticipationSummary] = useState({
     invited_vendor: 0,
     participated_vendor: 0,
   });
+  const [openModals, setOpenModals] = useState({});
+  const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
@@ -47,6 +55,23 @@ export default function ResponseTab({ isCounterOffer }) {
     setCounterModal(false);
   };
 
+  const handleTaxModalOpen = (material, index) => {
+    setSelectedMaterialIndex(index);
+    setShowTaxModal(true);
+  };
+
+  const handleTaxModalClose = () => {
+    setShowTaxModal(false);
+  };
+
+  const handleSaveTaxChanges = () => {
+    setShowTaxModal(false);
+  };
+
+  const handleShowModal = () => {
+    setShowTaxModal(true);
+  };
+
   const handleChange = (event) => {
     if (event.target.value === "vendor") {
       setIsVendor(true);
@@ -54,6 +79,62 @@ export default function ResponseTab({ isCounterOffer }) {
       setIsVendor(false);
     }
   };
+
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            taxChargeType: tax.type,
+          }));
+
+          setTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching tax data:", error);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
+
+  useEffect(() => {
+    const fetchDeductionTaxes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            type: tax.type,
+          }));
+
+          setDeductionTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching deduction tax data:", error);
+      }
+    };
+
+    fetchDeductionTaxes();
+  }, []);
 
   const fetchRevisionData = async (
     vendorId,
@@ -168,7 +249,6 @@ export default function ResponseTab({ isCounterOffer }) {
         const data = await response.json();
         setResponse(data);
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
-        // console.log("data of get fetch remarks", eventVendors);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -251,43 +331,10 @@ export default function ResponseTab({ isCounterOffer }) {
       <div className="viewBy-main">
         <div className="viewBy-main-child1">
           <div className="d-flex align-items-center mb-3">
-            {/* <select
-              style={{ marginRight: "20px" }}
-              name="language"
-              className=" viewBy-headerForm"
-              onChange={handleChange}
-              required
-            >
-              <option value="" selected>
-                View by Product
-              </option>
-              <option value="vendor">Vendor</option>
-              <option value="product">Product</option>
-            </select> */}
             <div
               className="d-flex align-items-center"
               style={{ marginRight: "20px" }}
-            >
-              {/* <div className="">
-                <p className="viewBy-headerFormP">
-                  <span className="me-1">
-                    <ShowIcon />
-                  </span>
-                  Show / Hide
-                </p>
-              </div> */}
-              {/* <div className="me-2">
-                <p className="viewBy-headerFormP" onClick={handle.enter}>
-                  <span className="me-1">
-                    <FullScreenIcon />
-                  </span>
-                  Fullscreen
-                </p>
-              </div>
-              <div>
-                <FullClipIcon />
-              </div> */}
-            </div>
+            ></div>
           </div>
         </div>
         <div className="viewBy-main-child2 mb-3">
@@ -375,7 +422,6 @@ export default function ResponseTab({ isCounterOffer }) {
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
-                          // console.log("format", vendor?.bids?.[0]?.created_at);
 
                           return (
                             <td
@@ -468,8 +514,6 @@ export default function ResponseTab({ isCounterOffer }) {
                 </div>
 
                 {segeregatedMaterialData?.map((materialData, ind) => {
-                  // Extract unique extra columns from bids_values
-
                   const extraColumns = Array.from(
                     new Set(
                       materialData.bids_values?.flatMap(
@@ -478,7 +522,6 @@ export default function ResponseTab({ isCounterOffer }) {
                     )
                   );
 
-                  // Extract keys from the extra object dynamically
                   const extraKeys = Array.from(
                     new Set(
                       materialData.bids_values?.flatMap((material) =>
@@ -505,34 +548,38 @@ export default function ResponseTab({ isCounterOffer }) {
                           label: "Realised Discount",
                           key: "realisedDiscount",
                         },
-                        { label: "GST", key: "gst" },
-                        { label: "Realised GST", key: "realisedGST" },
                         { label: "Landed Amount", key: "landedAmount" },
-                        {
-                          label: "Participant Attachment",
-                          key: "participantAttachment",
-                        },
                         { label: "Total Amount", key: "totalAmount" },
                         ...extraColumns
-                          .filter((column) => /^[A-Z]/.test(column)) // Filter columns with capitalized names
+                          .filter((column) => /^[A-Z]/.test(column))
                           .map((column) => ({
                             label: column
                               .replace(/_/g, " ")
                               .replace(/\b\w/g, (c) => c.toUpperCase()),
                             key: column,
                           })),
+                        {
+                          label: "Tax Rate",
+                          key: "taxRate",
+                          render: (material) => (
+                            <button
+                              className="btn btn-link"
+                              onClick={() => handleTaxModalOpen(material, ind)}
+                            >
+                              View Tax
+                            </button>
+                          ),
+                        },
                       ]}
                       tableData={materialData.bids_values?.map((material) => {
                         const extraData = material.extra_data || {};
 
                         return {
                           bestTotalAmount: material.total_amount || "_",
-                          quantityAvailable:
-                            material.quantity_available || "_",
+                          quantityAvailable: material.quantity_available || "_",
                           price: material.price || "_",
                           discount: material.discount || "_",
-                          realisedDiscount:
-                            material.realised_discount || "_",
+                          realisedDiscount: material.realised_discount || "_",
                           gst: material.gst || "_",
                           realisedGST: material.realised_gst || "_",
                           landedAmount: material.landed_amount || "_",
@@ -561,8 +608,10 @@ export default function ResponseTab({ isCounterOffer }) {
                             }
                             return acc;
                           }, {}),
+                          taxRate: material,
                         };
                       })}
+                      handleTaxButtonClick={handleShowModal}
                     />
                   );
                 })}
@@ -589,7 +638,6 @@ export default function ResponseTab({ isCounterOffer }) {
                     vendor?.bids?.[0]
                       ? [
                           {
-                            // Map keys from the extra object dynamically
                             ...Object.keys(vendor.bids[0].extra || {}).reduce(
                               (acc, key) => {
                                 acc[key] = vendor.bids[0].extra[key] || "_";
@@ -617,6 +665,340 @@ export default function ResponseTab({ isCounterOffer }) {
         handleClose={handleCounterModalClose}
         bidCounterData={BidCounterData}
       />
+
+      <DynamicModalBox
+        show={showTaxModal}
+        onHide={handleTaxModalClose}
+        size="lg"
+        title="View Tax & Rate"
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleTaxModalClose,
+            props: { className: "purple-btn1" },
+          },
+          {
+            label: "Save Changes",
+            onClick: handleSaveTaxChanges,
+            props: { className: "purple-btn2" },
+          },
+        ]}
+        centered={true}
+      >
+        <div className="container-fluid p-0">
+        <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
+                      ?.material_name || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">HSN Code</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
+                      ?.event_material?.inventory_id || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Rate per Nos</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]?.price ||
+                    ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Total PO Qty</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
+                      ?.quantity_available || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount(%)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
+                      ?.discount || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material Cost</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
+                      ?.total_amount || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="table-responsive">
+                <table className="table table-bordered">
+                  <thead className="tax-table-header">
+                    <tr>
+                      <th>Tax / Charge Type</th>
+                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Inclusive</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Total Base Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control bg-light"
+                          value={
+                            segeregatedMaterialData[0]?.bids_values?.[
+                              selectedMaterialIndex
+                            ]?.total_amount || ""
+                          }
+                          readOnly
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Addition Tax & Charges</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    {segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.addition_bid_material_tax_details?.map(
+                      (item, rowIndex) => (
+                        <tr key={`${rowIndex}-${item.id}`}>
+                          <td>
+                            <SelectBox
+                              options={taxOptions}
+                              defaultValue={
+                                item.taxChargeType ||
+                                taxOptions.find(
+                                  (option) => option.id === item.resource_id
+                                )?.value
+                              }
+                              onChange={(value) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargeType",
+                                  value,
+                                  "addition"
+                                )
+                              }
+                              className="custom-select"
+                              isDisableFirstOption={true}
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="form-select"
+                              value={item.taxChargePerUom}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                              disabled={true}
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="5%">5%</option>
+                              <option value="12%">12%</option>
+                              <option value="18%">18%</option>
+                              <option value="28%">28%</option>
+                            </select>
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "inclusive",
+                                  e.target.checked,
+                                  "addition"
+                                )
+                              }
+                              readOnly
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={item.amount}
+                              onChange={(e) => {}}
+                              readOnly
+                              disabled={true}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    )}
+                    <tr>
+                      <td>Deduction Tax</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    {segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.deduction_bid_material_tax_details?.map(
+                      (item, rowIndex) => (
+                        <tr key={`${rowIndex}-${item.id}`}>
+                          <td>
+                            <SelectBox
+                              options={deductionTaxOptions}
+                              defaultValue={
+                                item.taxChargeType ||
+                                deductionTaxOptions.find(
+                                  (option) => option.id == item.resource_id
+                                ).value
+                              }
+                              onChange={(value) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargeType",
+                                  value,
+                                  "deduction"
+                                )
+                              }
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="form-select"
+                              value={item.taxChargePerUom}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "deduction"
+                                )
+                              }
+                              disabled={true}
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="1%">1%/</option>
+                              <option value="2%">2%</option>
+                              <option value="10%">10%</option>
+                            </select>
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "inclusive",
+                                  e.target.checked,
+                                  "deduction"
+                                )
+                              }
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={item.amount}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "amount",
+                                  e.target.value,
+                                  "deduction"
+                                )
+                              }
+                              readonly
+                              disabled={true}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DynamicModalBox>
     </div>
   );
 }
