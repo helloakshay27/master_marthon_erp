@@ -694,7 +694,7 @@ export default function AllocationTab({ isCounterOffer }) {
                     />
                   );
                 })}
-                <Accordion
+                {/* <Accordion
                   title={"Other Charges"}
                   isDefault={true}
                   tableColumn={[
@@ -737,7 +737,43 @@ export default function AllocationTab({ isCounterOffer }) {
                         ]
                       : []
                   )}
-                />
+                /> */}
+
+                <Accordion
+                                  title={"Other Informations"}
+                                  isDefault={true}
+                                  tableColumn={[
+                                    ...Array.from(
+                                      new Set(
+                                        eventVendors?.flatMap((vendor) =>
+                                          vendor?.bids?.[0]?.extra
+                                            ? Object.keys(vendor.bids[0].extra)
+                                            : []
+                                        ) || []
+                                      )
+                                    ).map((key) => ({
+                                      label: key
+                                        .replace(/_/g, " ")
+                                        .replace(/\b\w/g, (c) => c.toUpperCase()),
+                                      key: key,
+                                    })),
+                                  ]}
+                                  tableData={eventVendors?.flatMap((vendor) =>
+                                    vendor?.bids?.[0]
+                                      ? [
+                                          {
+                                            ...Object.keys(vendor.bids[0].extra || {}).reduce(
+                                              (acc, key) => {
+                                                acc[key] = vendor.bids[0].extra[key] || "_";
+                                                return acc;
+                                              },
+                                              {}
+                                            ),
+                                          },
+                                        ]
+                                      : []
+                                  )}
+                                />
 
                 <>
                   {poIsLoading ? (

@@ -153,9 +153,9 @@ export default function EditTemplate() {
   ]);
 
   const [shortTableData, setShortTableData] = useState([
-    { label: "Freight Charge", value: "" },
-    { label: "GST on Freight", value: "" },
-    { label: "Realised GST", value: "" },
+    // { label: "Freight Charge", value: "" },
+    // { label: "GST on Freight", value: "" },
+    // { label: "Realised GST", value: "" },
     { label: "Warranty Clause", value: "" },
     { label: "Payment Terms", value: "" },
     { label: "Loading/Unloading", value: "" },

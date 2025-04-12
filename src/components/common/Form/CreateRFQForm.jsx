@@ -1086,7 +1086,7 @@ export default function CreateRFQForm({
         <SelectBox
           options={locationOptions}
           defaultValue={
-            locationOptions.find((option) => option.value === Number(fieldValue))?.value
+            locationOptions.find((option) => option.label === fieldValue)?.value || fieldValue
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
