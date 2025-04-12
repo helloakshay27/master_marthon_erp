@@ -15,6 +15,9 @@ import {
 } from "../components";
 import { useNavigate } from "react-router-dom";
 import MaterialReconciliationCreate from "./material-reconciliation -create";
+import { Link } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { baseURL } from "../confi/apiDomain";
 
 const MaterialReconciliationList = () => {
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
@@ -55,7 +58,7 @@ const MaterialReconciliationList = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -136,8 +139,7 @@ const MaterialReconciliationList = () => {
     const fetchData = (page) => {
       axios
         .get(
-          `
-          https://marathon.lockated.com/material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setReconciliationData(response.data.data); // Set the data from the API
@@ -485,7 +487,15 @@ const MaterialReconciliationList = () => {
               reconciliationData.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
-                  <td>{item.reco_number}</td>
+                  <td className="boq-id-link">
+                     <Link
+                                  to={`/material-reconciliation-detail/${item.id}`}
+                                  className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                  
+                  {item.reco_number}
+                                </Link>
+                   
+                  </td>
                   <td>{item.company_name}</td>
                   <td>{item.project}</td>
                   <td>{item.sub_project}</td>

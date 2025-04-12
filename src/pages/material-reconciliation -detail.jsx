@@ -1,22 +1,71 @@
 import React from "react";
+import { useState,useEffect } from "react";
+import axios from "axios";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import { baseURL } from "../confi/apiDomain";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { useParams } from 'react-router-dom';
+
 
 const MaterialReconciliationDetail = () => {
+  const { id } = useParams()
+  const [details, setDetails] = useState(null); // Store API data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+  // Fetch data from API
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}material_reconciliations/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setDetails(response.data); // Set API data
+        setLoading(false); // Set loading to false
+      })
+      .catch((err) => {
+        setError("Failed to fetch data");
+        setLoading(false);
+      });
+  }, [id]);
+
+  // Filter out the current selected value (boqDetails.status) from the options list
+  const options = [
+    {
+      label: 'Select Status',
+      value: '',
+      // isDisabled: false,
+    },
+    {
+      label: 'Draft',
+      value: 'draft',
+      // isDisabled: boqDetails.status === 'draft',
+    },
+    {
+      label: 'Submitted',
+      value: 'submitted',
+      // isDisabled: boqDetails.status === 'submitted',
+    },
+    {
+      label: 'Approved',
+      value: 'approved',
+      // isDisabled: boqDetails.status === 'approved',
+    },
+  ];
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
   return (
     <div>
       <div className="website-content overflow-auto">
-        <div className="module-data-section p-4 details_page">
+        <div className="module-data-section p-3 pt-2 ">
           {/* <a href="">
             Home &gt; Store &gt; Store Operations &gt; Material Reconciliation
           </a> */}
           {/* <div className="card"> */}
-          <div className="card card-default mt-5 p-2b-4" id="mor-material-slip">
-            {/* <div className="card-body "> */}
-            <div class="card-header3">
-              <h3 class="card-title">Material Reconciliation</h3>
-            </div>
-            <div className="card-body ">
               {/* <h5 className="mt-2">Material Reconciliation</h5> */}
-
+              <CollapsibleCard title="Material Reconciliation">
+              <div className="card-body ">
               <div className="row mt-3">
                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                   <div className="col-6">
@@ -24,7 +73,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>Material
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                     <span>{details.company.name}</span> 
                     </label>
                   </div>
                 </div>
@@ -34,7 +84,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>Sanvo Resorts Pvt. Ltd.-II
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                      <span>{details.project.name}</span> 
                     </label>
                   </div>
                 </div>
@@ -44,7 +95,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>Nexzone - Phase II
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                      <span>{details.sub_project.name}</span>
                     </label>
                   </div>
                 </div>
@@ -54,7 +106,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>82423
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                      <span>{details.store.name}</span>
                     </label>
                   </div>
                 </div>
@@ -64,7 +117,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>PO/SRPL/NXZPh2/18254
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                      <span>{details.reco_number}</span>
                     </label>
                   </div>
                 </div>
@@ -74,7 +128,8 @@ const MaterialReconciliationDetail = () => {
                   </div>
                   <div className="col-6">
                     <label className="text">
-                      <span className="me-3">:</span>INR 65,47,926.82
+                      <span className="me-3" style={{color:"black"}}>:</span>
+                      <span>{details.reco_date.split("-").reverse().join("-")}</span>
                     </label>
                   </div>
                 </div>
@@ -88,11 +143,9 @@ const MaterialReconciliationDetail = () => {
                     <tr>
                       <th>Sr.No.</th>
                       <th>Material</th>
-                      <th>Description</th>
-                      <th>Specification</th>
-                      <th>UOM</th>
+                      
                       <th>
-                        Stock As on <dd-mm-yy></dd-mm-yy>
+                        Stock As on 
                       </th>
                       <th>Rate (Weighted Average)(INR)</th>
                       <th>Deadstock Qty</th>
@@ -107,80 +160,50 @@ const MaterialReconciliationDetail = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td
-                        style={{
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                        }}
-                      >
-                        ROPO546
-                      </td>
-                      <td>Neo Valley</td>
-                      <td>09-03-2024</td>
-                      <td>Draft</td>
-                      <td>Neo Valley</td>
-                      <td>09-03-2024</td>
-                      <td>Draft</td>
-                      <td>
-                        {" "}
+                  
+                    {details.material_reconciliation_items.map((item, index) => (
+                      <tr key={item.id}>
+                        <td>{index + 1}</td>
+                        <td>{item.material}</td>
+                        <td> {item.stock_as_on}</td>
+                        <td> {item.rate}</td>
+                        <td>{item.deadstock_qty}</td>
+                        <td> 
                         <input
                           className="form-control"
                           type="text"
-                          placeholder="Default input"
+                          value={item.theft_or_missing_qty}
+                          // placeholder="Default input"
                         />
-                      </td>
-                      <td>
-                        {" "}
+                        </td>
+                        <td> 
                         <input
                           className="form-control"
                           type="text"
-                          placeholder="Default input"
+                          value={item.adjustment_qty}
+                          // placeholder="Default input"
                         />
-                      </td>
-                      <td>
-                        {" "}
+                        </td>
+                        <td> 
                         <input
                           className="form-control"
                           type="text"
-                          placeholder="Default input"
+                          value={item.adjustment_rate}
+                          // placeholder="Default input"
                         />
-                      </td>
-                      <td>
-                        {" "}
+                        </td>
+                        <td>
                         <input
                           className="form-control"
                           type="text"
-                          placeholder="Default input"
+                          value={item.adjustment_value}
+                          // placeholder="Default input"
                         />
-                      </td>
-                      <td>Neo Valley</td>
-                      <td>
-                        {" "}
-                        <input
-                          className="form-control"
-                          type="text"
-                          placeholder="Default input"
-                        />
-                      </td>
-                      <td>
-                        <div className="form-group">
-                          <select
-                            className="form-control form-select"
-                            style={{ width: "100%" }}
-                          >
-                            <option selected="selected">Nos</option>
-                            <option>Alaska</option>
-                            <option>California</option>
-                            <option>Delaware</option>
-                            <option>Tennessee</option>
-                            <option>Texas</option>
-                            <option>Washington</option>
-                          </select>
-                        </div>
-                      </td>
-                      <td>
+                        </td>
+                        <td>{item.net_quantity}</td>
+                        <td>{item.remarks}</td>
+                        <td>{item.reason}</td>
+                        <td>
                         <button className="btn">
                           <svg
                             width={18}
@@ -205,13 +228,23 @@ const MaterialReconciliationDetail = () => {
                             />
                           </svg>
                         </button>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
+                 
+                 
+                  {/* {item.deadstock_qty} */}
+                  {/* {item.theft_or_missing_qty} */}
+                  {/* {item.adjustment_qty} */}
+                  {/* {item.adjustment_rate}
+                  <td>{item.net_quantity}</td>
+                        <td>{item.remarks}</td>
+                        <td>{item.reason}</td> */}
                 </table>
               </div>
-            </div>
-          </div>
+              </div>
+              </CollapsibleCard>
           <div className="row mx-1 mt-3">
             <div className="col-md-12">
               <div className="form-group">
@@ -225,40 +258,33 @@ const MaterialReconciliationDetail = () => {
               </div>
             </div>
           </div>
-          <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-            <p className="">Status</p>
-            <div className="dropdown">
-              <button
-                className="btn purple-btn2 btn-secondary dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                PO Draft
-              </button>
-              <ul className="dropdown-menu">
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Action
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Another action
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Something else here
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
+        
+          <div className="row mt-4 justify-content-end align-items-center mx-2">
+                        <div className="col-md-3">
+                          <div className="form-group d-flex gap-3 align-items-center mx-3">
+                            <label style={{ fontSize: '1.1rem', color: 'black' }}>Status</label>
+          
+                            {/* <select className="form-control form-select" style={{ width: '100%' }} value={status} onChange={handleStatusChange} >
+          
+                              <option disabled={boqDetails.status} selected >{boqDetails.status}</option>
+                              <option value="" >Select Status</option>
+                              <option value="draft" disabled={boqDetails.status === 'draft'} >Draft</option>
+                              <option value="submitted" disabled={boqDetails.status === 'submitted'}>Submitted</option>
+                              <option value="approved" disabled={boqDetails.status === 'approved'}>Approved</option>
+                            </select> */}
+          
+          
+                            <SingleSelector
+                              options={options}
+                              // onChange={handleStatusChange}
+                              placeholder={`Select Status`} // Dynamic placeholder
+                              classNamePrefix="react-select"
+                            />
+                          </div>
+                        </div>
+                      </div>
           <div className="row mt-2 justify-content-end">
-            <div className="col-md-2">
-              <button className="purple-btn2 w-100">Print</button>
-            </div>
+           
             <div className="col-md-2">
               <button className="purple-btn2 w-100">Submit</button>
             </div>
@@ -278,7 +304,7 @@ const MaterialReconciliationDetail = () => {
                   <th>Date</th>
                   <th>Status</th>
                   <th>Remark</th>
-                  <th>Comments</th>
+                  {/* <th>Comments</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -287,32 +313,16 @@ const MaterialReconciliationDetail = () => {
                   <td>Pratham Shastri</td>
                   <td>15-02-2024</td>
                   <td>Verified</td>
-                  <td>
-                    <i
-                      className="fa-regular fa-eye"
-                      data-bs-toggle="modal"
-                      data-bs-target="#remark-modal"
-                      style={{ fontSize: 18 }}
-                    />
+                  <td>  
                   </td>
-                  <td>
-                    <i
-                      className="fa-regular fa-eye"
-                      data-bs-toggle="modal"
-                      data-bs-target="#comments-modal"
-                      style={{ fontSize: 18 }}
-                    />
-                  </td>
+                  {/* <td>
+                  </td> */}
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <footer className="footer">
-          <p className="">
-            Powered by <img src="./images/go-logo.JPG" />
-          </p>
-        </footer>
+       
       </div>
     </div>
   );

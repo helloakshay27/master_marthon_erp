@@ -417,7 +417,7 @@ function App() {
             element={<MaterialReconciliationCreate />}
           />
           <Route
-            path="/material-reconciliation-detail"
+            path="/material-reconciliation-detail/:id"
             element={<MaterialReconciliationDetail />}
           />
           <Route
