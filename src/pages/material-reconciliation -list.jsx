@@ -139,7 +139,7 @@ const MaterialReconciliationList = () => {
     const fetchData = (page) => {
       axios
         .get(
-          `${baseURL}material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}material_reconciliations.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setReconciliationData(response.data.data); // Set the data from the API
@@ -151,6 +151,9 @@ const MaterialReconciliationList = () => {
           console.error("Error fetching data:", error);
         });
     };
+    useEffect(() => {
+      console.log("Reconciliation Data:", reconciliationData);
+    }, [reconciliationData]);
     // Add a new state to track the total number of entries
 const [totalEntries, setTotalEntries] = useState(0);
   
@@ -526,7 +529,6 @@ const [totalEntries, setTotalEntries] = useState(0);
           <tbody>
             {reconciliationData.length > 0 ? (
               reconciliationData
-              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) // Slice data for the current page
               .map((item, index) => (
                 <tr key={item.id}>
                   <td> {(currentPage - 1) * itemsPerPage + index + 1}</td>
