@@ -434,7 +434,7 @@ const EditBoqSub = ({
             ? {
                 ...item,
                 materials: newMaterials[boqSubItemId] || [],
-                deleted: [...new Set([...(item.deleted || []), ...deletedIds])],
+                material_deleted: [...new Set([...(item.deleted || []), ...deletedIds])],
               }
             : item
         )
@@ -1386,7 +1386,9 @@ const EditBoqSub = ({
     if (!boqSubItemId) return;
   
     setBoqSubItems((prev) =>
+      
       prev.map((item) => {
+        // console.log("prev sub",item)
         if (item.id !== boqSubItemId) return item;
   
         const existingMaterials = item.materials || [];
@@ -1840,6 +1842,7 @@ console.log("sub item in delete case:,", boqSubItems)
                                     key={index}
                                     className="ms-5"
                                     type="checkbox"
+                                    disabled={material.can_delete === false}
                                     checked={selectedMaterials.some(
                                       (selected) =>
                                         selected.boqSubItemId === boqSubItemId &&

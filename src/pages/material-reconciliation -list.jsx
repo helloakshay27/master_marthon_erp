@@ -145,11 +145,14 @@ const MaterialReconciliationList = () => {
           setReconciliationData(response.data.data); // Set the data from the API
           setData(response.data.data); // Set data
           setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
         });
     };
+    // Add a new state to track the total number of entries
+const [totalEntries, setTotalEntries] = useState(0);
   
     // Fetch data on component mount and when the page changes
     useEffect(() => {
@@ -484,9 +487,11 @@ const MaterialReconciliationList = () => {
           </thead>
           <tbody>
             {reconciliationData.length > 0 ? (
-              reconciliationData.map((item, index) => (
+              reconciliationData
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) // Slice data for the current page
+              .map((item, index) => (
                 <tr key={item.id}>
-                  <td>{index + 1}</td>
+                  <td> {(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="boq-id-link">
                      <Link
                                   to={`/material-reconciliation-detail/${item.id}`}
@@ -516,7 +521,7 @@ const MaterialReconciliationList = () => {
          
       </div>
        {/* Pagination Controls */}
-       <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+       {/* <div className="d-flex justify-content-between align-items-center px-3 mt-2">
         <ul className="pagination justify-content-center d-flex">
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button
@@ -588,9 +593,73 @@ const MaterialReconciliationList = () => {
           {data.length} 
           entries
         </div>
-      </div>
+      </div> */}
 
-     
+      <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+  <ul className="pagination justify-content-center d-flex">
+    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(1)}
+        disabled={currentPage === 1}
+      >
+        First
+      </button>
+    </li>
+    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Prev
+      </button>
+    </li>
+
+    {Array.from({ length: totalPages }, (_, index) => (
+      <li
+        key={index + 1}
+        className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+      >
+        <button
+          className="page-link"
+          onClick={() => handlePageChange(index + 1)}
+        >
+          {index + 1}
+        </button>
+      </li>
+    ))}
+
+    <li
+      className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+    >
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </li>
+    <li
+      className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+    >
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(totalPages)}
+        disabled={currentPage === totalPages}
+      >
+        Last
+      </button>
+    </li>
+  </ul>
+  <div>
+    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+    {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
+    entries
+  </div>
+</div>
+
               </div>
             </div>
           </div>

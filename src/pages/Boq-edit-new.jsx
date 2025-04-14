@@ -1615,24 +1615,84 @@ const EditBOQNew = () => {
     //     setCounter((prevCounter) => (prevCounter > 0 ? prevCounter - 1 : 0));
     //   };
 
+    // const deleteRowFromTable1 = () => {
+    //     if (selectedRows.length === 0) {
+    //         alert("Please select at least one row to delete");
+    //         return;
+    //     }
+
+    //     // Remove from count state
+    //     setcount(prevCount => prevCount.filter(row => !selectedRows.includes(row.id)));
+
+    //     // Remove from boqSubItems state
+    //     setBoqSubItems(prevItems => prevItems.filter(item => !selectedRows.includes(item.id)));
+
+    //     // Clear selection
+    //     setSelectedRows([]);
+
+    //     // Update counter if needed
+    //     setCounter(prev => Math.max(0, prev - selectedRows.length));
+    // };
+
+    // const deleteRowFromTable1 = () => {
+    //     if (selectedRows.length === 0) {
+    //         alert("Please select at least one row to delete");
+    //         return;
+    //     }
+    
+    //     // Store deleted IDs
+    //     const deletedIds = boqSubItems
+    //         .filter(item => selectedRows.includes(item.id))
+    //         .map(item => item.id);
+    
+    //     // Update deleted state (you can define it as useState or just attach to an object)
+    //     setBoqSubItems(prevItems => {
+    //         const updatedItems = prevItems.filter(item => !selectedRows.includes(item.id));
+    //         return updatedItems;
+    //     });
+    
+    //     // Remove from count state
+    //     setcount(prevCount => prevCount.filter(row => !selectedRows.includes(row.id)));
+    
+    //     // Clear selection
+    //     setSelectedRows([]);
+    
+    //     // Update counter if needed
+    //     setCounter(prev => Math.max(0, prev - selectedRows.length));
+    
+    //     // Add deleted IDs to an attribute (e.g., if boqSubItems is stored in a parent state object)
+    //     setBoqSubItems(prev => ({
+    //         ...prev,
+    //         deleted: [...(prev.deleted || []), ...deletedIds]
+    //     }));
+    // };
+
+    const [deletedSubItemIds, setDeletedSubItemIds] = useState([]);
     const deleteRowFromTable1 = () => {
         if (selectedRows.length === 0) {
             alert("Please select at least one row to delete");
             return;
         }
-
+    
+        const deletedIds = selectedRows.map(rowId => rowId); // Assuming `selectedRows` contains IDs
+    
         // Remove from count state
-        setcount(prevCount => prevCount.filter(row => !selectedRows.includes(row.id)));
-
-        // Remove from boqSubItems state
-        setBoqSubItems(prevItems => prevItems.filter(item => !selectedRows.includes(item.id)));
-
-        // Clear selection
+        setcount(prevCount => prevCount.filter(row => !deletedIds.includes(row.id)));
+    
+        // Remove from boqSubItems array
+        setBoqSubItems(prevItems => prevItems.filter(item => !deletedIds.includes(item.id)));
+    
+        // Store deleted IDs
+        setDeletedSubItemIds(prev => [...prev, ...deletedIds]);
+    
+        // Clear selected rows
         setSelectedRows([]);
-
-        // Update counter if needed
-        setCounter(prev => Math.max(0, prev - selectedRows.length));
+    
+        // Adjust counter
+        setCounter(prev => Math.max(0, prev - deletedIds.length));
     };
+    
+    console.log("boq sub :",boqSubItems)
 
     const payload = {
         boq_detail: {
@@ -1667,15 +1727,15 @@ const EditBOQNew = () => {
             sub_categories: [
                 {
                     id: lastCategory,
-                    boq_sub_items: boqSubItems || []
-
+                    boq_sub_items: boqSubItems || [],
+                    deleted:deletedSubItemIds
                 }
             ]
         }
     }
 
 
-    // console.log("boq data payload 2 edit sub: ", payload2)
+    console.log("boq data payload 2 edit sub: ", payload2)
     // console.log("sub item boq needed:", boqSubItems)
 
     // console.log("predefine data 2", predefinedMaterialsData)
@@ -1809,15 +1869,24 @@ const EditBOQNew = () => {
     };
 
     // Function to calculate total estimated quantities with wastage
+    const [totalEstimatedvalidationErrors, setTotalEstimatedValidationErrors] = useState([]);
     const calculateTotalEstimatedQtyWastages = () => {
         if (boqQuantity && estimatedQuantities.length > 0 && wastages.length>0) {
             const newTotalEstimatedQtyWastages = materials.map((material, index) => {
                 const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
                 const wastagePercentage = parseFloat(wastages[index]) || 0;
-                console.log("wastage", wastagePercentage)
+                // console.log("wastage", wastagePercentage)
                 const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
+                const indentedQty = parseFloat(material.indented_qty) || 0;
+                // console.log("indented qty",indentedQty)
+                if (totalWithWastage < indentedQty) {
+                    errors[index] = `Must be greater than or equal to ${indentedQty}.`;
+                } else {
+                    errors[index] = null;
+                }
                 return parseFloat(totalWithWastage.toFixed(4)); // Adding wastage percentage
             });
+            setTotalEstimatedValidationErrors(errors);
             setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
         }
     };
@@ -2086,8 +2155,8 @@ const EditBOQNew = () => {
                         sub_categories: [
                             {
                                 id: lastCategory,
-                                boq_sub_items: processedSubItems || []
-
+                                boq_sub_items: processedSubItems || [],
+                                deleted:deletedSubItemIds
                             }
                         ]
                     }
@@ -2821,6 +2890,7 @@ const EditBOQNew = () => {
                                                                                     type="checkbox"
                                                                                     checked={selectedMaterials.includes(index)} // Use index instead of material.id
                                                                                     onChange={() => handleSelectRow(index)} // Pass index to function
+                                                                                    disabled={material.can_delete === false}
                                                                                 />
                                                                             </td>
 
@@ -2933,6 +3003,9 @@ const EditBOQNew = () => {
                                                                                     disabled
                                                                                     value={totalEstimatedQtyWastages[index] || ""}
                                                                                 />
+                                                                                   {totalEstimatedvalidationErrors[index] && (
+                                                                                    <span style={{ color: "red", fontSize: "12px" }}>{totalEstimatedvalidationErrors[index]}</span>
+                                                                                )}
                                                                             </td>
                                                                         </tr>
                                                                     ))
@@ -3288,7 +3361,7 @@ const EditBOQNew = () => {
                             {showBOQSubItem && (
                                 <>
 
-                                    {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
+                                 {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
                                     {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 

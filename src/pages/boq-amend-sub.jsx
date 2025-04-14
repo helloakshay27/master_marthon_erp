@@ -1260,14 +1260,25 @@ const BoqAmendSub = ({
   };
 
   // Function to calculate total estimated quantities with wastage
+  const [totalEstimatedvalidationErrors, setTotalEstimatedValidationErrors] = useState([]);
+   const [errors, setErrors] = useState({});
+  
   const calculateTotalEstimatedQtyWastages = () => {
     if (boqQuantity && estimatedQuantities.length > 0) {
       const newTotalEstimatedQtyWastages = materials.map((material, index) => {
         const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
         const wastagePercentage = parseFloat(wastages[index]) || 0;
         const totalWithWastage = estimatedQty * (1 + wastagePercentage / 100);
+        const indentedQty = parseFloat(material.indented_qty) || 0;
+        // console.log("indented qty",indentedQty)
+        if (totalWithWastage < indentedQty) {
+            errors[index] = `Must be greater than or equal to ${indentedQty}.`;
+        } else {
+            errors[index] = null;
+        }
         return parseFloat(totalWithWastage.toFixed(4)); // Adding wastage percentage
       });
+      setTotalEstimatedValidationErrors(errors);
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
@@ -2008,6 +2019,9 @@ console.log("sub item in delete case:,", boqSubItems)
                                     }
                                   // onChange={(e) => handleTotalEstimatedQtyWastageChange(index, e.target.value)}
                                   />
+                                   {totalEstimatedvalidationErrors[index] && (
+                                                                                    <span style={{ color: "red", fontSize: "12px" }}>{totalEstimatedvalidationErrors[index]}</span>
+                                                                                )}
                                 </td>
                               </tr>
                             ))
