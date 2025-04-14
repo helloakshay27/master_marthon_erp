@@ -103,7 +103,7 @@ export default function VendorDetails() {
     const fetchFreightData = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = response.data.applied_bid_template_fields.map((field) => ({
           label: field.field_name,
@@ -125,7 +125,7 @@ export default function VendorDetails() {
     const fetchAdditionalColumns = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const columns = response.data.applied_bid_material_template_fields.map(
           (field) => ({
@@ -2332,7 +2332,7 @@ export default function VendorDetails() {
     const fetchTaxes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data?.taxes) {
@@ -2361,7 +2361,7 @@ export default function VendorDetails() {
     const fetchTaxes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data?.taxes) {

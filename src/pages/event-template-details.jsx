@@ -92,7 +92,7 @@ export default function EventTemplateDetails() {
     const fetchTemplateDetails = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/event_templates/${id.id}`
+          `${baseURL}rfq/event_templates/${id.id}`
         );
         setTemplateDetails(response.data);
         setBidTemplateFields(response.data.bid_template_fields || []);

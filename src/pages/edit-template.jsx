@@ -193,7 +193,7 @@ export default function EditTemplate() {
     const fetchDepartments = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/department_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/department_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const options = response.data.list.map((dept) => ({
           value: dept.value,

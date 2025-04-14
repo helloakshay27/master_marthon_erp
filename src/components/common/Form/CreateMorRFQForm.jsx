@@ -20,7 +20,7 @@ export default function CreateMorRFQForm({ data, setData, isService }) {
     const fetchMaterials = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com/rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = await response.json();
         if (data && Array.isArray(data.materials)) {
@@ -36,7 +36,7 @@ export default function CreateMorRFQForm({ data, setData, isService }) {
     const fetchSections = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com/rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = await response.json();
         if (data && Array.isArray(data.inventory_types)) {
@@ -57,7 +57,7 @@ export default function CreateMorRFQForm({ data, setData, isService }) {
     const fetchSubSections = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com/rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = await response.json();
         if (data && Array.isArray(data.inventory_sub_types)) {
@@ -78,7 +78,7 @@ export default function CreateMorRFQForm({ data, setData, isService }) {
       try {
         console.log("Fetching MOR inventories...");
         const response = await fetch(
-          `https://marathon.lockated.com/rfq/events/mor_inventories?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_inventories="128,129"`,
+          `${baseURL}rfq/events/mor_inventories?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_inventories="128,129"`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export default function CreateMorRFQForm({ data, setData, isService }) {
     const fetchLocations = async () => {
       try {
         const response = await fetch(
-          "https://marathon.lockated.com/rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[6,7]"
+          `${baseURL}rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[6,7]`
         );
         const data = await response.json();
         if (data && Array.isArray(data.locations_list)) {

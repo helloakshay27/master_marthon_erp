@@ -19,7 +19,7 @@ export default function EventTemplateList() {
   const fetchEventTemplates = async () => {
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/rfq/event_templates?page=${pagination.current_page}`
+        `${baseURL}rfq/event_templates?page=${pagination.current_page}`
       );
       setEventTemplates(response.data.event_templates || []);
       setPagination(response.data.pagination || {});

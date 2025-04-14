@@ -436,19 +436,19 @@ const ErpStockRegister13B = () => {
 
   useEffect(() => {
     fetchData(
-      "https://marathon.lockated.com//pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+`${baseURL}pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       setGenericInfos
     );
     fetchData(
-      "https://marathon.lockated.com//pms/inventory_sub_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      `${baseURL}pms/inventory_sub_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       setMaterialSubTypes
     );
     fetchData(
-      "https://marathon.lockated.com//pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      `${baseURL}pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       setMaterialTypes
     );
     fetchData(
-      "https://marathon.lockated.com//unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       setUnitOfMeasures
     );
   }, []);

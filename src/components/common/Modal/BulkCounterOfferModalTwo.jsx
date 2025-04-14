@@ -184,7 +184,7 @@ export default function BulkCounterOfferModalTwo({
 
     try {
       const response = await fetch(
-        `https://marathon.lockated.com/rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {

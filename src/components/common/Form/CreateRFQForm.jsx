@@ -87,7 +87,7 @@ export default function CreateRFQForm({
   const fetchMorOptions = async () => {
     try {
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/events/mor_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}rfq/events/mor_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       if (response.data && Array.isArray(response.data.mors)) {
         const options = response.data.mors.map((mor) => ({
@@ -257,7 +257,7 @@ export default function CreateRFQForm({
   const fetchTemplates = async () => {
     try {
       const response = await axios.get(
-        "https://marathon.lockated.com/rfq/event_templates/template_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}rfq/event_templates/template_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       if (response.data && Array.isArray(response.data.event_templates)) {
         const templateOptions = response.data.event_templates.map(
