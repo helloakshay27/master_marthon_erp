@@ -615,7 +615,62 @@ export default function ResponseTab({ isCounterOffer }) {
                     />
                   );
                 })}
-                <Accordion
+               {(() => {
+  // Safely extract data with non-empty, non-array values
+  const extractedData = eventVendors?.flatMap((vendor) => {
+    const extra = vendor?.bids?.[0]?.extra;
+
+    if (
+      extra &&
+      Object.values(extra).some(
+        (val) =>
+          typeof val === "string" && val.trim() !== "" ||
+          (typeof val === "object" && val !== null && !Array.isArray(val))
+      )
+    ) {
+      const formattedExtra = {};
+      Object.entries(extra).forEach(([key, val]) => {
+        // Exclude arrays
+        if (!Array.isArray(val)) {
+          formattedExtra[key] = val?.toString().trim() || "_";
+        }
+      });
+
+      // Only return if there's still data after filtering
+      return Object.keys(formattedExtra).length > 0 ? [formattedExtra] : [];
+    }
+
+    return [];
+  }) || [];
+
+  // Early return if no data
+  if (extractedData.length === 0) {
+    return <p>No data available</p>;
+  }
+
+  // Gather all unique keys from the 'extra' objects
+  const extractedKeys = Array.from(
+    new Set(
+      extractedData.flatMap((obj) => Object.keys(obj))
+    )
+  );
+
+  return (
+    <Accordion
+      title="Other Informations"
+      isDefault={true}
+      tableColumn={extractedKeys.map((key) => ({
+        label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+        key: key,
+      }))}
+      tableData={extractedData}
+    />
+  );
+})()}
+
+
+
+                {/* <Accordion
                   title={"Other Informations"}
                   isDefault={true}
                   tableColumn={[
@@ -649,7 +704,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         ]
                       : []
                   )}
-                />
+                /> */}
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
