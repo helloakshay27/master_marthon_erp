@@ -209,7 +209,7 @@ const WorkSubCategory = () => {
     parentId: null,
     // parentId: "id-of-parent-category", // ID of the category to add to
     level: 2,
-    level: 2,
+    // level: 2,
     parentName: "",
     categoryPath: []
   });
