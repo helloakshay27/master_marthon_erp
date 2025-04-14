@@ -166,6 +166,44 @@ const [totalEntries, setTotalEntries] = useState(0);
       }
     };
  
+   
+      const fetchFilteredData = () => {
+        const companyId = selectedCompany?.value || "";
+        const projectId = selectedProject?.value || "";
+        const siteId = selectedSite?.value || "";
+     console.log("ids filter:", companyId,projectId,siteId)
+        const url = `${baseURL}material_reconciliations.json?q[pms_project_id_eq]=${projectId}&q[sub_project_id_eq]=${siteId}&q[pms_company_setup_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    // console.log("url:",url)
+        axios
+          .get(url)
+          .then((response) => {
+            setReconciliationData(response.data.data); // Update table data
+            setTotalPages(response.data.meta.total_pages); // Update total pages
+            setTotalEntries(response.data.meta.total_count); // Update total entries
+          })
+          .catch((error) => {
+            console.error("Error fetching filtered data:", error);
+          });
+      };
+    
+      const handleReset = () => {
+        // Clear selected filters
+        setSelectedCompany(null);
+        setSelectedProject(null);
+        setSelectedSite(null);
+      
+        // Fetch unfiltered data
+        axios
+          .get(`${baseURL}material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then((response) => {
+            setReconciliationData(response.data.data); // Reset table data
+            setTotalPages(response.data.meta.total_pages); // Reset total pages
+            setTotalEntries(response.data.meta.total_count); // Reset total entries
+          })
+          .catch((error) => {
+            console.error("Error resetting data:", error);
+          });
+      };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -264,10 +302,10 @@ const [totalEntries, setTotalEntries] = useState(0);
                   </div>
 
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 ">Go</button>
+                    <button className="purple-btn2 " onClick={fetchFilteredData}>Go</button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2">Reset</button>
+                    <button className="purple-btn2" onClick={handleReset}>Reset</button>
                   </div>
                 </div>
               </CollapsibleCard>
