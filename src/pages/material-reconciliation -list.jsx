@@ -168,7 +168,28 @@ const [totalEntries, setTotalEntries] = useState(0);
         setCurrentPage(pageNumber);
       }
     };
- 
+    const [validationErrors, setValidationErrors] = useState({});
+
+    const validateAndFetchFilteredData = () => {
+      const errors = {};
+    
+      if (!selectedCompany) {
+        errors.company = "Please select a company.";
+      }
+      if (!selectedProject) {
+        errors.project = "Please select a project.";
+      }
+      if (!selectedSite) {
+        errors.site = "Please select a sub-project.";
+      }
+    
+      setValidationErrors(errors);
+    
+      // If no errors, fetch filtered data
+      if (Object.keys(errors).length === 0) {
+        fetchFilteredData();
+      }
+    };
    
       const fetchFilteredData = () => {
         const companyId = selectedCompany?.value || "";
@@ -273,6 +294,9 @@ const [totalEntries, setTotalEntries] = useState(0);
                         value={selectedCompany}
                         placeholder={`Select Company`} // Dynamic placeholder
                       />
+                        {validationErrors.company && (
+          <span className="text-danger">{validationErrors.company}</span>
+        )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -287,6 +311,9 @@ const [totalEntries, setTotalEntries] = useState(0);
                         value={selectedProject}
                         placeholder={`Select Project`} // Dynamic placeholder
                       />
+                       {validationErrors.project && (
+          <span className="text-danger">{validationErrors.project}</span>
+        )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -301,11 +328,14 @@ const [totalEntries, setTotalEntries] = useState(0);
                         value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
+                        {validationErrors.site && (
+          <span className="text-danger">{validationErrors.site}</span>
+        )}
                     </div>
                   </div>
 
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 " onClick={fetchFilteredData}>Go</button>
+                    <button className="purple-btn2 " onClick={validateAndFetchFilteredData}>Go</button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
                     <button className="purple-btn2" onClick={handleReset}>Reset</button>
