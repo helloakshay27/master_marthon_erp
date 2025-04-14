@@ -22,8 +22,24 @@ const MaterialReconciliationDetail = () => {
     remarks: "",
     material_reconciliation_items_attributes: [],
   });
+  const [selectedStatus, setSelectedStatus] = useState({
+    value: "",
+    label: "Select Status",
+  });
 
-  // Fetch data from API
+  const calculateNetQuantity = (
+    stockAsOn,
+    deadstockQty,
+    theftQty,
+    adjustmentQty
+  ) => {
+    const stock = parseFloat(stockAsOn) || 0;
+    const deadstock = parseFloat(deadstockQty) || 0;
+    const theft = parseFloat(theftQty) || 0;
+    const adjustment = parseFloat(adjustmentQty) || 0;
+    return stock - deadstock - theft + adjustment;
+  };
+
   useEffect(() => {
     axios
       .get(
@@ -31,7 +47,6 @@ const MaterialReconciliationDetail = () => {
       )
       .then((response) => {
         setDetails(response.data);
-        // Initialize form data with API response
         setFormData({
           pms_project_id: response.data.project.id,
           pms_site_id: response.data.sub_project.id,
@@ -44,6 +59,7 @@ const MaterialReconciliationDetail = () => {
             response.data.material_reconciliation_items.map((item) => ({
               id: item.id,
               mor_inventory_id: item.mor_inventory_id,
+              material: item.material,
               stock_as_on: item.stock_as_on,
               rate: item.rate,
               deadstock_qty: item.deadstock_qty,
@@ -51,7 +67,12 @@ const MaterialReconciliationDetail = () => {
               adjustment_qty: item.adjustment_qty,
               adjustment_rate: item.adjustment_rate,
               adjustment_value: item.adjustment_value,
-              net_quantity: item.net_quantity,
+              net_quantity: calculateNetQuantity(
+                item.stock_as_on,
+                item.deadstock_qty,
+                item.theft_or_missing_qty,
+                item.adjustment_qty
+              ),
               remarks: item.remarks,
               reason: item.reason,
             })),
@@ -66,10 +87,39 @@ const MaterialReconciliationDetail = () => {
 
   const handleInputChange = (itemIndex, field, value) => {
     const updatedItems = [...formData.material_reconciliation_items_attributes];
+    const currentItem = updatedItems[itemIndex];
+
+    // Update the changed field
     updatedItems[itemIndex] = {
-      ...updatedItems[itemIndex],
+      ...currentItem,
       [field]: value,
     };
+
+    // If deadstock, theft, or adjustment quantity changes, recalculate net quantity
+    if (
+      field === "deadstock_qty" ||
+      field === "theft_or_missing_qty" ||
+      field === "adjustment_qty"
+    ) {
+      const newDeadstockQty =
+        field === "deadstock_qty" ? value : currentItem.deadstock_qty;
+      const newTheftQty =
+        field === "theft_or_missing_qty"
+          ? value
+          : currentItem.theft_or_missing_qty;
+      const newAdjustmentQty =
+        field === "adjustment_qty" ? value : currentItem.adjustment_qty;
+
+      // Calculate net quantity
+      const stock = parseFloat(currentItem.stock_as_on) || 0;
+      const deadstock = parseFloat(newDeadstockQty) || 0;
+      const theft = parseFloat(newTheftQty) || 0;
+      const adjustment = parseFloat(newAdjustmentQty) || 0;
+
+      updatedItems[itemIndex].net_quantity =
+        stock - deadstock - theft + adjustment;
+    }
+
     setFormData({
       ...formData,
       material_reconciliation_items_attributes: updatedItems,
@@ -82,7 +132,10 @@ const MaterialReconciliationDetail = () => {
       const response = await axios.put(
         `${baseURL}material_reconciliations/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
-          material_reconciliation: formData,
+          material_reconciliation: {
+            ...formData,
+            status: "draft",
+          },
         }
       );
       if (response.status === 200) {
@@ -95,28 +148,11 @@ const MaterialReconciliationDetail = () => {
     }
   };
 
-  // Filter out the current selected value (boqDetails.status) from the options list
-  const options = [
-    {
-      label: "Select Status",
-      value: "",
-      // isDisabled: false,
-    },
-    {
-      label: "Draft",
-      value: "draft",
-      // isDisabled: boqDetails.status === 'draft',
-    },
-    {
-      label: "Submitted",
-      value: "submitted",
-      // isDisabled: boqDetails.status === 'submitted',
-    },
-    {
-      label: "Approved",
-      value: "approved",
-      // isDisabled: boqDetails.status === 'approved',
-    },
+  const statusOptions = [
+    { value: "", label: "Select Status" },
+    { value: "draft", label: "Draft" },
+    { value: "submitted", label: "Submitted" },
+    { value: "approved", label: "Approved" },
   ];
 
   if (loading) return <p>Loading...</p>;
@@ -241,7 +277,21 @@ const MaterialReconciliationDetail = () => {
                             <td>{item.material}</td>
                             <td>{item.stock_as_on}</td>
                             <td>{item.rate}</td>
-                            <td>{item.deadstock_qty}</td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="number"
+                                value={item.deadstock_qty}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    index,
+                                    "deadstock_qty",
+                                    e.target.value
+                                  )
+                                }
+                                min="0"
+                              />
+                            </td>
                             <td>
                               <input
                                 className="form-control"
@@ -254,6 +304,7 @@ const MaterialReconciliationDetail = () => {
                                     e.target.value
                                   )
                                 }
+                                min="0"
                               />
                             </td>
                             <td>
@@ -298,7 +349,14 @@ const MaterialReconciliationDetail = () => {
                                 }
                               />
                             </td>
-                            <td>{item.net_quantity}</td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="number"
+                                value={item.net_quantity}
+                                readOnly
+                              />
+                            </td>
                             <td>
                               <input
                                 className="form-control"
@@ -380,20 +438,16 @@ const MaterialReconciliationDetail = () => {
                   <label style={{ fontSize: "0.95rem", color: "black" }}>
                     Status
                   </label>
-
-                  {/* <select className="form-control form-select" style={{ width: '100%' }} value={status} onChange={handleStatusChange} >
-          
-                              <option disabled={boqDetails.status} selected >{boqDetails.status}</option>
-                              <option value="" >Select Status</option>
-                              <option value="draft" disabled={boqDetails.status === 'draft'} >Draft</option>
-                              <option value="submitted" disabled={boqDetails.status === 'submitted'}>Submitted</option>
-                              <option value="approved" disabled={boqDetails.status === 'approved'}>Approved</option>
-                            </select> */}
-
                   <SingleSelector
-                    options={options}
-                    // onChange={handleStatusChange}
-                    // placeholder= // Dynamic placeholder
+                    options={statusOptions}
+                    value={selectedStatus}
+                    onChange={(selectedOption) => {
+                      setSelectedStatus(
+                        selectedOption || { value: "", label: "Select Status" }
+                      );
+                    }}
+                    placeholder="Select Status"
+                    isClearable={false}
                     classNamePrefix="react-select"
                   />
                 </div>
@@ -428,7 +482,6 @@ const MaterialReconciliationDetail = () => {
                   <th>Date</th>
                   <th>Status</th>
                   <th>Remark</th>
-                  {/* <th>Comments</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -438,8 +491,6 @@ const MaterialReconciliationDetail = () => {
                   <td>15-02-2024</td>
                   <td>Verified</td>
                   <td></td>
-                  {/* <td>
-                  </td> */}
                 </tr>
               </tbody>
             </table>

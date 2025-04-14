@@ -22,6 +22,17 @@ const MaterialReconciliationCreate = () => {
   const [addMaterialModal, setAddMaterialModal] = useState(false); // State to control modal visibility
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState({
+    value: "",
+    label: "Select Status",
+  });
+
+  // Add reason options
+  const reasonOptions = [
+    { value: "reason1", label: "Reason 1" },
+    { value: "reason2", label: "Reason 2" },
+    { value: "reason3", label: "Reason 3" },
+  ];
 
   // Function to close the modal
   const closeAddMaterialModal = () => {
@@ -173,6 +184,14 @@ const MaterialReconciliationCreate = () => {
   const [selectedBrand, setSelectedBrand] = useState(null); // State for selected brand
   const [uoms, setUoms] = useState([]); // State for UOMs
   const [selectedUom, setSelectedUom] = useState(null); // State for selected UOM
+
+  // Define status options
+  const statusOptions = [
+    { value: "", label: "Select Status" },
+    { value: "draft", label: "Draft" },
+    { value: "submitted", label: "Submitted" },
+    { value: "approved", label: "Approved" },
+  ];
 
   // Fetching inventory types data from API on component mount
   useEffect(() => {
@@ -476,24 +495,30 @@ const MaterialReconciliationCreate = () => {
       filters.colour_id = selectedColor.value;
     }
 
-    console.log("Filters:", filters); // Debug log
-    fetchAllMorInventories(1, filters); // Pass filters to the API call
+    console.log("Filters:", filters);
+    fetchAllMorInventories(1, filters); // Reset to first page with filters
   };
 
-  // Handler for page change
+  // Function to handle page change
   const handlePageChange = (page) => {
     // Create filters object with selected values
     const filters = {};
 
     // Add each selected value to filters if it exists
-    if (selectedInventory?.value) {
-      filters.material_type_id = selectedInventory.value;
+    if (selectedInventory?.map((item) => item.value).length > 0) {
+      filters.material_type_id = selectedInventory
+        .map((item) => item.value)
+        .join(",");
     }
-    if (selectedSubType?.value) {
-      filters.material_sub_type_id = selectedSubType.value;
+    if (selectedSubType?.map((item) => item.value).length > 0) {
+      filters.material_sub_type_id = selectedSubType
+        .map((item) => item.value)
+        .join(",");
     }
-    if (selectedInventoryMaterialTypes?.value) {
-      filters.material_id = selectedInventoryMaterialTypes.value;
+    if (selectedInventoryMaterialTypes?.map((item) => item.value).length > 0) {
+      filters.material_id = selectedInventoryMaterialTypes
+        .map((item) => item.value)
+        .join(",");
     }
     if (selectedBrand?.value) {
       filters.brand_id = selectedBrand.value;
@@ -508,7 +533,7 @@ const MaterialReconciliationCreate = () => {
       filters.colour_id = selectedColor.value;
     }
 
-    console.log("Filters for page change:", filters); // Debug log
+    console.log("Filters for page change:", filters);
     fetchAllMorInventories(page, filters);
   };
 
@@ -535,15 +560,54 @@ const MaterialReconciliationCreate = () => {
     closeAddMaterialModal();
   };
 
-  // Function to handle input changes for inventory items
+  // Modify calculateNetQuantity function to include adjustment quantity
+  const calculateNetQuantity = (
+    stockAsOn,
+    deadstockQty,
+    theftQty,
+    adjustmentQty
+  ) => {
+    const stock = parseFloat(stockAsOn) || 0;
+    const deadstock = parseFloat(deadstockQty) || 0;
+    const theft = parseFloat(theftQty) || 0;
+    const adjustment = parseFloat(adjustmentQty) || 0;
+    return stock - deadstock - theft + adjustment;
+  };
+
+  // Modify handleItemInputChange function
   const handleItemInputChange = (inventoryId, field, value) => {
     setAcceptedInventories((prev) =>
       prev.map((inventory) => {
         if (inventory.id === inventoryId) {
-          return {
+          const updatedInventory = {
             ...inventory,
             [field]: value,
           };
+
+          // Calculate net quantity when deadstock, theft, or adjustment quantity changes
+          if (
+            field === "deadstock_qty" ||
+            field === "theft_or_missing_qty" ||
+            field === "adjustment_qty"
+          ) {
+            const newDeadstockQty =
+              field === "deadstock_qty" ? value : inventory.deadstock_qty;
+            const newTheftQty =
+              field === "theft_or_missing_qty"
+                ? value
+                : inventory.theft_or_missing_qty;
+            const newAdjustmentQty =
+              field === "adjustment_qty" ? value : inventory.adjustment_qty;
+
+            updatedInventory.net_quantity = calculateNetQuantity(
+              inventory.qty,
+              newDeadstockQty,
+              newTheftQty,
+              newAdjustmentQty
+            );
+          }
+
+          return updatedInventory;
         }
         return inventory;
       })
@@ -563,6 +627,7 @@ const MaterialReconciliationCreate = () => {
           created_by_id: 2,
           reco_date: new Date().toISOString().split("T")[0],
           remarks: formData.remarks,
+          status: "draft", // Hardcoded status value
           material_reconciliation_items_attributes: acceptedInventories.map(
             (inventory) => ({
               mor_inventory_id: inventory.id,
@@ -643,29 +708,6 @@ const MaterialReconciliationCreate = () => {
       prev.filter((inventory) => inventory.id !== inventoryId)
     );
   };
-
-  const options = [
-    {
-      label: "Select Status",
-      value: "",
-      // isDisabled: false,
-    },
-    {
-      label: "Draft",
-      value: "draft",
-      // isDisabled: boqDetails.status === 'draft',
-    },
-    {
-      label: "Submitted",
-      value: "submitted",
-      // isDisabled: boqDetails.status === 'submitted',
-    },
-    {
-      label: "Approved",
-      value: "approved",
-      // isDisabled: boqDetails.status === 'approved',
-    },
-  ];
 
   return (
     <div className="main-content">
@@ -815,6 +857,7 @@ const MaterialReconciliationCreate = () => {
                               )
                             }
                             placeholder="Enter Deadstock Qty"
+                            min="0"
                           />
                         </td>
                         <td>
@@ -830,6 +873,7 @@ const MaterialReconciliationCreate = () => {
                               )
                             }
                             placeholder="Enter Theft/Missing Qty"
+                            min="0"
                           />
                         </td>
                         <td>
@@ -882,14 +926,8 @@ const MaterialReconciliationCreate = () => {
                             type="number"
                             className="form-control"
                             value={inventory.net_quantity || ""}
-                            onChange={(e) =>
-                              handleItemInputChange(
-                                inventory.id,
-                                "net_quantity",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Enter Net Qty"
+                            readOnly
+                            placeholder="Net Qty"
                           />
                         </td>
                         <td>
@@ -908,8 +946,7 @@ const MaterialReconciliationCreate = () => {
                           />
                         </td>
                         <td>
-                          <input
-                            type="text"
+                          <select
                             className="form-control"
                             value={inventory.reason || ""}
                             onChange={(e) =>
@@ -919,8 +956,14 @@ const MaterialReconciliationCreate = () => {
                                 e.target.value
                               )
                             }
-                            placeholder="Enter Reason"
-                          />
+                          >
+                            <option value="">Select Reason</option>
+                            {reasonOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td>
                           <button
@@ -1012,20 +1055,16 @@ const MaterialReconciliationCreate = () => {
                 <label style={{ fontSize: "0.95rem", color: "black" }}>
                   Status
                 </label>
-
-                {/* <select className="form-control form-select" style={{ width: '100%' }} value={status} onChange={handleStatusChange} >
-                    
-                                        <option disabled={boqDetails.status} selected >{boqDetails.status}</option>
-                                        <option value="" >Select Status</option>
-                                        <option value="draft" disabled={boqDetails.status === 'draft'} >Draft</option>
-                                        <option value="submitted" disabled={boqDetails.status === 'submitted'}>Submitted</option>
-                                        <option value="approved" disabled={boqDetails.status === 'approved'}>Approved</option>
-                                      </select> */}
-
                 <SingleSelector
-                  options={options}
-                  // onChange={handleStatusChange}
-                  // placeholder= // Dynamic placeholder
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(selectedOption) => {
+                    setSelectedStatus(
+                      selectedOption || { value: "", label: "Select Status" }
+                    );
+                  }}
+                  placeholder="Select Status"
+                  isClearable={false}
                   classNamePrefix="react-select"
                 />
               </div>
