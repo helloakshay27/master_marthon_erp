@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
+
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -16,15 +17,50 @@ const BillBookingCreate = () => {
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
-  // const companyOptions = [
-  //   { value: "alabama", label: "Alabama" },
-  //   { value: "alaska", label: "Alaska" },
-  //   { value: "california", label: "California" },
-  //   { value: "delaware", label: "Delaware" },
-  //   { value: "tennessee", label: "Tennessee" },
-  //   { value: "texas", label: "Texas" },
-  //   { value: "washington", label: "Washington" },
-  // ];
+
+  // Add new state for taxes
+  const [taxes, setTaxes] = useState([]);
+  const [selectedTax, setSelectedTax] = useState(null);
+  const [taxDeductionData, setTaxDeductionData] = useState({
+    total_material_cost: 0,
+    deduction_mor_inventory_tax_amount: 0,
+    total_deduction_cost: 0,
+  });
+
+  const [taxDetailsData, setTaxDetailsData] = useState({
+    tax_data: {},
+  });
+
+  // Add useEffect to fetch taxes
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        console.log("Taxes response:", response.data);
+        if (response.data && response.data.taxes) {
+          setTaxes(response.data.taxes);
+        }
+      } catch (error) {
+        console.error("Error fetching taxes:", error);
+        setTaxes([]);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
+
+  // Convert taxes to options format with null check
+  const taxOptions =
+    taxes && Array.isArray(taxes) && taxes.length > 0
+      ? taxes.map((tax) => ({
+          value: tax.id,
+          label: tax.name,
+        }))
+      : [];
+
+  console.log("Tax options:", taxOptions); // Add this for debugging
 
   // action dropdown
   const actionDropdown = () => {
@@ -131,6 +167,20 @@ const BillBookingCreate = () => {
     allInclusiveCost: "",
     charges: [],
     deductions: [],
+    typeOfCertificate: "",
+    departmentId: "",
+    otherDeductions: "",
+    otherDeductionRemarks: "",
+    otherAdditions: "",
+    otherAdditionRemarks: "",
+    retentionPercentage: "",
+    retentionAmount: "",
+    remark: "",
+    payeeName: "",
+    paymentMode: "",
+    paymentDueDate: "",
+    attachments: [],
+    currentAdvanceDeduction: "",
   });
 
   const [filterParams, setFilterParams] = useState({
@@ -299,6 +349,14 @@ const BillBookingCreate = () => {
 
   // Render PO table in modal
   const renderPOTable = () => {
+    if (purchaseOrders.length === 0) {
+      return (
+        <div className="tbl-container mx-3 mt-3">
+          <p className="text-center mt-3">No purchase orders found.</p>
+        </div>
+      );
+    }
+
     return (
       <div className="tbl-container mx-3 mt-3">
         <table className="w-100">
@@ -447,6 +505,17 @@ const BillBookingCreate = () => {
     setSiteOptions([]); // Reset site options
     // setWingsOptions([]); // Reset wings options
 
+    // Reset selected PO and related form data
+    setSelectedPO(null);
+    setFormData((prev) => ({
+      ...prev,
+      poNumber: "",
+      poDate: "",
+      poValue: "",
+      gstin: "",
+      pan: "",
+    }));
+
     if (selectedOption) {
       fetchPurchaseOrders(selectedOption.value);
 
@@ -542,6 +611,217 @@ const BillBookingCreate = () => {
     value: supplier.id,
     label: supplier.organization_name,
   }));
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTaxChange = (selectedOption) => {
+    console.log("Selected tax:", selectedOption);
+    setSelectedTax(selectedOption);
+    if (selectedOption && selectedOption.value) {
+      setFormData((prev) => ({
+        ...prev,
+        tax: selectedOption.value,
+        taxName: selectedOption.label,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        tax: "",
+        taxName: "",
+      }));
+    }
+  };
+
+  // Add null check for selectedTax in the SingleSelector
+  <SingleSelector
+    options={taxOptions}
+    value={selectedTax || null}
+    onChange={handleTaxChange}
+    placeholder="Select Tax"
+    isDisabled={isLoading}
+  />;
+
+  // Add percentage options for tax/charges
+  const percentageOptions = [
+    { value: "1", label: "1%" },
+    { value: "2", label: "2%" },
+    { value: "3", label: "3%" },
+  ];
+
+  // Add useEffect to fetch tax deduction data when GRNs change
+  useEffect(() => {
+    const fetchTaxDeductionData = async () => {
+      if (selectedGRNs.length > 0) {
+        try {
+          const grnIds = selectedGRNs.map((grn) => grn.id);
+          const response = await axios.get(
+            `${baseURL}bill_bookings/deduction_data?grns=[${grnIds.join(
+              ","
+            )}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+          );
+          setTaxDeductionData(response.data);
+        } catch (error) {
+          console.error("Error fetching tax deduction data:", error);
+        }
+      }
+    };
+
+    fetchTaxDeductionData();
+  }, [selectedGRNs]);
+
+  // Add useEffect to fetch tax details data when GRNs change
+  useEffect(() => {
+    const fetchTaxDetailsData = async () => {
+      if (selectedGRNs.length > 0) {
+        try {
+          const grnIds = selectedGRNs.map((grn) => grn.id);
+          const response = await axios.get(
+            `${baseURL}bill_bookings/taxes_data?grns=[${grnIds.join(
+              ","
+            )}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+          );
+          setTaxDetailsData(response.data);
+        } catch (error) {
+          console.error("Error fetching tax details data:", error);
+        }
+      }
+    };
+
+    fetchTaxDetailsData();
+  }, [selectedGRNs]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (
+      !selectedCompany ||
+      !selectedProject ||
+      !selectedSite ||
+      !selectedPO ||
+      selectedGRNs.length === 0
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        bill_booking: {
+          // company_id: selectedCompany.value,
+          // site_id: selectedSite.value,
+          // project_id: selectedProject.value,
+          company_id: selectedCompany?.value || null,
+          site_id: selectedSite?.value || null, // Add null check here
+          project_id: selectedProject?.value || null,
+
+          pms_supplier_id: selectedSupplier?.value || null,
+          invoice_number: formData.invoiceNumber,
+          einvoice: selectedEInvoice?.value === "yes",
+          inventory_date: formData.invoiceDate,
+          invoice_amount: parseFloat(formData.invoiceAmount),
+          type_of_certificate: formData.typeOfCertificate,
+          department_id: formData.departmentId,
+          other_deductions: parseFloat(formData.otherDeductions) || 0,
+          other_deduction_remarks: formData.otherDeductionRemarks,
+          other_additions: parseFloat(formData.otherAdditions) || 0,
+          other_addition_remarks: formData.otherAdditionRemarks,
+          retention_per: parseFloat(formData.retentionPercentage) || 0,
+          retention_amount: parseFloat(formData.retentionAmount) || 0,
+          total_value: taxDeductionData.total_material_cost,
+          total_amount: taxDeductionData.total_material_cost,
+          payable_amount:
+            taxDeductionData.total_material_cost -
+            taxDeductionData.total_deduction_cost,
+          remark: formData.remark,
+          status: "Pending",
+          payee_name: formData.payeeName,
+          payment_mode: formData.paymentMode,
+          payment_due_date: formData.paymentDueDate,
+          created_by_id: 1,
+          current_advance_deduction:
+            parseFloat(formData.currentAdvanceDeduction) || 0,
+          billing_po: [
+            {
+              id: selectedPO.id,
+              grn_ids: selectedGRNs.map((grn) => grn.id),
+            },
+          ],
+          // attachments: formData.attachments || [],
+          attachments: documentRows.map((row) => ({
+            filename: row.upload?.filename || "",
+            content: row.upload?.content || "",
+            content_type: row.upload?.content_type || "",
+          })), // Include attachments here
+        },
+      };
+
+      console.log("Payload for API:", payload);
+
+      const response = await axios.post(
+        `${baseURL}bill_bookings?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
+      );
+
+      if (response.data) {
+        alert("Bill booking created successfully!");
+        // Reset form or redirect as needed
+      }
+    } catch (error) {
+      console.error("Error creating bill booking:", error);
+      alert("Failed to create bill booking. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
+  const documentRowsRef = useRef(documentRows);
+
+  const handleAddDocumentRow = () => {
+    const newRow = { srNo: documentRows.length + 1, upload: null };
+    documentRowsRef.current.push(newRow);
+    setDocumentRows([...documentRowsRef.current]);
+  };
+
+  const handleRemoveDocumentRow = (index) => {
+    if (documentRows.length > 1) {
+      const updatedRows = documentRows.filter((_, i) => i !== index);
+
+      // Reset row numbers properly
+      updatedRows.forEach((row, i) => {
+        row.srNo = i + 1;
+      });
+
+      documentRowsRef.current = updatedRows;
+      setDocumentRows([...updatedRows]);
+    }
+  };
+
+  const handleFileChange = (index, file) => {
+    if (!file) return; // Ensure a file is selected
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1];
+
+      documentRowsRef.current[index].upload = {
+        filename: file.name,
+        content: base64String,
+        content_type: file.type,
+      };
+
+      setDocumentRows([...documentRowsRef.current]);
+    };
+
+    reader.readAsDataURL(file);
+
+    // Reset the input field to allow re-selecting the same file
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = ""; // Clear input value
+    }
+  };
 
   return (
     <>
@@ -974,102 +1254,34 @@ const BillBookingCreate = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Tax / Charge Type</th>
-                        {/* <th className="text-start">
-                          Tax / Charges per UOM (INR)
-                        </th> */}
-                        {/* <th className="text-start">Inclusive / Exclusive</th> */}
                         <th className="text-start">Amount</th>
-                        {/* <th className="text-start">Action</th> */}
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th className="text-start">Taxable Amount</th>
-                        {/* <td className="text-start" />
-                        <td className="text-start" /> */}
-                        <td className="text-start">3000</td>
-                        {/* <td /> */}
-                      </tr>
-                      {/* <tr>
-                        <th className="text-start">Deduction Tax</th>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td>
-                          {/* Add Row Using Plus Icon */}
-                      {/* <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            fill="currentColor"
-                            className="bi bi-plus-circle"
-                            viewBox="0 0 16 16"
-                            style={{ cursor: "pointer" }}
-                            onClick={handleAddRow} // Add Row on Click
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                          </svg>
+                        <td className="text-start">Taxable Amount</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost}
                         </td>
-                      </tr> */}
-
-                      {/* Dynamic Rows */}
-                      {/* {rows.map((row) => (
-                        <tr key={row.id}>
-                          <td className="text-start">
-                            <select className="form-control form-select">
-                              <option selected>{row.type}</option>
-                              <option>Other Type</option>
-                            </select>
-                          </td>
-                          <td className="text-start">
-                            <select className="form-control form-select">
-                              <option selected>{row.charges}</option>
-                              <option>Other Charges</option>
-                            </select>
-                          </td>
-                          <td className="text-start">
-                            <input
-                              type="checkbox"
-                              checked={row.inclusive}
-                              disabled={row.inclusive}
-                              readOnly
-                            />
-                          </td>
-                          <td className="text-start"></td>
-                          <td
-                            className="text-start"
-                            onClick={() => handleDeleteRow(row.id)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              fill="currentColor"
-                              className="bi bi-dash-circle"
-                              viewBox="0 0 16 16"
-                              style={{ cursor: "pointer" }}
-                            >
-                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                            </svg>
-                          </td>
-                        </tr>
-                      ))} */}
-
-                      <tr>
-                        <th className="text-start">Total Deduction</th>
-                        <td className="text-start" />
-                        {/* <td className="" /> */}
-                        {/* <td className="text-start">3540</td> */}
-                        {/* <td /> */}
                       </tr>
                       <tr>
-                        <th className="text-start">Payable Amount</th>
-                        <td className="text-start" />
-                        {/* <td className="" /> */}
-                        {/* <td className="text-start" /> */}
-                        {/* <td /> */}
+                        <td className="text-start">Deduction Tax</td>
+                        <td className="text-start">
+                          {taxDeductionData.deduction_mor_inventory_tax_amount}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-start">Total Deduction</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_deduction_cost}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-start">Payable Amount</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost -
+                            taxDeductionData.total_deduction_cost}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -1088,23 +1300,26 @@ const BillBookingCreate = () => {
                     <tbody>
                       <tr>
                         <td className="text-start">Base Cost</td>
-                        <td className="text-start" />
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost}
+                        </td>
                       </tr>
-                      <tr>
-                        <td className="text-start">Handling Charges</td>
-                        <td className="text-start" />
-                      </tr>
-                      <tr>
-                        <td className="text-start">CGST</td>
-                        <td className="text-start" />
-                      </tr>
-                      <tr>
-                        <td className="text-start">SGST</td>
-                        <td className="text-start" />
-                      </tr>
+                      {Object.entries(taxDetailsData.tax_data).map(
+                        ([taxType, amount]) => (
+                          <tr key={taxType}>
+                            <td className="text-start">{taxType}</td>
+                            <td className="text-start">{amount}</td>
+                          </tr>
+                        )
+                      )}
                       <tr>
                         <th className="text-start">Total</th>
-                        <td className="text-start" />
+                        <td className="text-start">
+                          {Object.values(taxDetailsData.tax_data).reduce(
+                            (sum, value) => sum + (value || 0),
+                            0
+                          ) + taxDeductionData.total_material_cost}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -1174,11 +1389,9 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Retention Details:</h5>
                 </div>
-
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
@@ -1207,8 +1420,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        value={formData.currentAdvanceDeduction}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            currentAdvanceDeduction: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter advance deduction amount"
                       />
                     </div>
                   </div>
@@ -1219,9 +1438,15 @@ const BillBookingCreate = () => {
                       <label>Other Deduction</label>
                       <input
                         className="form-control"
-                        type="text"
-                        placeholder={123}
-                        fdprocessedid="qv9ju9"
+                        type="number"
+                        value={formData.otherDeductions}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            otherDeductions: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter other deduction amount"
                       />
                     </div>
                   </div>
@@ -1231,8 +1456,14 @@ const BillBookingCreate = () => {
                       <textarea
                         className="form-control"
                         rows={2}
-                        placeholder="Enter ..."
-                        defaultValue={""}
+                        value={formData.otherDeductionRemarks}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            otherDeductionRemarks: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter other deduction remarks"
                       />
                     </div>
                   </div>
@@ -1241,9 +1472,15 @@ const BillBookingCreate = () => {
                       <label>Other Addition</label>
                       <input
                         className="form-control"
-                        type="text"
-                        placeholder={123}
-                        fdprocessedid="qv9ju9"
+                        type="number"
+                        value={formData.otherAdditions}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            otherAdditions: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter other addition amount"
                       />
                     </div>
                   </div>
@@ -1253,32 +1490,14 @@ const BillBookingCreate = () => {
                       <textarea
                         className="form-control"
                         rows={2}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Debit Note Adjustment</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Total Amount</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
+                        value={formData.otherAdditionRemarks}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            otherAdditionRemarks: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter other addition remarks"
                       />
                     </div>
                   </div>
@@ -1288,8 +1507,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        placeholder="%"
-                        fdprocessedid="qv9ju9"
+                        value={formData.retentionPercentage}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            retentionPercentage: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter retention percentage"
                       />
                     </div>
                   </div>
@@ -1299,32 +1524,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Amount Payable</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Round Off Amount</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
+                        value={formData.retentionAmount}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            retentionAmount: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter retention amount"
                       />
                     </div>
                   </div>
@@ -1333,9 +1540,15 @@ const BillBookingCreate = () => {
                       <label>Favouring / Payee</label>
                       <input
                         className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        type="text"
+                        value={formData.payeeName}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            payeeName: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter payee name"
                       />
                     </div>
                   </div>
@@ -1345,8 +1558,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        value={formData.paymentMode}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentMode: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter payment mode"
                       />
                     </div>
                   </div>
@@ -1356,8 +1575,13 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="date"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
+                        value={formData.paymentDueDate}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentDueDate: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -1534,7 +1758,7 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div> */}
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                   <div
                     className="card-tools d-flex"
@@ -1592,6 +1816,80 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
+                </div> */}
+                {/* // Replace the existing Document Attachment section with this
+                code */}
+                <div>
+                  <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                    <h5 className="mt-3">
+                      Document Attachments{" "}
+                      <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                    </h5>
+                    <button
+                      className="purple-btn2 mt-3"
+                      onClick={handleAddDocumentRow}
+                    >
+                      <span className="material-symbols-outlined align-text-top me-2">
+                        add
+                      </span>
+                      <span>Add</span>
+                    </button>
+                  </div>
+
+                  <Table
+                    columns={[
+                      { label: "Sr No", key: "srNo" },
+                      { label: "Upload File", key: "upload" },
+                      { label: "Action", key: "action" },
+                      { label: "view", key: "view" },
+                    ]}
+                    data={documentRows.map((row, index) => ({
+                      srNo: index + 1,
+                      upload: (
+                        <td style={{ border: "none" }}>
+                          {/* Hidden file input */}
+                          <input
+                            type="file"
+                            id={`file-input-${index}`}
+                            key={row?.srNo}
+                            style={{ display: "none" }} // Hide input
+                            onChange={(e) =>
+                              handleFileChange(index, e.target.files[0])
+                            }
+                            accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                          />
+
+                          <label
+                            htmlFor={`file-input-${index}`}
+                            style={{
+                              display: "inline-block",
+                              width: "300px",
+                              padding: "10px",
+                              border: "1px solid #ccc",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              color: "#555",
+                              backgroundColor: "#f5f5f5",
+                              textAlign: "center",
+                            }}
+                          >
+                            {row.upload?.filename
+                              ? row.upload.filename
+                              : "Choose File"}
+                          </label>
+                        </td>
+                      ),
+                      action: (
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleRemoveDocumentRow(index)}
+                          disabled={documentRows.length === 1}
+                        >
+                          Remove
+                        </button>
+                      ),
+                    }))}
+                  />
                 </div>
               </div>
               <div className="row">
@@ -1666,7 +1964,13 @@ const BillBookingCreate = () => {
 
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100">Submit</button>
+                  <button
+                    className="purple-btn2 w-100"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </button>
                 </div>
                 <div className="col-md-2">
                   <button className="purple-btn1 w-100">Cancel</button>
@@ -2499,11 +2803,13 @@ const BillBookingCreate = () => {
                             ...prev.deductions,
                             {
                               id: Date.now(),
+                              tax_id: null,
                               tax_name: "",
                               tax_charge_per_uom: "",
                               inclusive: false,
                               amount: "",
-                              tax_type: "Charge",
+                              tax_type: "TaxCategory",
+                              isNew: true, // Add flag to identify new deductions
                             },
                           ],
                         }));
@@ -2528,20 +2834,99 @@ const BillBookingCreate = () => {
                 {formData.deductions.map((deduction) => (
                   <tr key={deduction.id}>
                     <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={deduction.tax_name}
-                        readOnly
-                      />
+                      {deduction.isNew ? (
+                        <select
+                          className="form-control form-select"
+                          value={deduction.tax_id || ""}
+                          onChange={(e) => {
+                            const selectedTax = taxOptions.find(
+                              (tax) => tax.value === e.target.value
+                            );
+                            setFormData((prev) => ({
+                              ...prev,
+                              deductions: prev.deductions.map((d) =>
+                                d.id === deduction.id
+                                  ? {
+                                      ...d,
+                                      tax_id: e.target.value,
+                                      tax_name: selectedTax
+                                        ? selectedTax.label
+                                        : "",
+                                      tax_type: "TaxCategory",
+                                    }
+                                  : d
+                              ),
+                            }));
+                          }}
+                        >
+                          <option value="">Select Tax Type</option>
+                          {taxOptions.map((tax) => {
+                            // Check for duplicates based on tax_name
+                            const isAlreadySelected =
+                              formData.deductions &&
+                              formData.deductions.length > 0
+                                ? formData.deductions.some(
+                                    (d) =>
+                                      d.tax_name === tax.label &&
+                                      d.id !== deduction.id
+                                  )
+                                : false;
+
+                            return (
+                              <option
+                                key={tax.value}
+                                value={tax.value}
+                                disabled={isAlreadySelected}
+                                style={{
+                                  color: isAlreadySelected ? "#999" : "inherit",
+                                }}
+                              >
+                                {tax.label}{" "}
+                                {isAlreadySelected ? "(Already Selected)" : ""}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={deduction.tax_name}
+                          readOnly
+                        />
+                      )}
                     </td>
                     <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={deduction.tax_charge_per_uom}
-                        readOnly
-                      />
+                      {deduction.isNew ? (
+                        <select
+                          className="form-control form-select"
+                          value={deduction.tax_charge_per_uom || ""}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              deductions: prev.deductions.map((d) =>
+                                d.id === deduction.id
+                                  ? { ...d, tax_charge_per_uom: e.target.value }
+                                  : d
+                              ),
+                            }));
+                          }}
+                        >
+                          <option value="">Select Percentage</option>
+                          {percentageOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={deduction.tax_charge_per_uom}
+                          readOnly
+                        />
+                      )}
                     </td>
                     <td>
                       <input
