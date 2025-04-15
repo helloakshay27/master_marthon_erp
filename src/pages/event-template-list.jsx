@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 export default function EventTemplateList() {
   const [eventTemplates, setEventTemplates] = useState([]);
@@ -10,23 +11,23 @@ export default function EventTemplateList() {
     total_pages: 1,
   });
   const navigate = useNavigate();
-  const id = useParams();
 
+  
   useEffect(() => {
+    const fetchEventTemplates = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/event_templates?page=${pagination.current_page}`
+        );
+        setEventTemplates(response.data.event_templates || []);
+        setPagination(response.data.pagination || {});
+      } catch (error) {
+        console.error("Error fetching event templates:", error);
+      }
+    };
     fetchEventTemplates();
-  }, [pagination.current_page]);
+  }, [pagination.current_page]); // Add pagination.current_page as a dependency
 
-  const fetchEventTemplates = async () => {
-    try {
-      const response = await axios.get(
-        `${baseURL}rfq/event_templates?page=${pagination.current_page}`
-      );
-      setEventTemplates(response.data.event_templates || []);
-      setPagination(response.data.pagination || {});
-    } catch (error) {
-      console.error("Error fetching event templates:", error);
-    }
-  };
 
   const handlePageChange = (page) => {
     setPagination((prev) => ({ ...prev, current_page: page }));

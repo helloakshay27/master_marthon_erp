@@ -88,7 +88,7 @@ export default function adminList() {
   const handleReset = () => {
     console.log(filters, "filters before reset");
     console.log(filterOptions, "filterOptions before reset");
-  
+
     setFilters({
       created_by_id_in: "",
       event_type_detail_award_scheme_in: "",
@@ -99,7 +99,7 @@ export default function adminList() {
       event_materials_id_in: "",
       event_no_cont: "",
     });
-  
+
     setFilterOptions({
       event_titles: [],
       event_numbers: [],
@@ -109,12 +109,12 @@ export default function adminList() {
       material_type: [],
       locations: [],
     });
-  
+
     setSearchQuery(""); // Clear the search input
     setSuggestions([]); // Clear suggestions
     setIsSuggestionsVisible(false); // Hide suggestions dropdown
     setIsMyEvent(false);
-  
+
     console.log("Filters reset to default values.");
   };
 
@@ -174,7 +174,6 @@ export default function adminList() {
         locations: preprocessOptions(response.data?.locations || []),
       });
       console.log("Filter options fetched successfully:", response);
-      
     } catch (err) {
       console.error("Error fetching filter options:", err);
       setError(err.response?.data?.message || "Failed to fetch filter options");
@@ -229,10 +228,8 @@ export default function adminList() {
         }),
       };
 
-      const liveEventsUrl =
-        `${baseURL}rfq/events/live_events`;
-      const pastEventsUrl =
-        `${baseURL}rfq/events/past_events`;
+      const liveEventsUrl = `${baseURL}rfq/events/live_events`;
+      const pastEventsUrl = `${baseURL}rfq/events/past_events`;
       const allEventsUrl = `${baseURL}rfq/events`;
 
       const [liveResponse, historyResponse, allResponse] = await Promise.all([
@@ -625,26 +622,29 @@ export default function adminList() {
                             Event Title
                           </label>
                           <Select
-  id="event-title-select"
-  options={filterOptions.event_titles}
-  onChange={(option) =>
-    handleFilterChange("title_in", option?.value || "")
-  }
-  value={
-    filters.title_in
-      ? filterOptions.event_titles.find(
-          (opt) => opt.value === filters.title_in
-        )
-      : null
-  }
-  placeholder="Select title"
-  isClearable
-  menuPlacement="auto"
-  menuPortalTarget={document.body}
-  styles={{
-    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-  }}
-/>
+                            id="event-title-select"
+                            options={filterOptions.event_titles}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "title_in",
+                                option?.value || ""
+                              )
+                            }
+                            value={
+                              filters.title_in
+                                ? filterOptions.event_titles.find(
+                                    (opt) => opt.value === filters.title_in
+                                  )
+                                : null
+                            }
+                            placeholder="Select title"
+                            isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
+                          />
                         </div>
 
                         <div className="col-md-2">
@@ -743,18 +743,21 @@ export default function adminList() {
                     <div className="col-md-6 position-relative">
                       <form onSubmit={handleSearchSubmit}>
                         <div className="input-group">
-                        <input
-  type="search"
-  id="searchInput"
-  className="tbl-search form-control"
-  placeholder="Type your keywords here"
-  value={searchQuery}
-  onChange={handleInputChange}
-  onFocus={() => setIsSuggestionsVisible(true)}
-  onBlur={() =>
-    setTimeout(() => setIsSuggestionsVisible(false), 200)
-  }
-/>;
+                          <input
+                            type="search"
+                            id="searchInput"
+                            className="tbl-search form-control"
+                            placeholder="Type your keywords here"
+                            value={searchQuery}
+                            onChange={handleInputChange}
+                            onFocus={() => setIsSuggestionsVisible(true)}
+                            onBlur={() =>
+                              setTimeout(
+                                () => setIsSuggestionsVisible(false),
+                                200
+                              )
+                            }
+                          />
 
                           <div className="input-group-append">
                             <button
@@ -1140,7 +1143,10 @@ export default function adminList() {
                               (opt) => opt.value === filters.title_in
                             )}
                             onChange={(option) =>
-                              handleFilterChange("title_in", option?.value || "")
+                              handleFilterChange(
+                                "title_in",
+                                option?.value || ""
+                              )
                             }
                           />
                         </div>
