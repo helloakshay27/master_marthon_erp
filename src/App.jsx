@@ -339,7 +339,7 @@ function App() {
               element={<EstimationApprovolList />}
             />
             <Route
-              path="/bill-booking-details"
+              path="/bill-booking-details/:id"
               element={<BillBookingDetails />}
             />
             <Route path="/bill-entry-details" element={<BillEntryDetails />} />

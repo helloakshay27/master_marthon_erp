@@ -1,12 +1,17 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const BillBookingDetails = () => {
+   const { id } = useParams();
+    const navigate = useNavigate();
   const [actionDetails, setactionDetails] = useState(false);
   const [attachOneModal, setattachOneModal] = useState(false);
 
@@ -67,6 +72,79 @@ const BillBookingDetails = () => {
     setShowRows((prev) => !prev);
   };
 
+
+  const [details, setDetails] = useState(null); // State to store API data
+  const [loading, setLoading] = useState(true); // State to handle loading
+  const [error, setError] = useState(null); // State to handle errors
+
+   // Fetch data from the API
+   useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setDetails(response.data); // Update state with API data
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch data");
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+  }, [id]);
+
+    // Add new state for taxes
+    const [taxes, setTaxes] = useState([]);
+    const [selectedTax, setSelectedTax] = useState(null);
+    const [taxDeductionData, setTaxDeductionData] = useState({
+      total_material_cost: 0,
+      deduction_mor_inventory_tax_amount: 0,
+      total_deduction_cost: 0,
+    });
+  
+    const [taxDetailsData, setTaxDetailsData] = useState({
+      tax_data: {},
+    });
+  
+    // Add useEffect to fetch taxes
+    useEffect(() => {
+      const fetchTaxes = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          console.log("Taxes response:", response.data);
+          if (response.data && response.data.taxes) {
+            setTaxes(response.data.taxes);
+          }
+        } catch (error) {
+          console.error("Error fetching taxes:", error);
+          setTaxes([]);
+        }
+      };
+  
+      fetchTaxes();
+    }, []);
+  
+    const statusOptions = [
+      { value: "", label: "Select Status" },
+      { value: "draft", label: "PO Draft" },
+      { value: "accept", label: "Accept" },
+      { value: "reject", label: "Reject" },
+      { value: "submit", label: "Submit" },
+    ];
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -89,7 +167,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Aakash Infra Ltd.
+                        {details?.id}
                         </label>
                       </div>
                     </div>
@@ -102,7 +180,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Aakash Infra Ltd.
+                          {details?.company_name}
                         </label>
                       </div>
                     </div>
@@ -115,7 +193,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Aakash Project
+                          {details?.project_name}
                         </label>
                       </div>
                     </div>
@@ -128,7 +206,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Aakash sub project
+                          {details?.site_name}
                         </label>
                       </div>
                     </div>
@@ -141,7 +219,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Infra Ltd.
+                          {details?.supplier?.organization_name}
                         </label>
                       </div>
                     </div>
@@ -154,7 +232,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          989898
+                          {details?.po_number}
                         </label>
                       </div>
                     </div>
@@ -167,7 +245,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Ltd type
+
                         </label>
                       </div>
                     </div>
@@ -180,7 +258,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          00009
+                          {details?.invoice_number}
                         </label>
                       </div>
                     </div>
@@ -193,7 +271,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Invoice
+                          {details?.einvoice}
                         </label>
                       </div>
                     </div>
@@ -206,7 +284,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          12/5/24
+                        
                         </label>
                       </div>
                     </div>
@@ -219,7 +297,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          6000
+                          {details?.invoice_amount}
                         </label>
                       </div>
                     </div>
@@ -232,7 +310,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Demo value
+                         
                         </label>
                       </div>
                     </div>
@@ -245,7 +323,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          GSTIN989877
+                          {details?.supplier?.gstin}
                         </label>
                       </div>
                     </div>
@@ -258,7 +336,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          BAFPN5656
+                          {details?.supplier?.pan_number}
                         </label>
                       </div>
                     </div>
@@ -271,7 +349,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          demo certificate
+                          {details?.type_of_certificate}
                         </label>
                       </div>
                     </div>
@@ -284,7 +362,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          20000
+                          {/* {details?.retention_amount} */}
                         </label>
                       </div>
                     </div>
@@ -297,7 +375,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          4000
+                         
                         </label>
                       </div>
                     </div>
@@ -310,7 +388,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          3000
+                         
                         </label>
                       </div>
                     </div>
@@ -323,7 +401,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Demo Department
+                          
                         </label>
                       </div>
                     </div>
@@ -348,17 +426,21 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start"> 1</td>
-                        <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start" />
-                        <td className="text-start text-decoration-underline" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+                      {details?.bill_purchase_orders?.flatMap((order, orderIndex) =>
+      order.bill_grn_materials.map((material, materialIndex) => (
+        <tr key={material.id}>
+          <td className="text-start">{materialIndex + 1}</td>
+          <td className="text-start">{ ""}</td>
+          <td className="text-start">{""}</td>
+          <td className="text-start">{""}</td>
+          <td className="text-start">{""}</td>
+          <td className="text-start">{""}</td>
+          <td className="text-start">{""}</td>
+          <td className="text-start">{material.grn_material?.qty || 0}</td>
+          <td className="text-start">{""}</td>
+        </tr>
+      ))
+    )}
                     </tbody>
                   </table>
                 </div>
@@ -401,95 +483,34 @@ const BillBookingDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Tax / Charge Type</th>
-                        <th className="text-start">
-                          Tax / Charges per UOM (INR)
-                        </th>
-                        <th className="text-start">Inclusive / Exclusive</th>
                         <th className="text-start">Amount</th>
-                        <th className="text-start">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th className="text-start">Taxable Amount</th>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start">3000</td>
-                        <td />
-                      </tr>
-                      <tr>
-                        <th className="text-start">Deduction Tax</th>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td>
-                          {/* Add Row Using Plus Icon */}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            fill="currentColor"
-                            className="bi bi-plus-circle"
-                            viewBox="0 0 16 16"
-                            style={{ cursor: "pointer" }}
-                            onClick={handleAddRow} // Add Row on Click
-                          >
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                          </svg>
+                        <td className="text-start">Taxable Amount</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost}
                         </td>
                       </tr>
-
-                      {/* Dynamic Rows */}
-                      {rows.map((row) => (
-                        <tr key={row.id}>
-                          <td className="text-start">
-                            <select className="form-control form-select">
-                              <option selected>{row.type}</option>
-                              <option>Other Type</option>
-                            </select>
-                          </td>
-                          <td className="text-start">
-                            <select className="form-control form-select">
-                              <option selected>{row.charges}</option>
-                              <option>Other Charges</option>
-                            </select>
-                          </td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td
-                            className="text-start"
-                            onClick={() => handleDeleteRow(row.id)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              fill="currentColor"
-                              className="bi bi-dash-circle"
-                              viewBox="0 0 16 16"
-                              style={{ cursor: "pointer" }}
-                            >
-                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                            </svg>
-                          </td>
-                        </tr>
-                      ))}
-
                       <tr>
-                        <th className="text-start">Total Deduction</th>
-                        <td className="text-start" />
-                        <td className="" />
-                        <td className="text-start">3540</td>
-                        <td />
+                        <td className="text-start">Deduction Tax</td>
+                        <td className="text-start">
+                          {taxDeductionData.deduction_mor_inventory_tax_amount}
+                        </td>
                       </tr>
                       <tr>
-                        <th className="text-start">Payable Amount</th>
-                        <td className="text-start" />
-                        <td className="" />
-                        <td className="text-start" />
-                        <td />
+                        <td className="text-start">Total Deduction</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_deduction_cost}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="text-start">Payable Amount</td>
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost -
+                            taxDeductionData.total_deduction_cost}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -608,7 +629,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Document
+                          {details?.other_deductions}
                         </label>
                       </div>
                     </div>
@@ -621,7 +642,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Done/pending
+                          {details?.other_deduction_remarks}
                         </label>
                       </div>
                     </div>
@@ -634,7 +655,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Demo Addition
+                          {details?.other_additions}
                         </label>
                       </div>
                     </div>
@@ -647,7 +668,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          work in progress
+                          {details?.other_addition_remarks}
                         </label>
                       </div>
                     </div>
@@ -660,7 +681,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Demo debit note
+                         
                         </label>
                       </div>
                     </div>
@@ -673,7 +694,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          10000
+                          {details?.total_amount}
                         </label>
                       </div>
                     </div>
@@ -686,7 +707,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>{" "}
-                          55%
+                          {details?.retention_per}
                         </label>
                       </div>
                     </div>
@@ -699,7 +720,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          5000
+                          {details?.retention_amount}
                         </label>
                       </div>
                     </div>
@@ -712,7 +733,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          7000
+                          {details?.payable_amount}
                         </label>
                       </div>
                     </div>
@@ -725,7 +746,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          17000
+                        
                         </label>
                       </div>
                     </div>
@@ -738,7 +759,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          6000
+                          {details?.payee_name}
                         </label>
                       </div>
                     </div>
@@ -751,7 +772,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          UPI
+                          {details?.payment_mode}
                         </label>
                       </div>
                     </div>
@@ -764,7 +785,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          30/5/24
+                          {details?.payment_due_date}
                         </label>
                       </div>
                     </div>
@@ -777,7 +798,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          5
+                          
                         </label>
                       </div>
                     </div>
@@ -790,7 +811,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Pament pending
+                          {details?.remark}
                         </label>
                       </div>
                     </div>
@@ -803,7 +824,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          29/5/24
+                       
                         </label>
                       </div>
                     </div>
@@ -816,7 +837,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          25/4/24
+                        
                         </label>
                       </div>
                     </div>
@@ -829,7 +850,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Demo Status
+                          {details?.status}
                         </label>
                       </div>
                     </div>
@@ -863,7 +884,7 @@ const BillBookingDetails = () => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="text-start">1</td>
+                        <td className="text-start"></td>
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
@@ -897,7 +918,7 @@ const BillBookingDetails = () => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="text-start">1</td>
+                        <td className="text-start"></td>
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
@@ -938,7 +959,7 @@ const BillBookingDetails = () => {
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="text-start">1</td>
+                        <td className="text-start"></td>
                         <td className="text-start" />
                         <td className="text-start" />
                         <td className="text-start" />
@@ -968,21 +989,27 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start">PO.pdf</td>
-                        <td className="text-start">04-03-2024</td>
-                        <td
-                          className="text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openAttachOneModal}
-                        >
-                          Action
-                        </td>
-                      </tr>
+                      {details?.attachments?.map((attachment, index) => (
+      <tr key={attachment.id}>
+        <td className="text-start">{index + 1}</td>
+        <td className="text-start">{attachment.relation || ""}</td>
+        <td className="text-start">{attachment.filename || ""}</td>
+        <td className="text-start">{attachment.content_type || ""}</td>
+        <td className="text-start">
+          {attachment.created_at
+            ? new Date(attachment.created_at).toLocaleDateString()
+            : ""}
+        </td>
+        <td
+          className="text-decoration-underline"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          // onClick={() => openAttachOneModal(attachment)}
+        >
+          View
+        </td>
+      </tr>
+    ))}
                     </tbody>
                   </table>
                 </div>
@@ -1013,20 +1040,27 @@ const BillBookingDetails = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="mb-0">Status</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                >
-                  <option value="draft">PO Draft</option>
-                  <option value="accept">Accept</option>
-                  <option value="reject">Reject</option>
-                  <option value="submit">Submit</option>
-                </select>
+    <div className="row mt-4 justify-content-end align-items-center mx-2">
+              <div className="col-md-3">
+                <div className="form-group d-flex gap-3 align-items-center mx-3">
+                  <label style={{ fontSize: "0.95rem", color: "black" }}>
+                    Status
+                  </label>
+                  <SingleSelector
+                    options={statusOptions}
+                    // value={selectedStatus}
+                    // onChange={(selectedOption) => {
+                    //   setSelectedStatus(
+                    //     selectedOption || { value: "", label: "Select Status" }
+                    //   );
+                    // }}
+                    placeholder="Select Status"
+                    isClearable={false}
+                    classNamePrefix="react-select"
+                  />
+                </div>
               </div>
-
+            </div>
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Submit</button>
@@ -1036,7 +1070,7 @@ const BillBookingDetails = () => {
                 </div>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-              <div className="mx-0">
+              <div className="mx-0 mb-5">
                 <Table columns={auditLogColumns} data={auditLogData} />
               </div>
             </div>
