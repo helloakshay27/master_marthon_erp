@@ -644,7 +644,7 @@ export default function adminList() {
   styles={{
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
   }}
-/>;
+/>
                         </div>
 
                         <div className="col-md-2">
