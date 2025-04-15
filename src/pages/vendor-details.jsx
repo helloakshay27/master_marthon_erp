@@ -3099,7 +3099,6 @@ export default function VendorDetails() {
                   <div className="main-content w-100 ">
                     <div className="w-100  pt-2 mb-2  pe-2">
                       {/* Published Stages */}
-
                       <div className="card mb-5 p-3 mt-2 rounded-3 ">
                         <div
                           className="col-12"
@@ -3587,7 +3586,8 @@ export default function VendorDetails() {
                           )}
                         </div>
 
-                        <div className="col-12 pb-4 pt-3"
+                        <div
+                          className="col-12 pb-4 pt-3"
                           style={{
                             // borderTop: "1px solid #ccc",
                             borderBottom: "1px solid #ccc",
@@ -3716,7 +3716,8 @@ export default function VendorDetails() {
                           )}
                         </div>
 
-                        <div className="col-12 pb-4 pt-3"
+                        <div
+                          className="col-12 pb-4 pt-3"
                           style={{
                             // borderTop: "1px solid #ccc",
                             borderBottom: "1px solid #ccc",
@@ -3775,7 +3776,10 @@ export default function VendorDetails() {
                                 {/* Document Details Table */}
                                 <div className="row">
                                   {orderConfig?.map((item, idx) => (
-                                    <div className="total-activity col-3 my-3" key={idx}>
+                                    <div
+                                      className="total-activity col-3 my-3"
+                                      key={idx}
+                                    >
                                       <p>{item.label}</p>
                                       <p
                                         id={item.id}
@@ -3800,7 +3804,8 @@ export default function VendorDetails() {
                             </div>
                           )}
                         </div>
-                        <div className="col-12 pb-4 pt-3"
+                        <div
+                          className="col-12 pb-4 pt-3"
                           style={{
                             // borderTop: "1px solid #ccc",
                             borderBottom: "1px solid #ccc",
@@ -3876,39 +3881,37 @@ export default function VendorDetails() {
                                       </p>
                                     </div>
                                     ))} */}
-                                    <div className="total-activity col-3 my-3" >
-                                      <p> Event Title</p>
-                                      <p
-                                        style={{
-                                          display: "-webkit-box",
-                                          WebkitBoxOrient: "vertical",
-                                          WebkitLineClamp: 2,
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
-                                          whiteSpace: "normal",
-                                        }}
-                                      >
-                                        {console.log("dta1",data1)
-                                        }
-                                        {data1.event_no}{" "}{data1.event_title}
-                                      </p>
-                                    </div>
-                                    <div className="total-activity col-3 my-3" >
-                                      <p>Event Description</p>
-                                      <p
-                                        style={{
-                                          display: "-webkit-box",
-                                          WebkitBoxOrient: "vertical",
-                                          WebkitLineClamp: 2,
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
-                                          whiteSpace: "normal",
-                                        }}
-                                      >
-                                        {data1.event_description}
-                                      </p>
-                                    </div>
-
+                                  <div className="total-activity col-3 my-3">
+                                    <p> Event Title</p>
+                                    <p
+                                      style={{
+                                        display: "-webkit-box",
+                                        WebkitBoxOrient: "vertical",
+                                        WebkitLineClamp: 2,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "normal",
+                                      }}
+                                    >
+                                      {console.log("dta1", data1)}
+                                      {data1.event_no} {data1.event_title}
+                                    </p>
+                                  </div>
+                                  <div className="total-activity col-3 my-3">
+                                    <p>Event Description</p>
+                                    <p
+                                      style={{
+                                        display: "-webkit-box",
+                                        WebkitBoxOrient: "vertical",
+                                        WebkitLineClamp: 2,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "normal",
+                                      }}
+                                    >
+                                      {data1.event_description}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -3917,6 +3920,32 @@ export default function VendorDetails() {
                       </div>
                     </div>
                   </div>
+                  <div className="d-flex justify-content-end align-items-center">
+                  <button
+                        className="purple-btn2"
+                        onClick={() => {
+                          // Expand all collapsible sections
+                          document
+                            .querySelectorAll(".collapse")
+                            .forEach((el) => {
+                              el.classList.add("show");
+                            });
+
+                          // Trigger the print dialog
+                          window.print();
+                        }}
+                        style={{
+                          backgroundColor: "#8b0203",
+                          color: "#fff",
+                          border: "none",
+                          padding: "10px 20px",
+                          borderRadius: "5px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Print
+                      </button>
+                    </div>
                 </div>
               ) : (
                 "No data available"

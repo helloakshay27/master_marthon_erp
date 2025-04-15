@@ -18728,3 +18728,62 @@ ul.pagination.justify-content-center {
   color: #8b0203;
   text-decoration: underline !important;
 }
+
+@media print {
+  /* Set paper size to A2 */
+  @page {
+    size: A2;
+    margin: default; /* Default margins */
+  }
+
+  /* Ensure the body and html take up full height */
+  html, body {
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Expand scrollable areas to show full content */
+  .main-content, .card, .tbl-container, .p-3, .tab-content {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Hide unnecessary elements like buttons */
+  button, .btn, .nav-tabs {
+    display: none !important;
+  }
+
+  /* Ensure tables and other elements fit the page */
+  table {
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  th, td {
+    word-wrap: break-word;
+    white-space: normal;
+  }
+
+  /* Remove padding/margins that might cause clipping */
+  .container-fluid, .card {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Adjust font size for better readability */
+  body {
+    font-size: 12px;
+  }
+
+  /* Ensure collapsible sections are expanded */
+  .collapse {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Enable background graphics */
+  * {
+    -webkit-print-color-adjust: exact !important; /* For Chrome */
+    print-color-adjust: exact !important; /* For other browsers */
+  }
+}
