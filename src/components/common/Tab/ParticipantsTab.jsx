@@ -47,24 +47,39 @@ export default function ParticipantsTab({ data, id }) {
 
   const validateForm = () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
     if (!inviteForm.name) {
       errors.name = "Name is required";
       toast.error(errors.name);
     }
-    if (!inviteForm.email) {
-      errors.email = "Email is required";
+    if (!inviteForm.email || !emailRegex.test(inviteForm.email)) {
+      errors.email = "Valid email is required";
       toast.error(errors.email);
     }
-    if (!inviteForm.mobile) {
-      errors.mobile = "Mobile number is required";
+    if (!inviteForm.mobile || !mobileRegex.test(inviteForm.mobile)) {
+      errors.mobile = "Valid mobile number is required";
       toast.error(errors.mobile);
+    }
+    if (inviteForm.gstNumber && !gstRegex.test(inviteForm.gstNumber)) {
+      errors.gstNumber = "Invalid GST number format";
+      toast.error(errors.gstNumber);
+    }
+    if (inviteForm.panNumber && !panRegex.test(inviteForm.panNumber)) {
+      errors.panNumber = "Invalid PAN number format";
+      toast.error(errors.panNumber);
     }
     return errors;
   };
 
   const handleInviteInputChange = (e) => {
     const { name, value } = e.target;
-    setInviteForm((prev) => ({ ...prev, [name]: value }));
+    const capitalizedValue =
+      name === "gstNumber" || name === "panNumber" ? value.toUpperCase() : value;
+    setInviteForm((prev) => ({ ...prev, [name]: capitalizedValue }));
   };
 
   const handleInviteSubmit = async (e) => {
@@ -137,7 +152,7 @@ export default function ParticipantsTab({ data, id }) {
       name: vendor.pms_supplier.full_name,
       phone: vendor.pms_supplier.mobile,
       email: vendor.pms_supplier.email,
-      organisation: vendor.organization_name
+      organisation: vendor.organization_name,
     }));
     setVendorData(formattedData);
   }, [data, vendorData]);
@@ -180,19 +195,21 @@ export default function ParticipantsTab({ data, id }) {
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
 
       const formattedData = vendors
-      .map((vendor) => ({
-        id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "N/A",
-        email: vendor.email || "N/A",
-        organisation: vendor.organization_name || "N/A",
-        phone: vendor.contact_number || vendor.mobile || "N/A",
-        city: vendor.city_id || "N/A",
-        tags: vendor.tags || "N/A",
-      }))
-      .filter(
-        (vendor) =>
-          !selectedVendors.some((selected) => selected.pms_supplier_id === vendor.id)
-      );
+        .map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name || "N/A",
+          email: vendor.email || "N/A",
+          organisation: vendor.organization_name || "N/A",
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+          city: vendor.city_id || "N/A",
+          tags: vendor.tags || "N/A",
+        }))
+        .filter(
+          (vendor) =>
+            !selectedVendors.some(
+              (selected) => selected.pms_supplier_id === vendor.id
+            )
+        );
 
       setTableData(formattedData);
 
@@ -448,11 +465,11 @@ export default function ParticipantsTab({ data, id }) {
         </div>
         {vendorData.length > 0 ? (
           <>
-          {/* {console.log("vendorData:---",vendorData)} */}
-          <Table
-            columns={participantsTabColumns} // Use columns with serial number
-            data={vendorData}
-          />
+            {/* {console.log("vendorData:---",vendorData)} */}
+            <Table
+              columns={participantsTabColumns} // Use columns with serial number
+              data={vendorData}
+            />
           </>
         ) : (
           <div className="text-center mt-4">No data found</div>
@@ -761,7 +778,24 @@ export default function ParticipantsTab({ data, id }) {
                   className="form-control"
                   type="text"
                   name="mobile"
-                  inputMode="tel"
+                  inputMode="numeric" // mobile-friendly numeric keyboard
+                  pattern="[0-9]*" // restricts to digits only
+                  onKeyDown={(e) => {
+                    // Allow only numbers
+                    const invalidChars = ["e", "E", "+", "-", ".", ","];
+
+                    if (
+                      invalidChars.includes(e.key) ||
+                      (isNaN(Number(e.key)) &&
+                        e.key !== "Backspace" &&
+                        e.key !== "Delete" &&
+                        e.key !== "ArrowLeft" &&
+                        e.key !== "ArrowRight" &&
+                        e.key !== "Tab")
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   placeholder="Enter Phone Number"
                   value={inviteForm.mobile}
                   onChange={handleInviteInputChange}
@@ -780,6 +814,9 @@ export default function ParticipantsTab({ data, id }) {
                   value={inviteForm.gstNumber || ""}
                   onChange={handleInviteInputChange}
                 />
+                {formErrors.gstNumber && (
+                  <small className="text-danger">{formErrors.gstNumber}</small>
+                )}
               </div>
               <div className="form-group mb-3">
                 <label className="po-fontBold">PAN Number</label>
@@ -791,6 +828,9 @@ export default function ParticipantsTab({ data, id }) {
                   value={inviteForm.panNumber || ""}
                   onChange={handleInviteInputChange}
                 />
+                {formErrors.panNumber && (
+                  <small className="text-danger">{formErrors.panNumber}</small>
+                )}
               </div>
             </form>
           </>

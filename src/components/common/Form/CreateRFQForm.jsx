@@ -1137,24 +1137,26 @@ export default function CreateRFQForm({
     if (fieldName === "rate") {
       return (
         <input
-          className="form-control"
-          type="number"
-          value={fieldValue}
-          onChange={(e) => {
-            handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex);
+  className="form-control"
+  type="text"
+  inputMode="numeric"
+  value={fieldValue}
+  onWheel={(e) => e.target.blur()}
+  onKeyDown={(e) => {
+    if (!/^\d$/.test(e.key) && !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+      e.preventDefault();
+    }
+  }}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    handleInputChange(value, rowIndex, fieldName, sectionIndex);
 
-            // Calculate amount based on rate and quantity
-            const rate = parseFloat(e.target.value) || 0;
-            const quantity =
-              parseFloat(
-                sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0
-              ) || 0;
-            const amount = rate * quantity;
+    const rate = parseFloat(value) || 0;
+    const quantity = parseFloat(sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0) || 0;
+    handleInputChange((rate * quantity).toFixed(2), rowIndex, "amount", sectionIndex);
+  }}
+/>
 
-            // Update the amount field
-            handleInputChange(amount.toFixed(2), rowIndex, "amount", sectionIndex);
-          }}
-        />
       );
     }
 
@@ -1564,7 +1566,21 @@ export default function CreateRFQForm({
                             sectionIndex
                           )
                         }
+                        inputMode="numeric"
                         placeholder="Enter Quantity"
+                        onKeyDown={(e) => {
+                          if (
+                            e.key === "e" || 
+                            e.key === "E" || 
+                            e.key === "+" || 
+                            e.key === "-" || 
+                            e.key === "." || 
+                            e.key === "," || 
+                            e.key === " " // Add any other characters you want to restrict
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     ),
                     rate: (cell, rowIndex) => (
@@ -1572,14 +1588,30 @@ export default function CreateRFQForm({
                         className="form-control"
                         type="number"
                         value={cell}
-                        onChange={(e) =>
+                        onKeyDown={(e) => {
+                          if (
+                            e.key === "e" || 
+                            e.key === "E" || 
+                            e.key === "+" || 
+                            e.key === "-" || 
+                            e.key === "." || 
+                            e.key === "," || 
+                            e.key === " " // Add any other characters you want to restrict
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const value = e.target.value;
+    // Allow only positive numbers
+    if (/^\d*$/.test(value)) {
                           handleInputChange(
-                            e.target.value,
+                            value,
                             rowIndex,
                             "rate",
                             sectionIndex
-                          )
-                        }
+                          )}
+                        }}
                         placeholder="Enter Rate"
                       />
                     ),

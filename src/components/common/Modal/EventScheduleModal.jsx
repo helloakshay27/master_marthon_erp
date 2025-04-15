@@ -1,30 +1,40 @@
 import React, { useEffect, useState } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 // @ts-ignore
 import format from "date-fns/format";
 
-const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, onLoadScheduleData, deliveryDate }) => {
+const EventScheduleModal = ({
+  show,
+  onHide,
+  handleSaveSchedule,
+  existingData,
+  onLoadScheduleData,
+  deliveryDate,
+}) => {
   // Convert deliveryDate to the desired format
   const formattedDeliveryDate = deliveryDate.split("T")[0];
 
   const [isLater, setIsLater] = useState(false);
   const [isFixedEndTime, setIsFixedEndTime] = useState(false);
   const [isCustomEndTimeSelected, setIsCustomEndTimeSelected] = useState(false);
-  const [isCustomEvaluationSelected, setIsCustomEvaluationSelected] = useState(false);
-  const [customEvaluationDuration, setCustomEvaluationDuration] = useState("Mins");
+  const [isCustomEvaluationSelected, setIsCustomEvaluationSelected] =
+    useState(false);
+  const [customEvaluationDuration, setCustomEvaluationDuration] =
+    useState("Mins");
   const [endTimeDuration, setEndTimeDuration] = useState("Mins");
   const [endTimeDurationVal, setEndTimeDurationVal] = useState("Mins");
   const [evaluationDurationVal, setEvaluationDurationVal] = useState("Mins");
-  const [isCustomEvaluationDuration, setIsCustomEvaluationDuration] = useState(true);
+  const [isCustomEvaluationDuration, setIsCustomEvaluationDuration] =
+    useState(true);
   const [laterDate, setLaterDate] = useState("");
   const [laterTime, setLaterTime] = useState("");
   const [fixedEndDate, setFixedEndDate] = useState("");
   const [fixedEndTime, setFixedEndTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [formattedEndTime, setFormattedEndTime] = useState('');
+  const [formattedEndTime, setFormattedEndTime] = useState("");
 
   useEffect(() => {
     if (existingData) {
@@ -35,11 +45,12 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
       setEndDate(endTime.toISOString().split("T")[0]);
       setEndTime(endTime.toTimeString().split(" ")[0].substring(0, 5));
 
-      if (typeof existingData.evaluation_time === 'string') {
-        const [evaluationValue, evaluationUnit] = existingData.evaluation_time.split(" ");
+      if (typeof existingData.evaluation_time === "string") {
+        const [evaluationValue, evaluationUnit] =
+          existingData.evaluation_time.split(" ");
         setEvaluationDurationVal(evaluationValue || "Mins");
         setCustomEvaluationDuration(evaluationUnit || "Mins");
-      } else if (typeof existingData.evaluation_time === 'number') {
+      } else if (typeof existingData.evaluation_time === "number") {
         setEvaluationDurationVal(existingData.evaluation_time.toString());
         setCustomEvaluationDuration("Mins");
       } else {
@@ -47,9 +58,13 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
         setCustomEvaluationDuration("Mins");
       }
 
-      onLoadScheduleData(existingData.start_time, existingData.end_time, existingData.evaluation_time);      
+      onLoadScheduleData(
+        existingData.start_time,
+        existingData.end_time,
+        existingData.evaluation_time
+      );
     }
-  }, [existingData]);  
+  }, [existingData]);
 
   useEffect(() => {
     if (endDate && endTime) {
@@ -64,7 +79,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     currentTime.setMinutes(currentTime.getMinutes() + 30);
     const minEndDate = currentTime.toISOString().split("T")[0];
     // if (selectedDate >= minEndDate && selectedDate <= formattedDeliveryDate) {
-      setEndDate(selectedDate);
+    setEndDate(selectedDate);
     // }
   };
 
@@ -114,7 +129,7 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     // } else if (selectedDateTime > deliveryDateTime) {
     //   toast.warning("End time cannot exceed the delivery date and time.");
     // } else {
-      setEndTime(selectedTime);
+    setEndTime(selectedTime);
     // }
   };
 
@@ -134,25 +149,25 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
       : existingData?.start_time || currentTime.toISOString();
-  
-    const endTimeFormatted = endDate && endTime
-      ? `${endDate}T${endTime}:00Z`
-      : existingData?.end_time || "";
-  
-    const evaluationTimeFormatted = evaluationDurationVal && customEvaluationDuration
-      ? `${evaluationDurationVal} ${customEvaluationDuration}`
-      : existingData?.evaluation_time || "Mins Mins";
-  
+
+    const endTimeFormatted =
+      endDate && endTime
+        ? `${endDate}T${endTime}:00Z`
+        : existingData?.end_time || "";
+
+    const evaluationTimeFormatted =
+      evaluationDurationVal && customEvaluationDuration
+        ? `${evaluationDurationVal} ${customEvaluationDuration}`
+        : existingData?.evaluation_time || "Mins Mins";
+
     const data = {
       start_time: startTime,
       end_time_duration: endTimeFormatted,
       evaluation_time: evaluationTimeFormatted,
     };
-  
+
     handleSaveSchedule(data);
   };
-
- 
 
   return (
     <DynamicModalBox
@@ -262,9 +277,24 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
                 type="number"
                 className="form-control"
                 placeholder="Enter number of"
-                value={evaluationDurationVal}
-                onChange={(e) => setEvaluationDurationVal(e.target.value)}
+                inputMode="numeric"
+                value={evaluationDurationVal || ""}
+                onWheel={(e) => e.target.blur()}
+                onKeyDown={(e) => {
+                  if (
+                    !/^\d$/.test(e.key) &&
+                    !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(
+                      e.key
+                    )
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) =>
+                  setEvaluationDurationVal(e.target.value.replace(/\D/g, ""))
+                }
               />
+
               <div className="col-md-4">
                 <SelectBox
                   label={""}
@@ -282,16 +312,10 @@ const EventScheduleModal = ({ show, onHide, handleSaveSchedule, existingData, on
         </div>
 
         <div className="d-flex justify-content-center mt-4">
-          <button
-            className="purple-btn1"
-            onClick={onHide}
-            >
+          <button className="purple-btn1" onClick={onHide}>
             Back
-            </button>
-          <button
-            className="purple-btn2"
-            onClick={handleSaveScheduleFun}
-          >
+          </button>
+          <button className="purple-btn2" onClick={handleSaveScheduleFun}>
             Save
           </button>
         </div>

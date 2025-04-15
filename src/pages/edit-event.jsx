@@ -350,7 +350,7 @@ export default function EditEvent() {
       );
       const data = await response.json();
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-  
+
       // Remove already selected vendors before setting tableData
       const formattedData = vendors
         .map((vendor) => ({
@@ -364,9 +364,11 @@ export default function EditEvent() {
         }))
         .filter(
           (vendor) =>
-            !selectedVendors.some((selected) => selected.pms_supplier_id === vendor.id)
+            !selectedVendors.some(
+              (selected) => selected.pms_supplier_id === vendor.id
+            )
         );
-  
+
       setTableData(formattedData);
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1);
@@ -376,7 +378,6 @@ export default function EditEvent() {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     fetchEventData();
@@ -745,8 +746,7 @@ export default function EditEvent() {
     }
 
     setSubmitted(true);
-    console.log("materialFormData :-----",materialFormData);
-    
+    console.log("materialFormData :-----", materialFormData);
 
     const eventData = {
       event: {
@@ -925,9 +925,7 @@ export default function EditEvent() {
   }, []);
 
   useEffect(() => {
-    
     setFilteredTableData(tableData);
-    
   }, [tableData]);
 
   const handleInputChange = (e) => {
@@ -1023,44 +1021,76 @@ export default function EditEvent() {
 
   const handleRemoveVendor = (id) => {
     console.log("⬅️ Before Update", filteredTableData);
-  
+
     // Get the current selected vendors
-  const updatedSelected = selectedVendors.filter(
-    (vendor) => vendor.pms_supplier_id !== id
-  );
-
-  // Find the vendor to remove
-  const removedVendor = selectedVendors.find(
-    (vendor) => vendor.pms_supplier_id === id
-  );
-
-  // If vendor is found and not already in filteredTableData, add it
-  if (removedVendor) {
-    const alreadyExists = filteredTableData.some(
-      (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
+    const updatedSelected = selectedVendors.filter(
+      (vendor) => vendor.pms_supplier_id !== id
     );
 
-    if (!alreadyExists) {
-      const updatedFiltered = [...filteredTableData, removedVendor];
-      setFilteredTableData(updatedFiltered);
-      console.log("✅ Updated filteredTableData:", updatedFiltered.length, updatedFiltered);
-    }
-  }
+    // Find the vendor to remove
+    const removedVendor = selectedVendors.find(
+      (vendor) => vendor.pms_supplier_id === id
+    );
 
-  // Finally update selectedVendors
-  setSelectedVendors(updatedSelected);
-  
+    // If vendor is found and not already in filteredTableData, add it
+    if (removedVendor) {
+      const alreadyExists = filteredTableData.some(
+        (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
+      );
+
+      if (!alreadyExists) {
+        const updatedFiltered = [...filteredTableData, removedVendor];
+        setFilteredTableData(updatedFiltered);
+        console.log(
+          "✅ Updated filteredTableData:",
+          updatedFiltered.length,
+          updatedFiltered
+        );
+      }
+    }
+
+    // Finally update selectedVendors
+    setSelectedVendors(updatedSelected);
+
     // Delay this log to ensure the updated state is shown
     setTimeout(() => {
       console.log("➡️ After Update", filteredTableData);
     }, 100);
   };
-  
 
   useEffect(() => {
     // console.log("🔁 filteredTableData changed: ", filteredTableData.length, filteredTableData);
   }, [filteredTableData]);
-  
+
+  const validateInviteVendorForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (!inviteVendorData.name) {
+      errors.name = "Name is required";
+      toast.error(errors.name);
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      errors.email = "Valid email is required";
+      toast.error(errors.email);
+    }
+    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+      errors.mobile = "Valid mobile number is required";
+      toast.error(errors.mobile);
+    }
+    if (inviteVendorData.gstNumber && !gstRegex.test(inviteVendorData.gstNumber)) {
+      errors.gstNumber = "Invalid GST number format";
+      toast.error(errors.gstNumber);
+    }
+    if (inviteVendorData.panNumber && !panRegex.test(inviteVendorData.panNumber)) {
+      errors.panNumber = "Invalid PAN number format";
+      toast.error(errors.panNumber);
+    }
+    return errors;
+  };
 
   const [inviteVendorData, setInviteVendorData] = useState({
     name: "",
@@ -1072,22 +1102,18 @@ export default function EditEvent() {
 
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
+    const capitalizedValue =
+      name === "gstNumber" || name === "panNumber" ? value.toUpperCase() : value;
     setInviteVendorData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: capitalizedValue,
     }));
   };
 
-  const handleInviteVendor = () => {
-    if (
-      !inviteVendorData.name ||
-      !inviteVendorData.email ||
-      !inviteVendorData.mobile
-    ) {
-      toast.error("Please fill all the fields.");
-      return;
-    }
-  
+  const handleInviteVendor = async () => {
+    const errors = validateInviteVendorForm();
+    if (Object.keys(errors).length > 0) return;
+
     fetch(
       `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true`,
       {
@@ -1105,26 +1131,26 @@ export default function EditEvent() {
             toast.error("Failed to invite vendor.");
           });
         }
-  
+
         return response.json().then((newVendor) => {
           toast.success("Vendor invited successfully!");
-  
+
           const vendorData = {
             id: null,
             pms_supplier_id: newVendor?.id,
             name: newVendor?.full_name,
             phone: newVendor?.mobile,
           };
-  
+
           setSelectedVendors((prev) => [...prev, vendorData]);
-  
+
           // Clear input after success
           setInviteVendorData({
             name: "",
             email: "",
             mobile: "",
           });
-  
+
           handleInviteModalClose();
         });
       })
@@ -1133,7 +1159,6 @@ export default function EditEvent() {
         toast.error("An error occurred while inviting the vendor.");
       });
   };
-  
 
   useEffect(() => {
     if (eventDetails?.event_vendors?.length > 0) {
@@ -1838,7 +1863,24 @@ export default function EditEvent() {
                         className="form-control"
                         type="text"
                         name="mobile"
-                        inputMode="tel"
+                        inputMode="numeric" // mobile-friendly numeric keyboard
+                        pattern="[0-9]*" // restricts to digits only
+                        onKeyDown={(e) => {
+                          // Allow only numbers
+                          const invalidChars = ["e", "E", "+", "-", ".", ","];
+
+                          if (
+                            invalidChars.includes(e.key) ||
+                            (isNaN(Number(e.key)) &&
+                              e.key !== "Backspace" &&
+                              e.key !== "Delete" &&
+                              e.key !== "ArrowLeft" &&
+                              e.key !== "ArrowRight" &&
+                              e.key !== "Tab")
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
                         placeholder="Enter Phone Number"
                         value={inviteVendorData.mobile}
                         onChange={handleInviteVendorChange}

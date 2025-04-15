@@ -123,18 +123,39 @@ const EventTypeModal = ({
 
   const validateForm = () => {
     if (!["rfq", "contract", "auction"].includes(localEventType)) {
-      alert("Please select a valid event type.");
+      toast.warn("Please select a valid event type.");
       return false;
     }
     if (!["single_vendor", "multiple_vendors"].includes(localAwardType)) {
-      alert("Please select a valid award scheme.");
+      toast.warn("Please select a valid award scheme.");
+      return false;
+    }
+    if (
+      localDynamicExtension[1] &&
+      !localDynamicExtensionConfigurations.triggered_time_extension_on_last
+    ) {
+      toast.warn("Please enter the trigger time extension.");
+      return false;
+    }
+    if (
+      localDynamicExtension[1] &&
+      !localDynamicExtensionConfigurations.extend_event_time_by
+    ) {
+      toast.warn("Please enter the extend time value.");
+      return false;
+    }
+    if (
+      localDynamicExtension[1] &&
+      !localDynamicExtensionConfigurations.time_extension_on_change_in
+    ) {
+      toast.warn("Please select the time extension on change in.");
       return false;
     }
     if (
       localDynamicExtension[3] &&
       !localDynamicExtensionConfigurations.delivery_date
     ) {
-      alert("Please select a delivery date.");
+      toast.warn("Please select a delivery date.");
       return false;
     }
     return true;
@@ -786,7 +807,7 @@ const EventTypeModal = ({
                       <span style={{ color: "red" }}>*</span>
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="Min(s)"
                       className="form-control"
                       style={{ marginLeft: "5px" }}
@@ -799,6 +820,24 @@ const EventTypeModal = ({
                           triggered_time_extension_on_last: e.target.value,
                         })
                       }
+                      inputMode="numeric" // mobile-friendly numeric keyboard
+                      pattern="[0-9]*" // restricts to digits only
+                      onKeyDown={(e) => {
+                        // Allow only numbers
+                        const invalidChars = ["e", "E", "+", "-", ".", ","];
+
+                        if (
+                          invalidChars.includes(e.key) ||
+                          (isNaN(Number(e.key)) &&
+                            e.key !== "Backspace" &&
+                            e.key !== "Delete" &&
+                            e.key !== "ArrowLeft" &&
+                            e.key !== "ArrowRight" &&
+                            e.key !== "Tab")
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
                   <div className="extend-time">
@@ -806,7 +845,7 @@ const EventTypeModal = ({
                       Extend time by <span style={{ color: "red" }}>*</span>
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       placeholder="Min(s)"
                       className="form-control"
                       style={{ marginLeft: "5px" }}
@@ -819,6 +858,24 @@ const EventTypeModal = ({
                           extend_event_time_by: e.target.value,
                         })
                       }
+                      inputMode="numeric" // mobile-friendly numeric keyboard
+                      pattern="[0-9]*" // restricts to digits only
+                      onKeyDown={(e) => {
+                        // Allow only numbers
+                        const invalidChars = ["e", "E", "+", "-", ".", ","];
+
+                        if (
+                          invalidChars.includes(e.key) ||
+                          (isNaN(Number(e.key)) &&
+                            e.key !== "Backspace" &&
+                            e.key !== "Delete" &&
+                            e.key !== "ArrowLeft" &&
+                            e.key !== "ArrowRight" &&
+                            e.key !== "Tab")
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
                   <div className="time-extention">
@@ -841,7 +898,7 @@ const EventTypeModal = ({
                 </div>
               </>
             )}
-            <div className="d-flex align-items-center gap-2 my-3">
+            {/* <div className="d-flex align-items-center gap-2 my-3">
               <input
                 type="checkbox"
                 checked={dynamicExtension[2]}
@@ -852,7 +909,7 @@ const EventTypeModal = ({
               <div className="ant-col ant-form-item-label">
                 Set minimum revisions to show Rank
               </div>
-            </div>
+            </div> */}
             {dynamicExtension[2] && (
               <input
                 type="number"
