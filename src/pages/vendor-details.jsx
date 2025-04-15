@@ -752,32 +752,32 @@ export default function VendorDetails() {
 
               return counterMaterial
                 ? {
-                  bidId: counterMaterial.counter_bid_id,
-                  eventMaterialId: counterMaterial.event_material_id,
-                  descriptionOfItem: counterMaterial.material_name,
-                  varient: material.material_type,
-                  quantity: material.event_material.quantity,
-                  quantityAvail: counterMaterial.quantity_available,
-                  price: counterMaterial.price,
-                  section: material.event_material.material_type,
-                  subSection: material.event_material.inventory_sub_type,
-                  discount: counterMaterial.discount,
-                  realisedDiscount: counterMaterial.realised_discount,
-                  gst: counterMaterial.gst,
-                  realisedGst: counterMaterial.realised_gst,
-                  total: counterMaterial.total_amount,
-                  location: material.event_material.location,
-                  vendorRemark: counterMaterial.vendor_remark,
-                  landedAmount: counterMaterial.landed_amount,
-                  pmsBrand: material.pms_brand_name,
-                  pmsColour: material.pms_colour_name,
-                  genericInfo: material.generic_info_name,
-                  extra_data: material.event_material.extra_data || {}, // Include extra_data
-                  deduction_bid_material_tax_details:
-                    counterMaterial.deduction_bid_material_tax_details,
-                  addition_bid_material_tax_details:
-                    counterMaterial.addition_bid_material_tax_details,
-                }
+                    bidId: counterMaterial.counter_bid_id,
+                    eventMaterialId: counterMaterial.event_material_id,
+                    descriptionOfItem: counterMaterial.material_name,
+                    varient: material.material_type,
+                    quantity: material.event_material.quantity,
+                    quantityAvail: counterMaterial.quantity_available,
+                    price: counterMaterial.price,
+                    section: material.event_material.material_type,
+                    subSection: material.event_material.inventory_sub_type,
+                    discount: counterMaterial.discount,
+                    realisedDiscount: counterMaterial.realised_discount,
+                    gst: counterMaterial.gst,
+                    realisedGst: counterMaterial.realised_gst,
+                    total: counterMaterial.total_amount,
+                    location: material.event_material.location,
+                    vendorRemark: counterMaterial.vendor_remark,
+                    landedAmount: counterMaterial.landed_amount,
+                    pmsBrand: material.pms_brand_name,
+                    pmsColour: material.pms_colour_name,
+                    genericInfo: material.generic_info_name,
+                    extra_data: material.event_material.extra_data || {}, // Include extra_data
+                    deduction_bid_material_tax_details:
+                      counterMaterial.deduction_bid_material_tax_details,
+                    addition_bid_material_tax_details:
+                      counterMaterial.addition_bid_material_tax_details,
+                  }
                 : null; // Handle missing counter bids
             })
             .filter(Boolean); // Remove null entries if counter bids are missing
@@ -835,40 +835,50 @@ export default function VendorDetails() {
       console.log("taxxxXXXXxxx", taxRateData[index]);
 
       const taxDetails = [
-        ...(taxRateData[index]?.addition_bid_material_tax_details || []).map((charge) => {
-          const matchedTax = taxOptions?.find(
-            (tax) =>
-              tax.value?.trim().toLowerCase() ===
-              charge.taxChargeType.trim().toLowerCase()
-          );
+        ...(taxRateData[index]?.addition_bid_material_tax_details || []).map(
+          (charge) => {
+            const matchedTax = taxOptions?.find(
+              (tax) =>
+                tax.value?.trim().toLowerCase() ===
+                charge.taxChargeType.trim().toLowerCase()
+            );
 
-          console.log("matchedTax",matchedTax, "charge", charge, "taxRateData", taxRateData[index]);
-          
+            console.log(
+              "matchedTax",
+              matchedTax,
+              "charge",
+              charge,
+              "taxRateData",
+              taxRateData[index]
+            );
 
-          return {
-            resource_id: matchedTax?.id || null, // or set to null if not found
-            resource_type: matchedTax?.taxChargeType || "TaxCharge",
-            amount: charge.amount,
-            inclusive: charge.inclusive,
-            addition: true,
-          };
-        }),
+            return {
+              resource_id: matchedTax?.id || null, // or set to null if not found
+              resource_type: matchedTax?.taxChargeType || "TaxCharge",
+              amount: charge.amount,
+              inclusive: charge.inclusive,
+              addition: true,
+            };
+          }
+        ),
 
-        ...(taxRateData[index]?.deduction_bid_material_tax_details || []).map((charge) => {
-          const matchedTax = deductionTaxOptions?.find(
-            (tax) =>
-              tax.value?.trim().toLowerCase() ===
-              charge.taxChargeType.trim().toLowerCase()
-          );
+        ...(taxRateData[index]?.deduction_bid_material_tax_details || []).map(
+          (charge) => {
+            const matchedTax = deductionTaxOptions?.find(
+              (tax) =>
+                tax.value?.trim().toLowerCase() ===
+                charge.taxChargeType.trim().toLowerCase()
+            );
 
-          return {
-            resource_id: matchedTax?.id || null,
-            resource_type: matchedTax?.type || "TaxCharge",
-            amount: charge.amount,
-            inclusive: charge.inclusive,
-            addition: false,
-          };
-        }),
+            return {
+              resource_id: matchedTax?.id || null,
+              resource_type: matchedTax?.type || "TaxCharge",
+              amount: charge.amount,
+              inclusive: charge.inclusive,
+              addition: false,
+            };
+          }
+        ),
       ];
 
       const extraFields = Object.keys(row.extra_data || {}).reduce(
@@ -968,10 +978,10 @@ export default function VendorDetails() {
 
     const extractShortTableData = Array.isArray(shortTableData)
       ? shortTableData.reduce((acc, curr) => {
-        const { firstBid, counterBid } = curr.value;
-        acc[curr.label] = counterBid || firstBid;
-        return acc;
-      }, {})
+          const { firstBid, counterBid } = curr.value;
+          acc[curr.label] = counterBid || firstBid;
+          return acc;
+        }, {})
       : {};
 
     // const mappedBidMaterials = bid.bid_materials_attributes.map((material) => {
@@ -1103,55 +1113,63 @@ export default function VendorDetails() {
         const landedAmount = rowTotal - discountAmount;
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
-      
-        const fullTaxRow = originalTaxRateDataRef.current[index]; // ✅ full latest snapshot
-        console.log("fullTaxRow :------",fullTaxRow);
-        
-      
-        const taxDetails = [
-          ...(fullTaxRow?.addition_bid_material_tax_details || []).map((charge) => {
-            const matchedTax = taxOptions.find(
-              (tax) =>
-                tax.id ===
-                charge.resource_id
-            );
 
-            console.log(matchedTax, "matchedTax", charge, "charge", taxOptions);
-            
-      
-            return {
-              resource_id: matchedTax?.id || null,
-              resource_type: matchedTax?.taxChargeType || "",
-              amount: parseFloat(charge.amount || 0), // ensure clean amount
-              inclusive: charge.inclusive,
-              addition: true,
-            };
-          }),
-      
-          ...(fullTaxRow?.deduction_bid_material_tax_details || []).map((charge) => {
-            const matchedTax = deductionTaxOptions.find(
-              (tax) =>
-                // tax.value?.trim().toLowerCase() ===
-                // charge.taxChargeType?.trim().toLowerCase()
-                tax.id ===
-                charge.resource_id
-            );
-      
-            return {
-              resource_id: matchedTax?.id || null,
-              resource_type: matchedTax?.taxChargeType || "TaxCategory",
-              amount: parseFloat(charge.amount || 0),
-              inclusive: charge.inclusive,
-              addition: false,
-            };
-          }),
+        const fullTaxRow = originalTaxRateDataRef.current[index]; // ✅ full latest snapshot
+        console.log("fullTaxRow :------", fullTaxRow);
+
+        const taxDetails = [
+          ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = taxOptions.find(
+                (tax) => tax.id === charge.resource_id
+              );
+
+              console.log(
+                matchedTax,
+                "matchedTax",
+                charge,
+                "charge",
+                taxOptions
+              );
+
+              return {
+                resource_id: matchedTax?.id || null,
+                resource_type: matchedTax?.taxChargeType || "",
+                amount: parseFloat(charge.amount || 0), // ensure clean amount
+                inclusive: charge.inclusive,
+                addition: true,
+              };
+            }
+          ),
+
+          ...(fullTaxRow?.deduction_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = deductionTaxOptions.find(
+                (tax) =>
+                  // tax.value?.trim().toLowerCase() ===
+                  // charge.taxChargeType?.trim().toLowerCase()
+                  tax.id === charge.resource_id
+              );
+
+              return {
+                resource_id: matchedTax?.id || null,
+                resource_type: matchedTax?.taxChargeType || "TaxCategory",
+                amount: parseFloat(charge.amount || 0),
+                inclusive: charge.inclusive,
+                addition: false,
+              };
+            }
+          ),
         ];
-      
-        const extraFields = Object.keys(row.extra_data || {}).reduce((acc, key) => {
-          acc[key] = row.extra_data[key]?.value || "";
-          return acc;
-        }, {});
-      
+
+        const extraFields = Object.keys(row.extra_data || {}).reduce(
+          (acc, key) => {
+            acc[key] = row.extra_data[key]?.value || "";
+            return acc;
+          },
+          {}
+        );
+
         return {
           event_material_id: row.eventMaterialId,
           quantity_available: row.quantityAvail || 0,
@@ -1167,14 +1185,13 @@ export default function VendorDetails() {
           ...extraFields,
         };
       });
-      
 
       const extractShortTableData = Array.isArray(shortTableData)
         ? shortTableData.reduce((acc, curr) => {
-          const { firstBid, counterBid } = curr.value;
-          acc[curr.label] = counterBid || firstBid;
-          return acc;
-        }, {})
+            const { firstBid, counterBid } = curr.value;
+            acc[curr.label] = counterBid || firstBid;
+            return acc;
+          }, {})
         : {};
 
       const payload = {
@@ -1267,6 +1284,8 @@ export default function VendorDetails() {
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [documentAttachment, setDocumentAttachment] = useState(true);
+  const [orderConfig, setOrderConfig] = useState(true);
+  const [orderDetails, setOrderDetails] = useState(true);
   const [deliveryDate, setDelivaryDate] = useState(null);
 
   // console.log("Event ID:", eventId);
@@ -1289,6 +1308,12 @@ export default function VendorDetails() {
 
   const handleDocumentAttachment = () => {
     setDocumentAttachment(!documentAttachment);
+  };
+  const handleOrderConfig = () => {
+    setOrderConfig(!orderConfig);
+  };
+  const handleOrderDetails = () => {
+    setOrderDetails(!orderDetails);
   };
 
   const formatDate = (date) => {
@@ -1680,6 +1705,53 @@ export default function VendorDetails() {
         console.log("Event Data Response:", data);
 
         setData1(data);
+
+        const startTime = new Date(data?.event_schedule?.start_time);
+        const endTime = new Date(data?.event_schedule?.end_time);
+
+        const calculateOrderDuration = (start, end) => {
+          if (!start || !end) return "_";
+          const durationMs = end - start;
+          const hours = Math.floor(durationMs / (1000 * 60 * 60));
+          const minutes = Math.floor(
+            (durationMs % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          return `${hours} Hours ${minutes} Minutes`;
+        };
+
+        const newOrderConfig = [
+          {
+            label: "Order Type",
+            value: data?.event_type_detail?.event_type || "_",
+          },
+          {
+            label: "Order Mode",
+            value: data?.event_type_detail?.award_scheme || "_",
+          },
+          {
+            label: "Started at",
+            value: startTime.toLocaleString() || "_",
+          },
+          {
+            label: "Ended at",
+            value: endTime.toLocaleString() || "_",
+          },
+          {
+            label: "Order Duration",
+            value: calculateOrderDuration(startTime, endTime),
+          },
+          {
+            label: "Evaluation Time",
+            value: data?.event_schedule?.evaluation_time || "_",
+          },
+          {
+            label: "Delivery by",
+            value: data?.delivery_date
+              ? new Date(data.delivery_date).toLocaleString()
+              : "_",
+          },
+        ];
+        setOrderConfig(newOrderConfig);
 
         setDate(data?.event_schedule?.start_time || "");
         setEndDate(data?.event_schedule?.end_time_duration || "");
@@ -2137,42 +2209,50 @@ export default function VendorDetails() {
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     const updatedTaxRateData = structuredClone(taxRateData);
     const originalDataClone = structuredClone(originalTaxRateDataRef.current);
-  
+
     const targetRow = updatedTaxRateData[rowIndex];
     const originalRow = originalDataClone[rowIndex];
     if (!targetRow || !originalRow) return;
-  
+
     const isAddition = type === "addition";
     const taxDetailsKey = isAddition
       ? "addition_bid_material_tax_details"
       : "deduction_bid_material_tax_details";
-  
+
     const taxCharges = [...targetRow[taxDetailsKey]];
     const chargeIndex = taxCharges.findIndex((item) => item.id === id);
     if (chargeIndex === -1) return;
-  
+
     const charge = { ...taxCharges[chargeIndex] };
-  
+
     const isManualInputAllowed = [
       "Handling Charges",
       "Other charges",
       "Freight",
     ].includes(charge.taxChargeType);
-  
+
     if (field === "amount") {
       // Directly store the string value for smooth typing
       charge.amount = value;
-  
+
       // Now parse only for calculations (not display)
       const numericAmount = parseFloat(value);
-      if (!isManualInputAllowed && !charge.inclusive && targetRow.afterDiscountValue && !isNaN(numericAmount)) {
-        const newPerUOM = ((numericAmount / parseFloat(targetRow.afterDiscountValue)) * 100).toFixed(2);
+      if (
+        !isManualInputAllowed &&
+        !charge.inclusive &&
+        targetRow.afterDiscountValue &&
+        !isNaN(numericAmount)
+      ) {
+        const newPerUOM = (
+          (numericAmount / parseFloat(targetRow.afterDiscountValue)) *
+          100
+        ).toFixed(2);
         charge.taxChargePerUom = newPerUOM;
       }
     } else {
       charge[field] = value;
     }
-  
+
     // Recalculate amount if perUOM is changed
     if (
       !charge.inclusive &&
@@ -2186,20 +2266,19 @@ export default function VendorDetails() {
       );
       charge.amount = taxAmount.toFixed(2); // Optional: format
     }
-  
+
     taxCharges[chargeIndex] = charge;
     targetRow[taxDetailsKey] = taxCharges;
     updatedTaxRateData[rowIndex] = targetRow;
-  
+
     const recalculated = updatedTaxRateData.map((row, idx) => ({
       ...row,
       netCost: calculateNetCost(idx, updatedTaxRateData),
     }));
-  
+
     setTaxRateData(recalculated);
     originalTaxRateDataRef.current = structuredClone(recalculated);
   };
-  
 
   const addAdditionTaxCharge = (rowIndex) => {
     const newItem = {
@@ -2211,7 +2290,9 @@ export default function VendorDetails() {
     };
 
     const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(newItem);
+    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
+      newItem
+    );
     setTaxRateData(updatedTaxRateData);
   };
 
@@ -2225,7 +2306,9 @@ export default function VendorDetails() {
     };
 
     const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.push(newItem);
+    updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.push(
+      newItem
+    );
     setTaxRateData(updatedTaxRateData);
   };
 
@@ -2250,16 +2333,14 @@ export default function VendorDetails() {
 
   const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     if (inclusive) return 0;
-  
+
     const safePercentage =
       typeof percentage === "string" ? percentage.replace("%", "") : percentage;
     const parsedPercentage = parseFloat(safePercentage) || 0;
     const parsedBaseAmount = parseFloat(baseAmount) || 0;
-  
+
     return (parsedPercentage / 100) * parsedBaseAmount;
   };
-  
-
 
   const calculateNetCost = (rowIndex, updatedData = taxRateData) => {
     const taxRateRow = updatedData[rowIndex];
@@ -2544,24 +2625,24 @@ export default function VendorDetails() {
                           </h4>
                           {linkedData?.event_type_detail?.event_type ===
                             "auction" && (
-                              <span
-                                style={{
-                                  backgroundColor: "#fff2e8",
-                                  color: "#8b0203",
-                                  padding: "5px 10px",
-                                  borderRadius: "5px",
-                                  marginLeft: "25px",
-                                  fontSize: "0.85rem",
-                                  fontWeight: "bold",
-                                  borderColor: "#ffbb96",
-                                }}
-                              >
-                                {linkedData?.event_type_detail
-                                  ?.event_configuration === "rank_based"
-                                  ? `rank: ${linkedData?.bids?.[0]?.rank}`
-                                  : `price: ${linkedData?.bids?.[0]?.min_price}`}
-                              </span>
-                            )}
+                            <span
+                              style={{
+                                backgroundColor: "#fff2e8",
+                                color: "#8b0203",
+                                padding: "5px 10px",
+                                borderRadius: "5px",
+                                marginLeft: "25px",
+                                fontSize: "0.85rem",
+                                fontWeight: "bold",
+                                borderColor: "#ffbb96",
+                              }}
+                            >
+                              {linkedData?.event_type_detail
+                                ?.event_configuration === "rank_based"
+                                ? `rank: ${linkedData?.bids?.[0]?.rank}`
+                                : `price: ${linkedData?.bids?.[0]?.min_price}`}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <></>
@@ -2767,8 +2848,8 @@ export default function VendorDetails() {
                         <ShortTable
                           data={freightData2}
                           editable={false}
-                        // readOnly={isReadOnly} //// Flag to enable input fields
-                        // onValueChange={handleFreightDataChange} // Callback for changes
+                          // readOnly={isReadOnly} //// Flag to enable input fields
+                          // onValueChange={handleFreightDataChange} // Callback for changes
                         />
                       </div>
 
@@ -2833,8 +2914,8 @@ export default function VendorDetails() {
                                   index === 0
                                     ? "Current Bid"
                                     : index === bids2.length - 1
-                                      ? "Initial Bid" // The last button shows "Initial Bid"
-                                      : `${getOrdinalInText(
+                                    ? "Initial Bid" // The last button shows "Initial Bid"
+                                    : `${getOrdinalInText(
                                         bids.length - index
                                       )} Bid`; // Use the ordinal word for other buttons
 
@@ -3004,10 +3085,10 @@ export default function VendorDetails() {
 
             <div
               className="p-3 mb-2 "
-            // style={{
-            //   overflowY: "auto",
-            //   height: "calc(100vh - 100px)",
-            // }}
+              // style={{
+              //   overflowY: "auto",
+              //   height: "calc(100vh - 100px)",
+              // }}
             >
               {loading ? (
                 "Loading...."
@@ -3090,25 +3171,25 @@ export default function VendorDetails() {
                                       <tr>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           1
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           [{data1.event_no}] {data1.event_title}
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.status}
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.event_schedule?.start_time ? (
                                             <FormatDate
@@ -3122,7 +3203,7 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.event_schedule?.end_time ? (
                                             <FormatDate
@@ -3136,7 +3217,7 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {Delivarydate}
                                         </td>
@@ -3204,7 +3285,7 @@ export default function VendorDetails() {
                               <div className=" card card-body rounded-3 p-0">
                                 <ul
                                   className=" mt-3 mb-3"
-                                // style={{ fontSize: "13px", marginLeft: "0px" }}
+                                  // style={{ fontSize: "13px", marginLeft: "0px" }}
                                 >
                                   {/* {terms.map((term) => (
                                     <li key={term.id} className="mb-3 mt-3">
@@ -3294,25 +3375,25 @@ export default function VendorDetails() {
                                       <tr>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           1
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.created_by}
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.created_by_email}
                                         </td>
                                         <td
                                           className="text-start"
-                                        // style={{ color: "#777777" }}
+                                          // style={{ color: "#777777" }}
                                         >
                                           {data1.crated_by_mobile}
                                         </td>
@@ -3427,25 +3508,25 @@ export default function VendorDetails() {
                                           <tr key={data.id}>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {index + 1}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.material_type}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.inventory_sub_type}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.inventory_name}
                                             </td>
@@ -3457,31 +3538,31 @@ export default function VendorDetails() {
                                             </td> */}
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.quantity}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.uom_name}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.location}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.rate}
                                             </td>
                                             <td
                                               className="text-start"
-                                            // style={{ color: "#777777" }}
+                                              // style={{ color: "#777777" }}
                                             >
                                               {data.amount}
                                             </td>
@@ -3506,7 +3587,15 @@ export default function VendorDetails() {
                           )}
                         </div>
 
-                        <div className="col-12 pb-4 pt-3">
+                        <div className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
                           <a
                             className="btn d-flex justify-content-between w-100"
                             data-bs-toggle="collapse"
@@ -3610,17 +3699,216 @@ export default function VendorDetails() {
                                           </tr>
                                         )
                                       ) || (
-                                          <tr>
-                                            <td
-                                              colSpan="5"
-                                              className="text-center"
-                                            >
-                                              No attachments available.
-                                            </td>
-                                          </tr>
-                                        )}
+                                        <tr>
+                                          <td
+                                            colSpan="5"
+                                            className="text-center"
+                                          >
+                                            No attachments available.
+                                          </td>
+                                        </tr>
+                                      )}
                                     </tbody>
                                   </table>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+                          <a
+                            className="btn d-flex justify-content-between w-100"
+                            data-bs-toggle="collapse"
+                            href="#order-config"
+                            role="button"
+                            aria-expanded={orderConfig}
+                            aria-controls="order-config"
+                            onClick={handleOrderConfig}
+                            style={{ fontSize: "16px", fontWeight: "normal" }}
+                          >
+                            <div>
+                              <span
+                                id="order-config-icon"
+                                className="icon-1"
+                                style={{
+                                  marginRight: "8px",
+                                  border: "1px solid #dee2e6",
+                                  paddingTop: "10px",
+                                  paddingBottom: "10px",
+                                  paddingLeft: "8px",
+                                  paddingRight: "8px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                {orderConfig ? (
+                                  <i className="bi bi-dash-lg"></i>
+                                ) : (
+                                  <i className="bi bi-plus-lg"></i>
+                                )}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                Order Configuration
+                              </span>
+                            </div>
+                          </a>
+                          {orderConfig && (
+                            <div
+                              id="order-config"
+                              className="mt-2"
+                              style={{ paddingLeft: "24px" }}
+                            >
+                              <div className="card card-body rounded-3 p-4">
+                                {/* Document Details Table */}
+                                <div className="row">
+                                  {orderConfig?.map((item, idx) => (
+                                    <div className="total-activity col-3 my-3" key={idx}>
+                                      <p>{item.label}</p>
+                                      <p
+                                        id={item.id}
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitBoxOrient: "vertical",
+                                          WebkitLineClamp: 2,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "normal",
+                                        }}
+                                      >
+                                        {item.value}
+                                      </p>
+                                      {/* <p>
+                                      <strong>{item.label}</strong>: {item.value}
+                                    </p> */}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+                          <a
+                            className="btn d-flex justify-content-between w-100"
+                            data-bs-toggle="collapse"
+                            href="#order-details"
+                            role="button"
+                            aria-expanded={orderDetails}
+                            aria-controls="order-details"
+                            onClick={handleOrderConfig}
+                            style={{ fontSize: "16px", fontWeight: "normal" }}
+                          >
+                            <div>
+                              <span
+                                id="order-details-icon"
+                                className="icon-1"
+                                style={{
+                                  marginRight: "8px",
+                                  border: "1px solid #dee2e6",
+                                  paddingTop: "10px",
+                                  paddingBottom: "10px",
+                                  paddingLeft: "8px",
+                                  paddingRight: "8px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                {orderDetails ? (
+                                  <i className="bi bi-dash-lg"></i>
+                                ) : (
+                                  <i className="bi bi-plus-lg"></i>
+                                )}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                Order Details
+                              </span>
+                            </div>
+                          </a>
+                          {orderDetails && (
+                            <div
+                              id="order-config"
+                              className="mt-2"
+                              style={{ paddingLeft: "24px" }}
+                            >
+                              <div className="card card-body rounded-3 p-4">
+                                {/* Document Details Table */}
+                                <div className="row">
+                                  {/* {orderConfig?.map((item, idx) => (
+                                    <div className="total-activity col-3 my-3" key={idx}>
+                                      <p>{item.label}</p>
+                                      <p
+                                        id={item.id}
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitBoxOrient: "vertical",
+                                          WebkitLineClamp: 2,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "normal",
+                                        }}
+                                      >
+                                        {item.value}
+                                      </p>
+                                    </div>
+                                    ))} */}
+                                    <div className="total-activity col-3 my-3" >
+                                      <p> Event Title</p>
+                                      <p
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitBoxOrient: "vertical",
+                                          WebkitLineClamp: 2,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "normal",
+                                        }}
+                                      >
+                                        {console.log("dta1",data1)
+                                        }
+                                        {data1.event_no}{" "}{data1.event_title}
+                                      </p>
+                                    </div>
+                                    <div className="total-activity col-3 my-3" >
+                                      <p>Event Description</p>
+                                      <p
+                                        style={{
+                                          display: "-webkit-box",
+                                          WebkitBoxOrient: "vertical",
+                                          WebkitLineClamp: 2,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "normal",
+                                        }}
+                                      >
+                                        {data1.event_description}
+                                      </p>
+                                    </div>
+
                                 </div>
                               </div>
                             </div>
@@ -3692,14 +3980,14 @@ export default function VendorDetails() {
                           </span>
                         </h4>
                         {isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted ? (
+                        loading ||
+                        counterData > 0 ||
+                        currentIndex !== 0 ||
+                        submitted ? (
                           <></>
                         ) : (
                           data1?.event_type_detail?.event_type ===
-                          "auction" && (
+                            "auction" && (
                             <span
                               style={{
                                 backgroundColor: "#fff2e8",
@@ -3713,7 +4001,7 @@ export default function VendorDetails() {
                               }}
                             >
                               {data1?.event_type_detail?.event_configuration ===
-                                "rank_based"
+                              "rank_based"
                                 ? `Rank: ${bids[0]?.rank ?? "N/A"}`
                                 : `Price: ₹${bids[0]?.min_price ?? "N/A"}`}
                             </span>
@@ -4345,7 +4633,7 @@ export default function VendorDetails() {
                               const showArrow =
                                 counterData &&
                                 previousRealisedDiscount !==
-                                updatedRealisedDiscount;
+                                  updatedRealisedDiscount;
 
                               return showArrow ? (
                                 <div
@@ -4731,8 +5019,8 @@ export default function VendorDetails() {
                                     ? col.label
                                     : col.value &&
                                       row?.extra_data?.[col.value] !== undefined
-                                      ? col.value
-                                      : col.key;
+                                    ? col.value
+                                    : col.key;
 
                                 const revisedBid = row?.revised_bid;
                                 const extraData = row?.extra_data?.[currentKey];
@@ -4763,16 +5051,16 @@ export default function VendorDetails() {
                                               updatedRow.extra_data = {};
 
                                             updatedRow.extra_data[currentKey] =
-                                            {
-                                              ...(typeof updatedRow
-                                                .extra_data[currentKey] ===
+                                              {
+                                                ...(typeof updatedRow
+                                                  .extra_data[currentKey] ===
                                                 "object"
-                                                ? updatedRow.extra_data[
-                                                currentKey
-                                                ]
-                                                : {}),
-                                              value: newValue,
-                                            };
+                                                  ? updatedRow.extra_data[
+                                                      currentKey
+                                                    ]
+                                                  : {}),
+                                                value: newValue,
+                                              };
 
                                             return updatedRow;
                                           }
@@ -4862,8 +5150,8 @@ export default function VendorDetails() {
                                   index === 0
                                     ? "Current Bid"
                                     : index === bids.length - 1
-                                      ? "Initial Bid" // The last button shows "Initial Bid"
-                                      : `${getOrdinalInText(
+                                    ? "Initial Bid" // The last button shows "Initial Bid"
+                                    : `${getOrdinalInText(
                                         bids.length - index
                                       )} Bid`; // Use the ordinal word for other buttons
 
@@ -5011,45 +5299,46 @@ export default function VendorDetails() {
                           currentIndex !== 0 || // Disable if it's not the Current Bid
                           submitted
                         }
-                        className={`button ${isBid ||
+                        className={`button ${
+                          isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0 ||
+                          submitted
+                            ? "disabled-btn"
+                            : "button-enabled"
+                        }`}
+                        style={{
+                          backgroundColor:
+                            isBid ||
                             loading ||
                             counterData > 0 ||
                             currentIndex !== 0 ||
                             submitted
-                            ? "disabled-btn"
-                            : "button-enabled"
-                          }`}
-                        style={{
-                          backgroundColor:
-                            isBid ||
-                              loading ||
-                              counterData > 0 ||
-                              currentIndex !== 0 ||
-                              submitted
                               ? "#ccc"
                               : "#8b0203",
                           color:
                             isBid ||
-                              loading ||
-                              counterData > 0 ||
-                              currentIndex !== 0 ||
-                              submitted
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
                               ? "#666"
                               : "#fff",
                           border:
                             isBid ||
-                              loading ||
-                              counterData > 0 ||
-                              currentIndex !== 0 ||
-                              submitted
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
                               ? "1px solid #aaa"
                               : "1px solid #8b0203",
                           cursor:
                             isBid ||
-                              loading ||
-                              counterData > 0 ||
-                              currentIndex !== 0 ||
-                              submitted
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
                               ? "not-allowed"
                               : "pointer",
                           padding: "10px 20px",
@@ -5067,8 +5356,7 @@ export default function VendorDetails() {
         </div>
       </div>
       <ToastContainer />
-      {console.log("revisedBid", revisedBid)
-      }
+      {console.log("revisedBid", revisedBid)}
 
       <DynamicModalBox
         show={showModal}
@@ -5262,11 +5550,15 @@ export default function VendorDetails() {
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
                             if (
-                              taxRateData[tableId]?.addition_bid_material_tax_details.length >= 4
+                              taxRateData[tableId]
+                                ?.addition_bid_material_tax_details.length >= 4
                             ) {
-                              toast.error("You can only add up to 4 fields for Additional Tax & Charges.", {
-                                autoClose: 2000,
-                              });
+                              toast.error(
+                                "You can only add up to 4 fields for Additional Tax & Charges.",
+                                {
+                                  autoClose: 2000,
+                                }
+                              );
                             } else {
                               addAdditionTaxCharge(tableId);
                             }
@@ -5276,93 +5568,141 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                          
-                    {taxRateData[tableId]?.addition_bid_material_tax_details.map((item, rowIndex) => (
-                      <tr key={`${rowIndex}-${item.id}`}>
-                      {console.log("item:----",item,"taxOpiton",)}
-                        <td>
-                          <SelectBox
-                            options={taxOptions}
-                            defaultValue={
-                              item.taxChargeType ||
-                              taxOptions.find((option) => option.id === item.resource_id)?.value
-                            }
-                            onChange={(value) => {
-                              const selectedOption = taxOptions.find((option) => option.value === value);
-                              handleTaxChargeChange(
-                                tableId,
-                                item.id,
-                                "taxChargeType",
-                                selectedOption?.value,
-                                "addition"
-                              );
-                            }}
-                            className="custom-select"
-                            isDisableFirstOption={true}
-                            disabled={
-                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType || taxOptions.find((option) => option.id === item.resource_id)?.value)
-                            }
-                            disabledOptions={
-                              taxRateData[tableId]?.addition_bid_material_tax_details.length === 4 &&
-                                rowIndex === 3
-                                ? ["Handling Charges", "Other charges", "Freight"]
-                                : []
-                            }
-                          />
-                        </td>
 
-                        <td>
-                          <select
-                            className="form-select"
-                            // value={item.taxChargePerUom}
-                            defaultValue={item.taxChargePerUom}
-                            onChange={(e) =>
-                              handleTaxChargeChange(tableId, item.id, "taxChargePerUom", e.target.value, "addition")
-                            }
-                            disabled={
-                              ["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType) || rowIndex <= 2
-                            }
-                          >
-                            <option value="">Select Tax</option>
-                            <option value="5%">5%</option>
-                            <option value="12%">12%</option>
-                            <option value="18%">18%</option>
-                            <option value="28%">28%</option>
-                          </select>
-                        </td>
+                    {taxRateData[
+                      tableId
+                    ]?.addition_bid_material_tax_details.map(
+                      (item, rowIndex) => (
+                        <tr key={`${rowIndex}-${item.id}`}>
+                          {console.log("item:----", item, "taxOpiton")}
+                          <td>
+                            <SelectBox
+                              options={taxOptions}
+                              defaultValue={
+                                item.taxChargeType ||
+                                taxOptions.find(
+                                  (option) => option.id === item.resource_id
+                                )?.value
+                              }
+                              onChange={(value) => {
+                                const selectedOption = taxOptions.find(
+                                  (option) => option.value === value
+                                );
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "taxChargeType",
+                                  selectedOption?.value,
+                                  "addition"
+                                );
+                              }}
+                              className="custom-select"
+                              isDisableFirstOption={true}
+                              disabled={[
+                                "Handling Charges",
+                                "Other charges",
+                                "Freight",
+                              ].includes(
+                                item.taxChargeType ||
+                                  taxOptions.find(
+                                    (option) => option.id === item.resource_id
+                                  )?.value
+                              )}
+                              disabledOptions={
+                                taxRateData[tableId]
+                                  ?.addition_bid_material_tax_details.length ===
+                                  4 && rowIndex === 3
+                                  ? [
+                                      "Handling Charges",
+                                      "Other charges",
+                                      "Freight",
+                                    ]
+                                  : []
+                              }
+                            />
+                          </td>
 
-                        <td className="text-center">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={item.inclusive}
-                            onChange={(e) =>
-                              handleTaxChargeChange(tableId, item.id, "inclusive", e.target.checked, "addition")
-                            }
-                          />
-                        </td>
+                          <td>
+                            <select
+                              className="form-select"
+                              // value={item.taxChargePerUom}
+                              defaultValue={item.taxChargePerUom}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                              disabled={
+                                [
+                                  "Handling Charges",
+                                  "Other charges",
+                                  "Freight",
+                                ].includes(item.taxChargeType) || rowIndex <= 2
+                              }
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="5%">5%</option>
+                              <option value="12%">12%</option>
+                              <option value="18%">18%</option>
+                              <option value="28%">28%</option>
+                            </select>
+                          </td>
 
-                        <td>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={item.amount}
-                            onChange={(e) =>
-                              handleTaxChargeChange(tableId, item.id, "amount", e.target.value, "addition")
-                            }
-                          />
-                        </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "inclusive",
+                                  e.target.checked,
+                                  "addition"
+                                )
+                              }
+                            />
+                          </td>
 
-                        <td className="text-center">
-                          <button
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() => removeTaxChargeItem(tableId, item.id, "addition")}
-                          >
-                            <span>×</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={item.amount}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "amount",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                            />
+                          </td>
+
+                          <td className="text-center">
+                            <button
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() =>
+                                removeTaxChargeItem(
+                                  tableId,
+                                  item.id,
+                                  "addition"
+                                )
+                              }
+                            >
+                              <span>×</span>
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    )}
 
                     <tr>
                       <td>Deduction Tax</td>
@@ -5386,7 +5726,11 @@ export default function VendorDetails() {
                         <td>
                           <SelectBox
                             options={deductionTaxOptions}
-                            defaultValue={deductionTaxOptions.find((option) => option.id == item.resource_id).value}
+                            defaultValue={
+                              deductionTaxOptions.find(
+                                (option) => option.id == item.resource_id
+                              ).value
+                            }
                             onChange={(value) =>
                               handleTaxChargeChange(
                                 tableId,
@@ -5396,7 +5740,6 @@ export default function VendorDetails() {
                                 "deduction"
                               )
                             }
-                            
                           />
                         </td>
                         <td>
@@ -5412,7 +5755,6 @@ export default function VendorDetails() {
                                 "deduction"
                               )
                             }
-                            
                           >
                             <option value="">Select Tax</option>
                             <option value="1%">1%</option>
@@ -5425,7 +5767,6 @@ export default function VendorDetails() {
                             type="checkbox"
                             className="form-check-input"
                             checked={item.inclusive}
-                            
                             onChange={(e) =>
                               handleTaxChargeChange(
                                 tableId,
