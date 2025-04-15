@@ -27,7 +27,6 @@ export default function ParticipantsTab({ data, id }) {
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [vendorData, setVendorData] = useState([]);
-  // @ts-ignore
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
@@ -35,6 +34,7 @@ export default function ParticipantsTab({ data, id }) {
   const pageRange = 6; // Number of pages to display in the pagination
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [companyList, setCompanyList] = useState([]);
 
   const [inviteForm, setInviteForm] = useState({
     name: "",
@@ -42,6 +42,7 @@ export default function ParticipantsTab({ data, id }) {
     mobile: "",
     gstNumber: "",
     panNumber: "",
+    company: "",
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -172,6 +173,19 @@ export default function ParticipantsTab({ data, id }) {
         : []
     );
   }, [data]);
+
+  useEffect(() => {
+    fetch(
+      "https://marathon.lockated.com/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+    )
+      .then((response) => response.json())
+      .then((data) =>
+        setCompanyList(
+          data.list.map((item) => ({ label: item.name, value: item.value }))
+        )
+      )
+      .catch((error) => console.error("Error fetching company list:", error));
+  }, []);
 
   const handleSwitchChange = (e) => {
     const checked = e.target.checked;
@@ -330,11 +344,6 @@ export default function ParticipantsTab({ data, id }) {
     setInviteModal(false);
   };
 
-  // const tableData = filteredData.map((vendor, index) => ({
-  //   srNo: index + 1, // Add serial number
-  //   ...vendor,
-  // }));
-
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
 
@@ -416,43 +425,7 @@ export default function ParticipantsTab({ data, id }) {
               </button>
             </div>
           </div>
-          <div className="d-flex align-items-center">
-            {/* <div className="d-flex align-items-center">
-              <p className="eventList-p1 mb-0 me-2" style={{ textWrap: "nowrap" }}>
-                Show only selected vendors
-              </p>
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                  checked={isSelectCheckboxes}
-                  onChange={handleSwitchChange}
-                />
-              </div>
-            </div> */}
-            {/* <div>
-              <img
-                className="me-2"
-                src="../erp_event_module/img/Separator-dark.svg"
-                alt=""
-              />
-              asd
-            </div> */}
-            {/* <select
-              name="language"
-              className="event-participant-select eventD-forms buyEvent-forms"
-              required
-            >
-              <option value="" disabled selected hidden>
-                Filter by city
-              </option>
-              <option value="indian">xxxxxxxx</option>
-              <option value="nepali">xxxxxxxx</option>
-              <option value="others">Others</option>
-            </select> */}
-          </div>
+          <div className="d-flex align-items-center"></div>
           <button
             className="purple-btn2 mt-3"
             onClick={handleVendorTypeModalShow}
@@ -465,7 +438,6 @@ export default function ParticipantsTab({ data, id }) {
         </div>
         {vendorData.length > 0 ? (
           <>
-            {/* {console.log("vendorData:---",vendorData)} */}
             <Table
               columns={participantsTabColumns} // Use columns with serial number
               data={vendorData}
@@ -542,13 +514,6 @@ export default function ParticipantsTab({ data, id }) {
                   <i className="bi bi-person-plus"></i>
                   <span className="ms-2">Invite</span>
                 </button>
-                {/* <button
-                      className="purple-btn2 viewBy-main-child2P mb-0"
-                      onClick={() => setShowPopup(true)}
-                    >
-                      <i className="bi bi-filter"></i>
-                      <span className="ms-2">Filters</span>
-                    </button> */}
 
                 <PopupBox
                   title="Filter by"
@@ -581,29 +546,6 @@ export default function ParticipantsTab({ data, id }) {
                           isDisableFirstOption={true}
                         />
                       </div>
-
-                      {/* <div style={{ marginBottom: "12px" }}>
-                            <p>Filter By Tags</p>
-                            <MultiSelector
-                              options={options}
-                              value={selectedTags}
-                              onChange={handleChange}
-                              placeholder={"Filter by tags"}
-                            />
-                          </div> */}
-                      {/* <div className="d-flex align-items-center">
-                            <div className="form-check form-switch mt-1">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="flexSwitchCheckDefault"
-                              />
-                            </div>
-                            <p className="mb-0 pe-1">
-                              Show only selected vendors
-                            </p>
-                          </div> */}
                     </div>
                   }
                 />
@@ -633,7 +575,6 @@ export default function ParticipantsTab({ data, id }) {
             </div>
             <div className="d-flex justify-content-between align-items-center px-1 mt-2">
               <ul className="pagination justify-content-center d-flex ">
-                {/* First Button */}
                 <li
                   className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
                 >
@@ -645,7 +586,6 @@ export default function ParticipantsTab({ data, id }) {
                   </button>
                 </li>
 
-                {/* Previous Button */}
                 <li
                   className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
                 >
@@ -658,7 +598,6 @@ export default function ParticipantsTab({ data, id }) {
                   </button>
                 </li>
 
-                {/* Dynamic Page Numbers */}
                 {getPageRange().map((pageNumber) => (
                   <li
                     key={pageNumber}
@@ -675,7 +614,6 @@ export default function ParticipantsTab({ data, id }) {
                   </li>
                 ))}
 
-                {/* Next Button */}
                 <li
                   className={`page-item ${
                     currentPage === totalPages ? "disabled" : ""
@@ -690,7 +628,6 @@ export default function ParticipantsTab({ data, id }) {
                   </button>
                 </li>
 
-                {/* Last Button */}
                 <li
                   className={`page-item ${
                     currentPage === totalPages ? "disabled" : ""
@@ -705,9 +642,7 @@ export default function ParticipantsTab({ data, id }) {
                   </button>
                 </li>
               </ul>
-              {/* Display Data */}
 
-              {/* Showing entries count */}
               <div>
                 <p>
                   Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
@@ -781,9 +716,7 @@ export default function ParticipantsTab({ data, id }) {
                   inputMode="numeric" // mobile-friendly numeric keyboard
                   pattern="[0-9]*" // restricts to digits only
                   onKeyDown={(e) => {
-                    // Allow only numbers
                     const invalidChars = ["e", "E", "+", "-", ".", ","];
-
                     if (
                       invalidChars.includes(e.key) ||
                       (isNaN(Number(e.key)) &&
@@ -831,6 +764,18 @@ export default function ParticipantsTab({ data, id }) {
                 {formErrors.panNumber && (
                   <small className="text-danger">{formErrors.panNumber}</small>
                 )}
+              </div>
+              <div className="form-group mb-3">
+                <label className="po-fontBold">Company</label>
+                <SelectBox
+                  options={companyList}
+                  onChange={(selectedOption) =>
+                    setInviteForm((prev) => ({
+                      ...prev,
+                      company: selectedOption.value,
+                    }))
+                  }
+                />
               </div>
             </form>
           </>

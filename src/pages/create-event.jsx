@@ -84,7 +84,23 @@ export default function CreateEvent() {
     mobile: "",
     gstNumber: "",
     panNumber: "",
+    company: "",
   });
+
+  const [companyList, setCompanyList] = useState([]);
+
+  useEffect(() => {
+    fetch(
+      "https://marathon.lockated.com/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+    )
+      .then((response) => response.json())
+      .then((data) =>
+        setCompanyList(
+          data.list.map((item) => ({ label: item.name, value: item.value }))
+        )
+      )
+      .catch((error) => console.error("Error fetching company list:", error));
+  }, []);
 
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
@@ -810,6 +826,7 @@ export default function CreateEvent() {
           mobile: "",
           gstNumber: "",
           panNumber: "",
+          company: "",
         });
 
         handleInviteModalClose();
@@ -1673,6 +1690,18 @@ export default function CreateEvent() {
                                     placeholder="Enter PAN Number"
                                     value={inviteVendorData.panNumber || ""}
                                     onChange={handleInviteVendorChange}
+                                  />
+                                </div>
+                                <div className="form-group mb-3">
+                                  <label className="po-fontBold">Company</label>
+                                  <SelectBox
+                                    options={companyList}
+                                    onChange={(selectedOption) =>
+                                      setInviteVendorData((prev) => ({
+                                        ...prev,
+                                        company: selectedOption.value,
+                                      }))
+                                    }
                                   />
                                 </div>
                               </form>

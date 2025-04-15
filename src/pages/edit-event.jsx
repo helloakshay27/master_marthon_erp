@@ -65,8 +65,6 @@ export default function EditEvent() {
     },
   ]);
 
-  // console.log("materialFormData edit page-------------", materialFormData);
-
   const Loader = () => (
     <div className="loader-container">
       <div className="lds-ring">
@@ -80,7 +78,6 @@ export default function EditEvent() {
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
-  // @ts-ignore
   const [selectedCity, setSelectedCity] = useState([]);
   const [isTrafficSelected, setIsTrafficSelected] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -95,19 +92,12 @@ export default function EditEvent() {
   const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
   const [matchedTerm, setMatchedTerm] = useState({});
 
-  // @ts-ignore
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
-  // @ts-ignore
   const [selectedVendors, setSelectedVendors] = useState([]);
-  // @ts-ignore
-  // @ts-ignore
   const [eventSchedule, setEventSchedule] = useState("");
-  // @ts-ignore
   const [scheduleData, setScheduleData] = useState({});
   const [addTerm, setAddTerm] = useState(false);
   const [showSelectBox, setShowSelectBox] = useState(false);
-  // @ts-ignore
-  // @ts-ignore
   const [data, setData] = useState([
     { user: "", date: "", status: "", remark: "" },
   ]);
@@ -143,7 +133,6 @@ export default function EditEvent() {
   const handleEventTypeModalClose = () => {
     setEventTypeModal(false);
   };
-  // @ts-ignore
   const handleInviteModalShow = () => {
     setVendorModal(false);
     setInviteModal(true);
@@ -158,9 +147,6 @@ export default function EditEvent() {
     setPublishEventModal(false);
   };
   const handleEventScheduleModalShow = () => {
-    // if (!dynamicExtensionConfigurations.delivery_date) {
-    //   toast.warn("Please fill the delivery date on Event Type");
-    // } else {
     setEventScheduleModal(true);
   };
   const handleEventScheduleModalClose = () => {
@@ -200,7 +186,6 @@ export default function EditEvent() {
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
-    // console.log("scheduleText", scheduleText, data.end_time_duration);
   };
 
   const [eventScheduleText, setEventScheduleText] = useState("");
@@ -238,7 +223,6 @@ export default function EditEvent() {
 
   const handleDynamicExtensionChange = (id, isChecked) => {
     setDynamicExtension((prevState) => ({
-      // @ts-ignore
       ...prevState,
       [id]: isChecked,
     }));
@@ -276,8 +260,6 @@ export default function EditEvent() {
   }, []);
 
   const handleEventConfigurationSubmit = (config) => {
-    // console.log("config", config);
-
     setEventType(config.event_type);
     setAwardType(config.award_scheme);
     setSelectedStrategy(config.event_configuration);
@@ -315,9 +297,6 @@ export default function EditEvent() {
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
 
-  // @ts-ignore
-  // @ts-ignore
-  // const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending");
 
@@ -351,7 +330,6 @@ export default function EditEvent() {
       const data = await response.json();
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
 
-      // Remove already selected vendors before setting tableData
       const formattedData = vendors
         .map((vendor) => ({
           id: vendor.id,
@@ -389,7 +367,6 @@ export default function EditEvent() {
   useEffect(() => {
     if (eventDetails) {
       seteventName(eventDetails?.event_title);
-      // setTextareaId(eventDetails?.resource_term_conditions?.[0]?.term_condition_id);
       setSelectedTemplate(
         eventDetails?.applied_event_template?.event_template_id
       );
@@ -407,7 +384,6 @@ export default function EditEvent() {
 
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => {
-          // Dynamically include all fields from the payload
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
             if (
               ![
@@ -460,19 +436,15 @@ export default function EditEvent() {
   }, [eventDetails, termsOptions]);
 
   useEffect(() => {
-    // console.log("eventDetails?.resource_term_conditions", eventDetails?.resource_term_conditions);
-
     if (eventDetails?.resource_term_conditions?.length > 0) {
       setIsTextId(true);
     }
 
     setTextareas(
       eventDetails?.resource_term_conditions?.map((term) => {
-        // console.log("term:---", term);
-
         return {
           textareaId: term.term_condition_id,
-          id: term.id || null, // Ensure id is null if it doesn't exist
+          id: term.id || null,
           value: term.term_condition.condition,
           defaultOption: matchedTerm
             ? { label: matchedTerm?.label, value: matchedTerm?.value }
@@ -494,11 +466,9 @@ export default function EditEvent() {
   };
 
   const getPageRange = () => {
-    // Calculate the starting page for the range
     let startPage = Math.max(currentPage - Math.floor(pageRange / 2), 1);
     let endPage = startPage + pageRange - 1;
 
-    // Ensure the range doesn't exceed the total pages
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = Math.max(endPage - pageRange + 1, 1);
@@ -533,20 +503,11 @@ export default function EditEvent() {
   };
 
   const handleRemoveTextarea = (index) => {
-    // setTextareas((prev) => prev.filter((_, idx) => idx !== index));
     const updatedTextareas = textareas.filter(
       (textarea) => textarea.id !== index
     );
     setTextareas([...updatedTextareas]);
   };
-
-  // const handleTextareaChange = (id, value) => {
-  //   setTextareas(
-  //     textareas.map((textarea) =>
-  //       textarea.id === id ? { ...textarea, value } : textarea
-  //     )
-  //   );
-  // };
 
   const handleConditionChange = (id, selectedOption) => {
     const selectedCondition = termsOptions.find(
@@ -558,13 +519,6 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                // ...textarea,
-                // id: selectedCondition.value,
-                // value: selectedCondition.condition,
-                // defaultOption: {
-                //   label: selectedCondition.label,
-                //   value: selectedCondition.value,
-                // },
                 id: textarea.id,
                 value: selectedCondition.condition,
                 textareaId: selectedCondition.value,
@@ -586,7 +540,6 @@ export default function EditEvent() {
     if (documentRows.length > 1) {
       const updatedRows = documentRows.filter((_, i) => i !== index);
 
-      // Reset row numbers properly
       updatedRows.forEach((row, i) => {
         row.srNo = i + 1;
       });
@@ -597,7 +550,7 @@ export default function EditEvent() {
   };
 
   const handleFileChange = (index, file) => {
-    if (!file) return; // Ensure a file is selected
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -614,10 +567,9 @@ export default function EditEvent() {
 
     reader.readAsDataURL(file);
 
-    // Reset the input field to allow re-selecting the same file
     const inputElement = document.getElementById(`file-input-${index}`);
     if (inputElement) {
-      inputElement.value = ""; // Clear input value
+      inputElement.value = "";
     }
   };
 
@@ -654,12 +606,8 @@ export default function EditEvent() {
     });
   };
 
-  // ("eventDetails:----", eventDetails);
-
   const scrollToTop = () => {
     if (myRef.current) {
-      console.log("scrolling to top", myRef.current);
-
       myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
     }
   };
@@ -724,14 +672,10 @@ export default function EditEvent() {
   };
 
   const [eventData1, setEventData1] = useState(eventData2);
-  // useEffect(() => {
-  //   console.log("Event Data Debug:", JSON.stringify(selectedVendors, null, 2));
-  // }, [eventData1, selectedVendors]);
 
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
-    console.log(eventDetails);
 
     if (!eventName || !createdOn || selectedVendors.length === 0) {
       scrollToTop();
@@ -746,7 +690,6 @@ export default function EditEvent() {
     }
 
     setSubmitted(true);
-    console.log("materialFormData :-----", materialFormData);
 
     const eventData = {
       event: {
@@ -800,7 +743,7 @@ export default function EditEvent() {
                 "pms_colour_id",
               ].includes(key)
             ) {
-              acc[key] = material[key] || null; // Include dynamic fields
+              acc[key] = material[key] || null;
             }
             return acc;
           }, {});
@@ -817,11 +760,11 @@ export default function EditEvent() {
             section_name: material.section_id,
             inventory_type_id: material.inventory_type_id,
             inventory_sub_type_id: material.inventory_sub_type_id,
-            pms_brand_id: material.pms_brand_id || null, // Include pms_brand_id
-            pms_colour_id: material.pms_colour_id || null, // Include pms_colour_id
-            generic_info_id: material.generic_info_id || null, // Include generic_info_id
+            pms_brand_id: material.pms_brand_id || null,
+            pms_colour_id: material.pms_colour_id || null,
+            generic_info_id: material.generic_info_id || null,
             _destroy: material._destroy || false,
-            ...dynamicFields, // Add dynamic fields
+            ...dynamicFields,
           };
         }),
         event_vendors_attributes: selectedVendors.map((vendor) => ({
@@ -876,8 +819,6 @@ export default function EditEvent() {
         },
       },
     };
-
-    console.log("payload:-", eventData);
 
     try {
       const response = await fetch(
@@ -941,9 +882,8 @@ export default function EditEvent() {
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion.name); // Assuming `name` is the property you want
+    setSearchTerm(suggestion.name);
     setIsSuggestionsVisible(false);
-    // setFilteredTableData([suggestion]); // Set the table data to only the selected suggestion
     fetchData(1, suggestion.first_name, "");
   };
 
@@ -974,7 +914,6 @@ export default function EditEvent() {
       );
       const data = await response.json();
       setSuggestions(data.vendors || []);
-      // console.log("Suggestions:", data.vendors);
 
       setIsSuggestionsVisible(true);
     } catch (error) {
@@ -1020,19 +959,14 @@ export default function EditEvent() {
   };
 
   const handleRemoveVendor = (id) => {
-    console.log("⬅️ Before Update", filteredTableData);
-
-    // Get the current selected vendors
     const updatedSelected = selectedVendors.filter(
       (vendor) => vendor.pms_supplier_id !== id
     );
 
-    // Find the vendor to remove
     const removedVendor = selectedVendors.find(
       (vendor) => vendor.pms_supplier_id === id
     );
 
-    // If vendor is found and not already in filteredTableData, add it
     if (removedVendor) {
       const alreadyExists = filteredTableData.some(
         (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
@@ -1041,31 +975,18 @@ export default function EditEvent() {
       if (!alreadyExists) {
         const updatedFiltered = [...filteredTableData, removedVendor];
         setFilteredTableData(updatedFiltered);
-        console.log(
-          "✅ Updated filteredTableData:",
-          updatedFiltered.length,
-          updatedFiltered
-        );
       }
     }
 
-    // Finally update selectedVendors
     setSelectedVendors(updatedSelected);
-
-    // Delay this log to ensure the updated state is shown
-    setTimeout(() => {
-      console.log("➡️ After Update", filteredTableData);
-    }, 100);
   };
 
-  useEffect(() => {
-    // console.log("🔁 filteredTableData changed: ", filteredTableData.length, filteredTableData);
-  }, [filteredTableData]);
+  useEffect(() => {}, [filteredTableData]);
 
   const validateInviteVendorForm = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    const mobileRegex = /^[6-9]\d{9}$/;
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
@@ -1099,6 +1020,21 @@ export default function EditEvent() {
     gstNumber: "",
     panNumber: "",
   });
+
+  const [companyList, setCompanyList] = useState([]);
+
+  useEffect(() => {
+    fetch(
+      "https://marathon.lockated.com/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+    )
+      .then((response) => response.json())
+      .then((data) =>
+        setCompanyList(
+          data.list.map((item) => ({ label: item.name, value: item.value }))
+        )
+      )
+      .catch((error) => console.error("Error fetching company list:", error));
+  }, []);
 
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
@@ -1144,7 +1080,6 @@ export default function EditEvent() {
 
           setSelectedVendors((prev) => [...prev, vendorData]);
 
-          // Clear input after success
           setInviteVendorData({
             name: "",
             email: "",
@@ -1224,7 +1159,7 @@ export default function EditEvent() {
                     className="form-control"
                     onClick={handleEventTypeModalShow}
                     placeholder="Configure The Event"
-                    value={eventTypeText} // Display the selected event type
+                    value={eventTypeText}
                     readOnly
                   />
                 </div>
@@ -1234,9 +1169,8 @@ export default function EditEvent() {
                     <input
                       className="form-control"
                       type="date"
-                      defaultValue={createdOn} // Sets default value to today's date
-                      readOnly // Prevents user from ch
-                      // anging the value
+                      defaultValue={createdOn}
+                      readOnly
                       disabled
                     />
                   </div>
@@ -1251,7 +1185,7 @@ export default function EditEvent() {
                     className="form-control"
                     onClick={handleEventScheduleModalShow}
                     placeholder="From [dd-mm-yy hh:mm] To [dd-mm-yy hh:mm] ([DD] Days [HH] Hrs [MM] Mins)"
-                    value={eventScheduleText} // Display the selected event schedule
+                    value={eventScheduleText}
                     readOnly
                   />
                 </div>
@@ -1287,7 +1221,6 @@ export default function EditEvent() {
                   />
                 </div>
               </div>
-              {/* {console.log("materialFormData :------",materialFormData)} */}
 
               <CreateRFQForm
                 data={materialFormData}
@@ -1347,8 +1280,6 @@ export default function EditEvent() {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
-                            {/* {console.log("vendor", vendor)
-                            } */}
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             <td>{vendor.organisation}</td>
@@ -1400,12 +1331,11 @@ export default function EditEvent() {
                   data={documentRows.map((row, index) => ({
                     upload: (
                       <td style={{ border: "none" }}>
-                        {/* Hidden file input */}
                         <input
                           type="file"
                           id={`file-input-${index}`}
                           key={row?.srNo}
-                          style={{ display: "none" }} // Hide input
+                          style={{ display: "none" }}
                           onChange={(e) =>
                             handleFileChange(index, e.target.files[0])
                           }
@@ -1478,27 +1408,6 @@ export default function EditEvent() {
                       return (
                         <tr key={idx}>
                           <td>
-                            {/* {textarea?.defaultOption?.value && termsOptions && (
-                              <SelectBox
-                                options={termsOptions}
-                                onChange={(option) =>
-                                  handleConditionChange(textarea.id, option)
-                                }
-                                defaultValue={textarea?.defaultOption?.value}
-                              />
-                            )}
-                            {addTerm && !textarea?.defaultOption?.value && (
-                              <SelectBox
-                                options={termsOptions}
-                                onChange={(option) =>
-                                  handleConditionChange(textarea.id, option)
-                                }
-                                defaultValue={termsOptions.find(
-                                  (option) =>
-                                    option.condition === textarea.value
-                                )}
-                              />
-                            )} */}
                             <SelectBox
                               options={termsOptions.map((option) => ({
                                 label: option.label,
@@ -1581,7 +1490,6 @@ export default function EditEvent() {
                 </div>
               </div>
             </div>
-            {/* // vendor model with vendor data */}
             <DynamicModalBox
               size="xl"
               title="All Vendors"
@@ -1688,7 +1596,6 @@ export default function EditEvent() {
                     </div>
                   </div>
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    {/* {console.log("filteredTableData :------",filteredTableData)} */}
                     {filteredTableData.length > 0 ? (
                       <Table
                         columns={participantsTabColumns}
@@ -1712,7 +1619,6 @@ export default function EditEvent() {
                   </div>
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
-                      {/* First Button */}
                       <li
                         className={`page-item ${
                           currentPage === 1 ? "disabled" : ""
@@ -1726,7 +1632,6 @@ export default function EditEvent() {
                         </button>
                       </li>
 
-                      {/* Previous Button */}
                       <li
                         className={`page-item ${
                           currentPage === 1 ? "disabled" : ""
@@ -1741,7 +1646,6 @@ export default function EditEvent() {
                         </button>
                       </li>
 
-                      {/* Dynamic Page Numbers */}
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
@@ -1758,7 +1662,6 @@ export default function EditEvent() {
                         </li>
                       ))}
 
-                      {/* Next Button */}
                       <li
                         className={`page-item ${
                           currentPage === totalPages ? "disabled" : ""
@@ -1773,7 +1676,6 @@ export default function EditEvent() {
                         </button>
                       </li>
 
-                      {/* Last Button */}
                       <li
                         className={`page-item ${
                           currentPage === totalPages ? "disabled" : ""
@@ -1788,9 +1690,7 @@ export default function EditEvent() {
                         </button>
                       </li>
                     </ul>
-                    {/* Display Data */}
 
-                    {/* Showing entries count */}
                     <div>
                       <p>
                         Showing{" "}
@@ -1820,16 +1720,12 @@ export default function EditEvent() {
                 {
                   label: "Close",
                   onClick: handleInviteModalClose,
-                  props: {
-                    className: "purple-btn1",
-                  },
+                  props: { className: "purple-btn1" },
                 },
                 {
                   label: "Save Changes",
                   onClick: handleInviteVendor,
-                  props: {
-                    className: "purple-btn2",
-                  },
+                  props: { className: "purple-btn2" },
                 },
               ]}
               children={
@@ -1863,12 +1759,10 @@ export default function EditEvent() {
                         className="form-control"
                         type="text"
                         name="mobile"
-                        inputMode="numeric" // mobile-friendly numeric keyboard
-                        pattern="[0-9]*" // restricts to digits only
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         onKeyDown={(e) => {
-                          // Allow only numbers
                           const invalidChars = ["e", "E", "+", "-", ".", ","];
-
                           if (
                             invalidChars.includes(e.key) ||
                             (isNaN(Number(e.key)) &&
@@ -1906,6 +1800,18 @@ export default function EditEvent() {
                         placeholder="Enter PAN Number"
                         value={inviteVendorData.panNumber || ""}
                         onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Company</label>
+                      <SelectBox
+                        options={companyList}
+                        onChange={(selectedOption) =>
+                          setInviteVendorData((prev) => ({
+                            ...prev,
+                            company: selectedOption.value,
+                          }))
+                        }
                       />
                     </div>
                   </form>
