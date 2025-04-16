@@ -9,6 +9,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
+import { useNavigate } from "react-router-dom";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
@@ -17,6 +18,7 @@ const BillBookingCreate = () => {
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
+  const navigate = useNavigate();
 
   // Add new state for taxes
   const [taxes, setTaxes] = useState([]);
@@ -181,6 +183,7 @@ const BillBookingCreate = () => {
     paymentDueDate: "",
     attachments: [],
     currentAdvanceDeduction: "",
+    status: "draft",
   });
 
   const [filterParams, setFilterParams] = useState({
@@ -914,9 +917,9 @@ const BillBookingCreate = () => {
           payable_amount:
             taxDeductionData.total_material_cost -
             taxDeductionData.total_deduction_cost,
-          remark: formData.remark || "", // Add remark field
-          status: "Pending", // Add status field
-          po_type: "domestic", // Add hardcoded po_type
+          remark: formData.remark || "",
+          status: "draft", // Changed to hardcoded "draft"
+          po_type: "domestic",
           payee_name: formData.payeeName,
           payment_mode: formData.paymentMode,
           payment_due_date: formData.paymentDueDate,
@@ -946,6 +949,7 @@ const BillBookingCreate = () => {
 
       if (response.data) {
         alert("Bill booking created successfully!");
+        navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
@@ -1461,7 +1465,7 @@ const BillBookingCreate = () => {
                         <td className="text-start">Payable Amount</td>
                         <td className="text-start">
                           {taxDeductionData.total_material_cost -
-                            taxDeductionData.total_deduction_cost}
+                            taxDeductionData.deduction_mor_inventory_tax_amount}
                         </td>
                       </tr>
                     </tbody>
@@ -1785,6 +1789,13 @@ const BillBookingCreate = () => {
                         rows={2}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={formData.remark} // Bind to formData.remark
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            remark: e.target.value, // Update formData.remark
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -1810,7 +1821,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Status</label>
                       <input
@@ -1820,7 +1831,7 @@ const BillBookingCreate = () => {
                         fdprocessedid="qv9ju9"
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted:</h5>
@@ -2073,7 +2084,7 @@ const BillBookingCreate = () => {
                   />
                 </div>
               </div>
-              <div className="row">
+              {/* <div className="row">
                 <div className="col-md-12">
                   <div className="form-group">
                     <label>Remark</label>
@@ -2098,7 +2109,7 @@ const BillBookingCreate = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
               {/* <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Assigned To User</p>
                 <div className="dropdown">
@@ -2135,11 +2146,19 @@ const BillBookingCreate = () => {
                 <select
                   className="form-select purple-btn2"
                   style={{ width: "150px" }}
+                  value={formData.status || "draft"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      status: e.target.value,
+                    }))
+                  }
                 >
-                  <option value="draft">PO Draft</option>
-                  <option value="accept">Accept</option>
-                  <option value="reject">Reject</option>
-                  <option value="submit">Submit</option>
+                  <option value="draft">Draft</option>
+                  <option value="verified">Verified</option>
+                  <option value="approved">Approved</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="proceed">Proceed</option>
                 </select>
               </div>
 

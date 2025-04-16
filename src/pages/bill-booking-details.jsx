@@ -1,9 +1,9 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { Table } from "../components";
+import { DownloadIcon, Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -11,8 +11,8 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 
 const BillBookingDetails = () => {
-   const { id } = useParams();
-    const navigate = useNavigate();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [actionDetails, setactionDetails] = useState(false);
   const [attachOneModal, setattachOneModal] = useState(false);
 
@@ -73,32 +73,30 @@ const BillBookingDetails = () => {
     setShowRows((prev) => !prev);
   };
 
-
   const [details, setDetails] = useState(null); // State to store API data
   const [loading, setLoading] = useState(true); // State to handle loading
   const [error, setError] = useState(null); // State to handle errors
   const [selectedGRNs, setSelectedGRNs] = useState([]);
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
-   // Fetch data from the API
-   const fetchDetails = async () => {
+  // Fetch data from the API
+  const fetchDetails = async () => {
     try {
       const response = await axios.get(
         `${baseURL}bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setDetails(response.data); // Update state with API data
-    // console.log("get data detail res",response)
-    setStatus(response.data.status)
+      // console.log("get data detail res",response)
+      setStatus(response.data.status);
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch data");
       setLoading(false);
     }
   };
-   useEffect(() => {
+  useEffect(() => {
     fetchDetails();
   }, [id]);
-
 
   useEffect(() => {
     if (details?.bill_purchase_orders) {
@@ -106,7 +104,7 @@ const BillBookingDetails = () => {
       const grnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
         order.bill_grn_materials.map((material) => material.grn_material_id)
       );
-  
+
       // Update the selectedGRNs state
       setSelectedGRNs(grnMaterialIds);
     }
@@ -116,123 +114,116 @@ const BillBookingDetails = () => {
     //   const billGrnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
     //     order.bill_grn_materials.map((material) => material.id)
     //   );
-  
+
     //   // Update the selectedGRNs state
     //   setSelectedGRNs(billGrnMaterialIds);
     // }
   }, [details]);
-// console.log("grn ids:",selectedGRNs)
-  
+  // console.log("grn ids:",selectedGRNs)
 
-    // Add new state for taxes
-    const [taxes, setTaxes] = useState([]);
-    const [selectedTax, setSelectedTax] = useState(null);
-    const [taxDeductionData, setTaxDeductionData] = useState({
-      total_material_cost: 0,
-      deduction_mor_inventory_tax_amount: 0,
-      total_deduction_cost: 0,
-    });
-  
-    const [taxDetailsData, setTaxDetailsData] = useState({
-      tax_data: {},
-    });
-  
-    // Add useEffect to fetch taxes
-    useEffect(() => {
-      const fetchTaxes = async () => {
-        try {
-          const response = await axios.get(
-            `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-          // console.log("Taxes response:", response.data);
-          if (response.data && response.data.taxes) {
-            setTaxes(response.data.taxes);
-          }
-        } catch (error) {
-          console.error("Error fetching taxes:", error);
-          setTaxes([]);
+  // Add new state for taxes
+  const [taxes, setTaxes] = useState([]);
+  const [selectedTax, setSelectedTax] = useState(null);
+  const [taxDeductionData, setTaxDeductionData] = useState({
+    total_material_cost: 0,
+    deduction_mor_inventory_tax_amount: 0,
+    total_deduction_cost: 0,
+  });
+
+  const [taxDetailsData, setTaxDetailsData] = useState({
+    tax_data: {},
+  });
+
+  // Add useEffect to fetch taxes
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        // console.log("Taxes response:", response.data);
+        if (response.data && response.data.taxes) {
+          setTaxes(response.data.taxes);
         }
-      };
-  
-      fetchTaxes();
-    }, []);
+      } catch (error) {
+        console.error("Error fetching taxes:", error);
+        setTaxes([]);
+      }
+    };
 
-    
-     // Add useEffect to fetch tax deduction data when GRNs change
-      useEffect(() => {
-        const fetchTaxDeductionData = async () => {
-          // console.log("selected grn ids :",selectedGRNs)
-          if (selectedGRNs.length > 0) {
-            try {
-              // const grnIds = selectedGRNs.map((grn) => grn.id);
-              const response = await axios.get(
-                `${baseURL}bill_bookings/deduction_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
-              );
-              setTaxDeductionData(response.data);
-            } catch (error) {
-              console.error("Error fetching tax deduction data:", error);
-            }
-          }
-        };
-    
-        fetchTaxDeductionData();
-      }, [selectedGRNs]);
-    
-      // Add useEffect to fetch tax details data when GRNs change
-      useEffect(() => {
-        const fetchTaxDetailsData = async () => {
-          if (selectedGRNs.length > 0) {
-            try {
-              // const grnIds = selectedGRNs.map((grn) => grn.id);
-              const response = await axios.get(
-                `${baseURL}bill_bookings/taxes_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
-              );
-              setTaxDetailsData(response.data);
-            } catch (error) {
-              console.error("Error fetching tax details data:", error);
-            }
-          }
-        };
-    
-        fetchTaxDetailsData();
-      }, [selectedGRNs]);
-  
-    
+    fetchTaxes();
+  }, []);
 
-      const statusOptions = [
+  // Add useEffect to fetch tax deduction data when GRNs change
+  useEffect(() => {
+    const fetchTaxDeductionData = async () => {
+      // console.log("selected grn ids :",selectedGRNs)
+      if (selectedGRNs.length > 0) {
+        try {
+          // const grnIds = selectedGRNs.map((grn) => grn.id);
+          const response = await axios.get(
+            `${baseURL}bill_bookings/deduction_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+          );
+          setTaxDeductionData(response.data);
+        } catch (error) {
+          console.error("Error fetching tax deduction data:", error);
+        }
+      }
+    };
 
-        {
-          label: 'Select Status',
-          value: '',
-        },
-        {
-          label: 'Draft',
-          value: 'draft',
-        },
-        {
-          label: 'Verified',
-          value: 'verified',
-        },
-        {
-          label: 'Submited',
-          value: 'submited',
-        },
-        {
-          label: 'Proceed',
-          value: 'proceed',
-        },
-        {
-          label: 'Approved',
-          value: 'approved',
-        },
-      ];
-    
-    
-     
-      const [remark, setRemark] = useState('');
-      const [comment, setComment] = useState("");
-// console.log("status:",status)
-      // Step 2: Handle status change
+    fetchTaxDeductionData();
+  }, [selectedGRNs]);
+
+  // Add useEffect to fetch tax details data when GRNs change
+  useEffect(() => {
+    const fetchTaxDetailsData = async () => {
+      if (selectedGRNs.length > 0) {
+        try {
+          // const grnIds = selectedGRNs.map((grn) => grn.id);
+          const response = await axios.get(
+            `${baseURL}bill_bookings/taxes_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+          );
+          setTaxDetailsData(response.data);
+        } catch (error) {
+          console.error("Error fetching tax details data:", error);
+        }
+      }
+    };
+
+    fetchTaxDetailsData();
+  }, [selectedGRNs]);
+
+  const statusOptions = [
+    {
+      label: "Select Status",
+      value: "",
+    },
+    {
+      label: "Draft",
+      value: "draft",
+    },
+    {
+      label: "Verified",
+      value: "verified",
+    },
+    {
+      label: "Submited",
+      value: "submited",
+    },
+    {
+      label: "Proceed",
+      value: "proceed",
+    },
+    {
+      label: "Approved",
+      value: "approved",
+    },
+  ];
+
+  const [remark, setRemark] = useState("");
+  const [comment, setComment] = useState("");
+  // console.log("status:",status)
+  // Step 2: Handle status change
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
     setStatus(selectedOption.value);
@@ -252,8 +243,8 @@ const BillBookingDetails = () => {
     status_log: {
       status: status,
       remarks: remark,
-      comments:comment
-    }
+      comments: comment,
+    },
   };
 
   console.log("detail status change", payload);
@@ -264,8 +255,8 @@ const BillBookingDetails = () => {
       status_log: {
         status: status,
         remarks: remark,
-        comments:comment
-      }
+        comments: comment,
+      },
     };
 
     console.log("detail status change", payload);
@@ -274,37 +265,69 @@ const BillBookingDetails = () => {
     try {
       const response = await axios.patch(
         `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        payload,  // The request body containing status and remarks
+        payload, // The request body containing status and remarks
         {
           headers: {
-            'Content-Type': 'application/json', // Set the content type header
+            "Content-Type": "application/json", // Set the content type header
           },
         }
-
       );
       await fetchDetails();
 
-
       if (response.status === 200) {
-        console.log('Status updated successfully:', response.data);
-        setRemark("")
+        console.log("Status updated successfully:", response.data);
+        setRemark("");
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
       } else {
-        console.log('Error updating status:', response.data);
+        console.log("Error updating status:", response.data);
         toast.error("Failed to update status.");
         // Handle error (e.g., show an error message)
       }
     } catch (error) {
-      console.error('Request failed:', error);
+      console.error("Request failed:", error);
       // Handle network or other errors (e.g., show an error message)
     } finally {
       setLoading(false);
     }
   };
 
+  // Add handleDownload function
+  const handleDownload = async (blobId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
+        {
+          responseType: "blob", // Important for handling binary data
+        }
+      );
 
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Get filename from response headers or use a default
+      const filename =
+        response.headers["content-disposition"]?.split("filename=")[1] ||
+        "document.pdf";
+      link.setAttribute("download", filename);
+
+      // Append to body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      alert("Failed to download document. Please try again.");
+    }
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -313,7 +336,6 @@ const BillBookingDetails = () => {
   if (error) {
     return <p>{error}</p>;
   }
-
 
   return (
     <>
@@ -337,7 +359,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                        {details?.id}
+                          {details?.id}
                         </label>
                       </div>
                     </div>
@@ -547,7 +569,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                         
                         </label>
                       </div>
                     </div>
@@ -560,7 +581,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                         
                         </label>
                       </div>
                     </div>
@@ -573,7 +593,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          
                         </label>
                       </div>
                     </div>
@@ -598,21 +617,40 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {details?.bill_purchase_orders?.flatMap((order, orderIndex) =>
-      order.bill_grn_materials.map((material, materialIndex) => (
-        <tr key={material.id}>
-          <td className="text-start">{materialIndex + 1}</td>
-          <td className="text-start">{ material.material_name||""}</td>
-          <td className="text-start">{material.material_grn_amount||""}</td>
-          <td className="text-start">{""}</td>
-          <td className="text-start">{material.base_cost||""}</td>
-          <td className="text-start">{material.net_taxes||""}</td>
-          <td className="text-start">{material.net_charges||""}</td>
-          <td className="text-start">{material.qty || ""}</td>
-          <td className="text-start">{material.all_inc_tax||""}</td>
-        </tr>
-      ))
-    )}
+                      {details?.bill_purchase_orders?.flatMap(
+                        (order, orderIndex) =>
+                          order.bill_grn_materials.map(
+                            (material, materialIndex) => (
+                              <tr key={material.id}>
+                                <td className="text-start">
+                                  {materialIndex + 1}
+                                </td>
+                                <td className="text-start">
+                                  {material.material_name || ""}
+                                </td>
+                                <td className="text-start">
+                                  {material.material_grn_amount || ""}
+                                </td>
+                                <td className="text-start">{""}</td>
+                                <td className="text-start">
+                                  {material.base_cost || ""}
+                                </td>
+                                <td className="text-start">
+                                  {material.net_taxes || ""}
+                                </td>
+                                <td className="text-start">
+                                  {material.net_charges || ""}
+                                </td>
+                                <td className="text-start">
+                                  {material.qty || ""}
+                                </td>
+                                <td className="text-start">
+                                  {material.all_inc_tax || ""}
+                                </td>
+                              </tr>
+                            )
+                          )
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -961,13 +999,14 @@ const BillBookingDetails = () => {
                             <span className="text-dark">:</span>
                           </span>
                           {details?.payment_due_date
-                          ? new Date(details.payment_due_date).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "2-digit",
-                          })
-                        : ""
-                          }
+                            ? new Date(
+                                details.payment_due_date
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "2-digit",
+                              })
+                            : ""}
                         </label>
                       </div>
                     </div>
@@ -980,7 +1019,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          
                         </label>
                       </div>
                     </div>
@@ -1006,7 +1044,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                       
                         </label>
                       </div>
                     </div>
@@ -1019,7 +1056,6 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                        
                         </label>
                       </div>
                     </div>
@@ -1172,26 +1208,34 @@ const BillBookingDetails = () => {
                     </thead>
                     <tbody>
                       {details?.attachments?.map((attachment, index) => (
-      <tr key={attachment.id}>
-        <td className="text-start">{index + 1}</td>
-        <td className="text-start">{attachment.relation || ""}</td>
-        <td className="text-start">{attachment.filename || ""}</td>
-        <td className="text-start">{attachment.content_type || ""}</td>
-        <td className="text-start">
-          {attachment.created_at
-            ? new Date(attachment.created_at).toLocaleDateString()
-            : ""}
-        </td>
-        <td
-          className="boq-id-link"
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModal"
-          // onClick={() => openAttachOneModal(attachment)}
-        >
-          View
-        </td>
-      </tr>
-    ))}
+                        <tr key={attachment.id}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">
+                            {attachment.relation || ""}
+                          </td>
+                          <td className="text-start">
+                            {attachment.filename || ""}
+                          </td>
+                          <td className="text-start">
+                            {attachment.content_type || ""}
+                          </td>
+                          <td className="text-start">
+                            {attachment.created_at
+                              ? new Date(
+                                  attachment.created_at
+                                ).toLocaleDateString()
+                              : ""}
+                          </td>
+                          <td className="text-start">
+                            <button
+                              className="btn btn-link p-0 text-decoration-underline"
+                              onClick={() => handleDownload(attachment.blob_id)}
+                            >
+                              <DownloadIcon />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -1226,28 +1270,32 @@ const BillBookingDetails = () => {
                   </div>
                 </div>
               </div>
-    <div className="row mt-4 justify-content-end align-items-center mx-2">
-              <div className="col-md-3">
-                <div className="form-group d-flex gap-3 align-items-center mx-3">
-                  <label style={{ fontSize: "0.95rem", color: "black" }}>
-                    Status
-                  </label>
-                  <SingleSelector
-                    options={statusOptions}
-                    onChange={handleStatusChange}
-                    // options.find(option => option.value === status)
-                    // value={filteredOptions.find(option => option.value === status)}
-                    value={statusOptions.find(option => option.value === status)}
-                    placeholder="Select Status"
-                    isClearable={false}
-                    classNamePrefix="react-select"
-                  />
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      onChange={handleStatusChange}
+                      // options.find(option => option.value === status)
+                      // value={filteredOptions.find(option => option.value === status)}
+                      value={statusOptions.find(
+                        (option) => option.value === status
+                      )}
+                      placeholder="Select Status"
+                      isClearable={false}
+                      classNamePrefix="react-select"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+                  <button className="purple-btn2 w-100" onClick={handleSubmit}>
+                    Submit
+                  </button>
                 </div>
                 <div className="col-md-2">
                   <button className="purple-btn1 w-100">Cancel</button>
@@ -1258,30 +1306,28 @@ const BillBookingDetails = () => {
                 {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
 
                 <div className="tbl-container  mt-1">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th >Sr.No.</th>
-                      <th>User</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Remark</th>
-                    </tr>
-
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                </table>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              </div>
-           
             </div>
           </div>
         </div>
