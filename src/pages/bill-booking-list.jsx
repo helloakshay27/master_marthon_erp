@@ -178,7 +178,7 @@ const BillBookingList = () => {
     const siteId = selectedSite?.value || "";
     const search = searchKeyword||"";
     console.log("ids filter:", companyId, projectId, siteId)
-    const url = `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}&q[search]=${search}`;
+    const url = `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     // console.log("url:",url)
     axios
@@ -201,25 +201,26 @@ const BillBookingList = () => {
       value: '',
     },
     {
-      label: 'PO Draft',
+      label: 'Draft',
       value: 'draft',
     },
     {
-      label: 'Pending',
-      value: 'Pending',
+      label: 'Verified',
+      value: 'verified',
     },
     {
-      label: 'Submit',
-      value: 'submit',
+      label: 'Submited',
+      value: 'submited',
+    },
+    {
+      label: 'Proceed',
+      value: 'proceed',
     },
     {
       label: 'Approved',
       value: 'approved',
     },
-    {
-      label: 'Reject',
-      value: 'reject',
-    },
+   
   ];
 
   const [fromStatus, setFromStatus] = useState("");
