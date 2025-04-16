@@ -868,7 +868,7 @@ export default function adminList() {
                           </tr>
                         ) : (
                           eventsToDisplay.map((event, index) => (
-                            <tr key={index}>
+                            <tr key={index} style={{backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#fff"}}>
                               <td>
                                 {(pagination.current_page - 1) * 10 + index + 1}
                               </td>

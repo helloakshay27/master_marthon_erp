@@ -4205,6 +4205,8 @@ export default function VendorDetails() {
                                 onClick={() => handleOpenModal(rowIndex)}
                               >
                                 <span className="align-text-top">Select</span>
+                                {console.log("data:---", data)
+                                }
                               </button>
                             ),
                             pmsBrand: (cell, rowIndex) => (
@@ -4643,7 +4645,7 @@ export default function VendorDetails() {
                                       color: "gray",
                                     }}
                                   >
-                                    {previousQuantity}
+                                    {previousQuantity || data[rowIndex].quantity}
                                   </span>
                                   {/* <span style={{ marginRight: "5px" }}>→</span>
                                   <span>{updatedGst}</span> */}
