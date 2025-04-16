@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import FormatDate from "../components/FormatDate"; // Import the default styles
 import { baseURL } from "../confi/apiDomain";
 import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
-import ChargesDataTable from "../components/base/Table/chargesDataTable";
+import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
