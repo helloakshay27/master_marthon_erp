@@ -27,13 +27,15 @@ const BillBookingList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
+  const [searchKeyword, setSearchKeyword] = useState('');
   // Fetch data from API
   // useEffect(() => {
   const fetchData = async (page) => {
+    const search = searchKeyword||"";
     try {
       setLoading(true); // Start loading
       const response = await axios.get(
-        `https://marathon.lockated.com/bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[search]=${search}`
       );
       setBillData(response.data.bill_bookings); // Set fetched data
       setMeta(response.data.meta)
@@ -54,7 +56,7 @@ const BillBookingList = () => {
   // Fetch data on component mount and when the page changes
   useEffect(() => {
     fetchData(currentPage);
-  }, [currentPage]);
+  }, [currentPage,searchKeyword]);
   // Handle page change
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -70,6 +72,7 @@ const BillBookingList = () => {
   // const [selectedWing, setSelectedWing] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
   // const [wingsOptions, setWingsOptions] = useState([]);
+  
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -173,8 +176,10 @@ const BillBookingList = () => {
     const companyId = selectedCompany?.value || "";
     const projectId = selectedProject?.value || "";
     const siteId = selectedSite?.value || "";
+    const search = searchKeyword||"";
     console.log("ids filter:", companyId, projectId, siteId)
-    const url = `https://marathon.lockated.com/bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}& q[site_id_eq]=${siteId}`;
+    const url = `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}&q[search]=${search}`;
+
     // console.log("url:",url)
     axios
       .get(url)
@@ -526,8 +531,8 @@ const BillBookingList = () => {
                       <input
                         type="search"
                         id="searchInput"
-                        // value={searchKeyword}
-                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />

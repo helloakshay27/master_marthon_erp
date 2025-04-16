@@ -84,7 +84,7 @@ const BillBookingDetails = () => {
    const fetchDetails = async () => {
     try {
       const response = await axios.get(
-        `https://marathon.lockated.com/bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setDetails(response.data); // Update state with API data
     // console.log("get data detail res",response)
@@ -317,7 +317,7 @@ const BillBookingDetails = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid px-3">
+        <div className="module-data-section container-fluid px-3 mt-4">
           <a href="">
             Home &gt; Billing &amp; Accounts &gt; Bill Booking Details
           </a>
@@ -647,7 +647,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Tax Deduction:</h5>
+                  <h5 className=" ">Tax Deduction</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -687,7 +687,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Tax Details:</h5>
+                  <h5 className=" ">Tax Details</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -725,7 +725,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Advance Adjusted:</h5>
+                  <h5 className=" ">Advance Adjusted</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -750,7 +750,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Advance Details:</h5>
+                  <h5 className=" ">Advance Details</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -790,7 +790,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Advance Deductions:</h5>
+                  <h5 className=" ">Advance Deductions</h5>
                 </div>
                 <div className="details_page">
                   <div className="row px-3">
@@ -959,7 +959,14 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payment_due_date}
+                          {details?.payment_due_date
+                          ? new Date(details.payment_due_date).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })
+                        : ""
+                          }
                         </label>
                       </div>
                     </div>
@@ -1031,7 +1038,7 @@ const BillBookingDetails = () => {
                   </div>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Advance Adjusted:</h5>
+                  <h5 className=" ">Advance Adjusted</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -1175,7 +1182,7 @@ const BillBookingDetails = () => {
             : ""}
         </td>
         <td
-          className="text-decoration-underline"
+          className="boq-id-link"
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
           // onClick={() => openAttachOneModal(attachment)}
