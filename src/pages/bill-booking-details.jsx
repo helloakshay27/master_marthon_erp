@@ -8,6 +8,7 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { baseURL } from "../confi/apiDomain";
 
 const BillBookingDetails = () => {
    const { id } = useParams();
@@ -76,24 +77,52 @@ const BillBookingDetails = () => {
   const [details, setDetails] = useState(null); // State to store API data
   const [loading, setLoading] = useState(true); // State to handle loading
   const [error, setError] = useState(null); // State to handle errors
+  const [selectedGRNs, setSelectedGRNs] = useState([]);
+  const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
    // Fetch data from the API
+   const fetchDetails = async () => {
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      setDetails(response.data); // Update state with API data
+    // console.log("get data detail res",response)
+    setStatus(response.data.status)
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch data");
+      setLoading(false);
+    }
+  };
    useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        const response = await axios.get(
-          `https://marathon.lockated.com/bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        setDetails(response.data); // Update state with API data
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch data");
-        setLoading(false);
-      }
-    };
-
     fetchDetails();
   }, [id]);
+
+
+  useEffect(() => {
+    if (details?.bill_purchase_orders) {
+      // Extract all GRN material IDs
+      const grnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
+        order.bill_grn_materials.map((material) => material.grn_material_id)
+      );
+  
+      // Update the selectedGRNs state
+      setSelectedGRNs(grnMaterialIds);
+    }
+
+    // if (details?.bill_purchase_orders) {
+    //   // Extract all bill_grn_material IDs
+    //   const billGrnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
+    //     order.bill_grn_materials.map((material) => material.id)
+    //   );
+  
+    //   // Update the selectedGRNs state
+    //   setSelectedGRNs(billGrnMaterialIds);
+    // }
+  }, [details]);
+// console.log("grn ids:",selectedGRNs)
+  
 
     // Add new state for taxes
     const [taxes, setTaxes] = useState([]);
@@ -115,7 +144,7 @@ const BillBookingDetails = () => {
           const response = await axios.get(
             `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
-          console.log("Taxes response:", response.data);
+          // console.log("Taxes response:", response.data);
           if (response.data && response.data.taxes) {
             setTaxes(response.data.taxes);
           }
@@ -127,14 +156,154 @@ const BillBookingDetails = () => {
   
       fetchTaxes();
     }, []);
+
+    
+     // Add useEffect to fetch tax deduction data when GRNs change
+      useEffect(() => {
+        const fetchTaxDeductionData = async () => {
+          // console.log("selected grn ids :",selectedGRNs)
+          if (selectedGRNs.length > 0) {
+            try {
+              // const grnIds = selectedGRNs.map((grn) => grn.id);
+              const response = await axios.get(
+                `${baseURL}bill_bookings/deduction_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+              );
+              setTaxDeductionData(response.data);
+            } catch (error) {
+              console.error("Error fetching tax deduction data:", error);
+            }
+          }
+        };
+    
+        fetchTaxDeductionData();
+      }, [selectedGRNs]);
+    
+      // Add useEffect to fetch tax details data when GRNs change
+      useEffect(() => {
+        const fetchTaxDetailsData = async () => {
+          if (selectedGRNs.length > 0) {
+            try {
+              // const grnIds = selectedGRNs.map((grn) => grn.id);
+              const response = await axios.get(
+                `${baseURL}bill_bookings/taxes_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+              );
+              setTaxDetailsData(response.data);
+            } catch (error) {
+              console.error("Error fetching tax details data:", error);
+            }
+          }
+        };
+    
+        fetchTaxDetailsData();
+      }, [selectedGRNs]);
   
-    const statusOptions = [
-      { value: "", label: "Select Status" },
-      { value: "draft", label: "PO Draft" },
-      { value: "accept", label: "Accept" },
-      { value: "reject", label: "Reject" },
-      { value: "submit", label: "Submit" },
-    ];
+    
+
+      const statusOptions = [
+        {
+          label: 'Select Status',
+          value: '',
+        },
+        {
+          label: 'PO Draft',
+          value: 'draft',
+        },
+        {
+          label: 'Pending',
+          value: 'Pending',
+        },
+        {
+          label: 'Submit',
+          value: 'submit',
+        },
+        {
+          label: 'Approved',
+          value: 'approved',
+        },
+        {
+          label: 'Reject',
+          value: 'reject',
+        },
+      ];
+    
+    
+     
+      const [remark, setRemark] = useState('');
+      const [comment, setComment] = useState("");
+// console.log("status:",status)
+      // Step 2: Handle status change
+  const handleStatusChange = (selectedOption) => {
+    // setStatus(e.target.value);
+    setStatus(selectedOption.value);
+    handleStatusChange(selectedOption); // Handle status change
+  };
+
+  // Step 3: Handle remark change
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const handleCommentChange = (e) => {
+    setComment(e.target.value);
+  };
+
+  const payload = {
+    status_log: {
+      status: status,
+      remarks: remark,
+      comments:comment
+    }
+  };
+
+  console.log("detail status change", payload);
+
+  const handleSubmit = async () => {
+    // Prepare the payload for the API
+    const payload = {
+      status_log: {
+        status: status,
+        remarks: remark,
+        comments:comment
+      }
+    };
+
+    console.log("detail status change", payload);
+    setLoading(true);
+
+    try {
+      const response = await axios.patch(
+        `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload,  // The request body containing status and remarks
+        {
+          headers: {
+            'Content-Type': 'application/json', // Set the content type header
+          },
+        }
+
+      );
+      await fetchDetails();
+
+
+      if (response.status === 200) {
+        console.log('Status updated successfully:', response.data);
+        setRemark("")
+        // alert('Status updated successfully');
+        // Handle success (e.g., update the UI, reset fields, etc.)
+        toast.success("Status updated successfully!");
+      } else {
+        console.log('Error updating status:', response.data);
+        toast.error("Failed to update status.");
+        // Handle error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error('Request failed:', error);
+      // Handle network or other errors (e.g., show an error message)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   if (loading) {
     return <p>Loading...</p>;
@@ -245,7 +414,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-
+                          Domestic
                         </label>
                       </div>
                     </div>
@@ -271,7 +440,9 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.einvoice}
+                          {/* {details?.einvoice} */}
+                          {details?.einvoice ? "Yes" : "No"}
+                          {/* {console.log("envoice",details?.einvoice)} */}
                         </label>
                       </div>
                     </div>
@@ -301,7 +472,7 @@ const BillBookingDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>PO Value</label>
                       </div>
@@ -313,7 +484,7 @@ const BillBookingDetails = () => {
                          
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>GSTIN</label>
@@ -430,14 +601,14 @@ const BillBookingDetails = () => {
       order.bill_grn_materials.map((material, materialIndex) => (
         <tr key={material.id}>
           <td className="text-start">{materialIndex + 1}</td>
-          <td className="text-start">{ ""}</td>
+          <td className="text-start">{ material.material_name||""}</td>
+          <td className="text-start">{material.material_grn_amount||""}</td>
           <td className="text-start">{""}</td>
-          <td className="text-start">{""}</td>
-          <td className="text-start">{""}</td>
-          <td className="text-start">{""}</td>
-          <td className="text-start">{""}</td>
-          <td className="text-start">{material.grn_material?.qty || 0}</td>
-          <td className="text-start">{""}</td>
+          <td className="text-start">{material.base_cost||""}</td>
+          <td className="text-start">{material.net_taxes||""}</td>
+          <td className="text-start">{material.net_charges||""}</td>
+          <td className="text-start">{material.qty || ""}</td>
+          <td className="text-start">{material.all_inc_tax||""}</td>
         </tr>
       ))
     )}
@@ -529,23 +700,26 @@ const BillBookingDetails = () => {
                     <tbody>
                       <tr>
                         <td className="text-start">Base Cost</td>
-                        <td className="text-start" />
+                        <td className="text-start">
+                          {taxDeductionData.total_material_cost}
+                        </td>
                       </tr>
-                      <tr>
-                        <td className="text-start">Handling Charges</td>
-                        <td className="text-start" />
-                      </tr>
-                      <tr>
-                        <td className="text-start">CGST</td>
-                        <td className="text-start" />
-                      </tr>
-                      <tr>
-                        <td className="text-start">SGST</td>
-                        <td className="text-start" />
-                      </tr>
+                      {Object.entries(taxDetailsData.tax_data).map(
+                        ([taxType, amount]) => (
+                          <tr key={taxType}>
+                            <td className="text-start">{taxType}</td>
+                            <td className="text-start">{amount}</td>
+                          </tr>
+                        )
+                      )}
                       <tr>
                         <th className="text-start">Total</th>
-                        <td className="text-start" />
+                        <td className="text-start">
+                          {Object.values(taxDetailsData.tax_data).reduce(
+                            (sum, value) => sum + (value || 0),
+                            0
+                          ) + taxDeductionData.total_material_cost}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -672,7 +846,7 @@ const BillBookingDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Debit Note Adjustment</label>
                       </div>
@@ -684,7 +858,7 @@ const BillBookingDetails = () => {
                          
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Total Amount</label>
@@ -737,7 +911,7 @@ const BillBookingDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Round Off Amount</label>
                       </div>
@@ -749,7 +923,7 @@ const BillBookingDetails = () => {
                         
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Favouring / Payee</label>
@@ -1023,6 +1197,8 @@ const BillBookingDetails = () => {
                       rows={3}
                       placeholder="Enter ..."
                       defaultValue={""}
+                      value={remark}
+                      onChange={handleRemarkChange}
                     />
                   </div>
                 </div>
@@ -1036,6 +1212,8 @@ const BillBookingDetails = () => {
                       rows={2}
                       placeholder="Enter ..."
                       defaultValue={""}
+                      value={comment}
+                      onChange={handleCommentChange}
                     />
                   </div>
                 </div>
@@ -1048,12 +1226,10 @@ const BillBookingDetails = () => {
                   </label>
                   <SingleSelector
                     options={statusOptions}
-                    // value={selectedStatus}
-                    // onChange={(selectedOption) => {
-                    //   setSelectedStatus(
-                    //     selectedOption || { value: "", label: "Select Status" }
-                    //   );
-                    // }}
+                    onChange={handleStatusChange}
+                    // options.find(option => option.value === status)
+                    // value={filteredOptions.find(option => option.value === status)}
+                    value={statusOptions.find(option => option.value === status)}
                     placeholder="Select Status"
                     isClearable={false}
                     classNamePrefix="react-select"
@@ -1063,7 +1239,7 @@ const BillBookingDetails = () => {
             </div>
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100">Submit</button>
+                  <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                 </div>
                 <div className="col-md-2">
                   <button className="purple-btn1 w-100">Cancel</button>
@@ -1071,8 +1247,33 @@ const BillBookingDetails = () => {
               </div>
               <h5 className=" mt-3">Audit Log</h5>
               <div className="mx-0 mb-5">
-                <Table columns={auditLogColumns} data={auditLogData} />
+                {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
+
+                <div className="tbl-container  mt-1">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th >Sr.No.</th>
+                      <th>User</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Remark</th>
+                    </tr>
+
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+              </div>
+           
             </div>
           </div>
         </div>

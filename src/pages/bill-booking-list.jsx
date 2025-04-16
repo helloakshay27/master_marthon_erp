@@ -23,24 +23,45 @@ const BillBookingList = () => {
   const [billData, setBillData] = useState([]); // State to store fetched data
   const [loading, setLoading] = useState(true); // State for loading
   const [error, setError] = useState(null); // State for error handling
+  const [meta, setMeta] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Items per page
   // Fetch data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true); // Start loading
-        const response = await axios.get(
-          "https://marathon.lockated.com/bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        setBillData(response.data.bill_bookings); // Set fetched data
-        setLoading(false); // Stop loading
-      } catch (err) {
-        setError("Failed to fetch data. Please try again."); // Set error message
-        setLoading(false); // Stop loading
-      }
-    };
+  // useEffect(() => {
+  const fetchData = async (page) => {
+    try {
+      setLoading(true); // Start loading
+      const response = await axios.get(
+        `https://marathon.lockated.com/bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      setBillData(response.data.bill_bookings); // Set fetched data
+      setMeta(response.data.meta)
+      setTotalPages(response.data.meta.total_pages); // Set total pages
+      setTotalEntries(response.data.meta.total_count);
+      setLoading(false); // Stop loading
+    } catch (err) {
+      setError("Failed to fetch data. Please try again."); // Set error message
+      setLoading(false); // Stop loading
+    }
+  };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
+  // Add a new state to track the total number of entries
+  const [totalEntries, setTotalEntries] = useState(0);
+
+  // Fetch data on component mount and when the page changes
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage]);
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -125,6 +146,162 @@ const BillBookingList = () => {
     label: company.company_name,
   }));
 
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const validateAndFetchFilteredData = () => {
+    const errors = {};
+
+    if (!selectedCompany) {
+      errors.company = "Please select a company.";
+    }
+    if (!selectedProject) {
+      errors.project = "Please select a project.";
+    }
+    if (!selectedSite) {
+      errors.site = "Please select a sub-project.";
+    }
+
+    setValidationErrors(errors);
+
+    // If no errors, fetch filtered data
+    if (Object.keys(errors).length === 0) {
+      fetchFilteredData();
+    }
+  };
+
+  const fetchFilteredData = () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+    console.log("ids filter:", companyId, projectId, siteId)
+    const url = `https://marathon.lockated.com/bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}& q[site_id_eq]=${siteId}`;
+    // console.log("url:",url)
+    axios
+      .get(url)
+      .then((response) => {
+        setBillData(response.data.bill_bookings); // Set fetched data
+        // setReconciliationData(response.data.data); // Update table data
+        setTotalPages(response.data.meta.total_pages); // Update total pages
+        setTotalEntries(response.data.meta.total_count); // Update total entries
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+  //  bulk action 
+  //bulkaction options 
+  const options = [
+    {
+      label: 'Select Status',
+      value: '',
+    },
+    {
+      label: 'PO Draft',
+      value: 'draft',
+    },
+    {
+      label: 'Pending',
+      value: 'Pending',
+    },
+    {
+      label: 'Submit',
+      value: 'submit',
+    },
+    {
+      label: 'Approved',
+      value: 'approved',
+    },
+    {
+      label: 'Reject',
+      value: 'reject',
+    },
+  ];
+
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+  // const [boqList, setBoqList] = useState([]);
+  // const [loading, setLoading] = useState(false);
+
+  // Handle input changes
+  const handleStatusChange = (selectedOption) => {
+    // const { name, value } = e.target;
+    // if (name === "fromStatus") {
+    //   setFromStatus(selectedOption.value);
+    // } else if (name === "toStatus") {
+    //   setToStatus(selectedOption.value);
+    // }
+
+    setFromStatus(selectedOption.value);
+  };
+
+  // Handle status change for 'To Status'
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
+  };
+
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const [selectedBoqDetails, setSelectedBoqDetails] = useState("");
+
+  const handleSubmit = () => {
+    // e.preventDefault();
+
+    if (!fromStatus || !toStatus) {
+      alert("Please select both 'From Status' and 'To Status'.");
+      return;
+    }
+
+    // Prepare data to send
+    const data = {
+      bill_booking_ids: selectedBoqDetails,
+      // from_status: fromStatus,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data)
+
+    // Send data to API using axios
+    axios
+      .patch(
+        `${baseURL}bill_bookings/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        data
+      )
+      .then((response) => {
+        console.log('Success:', response.data);
+        alert('Status updated successfully ....')
+        // Handle success (e.g., show a success message, update UI, etc.)
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        // Handle error (e.g., show an error message)
+      });
+  };
+
+
+
+  // State to track selected bill detail IDs
+  const handleCheckboxChange = (boqDetailId) => {
+    setSelectedBoqDetails((prevSelected) => {
+      const selectedArray = prevSelected ? prevSelected.split(",").map(Number) : [];
+      if (selectedArray.includes(boqDetailId)) {
+        // If already selected, remove it from the string
+        const updatedArray = selectedArray.filter((id) => id !== boqDetailId);
+        return updatedArray.join(",");
+      } else {
+        // If not selected, add it to the string
+        const updatedArray = [...selectedArray, boqDetailId];
+        return updatedArray.join(",");
+      }
+    });
+  };
+
+  console.log("selected bill id array :", selectedBoqDetails)
+
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -140,7 +317,16 @@ const BillBookingList = () => {
                     data-tab="total"
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">150</p>
+                    <p className="content-box-sub">{meta?.total_count}</p>
+                    {/* {console.log("meta data ", billData)} */}
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div className="content-box tab-button" data-tab="draft">
+                    <h4 className="content-box-title fw-semibold">
+                      Draft
+                    </h4>
+                    <p className="content-box-sub">{meta?.draft_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -148,7 +334,7 @@ const BillBookingList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Verified Bills
                     </h4>
-                    <p className="content-box-sub">4</p>
+                    <p className="content-box-sub">{meta?.verified_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -157,7 +343,7 @@ const BillBookingList = () => {
                     data-tab="pending-approval"
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub">{meta?.submited_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -166,7 +352,7 @@ const BillBookingList = () => {
                     data-tab="self-overdue"
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub">{meta?.approved_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -175,7 +361,7 @@ const BillBookingList = () => {
                     data-tab="self-overdue"
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub">{meta?.proceed_count}</p>
                   </div>
                 </div>
               </div>
@@ -183,7 +369,7 @@ const BillBookingList = () => {
           </div>
           <div className="tab-content1 active" id="total-content">
             {/* Total Content Here */}
-            <div className="card mt-3 pb-4">
+            <div className="card mt-3 pb-4 mb-5">
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                 <div className="row">
                   <div className="col-md-3">
@@ -198,6 +384,9 @@ const BillBookingList = () => {
                         value={selectedCompany}
                         placeholder={`Select Company`}
                       />
+                      {validationErrors.company && (
+                        <span className="text-danger">{validationErrors.company}</span>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -212,6 +401,9 @@ const BillBookingList = () => {
                         value={selectedProject}
                         placeholder={`Select Project`}
                       />
+                      {validationErrors.project && (
+                        <span className="text-danger">{validationErrors.project}</span>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-3">
@@ -226,33 +418,82 @@ const BillBookingList = () => {
                         value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
+                      {validationErrors.site && (
+                        <span className="text-danger">{validationErrors.site}</span>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-3 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 m-0">Go</button>
+                    <button className="purple-btn2 m-0" onClick={validateAndFetchFilteredData}>Go</button>
                   </div>
                 </div>
               </CollapsibleCard>
 
-
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
-                <div className="card-body mt-0 pt-0">
+                <form
+                  onSubmit={handleSubmit}
+                >
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <div className="form-group">
                         <label>From Status</label>
+                        {/* <select
+                                      name="fromStatus"
+                                      className="form-control form-select"
+                                       classNamePrefix="react-select"
+                                      value={fromStatus}
+                                      onChange={handleStatusChange}
+                                    // value={formValues.fromStatus}
+                                    // onChange={handleChange}
+                                    >
+                                      <option value="">Select Status</option>
+                                      <option value="draft">Draft</option>
+                                      <option value="submitted">Submitted</option>
+                                      <option value="approved">Approved</option>
+                                    </select> */}
+                        {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
+
                         <SingleSelector
-                          options={companyOptions}
-                        // selectedValue={selectedValue}
-                        // onChange={handleChange}
+                          options={options}
+                          // value={options.value}
+                          value={options.find(option => option.value === fromStatus)}
+                          onChange={handleStatusChange}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
+                        {/* {console.log("options:", options.value)} */}
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
+                        {/* <select
+                                      name="toStatus"
+                                      className="form-control form-select"
+                                      value={toStatus}
+                                      onChange={handleToStatusChange}
+                                    >
+                                      <option value="">Select Status</option>
+                                      <option value="draft">Draft</option>
+                                      <option value="submitted">Submitted</option>
+                                      <option value="approved">Approved</option>
+                                    </select> */}
+
                         <SingleSelector
-                          options={companyOptions}
-                        // selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        // onChange={handleChange} // Handle change event
+                          options={options}
+                          // value={options.value}
+                          onChange={handleToStatusChange}
+                          value={options.find(option => option.value === toStatus)}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
                       </div>
                     </div>
@@ -260,24 +501,22 @@ const BillBookingList = () => {
                       <div className="form-group">
                         <label>Remark</label>
                         <textarea
+                          name="remark"
                           className="form-control"
                           rows={4}
                           placeholder="Enter ..."
-                          defaultValue={""}
+                          value={remark}
+                          onChange={handleRemarkChange}
                         />
                       </div>
                     </div>
                     <div className="offset-md-1 col-md-2">
-                      <button
-                        className="purple-btn2 m-0"
-                        style={{ color: "white" }}
-                        onClick={() => (window.location.href = "#")}
-                      >
+                      <button type="submit" className="purple-btn2 m-0">
                         Submit
                       </button>
                     </div>
                   </div>
-                </div>
+                </form>
               </CollapsibleCard>
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
@@ -391,9 +630,14 @@ const BillBookingList = () => {
                         billData.map((bill, index) => (
                           <tr key={bill.id}>
                             <td className="text-start">
-                              <input type="checkbox" />
+                              <input
+                                className="ms-1 me-1 mb-1"
+                                type="checkbox"
+                                checked={selectedBoqDetails.includes(bill.id)} // Check if this ID is selected
+                                onChange={() => handleCheckboxChange(bill.id)} // Handle checkbox change
+                              />
                             </td>
-                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                             <td className="text-start boq-id-link">
                               <Link
                                 to={`/bill-booking-details/${bill.id}`}
@@ -418,7 +662,7 @@ const BillBookingList = () => {
                             <td className="text-start">
                               {/* {bill.accepted_on ? new Date(bill.accepted_on).toLocaleDateString() : ""} */}
                             </td>
-                           
+
                             <td className="text-start">
                               {bill.inventory_date ? new Date(bill.inventory_date).toLocaleDateString(
                                 "en-GB", {
@@ -463,7 +707,70 @@ const BillBookingList = () => {
                   </table>
                 </div>
               )}
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
 
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
+                  entries
+                </div>
+              </div>
 
 
             </div>
