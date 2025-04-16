@@ -422,6 +422,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
+                          console.log("vendor:-", vendor);
 
                           return (
                             <td
@@ -436,6 +437,14 @@ export default function ResponseTab({ isCounterOffer }) {
                                   {vendor.full_name}
                                   <p>
                                     {formatDate(vendor?.bids?.[0]?.created_at)}
+                                  </p>
+                                  <p>
+                                    {vendor?.counter_bid_length} Counter Bid
+                                    <span>
+                                      {vendor?.counter_bid_length > 0
+                                        ? "s"
+                                        : ""}
+                                    </span>
                                   </p>
                                 </div>
                                 <div className="d-flex justify-content-center align-items-center w-100 my-2">
@@ -615,60 +624,63 @@ export default function ResponseTab({ isCounterOffer }) {
                     />
                   );
                 })}
-               {(() => {
-  // Safely extract data with non-empty, non-array values
-  const extractedData = eventVendors?.flatMap((vendor) => {
-    const extra = vendor?.bids?.[0]?.extra;
+                {(() => {
+                  // Safely extract data with non-empty, non-array values
+                  const extractedData =
+                    eventVendors?.flatMap((vendor) => {
+                      const extra = vendor?.bids?.[0]?.extra;
 
-    if (
-      extra &&
-      Object.values(extra).some(
-        (val) =>
-          typeof val === "string" && val.trim() !== "" ||
-          (typeof val === "object" && val !== null && !Array.isArray(val))
-      )
-    ) {
-      const formattedExtra = {};
-      Object.entries(extra).forEach(([key, val]) => {
-        // Exclude arrays
-        if (!Array.isArray(val)) {
-          formattedExtra[key] = val?.toString().trim() || "_";
-        }
-      });
+                      if (
+                        extra &&
+                        Object.values(extra).some(
+                          (val) =>
+                            (typeof val === "string" && val.trim() !== "") ||
+                            (typeof val === "object" &&
+                              val !== null &&
+                              !Array.isArray(val))
+                        )
+                      ) {
+                        const formattedExtra = {};
+                        Object.entries(extra).forEach(([key, val]) => {
+                          // Exclude arrays
+                          if (!Array.isArray(val)) {
+                            formattedExtra[key] = val?.toString().trim() || "_";
+                          }
+                        });
 
-      // Only return if there's still data after filtering
-      return Object.keys(formattedExtra).length > 0 ? [formattedExtra] : [];
-    }
+                        // Only return if there's still data after filtering
+                        return Object.keys(formattedExtra).length > 0
+                          ? [formattedExtra]
+                          : [];
+                      }
 
-    return [];
-  }) || [];
+                      return [];
+                    }) || [];
 
-  // Early return if no data
-  if (extractedData.length === 0) {
-    return <p>No data available</p>;
-  }
+                  // Early return if no data
+                  if (extractedData.length === 0) {
+                    return <p>No data available</p>;
+                  }
 
-  // Gather all unique keys from the 'extra' objects
-  const extractedKeys = Array.from(
-    new Set(
-      extractedData.flatMap((obj) => Object.keys(obj))
-    )
-  );
+                  // Gather all unique keys from the 'extra' objects
+                  const extractedKeys = Array.from(
+                    new Set(extractedData.flatMap((obj) => Object.keys(obj)))
+                  );
 
-  return (
-    <Accordion
-      title="Other Informations"
-      isDefault={true}
-      tableColumn={extractedKeys.map((key) => ({
-        label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        key: key,
-      }))}
-      tableData={extractedData}
-    />
-  );
-})()}
-
-
+                  return (
+                    <Accordion
+                      title="Other Informations"
+                      isDefault={true}
+                      tableColumn={extractedKeys.map((key) => ({
+                        label: key
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase()),
+                        key: key,
+                      }))}
+                      tableData={extractedData}
+                    />
+                  );
+                })()}
 
                 {/* <Accordion
                   title={"Other Informations"}
@@ -741,7 +753,7 @@ export default function ResponseTab({ isCounterOffer }) {
         centered={true}
       >
         <div className="container-fluid p-0">
-        <div className="row mb-3">
+          <div className="row mb-3">
             <div className="col-md-6">
               <div className="mb-3">
                 <label className="form-label fw-bold">Material</label>
@@ -749,8 +761,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
-                      ?.material_name || ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.material_name || ""
                   }
                   readOnly
                   disabled={true}
@@ -764,8 +777,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
-                      ?.event_material?.inventory_id || ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.event_material?.inventory_id || ""
                   }
                   readOnly
                   disabled={true}
@@ -782,8 +796,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]?.price ||
-                    ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.price || ""
                   }
                   readOnly
                   disabled={true}
@@ -797,8 +812,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
-                      ?.quantity_available || ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.quantity_available || ""
                   }
                   readOnly
                   disabled={true}
@@ -815,8 +831,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
-                      ?.discount || ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.discount || ""
                   }
                   readOnly
                   disabled={true}
@@ -830,8 +847,9 @@ export default function ResponseTab({ isCounterOffer }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[selectedMaterialIndex]
-                      ?.total_amount || ""
+                    segeregatedMaterialData[0]?.bids_values?.[
+                      selectedMaterialIndex
+                    ]?.total_amount || ""
                   }
                   readOnly
                   disabled={true}

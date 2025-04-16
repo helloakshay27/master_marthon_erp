@@ -483,6 +483,7 @@ export default function adminList() {
     { label: "Sr.No.", key: "srNo" },
     { label: "Event Title", key: "event_title" },
     { label: "Event No", key: "event_no" },
+    { label: "Bid Placed", key: "bid_placed" },
     { label: "Start Time", key: "start_time" },
     { label: "End Time", key: "end_time" },
     { label: "Created At", key: "created_at" },
@@ -849,6 +850,8 @@ export default function adminList() {
                     </div>
                   </div>
                   <div className="tbl-container mt-3 px-3">
+                    {console.log("eventsToDisplay:--",eventsToDisplay)
+                    }
                     <table className="w-100">
                       <thead>
                         <tr>
@@ -871,6 +874,7 @@ export default function adminList() {
                               </td>
                               <td>{event.event_title || "N/A"}</td>
                               <td>{event.event_no || "N/A"}</td>
+                              <td>{event.bid_placed ? "Yes" : "No"}</td>
                               <td>
                                 {event.event_schedule?.start_time ? (
                                   <FormatDate
