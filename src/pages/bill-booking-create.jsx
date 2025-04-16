@@ -191,6 +191,50 @@ const BillBookingCreate = () => {
     selectedPOIds: [], // Ensure this is initialized as an empty array
   });
 
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    next_page: 2,
+    prev_page: null,
+    total_pages: 10,
+    total_count: 46,
+  });
+
+  const [pageSize, setPageSize] = useState(10); // Set default page size to 10
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: page,
+    }));
+
+    // Fetch data for the new page without any filters
+    if (selectedCompany) {
+      fetchPurchaseOrders(
+        selectedCompany.value,
+        null, // Don't pass project on page change
+        null, // Don't pass site on page change
+        {
+          page: page,
+          pageSize: 10,
+        }
+      );
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(
+      pagination.total_pages,
+      pagination.current_page + 2
+    );
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
   const fetchPurchaseOrders = async (
     companyId,
     projectId,
@@ -201,21 +245,25 @@ const BillBookingCreate = () => {
       poType: "",
       poNumber: "",
       selectedPOIds: [],
-      supplierId: "", // Add supplierId to filters
+      supplierId: "",
+      page: 1,
+      pageSize: 10,
     }
   ) => {
     try {
       setLoading(true);
       let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
-      // Add base filters
+      // Always add company filter
       url += `&q[company_id_eq]=${companyId}`;
+
+      // Only add project and site filters if they are provided
       if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
       if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+
+      // Add other filters if they are provided
       if (filters?.supplierId)
         url += `&q[supplier_id_eq]=${filters.supplierId}`;
-
-      // Add additional filters with null checks
       if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
       if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
       if (filters?.poType) url += `&q[po_type_eq]=${filters.poType}`;
@@ -223,8 +271,23 @@ const BillBookingCreate = () => {
         url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
       }
 
+      // Always add pagination parameters
+      url += `&page=${filters.page || 1}`;
+      url += `&per_page=10`;
+
       const response = await axios.get(url);
       setPurchaseOrders(response.data.purchase_orders);
+
+      // Update pagination state with server response
+      if (response.data.pagination) {
+        setPagination({
+          current_page: response.data.pagination.current_page,
+          next_page: response.data.pagination.next_page,
+          prev_page: response.data.pagination.prev_page,
+          total_pages: response.data.pagination.total_pages,
+          total_count: response.data.pagination.total_count,
+        });
+      }
     } catch (err) {
       setError("Failed to fetch purchase orders");
       console.error("Error fetching purchase orders:", err);
@@ -240,16 +303,24 @@ const BillBookingCreate = () => {
       return;
     }
 
+    // Reset to first page when applying filters
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+
     fetchPurchaseOrders(
       selectedCompany.value,
-      selectedProject?.value,
-      selectedSite?.value,
+      selectedProject?.value, // Pass project only on search
+      selectedSite?.value, // Pass site only on search
       {
         startDate: filterParams.startDate,
         endDate: filterParams.endDate,
         poType: filterParams.poType,
         selectedPOIds: filterParams.selectedPOIds,
-        supplierId: selectedSupplier?.value || "", // Add selected supplier ID
+        supplierId: selectedSupplier?.value || "",
+        page: 1,
+        pageSize: 10,
       }
     );
   };
@@ -358,49 +429,163 @@ const BillBookingCreate = () => {
     }
 
     return (
-      <div className="tbl-container mx-3 mt-3">
-        <table className="w-100">
-          <thead>
-            <tr>
-              <th>
-                <input type="checkbox" />
-              </th>
-              <th className="text-start">Sr.No</th>
-              <th className="text-start">PO Number</th>
-              <th className="text-start">PO Date</th>
-              <th className="text-start">PO Value</th>
-              <th className="text-start">PO Type</th>
-              <th className="text-start">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {purchaseOrders.map((po, index) => (
-              <tr key={po.id}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedPO?.id === po.id}
-                    onChange={() => handlePOSelect(po)}
-                  />
-                </td>
-                <td className="text-start">{index + 1}</td>
-                <td className="text-start">{po.po_number}</td>
-                <td className="text-start">{po.po_date}</td>
-                <td className="text-start">{po.total_value}</td>
-                <td className="text-start">{po.po_type}</td>
-                <td>
-                  <button
-                    className="btn btn-light p-0 border-0"
-                    onClick={() => handlePOSelect(po)}
-                  >
-                    Select
-                  </button>
-                </td>
+      <>
+        <div className="tbl-container mx-3 mt-3">
+          <table className="w-100">
+            <thead>
+              <tr>
+                <th>
+                  <input type="checkbox" />
+                </th>
+                <th className="text-start">Sr.No</th>
+                <th className="text-start">PO Number</th>
+                <th className="text-start">PO Date</th>
+                <th className="text-start">PO Value</th>
+                <th className="text-start">PO Type</th>
+                <th className="text-start">Action</th>
               </tr>
+            </thead>
+            <tbody>
+              {purchaseOrders.map((po, index) => (
+                <tr key={po.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedPO?.id === po.id}
+                      onChange={() => handlePOSelect(po)}
+                    />
+                  </td>
+                  <td className="text-start">{index + 1}</td>
+                  <td className="text-start">{po.po_number}</td>
+                  <td className="text-start">{po.po_date}</td>
+                  <td className="text-start">{po.total_value}</td>
+                  <td className="text-start">{po.po_type}</td>
+                  <td>
+                    <button
+                      className="btn btn-light p-0 border-0"
+                      onClick={() => handlePOSelect(po)}
+                    >
+                      Select
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+          <ul className="pagination justify-content-center d-flex">
+            {/* First Button */}
+            <li
+              className={`page-item ${
+                pagination.current_page === 1 ? "disabled" : ""
+              }`}
+            >
+              <button className="page-link" onClick={() => handlePageChange(1)}>
+                First
+              </button>
+            </li>
+
+            {/* Previous Button */}
+            <li
+              className={`page-item ${
+                pagination.current_page === 1 ? "disabled" : ""
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(pagination.current_page - 1)}
+                disabled={pagination.current_page === 1}
+              >
+                Prev
+              </button>
+            </li>
+
+            {/* Ellipsis before first page numbers if needed */}
+            {pagination.current_page > 5 && (
+              <li className="page-item disabled">
+                <span className="page-link">...</span>
+              </li>
+            )}
+
+            {/* Dynamic Page Numbers */}
+            {getPageNumbers().map((pageNumber) => (
+              <li
+                key={pageNumber}
+                className={`page-item ${
+                  pagination.current_page === pageNumber ? "active" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber}
+                </button>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+
+            {/* Ellipsis after last page numbers if needed */}
+            {pagination.current_page + 4 < pagination.total_pages && (
+              <li className="page-item disabled">
+                <span className="page-link">...</span>
+              </li>
+            )}
+
+            {/* Next Button */}
+            <li
+              className={`page-item ${
+                pagination.current_page === pagination.total_pages
+                  ? "disabled"
+                  : ""
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(pagination.current_page + 1)}
+                disabled={pagination.current_page === pagination.total_pages}
+              >
+                Next
+              </button>
+            </li>
+
+            {/* Last Button */}
+            <li
+              className={`page-item ${
+                pagination.current_page === pagination.total_pages
+                  ? "disabled"
+                  : ""
+              }`}
+            >
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(pagination.total_pages)}
+                disabled={pagination.current_page === pagination.total_pages}
+              >
+                Last
+              </button>
+            </li>
+          </ul>
+
+          {/* Showing entries count */}
+          <div>
+            <p>
+              Showing{" "}
+              {Math.min(
+                (pagination.current_page - 1) * pageSize + 1 || 1,
+                pagination.total_count
+              )}{" "}
+              to{" "}
+              {Math.min(
+                pagination.current_page * pageSize,
+                pagination.total_count
+              )}{" "}
+              of {pagination.total_count} entries
+            </p>
+          </div>
+        </div>
+      </>
     );
   };
 
@@ -708,13 +893,9 @@ const BillBookingCreate = () => {
     try {
       const payload = {
         bill_booking: {
-          // company_id: selectedCompany.value,
-          // site_id: selectedSite.value,
-          // project_id: selectedProject.value,
           company_id: selectedCompany?.value || null,
-          site_id: selectedSite?.value || null, // Add null check here
+          site_id: selectedSite?.value || null,
           project_id: selectedProject?.value || null,
-
           pms_supplier_id: selectedSupplier?.value || null,
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
@@ -733,8 +914,9 @@ const BillBookingCreate = () => {
           payable_amount:
             taxDeductionData.total_material_cost -
             taxDeductionData.total_deduction_cost,
-          remark: formData.remark,
-          status: "Pending",
+          remark: formData.remark || "", // Add remark field
+          status: "Pending", // Add status field
+          po_type: "domestic", // Add hardcoded po_type
           payee_name: formData.payeeName,
           payment_mode: formData.paymentMode,
           payment_due_date: formData.paymentDueDate,
@@ -747,12 +929,11 @@ const BillBookingCreate = () => {
               grn_ids: selectedGRNs.map((grn) => grn.id),
             },
           ],
-          // attachments: formData.attachments || [],
           attachments: documentRows.map((row) => ({
             filename: row.upload?.filename || "",
             content: row.upload?.content || "",
             content_type: row.upload?.content_type || "",
-          })), // Include attachments here
+          })),
         },
       };
 
