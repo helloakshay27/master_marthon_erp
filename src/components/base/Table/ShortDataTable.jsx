@@ -82,6 +82,7 @@ export default function ShortDataTable({
                   padding: "12px",
                   fontWeight: "bold",
                   background: "#8b0203",
+                  width: "20%",
                 }}
               >
                 {row.label}
