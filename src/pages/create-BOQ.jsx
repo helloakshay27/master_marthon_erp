@@ -1622,6 +1622,7 @@ const CreateBOQ = () => {
       setTotalEstimatedQtyWastages(newTotalEstimatedQtyWastages); // Set the total quantities with wastage
     }
   };
+  // console.log("sub item:",boqSubItems)
 
   const handleLevel5Change = (selectedOption) =>
     setSelectedSubCategoryLevel5(selectedOption);
@@ -1694,7 +1695,20 @@ const CreateBOQ = () => {
       );
       return; // Exit function if validation fails
     }
+    // sub type validation
+    const invalidSubType = materials.some((material, index) => {
+      // Get the selected generic specification for this material
+      const subType = selectedSubTypes[index];
 
+      // Check if the generic specification is invalid (empty or undefined)
+      return !subType || subType === "";
+    });
+    if (invalidSubType) {
+      toast.error(
+        "Material Sub-Type is required for all materials."
+      );
+      return; // Exit function if validation fails
+    }
 
     // if (!validateDuplicateAssets() || !validateDuplicateMaterials()) {
     //   toast.error("Please resolve duplicate materials or assets before submitting.");
@@ -2018,6 +2032,29 @@ const CreateBOQ = () => {
       // **Prevent form submission if any sub-item has errors**
       if (hasErrors2) return;
 
+      let hasErrors3 = false; // Track global errors
+
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
+
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+
+        boqSubItem.materials.forEach((material) => {
+          const genericInfoId = material.material_sub_type_id?? ""; // Ensure it's never undefined
+
+          if (!genericInfoId) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
+
+        if (subItemHasErrors) {
+          hasErrors3 = true; // Mark that there are global errors
+          toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
+        }
+      });
+
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors3) return;
 
       // // if (boqSubItem.materials.length > 0) {
       //   boqSubItems.forEach((boqSubItem, i) => {

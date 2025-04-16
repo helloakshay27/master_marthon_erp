@@ -200,29 +200,30 @@ const BillBookingDetails = () => {
     
 
       const statusOptions = [
+
         {
           label: 'Select Status',
           value: '',
         },
         {
-          label: 'PO Draft',
+          label: 'Draft',
           value: 'draft',
         },
         {
-          label: 'Pending',
-          value: 'Pending',
+          label: 'Verified',
+          value: 'verified',
         },
         {
-          label: 'Submit',
-          value: 'submit',
+          label: 'Submited',
+          value: 'submited',
+        },
+        {
+          label: 'Proceed',
+          value: 'proceed',
         },
         {
           label: 'Approved',
           value: 'approved',
-        },
-        {
-          label: 'Reject',
-          value: 'reject',
         },
       ];
     
@@ -455,7 +456,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                        
+                          {details?.inventory_date}
                         </label>
                       </div>
                     </div>
