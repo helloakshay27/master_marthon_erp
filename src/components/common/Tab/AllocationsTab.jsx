@@ -179,7 +179,6 @@ export default function AllocationTab({ isCounterOffer }) {
       );
 
       const responseData = response.data;
-      console.log("Response Data:", responseData);
 
       const bidMaterial = responseData.bid_materials.find(
         (material) => material.id === id
@@ -274,7 +273,6 @@ export default function AllocationTab({ isCounterOffer }) {
         { vendorId: vendor_id, data: updatedDummyData },
       ]);
 
-      console.log("Toast message: Allocation updated successfully");
       toast.success("Allocation updated successfully");
     } catch (err) {
       console.error("Error updating allocation:", err);
@@ -307,7 +305,6 @@ export default function AllocationTab({ isCounterOffer }) {
         `${baseURL}rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         jsonBody
       );
-      console.log("Toast message: PO created successfully");
       toast.success("PO created successfully");
       setTimeout(() => {
         setSelectedData([]);

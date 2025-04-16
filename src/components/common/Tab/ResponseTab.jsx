@@ -422,7 +422,6 @@ export default function ResponseTab({ isCounterOffer }) {
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
-                          console.log("vendor:-", vendor);
 
                           return (
                             <td

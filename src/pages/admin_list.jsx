@@ -86,8 +86,6 @@ export default function adminList() {
   const handleModalShow = () => setShow(true);
 
   const handleReset = () => {
-    console.log(filters, "filters before reset");
-    console.log(filterOptions, "filterOptions before reset");
 
     setFilters({
       created_by_id_in: "",
@@ -114,8 +112,6 @@ export default function adminList() {
     setSuggestions([]); // Clear suggestions
     setIsSuggestionsVisible(false); // Hide suggestions dropdown
     setIsMyEvent(false);
-
-    console.log("Filters reset to default values.");
   };
 
   // Debounce function to limit API calls
@@ -173,7 +169,6 @@ export default function adminList() {
         material_type: preprocessOptions(response.data?.material_type || []),
         locations: preprocessOptions(response.data?.locations || []),
       });
-      console.log("Filter options fetched successfully:", response);
     } catch (err) {
       console.error("Error fetching filter options:", err);
       setError(err.response?.data?.message || "Failed to fetch filter options");
@@ -189,7 +184,6 @@ export default function adminList() {
   const fetchData = async (url, params) => {
     try {
       const response = await axios.get(url, { params });
-      // console.log(`Response from ${url}:`, response.data);
       return response.data;
     } catch (err) {
       console.error(`Error fetching data from ${url}:`, err);
@@ -429,7 +423,6 @@ export default function adminList() {
     e.preventDefault();
     setIsSuggestionsVisible(false);
     // Trigger search logic with `searchQuery`
-    console.log("Search submitted for:", searchQuery);
     fetchSuggestions(searchQuery);
   };
 
@@ -850,8 +843,6 @@ export default function adminList() {
                     </div>
                   </div>
                   <div className="tbl-container mt-3 px-3">
-                    {console.log("eventsToDisplay:--",eventsToDisplay)
-                    }
                     <table className="w-100">
                       <thead>
                         <tr>
