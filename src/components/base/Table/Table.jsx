@@ -114,8 +114,8 @@ export default function Table({
     const transposedData = transposeData(data, columns);
 
     // Extract the total amounts for the last row (e.g., "Total Amount")
-    const totalAmountsRow = transposedData.find(row => row.header === "Total Amount");
-    const totalAmounts = totalAmountsRow ? totalAmountsRow.values.map(value => parseFloat(value) || 0) : [];
+    const totalAmountsRow = transposedData.find((row) => row.header === "Total Amount");
+    const totalAmounts = totalAmountsRow ? totalAmountsRow.values.map((value) => parseFloat(value) || 0) : [];
 
     // Sort the amounts to find the least, second least, and third least
     const sortedAmounts = [...totalAmounts].sort((a, b) => a - b);
@@ -124,10 +124,10 @@ export default function Table({
     const thirdLeastAmount = sortedAmounts[2];
 
     const getBackgroundColor = (amt) => {
-        if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
-        if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
-        if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
-        return "transparent";
+      if (amt === leastAmount) return "rgba(139, 231, 139, 0.5)";
+      if (amt === secondLeastAmount) return "rgba(255, 237, 85, 0.5)";
+      if (amt === thirdLeastAmount) return "rgba(255, 63, 64, 0.5)";
+      return "transparent";
     };
 
     return (
@@ -146,6 +146,8 @@ export default function Table({
             ))}
             <col style={{ width: "auto" }} />
           </colgroup>
+          <thead>
+          </thead>
           <tbody>
             {transposedData.map(
               (row, rowIndex) =>
@@ -169,62 +171,50 @@ export default function Table({
                     >
                       {row.header}
                     </td>
-                    {row.values.map(
-                      (value, valueIndex) =>
-                        value !== "" && (
-                          <td
-                            key={valueIndex}
-                            style={{
-                              width: "180px",
-                              textAlign: "center",
-                              whiteSpace: "nowrap",
-                              backgroundColor: [
-                                "totalAmount",
-                                "grossTotal",
-                              ].includes(columns[rowIndex]?.key)
-                                ? getBackgroundColor(value)
-                                : "transparent",
-                              fontWeight: [
-                                "totalAmount",
-                                "grossTotal",
-                              ].includes(columns[rowIndex]?.key)
-                                ? "bold"
-                                : "normal",
-                              textTransform: "capitalize",
-                              cursor: enableHoverEffect ? "pointer" : "default", // Conditionally add cursor pointer
-                            }}
-                            onClick={() =>
-                              handleColumnClick(
-                                data[valueIndex],
-                                columns[rowIndex]?.key
-                              )
-                            }
-                            onMouseOver={(e) =>
-                              enableHoverEffect &&
-                              (e.currentTarget.style.backgroundColor =
-                                "#f0f0f0")
-                            } // Conditionally add hover effect
-                            onMouseOut={(e) =>
-                              enableHoverEffect &&
-                              (e.currentTarget.style.backgroundColor = [
-                                "totalAmount",
-                                "grossTotal",
-                              ].includes(columns[rowIndex]?.key)
-                                ? getBackgroundColor(value)
-                                : "transparent")
-                            } // Conditionally reset background color on mouse out
-                          >
-                            {customRender[columns[rowIndex]?.key]
-                              ? customRender[columns[rowIndex]?.key](
-                                  value,
-                                  valueIndex,
-                                  data[valueIndex]
-                                )
-                              : value}
-                          </td>
-                        )
-                    )}
-                    <td style={{ width: "auto" }}></td>
+                    {row.values.map((value, valueIndex) => (
+                      <td
+                        key={valueIndex}
+                        style={{
+                          width: "180px",
+                          textAlign: "center",
+                          whiteSpace: "nowrap",
+                          backgroundColor: [
+                            "totalAmount",
+                            "grossTotal",
+                          ].includes(columns[rowIndex]?.key)
+                            ? getBackgroundColor(value)
+                            : "transparent",
+                          fontWeight: [
+                            "totalAmount",
+                            "grossTotal",
+                          ].includes(columns[rowIndex]?.key)
+                            ? "bold"
+                            : "normal",
+                          textTransform: "capitalize",
+                        }}
+                        onMouseOver={(e) =>
+                          enableHoverEffect &&
+                          (e.currentTarget.style.backgroundColor = "#f0f0f0")
+                        }
+                        onMouseOut={(e) =>
+                          enableHoverEffect &&
+                          (e.currentTarget.style.backgroundColor = [
+                            "totalAmount",
+                            "grossTotal",
+                          ].includes(columns[rowIndex]?.key)
+                            ? getBackgroundColor(value)
+                            : "transparent")
+                        }
+                      >
+                        {customRender[columns[rowIndex]?.key]
+                          ? customRender[columns[rowIndex]?.key](
+                              value,
+                              valueIndex,
+                              data[valueIndex]
+                            )
+                          : value}
+                      </td>
+                    ))}
                   </tr>
                 )
             )}

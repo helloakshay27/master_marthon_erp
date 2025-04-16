@@ -11,11 +11,27 @@ export default function Accordion({
   tableData,
   onColumnClick,
   enableHoverEffect,
-  handleTaxButtonClick
+  handleTaxButtonClick,
+  isAllocation = false,
+  onSelectAll,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedAmounts, setSelectedAmounts] = useState([]); // State for selected amounts
 
   const toggleAccordion = () => setIsOpen(!isOpen);
+
+  const handleAmountSelection = (amt) => {
+    const isSelected = selectedAmounts.includes(amt);
+    const updatedSelectedAmounts = isSelected
+      ? selectedAmounts.filter((selectedAmt) => selectedAmt !== amt)
+      : [...selectedAmounts, amt];
+
+    setSelectedAmounts(updatedSelectedAmounts);
+
+    if (onSelectAll) {
+      onSelectAll(amt, !isSelected); // Notify parent about selection change
+    }
+  };
 
   // Sort the amounts to determine the least, second least, and third least values
   const sortedAmounts = [...amount].sort((a, b) => a - b);
@@ -28,7 +44,22 @@ export default function Accordion({
       const bid_id = data.bid_id || data.bidId;
       const material_id = data.material_id || data.materialId;
       const vendor_id = data.vendor_id || data.vendorId;
-      onColumnClick({ bid_id, material_id, vendor_id, ...data }, columnKey);
+
+      // If there are multiple materials, iterate over them
+      if (Array.isArray(data.materials) && data.materials.length > 0) {
+        data.materials.forEach((material) => {
+          const materialData = {
+            bid_id: material.bid_id || material.bidId,
+            material_id: material.material_id || material.materialId,
+            vendor_id: material.vendor_id || material.vendorId,
+            ...material,
+          };
+          onColumnClick(materialData, columnKey);
+        });
+      } else {
+        // Handle single material
+        onColumnClick({ bid_id, material_id, vendor_id, ...data }, columnKey);
+      }
     }
   };
 
@@ -58,9 +89,9 @@ export default function Accordion({
           >
             <span className="p-2">
               <DropArrowIcon isOpen={isOpen} />
-            </span>{" "}
+            </span>
             <Tooltip content={title}>
-              <span style={{ width: "260px", display: "inline-block", paddingRight:'10px' }}>
+              <span style={{ width: "260px", display: "inline-block", paddingRight: "10px" }}>
                 {title}
               </span>
             </Tooltip>
@@ -69,14 +100,29 @@ export default function Accordion({
                 <span
                   key={index}
                   style={{
-                    padding: '15px',
+                    padding: "15px",
                     width: "180px",
                     textAlign: "center",
                     whiteSpace: "nowrap",
                     backgroundColor: getBackgroundColor(amt),
-                    height:'50px'
+                    height: "50px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px", // Add spacing between checkbox and amount
                   }}
                 >
+                  {isAllocation && (
+                    <input
+                      type="checkbox"
+                      onChange={() =>
+                        handleColumnClick(
+                          tableData[index], // Pass the correct data for the row
+                          "amount"
+                        )
+                      }
+                      style={{cursor: "pointer"}}
+                    />
+                  )}
                   {amt}
                 </span>
               ))}
@@ -95,8 +141,9 @@ export default function Accordion({
               onRowSelect={undefined}
               resetSelectedRows={undefined}
               onResetComplete={undefined}
-              onColumnClick={handleColumnClick}
+              onColumnClick={handleColumnClick} // Pass the updated function
               enableHoverEffect={enableHoverEffect}
+              onSelectAll={onSelectAll} // Pass to Table
               customRender={{
                 taxRate: (value, rowIndex, rowData) => (
                   <button

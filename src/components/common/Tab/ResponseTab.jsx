@@ -974,7 +974,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                 item.taxChargeType ||
                                 deductionTaxOptions.find(
                                   (option) => option.id == item.resource_id
-                                ).value
+                                )?.value
                               }
                               onChange={(value) =>
                                 handleTaxChargeChange(
