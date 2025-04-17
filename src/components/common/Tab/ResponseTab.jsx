@@ -624,7 +624,7 @@ export default function ResponseTab({ isCounterOffer }) {
                   );
                 })}
                 {(() => {
-                  // Safely extract data with non-empty, non-array values
+                  
                   const extractedData =
                     eventVendors?.flatMap((vendor) => {
                       const extra = vendor?.bids?.[0]?.extra;
@@ -655,13 +655,6 @@ export default function ResponseTab({ isCounterOffer }) {
 
                       return [];
                     }) || [];
-
-                  // Early return if no data
-                  if (extractedData.length === 0) {
-                    return <p>No data available</p>;
-                  }
-
-                  // Gather all unique keys from the 'extra' objects
                   const extractedKeys = Array.from(
                     new Set(extractedData.flatMap((obj) => Object.keys(obj)))
                   );
@@ -680,6 +673,68 @@ export default function ResponseTab({ isCounterOffer }) {
                     />
                   );
                 })()}
+
+{(() => {
+  console.log("eventVendors", eventVendors);
+
+  // Extract charge data
+  const extractedChargeData =
+    eventVendors?.flatMap((vendor) => {
+      const charges = vendor?.bids?.[0]?.charges;
+
+      if (
+        charges &&
+        Object.values(charges).some(
+          (val) =>
+            (typeof val === "string" && val.trim() !== "") ||
+            (typeof val === "number" && val !== null) || // Include numbers
+            (typeof val === "object" && val !== null && !Array.isArray(val))
+        )
+      ) {
+        const formattedCharges = {};
+
+        Object.entries(charges).forEach(([key, val]) => {
+          if (!Array.isArray(val)) {
+            formattedCharges[key] = val?.toString().trim() || "_";
+          }
+        });
+
+        return Object.keys(formattedCharges).length > 0
+          ? [formattedCharges]
+          : [];
+      }
+      return [];
+    }) || [];
+
+  // Extract unique keys for table columns
+  const extractedChargeKeys = Array.from(
+    new Set(extractedChargeData.flatMap((obj) => Object.keys(obj)))
+  );
+
+  // Debugging: Log extracted data and keys
+  console.log("extractedChargeData", extractedChargeData);
+  console.log("extractedChargeKeys", extractedChargeKeys);
+
+  // Check if there's data to display
+  if (extractedChargeData.length === 0) {
+    return <p>No charges available to display.</p>;
+  }
+
+  // Render Accordion
+  return (
+    <Accordion
+      title="Other Charges"
+      isDefault={true}
+      tableColumn={extractedChargeKeys.map((key) => ({
+        label: key
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+        key: key,
+      }))}
+      tableData={extractedChargeData}
+    />
+  );
+})()}
 
                 {/* <Accordion
                   title={"Other Informations"}
