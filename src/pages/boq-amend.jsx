@@ -1923,6 +1923,17 @@ const BoqAmend = () => {
             return; // Exit function if validation fails
         }
 
+          // sub type validation
+            const invalidSubType = materials.some((material, index) => {
+              const subType = selectedSubTypes[index];
+              return !subType || subType === "";
+            });
+            if (invalidSubType) {
+              toast.error(
+                "Material Sub-Type is required for all materials."
+              );
+              return; // Exit function if validation fails
+            }
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -2115,6 +2126,29 @@ const BoqAmend = () => {
             // **Prevent form submission if any sub-item has errors**
             if (hasErrors2) return;
 
+ let hasErrors3 = false; // Track global errors
+
+      boqSubItems.forEach((boqSubItem, i) => {
+        console.log("boq sub mt:", boqSubItem.materials);
+
+        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+
+        boqSubItem.materials.forEach((material) => {
+          const genericInfoId = material.material_sub_type_id?? ""; // Ensure it's never undefined
+
+          if (!genericInfoId) {
+            subItemHasErrors = true; // Mark that there's an error for this sub-item
+          }
+        });
+
+        if (subItemHasErrors) {
+          hasErrors3 = true; // Mark that there are global errors
+          toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
+        }
+      });
+
+      // **Prevent form submission if any sub-item has errors**
+      if (hasErrors3) return;
 
 
         }
@@ -2834,7 +2868,7 @@ const BoqAmend = () => {
                                                                     </th>
                                                                     <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                                                     <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
-                                                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                                                    <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type <span>*</span></th>
                                                                     <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
                                                                     <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Colour </th>
                                                                     <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Brand </th>
