@@ -3004,7 +3004,7 @@ export default function VendorDetails() {
               ) : error ? (
                 "Something went wrong..."
               ) : data1 ? (
-                <div className="w-100 container-fluid">
+                <div className="w-100 container-fluid print-wrapper">
                   <div className="main-content w-100 ">
                     <div className="w-100  pt-2 mb-2  pe-2">
                       {/* Published Stages */}
@@ -3830,30 +3830,28 @@ export default function VendorDetails() {
                     </div>
                   </div>
                   <div className="d-flex justify-content-end align-items-center">
-                    <button
-                      className="purple-btn2"
-                      onClick={() => {
-                        // Expand all collapsible sections
-                        document
-                          .querySelectorAll(".collapse")
-                          .forEach((el) => {
-                            el.classList.add("show");
-                          });
+                  <button
+  className="purple-btn2"
+  onClick={() => {
+    document.querySelectorAll(".collapse").forEach((el) => {
+      el.classList.add("show");
+      el.style.display = "block";
+      el.style.visibility = "visible";
+    });
+    window.print();
+  }}
+  style={{
+    backgroundColor: "#8b0203",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    cursor: "pointer",
+  }}
+>
+  Print
+</button>
 
-                        // Trigger the print dialog
-                        window.print();
-                      }}
-                      style={{
-                        backgroundColor: "#8b0203",
-                        color: "#fff",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Print
-                    </button>
                   </div>
                 </div>
               ) : (

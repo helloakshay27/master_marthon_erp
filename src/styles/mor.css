@@ -18730,63 +18730,109 @@ ul.pagination.justify-content-center {
 }
 
 @media print {
-  /* Set paper size to A2 */
+  /* Force A2 paper size with adequate spacing */
   @page {
-    size: A2;
-    margin: default; /* Default margins */
+    size: A2 portrait;
+    margin: 1in; /* Avoid 'default' — it's browser inconsistent */
   }
 
-  /* Ensure the body and html take up full height */
+  /* Body & HTML must be allowed to grow naturally */
   html, body {
-    height: auto;
-    overflow: visible;
-  }
-
-  /* Expand scrollable areas to show full content */
-  .main-content, .card, .tbl-container, .p-3, .tab-content {
-    overflow: visible !important;
+    width: 100% !important;        /* Scales content down */
+    max-width: 100% !important;
+    font-size: 10px !important;
     height: auto !important;
+    overflow: visible !important;
+    font-size: 12px;
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Hide unnecessary elements like buttons */
-  button, .btn, .nav-tabs {
+  /* Hide all buttons and navs */
+  .btn, button, .purple-btn2, .no-print, .nav-tabs {
     display: none !important;
   }
 
-  /* Ensure tables and other elements fit the page */
+  /* Expand scrollable areas */
+  .main-content,
+  .card,
+  .tbl-container,
+  .tab-content,
+  .p-3,
+  .table-responsive,
+  .scrollable,
+  .content-scrollable {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    background-color: white !important;
+    box-shadow: none !important;
+  }
+
+  /* Layout spacing cleanup */
+  .container,
+  .container-fluid,
+  .card,
+  .row,
+  .col,
+  .col-12 {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Tables must break cleanly */
   table {
     width: 100% !important;
     page-break-inside: avoid;
+    break-inside: avoid;
+    border-collapse: collapse;
   }
 
   th, td {
-    word-wrap: break-word;
+    word-break: break-word;
     white-space: normal;
+    font-size: 11px;
+    padding: 6px 8px;
   }
 
-  /* Remove padding/margins that might cause clipping */
-  .container-fluid, .card {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Adjust font size for better readability */
-  body {
-    font-size: 12px;
-  }
-
-  /* Ensure collapsible sections are expanded */
-  .collapse {
+  /* Keep collapsibles open */
+  .collapse,
+  .collapsing,
+  .collapse.show {
     display: block !important;
     visibility: visible !important;
+    height: auto !important;
   }
 
-  /* Enable background graphics */
-  * {
-    -webkit-print-color-adjust: exact !important; /* For Chrome */
-    print-color-adjust: exact !important; /* For other browsers */
+  /* Optional: Add page-break manually for long content */
+  .page-break {
+    page-break-after: always;
+  }
+
+  /* Ensure headings and logos print correctly */
+  h1, h2, h3, h4, h5, h6, img, label {
+    color: black !important;
   }
 }
+
+@media print {
+  @supports (-ms-ime-align: auto) {
+    .print-wrapper {
+      transform: scale(0.8);
+      transform-origin: top left;
+      width: 125%;
+    }
+
+    /* Prevent double scroll in Edge due to scaled wrapper */
+    html, body {
+      overflow: hidden !important;
+      height: auto !important;
+    }
+  }
+}
+
 
 .modal-xxl .modal-dialog {
   max-width: 95%;
