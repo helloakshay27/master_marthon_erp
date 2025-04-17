@@ -151,26 +151,26 @@ const BillBookingList = () => {
 
   const [validationErrors, setValidationErrors] = useState({});
 
-  const validateAndFetchFilteredData = () => {
-    const errors = {};
+  // const validateAndFetchFilteredData = () => {
+  //   const errors = {};
 
-    if (!selectedCompany) {
-      errors.company = "Please select a company.";
-    }
-    if (!selectedProject) {
-      errors.project = "Please select a project.";
-    }
-    if (!selectedSite) {
-      errors.site = "Please select a sub-project.";
-    }
+  //   if (!selectedCompany) {
+  //     errors.company = "Please select a company.";
+  //   }
+  //   if (!selectedProject) {
+  //     errors.project = "Please select a project.";
+  //   }
+  //   if (!selectedSite) {
+  //     errors.site = "Please select a sub-project.";
+  //   }
 
-    setValidationErrors(errors);
+  //   setValidationErrors(errors);
 
-    // If no errors, fetch filtered data
-    if (Object.keys(errors).length === 0) {
-      fetchFilteredData();
-    }
-  };
+  //   // If no errors, fetch filtered data
+  //   if (Object.keys(errors).length === 0) {
+  //     fetchFilteredData();
+  //   }
+  // };
 
   const fetchFilteredData = () => {
     const companyId = selectedCompany?.value || "";
@@ -191,6 +191,25 @@ const BillBookingList = () => {
       })
       .catch((error) => {
         console.error("Error fetching filtered data:", error);
+      });
+  };
+  const handleReset = () => {
+    // Clear selected filters
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    // Fetch unfiltered data
+    axios
+      .get(`${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then((response) => {
+        setBillData(response.data.bill_bookings); // Set fetched data
+        setMeta(response.data.meta)
+        setTotalPages(response.data.meta.total_pages); // Reset total pages
+        setTotalEntries(response.data.meta.total_count); // Reset total entries
+      })
+      .catch((error) => {
+        console.error("Error resetting data:", error);
       });
   };
   //  bulk action 
@@ -287,6 +306,27 @@ const BillBookingList = () => {
       });
   };
 
+   // Fetch the data when 'fromStatus' changes
+    useEffect(() => {
+      if (fromStatus) { // Only fetch data if a status is selected
+        setLoading(true); // Show loading state while fetching
+        axios
+        .get(`${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .then((response) => {
+          setBillData(response.data.bill_bookings); // Set fetched data
+          setMeta(response.data.meta)
+          setTotalPages(response.data.meta.total_pages); // Reset total pages
+          setTotalEntries(response.data.meta.total_count); // Reset total entries
+        })
+        .catch((error) => {
+          console.error("Error resetting data:", error);
+        })
+          .finally(() => {
+            setLoading(false); // Stop loading when request is complete
+          });
+      }
+    }, [fromStatus]);  // This will run every time 'fromStatus' changes
+
 
 
   // State to track selected bill detail IDs
@@ -381,7 +421,7 @@ const BillBookingList = () => {
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Company <span>*</span>
+                        Company 
                       </label>
 
                       <SingleSelector
@@ -390,15 +430,15 @@ const BillBookingList = () => {
                         value={selectedCompany}
                         placeholder={`Select Company`}
                       />
-                      {validationErrors.company && (
+                      {/* {validationErrors.company && (
                         <span className="text-danger">{validationErrors.company}</span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Project<span>*</span>
+                        Project
                       </label>
 
                       <SingleSelector
@@ -407,15 +447,15 @@ const BillBookingList = () => {
                         value={selectedProject}
                         placeholder={`Select Project`}
                       />
-                      {validationErrors.project && (
+                      {/* {validationErrors.project && (
                         <span className="text-danger">{validationErrors.project}</span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Sub-Project <span>*</span>
+                        Sub-Project 
                       </label>
                       {/* Pass static data as options */}
                       <SingleSelector
@@ -424,13 +464,16 @@ const BillBookingList = () => {
                         value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
-                      {validationErrors.site && (
+                      {/* {validationErrors.site && (
                         <span className="text-danger">{validationErrors.site}</span>
-                      )}
+                      )} */}
                     </div>
                   </div>
-                  <div className="col-md-3 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 m-0" onClick={validateAndFetchFilteredData}>Go</button>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2" onClick={fetchFilteredData}>Go</button>
+                  </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2" onClick={handleReset}>Reset</button>
                   </div>
                 </div>
               </CollapsibleCard>
