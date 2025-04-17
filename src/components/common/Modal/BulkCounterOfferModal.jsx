@@ -211,15 +211,29 @@ export default function BulkCounterOfferModal({
   };
 
   const handleMaterialInputChange = (e, field, index) => {
-    const value = e.target.value;
+    const value = parseFloat(e.target.value) || 0;
     const updatedMaterials = [...formData.bid_materials];
+
     if (field === "quantity_available") {
       const quantityRequested =
         parseFloat(updatedMaterials[index].quantity_requested) || 0;
-      if (parseFloat(value) > quantityRequested) {
+      if (value > quantityRequested) {
         toast.error("Quantity available cannot exceed quantity requested."); // Display toaster message
         return;
       }
+    }
+
+    if (field === "price" && value > parseFloat(updatedMaterials[index].price)) {
+      toast.error("Price cannot be higher than the present value."); // Display toaster message
+      return;
+    }
+
+    if (
+      field === "discount" &&
+      value < parseFloat(updatedMaterials[index].discount)
+    ) {
+      toast.error("Discount cannot be lower than the present value."); // Display toaster message
+      return;
     }
 
     updatedMaterials[index][field] = value;
@@ -246,6 +260,15 @@ export default function BulkCounterOfferModal({
     updatedMaterials[index].landed_amount = landedAmount.toFixed(2);
     updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
     updatedMaterials[index].total_amount = finalTotal.toFixed(2);
+
+    // Disable price if discount is modified, and vice versa
+    if (field === "price") {
+      updatedMaterials[index].disableDiscount = true;
+      updatedMaterials[index].disablePrice = false;
+    } else if (field === "discount") {
+      updatedMaterials[index].disablePrice = true;
+      updatedMaterials[index].disableDiscount = false;
+    }
 
     setSumTotal(
       updatedMaterials.reduce(
@@ -590,6 +613,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.price}
           onChange={(e) => handleMaterialInputChange(e, "price", index)}
+          disabled={item.disablePrice}
         />
       );
 
@@ -611,6 +635,7 @@ export default function BulkCounterOfferModal({
           style={{ width: "auto" }}
           value={item.discount}
           onChange={(e) => handleInputChange(e, "discount")}
+          disabled={item.disableDiscount}
         />
       );
 
