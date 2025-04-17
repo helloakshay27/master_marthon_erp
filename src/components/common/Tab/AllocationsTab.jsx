@@ -248,7 +248,9 @@ export default function AllocationTab({ isCounterOffer }) {
         },
         {
           label: "Realised Freight Amount",
-          value: `₹${responseData.bids[0]?.realised_freight_charge_amount || 0}`,
+          value: `₹${
+            responseData.bids[0]?.realised_freight_charge_amount || 0
+          }`,
         },
         {
           label: "Warranty Clause",
@@ -296,6 +298,7 @@ export default function AllocationTab({ isCounterOffer }) {
               id: material.id,
             })),
           },
+          validity_period: vendorData.validityPeriod || null,
         },
       ],
     };
@@ -372,8 +375,7 @@ export default function AllocationTab({ isCounterOffer }) {
             <div
               className="d-flex align-items-center"
               style={{ marginRight: "20px" }}
-            >
-            </div>
+            ></div>
           </div>
         </div>
         <div className="viewBy-main-child2 mb-3">
@@ -684,6 +686,51 @@ export default function AllocationTab({ isCounterOffer }) {
                                   }
                                   editable={false}
                                 />
+                              </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                  marginTop: "20px",
+                                }}
+                              >
+                                <div style={{ marginTop: "20px" }}>
+                                  <label
+                                    className="po-fontBold"
+                                    htmlFor={`validity-period-${index}`}
+                                    style={{ marginRight: "10px" }}
+                                  >
+                                    Validity Period
+                                  </label>
+                                  <input
+                                    type="datetime-local"
+                                    id={`validity-period-${index}`}
+                                    className="form-control"
+                                    value={vendorData.validityPeriod || ""}
+                                    min={new Date().toISOString().slice(0, 16)} // Disable past dates and times
+                                    onChange={(e) => {
+                                      const selectedDate = new Date(
+                                        e.target.value
+                                      );
+                                      const currentDate = new Date();
+
+                                      if (selectedDate <= currentDate) {
+                                        toast.error(
+                                          "Only future dates and times can be selected"
+                                        );
+                                        return;
+                                      }
+
+                                      const updatedSelectedData = [
+                                        ...selectedData,
+                                      ];
+                                      updatedSelectedData[
+                                        index
+                                      ].validityPeriod = e.target.value;
+                                      setSelectedData(updatedSelectedData);
+                                    }}
+                                  />
+                                </div>
                               </div>
 
                               <div className="text-end">

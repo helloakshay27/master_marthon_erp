@@ -27,14 +27,20 @@ export default function ParticipantsTab({ data, id }) {
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [vendorData, setVendorData] = useState([]);
-  const [tableData, setTableData] = useState([]); // State to hold dynamic data
+  const [tableData, setTableData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1); // Default total pages
-  const pageSize = 100; // Number of items per page
-  const pageRange = 6; // Number of pages to display in the pagination
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 100;
+  const pageRange = 6;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [companyList, setCompanyList] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]); // State for selected tags
+  const options = [
+    { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
+    { value: "MIVAN MA", label: "MIVAN MA" },
+    { value: "MIVAN MATERIAL", label: "MIVAN MATERIAL" },
+  ]; // Example tag options
 
   const [inviteForm, setInviteForm] = useState({
     name: "",
@@ -49,7 +55,7 @@ export default function ParticipantsTab({ data, id }) {
   const validateForm = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    const mobileRegex = /^[6-9]\d{9}$/;
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
@@ -85,7 +91,7 @@ export default function ParticipantsTab({ data, id }) {
 
   const handleInviteSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
     setIsSubmitting(true);
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -96,7 +102,9 @@ export default function ParticipantsTab({ data, id }) {
 
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true`,
+        `${baseURL}rfq/events/${id}/invite_vendor?
+        token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}
+        &mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&company_id=${inviteForm.company}`,
         {
           method: "POST",
         }
@@ -105,7 +113,6 @@ export default function ParticipantsTab({ data, id }) {
       if (response.ok) {
         const newVendor = await response.json();
 
-        // Add the new vendor to vendorData in the specified format
         const formattedVendor = {
           key: newVendor.id,
           serialNumber: vendorData.length + 1,
@@ -228,7 +235,7 @@ export default function ParticipantsTab({ data, id }) {
       setTableData(formattedData);
 
       setCurrentPage(page);
-      setTotalPages(data?.pagination?.total_pages || 1); // Assume the API returns total pages
+      setTotalPages(data?.pagination?.total_pages || 1);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -245,7 +252,6 @@ export default function ParticipantsTab({ data, id }) {
   }, [tableData]);
 
   useEffect(() => {
-    // This useEffect will trigger whenever vendorData is updated
     setVendorData(vendorData);
   }, [vendorData]);
 
@@ -256,11 +262,9 @@ export default function ParticipantsTab({ data, id }) {
   };
 
   const getPageRange = () => {
-    // Calculate the starting page for the range
     let startPage = Math.max(currentPage - Math.floor(pageRange / 2), 1);
     let endPage = startPage + pageRange - 1;
 
-    // Ensure the range doesn't exceed the total pages
     if (endPage > totalPages) {
       endPage = totalPages;
       startPage = Math.max(endPage - pageRange + 1, 1);
@@ -282,7 +286,7 @@ export default function ParticipantsTab({ data, id }) {
   };
 
   const handleSaveButtonClick = async () => {
-    if (isSaving) return; // Prevent multiple submissions
+    if (isSaving) return;
     setIsSaving(true);
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
@@ -296,7 +300,6 @@ export default function ParticipantsTab({ data, id }) {
       });
 
       if (response.ok) {
-        // Remove selected vendors from tableData
         const updatedTableData = tableData.filter(
           (vendor) =>
             !selectedRows.some(
@@ -305,7 +308,6 @@ export default function ParticipantsTab({ data, id }) {
         );
         setTableData(updatedTableData);
 
-        // Add selected vendors to vendorData
         const updatedVendorData = [...vendorData, ...selectedRows];
         setVendorData(updatedVendorData);
 
@@ -439,7 +441,7 @@ export default function ParticipantsTab({ data, id }) {
         {vendorData.length > 0 ? (
           <>
             <Table
-              columns={participantsTabColumns} // Use columns with serial number
+              columns={participantsTabColumns}
               data={vendorData}
             />
           </>
@@ -713,8 +715,8 @@ export default function ParticipantsTab({ data, id }) {
                   className="form-control"
                   type="text"
                   name="mobile"
-                  inputMode="numeric" // mobile-friendly numeric keyboard
-                  pattern="[0-9]*" // restricts to digits only
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   onKeyDown={(e) => {
                     const invalidChars = ["e", "E", "+", "-", ".", ","];
                     if (

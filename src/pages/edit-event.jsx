@@ -1051,13 +1051,9 @@ export default function EditEvent() {
     if (Object.keys(errors).length > 0) return;
 
     fetch(
-      `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true`,
+      `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&company_id=${inviteForm.company}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(inviteVendorData),
       }
     )
       .then((response) => {
@@ -1084,6 +1080,9 @@ export default function EditEvent() {
             name: "",
             email: "",
             mobile: "",
+            gstNumber: "",
+            panNumber: "",
+            company: "",
           });
 
           handleInviteModalClose();

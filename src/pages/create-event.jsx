@@ -784,42 +784,31 @@ export default function CreateEvent() {
   };
 
   const handleInviteVendor = async () => {
-    if (
-      !inviteVendorData.name ||
-      !inviteVendorData.email ||
-      !inviteVendorData.mobile
-    ) {
-      toast.error("Please fill all the fields.");
-      return;
-    }
-
+    const errors = validateInviteVendorForm();
+    if (Object.keys(errors).length > 0) return;
+  
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true`,
+        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&company_id=${inviteForm.company}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(inviteVendorData),
         }
       );
-
+  
       if (response.ok) {
         const newVendor = await response.json();
         toast.success("Vendor invited successfully!");
-
+  
         const vendorData = {
           id: null,
           pms_supplier_id: newVendor?.id,
           name: newVendor?.full_name,
           phone: newVendor?.mobile,
         };
-
+  
         setSelectedVendors((prev) => [...prev, vendorData]);
         setFilteredTableData((prev) => [...prev, vendorData]);
-
-        // Clear input after success
+  
         setInviteVendorData({
           name: "",
           email: "",
@@ -828,7 +817,7 @@ export default function CreateEvent() {
           panNumber: "",
           company: "",
         });
-
+  
         handleInviteModalClose();
       } else {
         const errorData = await response.json();
