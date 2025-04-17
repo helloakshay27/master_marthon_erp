@@ -1768,7 +1768,7 @@ console.log("sub item in delete case:,", boqSubItems)
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
-                              Material Sub-Type
+                              Material Sub-Type <span>*</span>
                             </th>
                             <th
                               rowSpan={2}

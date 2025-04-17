@@ -35,7 +35,7 @@ const BillBookingList = () => {
     try {
       setLoading(true); // Start loading
       const response = await axios.get(
-        `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[search]=${search}`
+        `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${search}`
       );
       setBillData(response.data.bill_bookings); // Set fetched data
       setMeta(response.data.meta)
