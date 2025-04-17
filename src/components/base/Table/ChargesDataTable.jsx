@@ -9,16 +9,16 @@ export default function ChargesDataTable({
 }) {
   const handleInputChange = (index, e) => {
     const updated = [...data];
-  
+
     // Ensure value is an object
     if (typeof updated[index].value !== 'object' || updated[index].value === null) {
       updated[index].value = {};
     }
-  
+
     updated[index].value.firstBid = e.target.value;
     onValueChange(updated);
   };
-  
+
 
   // Recalculate gross total whenever data changes
   useEffect(() => {
@@ -33,22 +33,30 @@ export default function ChargesDataTable({
 
     const freight = getValue("freight_charge_amount");
     const gstFreight = getValue("gst_on_freight");
+
     const other = getValue("other_charge_amount");
     const gstOther = getValue("gst_on_other_charge");
+
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = getValue("realised_freight_charge_amount");
+    const realisedOther = getValue("realised_other_charge_amount");
+    const realisedHandling = getValue("realised_handling_charge_amount");
 
     const gross =
       freight + (freight * gstFreight) / 100 +
       other + (other * gstOther) / 100 +
-      handling + (handling * gstHandling) / 100;
+      handling + (handling * gstHandling) / 100 +
+      realisedFreight + realisedOther + realisedHandling;
 
     setGrossTotal(gross);
   };
 
 
+
   return (
- <table className="tbl-container mt-4 ShortTable" style={{ width: "40% " }}>
+    <table className="tbl-container mt-4 ShortTable" style={{ width: "40%" }}>
       <tbody>
         {data.map((row, index) => {
           const { firstBid, counterBid } = row?.value || {};
@@ -66,19 +74,32 @@ export default function ChargesDataTable({
                 }}
               >
                 {row.label
-                  .replace(/_/g, " ") // change underscores to spaces
+                  .replace(/_/g, " ")
                   .replace(/\b\w/g, (c) => c.toUpperCase())}
               </td>
 
               <td style={{ padding: "12px", color: "#000", textAlign: "left" }}>
                 {editable ? (
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={firstBid || ""}
-                    onChange={(e) => handleInputChange(index, e)}
-                    style={{ backgroundColor: "#fff", color: "#000" }}
-                  />
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={firstBid || ""}
+                      onChange={(e) => handleInputChange(index, e)}
+                      style={{
+                        backgroundColor: "#fff",
+                        color: "#000",
+                        width: "80%",
+                        marginRight: "5px",
+                      }}
+                    />
+                    {row.label.startsWith("gst_") ? (
+                      <span style={{ color: "#000" }}>%</span>
+                    ) : (
+                      <span style={{ color: "#000" }}>₹</span>
+                    )}
+
+                  </div>
                 ) : showBoth ? (
                   <>
                     <span

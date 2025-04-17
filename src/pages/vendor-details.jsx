@@ -517,7 +517,7 @@ export default function VendorDetails() {
             },
             {}
           );
-          const bidMaterial = item.bid_materials?.[0]; 
+          const bidMaterial = item.bid_materials?.[0];
 
           // Map the row data
           const rowData = {
@@ -565,9 +565,7 @@ export default function VendorDetails() {
             readonly: false,
           },
         };
-
         const extra_charges = {
-
           freight_charge_amount: {
             value: "",
             readonly: false,
@@ -592,12 +590,20 @@ export default function VendorDetails() {
             value: "",
             readonly: false,
           },
-          remark: {
+          realised_freight_charge_amount: {
             value: "",
             readonly: false,
           },
-
+          realised_other_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          realised_handling_charge_amount: {
+            value: "",
+            readonly: false,
+          },
         };
+
 
 
 
@@ -722,27 +728,57 @@ export default function VendorDetails() {
           );
 
           const extra_charges = {
-            freight_charge_amount: { value: "", readonly: false },
-            gst_on_freight: { value: "", readonly: false },
-            other_charge_amount: { value: "", readonly: false },
-            gst_on_other_charge: { value: "", readonly: false },
-            handling_charge_amount: { value: "", readonly: false },
-            gst_on_handling_charge: { value: "", readonly: false },
-            remark: { value: "", readonly: false },
+            freight_charge_amount: {
+              value: "",
+              readonly: false,
+            },
+            gst_on_freight: {
+              value: "",
+              readonly: false,
+            },
+            other_charge_amount: {
+              value: "",
+              readonly: false,
+            },
+            gst_on_other_charge: {
+              value: "",
+              readonly: false,
+            },
+            handling_charge_amount: {
+              value: "",
+              readonly: false,
+            },
+            gst_on_handling_charge: {
+              value: "",
+              readonly: false,
+            },
+            realised_freight_charge_amount: {
+              value: "",
+              readonly: false,
+            },
+            realised_other_charge_amount: {
+              value: "",
+              readonly: false,
+            },
+            realised_handling_charge_amount: {
+              value: "",
+              readonly: false,
+            },
           };
-          
+
+
           // Filter only keys that exist in extra_charges
           const filteredFirstBid = Object.entries(firstBid).filter(([key]) =>
             Object.keys(extra_charges).includes(key)
           );
-          
+
           // Map and format the filtered data
           const formattedCharges = filteredFirstBid.map(([fieldName, fieldData]) => ({
             label: fieldName,
             value: {
               firstBid: fieldData || "",
             },
-         
+
           }));
 
           setBidTemplate(formattedData);
@@ -1143,7 +1179,7 @@ export default function VendorDetails() {
         const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
         const finalTotal = landedAmount + gstAmount;
 
-        const fullTaxRow = originalTaxRateDataRef.current[index]; 
+        const fullTaxRow = originalTaxRateDataRef.current[index];
         const taxDetails = [
           ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
             (charge) => {
@@ -5002,7 +5038,7 @@ export default function VendorDetails() {
                           />
                         </>
                       </div>
-                    
+
 
                       <div className="d-flex justify-content-end mt-2 mx-2">
                         <h5>
