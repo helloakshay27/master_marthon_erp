@@ -464,7 +464,7 @@ export default function BulkCounterOfferModal({
   };
 
   const productTableColumns = [
-    { label: "Sr no.", key: "SrNo" },
+    // { label: "Sr no.", key: "SrNo" },
     { label: "Material Name", key: "product" },
     { label: "Material Type", key: "materialType" },
     { label: "Material Sub Type", key: "materialSubType" },
@@ -719,7 +719,7 @@ export default function BulkCounterOfferModal({
       );
 
       return {
-        Sno: index + 1,
+        // Sno: index + 1,
         product: <span>{productName}</span>,
         materialType,
         materialSubType,
@@ -750,7 +750,7 @@ export default function BulkCounterOfferModal({
         show={show}
         onHide={handleClose}
         title="Counter Offer"
-        size="xl"
+        size="xxl"
         footerButtons={[
           {
             label: loading ? (

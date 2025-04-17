@@ -430,7 +430,7 @@ export default function ResponseTab({ isCounterOffer }) {
                             >
                               <div
                                 className="d-flex flex-column align-items-center justify-content-between"
-                                style={{ height: "150px" }}
+                                style={{ height: "170px" }}
                               >
                                 <div className="">
                                   {vendor.full_name}

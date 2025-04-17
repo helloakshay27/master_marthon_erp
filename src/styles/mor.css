@@ -18787,3 +18787,8 @@ ul.pagination.justify-content-center {
     print-color-adjust: exact !important; /* For other browsers */
   }
 }
+
+.modal-xxl .modal-dialog {
+  max-width: 95%;
+  width: 100%;
+}

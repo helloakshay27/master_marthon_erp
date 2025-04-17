@@ -60,6 +60,7 @@ export default function adminList() {
     event_materials_pms_inventory_inventory_type_id_in: "",
     event_materials_id_in: "",
     event_no_cont: "",
+    event_type_detail_event_type_eq: "",
   });
   const [filterOptions, setFilterOptions] = useState({
     event_titles: [],
@@ -86,7 +87,6 @@ export default function adminList() {
   const handleModalShow = () => setShow(true);
 
   const handleReset = () => {
-
     setFilters({
       created_by_id_in: "",
       event_type_detail_award_scheme_in: "",
@@ -219,6 +219,10 @@ export default function adminList() {
         }),
         ...(filters.event_no_cont && {
           "q[event_no_cont]": filters.event_no_cont,
+        }),
+        ...(filters.event_type_detail_event_type_eq && {
+          "q[event_type_detail_event_type_eq]":
+            filters.event_type_detail_event_type_eq,
         }),
       };
 
@@ -726,6 +730,42 @@ export default function adminList() {
                             }}
                           />
                         </div>
+
+                        <div className="col-md-2">
+                          <label htmlFor="event-type-select">Event Type</label>
+                          <Select
+                            id="event-type-select"
+                            options={[
+                              { value: "rfq", label: "RFQ" },
+                              { value: "auction", label: "Auction" },
+                              { value: "contract", label: "Contract" },
+                            ]}
+                            onChange={(option) =>
+                              handleFilterChange(
+                                "event_type_detail_event_type_eq",
+                                option?.value || ""
+                              )
+                            }
+                            value={
+                              filters.event_type_detail_event_type_eq
+                                ? {
+                                    value:
+                                      filters.event_type_detail_event_type_eq,
+                                    label:
+                                      filters.event_type_detail_event_type_eq,
+                                  }
+                                : null
+                            }
+                            placeholder="Select Type"
+                            isClearable
+                            menuPlacement="auto"
+                            menuPortalTarget={document.body}
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                            }}
+                          />
+                        </div>
+
                         <button type="submit" className="col-md-1 purple-btn2">
                           Go{" "}
                         </button>
@@ -859,7 +899,13 @@ export default function adminList() {
                           </tr>
                         ) : (
                           eventsToDisplay.map((event, index) => (
-                            <tr key={index} style={{backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#fff"}}>
+                            <tr
+                              key={index}
+                              style={{
+                                backgroundColor:
+                                  index % 2 === 0 ? "#f8f9fa" : "#fff",
+                              }}
+                            >
                               <td>
                                 {(pagination.current_page - 1) * 10 + index + 1}
                               </td>

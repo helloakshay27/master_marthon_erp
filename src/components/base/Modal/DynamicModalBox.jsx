@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
+import '../../../styles/mor.css'
 
 function DynamicModalBox({
   show,
@@ -13,6 +14,8 @@ function DynamicModalBox({
   footerButtons = [],
   modalType = null,
 }) {
+  const customClass = size === "xxl" ? "modal-xxl" : "";
+
   return (
     <Modal
       centered={centered}
@@ -22,7 +25,9 @@ function DynamicModalBox({
       onHide={onHide}
       backdrop={backdrop}
       keyboard={keyboard}
-      className={modalType ? "setting-modal" : "modal-centered-custom"}
+      className={`${
+        modalType ? "setting-modal" : "modal-centered-custom"
+      } ${customClass}`}
     >
       <Modal.Header>
         <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
