@@ -5641,7 +5641,7 @@ export default function VendorDetails() {
                           onClick={() => {
                             if (
                               taxRateData[tableId]
-                                ?.addition_bid_material_tax_details.length >= 1
+                                ?.addition_bid_material_tax_details.length >= 2
                             ) {
                               toast.error(
                                 "You can only add up to 1 fields for Additional Tax & Charges.",
