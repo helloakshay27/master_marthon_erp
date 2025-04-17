@@ -478,7 +478,15 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.inventory_date}
+                          {details?.inventory_date
+                            ? new Date(
+                                details.inventory_date
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })
+                            : ""}
                         </label>
                       </div>
                     </div>
@@ -1004,7 +1012,7 @@ const BillBookingDetails = () => {
                               ).toLocaleDateString("en-GB", {
                                 day: "2-digit",
                                 month: "2-digit",
-                                year: "2-digit",
+                                year: "numeric",
                               })
                             : ""}
                         </label>
@@ -1247,7 +1255,7 @@ const BillBookingDetails = () => {
                     <textarea
                       className="form-control"
                       rows={3}
-                      placeholder="Enter ..."
+                      placeholder="Enter Remark ..."
                       defaultValue={""}
                       value={remark}
                       onChange={handleRemarkChange}
@@ -1262,7 +1270,7 @@ const BillBookingDetails = () => {
                     <textarea
                       className="form-control"
                       rows={2}
-                      placeholder="Enter ..."
+                      placeholder="Enter Comment ..."
                       defaultValue={""}
                       value={comment}
                       onChange={handleCommentChange}
@@ -1302,10 +1310,10 @@ const BillBookingDetails = () => {
                 </div>
               </div>
               <h5 className=" mt-3">Audit Log</h5>
-              <div className="mx-0 mb-5">
+              <div className="mx-0 mb-5 pb-4">
                 {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
 
-                <div className="tbl-container  mt-1">
+                <div className="tbl-container mt-1">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1317,13 +1325,28 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                      </tr>
+                      {details?.status_logs?.map((log, index) => (
+        <tr key={log.id}>
+          <td>{index + 1}</td>
+          <td>{ ""}</td>
+          <td>    
+                 {log.created_at
+              ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  // second: "2-digit",
+                  hour12: true,
+                })}`
+              : ""}
+          </td>
+          <td>{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+          <td>{log.remarks || ""}</td>
+        </tr>
+      ))}
                     </tbody>
                   </table>
                 </div>

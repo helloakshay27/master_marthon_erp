@@ -705,7 +705,7 @@ const BillBookingList = () => {
                               {bill.created_at ? new Date(bill.created_at).toLocaleDateString("en-GB", {
                                 day: "2-digit",
                                 month: "2-digit",
-                                year: "2-digit",
+                                year: "numeric",
                               }) : ""}
                             </td>
                             <td className="text-start">
@@ -717,7 +717,7 @@ const BillBookingList = () => {
                                 "en-GB", {
                                 day: "2-digit",
                                 month: "2-digit",
-                                year: "2-digit",
+                                year: "numeric",
                               }) : ""}
                             </td>
                             <td className="text-start">{bill.total_amount || ""}</td>
@@ -728,7 +728,7 @@ const BillBookingList = () => {
                                 "en-GB", {
                                 day: "2-digit",
                                 month: "2-digit",
-                                year: "2-digit",
+                                year: "numeric",
                               }
                               ) : ""}
                             </td>

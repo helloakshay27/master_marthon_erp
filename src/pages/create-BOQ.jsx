@@ -2536,7 +2536,7 @@ const CreateBOQ = () => {
                                   </th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type</th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type  <span>*</span></th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Colour </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Brand </th>
