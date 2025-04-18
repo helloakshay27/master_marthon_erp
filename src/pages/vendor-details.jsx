@@ -162,28 +162,27 @@ export default function VendorDetails() {
   }, []);
 
   const [vendorId, setVendorId] = useState(() => {
-    // Retrieve the vendorId from sessionStorage or default to an empty string
     return sessionStorage.getItem("vendorId") || "";
   });
 
   const handleDownloadPDF = () => {
-    const element = document.querySelector(".print-wrapper"); // Select the content to download
+    const element = document.querySelector(".print-wrapper"); 
     const options = {
-      margin: 0, // No margin to capture full content
-      filename: "vendor-details.pdf", // Name of the downloaded file
-      image: { type: "jpeg", quality: 1.0 }, // High image quality
+      margin: 0, 
+      filename: "vendor-details.pdf", 
+      image: { type: "jpeg", quality: 1.0 }, 
       html2canvas: { 
-        scale: 3, // Higher scale for better resolution
-        useCORS: true, // Enable cross-origin resource sharing for external assets
-        scrollX: 0, // Ensure horizontal scrolling is captured
-        scrollY: 0, // Ensure vertical scrolling is captured
-        windowWidth: element.scrollWidth, // Capture full width of the content
-        windowHeight: element.scrollHeight, // Capture full height of the content
+        scale: 3, 
+        useCORS: true, 
+        scrollX: 0, 
+        scrollY: 0, 
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       },
       jsPDF: { 
-        unit: "px", // Use pixels for better precision
-        format: [element.scrollWidth, element.scrollHeight], // Dynamically set page size based on content dimensions
-        orientation: "portrait", // Portrait orientation
+        unit: "px", 
+        format: [element.scrollWidth, element.scrollHeight], 
+        orientation: "portrait", 
       },
     };
   
