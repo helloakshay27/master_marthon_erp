@@ -102,9 +102,7 @@ export default function ParticipantsTab({ data, id }) {
 
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${id}/invite_vendor?
-        token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}
-        &mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&company_id=${inviteForm.company}`,
+        `${baseURL}rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&company_id=${inviteForm.company}`,
         {
           method: "POST",
         }
