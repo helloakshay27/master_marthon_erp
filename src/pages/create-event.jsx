@@ -782,18 +782,29 @@ export default function CreateEvent() {
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
   };
-
+  
   const handleInviteVendor = async () => {
     const errors = validateInviteVendorForm();
     if (Object.keys(errors).length > 0) return;
   
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&company_id=${inviteForm.company}`,
+        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&company_id=${inviteVendorData?.company}`,
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: inviteVendorData.name,
+            email: inviteVendorData.email,
+            mobile: inviteVendorData.mobile,
+            gst_number: inviteVendorData.gstNumber,
+            pan_number: inviteVendorData.panNumber,
+          }),
         }
       );
+      console.log("response:--", response);
   
       if (response.ok) {
         const newVendor = await response.json();
@@ -829,39 +840,44 @@ export default function CreateEvent() {
       toast.error("An error occurred while inviting the vendor.");
     }
   };
-
-  const validateInviteVendorForm = () => {
-      const errors = {};
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
-      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
-      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
   
-      if (!inviteVendorData.name) {
-        errors.name = "Name is required";
-        toast.error(errors.name);
-      }
-      if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
-        errors.email = "Valid email is required";
-        toast.error(errors.email);
-      }
-      if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
-        errors.mobile = "Valid mobile number is required";
-        toast.error(errors.mobile);
-      }
-      if (inviteVendorData.gstNumber && !gstRegex.test(inviteVendorData.gstNumber)) {
-        errors.gstNumber = "Invalid GST number format";
-        toast.error(errors.gstNumber);
-      }
-      if (inviteVendorData.panNumber && !panRegex.test(inviteVendorData.panNumber)) {
-        errors.panNumber = "Invalid PAN number format";
-        toast.error(errors.panNumber);
-      }
-      return errors;
-    };
+  const validateInviteVendorForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  
+    if (!inviteVendorData.name) {
+      errors.name = "Name is required";
+      toast.error(errors.name);
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      errors.email = "Valid email is required";
+      toast.error(errors.email);
+    }
+    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+      errors.mobile = "Valid mobile number is required";
+      toast.error(errors.mobile);
+    }
+    if (inviteVendorData.gstNumber && !gstRegex.test(inviteVendorData.gstNumber)) {
+      errors.gstNumber = "Invalid GST number format";
+      toast.error(errors.gstNumber);
+    }
+    if (inviteVendorData.panNumber && !panRegex.test(inviteVendorData.panNumber)) {
+      errors.panNumber = "Invalid PAN number format";
+      toast.error(errors.panNumber);
+    }
+    if (!inviteVendorData.company) {
+      errors.company = "Company is required";
+      toast.error(errors.company);
+    }
+    return errors;
+  };
 
- 
-
+  console.log("inviteVendorData", inviteVendorData.company);
+  
+  
     const handleInviteVendorChange = (e) => {
       const { name, value } = e.target;
       const capitalizedValue =
@@ -1685,12 +1701,16 @@ export default function CreateEvent() {
                                   <label className="po-fontBold">Company</label>
                                   <SelectBox
                                     options={companyList}
-                                    onChange={(selectedOption) =>
+                                    value={companyList.find(
+                                      (option) => option.value === inviteVendorData.company
+                                    )} // Ensure the selected value is displayed
+                                    onChange={(selectedOption) => {
+                                      const updatedCompany = selectedOption || null; // Get the numeric value or null
                                       setInviteVendorData((prev) => ({
                                         ...prev,
-                                        company: selectedOption.value,
-                                      }))
-                                    }
+                                        company: updatedCompany, // Update the company field
+                                      }));
+                                    }}
                                   />
                                 </div>
                               </form>

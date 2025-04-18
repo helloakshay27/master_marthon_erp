@@ -774,7 +774,7 @@ export default function ParticipantsTab({ data, id }) {
                   onChange={(selectedOption) =>
                     setInviteForm((prev) => ({
                       ...prev,
-                      company: selectedOption.value,
+                      company: selectedOption,
                     }))
                   }
                 />
