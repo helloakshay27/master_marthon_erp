@@ -114,8 +114,12 @@ export default function Table({
     const transposedData = transposeData(data, columns);
 
     // Extract the total amounts for the last row (e.g., "Total Amount")
-    const totalAmountsRow = transposedData.find((row) => row.header === "Total Amount");
-    const totalAmounts = totalAmountsRow ? totalAmountsRow.values.map((value) => parseFloat(value) || 0) : [];
+    const totalAmountsRow = transposedData.find(
+      (row) => row.header === "Total Amount"
+    );
+    const totalAmounts = totalAmountsRow
+      ? totalAmountsRow.values.map((value) => parseFloat(value) || 0)
+      : [];
 
     // Sort the amounts to find the least, second least, and third least
     const sortedAmounts = [...totalAmounts].sort((a, b) => a - b);
@@ -142,13 +146,16 @@ export default function Table({
           <colgroup>
             <col style={{ width: "300px" }} />
             {data.map((_, index) => (
+              <>
               <col key={index} style={{ width: "180px" }} />
+              <p>huijilj</p>
+              </>
             ))}
             <col style={{ width: "auto" }} />
           </colgroup>
           <thead>
           </thead>
-          <tbody>
+          <tbody>            
             {transposedData.map(
               (row, rowIndex) =>
                 ![
@@ -184,10 +191,9 @@ export default function Table({
                           ].includes(columns[rowIndex]?.key)
                             ? getBackgroundColor(value)
                             : "transparent",
-                          fontWeight: [
-                            "totalAmount",
-                            "grossTotal",
-                          ].includes(columns[rowIndex]?.key)
+                          fontWeight: ["totalAmount", "grossTotal"].includes(
+                            columns[rowIndex]?.key
+                          )
                             ? "bold"
                             : "normal",
                           textTransform: "capitalize",
@@ -291,7 +297,8 @@ export default function Table({
                       overflow: enableOverflowScroll ? "hidden" : "visible",
                       textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
                       width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
-                      minWidth: isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
+                      minWidth:
+                        isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
                     }}
                   >
                     {cellContent}

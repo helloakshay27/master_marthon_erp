@@ -50,6 +50,8 @@ export default function AllocationTab({ isCounterOffer }) {
   });
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
+  const [checkedColumns, setCheckedColumns] = useState({}); // State to track checked status of columns
+  const [bulkBidId, setBulkBidId] = useState(null);
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -61,6 +63,20 @@ export default function AllocationTab({ isCounterOffer }) {
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
   }, [eventVendors]);
+
+  useEffect(() => {
+    if (bulkBidId) {
+      const updatedData = [...segeregatedMaterialData];
+      updatedData.map((material) => ({
+        ...material,
+        bids_values: material.bids_values.map((bid) => ({
+          ...bid,
+          isChecked: bulkBidId === bid.bid_id,
+        })),
+      }));
+      setSegeregatedMaterialData(updatedData);
+    }
+  }, [bulkBidId]);
 
   const { eventId } = useParams();
 
@@ -143,137 +159,191 @@ export default function AllocationTab({ isCounterOffer }) {
     return remainingWidth > 0 ? remainingWidth : 0; // Return remaining width if positive, else 0
   };
 
-  const handleColumnClick = async (data, columnKey) => {
+  const handleColumnClick = async (
+    data,
+    columnKey,
+    event,
+    isBulk = false,
+    updatedSegeregatedMaterialData
+  ) => {
+    const isDeletedAllocation = event?.target?.checked; // Ensure event is used here
+    setVendorIdVal(data.vendor_id);
+
     if (isUpdatingAllocation.current) return;
     isUpdatingAllocation.current = true;
 
-    const {
-      bid_id,
-      material_id,
-      material_name,
-      vendor_id,
-      vendor_name,
-      pms_supplier_id,
-      id,
-    } = data;
-
-    if (!bid_id || !material_id || !vendor_id) {
-      console.error("Missing bid_id, material_id, or vendor_id");
-      isUpdatingAllocation.current = false;
-      return;
-    }
-
-    setBidIdVal(bid_id);
-    setBidMaterialIdVal(material_id);
-    setVendorIdVal(vendor_id);
-    setPmsIdVal(pms_supplier_id);
-
     try {
+      const payload = isBulk
+        ? {
+            bid_id: data[0].bid_id,
+            select_all: "true",
+            delete_material: `${!isDeletedAllocation}`,
+          }
+        : {
+            bid_id: data.bid_id,
+            bid_material_id: data.id,
+            delete_material: `${!isDeletedAllocation}`,
+          };
+
       const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/event_vendors/${vendor_id}/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          bid_id: bid_id,
-          bid_material_id: id,
-          delete_material: "false",
-        }
+        `${baseURL}rfq/events/${eventId}/event_vendors/${
+          isBulk ? data[0].vendor_id : data.vendor_id
+        }/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
       );
 
       const responseData = response.data;
 
-      const bidMaterial = responseData.bid_materials.find(
-        (material) => material.id === id
-      );
+      if (responseData?.bid_materials?.length === 0) {
+        setSelectedData((prevSelectedData) =>
+          prevSelectedData.filter(
+            (entry) =>
+              entry.materials[0]?.bidId !==
+              (isBulk ? data[0]?.bid_id : data?.bid_id)
+          )
+        );
 
-      if (!bidMaterial) {
-        console.error("Bid material not found");
+        setDummyData((prevDummyData) =>
+          prevDummyData.filter((entry) =>
+            isBulk
+              ? !data.some((item) => item.vendor_id === entry.vendorId)
+              : entry.vendorId !== data.vendor_id
+          )
+        );
+
+        toast.success("Allocation removed successfully");
         isUpdatingAllocation.current = false;
         return;
       }
 
-      const updatedSelectedData = {
-        bestTotalAmount: bidMaterial.total_amount || "_",
-        quantityAvailable: bidMaterial.quantity_available || "_",
-        price: bidMaterial.price || "_",
-        discount: bidMaterial.discount || "_",
-        realisedDiscount: bidMaterial.realised_discount || "_",
-        gst: bidMaterial.gst || "_",
-        realisedGST: bidMaterial.realised_gst || "_",
-        landedAmount: bidMaterial.landed_amount || "_",
+      const bidMaterials = responseData.bid_materials;
+
+      if (!bidMaterials || bidMaterials.length === 0) {
+        console.error("Bid materials not found");
+        isUpdatingAllocation.current = false;
+        setSelectedData([]);
+        return [];
+      }
+
+      if (isBulk) {
+        setBulkBidId(data[0].bid_id);
+      } else {
+        // Check if all individual checkboxes for the vendor are selected
+        const allChecked = updatedSegeregatedMaterialData
+          .flatMap((material) => material.bids_values) // Flatten all bids_values
+          .filter((bid) => bid.vendor_id === data.vendor_id) // Filter by vendor_id
+          .every((bid) => bid.isChecked); // Check if all are checked
+
+        // Update the "Select All" checkbox for the vendor
+        setCheckedColumns((prev) => ({
+          ...prev,
+          [data.vendor_id]: allChecked,
+        }));
+      }
+
+      const updatedSelectedData = bidMaterials.map((material) => ({
+        bestTotalAmount: material?.total_amount || "_",
+        quantityAvailable: material?.quantity_available || "_",
+        price: material?.price || "_",
+        discount: material?.discount || "_",
+        realisedDiscount: material?.realised_discount || "_",
+        gst: material?.gst || "_",
+        realisedGST: material?.realised_gst || "_",
+        landedAmount: material?.landed_amount || "_",
         participantAttachment: "_",
-        totalAmount: bidMaterial.total_amount || "_",
-        materialName: bidMaterial.material_name || "_",
-        vendorId: vendor_id,
-        vendor_name: vendor_name,
-        materialId: material_id,
-        bidId: bid_id,
-        pms_supplier_id: pms_supplier_id,
-        id: id,
-      };
+        totalAmount: material?.total_amount || "_",
+        materialName: material?.material_name || "_",
+        vendorId: material.vendor_id,
+        vendor_name: material.vendor_name,
+        materialId: material.material_id,
+        bidId: material.bid_id,
+        pms_supplier_id: material.pms_supplier_id,
+        id: material.id,
+      }));
 
       setSelectedData((prevSelectedData) => {
-        let filteredData = prevSelectedData
-          .map((vendor) => ({
-            ...vendor,
-            materials: vendor.materials?.filter(
-              (material) => material.materialName !== material_name
-            ),
-          }))
-          .filter((vendor) => vendor.materials?.length > 0); // Remove vendors with no materials left
+        const updatedData = [...prevSelectedData];
 
-        const existingVendorIndex = filteredData.findIndex(
-          (data) => data.vendorId === vendor_id
+        updatedSelectedData.forEach((updatedMaterial) => {
+          const existingVendorIndex = updatedData.findIndex(
+            (vendor) => vendor.vendor_name === updatedMaterial.vendor_name
+          );
+
+          if (existingVendorIndex !== -1) {
+            const existingMaterials =
+              updatedData[existingVendorIndex].materials;
+            if (
+              !existingMaterials.some(
+                (material) => material.materialId === updatedMaterial.materialId
+              )
+            ) {
+              updatedData[existingVendorIndex].materials.push(updatedMaterial);
+            } else {
+              updatedData[existingVendorIndex].materials = [updatedMaterial];
+            }
+          } else {
+            updatedData.push({
+              vendorId: updatedMaterial.vendorId,
+              vendor_name: updatedMaterial.vendor_name,
+              materials: [updatedMaterial],
+            });
+          }
+        });
+
+        return updatedData;
+      });
+
+      const updatedDummyData = updatedSelectedData.reduce((acc, material) => {
+        const vendorIndex = acc.findIndex(
+          (entry) => entry.vendorId === material.vendorId
         );
 
-        if (existingVendorIndex !== -1) {
-          filteredData[existingVendorIndex].materials.push(updatedSelectedData);
+        const dummyDataEntry = [
+          {
+            label: "Freight Charge Amount",
+            value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
+          },
+          {
+            label: "GST on Freight",
+            value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
+          },
+          {
+            label: "Realised Freight Amount",
+            value: `₹${
+              responseData.bids[0]?.realised_freight_charge_amount || 0
+            }`,
+          },
+          {
+            label: "Warranty Clause",
+            value: responseData.bids[0]?.warranty_clause || "-",
+          },
+          {
+            label: "Payment Terms",
+            value: responseData.bids[0]?.payment_terms || "-",
+          },
+          {
+            label: "Loading / Unloading Clause",
+            value: responseData.bids[0]?.loading_unloading_clause || "-",
+          },
+          {
+            label: "Gross Total",
+            value: `₹${responseData.bids[0]?.gross_total || 0}`,
+          },
+        ];
+
+        if (vendorIndex !== -1) {
+          acc[vendorIndex].data = dummyDataEntry;
         } else {
-          filteredData.push({
-            vendorId: vendor_id,
-            vendor_name: vendor_name,
-            materials: [updatedSelectedData],
+          acc.push({
+            vendorId: material.vendorId,
+            data: dummyDataEntry,
           });
         }
 
-        return filteredData;
-      });
+        return acc;
+      }, []);
 
-      const updatedDummyData = [
-        {
-          label: "Freight Charge Amount",
-          value: `₹${responseData.bids[0]?.freight_charge_amount || 0}`,
-        },
-        {
-          label: "GST on Freight",
-          value: `${responseData.bids[0]?.gst_on_freight || 0}%`,
-        },
-        {
-          label: "Realised Freight Amount",
-          value: `₹${
-            responseData.bids[0]?.realised_freight_charge_amount || 0
-          }`,
-        },
-        {
-          label: "Warranty Clause",
-          value: responseData.bids[0]?.warranty_clause || "-",
-        },
-        {
-          label: "Payment Terms",
-          value: responseData.bids[0]?.payment_terms || "-",
-        },
-        {
-          label: "Loading / Unloading Clause",
-          value: responseData.bids[0]?.loading_unloading_clause || "-",
-        },
-        {
-          label: "Gross Total",
-          value: `₹${responseData.bids[0]?.gross_total || 0}`,
-        },
-      ];
-
-      setDummyData((prevDummyData) => [
-        ...prevDummyData.filter((data) => data.vendorId !== vendor_id),
-        { vendorId: vendor_id, data: updatedDummyData },
-      ]);
+      setDummyData(updatedDummyData);
 
       toast.success("Allocation updated successfully");
     } catch (err) {
@@ -304,14 +374,18 @@ export default function AllocationTab({ isCounterOffer }) {
     };
 
     try {
+      setTimeout(() => {
+        setSelectedData((prevSelectedData) =>
+          prevSelectedData.filter(
+            (data) => data.materials[0].bidId !== vendorData.materials[0].bidId
+          )
+        );
+      }, 1000);
       const response = await axios.post(
         `${baseURL}rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         jsonBody
       );
       toast.success("PO created successfully");
-      setTimeout(() => {
-        setSelectedData([]);
-      }, 1000);
     } catch (error) {
       console.error("Error creating PO:", error);
       if (error.response?.status === 422) {
@@ -349,7 +423,6 @@ export default function AllocationTab({ isCounterOffer }) {
         <div></div>
         <div></div>
         <div></div>
-        <div></div>
       </div>
       <p>Submitting your bid...</p>
     </div>
@@ -359,6 +432,38 @@ export default function AllocationTab({ isCounterOffer }) {
     materialData.bids_values?.forEach((material) => {
       handleColumnClick(material, "selectAll");
     });
+  };
+
+  const handleColumnCheckboxChange = (vendorId, isChecked) => {
+    setCheckedColumns((prev) => ({
+      ...prev,
+      [vendorId]: isChecked,
+    }));
+
+    // Filter bid_values for the specific vendor
+    const vendorMaterials = segeregatedMaterialData.flatMap((material) =>
+      material.bids_values?.filter((bid) => bid.vendor_id === vendorId)
+    );
+
+    handleColumnClick(
+      vendorMaterials,
+      "selectAll",
+      { target: { checked: isChecked } },
+      true
+    );
+    // Update the isChecked property for the filtered materials
+    const updatedSegeregatedMaterialData = segeregatedMaterialData.map(
+      (material) => ({
+        ...material,
+        bids_values: material.bids_values.map((bid) => ({
+          ...bid,
+          isChecked: bid.vendor_id === vendorId ? isChecked : bid.isChecked,
+        })),
+      })
+    );
+
+    // Update the state with the modified data
+    setSegeregatedMaterialData(updatedSegeregatedMaterialData);
   };
 
   return (
@@ -502,72 +607,114 @@ export default function AllocationTab({ isCounterOffer }) {
                         })}
                         <td style={{ width: "auto" }}></td>
                       </tr>
+                      <tr>
+                        <td
+                          className="viewBy-tBody1-p"
+                          style={{ minidth: "300px", textAlign: "left" }}
+                        >
+                          Select All Materials for Allocation
+                        </td>
+                        {eventVendors?.map((vendor) => {
+                          return (
+                            <td key={`selectall-${vendor.id}`}>
+                              <input
+                                type="checkbox"
+                                checked={!!checkedColumns[vendor.id]}
+                                onChange={(e) =>
+                                  handleColumnCheckboxChange(
+                                    vendor.id,
+                                    e.target.checked
+                                  )
+                                }
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
                     </tbody>
                   </table>
                 </div>
 
                 {segeregatedMaterialData?.map((materialData, ind) => (
-                  <Accordion
-                    key={ind}
-                    title={materialData.material_name || "_"}
-                    amount={materialData.total_amounts}
-                    enableHoverEffect={true}
-                    isAllocation={true}
-                    tableColumn={[
-                      {
-                        label: "Best Total Amount",
-                        key: "bestTotalAmount",
-                      },
-                      {
-                        label: "Quantity Available",
-                        key: "quantityAvailable",
-                      },
-                      { label: "Price", key: "price" },
-                      { label: "Discount", key: "discount" },
-                      {
-                        label: "Realised Discount",
-                        key: "realisedDiscount",
-                      },
-                      { label: "GST", key: "gst" },
-                      { label: "Realised GST", key: "realisedGST" },
-                      { label: "Landed Amount", key: "landedAmount" },
-                      {
-                        label: "Participant Attachment",
-                        key: "participantAttachment",
-                      },
-                      { label: "Total Amount", key: "totalAmount" },
-                      { label: "bid Id", key: "bid_id" },
-                      { label: "Material ID", key: "material_id" },
-                      { label: "ID", key: "id" },
-                      { label: "vendor id", key: "vendor_id" },
-                      { label: "vendor name", key: "vendor_name" },
-                      { label: "pms supplier id", key: "pms_supplier_id" },
-                      { label: "material name", key: "material_name" },
-                    ]}
-                    tableData={materialData.bids_values?.map((material) => {
-                      return {
-                        bestTotalAmount: material.total_amount || "_",
-                        quantityAvailable: material.quantity_available || "_",
-                        price: material.price || "_",
-                        discount: material.discount || "_",
-                        realisedDiscount: material.realised_discount || "_",
-                        gst: material.gst || "_",
-                        realisedGST: material.realised_gst || "_",
-                        landedAmount: material.landed_amount || "_",
-                        participantAttachment: "_",
-                        totalAmount: material.total_amount || "_",
-                        bid_id: material.bid_id,
-                        material_id: material.material_id,
-                        id: material.id,
-                        vendor_id: material.vendor_id,
-                        vendor_name: material.vendor_name,
-                        pms_supplier_id: material.pms_supplier_id,
-                        material_name: material.material_name,
-                      };
-                    })}
-                    onColumnClick={handleColumnClick}
-                    onSelectAll={() => handleSelectAll(materialData)}
-                  />
+                  <>
+                    <Accordion
+                      key={ind}
+                      title={materialData.material_name || "_"}
+                      amount={materialData.total_amounts}
+                      enableHoverEffect={true}
+                      isAllocation={true}
+                      tableColumn={[
+                        {
+                          label: "Best Total Amount",
+                          key: "bestTotalAmount",
+                        },
+                        {
+                          label: "Quantity Available",
+                          key: "quantityAvailable",
+                        },
+                        { label: "Price", key: "price" },
+                        { label: "Discount", key: "discount" },
+                        {
+                          label: "Realised Discount",
+                          key: "realisedDiscount",
+                        },
+                        { label: "GST", key: "gst" },
+                        { label: "Realised GST", key: "realisedGST" },
+                        { label: "Landed Amount", key: "landedAmount" },
+                        {
+                          label: "Participant Attachment",
+                          key: "participantAttachment",
+                        },
+                        { label: "Total Amount", key: "totalAmount" },
+                        { label: "bid Id", key: "bid_id" },
+                        { label: "Material ID", key: "material_id" },
+                        { label: "ID", key: "id" },
+                        { label: "vendor id", key: "vendor_id" },
+                        { label: "vendor name", key: "vendor_name" },
+                        { label: "pms supplier id", key: "pms_supplier_id" },
+                        { label: "material name", key: "material_name" },
+                      ]}
+                      tableData={materialData.bids_values?.map((material) => {
+                        return {
+                          bestTotalAmount: material.total_amount || "_",
+                          quantityAvailable: material.quantity_available || "_",
+                          price: material.price || "_",
+                          discount: material.discount || "_",
+                          realisedDiscount: material.realised_discount || "_",
+                          gst: material.gst || "_",
+                          realisedGST: material.realised_gst || "_",
+                          landedAmount: material.landed_amount || "_",
+                          participantAttachment: "_",
+                          totalAmount: material.total_amount || "_",
+                          bid_id: material.bid_id,
+                          material_id: material.material_id,
+                          id: material.id,
+                          vendor_id: material.vendor_id,
+                          vendor_name: material.vendor_name,
+                          pms_supplier_id: material.pms_supplier_id,
+                          material_name: material.material_name,
+                          isChecked: material.isChecked || false,
+                        };
+                      })}
+                      setSegeregatedMaterialData={setSegeregatedMaterialData}
+                      onColumnClick={(
+                        data,
+                        columnKey,
+                        e,
+                        updatedSegeregatedMaterialData
+                      ) => {
+                        handleColumnClick(
+                          data,
+                          columnKey,
+                          e,
+                          false,
+                          updatedSegeregatedMaterialData
+                        );
+                      }} // Pass the event object
+                      onSelectAll={() => handleSelectAll(materialData)}
+                      accordianIndex={ind}
+                    />
+                  </>
                 ))}
                 {(() => {
                   const extractedData =
@@ -629,6 +776,12 @@ export default function AllocationTab({ isCounterOffer }) {
                     <>
                       {selectedData.length > 0 &&
                         selectedData.map((vendorData, index) => {
+                          if (
+                            !vendorData.materials ||
+                            vendorData.materials.length === 0
+                          ) {
+                            return null;
+                          }
                           return (
                             <div className="card p-4 mt-3 border-0" key={index}>
                               <h4>{vendorData.vendor_name}</h4>

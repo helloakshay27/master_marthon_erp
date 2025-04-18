@@ -743,10 +743,6 @@ export default function ResponseTab({ isCounterOffer }) {
                     )
                   );
 
-                  // Check if there's data to display
-                  if (extractedChargeData.length === 0) {
-                    return <p>No charges available to display.</p>;
-                  }
 
                   // Render Accordion
                   return (

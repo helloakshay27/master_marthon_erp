@@ -1,11 +1,10 @@
 export const SegregatedBidMaterials = (inputArray) => {
-console.log("inputArray----",inputArray);
+  console.log("inputArray----", inputArray);
   const materialMap = new Map();
   inputArray.forEach((vendor) => {
     const bid = vendor.bids[0];
-    
 
-    bid.bid_materials.forEach((material) => {      
+    bid.bid_materials.forEach((material) => {
       if (!materialMap.has(material.event_material_id)) {
         materialMap.set(material.event_material_id, {
           id: material.id,
@@ -24,8 +23,7 @@ console.log("inputArray----",inputArray);
         });
       }
       const materialData = materialMap.get(material.event_material_id);
-      // console.log("materialData:-------",materialData);
-      
+
       materialData.bids_values.push({
         ...material,
         bid_id: bid.id,
@@ -34,7 +32,8 @@ console.log("inputArray----",inputArray);
         material_name: material.material_name,
         vendor_id: vendor.id,
         pms_supplier_id: vendor.pms_supplier_id,
-        extra: bid.extra // Pass the extra object from the bid
+        extra: bid.extra, // Pass the extra object from the bid
+        isChecked: false, // Add the isChecked property with a default value
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);
