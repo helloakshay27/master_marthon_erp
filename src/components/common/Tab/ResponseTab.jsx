@@ -23,6 +23,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const [BidCounterData, setBidCounterData] = useState(null);
   const [response, setResponse] = useState([]);
   const [responseTableData, setResponseTableData] = useState([]);
+  const [materialData, setMaterialData] = useState({});
   const [bidId, setBidId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,6 +45,12 @@ export default function ResponseTab({ isCounterOffer }) {
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
   }, [eventVendors]);
+
+  useEffect(() => {
+    if (segeregatedMaterialData.length > 0) {
+      setMaterialData(segeregatedMaterialData[0]); // Set the first material data as default
+    }
+  }, [segeregatedMaterialData]);
 
   const { eventId } = useParams();
 
@@ -328,6 +335,27 @@ export default function ResponseTab({ isCounterOffer }) {
       aria-labelledby="responses-tab"
       tabIndex={0}
     >
+      {console.log("materialData",materialData)
+      }
+      {materialData.status === "pending" || materialData.status === null && (
+        <div className="d-flex justify-content-between align-items-center mt-3 bg-light p-3 rounded-3">
+          <div className="">
+            <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+            <p>
+              A counter is pending on your bid. You cannot make any further
+              changes to your bid until you resolve the counter offer.
+            </p>
+          </div>
+          <div className="d-flex">
+            <button className="purple-btn1" onClick={() => {}}>
+              Decline
+            </button>
+            <button className="purple-btn2" onClick={() => {}}>
+              Accept Offer
+            </button>
+          </div>
+        </div>
+      )}
       <div className="viewBy-main">
         <div className="viewBy-main-child1">
           <div className="d-flex align-items-center mb-3">
@@ -337,6 +365,7 @@ export default function ResponseTab({ isCounterOffer }) {
             ></div>
           </div>
         </div>
+
         <div className="viewBy-main-child2 mb-3">
           <div className="d-flex align-items-center">
             <p className="viewBy-main-child2P mb-0">
@@ -624,7 +653,6 @@ export default function ResponseTab({ isCounterOffer }) {
                   );
                 })}
                 {(() => {
-                  
                   const extractedData =
                     eventVendors?.flatMap((vendor) => {
                       const extra = vendor?.bids?.[0]?.extra;
@@ -674,103 +702,67 @@ export default function ResponseTab({ isCounterOffer }) {
                   );
                 })()}
 
-{(() => {
-  console.log("eventVendors", eventVendors);
+                {(() => {
 
-  // Extract charge data
-  const extractedChargeData =
-    eventVendors?.flatMap((vendor) => {
-      const charges = vendor?.bids?.[0]?.charges;
+                  // Extract charge data
+                  const extractedChargeData =
+                    eventVendors?.flatMap((vendor) => {
+                      const charges = vendor?.bids?.[0]?.charges;
 
-      if (
-        charges &&
-        Object.values(charges).some(
-          (val) =>
-            (typeof val === "string" && val.trim() !== "") ||
-            (typeof val === "number" && val !== null) || // Include numbers
-            (typeof val === "object" && val !== null && !Array.isArray(val))
-        )
-      ) {
-        const formattedCharges = {};
+                      if (
+                        charges &&
+                        Object.values(charges).some(
+                          (val) =>
+                            (typeof val === "string" && val.trim() !== "") ||
+                            (typeof val === "number" && val !== null) || // Include numbers
+                            (typeof val === "object" &&
+                              val !== null &&
+                              !Array.isArray(val))
+                        )
+                      ) {
+                        const formattedCharges = {};
 
-        Object.entries(charges).forEach(([key, val]) => {
-          if (!Array.isArray(val)) {
-            formattedCharges[key] = val?.toString().trim() || "_";
-          }
-        });
+                        Object.entries(charges).forEach(([key, val]) => {
+                          if (!Array.isArray(val)) {
+                            formattedCharges[key] =
+                              val?.toString().trim() || "_";
+                          }
+                        });
 
-        return Object.keys(formattedCharges).length > 0
-          ? [formattedCharges]
-          : [];
-      }
-      return [];
-    }) || [];
+                        return Object.keys(formattedCharges).length > 0
+                          ? [formattedCharges]
+                          : [];
+                      }
+                      return [];
+                    }) || [];
 
-  // Extract unique keys for table columns
-  const extractedChargeKeys = Array.from(
-    new Set(extractedChargeData.flatMap((obj) => Object.keys(obj)))
-  );
+                  // Extract unique keys for table columns
+                  const extractedChargeKeys = Array.from(
+                    new Set(
+                      extractedChargeData.flatMap((obj) => Object.keys(obj))
+                    )
+                  );
 
-  // Debugging: Log extracted data and keys
-  console.log("extractedChargeData", extractedChargeData);
-  console.log("extractedChargeKeys", extractedChargeKeys);
+                  // Check if there's data to display
+                  if (extractedChargeData.length === 0) {
+                    return <p>No charges available to display.</p>;
+                  }
 
-  // Check if there's data to display
-  if (extractedChargeData.length === 0) {
-    return <p>No charges available to display.</p>;
-  }
-
-  // Render Accordion
-  return (
-    <Accordion
-      title="Other Charges"
-      isDefault={true}
-      tableColumn={extractedChargeKeys.map((key) => ({
-        label: key
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase()),
-        key: key,
-      }))}
-      tableData={extractedChargeData}
-    />
-  );
-})()}
-
-                {/* <Accordion
-                  title={"Other Informations"}
-                  isDefault={true}
-                  tableColumn={[
-                    ...Array.from(
-                      new Set(
-                        eventVendors?.flatMap((vendor) =>
-                          vendor?.bids?.[0]?.extra
-                            ? Object.keys(vendor.bids[0].extra)
-                            : []
-                        ) || []
-                      )
-                    ).map((key) => ({
-                      label: key
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase()),
-                      key: key,
-                    })),
-                  ]}
-                  tableData={eventVendors?.flatMap((vendor) =>
-                    vendor?.bids?.[0]
-                      ? [
-                          {
-                            ...Object.keys(vendor.bids[0].extra || {}).reduce(
-                              (acc, key) => {
-                                acc[key] = vendor.bids[0].extra[key] || "_";
-                                return acc;
-                              },
-                              {}
-                            ),
-                          },
-                        ]
-                      : []
-                  )}
-                /> */}
+                  // Render Accordion
+                  return (
+                    <Accordion
+                      title="Other Charges"
+                      isDefault={true}
+                      tableColumn={extractedChargeKeys.map((key) => ({
+                        label: key
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase()),
+                        key: key,
+                      }))}
+                      tableData={extractedChargeData}
+                    />
+                  );
+                })()}
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">

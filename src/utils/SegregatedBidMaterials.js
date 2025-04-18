@@ -19,6 +19,8 @@ console.log("inputArray----",inputArray);
           vendor_ids: [],
           additionTaxData: material.addition_bid_material_tax_details,
           deductionTaxData: material.deduction_bid_material_tax_details,
+          status: bid.status,
+          original_bid_id: bid.original_bid_id,
         });
       }
       const materialData = materialMap.get(material.event_material_id);
