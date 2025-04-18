@@ -254,6 +254,15 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+            <h1>Rate</h1>
+            <ul>
+            <li>
+                  <Link to="/create-rate">Create Rate</Link>
+                </li>
+                <li>
+                  <Link to="/view-rate">Rate List</Link>
+                </li>
+                </ul>
               <h1>BOQ</h1>
               <ul>
                 <li>
@@ -438,13 +447,7 @@ function Members() {
                   <Link to="/boq-edit">BOQ Edit</Link>
                 </li> */}
 
-                {/* <li>
-                  <Link to="/create-rate">Create Rate</Link>
-                </li>
-                <li>
-                  <Link to="/view-rate">View Rate</Link>
-                </li> */}
-
+               
                 <li>
                   <Link to="/estimation-creation">Estimation creation</Link>
                 </li>
@@ -482,6 +485,8 @@ function Members() {
                     Estimation approval details
                   </Link>
                 </li>
+               
+
               </ul>
             </div>
             <div className="m-3">

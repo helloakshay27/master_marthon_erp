@@ -235,8 +235,8 @@ const CreateRate = () => {
                             </button>
                         </div>
 
-                        {/* <div className="mx-3"> */}
-                        <div className="tbl-container mx-3 mt-1">
+                        <div className="mx-3">
+                        <div className="tbl-container  mt-1">
                             <table className="w-100">
                                 <thead>
                                     <tr>
@@ -409,10 +409,10 @@ const CreateRate = () => {
                                 </tbody>
                             </table>
                         </div>
-                        {/* </div> */}
+                        </div>
 
                     </div>
-                    <div className="row mt-2 justify-content-center">
+                    <div className="row mt-2 justify-content-center mb-5 pb-5">
                         <div className="col-md-2">
                             <button className="purple-btn2 w-100">Create</button>
                         </div>

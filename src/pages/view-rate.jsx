@@ -34,12 +34,12 @@ const ViewRate = () => {
 
 
             <div className="website-content overflow-auto">
-                <div className="module-data-section p-4">
+                <div className="module-data-section p-4 pb-5">
                     <a href="">
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
                     <h5 class="mt-4">Rate Card</h5>
-                    <div className="card mt-3 pb-3">
+                    <div className="card mt-3 pb-">
 
                         {/* <CollapsibleCard title="Rate Card">
                             <div className="card-body mt-0 pt-0">
@@ -359,8 +359,8 @@ const ViewRate = () => {
                             </button>
                         </div>
 
-
-                        <div className="tbl-container mx-3 mt-1">
+<div className="mx-3">
+                        <div className="tbl-container mt-1">
                             <table className="w-100">
                                 <thead>
                                     <tr>
@@ -442,7 +442,7 @@ const ViewRate = () => {
                                 </tbody>
                             </table>
                         </div>
-
+                        </div>
                     </div>
 
                 </div>
