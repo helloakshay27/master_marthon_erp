@@ -41,6 +41,7 @@ export default function ResponseTab({ isCounterOffer }) {
   });
   const [openModals, setOpenModals] = useState({});
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
+  const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(true);
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
@@ -327,6 +328,29 @@ export default function ResponseTab({ isCounterOffer }) {
     return "th";
   };
 
+  const acceptOffer = async (bidId, revisedBidId) => {
+    try {
+      const response = await axios.put(
+        `${baseURL}rfq/events/${eventId}/bids/${bidId}/revised_bids/${revisedBidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        { status: "accepted" },
+        {
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status === 200) {
+        toast.success("Offer accepted successfully");
+        setTimeout(() => {
+          setShowCounterOfferDiv(false);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error accepting offer:", error);
+    }
+  };
+
   return (
     <div
       className="tab-pane fade show active"
@@ -335,27 +359,44 @@ export default function ResponseTab({ isCounterOffer }) {
       aria-labelledby="responses-tab"
       tabIndex={0}
     >
-      {console.log("materialData",materialData)
-      }
-      {materialData.status === "pending" || materialData.status === null && (
-        <div className="d-flex justify-content-between align-items-center mt-3 bg-light p-3 rounded-3">
-          <div className="">
-            <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
-            <p>
-              A counter is pending on your bid. You cannot make any further
-              changes to your bid until you resolve the counter offer.
-            </p>
+      {console.log("materialData", materialData)}
+      {showCounterOfferDiv &&
+        materialData.bids_values?.some((bid) => bid.status === "pending") && (
+          <div className="d-flex justify-content-between align-items-center mt-3 bg-light p-3 rounded-3">
+            <div className="">
+              <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+              <p>
+                A counter is pending on your bid. You cannot make any further
+                changes to your bid until you resolve the counter offer.
+              </p>
+            </div>
+            <div className="d-flex">
+              <button
+                className="purple-btn1"
+                onClick={() => {
+                  setShowCounterOfferDiv(false);
+                }}
+              >
+                Decline
+              </button>
+              <button
+                className="purple-btn2"
+                onClick={() => {
+                  const pendingBid = materialData.bids_values.find(
+                    (bid) => bid.status === "pending"
+                  );
+                  if (pendingBid) {
+                    console.log("pendingBid",pendingBid);
+                    
+                    acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
+                  }
+                }}
+              >
+                Accept Offer
+              </button>
+            </div>
           </div>
-          <div className="d-flex">
-            <button className="purple-btn1" onClick={() => {}}>
-              Decline
-            </button>
-            <button className="purple-btn2" onClick={() => {}}>
-              Accept Offer
-            </button>
-          </div>
-        </div>
-      )}
+        )}
       <div className="viewBy-main">
         <div className="viewBy-main-child1">
           <div className="d-flex align-items-center mb-3">
@@ -703,7 +744,6 @@ export default function ResponseTab({ isCounterOffer }) {
                 })()}
 
                 {(() => {
-
                   // Extract charge data
                   const extractedChargeData =
                     eventVendors?.flatMap((vendor) => {
@@ -742,7 +782,6 @@ export default function ResponseTab({ isCounterOffer }) {
                       extractedChargeData.flatMap((obj) => Object.keys(obj))
                     )
                   );
-
 
                   // Render Accordion
                   return (

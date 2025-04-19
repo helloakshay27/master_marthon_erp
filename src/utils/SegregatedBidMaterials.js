@@ -18,8 +18,6 @@ export const SegregatedBidMaterials = (inputArray) => {
           vendor_ids: [],
           additionTaxData: material.addition_bid_material_tax_details,
           deductionTaxData: material.deduction_bid_material_tax_details,
-          status: bid.status,
-          original_bid_id: bid.original_bid_id,
         });
       }
       const materialData = materialMap.get(material.event_material_id);
@@ -34,6 +32,8 @@ export const SegregatedBidMaterials = (inputArray) => {
         pms_supplier_id: vendor.pms_supplier_id,
         extra: bid.extra, // Pass the extra object from the bid
         isChecked: false, // Add the isChecked property with a default value
+        status: bid.status,
+        original_bid_id: bid.original_bid_id,
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);
