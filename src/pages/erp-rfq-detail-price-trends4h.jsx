@@ -439,7 +439,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                 renderModal={renderModal}
               />
               <div className="tab-content mt-3 main-scroll-div">
-                <ResponseTab isCounterOffer={isCounter} />
+                <ResponseTab isCounterOffer={isCounter} reminderData={participants} />
                 <OverviewTab
                   materialData={counterOfferData}
                   overviewData={overviewData}

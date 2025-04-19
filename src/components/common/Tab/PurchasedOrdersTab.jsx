@@ -74,7 +74,7 @@ export default function PurchasedOrdersTab() {
                                         <td key={col.key}>
                                             {col.key === "po_number" ? (
                                                 <a
-                                                    href={`https://marathon.lockated.com/purchase_orders/${order.id}?layout=true`}
+                                                    href={`${baseURL}/purchase_orders/${order.id}?layout=true`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     style={{ textDecoration: "underline" }}

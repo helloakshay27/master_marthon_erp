@@ -17,7 +17,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { set } from "lodash";
 
-export default function ResponseTab({ isCounterOffer }) {
+export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [isVendor, setIsVendor] = useState(false);
   const [counterModal, setCounterModal] = useState(false);
   const [BidCounterData, setBidCounterData] = useState(null);
@@ -42,6 +42,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const [openModals, setOpenModals] = useState({});
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
   const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(true);
+  const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
@@ -351,6 +352,22 @@ export default function ResponseTab({ isCounterOffer }) {
     }
   };
 
+  const handleSendReminder = async (vendorId, index) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/${eventId}/event_vendors/${vendorId}/send_reminder?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+
+      if (response.status === 200) {
+        // Mark the button as clicked
+        reminderData.event_vendors[index].clicked = true;
+        setShowDeliveryStatsModal((prev) => !prev); // Trigger re-render
+      }
+    } catch (error) {
+      console.error("Error sending reminder:", error);
+    }
+  };
+
   return (
     <div
       className="tab-pane fade show active"
@@ -359,7 +376,6 @@ export default function ResponseTab({ isCounterOffer }) {
       aria-labelledby="responses-tab"
       tabIndex={0}
     >
-      {console.log("materialData", materialData)}
       {showCounterOfferDiv &&
         materialData.bids_values?.some((bid) => bid.status === "pending") && (
           <div className="d-flex justify-content-between align-items-center mt-3 bg-light p-3 rounded-3">
@@ -386,8 +402,6 @@ export default function ResponseTab({ isCounterOffer }) {
                     (bid) => bid.status === "pending"
                   );
                   if (pendingBid) {
-                    console.log("pendingBid",pendingBid);
-                    
                     acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
                   }
                 }}
@@ -424,6 +438,7 @@ export default function ResponseTab({ isCounterOffer }) {
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Emails"
+                onClick={() => setShowDeliveryStatsModal(true)} // Open modal on click
               >
                 <i className="bi bi-envelope me-2"></i>
                 {participationSummary.participated_vendor || 0}
@@ -1151,6 +1166,32 @@ export default function ResponseTab({ isCounterOffer }) {
               </div>
             </div>
           </div>
+        </div>
+      </DynamicModalBox>
+
+      <DynamicModalBox
+        show={showDeliveryStatsModal}
+        onHide={() => setShowDeliveryStatsModal(false)} // Close modal
+        title="Delivery Stats"
+        size="md"
+        modalType={true}
+      >
+        {console.log("reminderData :---", reminderData)}
+        <div>
+          {reminderData?.event_vendors?.map((item, index) => (
+            <div key={index}>
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <p className="mb-0">{item.full_name}</p>
+                <button
+                  className={item.clicked ? "purple-btn2" : "purple-btn1"} // Toggle class
+                  onClick={() => handleSendReminder(item.id, index)} // Call API on click
+                >
+                  {item.clicked ? "Reminder Sent" : "Send Reminder"} {/* Update text */}
+                </button>
+              </div>
+              {index < reminderData.event_vendors.length - 1 && <hr />}
+            </div>
+          ))}
         </div>
       </DynamicModalBox>
     </div>

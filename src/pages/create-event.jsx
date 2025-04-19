@@ -91,7 +91,7 @@ export default function CreateEvent() {
 
   useEffect(() => {
     fetch(
-      "https://marathon.lockated.com/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      `${baseURL}/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
     )
       .then((response) => response.json())
       .then((data) =>
