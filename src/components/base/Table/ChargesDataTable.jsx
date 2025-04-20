@@ -12,33 +12,34 @@ export default function ChargesDataTable({
 }) {
   const handleInputChange = (index, e) => {
     const updated = [...data];
-
+  
     // Ensure value is an object
     if (typeof updated[index].value !== "object" || updated[index].value === null) {
       updated[index].value = {};
     }
-
+  
     updated[index].value.firstBid = e.target.value;
-
+  
     // Dynamically calculate and update realized values
     const getValue = (label) => {
       const row = updated.find((row) => row.label === label);
       return parseFloat(row?.value?.firstBid || "0") || 0;
     };
-
+  
     const freight = getValue("freight_charge_amount");
     const gstFreight = getValue("gst_on_freight");
-
+  
     const other = getValue("other_charge_amount");
     const gstOther = getValue("gst_on_other_charge");
-
+  
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
-
-    const realisedFreight = (freight * gstFreight) / 100;
-    const realisedOther = (other * gstOther) / 100;
-    const realisedHandling = (handling * gstHandling) / 100;
-
+  
+    // Updated realized calculations
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+  
     const updatedRealizedData = updated.map((row) => {
       if (row.label === "realised_freight_charge_amount") {
         return { ...row, value: { ...row.value, firstBid: realisedFreight } };
@@ -51,45 +52,30 @@ export default function ChargesDataTable({
       }
       return row;
     });
-
+  
     onValueChange(updatedRealizedData);
   };
-
+  
   const calculateGrossTotal = (updatedData) => {
-    console.log("updatedData", updatedData);
-
     const getValue = (label) => {
       const row = updatedData.find((row) => row.label === label);
       return parseFloat(row?.value?.firstBid || "0") || 0;
     };
-
+  
     const freight = getValue("freight_charge_amount");
     const gstFreight = getValue("gst_on_freight");
-
+  
     const other = getValue("other_charge_amount");
     const gstOther = getValue("gst_on_other_charge");
-
+  
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
-
-    // Automatically calculate realized values
-    const realisedFreight = (freight * gstFreight) / 100;
-    const realisedOther = (other * gstOther) / 100;
-    const realisedHandling = (handling * gstHandling) / 100;
-
-    console.log(
-      freight,
-      gstFreight,
-      other,
-      gstOther,
-      handling,
-      gstHandling,
-      realisedFreight,
-      realisedOther,
-      realisedHandling
-    );
-
-    // Update the data state with realized values
+  
+    // Updated realized calculations
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+  
     const updatedRealizedData = updatedData.map((row) => {
       if (row.label === "realised_freight_charge_amount") {
         return { ...row, value: { ...row.value, firstBid: realisedFreight } };
@@ -102,9 +88,9 @@ export default function ChargesDataTable({
       }
       return row;
     });
-
+  
     onValueChange(updatedRealizedData);
-
+  
     // Correct gross calculation
     const gross =
       freight +
@@ -113,7 +99,7 @@ export default function ChargesDataTable({
       realisedOther +
       handling +
       realisedHandling;
-
+  
     // Add the new gross value to the previous total
     setGrossTotal((prev) => prev + gross);
   };
