@@ -216,42 +216,33 @@ export default function VendorDetails() {
     setData(updatedData);
   };
   const handleInputChange = (value, rowIndex, key) => {
-    const updatedData = [...data];
-    updatedData[rowIndex][key] = value;
-
-    const price = parseFloat(updatedData[rowIndex].price) || 0;
-    const quantityAvail = parseFloat(updatedData[rowIndex].quantityAvail) || 0;
-    const discount = parseFloat(updatedData[rowIndex].discount) || 0;
-    const gst = parseFloat(updatedData[rowIndex].gst) || 0;
-
-    // Step 1: Calculate total amount (price * quantity)
+    const updated = [...data];
+    updated[rowIndex][key] = value;
+  
+    const price = parseFloat(updated[rowIndex].price) || 0;
+    const quantityRequested = parseFloat(updated[rowIndex].quantity) || 0;
+    const quantityAvail = updated[rowIndex].quantityAvail !== undefined && updated[rowIndex].quantityAvail !== ''
+      ? parseFloat(updated[rowIndex].quantityAvail)
+      : quantityRequested; // Use quantityRequested as fallback
+  
+    const discount = parseFloat(updated[rowIndex].discount) || 0;
+    const gst = parseFloat(updated[rowIndex].gst) || 0;
+  
     const total = price * quantityAvail;
-
-    // Step 2: Calculate realised discount
     const realisedDiscount = (total * discount) / 100;
-
-    // Step 3: Calculate landed amount (discounted total, before GST)
     const landedAmount = total - realisedDiscount;
-
-    // Step 4: Calculate realised GST (based on landed amount)
-    let realisedGst = 0;
-    if (gst > 0) {
-      realisedGst = (landedAmount * gst) / 100; // GST applied on landed amount
-    }
-
-    // Step 5: Calculate final total (landed amount + GST)
+    const realisedGst = (landedAmount * gst) / 100;
     const finalTotal = landedAmount + realisedGst;
-
-    // Update fields in the data array
-    updatedData[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
-    updatedData[rowIndex].landedAmount = landedAmount.toFixed(2); // Before GST
-    updatedData[rowIndex].realisedGst = realisedGst.toFixed(2);
-    updatedData[rowIndex].total = finalTotal.toFixed(2); // After GST
-
-    setData(updatedData);
-    const updatedGrossTotal = calculateSumTotal();
-    setGrossTotal(updatedGrossTotal);
+  
+    updated[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
+    updated[rowIndex].landedAmount = landedAmount.toFixed(2);
+    updated[rowIndex].realisedGst = realisedGst.toFixed(2);
+    updated[rowIndex].total = finalTotal.toFixed(2);
+  
+    setData(updated);
+    setGrossTotal(calculateSumTotal());
   };
+  
 
   const calculateFreightTotal = (updatedFreightData = freightData) => {
     const getFreightValue = (label) => {
@@ -4527,9 +4518,6 @@ export default function VendorDetails() {
                                       // color:"#7c2d12",
                                       lineHeight: "1",
                                       color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
                                     }}
                                   >
                                     {updatedGst}%
@@ -4556,43 +4544,28 @@ export default function VendorDetails() {
                             },
 
                             quantityAvail: (cell, rowIndex) => {
-                              const previousQuantity =
-                                previousData[rowIndex]?.quantityAvail || cell;
-                              const updatedQuantity =
-                                updatedData[rowIndex]?.quantityAvail ||
-                                previousQuantity;
-
+                              const row = data[rowIndex];
+                              const quantityRequested = parseFloat(row.quantity) || 0;
+                              const quantityAvail = row.quantityAvail ?? ''; // editable input
+                              const price = parseFloat(row.price) || 0;
+                            
                               const handleQuantityChange = (e) => {
                                 const value = parseFloat(e.target.value) || 0;
-                                const quantityRequested =
-                                  parseFloat(data[rowIndex].quantity) || 0;
-
+                            
                                 if (value > quantityRequested) {
-                                  toast.error(
-                                    "The quantity available value cannot be greater than the quantity requested."
-                                  ); // Display toaster message
+                                  toast.error("The quantity available value cannot be greater than the quantity requested.");
                                   return;
                                 }
-
-                                handleInputChange(
-                                  value,
-                                  rowIndex,
-                                  "quantityAvail"
-                                );
+                            
+                                handleInputChange(value, rowIndex, "quantityAvail");
                               };
-
+                            
                               const showArrow =
                                 counterData &&
-                                previousQuantity !== updatedQuantity;
-
+                                (previousData[rowIndex]?.quantityAvail ?? '') !== (updatedData[rowIndex]?.quantityAvail ?? '');
+                            
                               return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
+                                <div style={{ display: "flex", alignItems: "center" }}>
                                   <span
                                     style={{
                                       textDecoration: "line-through",
@@ -4600,59 +4573,43 @@ export default function VendorDetails() {
                                       color: "gray",
                                     }}
                                   >
-                                    {previousQuantity ||
-                                      data[rowIndex].quantity}
+                                    {previousData[rowIndex]?.quantityAvail || quantityRequested}
                                   </span>
-                                  {/* <span style={{ marginRight: "5px" }}>→</span>
-                                  <span>{updatedGst}</span> */}
-
                                   <span className="me-2">
-                                    {" "}
                                     <svg
-                                      className="me-2"
                                       viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
                                       width="1em"
                                       height="1em"
                                       fill="currentColor"
-                                      aria-hidden="true"
                                     >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
                                     </svg>
                                   </span>
                                   <span
                                     style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
+                                      backgroundColor: "#b45253",
+                                      padding: "4px 10px",
                                       borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
                                       color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
+                                      lineHeight: "1",
                                     }}
                                   >
-                                    {updatedQuantity}
+                                    {updatedData[rowIndex]?.quantityAvail || quantityAvail}
                                   </span>
                                 </div>
                               ) : counterData ? (
-                                <span>{updatedQuantity}</span>
+                                <span>{quantityAvail}</span>
                               ) : (
                                 <input
                                   className="form-control"
                                   type="number"
-                                  value={previousQuantity}
+                                  value={quantityAvail !== '' && quantityAvail !== undefined ? quantityAvail : quantityRequested}
                                   onChange={handleQuantityChange}
                                   style={otherColumnsStyle}
                                   disabled={isBid}
                                 />
                               );
                             },
-
                             landedAmount: (cell, rowIndex) => {
                               const previousLandedAmount =
                                 previousData[rowIndex]?.landedAmount || cell;
