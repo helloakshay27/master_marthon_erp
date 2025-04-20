@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
 import Header from "../components/Header";
 import { Table, ShortTable, SelectBox } from "../components";
 import ShortDataTable from "../components/base/Table/ShortDataTable";
@@ -12,7 +13,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FormatDate from "../components/FormatDate"; // Import the default styles
 import { baseURL } from "../confi/apiDomain";
-import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
 import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 import html2pdf from "html2pdf.js";
 
@@ -166,26 +166,26 @@ export default function VendorDetails() {
   });
 
   const handleDownloadPDF = () => {
-    const element = document.querySelector(".print-wrapper"); 
+    const element = document.querySelector(".print-wrapper");
     const options = {
-      margin: 0, 
-      filename: "vendor-details.pdf", 
-      image: { type: "jpeg", quality: 1.0 }, 
-      html2canvas: { 
-        scale: 3, 
-        useCORS: true, 
-        scrollX: 0, 
-        scrollY: 0, 
+      margin: 0,
+      filename: "vendor-details.pdf",
+      image: { type: "jpeg", quality: 1.0 },
+      html2canvas: {
+        scale: 3,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
       },
-      jsPDF: { 
-        unit: "px", 
-        format: [element.scrollWidth, element.scrollHeight], 
-        orientation: "portrait", 
+      jsPDF: {
+        unit: "px",
+        format: [element.scrollWidth, element.scrollHeight],
+        orientation: "portrait",
       },
     };
-  
+
     html2pdf().set(options).from(element).save();
   };
   // console.log(" vednor idddddddddddddddddd", vendorId);
@@ -402,6 +402,10 @@ export default function VendorDetails() {
   };
 
   const [loading, setLoading] = useState(true);
+  const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
+
+  const handleOpenOtherChargesModal = () => setShowOtherChargesModal(true);
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
   const [bidIds, setBidIds] = useState([]);
 
@@ -5150,28 +5154,31 @@ export default function VendorDetails() {
                           }}
                         />
                       </div>
-                      <div className=" d-flex justify-content-end gap-3">
-                        {/* <pre> {JSON.stringify(chargesData, null, 2)}</pre> */}
-                        <>
-                          <ChargesDataTable
-                            data={chargesData}
-                            setGrossTotal={setGrossTotal}
-                            editable={true}
-                            onValueChange={(updated) => {
-                              setChargesData(updated);
-                            }}
-                          />
-                        </>
-                        <>
-                          <ShortDataTable
-                            data={bidTemplate}
-                            editable={true}
-                            onValueChange={(updated) =>
-                              setShortTableData(updated)
-                            }
-                          />
-                        </>
-                      </div>
+                      <div className="d-flex justify-content-end align-items-start gap-3 w-100">
+  <div className="d-flex flex-column align-items-end w-100">
+    <ShortDataTable
+      data={bidTemplate}
+      editable={true}
+      onValueChange={(updated) => setShortTableData(updated)}
+    />
+    <button
+      className="purple-btn2 mt-2"
+      onClick={handleOpenOtherChargesModal}
+    >
+      Other Charges
+    </button>
+    <ChargesDataTable
+      data={chargesData}
+      showOtherChargesModal={showOtherChargesModal}
+      handleCloseOtherChargesModal={handleCloseOtherChargesModal}
+      setGrossTotal={setGrossTotal}
+      editable={true}
+      onValueChange={(updated) => {
+        setChargesData(updated);
+      }}
+    />
+  </div>
+</div>
 
                       {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
 
@@ -5487,23 +5494,6 @@ export default function VendorDetails() {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Total Base Cost Row */}
-                    {/* <tr>
-                      <td>Total Base Cost</td>
-                      <td></td>
-                      <td></td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control "
-                          value={taxRateData[tableId]?.afterDiscountValue}
-                          readOnly
-                          disabled={true}
-                        />
-                      </td>
-                      <td></td>
-                    </tr> */}
-
                     {/* Addition Tax & Charges Row */}
                     <tr>
                       <td>Addition Tax & Charges</td>
@@ -5712,21 +5702,6 @@ export default function VendorDetails() {
                           </td>
                         </tr>
                       ))}
-                    {/* <tr>
-                      <td>Net Cost</td>
-                      <td></td>
-                      <td></td>
-                      <td className="text-center">
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={taxRateData[tableId]?.netCost}
-                          readOnly
-                          disabled={true}
-                        />
-                      </td>
-                      <td></td>
-                    </tr> */}
                   </tbody>
                 </table>
               </div>
