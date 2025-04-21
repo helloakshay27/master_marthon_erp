@@ -16,6 +16,7 @@ import { baseURL } from "../../../confi/apiDomain";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { set } from "lodash";
+import { toast, ToastContainer } from "react-toastify"; // Ensure toast is imported
 
 export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -364,9 +365,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         // Mark the button as clicked
         reminderData.event_vendors[index].clicked = true;
         setShowDeliveryStatsModal((prev) => !prev); // Trigger re-render
+        toast.success("Reminder sent successfully!"); // Success message
       }
     } catch (error) {
       console.error("Error sending reminder:", error);
+      toast.error("Failed to send reminder. Please try again."); // Failure message
     }
   };
 
@@ -1196,6 +1199,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
           ))}
         </div>
       </DynamicModalBox>
+      <ToastContainer />
     </div>
   );
 }
