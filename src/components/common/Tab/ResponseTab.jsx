@@ -37,7 +37,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
   const [participationSummary, setParticipationSummary] = useState({
     invited_vendor: 0,
-    participated_vendor: 0,
+    participanted_vendor: 0,
+    added_vendor: 0,
+    seen_vendor: 0,
   });
   const [openModals, setOpenModals] = useState({});
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
@@ -433,7 +435,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                 aria-label="Participants"
               >
                 <i className="bi bi-check2 me-2"></i>
-                {participationSummary.participated_vendor || 0}
+                {participationSummary.added_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
@@ -441,21 +443,21 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                 onClick={() => setShowDeliveryStatsModal(true)} // Open modal on click
               >
                 <i className="bi bi-envelope me-2"></i>
-                {participationSummary.participated_vendor || 0}
+                {participationSummary.invited_vendor || 0}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Views"
               >
                 <i className="bi bi-eye me-2"></i>
-                {participationSummary.invited_vendor}
+                {participationSummary.participanted_vendor}
               </div>
               <div
                 className="viewBy-main-child2-item d-flex align-items-center justify-content-center bg-light rounded-3 px-3 py-2"
                 aria-label="Completed"
               >
                 <i className="bi bi-check-circle me-2"></i>
-                {participationSummary.invited_vendor}
+                {participationSummary.participanted_vendor}
               </div>
             </div>
           </div>

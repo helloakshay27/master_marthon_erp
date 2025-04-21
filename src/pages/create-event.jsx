@@ -85,6 +85,7 @@ export default function CreateEvent() {
     gstNumber: "",
     panNumber: "",
     company: "",
+    organization:""
   });
 
   const [companyList, setCompanyList] = useState([]);
@@ -789,7 +790,7 @@ export default function CreateEvent() {
   
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&company_id=${inviteVendorData?.company}`,
+        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
         {
           method: "POST",
           headers: {
@@ -871,6 +872,10 @@ export default function CreateEvent() {
     if (!inviteVendorData.company) {
       errors.company = "Company is required";
       toast.error(errors.company);
+    }
+    if (!inviteVendorData.organization) {
+      errors.organization = "Organization Name is required";
+      toast.error(errors.organization);
     }
     return errors;
   };
@@ -1065,8 +1070,6 @@ export default function CreateEvent() {
                         <th>Action</th>
                       </tr>
                     </thead>
-{console.log("selectedVendors:",selectedVendors)
-}
                     <tbody>
                       {selectedVendors.length > 0 ? (
                         selectedVendors
@@ -1711,6 +1714,17 @@ export default function CreateEvent() {
                                         company: updatedCompany, // Update the company field
                                       }));
                                     }}
+                                  />
+                                </div>
+                                <div className="form-group mb-3">
+                                  <label className="po-fontBold">Organization</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    name="organization"
+                                    placeholder="Enter Organization Name"
+                                    value={inviteVendorData.organization || ""}
+                                    onChange={handleInviteVendorChange}
                                   />
                                 </div>
                               </form>
