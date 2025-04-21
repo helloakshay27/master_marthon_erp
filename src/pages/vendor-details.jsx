@@ -225,19 +225,23 @@ export default function VendorDetails() {
     const quantityAvail = updated[rowIndex].quantityAvail !== undefined && updated[rowIndex].quantityAvail !== ''
       ? parseFloat(updated[rowIndex].quantityAvail)
       : quantityRequested; // Use quantityRequested as fallback
-  
-    const discount = parseFloat(updated[rowIndex].discount) || 0;
-    const gst = parseFloat(updated[rowIndex].gst) || 0;
-  
-    const total = price * quantityAvail;
+
+      
+      const discount = parseFloat(updated[rowIndex].discount) || 0;
+      const gst = parseFloat(updated[rowIndex].gst) || 0;
+      
+      const total = price * quantityAvail;
+      const realisedPrice = price - (price * discount) / 100;
     const realisedDiscount = (total * discount) / 100;
     const landedAmount = total - realisedDiscount;
     const realisedGst = (landedAmount * gst) / 100;
     const finalTotal = landedAmount + realisedGst;
   
     updated[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
+    updated[rowIndex].realisedPrice = realisedPrice.toFixed(2);
     updated[rowIndex].landedAmount = landedAmount.toFixed(2);
     updated[rowIndex].realisedGst = realisedGst.toFixed(2);
+    updated[rowIndex].total = finalTotal.toFixed(2);
     updated[rowIndex].total = finalTotal.toFixed(2);
   
     setData(updated);
@@ -2148,9 +2152,31 @@ export default function VendorDetails() {
   }, [currentIndex, bids2]);
 
   const defaultColumns = [
-    { label: "Freight Charge", key: "freightCharge" },
-    { label: "GST on Freight", key: "gstOnFreight" },
-    { label: "Realised Freight", key: "realisedFreight" },
+      { label: "Freight Charge", key: "freightCharge" },
+      { label: "GST on Freight", key: "gstOnFreight" },
+      { label: "Realised Freight", key: "realisedFreight" },
+      {
+          label: "Realised Price",
+          key: "realisedPrice",
+          realisedPrice: (cell, rowIndex) => {
+              const price = parseFloat(data[rowIndex]?.price) || 0;
+              const discount = parseFloat(data[rowIndex]?.discount) || 0;
+  
+              // Calculate the realized discount amount
+              const realisedDiscountAmount = (price * discount) / 100;
+  
+              return (
+                  <input
+                      className="form-control"
+                      type="number"
+                      value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
+                      readOnly
+                      style={otherColumnsStyle}
+                      disabled
+                  />
+              );
+          },
+      },
   ];
 
   const mergedColumns = [...defaultColumns, ...bidTemplate];
@@ -4136,6 +4162,7 @@ export default function VendorDetails() {
                               key: "quantityAvail",
                             },
                             { label: "Price *", key: "price" },
+                            { label: "Realised Price *", key: "realisedPrice" },
                             { label: "Discount *", key: "discount" },
                             {
                               label: "Realised Discount",
@@ -4153,6 +4180,16 @@ export default function VendorDetails() {
                           ]}
                           data={data}
                           customRender={{
+                            realisedPrice: (cell, rowIndex) => {
+                              return(
+                                <input
+                              value={cell || "N/A"}
+                                disabled={true}
+                                className="form-control"
+                                readonly
+                                />
+                              )
+                            },
                             taxRate: (cell, rowIndex) => (
                               <button
                                 className="purple-btn2"
@@ -4371,25 +4408,6 @@ export default function VendorDetails() {
                                 />
                               );
                             },
-
-                            rate: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="number"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e.target.value,
-                                    rowIndex,
-                                    "rate"
-                                  )
-                                }
-                                placeholder="Enter Discount"
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
-
                             discount: (cell, rowIndex) => {
                               const previousDiscount =
                                 previousData[rowIndex]?.discount || cell;
@@ -4472,6 +4490,25 @@ export default function VendorDetails() {
                                 />
                               );
                             },
+                            rate: (cell, rowIndex) => (
+                              <input
+                                className="form-control"
+                                type="number"
+                                value={cell}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e.target.value,
+                                    rowIndex,
+                                    "rate"
+                                  )
+                                }
+                                placeholder="Enter Discount"
+                                style={otherColumnsStyle}
+                                disabled={isBid}
+                              />
+                            ),
+
+                            
 
                             gst: (cell, rowIndex) => {
                               const previousGst =
