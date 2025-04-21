@@ -2731,6 +2731,10 @@ export default function VendorDetails() {
                               { label: "Material Type", key: "section" },
                               { label: "Material Sub Type", key: "subSection" },
                               { label: "Quantity Requested", key: "quantity" },
+                              {
+                                label: "Quantity Available",
+                                key: "quantityAvail",
+                              },
                               { label: "Delivery Location", key: "location" },
                               { label: "Brand", key: "brand" },
                               { label: "Delivery Location", key: "location" },
@@ -2739,10 +2743,6 @@ export default function VendorDetails() {
                               //   label: "Creator Attachment",
                               //   key: "attachment",
                               // },
-                              {
-                                label: "Quantity Available",
-                                key: "quantityAvail",
-                              },
                               { label: "Price", key: "price" },
                               { label: "Discount", key: "discount" },
                               { label: "GST", key: "gst" },
@@ -4131,11 +4131,11 @@ export default function VendorDetails() {
                             { label: "Generic Info", key: "genericInfo" },
                             { label: "Delivery Location", key: "location" },
                             { label: "Quantity Requested", key: "quantity" },
-                            { label: "Price *", key: "price" },
                             {
                               label: "Quantity Available *",
                               key: "quantityAvail",
                             },
+                            { label: "Price *", key: "price" },
                             { label: "Discount *", key: "discount" },
                             {
                               label: "Realised Discount",
