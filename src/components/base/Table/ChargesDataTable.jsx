@@ -8,6 +8,7 @@ export default function ChargesDataTable({
   setGrossTotal,
   showOtherChargesModal,
   handleCloseOtherChargesModal,
+  isTaxRateDataChanged,
   ...rest
 }) {
   const handleInputChange = (index, e) => {
