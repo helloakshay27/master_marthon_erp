@@ -1,36 +1,76 @@
 import React from "react";
-import { useEffect } from "react";
+import { useState, useRef } from "react";
 import DynamicModalBox from "../Modal/DynamicModalBox";
 export default function ChargesDataTable({
   data,
   editable = false,
   onValueChange,
   setGrossTotal,
+  grossTotal,
   showOtherChargesModal,
   handleCloseOtherChargesModal,
   isTaxRateDataChanged,
   ...rest
 }) {
+  const [isSaveClicked, setIsSaveClicked] = React.useState(false);
+  const prevGrossRef = useRef(null);
+
   const handleInputChange = (index, e) => {
     const updated = [...data];
-  
-    if (typeof updated[index].value !== "object" || updated[index].value === null) {
+
+    if (
+      typeof updated[index].value !== "object" ||
+      updated[index].value === null
+    ) {
       updated[index].value = {};
     }
-  
+
     updated[index].value.firstBid = e.target.value;
-  
+
     const getValue = (label) => {
       const row = updated.find((row) => row.label === label);
+      return parseFloat(row?.value?.firstBid || "0") || 0;
+    };
+
+    const freight = getValue("freight_charge_amount");
+    const gstFreight = getValue("gst_on_freight");
+
+    const other = getValue("other_charge_amount");
+    const gstOther = getValue("gst_on_other_charge");
+
+    const handling = getValue("handling_charge_amount");
+    const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+
+    const updatedRealizedData = updated.map((row) => {
+      if (row.label === "realised_freight_charge_amount") {
+        return { ...row, value: { ...row.value, firstBid: realisedFreight } };
+      }
+      if (row.label === "realised_other_charge_amount") {
+        return { ...row, value: { ...row.value, firstBid: realisedOther } };
+      }
+      if (row.label === "realised_handling_charge_amount") {
+        return { ...row, value: { ...row.value, firstBid: realisedHandling } };
+      }
+      return row;
+    });
+
+    onValueChange(updatedRealizedData);
+  };
+
+  const calculateGrossTotal = (updatedData) => {
+    const getValue = (label) => {
+      const row = updatedData.find((row) => row.label === label);
       return parseFloat(row?.value?.firstBid || "0") || 0;
     };
   
     const freight = getValue("freight_charge_amount");
     const gstFreight = getValue("gst_on_freight");
-  
     const other = getValue("other_charge_amount");
     const gstOther = getValue("gst_on_other_charge");
-  
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
   
@@ -38,7 +78,7 @@ export default function ChargesDataTable({
     const realisedOther = other + (other * gstOther) / 100;
     const realisedHandling = handling + (handling * gstHandling) / 100;
   
-    const updatedRealizedData = updated.map((row) => {
+    const updatedRealizedData = updatedData.map((row) => {
       if (row.label === "realised_freight_charge_amount") {
         return { ...row, value: { ...row.value, firstBid: realisedFreight } };
       }
@@ -52,56 +92,16 @@ export default function ChargesDataTable({
     });
   
     onValueChange(updatedRealizedData);
+  
+    const gross = realisedFreight + realisedOther + realisedHandling;
+  
+    if (prevGrossRef.current === null) {
+      prevGrossRef.current = grossTotal; 
+    }
+  
+    const finalGross = prevGrossRef.current + gross;
+    setGrossTotal(finalGross);
   };
-  let isGrossTotalUpdated = true; // Declare a flag outside the function
-
-
-const calculateGrossTotal = (updatedData) => {
-  const getValue = (label) => {
-    const row = updatedData.find((row) => row.label === label);
-    return parseFloat(row?.value?.firstBid || "0") || 0;
-  };
-
-  const freight = getValue("freight_charge_amount");
-  const gstFreight = getValue("gst_on_freight");
-
-  const other = getValue("other_charge_amount");
-  const gstOther = getValue("gst_on_other_charge");
-
-  const handling = getValue("handling_charge_amount");
-  const gstHandling = getValue("gst_on_handling_charge");
-
-  // Updated realized calculations
-  const realisedFreight = freight + (freight * gstFreight) / 100;
-  const realisedOther = other + (other * gstOther) / 100;
-  const realisedHandling = handling + (handling * gstHandling) / 100;
-
-  const updatedRealizedData = updatedData.map((row) => {
-    if (row.label === "realised_freight_charge_amount") {
-      return { ...row, value: { ...row.value, firstBid: realisedFreight } };
-    }
-    if (row.label === "realised_other_charge_amount") {
-      return { ...row, value: { ...row.value, firstBid: realisedOther } };
-    }
-    if (row.label === "realised_handling_charge_amount") {
-      return { ...row, value: { ...row.value, firstBid: realisedHandling } };
-    }
-    return row;
-  });
-
-  onValueChange(updatedRealizedData);
-
-  // Correct gross calculation
-  const gross = realisedFreight + realisedOther + realisedHandling;
-
-  // Update gross total based on the flag
-  if (isGrossTotalUpdated === true) {
-    setGrossTotal((prevGrossTotal) => parseFloat(prevGrossTotal) + parseFloat(gross));
-    isGrossTotalUpdated = false; // Set the flag to true after the first update
-  } else if (isGrossTotalUpdated === false) {
-    setGrossTotal(parseFloat(gross)); // Replace the value on subsequent calls
-  }
-};
 
   return (
     <DynamicModalBox
@@ -128,10 +128,7 @@ const calculateGrossTotal = (updatedData) => {
       ]}
     >
       <div>
-        <table
-          className="tbl-container mt-4 p-4"
-          style={{ maxWidth: "100%" }}
-        >
+        <table className="tbl-container mt-4 p-4" style={{ maxWidth: "100%" }}>
           <tbody>
             {data.map((row, index) => {
               const { firstBid, counterBid } = row?.value || {};

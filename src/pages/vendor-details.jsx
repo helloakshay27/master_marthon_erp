@@ -5173,6 +5173,7 @@ export default function VendorDetails() {
       showOtherChargesModal={showOtherChargesModal}
       handleCloseOtherChargesModal={handleCloseOtherChargesModal}
       setGrossTotal={setGrossTotal}
+      grossTotal={grossTotal}
       editable={true}
       isTaxRateDataChanged={isTaxRateDataChanged}
       onValueChange={(updated) => {
