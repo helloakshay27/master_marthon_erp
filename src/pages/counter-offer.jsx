@@ -231,7 +231,15 @@ export default function CounterOffer() {
     }, {});
 
     setLoading(true);
-    // formData
+
+    // Calculate the final sumTotal including grossTotal
+    const materialSum = formData.bid_materials.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
+    );
+    const finalSumTotal = materialSum + grossTotal;
+
+    // Include updated changes in the payload
     const payload = {
       counter_bid: {
         event_vendor_id: formData.event_vendor_id,
@@ -239,30 +247,26 @@ export default function CounterOffer() {
         discount: formData.discount,
         freight_charge_amount: formData.freight_charge_amount,
         gst_on_freight: formData.gst_on_freight,
-        realised_freight_charge_amount: formData.realised_freight_charge_amount,
-        gross_total: formData.gross_total,
+        realised_freight_charge_amount: shortTableData.realised_freight_charge_amount,
+        realised_other_charge_amount: shortTableData.realised_other_charge_amount,
+        realised_handling_charge_amount: shortTableData.realised_handling_charge_amount,
+        gross_total: grossTotal,
+        sum_total: finalSumTotal, // Pass the updated sumTotal
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
           const { extra_data, ...rest } = item; // Destructure to exclude shortTable values
-          // return {
-          //   ...rest,
-          //   bid_material_id: item.id,
-          // };
           return {
+            ...rest,
             event_material_id: item.event_material_id,
             bid_material_id: item.id,
-            quantity_available: item.quantity_available,
-            price: item.price,
-            discount: item.discount,
-            total_amount: item.total_amount,
             realised_discount: item.realised_discount,
-            gst: item.gst,
+            realised_price: item.realised_price,
             realised_gst: item.realised_gst,
-            vendor_remark: item.vendor_remark,
-            bid_material_tax_details: item.bid_material_tax_details,
-            ...extractedExtraData,
+            landed_amount: item.landed_amount,
+            total_amount: item.total_amount,
+            ...extractedExtraData, // Include extra data
           };
         }),
-        ...extractShortTableData,
+        ...extractShortTableData, // Include short table data
         remark: formData.remark || "",
       },
     };
@@ -279,15 +283,12 @@ export default function CounterOffer() {
         }
       );
       if (response.ok) {
-        // handleClose(); // Close the modal if the request was successful
         toast.success("Counter bid submitted successfully!"); // Display success message
       } else {
-        // Handle failure if the response wasn't OK
         throw new Error("Failed to submit counter bid");
       }
     } catch (error) {
       console.error("Error during submission:", error);
-      // Handle error if the request fails
       alert("There was an error submitting the counter bid. Please try again.");
     } finally {
       setLoading(false); // Always set loading to false after the request completes
