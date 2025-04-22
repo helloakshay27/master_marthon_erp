@@ -250,13 +250,25 @@ export default function CounterOffer() {
       updatedMaterials[index].allowPriceIncrease = value <= originalPrice;
     }
 
-    if (
-      field === "discount" &&
-      value < parseFloat(updatedMaterials[index].discount)
-    ) {
-      toast.error("Discount cannot be lower than already existed value.");
-      return;
+    // if (
+    //   field === "discount" &&
+    //   value < parseFloat(updatedMaterials[index].discount)
+    // ) {
+    //   toast.error("Discount cannot be lower than already existed value.");
+    //   return;
+    // }
+
+    if(field === "discount"){
+        const originalDiscount = parseFloat(bidCounterData?.bid_materials[index]?.discount) || 0;
+
+        if (value < originalDiscount) {
+            toast.error("Discount cannot be lower than already existed value.");
+            return;
+        }
+        updatedMaterials[index].allowDiscountIncrease = value >= originalDiscount;
     }
+
+
 
     updatedMaterials[index][field] = value;
 
@@ -788,7 +800,35 @@ export default function CounterOffer() {
     <div className="website-content overflow-auto">
       <div className="module-data-section">
         <div className="event-order-page">
-          <h5 className="">Material Sheet</h5>
+        <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="ant-btn styles_headerCtaLink__2kCN6 ant-btn-link"
+                  onClick={() => navigate(-1)}
+                >
+                  <svg
+                    width="1em"
+                    height="1em"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    role="img"
+                    className="pro-icon"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M12.707 4.293a1 1 0 0 1 0 1.414L7.414 11H19a1 1 0 1 1 0 2H7.414l5.293 5.293a1 1 0 0 1-1.414 1.414l-7-7a1 1 0 0 1 0-1.414l7-7a1 1 0 1 1 1.414 0Z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                </button>
+                <div>
+                  <h4 className="event-head px-2 pt-2 ms-2">Counter Offer</h4>
+                </div>
+              </div>
+
+          <h5 className="mt-4">Material Sheet</h5>
           <Table columns={productTableColumns} data={productTableData} />
           <div className="d-flex justify-content-end">
             <table
