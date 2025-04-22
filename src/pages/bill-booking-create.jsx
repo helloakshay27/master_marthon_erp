@@ -611,8 +611,8 @@ const BillBookingCreate = () => {
               <th>Net Taxes</th>
               <th>Net Charges</th>
               <th>Qty</th>
-              <th>All Inclusive Cost</th>
-              <th>Action</th>
+              <th className="text-start">All Inclusive Cost</th>
+              <th className="text-start">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -906,9 +906,9 @@ const BillBookingCreate = () => {
           invoice_amount: parseFloat(formData.invoiceAmount),
           type_of_certificate: formData.typeOfCertificate,
           department_id: formData.departmentId,
-          other_deductions: parseFloat(formData.otherDeductions) || 0,
+          other_deductions: parseFloat(otherDeductions) || 0,
           other_deduction_remarks: formData.otherDeductionRemarks,
-          other_additions: parseFloat(formData.otherAdditions) || 0,
+          other_additions: parseFloat(otherAdditions) || 0,
           other_addition_remarks: formData.otherAdditionRemarks,
           retention_per: parseFloat(formData.retentionPercentage) || 0,
           retention_amount: parseFloat(formData.retentionAmount) || 0,
@@ -1007,6 +1007,30 @@ const BillBookingCreate = () => {
       inputElement.value = ""; // Clear input value
     }
   };
+
+  const [otherDeductions, setOtherDeductions] = useState(0);
+  const [otherAdditions, setOtherAdditions] = useState(0);
+  const [taxDetailsTotal, setTaxDetailsTotal] = useState(0);
+
+  // Function to calculate the total dynamically
+  const calculateTaxDetailsTotal = () => {
+    const baseCost = taxDeductionData.total_material_cost || 0;
+    const taxAmount = Object.values(taxDetailsData.tax_data).reduce(
+      (sum, value) => sum + (value || 0),
+      0
+    );
+    const total =
+      baseCost +
+      taxAmount +
+      parseFloat(otherAdditions || 0) -
+      parseFloat(otherDeductions || 0);
+    setTaxDetailsTotal(total);
+  };
+
+  // Update total whenever deductions or additions change
+  useEffect(() => {
+    calculateTaxDetailsTotal();
+  }, [otherDeductions, otherAdditions, taxDeductionData, taxDetailsData]);
 
   return (
     <>
@@ -1497,7 +1521,7 @@ const BillBookingCreate = () => {
                           </tr>
                         )
                       )}
-                      <tr>
+                      {/* <tr>
                         <th className="text-start">Total</th>
                         <td className="text-start">
                           {Object.values(taxDetailsData.tax_data).reduce(
@@ -1505,6 +1529,18 @@ const BillBookingCreate = () => {
                             0
                           ) + taxDeductionData.total_material_cost}
                         </td>
+                      </tr> */}
+                      <tr>
+                        <td className="text-start">Other Additions</td>
+                        <td className="text-start">{otherAdditions}</td>
+                      </tr>
+                      <tr>
+                        <td className="text-start">Other Deductions</td>
+                        <td className="text-start">-{otherDeductions}</td>
+                      </tr>
+                      <tr>
+                        <th className="text-start">Total</th>
+                        <td className="text-start">{taxDetailsTotal}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1624,13 +1660,15 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={formData.otherDeductions}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            otherDeductions: e.target.value,
-                          }))
-                        }
+                        // value={formData.otherDeductions}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     otherDeductions: e.target.value,
+                        //   }))
+                        // }
+                        value={otherDeductions}
+                        onChange={(e) => setOtherDeductions(e.target.value)}
                         placeholder="Enter other deduction amount"
                       />
                     </div>
@@ -1655,7 +1693,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Other Addition</label>
-                      <input
+                      {/* <input
                         className="form-control"
                         type="number"
                         value={formData.otherAdditions}
@@ -1665,6 +1703,13 @@ const BillBookingCreate = () => {
                             otherAdditions: e.target.value,
                           }))
                         }
+                        placeholder="Enter other addition amount"
+                      /> */}
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={otherAdditions}
+                        onChange={(e) => setOtherAdditions(e.target.value)}
                         placeholder="Enter other addition amount"
                       />
                     </div>
