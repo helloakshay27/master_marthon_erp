@@ -14,14 +14,12 @@ export default function ChargesDataTable({
   const handleInputChange = (index, e) => {
     const updated = [...data];
   
-    // Ensure value is an object
     if (typeof updated[index].value !== "object" || updated[index].value === null) {
       updated[index].value = {};
     }
   
     updated[index].value.firstBid = e.target.value;
   
-    // Dynamically calculate and update realized values
     const getValue = (label) => {
       const row = updated.find((row) => row.label === label);
       return parseFloat(row?.value?.firstBid || "0") || 0;
@@ -36,7 +34,6 @@ export default function ChargesDataTable({
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
   
-    // Updated realized calculations
     const realisedFreight = freight + (freight * gstFreight) / 100;
     const realisedOther = other + (other * gstOther) / 100;
     const realisedHandling = handling + (handling * gstHandling) / 100;
@@ -72,7 +69,6 @@ export default function ChargesDataTable({
     const handling = getValue("handling_charge_amount");
     const gstHandling = getValue("gst_on_handling_charge");
   
-    // Updated realized calculations
     const realisedFreight = freight + (freight * gstFreight) / 100;
     const realisedOther = other + (other * gstOther) / 100;
     const realisedHandling = handling + (handling * gstHandling) / 100;
@@ -92,7 +88,6 @@ export default function ChargesDataTable({
   
     onValueChange(updatedRealizedData);
   
-    // Correct gross calculation
     const gross =
       freight +
       realisedFreight +
@@ -100,8 +95,6 @@ export default function ChargesDataTable({
       realisedOther +
       handling +
       realisedHandling;
-  
-    // Add the new gross value to the previous total
     setGrossTotal((prev) => prev + gross);
   };
 

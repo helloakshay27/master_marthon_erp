@@ -18,6 +18,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
 import { set } from "lodash";
+
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
   const fileInputRef = useRef(null);
@@ -101,6 +102,7 @@ export default function EditEvent() {
   const [data, setData] = useState([
     { user: "", date: "", status: "", remark: "" },
   ]);
+  const [statusLogData, setStatusLogData] = useState([]);
 
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
@@ -381,7 +383,7 @@ export default function EditEvent() {
       setStart_time(eventDetails?.event_schedule?.start_time);
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
-
+      setStatusLogData(eventDetails?.status_logs);
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => {
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
@@ -423,7 +425,6 @@ export default function EditEvent() {
         })
       );
       setSelectedVendors(
-        
         eventDetails?.event_vendors?.map((vendor) => ({
           id: vendor.id,
           name: vendor.full_name,
@@ -1307,7 +1308,6 @@ export default function EditEvent() {
                         </tr>
                       ) : (
                         selectedVendors?.map((vendor, index) => (
-                          
                           <tr key={vendor.id}>
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
@@ -1475,6 +1475,36 @@ export default function EditEvent() {
                   </tbody>
                 </table>
               </div>
+
+              {statusLogData?.length > 0 && (
+                <>
+                  <h5 className="mt-5">Audit Log</h5>
+                  <table className="tbl-container w-100">
+                    <thead>
+                      <tr>
+                        <th>Comment</th>
+                        <th>Remark</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statusLogData?.map((item, idx) => {
+                        if (item.id === null) {
+                          return null;
+                        }
+                        return (
+                          <tr key={idx}>
+                            <td>{item.comment || "N/A"}</td>
+                            <td>{item.remark || "N/A"}</td>
+                            <td>{item.status || "N/A"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </>
+              )}
+
               <div className="row mt-2 justify-content-end align-items-center mt-4">
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Preview</button>

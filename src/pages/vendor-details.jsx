@@ -2163,7 +2163,7 @@ export default function VendorDetails() {
               const discount = parseFloat(data[rowIndex]?.discount) || 0;
   
               // Calculate the realized discount amount
-              const realisedDiscountAmount = (price * discount) / 100;
+              const realisedDiscountAmount = price - (price * discount) / 100;
   
               return (
                   <input

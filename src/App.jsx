@@ -84,6 +84,7 @@ import AddWorkSubCategory from "./pages/add-work-sub-category";
 // import BOQAmend from "./pages/boq-amend";
 import BoqAmend from "./pages/boq-amend";
 import BoqAmendSub from "./pages/boq-amend-sub";
+import CounterOffer from "./pages/counter-offer";
 
 function App() {
   return (
@@ -165,13 +166,14 @@ function App() {
           <Route path="/section-tab" element={<SectionTab />} />
           {/* <Route path="/event-list" element={<EventList />} /> */}
           <Route path="/user-list/:eventId" element={<VendorDetails />} />
-          <Route path="/eoi-details/:eventId" element={<EoiDeatailPage />} />n
+          <Route path="/eoi-details/:eventId" element={<EoiDeatailPage />} />
           <Route path="/vendor-list" element={<VendorListPage />} />
           <Route path="/user-overview/:eventId" element={<UserOverview />} />
           <Route path="/create-event" element={<CreateEvent />} />
           {/* <Route path='/create-bid' element={<CreateBid />} /> */}
           <Route path="/create-bid/:eventId" element={<CreateBid />} />
           <Route path="/edit-event/:id" element={<EditEvent />} />
+          <Route path="/counter-offer/:id" element={<CounterOffer />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<RootLayout />}>
             {/* <Route path='/erp-stock-register-creation13c' element={<ErpStockRegisterCreation13C />} /> */}

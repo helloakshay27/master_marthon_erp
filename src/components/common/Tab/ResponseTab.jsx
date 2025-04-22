@@ -9,7 +9,7 @@ import ResponseVendor from "../ResponseVendor";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import BulkCounterOfferModal from "../Modal/BulkCounterOfferModal";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { da } from "date-fns/locale";
 import { SegregatedBidMaterials } from "../../../utils/SegregatedBidMaterials";
 import { baseURL } from "../../../confi/apiDomain";
@@ -46,6 +46,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
   const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(true);
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSegeregatedMaterialData(SegregatedBidMaterials(eventVendors));
@@ -280,6 +282,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
           `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBidCounterData(response.data);
+        sessionStorage.setItem("bidCounterData", JSON.stringify(response.data)); // Save data in session storage
       } catch (err) {
         setError(err.message);
       } finally {
@@ -573,10 +576,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                       vendor?.bids?.length > 0 &&
                                       vendor?.bids[0]?.bid_materials?.length > 0
                                     ) {
-                                      handleCounterModalShow();
                                       setBidId(
                                         vendor.bids[0].bid_materials[0].bid_id
                                       );
+
+                                      navigate(`/counter-offer/${vendor.bids[0].bid_materials[0].bid_id}`)
                                     }
                                   }}
                                   disabled={isCounterOffer}
