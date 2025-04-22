@@ -12,7 +12,6 @@ export default function ChargesDataTable({
   isTaxRateDataChanged,
   ...rest
 }) {
-  const [isSaveClicked, setIsSaveClicked] = React.useState(false);
   const prevGrossRef = useRef(null);
 
   const handleInputChange = (index, e) => {

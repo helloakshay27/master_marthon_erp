@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "../components/base/Table/Table";
 import SelectBox from "../components/base/Select/SelectBox";
@@ -21,6 +21,15 @@ export default function CounterOffer() {
   const [taxOptions, setTaxOptions] = useState([]); // State for tax options
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
   const [shortTableData, setShortTableData] = useState({});
+  const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
+  const [chargesData, setChargesData] = useState({}); // State for charges data
+  const [grossTotal, setGrossTotal] = useState(0); // State for gross total
+  const prevGrossRef = useRef(null); // Ref for previous gross total
+
+  const handleOpenOtherChargesModal = () => {
+    setShowOtherChargesModal(true);
+  };
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
 
   useEffect(() => {
     if (bidCounterData && Object.keys(formData).length === 0) {
@@ -139,6 +148,64 @@ export default function CounterOffer() {
     fetchDeductionTaxes();
   }, []);
 
+  useEffect(() => {
+    const extra_charges = {
+      freight_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_freight: {
+        value: "",
+        readonly: false,
+      },
+      other_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_other_charge: {
+        value: "",
+        readonly: false,
+      },
+      handling_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_handling_charge: {
+        value: "",
+        readonly: false,
+      },
+      realised_freight_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      realised_other_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      realised_handling_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+    };
+
+    const formattedCharges = Object.entries(extra_charges).map(
+      ([fieldName, fieldData]) => ({
+        label: fieldName || "",
+        value: fieldData || "",
+        isRequired: false, // or true, if you have that info elsewhere
+        isReadOnly: fieldData.readonly,
+        fieldOwner: null, // or fetch from another object if needed
+      })
+    );
+
+    setShortTableData(
+      formattedCharges.reduce((acc, charge) => {
+        acc[charge.label] = charge.value.value;
+        return acc;
+      }, {})
+    );
+  }, []);
+
   const eventId = bidCounterData?.event?.id;
   const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
 
@@ -212,7 +279,7 @@ export default function CounterOffer() {
         }
       );
       if (response.ok) {
-        handleClose(); // Close the modal if the request was successful
+        // handleClose(); // Close the modal if the request was successful
         toast.success("Counter bid submitted successfully!"); // Display success message
       } else {
         // Handle failure if the response wasn't OK
@@ -250,25 +317,16 @@ export default function CounterOffer() {
       updatedMaterials[index].allowPriceIncrease = value <= originalPrice;
     }
 
-    // if (
-    //   field === "discount" &&
-    //   value < parseFloat(updatedMaterials[index].discount)
-    // ) {
-    //   toast.error("Discount cannot be lower than already existed value.");
-    //   return;
-    // }
+    if (field === "discount") {
+      const originalDiscount =
+        parseFloat(bidCounterData?.bid_materials[index]?.discount) || 0;
 
-    if(field === "discount"){
-        const originalDiscount = parseFloat(bidCounterData?.bid_materials[index]?.discount) || 0;
-
-        if (value < originalDiscount) {
-            toast.error("Discount cannot be lower than already existed value.");
-            return;
-        }
-        updatedMaterials[index].allowDiscountIncrease = value >= originalDiscount;
+      if (value < originalDiscount) {
+        toast.error("Discount cannot be lower than already existed value.");
+        return;
+      }
+      updatedMaterials[index].allowDiscountIncrease = value >= originalDiscount;
     }
-
-
 
     updatedMaterials[index][field] = value;
 
@@ -306,12 +364,14 @@ export default function CounterOffer() {
       updatedMaterials[index].disableDiscount = false;
     }
 
-    setSumTotal(
-      updatedMaterials.reduce(
-        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-        0
-      )
+    const newSumTotal = updatedMaterials.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
     );
+
+    if (newSumTotal !== sumTotal) {
+      setSumTotal(newSumTotal); // Only update sumTotal if it has changed
+    }
 
     setFormData({
       ...formData,
@@ -319,74 +379,32 @@ export default function CounterOffer() {
     });
   };
 
-  useEffect(() => {
-    if (formData?.bid_materials) {
-      const updatedMaterials = formData.bid_materials.map((item) => {
-        const price = parseFloat(item.price) || 0;
-        const quantityAvail = parseFloat(item.quantity_available) || 0;
-        const discount = parseFloat(item.discount) || 0;
-        const gst = parseFloat(item.gst) || 0;
-
-        const total = price * quantityAvail;
-
-        const realisedDiscount = (total * discount) / 100;
-        const realisedPrice = price - (price * discount) / 100; // Calculate realised price
-
-        const landedAmount = total - realisedDiscount;
-        let realisedGst = 0;
-        if (gst > 0) {
-          realisedGst = (landedAmount * gst) / 100;
-        }
-
-        const finalTotal = landedAmount + realisedGst;
-
-        return {
-          ...item,
-          realised_discount: realisedDiscount.toFixed(2),
-          realised_price: realisedPrice.toFixed(2), // Set realised price
-          landed_amount: landedAmount.toFixed(2),
-          realised_gst: realisedGst.toFixed(2),
-          total_amount: finalTotal.toFixed(2),
-        };
-      });
-
-      const newSumTotal = updatedMaterials.reduce(
-        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-        0
-      );
-
-      if (newSumTotal !== sumTotal) {
-        setSumTotal(newSumTotal); // Only update sumTotal if it has changed
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        bid_materials: updatedMaterials,
-      }));
-    }
-  }, [formData?.bid_materials]); // Ensure this effect only runs when formData.bid_materials changes
-
   const handleInputChange = (e, field) => {
     const value = e.target.value;
     const updatedFormData = { ...formData, [field]: value };
 
     if (field === "freight_charge_amount" || field === "gst_on_freight") {
-      const freightCharge =
-        parseFloat(updatedFormData.freight_charge_amount) || 0;
+      const freightCharge = parseFloat(updatedFormData.freight_charge_amount) || 0;
       const gstOnFreight = parseFloat(updatedFormData.gst_on_freight) || 0;
       updatedFormData.realised_freight_charge_amount =
         freightCharge + (freightCharge * gstOnFreight) / 100;
     }
 
-    const sumTotal = formData.bid_materials.reduce(
+    setFormData(updatedFormData);
+
+    // Avoid redundant sumTotal calculation
+    const gross = parseFloat(updatedFormData.realised_freight_charge_amount || 0);
+    const materialSum = formData.bid_materials.reduce(
       (acc, item) => acc + (parseFloat(item.total_amount) || 0),
       0
     );
-    const totalSum =
-      sumTotal + (updatedFormData.realised_freight_charge_amount || 0);
+    const finalSumTotal = materialSum + gross;
 
-    setFormData(updatedFormData);
-    setSumTotal(totalSum);
+    console.log("Calculated sumTotal:", finalSumTotal);
+
+    if (sumTotal !== finalSumTotal) {
+      setSumTotal(finalSumTotal);
+    }
   };
 
   const handleFreightDataChange = (updatedData) => {
@@ -502,8 +520,104 @@ export default function CounterOffer() {
     setTaxRateData(updatedTaxRateData);
   };
 
+  const handleOtherChargesInputChange = (field, value) => {
+    const updatedCharges = { ...shortTableData, [field]: value };
+
+    const getValue = (label) => parseFloat(updatedCharges[label] || "0") || 0;
+
+    const freight = getValue("freight_charge_amount");
+    const gstFreight = getValue("gst_on_freight");
+
+    const other = getValue("other_charge_amount");
+    const gstOther = getValue("gst_on_other_charge");
+
+    const handling = getValue("handling_charge_amount");
+    const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+
+    const gross = realisedFreight + realisedOther + realisedHandling;
+
+    setShortTableData({
+      ...updatedCharges,
+      realised_freight_charge_amount: realisedFreight.toFixed(2),
+      realised_other_charge_amount: realisedOther.toFixed(2),
+      realised_handling_charge_amount: realisedHandling.toFixed(2),
+    });
+
+    const materialSum = formData.bid_materials.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
+    );
+    const finalSumTotal = materialSum + gross;
+
+    console.log("Calculated finalSumTotal in handleOtherChargesInputChange:", finalSumTotal);
+
+    if (sumTotal !== finalSumTotal) {
+      console.log("Updating sumTotal from handleOtherChargesInputChange:", finalSumTotal);
+      setSumTotal(finalSumTotal);
+    }
+  };
+
+  const onValueChange = (updated) => {
+    setChargesData(updated);
+  };
+
+  const calculateGrossTotal = (updatedData) => {
+    console.log("Updated Data:", updatedData);
+
+    const getValue = (label) => {
+      return parseFloat(updatedData[label] || "0") || 0; // Directly access the value from updatedData
+    };
+
+    const freight = getValue("freight_charge_amount");
+    const gstFreight = getValue("gst_on_freight");
+    const other = getValue("other_charge_amount");
+    const gstOther = getValue("gst_on_other_charge");
+    const handling = getValue("handling_charge_amount");
+    const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+
+    const updatedRealizedData = { ...updatedData }; // Create a copy of the object
+    updatedRealizedData["realised_freight_charge_amount"] = realisedFreight.toFixed(2);
+    updatedRealizedData["realised_other_charge_amount"] = realisedOther.toFixed(2);
+    updatedRealizedData["realised_handling_charge_amount"] = realisedHandling.toFixed(2);
+
+    onValueChange(updatedRealizedData);
+
+    const gross = realisedFreight + realisedOther + realisedHandling;
+
+    // Calculate the final sum total
+    const materialSum = formData.bid_materials.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
+    );
+    const finalSumTotal = materialSum + gross;
+
+    console.log("finalSumTotal :---", finalSumTotal);
+
+    // Update sumTotal only if it has changed
+    if (sumTotal !== finalSumTotal) {
+      console.log("Updating sumTotal from calculateGrossTotal:", finalSumTotal);
+      setSumTotal(finalSumTotal);
+    }
+
+    if (prevGrossRef.current === null) {
+      prevGrossRef.current = grossTotal;
+    }
+
+    const finalGross = gross; // Use the calculated gross directly
+    console.log("finalGross :---", finalGross);
+
+    setGrossTotal(finalGross);
+  };
+
   const productTableColumns = [
-    // { label: "Sr no.", key: "SrNo" },
     { label: "Material Name", key: "product" },
     { label: "Material Type", key: "materialType" },
     { label: "Material Sub Type", key: "materialSubType" },
@@ -772,7 +886,6 @@ export default function CounterOffer() {
       );
 
       return {
-        // Sno: index + 1,
         product: <span>{productName}</span>,
         materialType,
         materialSubType,
@@ -798,90 +911,40 @@ export default function CounterOffer() {
 
   return (
     <div className="website-content overflow-auto">
-      <div className="module-data-section">
-        <div className="event-order-page">
-        <div className="d-flex align-items-center">
-                <button
-                  type="button"
-                  className="ant-btn styles_headerCtaLink__2kCN6 ant-btn-link"
-                  onClick={() => navigate(-1)}
-                >
-                  <svg
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    role="img"
-                    className="pro-icon"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M12.707 4.293a1 1 0 0 1 0 1.414L7.414 11H19a1 1 0 1 1 0 2H7.414l5.293 5.293a1 1 0 0 1-1.414 1.414l-7-7a1 1 0 0 1 0-1.414l7-7a1 1 0 1 1 1.414 0Z"
-                      fill="currentColor"
-                    ></path>
-                  </svg>
-                </button>
-                <div>
-                  <h4 className="event-head px-2 pt-2 ms-2">Counter Offer</h4>
-                </div>
-              </div>
+      <div className="module-data-section px-4">
+          <div className="d-flex align-items-center">
+            <button
+              type="button"
+              className="ant-btn styles_headerCtaLink__2kCN6 ant-btn-link"
+              onClick={() => navigate(-1)}
+            >
+              <svg
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                className="pro-icon"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M12.707 4.293a1 1 0 0 1 0 1.414L7.414 11H19a1 1 0 1 1 0 2H7.414l5.293 5.293a1 1 0 0 1-1.414 1.414l-7-7a1 1 0 0 1 0-1.414l7-7a1 1 0 1 1 1.414 0Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </button>
+            <div>
+              <h4 className="event-head px-2 pt-2 ms-2">Counter Offer</h4>
+            </div>
+          </div>
 
           <h5 className="mt-4">Material Sheet</h5>
           <Table columns={productTableColumns} data={productTableData} />
-          <div className="d-flex justify-content-end">
-            <table
-              className="tbl-container mt-4 ShortTable"
-              style={{ width: "40% !important" }}
-            >
-              <tbody>
-                {Object.keys(formData.extra_data || {}).map((key, index) => {
-                  const label = key.replace(/_/g, " ").toUpperCase();
-                  const value =
-                    shortTableData[key] ||
-                    formData.extra_data[key]?.value ||
-                    "";
-
-                  return (
-                    <tr
-                      key={index}
-                      style={{ borderBottom: "1px solid #ddd", color: "#fff" }}
-                    >
-                      <td
-                        style={{
-                          padding: "12px",
-                          fontWeight: "bold",
-                          background: "#8b0203",
-                        }}
-                      >
-                        {label}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          color: "#000",
-                          textAlign: "left",
-                        }}
-                      >
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={shortTableData?.[key] || ""}
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            handleExtraDataChange(0, key, newValue);
-                          }}
-                          style={{ backgroundColor: "#fff", color: "#000" }}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
+            <div className="d-flex justify-content-end mt-4">
+          <button onClick={handleOpenOtherChargesModal} className="purple-btn2">Other Charges</button>
+                </div>
           <div className="d-flex justify-content-end">
             <h4>Sum Total : ₹{sumTotal}</h4>
           </div>
@@ -1262,9 +1325,103 @@ export default function CounterOffer() {
               </div>
             </div>
           </DynamicModalBox>
+          <DynamicModalBox
+            show={showOtherChargesModal}
+            onHide={handleCloseOtherChargesModal}
+            size="lg"
+            modalType={true}
+            footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleCloseOtherChargesModal,
+                  props: { className: "purple-btn1" },
+                },
+                {
+                  label: "Save",
+                  onClick: () => {
+                    // Add save logic here
+                    calculateGrossTotal(shortTableData);
+                    handleCloseOtherChargesModal();
+                  },
+                  props: { className: "purple-btn2" },
+                },
+              ]}
+          >
+            <div className="d-flex justify-content-end">
+            <table
+              className="tbl-container mt-4 p-4"
+              style={{ maxWidth: "100%", width: "40%" }}
+            >
+              <tbody>
+                {Object.keys(shortTableData).map((field, index) => (
+                  <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
+                    <td
+                      style={{
+                        padding: "12px",
+                        fontWeight: "bold",
+                        background: "#8b0203",
+                        color: "#fff",
+                        width: "65%",
+                      }}
+                    >
+                      {field
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px",
+                        color: "#000",
+                        textAlign: "left",
+                      }}
+                    >
+                      {field.startsWith("realised_") ? (
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={shortTableData[field] || ""}
+                          readOnly
+                          disabled
+                          style={{
+                            backgroundColor: "#f5f5f5",
+                            color: "#000",
+                          }}
+                        />
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <input
+                            type="number"
+                            className="form-control"
+                            value={shortTableData[field] || ""}
+                            onChange={(e) =>
+                              handleOtherChargesInputChange(
+                                field,
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            style={{
+                              backgroundColor: "#fff",
+                              color: "#000",
+                              width: "80%",
+                              marginRight: "5px",
+                            }}
+                          />
+                          {field.startsWith("gst_") ? (
+                            <span style={{ color: "#000" }}>%</span>
+                          ) : (
+                            <span style={{ color: "#000" }}>₹</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          </DynamicModalBox>
           <ToastContainer />
         </div>
-      </div>
     </div>
   );
 }

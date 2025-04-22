@@ -5175,7 +5175,6 @@ export default function VendorDetails() {
       setGrossTotal={setGrossTotal}
       grossTotal={grossTotal}
       editable={true}
-      isTaxRateDataChanged={isTaxRateDataChanged}
       onValueChange={(updated) => {
         setChargesData(updated);
       }}
