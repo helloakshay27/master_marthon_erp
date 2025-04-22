@@ -318,7 +318,7 @@ export default function VendorDetails() {
   const handleFreightDataChange = (updatedFreightData) => {
     setFreightData(updatedFreightData);
     const updatedGrossTotal = calculateSumTotal(updatedFreightData);
-    setGrossTotal(updatedGrossTotal);
+    setGrossTotal(parseFloat(updatedGrossTotal));
   };
 
   const handleSumTotalChange = (sumTotal) => {
@@ -2225,7 +2225,7 @@ export default function VendorDetails() {
 
     setData(updatedData);
     const updatedGrossTotal = calculateGrossTotal();
-    setGrossTotal(updatedGrossTotal);
+    setGrossTotal(parseFloat(updatedGrossTotal));
     handleCloseModal1();
   };
 
@@ -2440,15 +2440,14 @@ export default function VendorDetails() {
   };
 
   const calculateGrossTotal = () => {
-    const total = data.reduce(
-      (acc, item) => Number(acc) + Number(item.total || "0"),
-      0
-    );
-    // console.log("Total:", total, data);
-
+    const total = data.reduce((acc, item) => {
+      const itemTotal = parseFloat(item.total) || 0; // Ensure valid number
+      return acc + itemTotal;
+    }, 0);
+  
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
-
+;
   const handleSaveTaxChanges = () => {
     const updatedData = [...data]; // Create a copy of the data array
     const updatedNetCost = calculateNetCost(tableId);
@@ -2460,7 +2459,7 @@ export default function VendorDetails() {
     //   netCost: updatedNetCost,
     // }));
 
-    setGrossTotal(updatedGrossTotal);
+    setGrossTotal(parseFloat(updatedGrossTotal));    
     handleCloseModal();
     setIsTaxRateDataChanged(true)
   };
@@ -2476,7 +2475,7 @@ export default function VendorDetails() {
     //   netCost: updatedNetCost,
     // }));
 
-    setGrossTotal(updatedGrossTotal);
+    setGrossTotal(parseFloat(updatedGrossTotal));    
     handleCloseModal();
   };
 
