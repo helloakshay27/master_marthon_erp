@@ -475,17 +475,17 @@ export default function VendorDetails() {
   // Add new function for handling all tax changes
   const handleAllTaxChargeChange = (field, value, type) => {
     const updatedTaxRateData = structuredClone(taxRateData);
-
-    updatedTaxRateData.forEach((row) => {
+  
+    updatedTaxRateData.forEach((row, rowIndex) => {
       const taxDetailsKey =
         type === "addition"
           ? "addition_bid_material_tax_details"
           : "deduction_bid_material_tax_details";
-
+  
       if (!row[taxDetailsKey]) {
         row[taxDetailsKey] = [];
       }
-
+  
       // Ensure there's at least one item to update
       if (row[taxDetailsKey].length === 0) {
         row[taxDetailsKey].push({
@@ -498,17 +498,15 @@ export default function VendorDetails() {
           resource_type: type === "addition" ? "TaxCharge" : "TaxCategory",
         });
       }
-
+  
       row[taxDetailsKey].forEach((charge) => {
         if (field === "taxChargeType") {
           charge.taxChargeType = value;
-
-          // FIXED: Use correct option list based on type
+  
           const optionsList =
             type === "addition" ? taxOptions : deductionTaxOptions;
           const selectedOption = optionsList.find((opt) => opt.value === value);
-
-          // FIX: Ensure resource_id and resource_type are correctly set
+  
           if (selectedOption) {
             charge.resource_id = selectedOption.id;
             charge.resource_type =
@@ -520,10 +518,10 @@ export default function VendorDetails() {
               type === "addition" ? "TaxCharge" : "TaxCategory";
           }
         }
-
+  
         if (field === "taxChargePerUom") {
           charge.taxChargePerUom = value;
-
+  
           if (!charge.inclusive && row.afterDiscountValue) {
             const percentage = parseFloat(value.replace("%", ""));
             const baseAmount = parseFloat(row.afterDiscountValue);
@@ -532,13 +530,13 @@ export default function VendorDetails() {
             }
           }
         }
-
+  
         if (field === "inclusive") {
           charge.inclusive = value;
         }
       });
-
-      // Deduplicate by taxChargeType
+  
+      // Deduplicate taxChargeType
       const dedupe = (arr) => {
         const seen = new Set();
         return arr.filter((item) => {
@@ -547,21 +545,22 @@ export default function VendorDetails() {
           return true;
         });
       };
-
+  
       row[taxDetailsKey] = dedupe(row[taxDetailsKey]);
-
-      console.log("row:", JSON.stringify(row));
+  
+      // ✅ Update netCost for the current row immediately after changes
+      row.netCost = calculateNetCost(rowIndex, updatedTaxRateData);
     });
-
-    // console.log("row:", JSON.stringify(row));
+  
     console.log(
       "updatedTaxRateData:",
       JSON.stringify(updatedTaxRateData, null, 2)
     );
-
+  
     setTaxRateData(updatedTaxRateData);
     originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
   };
+  
 
   // Update the modal tax inputs to use new handler for "Apply All"
   // const [currentIndex, setCurrentIndex] = useState(0);
@@ -2402,10 +2401,10 @@ export default function VendorDetails() {
     let additionTaxTotal = 0;
     let deduction_bid_material_tax_detailsTotal = 0;
     let directChargesTotal = 0;
-
+  
     taxRateRow.addition_bid_material_tax_details.forEach((item) => {
       if (item.inclusive) return;
-
+  
       if (
         ["Handling Charges", "Other charges", "Freight"].includes(
           item.taxChargeType
@@ -2420,7 +2419,7 @@ export default function VendorDetails() {
         additionTaxTotal += taxAmount;
       }
     });
-
+  
     taxRateRow.deduction_bid_material_tax_details.forEach((item) => {
       if (item.inclusive) return;
       const taxAmount = calculateTaxAmount(
@@ -2429,15 +2428,20 @@ export default function VendorDetails() {
       );
       deduction_bid_material_tax_detailsTotal += taxAmount;
     });
-
+  
     const netCost =
       parseFloat(taxRateRow.afterDiscountValue || "0") +
       additionTaxTotal +
       directChargesTotal -
       deduction_bid_material_tax_detailsTotal;
-
+  
     return netCost.toFixed(2);
   };
+  
+
+// useEffect(() => {
+//     const updatedNetCost = calculateNetCost(tableId);
+//   },[taxRateData])
 
   const calculateGrossTotal = () => {
     const total = data.reduce((acc, item) => {
