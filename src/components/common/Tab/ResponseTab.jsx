@@ -580,7 +580,31 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                         vendor.bids[0].bid_materials[0].bid_id
                                       );
 
-                                      navigate(`/counter-offer/${vendor.bids[0].bid_materials[0].bid_id}`)
+                                      navigate(
+                                        `/counter-offer/${vendor.bids[0].bid_materials[0].bid_id}`
+                                      );
+
+                                      setTimeout(() => {
+                                        const fetchData = async () => {
+                                          setLoading(true);
+                                          setError(null);
+                                          try {
+                                            const response = await axios.get(
+                                              `${baseURL}rfq/events/${eventId}/bids/${vendor.bids[0].bid_materials[0].bid_id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                            );
+                                            setBidCounterData(response.data);
+                                            sessionStorage.setItem(
+                                              "bidCounterData",
+                                              JSON.stringify(response.data)
+                                            );
+                                          } catch (err) {
+                                            setError(err.message);
+                                          } finally {
+                                            setLoading(false);
+                                          }
+                                        };
+                                        fetchData();
+                                      }, 1000); 
                                     }
                                   }}
                                   disabled={isCounterOffer}

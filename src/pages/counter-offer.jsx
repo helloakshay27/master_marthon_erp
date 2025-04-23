@@ -250,10 +250,9 @@ export default function CounterOffer() {
         realised_freight_charge_amount: shortTableData.realised_freight_charge_amount,
         realised_other_charge_amount: shortTableData.realised_other_charge_amount,
         realised_handling_charge_amount: shortTableData.realised_handling_charge_amount,
-        gross_total: grossTotal,
-        sum_total: finalSumTotal, // Pass the updated sumTotal
+        gross_total: finalSumTotal,
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
-          const { extra_data, ...rest } = item; // Destructure to exclude shortTable values
+          const { extra_data, ...rest } = item; 
           return {
             ...rest,
             event_material_id: item.event_material_id,
@@ -912,7 +911,10 @@ export default function CounterOffer() {
 
   return (
     <div className="website-content overflow-auto">
-      <div className="module-data-section px-4">
+      <div className="module-data-section">
+        <div className="event-order-page">
+
+        
           <div className="d-flex align-items-center">
             <button
               type="button"
@@ -1422,6 +1424,7 @@ export default function CounterOffer() {
           </div>
           </DynamicModalBox>
           <ToastContainer />
+        </div>
         </div>
     </div>
   );
