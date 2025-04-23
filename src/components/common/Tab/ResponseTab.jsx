@@ -571,40 +571,37 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                   className={`purple-btn1 d-block mt-2 ${
                                     isCounterOffer ? "disabled-btn" : ""
                                   }`}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (
                                       vendor?.bids?.length > 0 &&
                                       vendor?.bids[0]?.bid_materials?.length > 0
                                     ) {
-                                      setBidId(
-                                        vendor.bids[0].bid_materials[0].bid_id
-                                      );
+                                      const bidId =
+                                        vendor.bids[0].bid_materials[0].bid_id;
+                                      setBidId(bidId);
 
-                                      navigate(
-                                        `/counter-offer/${vendor.bids[0].bid_materials[0].bid_id}`
-                                      );
+                                      try {
+                                        setLoading(true);
+                                        setError(null);
 
-                                      setTimeout(() => {
-                                        const fetchData = async () => {
-                                          setLoading(true);
-                                          setError(null);
-                                          try {
-                                            const response = await axios.get(
-                                              `${baseURL}rfq/events/${eventId}/bids/${vendor.bids[0].bid_materials[0].bid_id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-                                            );
-                                            setBidCounterData(response.data);
-                                            sessionStorage.setItem(
-                                              "bidCounterData",
-                                              JSON.stringify(response.data)
-                                            );
-                                          } catch (err) {
-                                            setError(err.message);
-                                          } finally {
-                                            setLoading(false);
-                                          }
-                                        };
-                                        fetchData();
-                                      }, 1000); 
+                                        const response = await axios.get(
+                                          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                        );
+
+                                        const fetchedData = response.data;
+                                        setBidCounterData(fetchedData);
+
+                                        // Now navigate with data as state
+                                        navigate(`/counter-offer/${bidId}`, {
+                                          state: {
+                                            bidCounterData: fetchedData,
+                                          },
+                                        });
+                                      } catch (err) {
+                                        setError(err.message);
+                                      } finally {
+                                        setLoading(false);
+                                      }
                                     }
                                   }}
                                   disabled={isCounterOffer}
@@ -1219,7 +1216,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   className={item.clicked ? "purple-btn2" : "purple-btn1"} // Toggle class
                   onClick={() => handleSendReminder(item.id, index)} // Call API on click
                 >
-                  {item.clicked ? "Reminder Sent" : "Send Reminder"} {/* Update text */}
+                  {item.clicked ? "Reminder Sent" : "Send Reminder"}{" "}
+                  {/* Update text */}
                 </button>
               </div>
               {index < reminderData.event_vendors.length - 1 && <hr />}

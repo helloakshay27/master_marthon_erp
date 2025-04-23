@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Table from "../components/base/Table/Table";
 import SelectBox from "../components/base/Select/SelectBox";
 import { toast, ToastContainer } from "react-toastify";
@@ -9,7 +9,9 @@ import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
 
 export default function CounterOffer() {
   const navigate = useNavigate();
-  const bidCounterData = JSON.parse(sessionStorage.getItem("bidCounterData")); // Retrieve data from session storage
+  const location = useLocation();
+  const { id } = useParams();
+  const [bidCounterData, setBidCounterData] = useState(location.state?.bidCounterData || null);
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
   const [loading, setLoading] = useState(false); // Add loading state
@@ -29,8 +31,9 @@ export default function CounterOffer() {
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
   };
-  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
-
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);  
+  console.log("bidCounterData----", bidCounterData);
+  
   useEffect(() => {
     if (bidCounterData && Object.keys(formData).length === 0) {
       // Only set state if formData is empty to prevent infinite updates
