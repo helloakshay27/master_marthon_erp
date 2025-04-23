@@ -473,93 +473,142 @@ export default function VendorDetails() {
   const [previousData, setPreviousData] = useState([]); // Holds the data from bid_materials
   const [updatedData, setUpdatedData] = useState([]); // Holds th
   // Add new function for handling all tax changes
-  const handleAllTaxChargeChange = (field, value, type) => {
-    const updatedTaxRateData = structuredClone(taxRateData);
-  
-    updatedTaxRateData.forEach((row, rowIndex) => {
-      const taxDetailsKey =
-        type === "addition"
-          ? "addition_bid_material_tax_details"
-          : "deduction_bid_material_tax_details";
-  
-      if (!row[taxDetailsKey]) {
-        row[taxDetailsKey] = [];
-      }
-  
-      // Ensure there's at least one item to update
-      if (row[taxDetailsKey].length === 0) {
-        row[taxDetailsKey].push({
-          id: Date.now().toString(),
-          taxChargeType: "",
-          taxChargePerUom: "",
-          inclusive: false,
-          amount: "0",
-          resource_id: null,
-          resource_type: type === "addition" ? "TaxCharge" : "TaxCategory",
-        });
-      }
-  
-      row[taxDetailsKey].forEach((charge) => {
-        if (field === "taxChargeType") {
-          charge.taxChargeType = value;
-  
-          const optionsList =
-            type === "addition" ? taxOptions : deductionTaxOptions;
-          const selectedOption = optionsList.find((opt) => opt.value === value);
-  
-          if (selectedOption) {
-            charge.resource_id = selectedOption.id;
-            charge.resource_type =
-              selectedOption.type ||
-              (type === "addition" ? "TaxCharge" : "TaxCategory");
-          } else {
-            charge.resource_id = null;
-            charge.resource_type =
-              type === "addition" ? "TaxCharge" : "TaxCategory";
-          }
-        }
-  
-        if (field === "taxChargePerUom") {
-          charge.taxChargePerUom = value;
-  
-          if (!charge.inclusive && row.afterDiscountValue) {
-            const percentage = parseFloat(value.replace("%", ""));
-            const baseAmount = parseFloat(row.afterDiscountValue);
-            if (!isNaN(percentage) && !isNaN(baseAmount)) {
-              charge.amount = ((baseAmount * percentage) / 100).toFixed(2);
-            }
-          }
-        }
-  
-        if (field === "inclusive") {
-          charge.inclusive = value;
-        }
+  const [parentTaxRateData, setParentTaxRateData] = useState([]);
+  const fromAllUpdateRef = useRef(false); // Track if change came from bulk update
+
+
+// Utility: Calculate Tax Amount
+
+
+// Utility: Deduplicate TaxChargeType Entries
+const deduplicateTaxCharges = (arr) => {
+  const seen = new Set();
+  return arr.filter((item) => {
+    if (seen.has(item.taxChargeType)) return false;
+    seen.add(item.taxChargeType);
+    return true;
+  });
+};
+
+// 🔁 Bulk Update - All Rows
+const handleAllTaxChargeChange = (field, value, type) => {
+  fromAllUpdateRef.current = true; // 🚩 Set the flag ON
+
+  const updatedData = structuredClone(parentTaxRateData);
+
+  updatedData.forEach((row, rowIndex) => {
+    const taxKey = type === "addition"
+      ? "addition_bid_material_tax_details"
+      : "deduction_bid_material_tax_details";
+
+    if (!row[taxKey]) row[taxKey] = [];
+
+    if (row[taxKey].length === 0) {
+      row[taxKey].push({
+        id: Date.now().toString(),
+        taxChargeType: "",
+        taxChargePerUom: "",
+        inclusive: false,
+        amount: "0",
+        resource_id: null,
+        resource_type: type === "addition" ? "TaxCharge" : "TaxCategory",
       });
-  
-      // Deduplicate taxChargeType
-      const dedupe = (arr) => {
-        const seen = new Set();
-        return arr.filter((item) => {
-          if (seen.has(item.taxChargeType)) return false;
-          seen.add(item.taxChargeType);
-          return true;
-        });
-      };
-  
-      row[taxDetailsKey] = dedupe(row[taxDetailsKey]);
-  
-      // ✅ Update netCost for the current row immediately after changes
-      row.netCost = calculateNetCost(rowIndex, updatedTaxRateData);
+    }
+
+    row[taxKey].forEach((charge) => {
+      if (field === "taxChargeType") {
+        charge.taxChargeType = value;
+
+        const optionsList = type === "addition" ? taxOptions : deductionTaxOptions;
+        const selected = optionsList.find((opt) => opt.value === value);
+
+        charge.resource_id = selected ? selected.id : null;
+        charge.resource_type = selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
+      }
+
+      if (field === "taxChargePerUom") {
+        charge.taxChargePerUom = value;
+        if (!charge.inclusive && row.afterDiscountValue) {
+          const amount = calculateTaxAmount(value, row.afterDiscountValue, charge.inclusive);
+          charge.amount = amount.toFixed(2);
+        }
+      }
+
+      if (field === "inclusive") {
+        charge.inclusive = value;
+      }
     });
-  
-    console.log(
-      "updatedTaxRateData:",
-      JSON.stringify(updatedTaxRateData, null, 2)
-    );
-  
-    setTaxRateData(updatedTaxRateData);
-    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-  };
+
+    row[taxKey] = deduplicateTaxCharges(row[taxKey]);
+    row.netCost = calculateNetCost(rowIndex, updatedData);
+  });
+
+  console.log("Updated Tax Data (All):", JSON.stringify(updatedData, null, 2));
+
+  setParentTaxRateData(updatedData);
+  setTaxRateData(updatedData);
+  originalTaxRateDataRef.current = structuredClone(updatedData);
+};
+
+
+// ✏️ Single Row + Charge Update
+const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
+  if (fromAllUpdateRef.current) {
+    // 🛑 Skip if last update was from bulk
+    fromAllUpdateRef.current = false;
+    return;
+  }
+
+  const updatedData = structuredClone(taxRateData);
+  const originalData = structuredClone(originalTaxRateDataRef.current);
+  const targetRow = updatedData[rowIndex];
+  const originalRow = originalData[rowIndex];
+  if (!targetRow || !originalRow) return;
+
+  const taxKey = type === "addition"
+    ? "addition_bid_material_tax_details"
+    : "deduction_bid_material_tax_details";
+
+  const taxCharges = [...targetRow[taxKey]];
+  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+  if (chargeIndex === -1) return;
+
+  const charge = { ...taxCharges[chargeIndex] };
+
+  if (field === "amount") {
+    charge.amount = value;
+    if (!charge.inclusive && targetRow.afterDiscountValue) {
+      const perUOM = (
+        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+        100
+      ).toFixed(2);
+      charge.taxChargePerUom = perUOM;
+    }
+  } else {
+    charge[field] = value;
+  }
+
+  if (!charge.inclusive && field === "taxChargePerUom") {
+    const taxAmount = calculateTaxAmount(charge.taxChargePerUom, targetRow.afterDiscountValue, charge.inclusive);
+    charge.amount = taxAmount.toFixed(2);
+  }
+
+  taxCharges[chargeIndex] = charge;
+  targetRow[taxKey] = taxCharges;
+  updatedData[rowIndex] = targetRow;
+
+  const recalculated = updatedData.map((row, idx) => ({
+    ...row,
+    netCost: calculateNetCost(idx, updatedData),
+  }));
+
+  console.log("Updated Tax Data (Single):", JSON.stringify(updatedData, null, 2));
+
+  setTaxRateData(recalculated);
+  originalTaxRateDataRef.current = structuredClone(recalculated);
+};
+
+
   
 
   // Update the modal tax inputs to use new handler for "Apply All"
@@ -2241,6 +2290,7 @@ export default function VendorDetails() {
 
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
+      
     } else {
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
@@ -2257,82 +2307,7 @@ export default function VendorDetails() {
   };
 
   // Function to add a new addition tax charge row
-  const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
-    // Clone the tax rate data to prevent any side effects
-    const updatedTaxRateData = structuredClone(taxRateData);
-    const originalDataClone = structuredClone(originalTaxRateDataRef.current);
 
-    // Get the target row and original row for comparison
-    const targetRow = updatedTaxRateData[rowIndex];
-    const originalRow = originalDataClone[rowIndex];
-    if (!targetRow || !originalRow) return;
-
-    // Determine if this is an addition or deduction
-    const isAddition = type === "addition";
-    const taxDetailsKey = isAddition
-      ? "addition_bid_material_tax_details"
-      : "deduction_bid_material_tax_details";
-
-    // Find the specific charge to update within the row
-    const taxCharges = [...targetRow[taxDetailsKey]];
-    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-    if (chargeIndex === -1) return;
-
-    const charge = { ...taxCharges[chargeIndex] };
-
-    // Update the field based on the input
-    if (field === "amount") {
-      charge.amount = value;
-
-      // Perform tax charge per UOM calculation if applicable
-      const numericAmount = parseFloat(value);
-      if (
-        !charge.inclusive &&
-        targetRow.afterDiscountValue &&
-        !isNaN(numericAmount)
-      ) {
-        const newPerUOM = (
-          (numericAmount / parseFloat(targetRow.afterDiscountValue)) *
-          100
-        ).toFixed(2);
-        charge.taxChargePerUom = newPerUOM;
-      }
-    } else {
-      charge[field] = value;
-    }
-
-    // Recalculate amount if perUOM is changed and not inclusive
-    if (!charge.inclusive && field === "taxChargePerUom") {
-      const taxAmount = calculateTaxAmount(
-        charge.taxChargePerUom,
-        targetRow.afterDiscountValue,
-        charge.inclusive
-      );
-      charge.amount = taxAmount.toFixed(2); // Optional: format
-    }
-
-    // Update the tax charge in the target row
-    taxCharges[chargeIndex] = charge;
-    targetRow[taxDetailsKey] = taxCharges;
-    updatedTaxRateData[rowIndex] = targetRow;
-
-    // Directly update the state without calling `handleAllTaxChargeChange`
-    const recalculated = updatedTaxRateData.map((row, idx) => ({
-      ...row,
-      netCost: calculateNetCost(idx, updatedTaxRateData),
-    }));
-
-    console.log(
-      "Updated Tax Data:",
-      JSON.stringify(updatedTaxRateData, null, 2)
-    );
-
-    // Set the updated state
-    setTaxRateData(recalculated);
-
-    // Update the original data reference for consistency
-    originalTaxRateDataRef.current = structuredClone(recalculated);
-  };
 
   const addAdditionTaxCharge = (rowIndex) => {
     const newItem = {
@@ -2348,6 +2323,8 @@ export default function VendorDetails() {
       newItem
     );
     setTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
+
   };
 
   const addDeductionTaxCharge = (rowIndex) => {
@@ -2364,6 +2341,7 @@ export default function VendorDetails() {
       newItem
     );
     setTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
   };
 
   // Function to remove a tax charge item
@@ -2381,6 +2359,7 @@ export default function VendorDetails() {
         );
     }
     setTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
   };
 
   // console.log("taxRateData :------", taxRateData);
@@ -5530,7 +5509,7 @@ export default function VendorDetails() {
                       </td>
                     </tr>
 
-                    {taxRateData[tableId]?.addition_bid_material_tax_details
+                    {parentTaxRateData[tableId]?.addition_bid_material_tax_details
                       .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
@@ -5638,7 +5617,7 @@ export default function VendorDetails() {
                       </td>
                     </tr>
 
-                    {taxRateData[tableId]?.deduction_bid_material_tax_details
+                    {parentTaxRateData[tableId]?.deduction_bid_material_tax_details
                       .slice(0, 1)
                       .map((item) => (
                         <tr key={item.id}>
