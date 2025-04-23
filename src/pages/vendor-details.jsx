@@ -2432,10 +2432,7 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
   };
 ;
   const handleSaveTaxChanges = () => {
-    const updatedData = [...data]; // Create a copy of the data array
-    const updatedNetCost = calculateNetCost(tableId);
-    updatedData[tableId].total = updatedNetCost; // Update the total for the specific row
-    setData(updatedData); // Update the state with the modified data
+   
     const updatedGrossTotal = calculateGrossTotal();
     // setTaxRateData((prevState) => ({
     //   ...prevState,
@@ -2448,10 +2445,7 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
   };
 
   const handleSaveALlTaxChanges = () => {
-    const updatedData = [...data]; // Create a copy of the data array
-    const updatedNetCost = calculateNetCost(tableId);
-    updatedData[tableId].total = updatedNetCost; // Update the total for the specific row
-    setData(updatedData); // Update the state with the modified data
+   
     const updatedGrossTotal = calculateGrossTotal();
     // setTaxRateData((prevState) => ({
     //   ...prevState,
