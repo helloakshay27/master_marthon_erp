@@ -28,12 +28,14 @@ export const SegregatedBidMaterials = (inputArray) => {
         id: material.id,
         material_id: material.material_id,
         material_name: material.material_name,
+        event_vendor_id: bid.event_vendor_id,
         vendor_id: vendor.id,
         pms_supplier_id: vendor.pms_supplier_id,
         extra: bid.extra, // Pass the extra object from the bid
         isChecked: false, // Add the isChecked property with a default value
         status: bid.status,
         original_bid_id: bid.original_bid_id,
+        serialized_last_bid : bid.serialized_last_bid
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);

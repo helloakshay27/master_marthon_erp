@@ -6,6 +6,7 @@ import Tooltip from "../../common/Tooltip/Tooltip";
 export default function Accordion({
   title,
   amount = [],
+  serializedData = [],
   isDefault,
   tableColumn,
   tableData,
@@ -206,6 +207,7 @@ export default function Accordion({
               <Table
                 columns={tableColumn}
                 data={updatedTableData}
+                serializedData={serializedData}
                 isHorizontal={true}
                 onRowSelect={undefined}
                 resetSelectedRows={undefined}

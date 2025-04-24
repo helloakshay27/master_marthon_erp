@@ -13,6 +13,7 @@ export default function Table({
   columns,
   data = [], // Ensure data is always an array
   onActionClick = null,
+  serializedData = [],
   showCheckbox = false,
   actionIcon = null,
   isSelectCheckboxes = null,
@@ -32,6 +33,7 @@ export default function Table({
 }) {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [loadedSerializedData, setLoadedSerializedData] = useState([]);
 
   useEffect(() => {
     if (isSelectCheckboxes) {
@@ -55,6 +57,38 @@ export default function Table({
       onResetComplete();
     }
   }, [resetSelectedRows, onResetComplete]);
+
+  useEffect(() => {
+    console.log("serializedData from table----", serializedData);
+
+    // Process serializedData only when it stabilizes
+    const processSerializedData = () => {
+      if (serializedData.length > 0) {
+        const flattenedData = serializedData.flatMap((entry) =>
+          Array.isArray(entry) ? entry : [entry]
+        );
+        // console.log("Flattened serializedData:", flattenedData);
+        setLoadedSerializedData(flattenedData);
+      } else {
+        // console.log("No serializedData provided, resetting loadedSerializedData.");
+        setLoadedSerializedData([]); // Reset if serializedData is empty
+      }
+    };
+
+    // Use a timeout to wait for serializedData to stabilize
+    const timer = setTimeout(() => {
+      processSerializedData();
+    }, 200); // Wait for 200ms to ensure serializedData is stable
+
+    return () => clearTimeout(timer); // Cleanup timeout on component unmount or serializedData change
+  }, [serializedData]);
+
+  if (!loadedSerializedData.length && serializedData.length > 0) {
+    // console.log("Serialized data is still loading...");
+    return <div>Loading data...</div>;
+  }
+
+  // console.log("Loaded serializedData:", loadedSerializedData);
 
   const handleRowSelection = (rowIndex) => {
     const vendor = data[rowIndex];
@@ -146,16 +180,12 @@ export default function Table({
           <colgroup>
             <col style={{ width: "300px" }} />
             {data.map((_, index) => (
-              <>
               <col key={index} style={{ width: "180px" }} />
-              <p>huijilj</p>
-              </>
             ))}
             <col style={{ width: "auto" }} />
           </colgroup>
-          <thead>
-          </thead>
-          <tbody>            
+          <thead></thead>
+          <tbody>
             {transposedData.map(
               (row, rowIndex) =>
                 ![
@@ -178,49 +208,132 @@ export default function Table({
                     >
                       {row.header}
                     </td>
-                    {row.values.map((value, valueIndex) => (
-                      <td
-                        key={valueIndex}
-                        style={{
-                          width: "180px",
-                          textAlign: "center",
-                          whiteSpace: "nowrap",
-                          backgroundColor: [
-                            "totalAmount",
-                            "grossTotal",
-                          ].includes(columns[rowIndex]?.key)
-                            ? getBackgroundColor(value)
-                            : "transparent",
-                          fontWeight: ["totalAmount", "grossTotal"].includes(
-                            columns[rowIndex]?.key
-                          )
-                            ? "bold"
-                            : "normal",
-                          textTransform: "capitalize",
-                        }}
-                        onMouseOver={(e) =>
-                          enableHoverEffect &&
-                          (e.currentTarget.style.backgroundColor = "#f0f0f0")
-                        }
-                        onMouseOut={(e) =>
-                          enableHoverEffect &&
-                          (e.currentTarget.style.backgroundColor = [
-                            "totalAmount",
-                            "grossTotal",
-                          ].includes(columns[rowIndex]?.key)
-                            ? getBackgroundColor(value)
-                            : "transparent")
-                        }
-                      >
-                        {customRender[columns[rowIndex]?.key]
-                          ? customRender[columns[rowIndex]?.key](
-                              value,
-                              valueIndex,
-                              data[valueIndex]
+                    {row.values.map((value, valueIndex) => {
+                      // Handle serializedData as an array of arrays
+                      const serializedEntries = Array.isArray(loadedSerializedData[valueIndex])
+                        ? loadedSerializedData[valueIndex]
+                        : [loadedSerializedData[valueIndex] || {}];
+
+                      const serializedCharges = serializedEntries.map((entry) => entry.charges || {});
+                      const serializedBidMaterials = serializedEntries.flatMap(
+                        (entry) => entry.bid_materials || [] // Handle all bid_materials, not just the first one
+                      );
+                      const originalValue = value === "_" ? "" : value; // Replace "_" with an empty string
+
+                      // Map tableColumn keys to serializedBidMaterials keys
+                      const keyMapping = {
+                        bestTotalAmount: "total_amount",
+                        quantityAvailable: "quantity_available",
+                        realisedDiscount: "realised_discount",
+                        landedAmount: "total_amount",
+                        totalAmount: "total_amount",
+                      };
+
+                      // Fetch serialized value based on key mapping
+                      const serializedValue = serializedEntries
+                        .map((entry, index) =>
+                          serializedCharges[index][columns[rowIndex]?.key] !== undefined
+                            ? serializedCharges[index][columns[rowIndex]?.key]
+                            : keyMapping[columns[rowIndex]?.key]
+                            ? serializedBidMaterials.find(
+                                (material) =>
+                                  material[keyMapping[columns[rowIndex]?.key]] !== undefined
+                              )?.[keyMapping[columns[rowIndex]?.key]]
+                            : serializedBidMaterials.find(
+                                (material) =>
+                                  material[columns[rowIndex]?.key] !== undefined
+                              )?.[columns[rowIndex]?.key] || ""
+                        )
+                        .filter((val) => val !== "")[0]; // Use the first non-empty value
+
+                      const adjustedSerializedValue = serializedValue || originalValue;
+
+                      // console.log(
+                      //   `Row ${rowIndex}, Column ${valueIndex}:`,
+                      //   {
+                      //     originalValue,
+                      //     serializedValue,
+                      //     adjustedSerializedValue,
+                      //   }
+                      // );
+
+                      const shouldCompare = [
+                        "freight_charge_amount",
+                        "gst_on_freight",
+                        "gst_on_handling_charge",
+                        "gst_on_other_charge",
+                        "handling_charge_amount",
+                        "other_charge_amount",
+                        "realised_freight_charge_amount",
+                        "realised_handling_charge_amount",
+                        "realised_other_charge_amount",
+                        "bestTotalAmount",
+                        "quantityAvailable",
+                        "realisedDiscount",
+                        "landedAmount",
+                        "totalAmount",
+                        "price",
+                        "discount",
+                      ].includes(columns[rowIndex]?.key);
+
+                      return (
+                        <td
+                          key={valueIndex}
+                          style={{
+                            width: "180px",
+                            textAlign: "center",
+                            whiteSpace: "nowrap",
+                            backgroundColor: [
+                              "totalAmount",
+                              "grossTotal",
+                            ].includes(columns[rowIndex]?.key)
+                              ? getBackgroundColor(value)
+                              : "transparent",
+                            fontWeight: ["totalAmount", "grossTotal"].includes(
+                              columns[rowIndex]?.key
                             )
-                          : value}
-                      </td>
-                    ))}
+                              ? "bold"
+                              : "normal",
+                            textTransform: "capitalize",
+                          }}
+                          onMouseOver={(e) =>
+                            enableHoverEffect &&
+                            (e.currentTarget.style.backgroundColor = "#f0f0f0")
+                          }
+                          onMouseOut={(e) =>
+                            enableHoverEffect &&
+                            (e.currentTarget.style.backgroundColor = [
+                              "totalAmount",
+                              "grossTotal",
+                            ].includes(columns[rowIndex]?.key)
+                              ? getBackgroundColor(value)
+                              : "transparent")
+                          }
+                        >
+                          {customRender[columns[rowIndex]?.key]
+                            ? customRender[columns[rowIndex]?.key](
+                                value,
+                                valueIndex,
+                                data[valueIndex]
+                              )
+                            : shouldCompare && adjustedSerializedValue ? (
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                  {serializedValue && (
+                                    <span style={{ textDecoration: "line-through", color: "red" }}>
+                                      {serializedValue}
+                                    </span>
+                                  )}
+                                  {serializedValue && (
+                                    <span style={{ margin: "0 5px" }}>→</span>
+                                  )}
+                                  <span>{originalValue}</span>
+                                </div>
+                              ) : (
+                                value
+                              )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 )
             )}

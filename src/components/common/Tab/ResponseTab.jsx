@@ -44,8 +44,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   });
   const [openModals, setOpenModals] = useState({});
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
-  const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(true);
+  const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(false);
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
+  const [showCounterOfferPopup, setShowCounterOfferPopup] = useState(false); // State for popup visibility
 
   const navigate = useNavigate();
 
@@ -338,7 +339,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const acceptOffer = async (bidId, revisedBidId) => {
     try {
       const response = await axios.put(
-        `${baseURL}rfq/events/${eventId}/bids/${bidId}/revised_bids/${revisedBidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         { status: "accepted" },
         {
           headers: {
@@ -384,41 +385,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
       aria-labelledby="responses-tab"
       tabIndex={0}
     >
-      {showCounterOfferDiv &&
-        materialData.bids_values?.some((bid) => bid.status === "pending") && (
-          <div className="d-flex justify-content-between align-items-center mt-3 bg-light p-3 rounded-3">
-            <div className="">
-              <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
-              <p>
-                A counter is pending on your bid. You cannot make any further
-                changes to your bid until you resolve the counter offer.
-              </p>
-            </div>
-            <div className="d-flex">
-              <button
-                className="purple-btn1"
-                onClick={() => {
-                  setShowCounterOfferDiv(false);
-                }}
-              >
-                Decline
-              </button>
-              <button
-                className="purple-btn2"
-                onClick={() => {
-                  const pendingBid = materialData.bids_values.find(
-                    (bid) => bid.status === "pending"
-                  );
-                  if (pendingBid) {
-                    acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
-                  }
-                }}
-              >
-                Accept Offer
-              </button>
-            </div>
-          </div>
-        )}
       <div className="viewBy-main">
         <div className="viewBy-main-child1">
           <div className="d-flex align-items-center mb-3">
@@ -515,15 +481,21 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
                           const bidLength = vendor?.bids?.length || 0;
+                          const hasPendingBid = vendor?.bids?.some(
+                            (bid) => bid.status === "pending"
+                          );
 
                           return (
                             <td
                               key={vendor.id}
-                              style={{ background: "#f3f3f3" }}
+                              style={{
+                                background: "#f3f3f3",
+                                position: "relative",
+                              }}
                             >
                               <div
                                 className="d-flex flex-column align-items-center justify-content-between"
-                                style={{ height: "170px" }}
+                                style={{ height: "160px" }}
                               >
                                 <div className="">
                                   {vendor.full_name}
@@ -559,7 +531,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                   </div>
                                   {activeIndex < bidLength - 1 && (
                                     <button
-                                      class="px-2 border-0"
+                                      className="px-2 border-0"
                                       style={{ fontSize: "1.5rem" }}
                                       onClick={() => handleNext(vendor.id)}
                                     >
@@ -591,7 +563,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                         const fetchedData = response.data;
                                         setBidCounterData(fetchedData);
 
-                                        // Now navigate with data as state
                                         navigate(`/counter-offer/${bidId}`, {
                                           state: {
                                             bidCounterData: fetchedData,
@@ -608,6 +579,35 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                 >
                                   Counter
                                 </button>
+                                {hasPendingBid && (
+                                  <button
+                                    className="d-block mt-2"
+                                    style={{
+                                      position: "absolute",
+                                      top: "10px",
+                                      right: "10px",
+                                      background: "none",
+                                      border: "none",
+                                    }}
+                                    onClick={() => {
+                                      setShowCounterOfferPopup(true);
+                                      setMaterialData({
+                                        material_name:
+                                          vendor?.bids?.[0]?.bid_materials?.[0]
+                                            ?.material_name,
+                                        vendor_name: vendor.full_name,
+                                        bids_values: vendor.bids,
+                                      });
+                                    }}
+                                  >
+                                    <img
+                                      src="/offer-btn.png"
+                                      alt="Offer"
+                                      width="30px"
+                                      height="30px"
+                                    />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           );
@@ -653,9 +653,28 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                     )
                   );
 
+                  console.log("materialData:---", materialData);
+
                   return (
                     <Accordion
                       key={ind}
+                      serializedData={
+                        materialData.bids_values?.some(
+                          (bid) =>
+                            bid.status === "pending" &&
+                            bid.serialized_last_bid?.event_vendor_id ===
+                              bid?.event_vendor_id
+                        )
+                          ? materialData.bids_values
+                              ?.filter(
+                                (bid) =>
+                                  bid.status === "pending" &&
+                                  bid?.serialized_last_bid?.event_vendor_id ===
+                                    bid?.event_vendor_id
+                              )
+                              ?.map((bid) => bid.serialized_last_bid)
+                          : undefined
+                      }
                       title={materialData.material_name || "_"}
                       amount={materialData.total_amounts}
                       isDefault={true}
@@ -755,13 +774,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                       ) {
                         const formattedExtra = {};
                         Object.entries(extra).forEach(([key, val]) => {
-                          // Exclude arrays
                           if (!Array.isArray(val)) {
                             formattedExtra[key] = val?.toString().trim() || "_";
                           }
                         });
 
-                        // Only return if there's still data after filtering
                         return Object.keys(formattedExtra).length > 0
                           ? [formattedExtra]
                           : [];
@@ -769,77 +786,131 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
 
                       return [];
                     }) || [];
+
                   const extractedKeys = Array.from(
                     new Set(extractedData.flatMap((obj) => Object.keys(obj)))
                   );
 
-                  return (
-                    <Accordion
-                      title="Other Informations"
-                      isDefault={true}
-                      tableColumn={extractedKeys.map((key) => ({
-                        label: key
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase()),
-                        key: key,
-                      }))}
-                      tableData={extractedData}
-                    />
-                  );
+                  // ✅ Conditionally render Accordion only if both data and keys exist
+                  if (extractedData.length > 0 && extractedKeys.length > 0) {
+                    return (
+                      <Accordion
+                        title="Other Informations"
+                        isDefault={true}
+                        tableColumn={extractedKeys.map((key) => ({
+                          label: key
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase()),
+                          key: key,
+                        }))}
+                        tableData={extractedData}
+                      />
+                    );
+                  }
+
+                  return null;
                 })()}
 
                 {(() => {
-                  // Extract charge data
-                  const extractedChargeData =
-                    eventVendors?.flatMap((vendor) => {
-                      const charges = vendor?.bids?.[0]?.charges;
-
-                      if (
-                        charges &&
-                        Object.values(charges).some(
-                          (val) =>
-                            (typeof val === "string" && val.trim() !== "") ||
-                            (typeof val === "number" && val !== null) || // Include numbers
-                            (typeof val === "object" &&
-                              val !== null &&
-                              !Array.isArray(val))
+                  const serializedData =
+                    segeregatedMaterialData?.flatMap((material) =>
+                      material?.bids_values
+                        ?.filter(
+                          (bid) =>
+                            bid?.status == "pending" &&
+                            bid?.serialized_last_bid?.event_vendor_id ===
+                              bid?.event_vendor_id
                         )
-                      ) {
-                        const formattedCharges = {};
+                        ?.map((bid) => bid.serialized_last_bid)
+                    ) || [];
 
-                        Object.entries(charges).forEach(([key, val]) => {
-                          if (!Array.isArray(val)) {
-                            formattedCharges[key] =
-                              val?.toString().trim() || "_";
-                          }
-                        });
+                  // Step 2: Extract charge data for table
+                  const extractedChargeData =
+                    eventVendors?.flatMap((vendor, vendorIndex) => {
+                      const charges = vendor?.bids?.[0]?.charges || {};
+                      const serializedCharges =
+                        serializedData[vendorIndex]?.charges || {};
 
-                        return Object.keys(formattedCharges).length > 0
-                          ? [formattedCharges]
-                          : [];
-                      }
-                      return [];
+                      const hasValidCharges = Object.values(charges).some(
+                        (val) =>
+                          (typeof val === "string" && val.trim() !== "") ||
+                          (typeof val === "number" &&
+                            val !== null &&
+                            val !== undefined) ||
+                          (typeof val === "object" &&
+                            val !== null &&
+                            !Array.isArray(val))
+                      );
+
+                      if (!hasValidCharges) return [];
+
+                      const formattedCharges = {};
+                      Object.entries(charges).forEach(([key, val]) => {
+                        if (!Array.isArray(val)) {
+                          const serializedValue = serializedCharges[key];
+                          formattedCharges[key] = serializedValue
+                            ? {
+                                original: val?.toString().trim() || "_",
+                                serialized:
+                                  serializedValue?.toString().trim() || "_",
+                              }
+                            : val?.toString().trim() || "_";
+                        }
+                      });
+
+                      return Object.keys(formattedCharges).length > 0
+                        ? [formattedCharges]
+                        : [];
                     }) || [];
 
-                  // Extract unique keys for table columns
+                  // Step 3: Extract unique keys for table columns
                   const extractedChargeKeys = Array.from(
                     new Set(
                       extractedChargeData.flatMap((obj) => Object.keys(obj))
                     )
                   );
 
-                  // Render Accordion
+                  // Step 4: Render Accordion with table data
                   return (
                     <Accordion
                       title="Other Charges"
                       isDefault={true}
+                      // serializedData={serializedData} // Optional: used elsewhere?
                       tableColumn={extractedChargeKeys.map((key) => ({
                         label: key
                           .replace(/_/g, " ")
                           .replace(/\b\w/g, (c) => c.toUpperCase()),
                         key: key,
                       }))}
-                      tableData={extractedChargeData}
+                      tableData={extractedChargeData.map((charge) =>
+                        Object.fromEntries(
+                          Object.entries(charge).map(([key, value]) => [
+                            key,
+                            typeof value === "object" && value.serialized ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    textDecoration: "line-through",
+                                    color: "red",
+                                  }}
+                                >
+                                  {value.serialized}
+                                </span>
+                                <span style={{ margin: "0 5px" }}>→</span>
+                                <span>{value.original}</span>
+                              </div>
+                            ) : (
+                              value
+                            ),
+                          ])
+                        )
+                      )}
                     />
                   );
                 })()}
@@ -1206,7 +1277,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         size="md"
         modalType={true}
       >
-        {console.log("reminderData :---", reminderData)}
         <div>
           {reminderData?.event_vendors?.map((item, index) => (
             <div key={index}>
@@ -1216,13 +1286,66 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   className={item.clicked ? "purple-btn2" : "purple-btn1"} // Toggle class
                   onClick={() => handleSendReminder(item.id, index)} // Call API on click
                 >
-                  {item.clicked ? "Reminder Sent" : "Send Reminder"}{" "}
-                  {/* Update text */}
+                  {item.clicked ? "Reminder Sent" : "Send Reminder"}
                 </button>
               </div>
               {index < reminderData.event_vendors.length - 1 && <hr />}
             </div>
           ))}
+        </div>
+      </DynamicModalBox>
+
+      <DynamicModalBox
+        show={showCounterOfferPopup}
+        onHide={() => setShowCounterOfferPopup(false)} // Close popup
+        size="md"
+        title="Counter Offer Details"
+        footerButtons={[
+          {
+            label: "Decline",
+            onClick: () => {
+              setShowCounterOfferPopup(false);
+            },
+            props: { className: "purple-btn1" },
+          },
+          {
+            label: "Accept Offer",
+            onClick: () => {
+              const pendingBid = materialData?.bids_values?.find(
+                (bid) => bid.status === "pending"
+              );
+
+              // console.log("Pending Bid:", pendingBid);
+
+              if (pendingBid && pendingBid.bid_id) {
+                // console.log("Sending bid_id to API:", pendingBid.bid_id);
+                acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
+              } else {
+                if (!pendingBid) {
+                  showToast("No pending bid found", "warning");
+                } else {
+                  console.error(
+                    "Found pending bid, but bid_id is missing:",
+                    pendingBid
+                  );
+                  showToast(
+                    "Error: Bid ID is undefined. Cannot proceed.",
+                    "error"
+                  );
+                }
+              }
+            },
+            props: { className: "purple-btn2" },
+          },
+        ]}
+        centered={true}
+      >
+        <div>
+          <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+          <p>
+            A counter is pending on your bid. You cannot make any further
+            changes to your bid until you resolve the counter offer.
+          </p>
         </div>
       </DynamicModalBox>
       <ToastContainer />
