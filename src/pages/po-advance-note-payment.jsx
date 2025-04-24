@@ -20,37 +20,6 @@ const PoAdvanceNotePayment = () => {
   const [error, setError] = useState(null);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
-  const [filterParams, setFilterParams] = useState({
-    startDate: "",
-    endDate: "",
-    poType: "",
-    poNumber: "",
-    selectedPOIds: [],
-    projectId: "",
-    siteId: "",
-  });
-  const [pagination, setPagination] = useState({
-    current_page: 1,
-    next_page: 2,
-    prev_page: null,
-    total_pages: 1,
-    total_count: 0,
-    per_page: 5,
-  });
-  const [pageSize, setPageSize] = useState(5);
-  const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [sites, setSites] = useState([]);
-  const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [companies, setCompanies] = useState([]);
-  const [selectedPOs, setSelectedPOs] = useState([]);
-  const [poTypes, setPoTypes] = useState([
-    { value: "", label: "All" },
-    { value: "Domestic", label: "Domestic" },
-    { value: "ROPO", label: "ROPO" },
-    { value: "Import", label: "Import" },
-  ]);
 
   // add row & delete row
   const [tableRows, setTableRows] = useState([
@@ -71,7 +40,80 @@ const PoAdvanceNotePayment = () => {
       tableRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
     );
   };
+
+  const [rows, setRows] = useState([
+    {
+      id: 1,
+      type: "Tax Type 1",
+      charges: "200",
+      inclusive: false,
+      amount: 50.0,
+    },
+    {
+      id: 2,
+      type: "Tax Type 2",
+      charges: "200",
+      inclusive: true,
+      amount: 75.0,
+    },
+    {
+      id: 3,
+      type: "Tax Type 3",
+      charges: "300",
+      inclusive: false,
+      amount: 25.0,
+    },
+  ]);
+
+  // Toggle visibility of rows
+  const toggleRows = () => {
+    setShowRows((prev) => !prev);
+  };
+
+  // Delete a specific row
+  const deleteRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+
+  // Calculate Sub Total (Addition)
+  const calculateSubTotal = () => {
+    return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
+  };
+
+  const [pageSize, setPageSize] = useState(5);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [sites, setSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [selectedPOs, setSelectedPOs] = useState([]);
+  const [poTypes, setPoTypes] = useState([
+    { value: "", label: "All" },
+    { value: "Domestic", label: "Domestic" },
+    { value: "ROPO", label: "ROPO" },
+    { value: "Import", label: "Import" },
+  ]);
+
   // add row & delete row
+
+  const [filterParams, setFilterParams] = useState({
+    startDate: "",
+    endDate: "",
+    poType: "",
+    poNumber: "",
+    selectedPOIds: [],
+    projectId: "",
+    siteId: "",
+  });
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    next_page: 2,
+    prev_page: null,
+    total_pages: 1,
+    total_count: 0,
+    per_page: 5,
+  });
 
   const openCashModal = () => setmakeCashModal(true);
   const closeCashModal = () => setmakeCashModal(false);
@@ -305,44 +347,6 @@ const PoAdvanceNotePayment = () => {
   };
   // tax table functionality
 
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      type: "Tax Type 1",
-      charges: "200",
-      inclusive: false,
-      amount: 50.0,
-    },
-    {
-      id: 2,
-      type: "Tax Type 2",
-      charges: "200",
-      inclusive: true,
-      amount: 75.0,
-    },
-    {
-      id: 3,
-      type: "Tax Type 3",
-      charges: "300",
-      inclusive: false,
-      amount: 25.0,
-    },
-  ]);
-
-  // Toggle visibility of rows
-  const toggleRows = () => {
-    setShowRows((prev) => !prev);
-  };
-
-  // Delete a specific row
-  const deleteRow = (id) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  };
-
-  // Calculate Sub Total (Addition)
-  const calculateSubTotal = () => {
-    return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
-  };
   // tax table functionality
 
   const handleProjectChange = (value) => {

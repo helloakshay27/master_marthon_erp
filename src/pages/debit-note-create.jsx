@@ -1,19 +1,94 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
-import { Modal} from "react-bootstrap";
-import {
-  Table
-} from "../components";
-import { auditLogColumns, auditLogData } from "../constant/data";
 
+import { Table } from "../components";
+import { auditLogColumns, auditLogData } from "../constant/data";
+import { useState, useEffect, useRef } from "react";
+import { Modal, Button } from "react-bootstrap";
+
+import SingleSelector from "../components/base/Select/SingleSelector";
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
 const DebitNoteCreate = () => {
+  // const [showRows, setShowRows] = useState(false);
+  // const [attachOneModal, setattachOneModal] = useState(false);
+  // const [attachTwoModal, setattachTwoModal] = useState(false);
+  // const [attachThreeModal, setattachThreeModal] = useState(false);
+  // const [taxesRowDetails, settaxesRowDetails] = useState(false);
+
+  // const taxesRowDropdown = () => {
+  //   settaxesRowDetails(!taxesRowDetails);
+  // };
+
+  // const openAttachOneModal = () => setattachOneModal(true);
+  // const closeAttachOneModal = () => setattachOneModal(false);
+
+  // const openAttachTwoModal = () => setattachTwoModal(true);
+  // const closeAttachTwoModal = () => setattachTwoModal(false);
+
+  // const openAttachThreeModal = () => setattachThreeModal(true);
+  // const closeAttachThreeModal = () => setattachThreeModal(false);
+
+  // // tax table functionality
+
+  // const [rows, setRows] = useState([
+  //   {
+  //     id: 1,
+  //     type: "TDS 1",
+  //     charges: "100",
+  //     inclusive: false,
+  //     amount: 50.0,
+  //   },
+  // ]);
+
+  // // Toggle visibility of rows
+  // const toggleRows = () => {
+  //   setShowRows((prev) => !prev);
+  // };
+
+  // // Delete a specific row
+  // const deleteRow = (id) => {
+  //   setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  // };
+
+  // // Calculate Sub Total (Addition)
+  // const calculateSubTotal = () => {
+  //   return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
+  // };
+  // // tax table functionality
+
+  //   // Function to handle tab change
+  //   const handleTabChange = (tabId) => {
+  //     setActiveTab(tabId);
+  //   };
+
+  //   const [currentStep, setCurrentStep] = useState(1);
+  //   const totalSteps = 4;
+
+  //   // Function to handle the next step
+  //   const handleNext = () => {
+  //     if (currentStep < totalSteps) {
+  //       setCurrentStep(currentStep + 1);
+  //     }
+  //   };
+
+  //   // Function to handle the previous step
+  //   const handlePrev = () => {
+  //     if (currentStep > 1) {
+  //       setCurrentStep(currentStep - 1);
+  //     }
+  //   };
+
   const [showRows, setShowRows] = useState(false);
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
   const [taxesRowDetails, settaxesRowDetails] = useState(false);
+  const [selectPOModal, setselectPOModal] = useState(false);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [selectedPO, setSelectedPO] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const taxesRowDropdown = () => {
     settaxesRowDetails(!taxesRowDetails);
@@ -21,13 +96,13 @@ const DebitNoteCreate = () => {
 
   const openAttachOneModal = () => setattachOneModal(true);
   const closeAttachOneModal = () => setattachOneModal(false);
-  
+
   const openAttachTwoModal = () => setattachTwoModal(true);
   const closeAttachTwoModal = () => setattachTwoModal(false);
-  
+
   const openAttachThreeModal = () => setattachThreeModal(true);
   const closeAttachThreeModal = () => setattachThreeModal(false);
-  
+
   // tax table functionality
 
   const [rows, setRows] = useState([
@@ -56,32 +131,453 @@ const DebitNoteCreate = () => {
   };
   // tax table functionality
 
-    // Function to handle tab change
-    const handleTabChange = (tabId) => {
-      setActiveTab(tabId);
-    };
-  
-    const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 4;
-  
-    // Function to handle the next step
-    const handleNext = () => {
-      if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1);
+  // Function to handle tab change
+  // const handleTabChange = (tabId) => {
+  //   setActiveTab(tabId);
+  // };
+
+  // const [currentStep, setCurrentStep] = useState(1);
+  // const totalSteps = 4;
+
+  // // Function to handle the next step
+  // const handleNext = () => {
+  //   if (currentStep < totalSteps) {
+  //     setCurrentStep(currentStep + 1);
+  //   }
+  // };
+
+  // // Function to handle the previous step
+  // const handlePrev = () => {
+  //   if (currentStep > 1) {
+  //     setCurrentStep(currentStep - 1);
+  //   }
+  // };
+  const [pageSize, setPageSize] = useState(5);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [sites, setSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [selectedPOs, setSelectedPOs] = useState([]);
+  const [poTypes, setPoTypes] = useState([
+    { value: "", label: "All" },
+    { value: "Domestic", label: "Domestic" },
+    { value: "ROPO", label: "ROPO" },
+    { value: "Import", label: "Import" },
+  ]);
+
+  // add row & delete row
+
+  const [filterParams, setFilterParams] = useState({
+    startDate: "",
+    endDate: "",
+    poType: "",
+    poNumber: "",
+    selectedPOIds: [],
+    projectId: "",
+    siteId: "",
+  });
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    next_page: 2,
+    prev_page: null,
+    total_pages: 1,
+    total_count: 0,
+    per_page: 5,
+  });
+
+  const openCashModal = () => setmakeCashModal(true);
+  const closeCashModal = () => setmakeCashModal(false);
+
+  const openBankModal = () => setmakeBankModal(true);
+  const closeBankModal = () => setmakeBankModal(false);
+
+  const openAdjustModal = () => setmakeAdjustModal(true);
+  const closeAdjustModal = () => setmakeAdjustModal(false);
+
+  const openSelectPOModal = () => {
+    setselectPOModal(true);
+  };
+
+  const closeSelectPOModal = () => {
+    setselectPOModal(false);
+  };
+
+  const handlePOSelect = (po) => {
+    setSelectedPO(po);
+    setFilterParams((prev) => ({
+      ...prev,
+      selectedPOIds: [po.id],
+    }));
+
+    // Update form fields with selected PO details
+    if (po) {
+      // Update PO Date
+      const poDateInput = document.querySelector('input[name="po_date"]');
+      if (poDateInput) {
+        poDateInput.value = po.po_date;
       }
-    };
-  
-    // Function to handle the previous step
-    const handlePrev = () => {
-      if (currentStep > 1) {
-        setCurrentStep(currentStep - 1);
+
+      // Update PO Value
+      const poValueInput = document.querySelector('input[name="po_value"]');
+      if (poValueInput) {
+        poValueInput.value = po.total_value;
       }
+
+      // Update GSTIN Number
+      const gstinInput = document.querySelector('input[name="gstin_number"]');
+      if (gstinInput) {
+        gstinInput.value = po.gstin || "";
+      }
+
+      // Update PAN Number
+      const panInput = document.querySelector('input[name="pan_number"]');
+      if (panInput) {
+        panInput.value = po.pan || "";
+      }
+    }
+
+    closeSelectPOModal();
+  };
+
+  const handleCheckboxChange = (poId) => {
+    setSelectedPOs((prev) => {
+      if (prev.includes(poId)) {
+        return prev.filter((id) => id !== poId);
+      } else {
+        return [...prev, poId];
+      }
+    });
+  };
+
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      setSelectedPOs(purchaseOrders.map((po) => po.id));
+    } else {
+      setSelectedPOs([]);
+    }
+  };
+
+  // Fetch initial PO data when component mounts
+  useEffect(() => {
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  }, []);
+
+  const fetchPurchaseOrders = async (
+    companyId = null,
+    projectId = null,
+    siteId = null,
+    filters = {
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+      supplierId: "",
+      page: 1,
+      pageSize: 5,
+    }
+  ) => {
+    try {
+      setLoading(true);
+      let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+      // Add filters only if they are provided
+      if (companyId) url += `&q[company_id_eq]=${companyId}`;
+      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
+      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+      if (filters?.supplierId)
+        url += `&q[supplier_id_eq]=${filters.supplierId}`;
+      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
+      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
+      if (filters?.selectedPOIds?.length > 0) {
+        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+      }
+
+      // Always add pagination parameters
+      url += `&page=${filters.page || 1}`;
+      url += `&per_page=${filters.pageSize || 5}`;
+
+      const response = await axios.get(url);
+      setPurchaseOrders(response.data.purchase_orders);
+
+      if (response.data.pagination) {
+        setPagination({
+          current_page: parseInt(response.data.pagination.current_page) || 1,
+          next_page: parseInt(response.data.pagination.next_page) || null,
+          prev_page: parseInt(response.data.pagination.prev_page) || null,
+          total_pages: parseInt(response.data.pagination.total_pages) || 1,
+          total_count: parseInt(response.data.pagination.total_count) || 0,
+          per_page: parseInt(response.data.pagination.per_page) || 5,
+        });
+      }
+    } catch (err) {
+      setError("Failed to fetch purchase orders");
+      console.error("Error fetching purchase orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: 1,
+        pageSize: pageSize,
+      }
+    );
+  };
+
+  const handleReset = () => {
+    setFilterParams({
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+    });
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects([]);
+    setSites([]);
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(
+      pagination.total_pages,
+      pagination.current_page + 2
+    );
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: page,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: page,
+        pageSize: pageSize,
+      }
+    );
+  };
+
+  // Function to handle tab change
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+
+  // Function to handle the next step
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  // Function to handle the previous step
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+  // tax table functionality
+
+  // tax table functionality
+
+  const handleProjectChange = (value) => {
+    setSelectedProject(value);
+    setSelectedSite(null);
+    setSites(
+      value?.sites?.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
+  };
+
+  const handleSiteChange = (value) => {
+    setSelectedSite(value);
+  };
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects(
+      selectedOption?.projects?.map((project) => ({
+        value: project.id,
+        label: project.name,
+        sites: project.pms_sites,
+      })) || []
+    );
+    setSites([]);
+  };
+
+  const fetchProjects = async (companyId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}`
+      );
+      setProjects(
+        response.data.projects.map((project) => ({
+          value: project.id,
+          label: project.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  const fetchSites = async (projectId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
+      );
+      setSites(
+        response.data.sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProject?.value) {
+      fetchSites(selectedProject.value);
+    }
+  }, [selectedProject]);
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await axios.get(
+        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      const formattedCompanies = response.data.companies.map((company) => ({
+        value: company.id,
+        label: company.company_name,
+        projects: company.projects,
+      }));
+      setCompanies(formattedCompanies);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCompany?.value) {
+      fetchProjects(selectedCompany.value);
+    }
+  }, [selectedCompany]);
+
+  const getShowingEntriesText = () => {
+    if (!pagination.total_count) return "No entries found";
+
+    const start = (pagination.current_page - 1) * pagination.per_page + 1;
+    const end = Math.min(
+      start + pagination.per_page - 1,
+      pagination.total_count
+    );
+
+    return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
+  };
+
+  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
+  const documentRowsRef = useRef(documentRows);
+
+  const handleAddDocumentRow = () => {
+    const newRow = { srNo: documentRows.length + 1, upload: null };
+    documentRowsRef.current.push(newRow);
+    setDocumentRows([...documentRowsRef.current]);
+  };
+
+  const handleRemoveDocumentRow = (index) => {
+    if (documentRows.length > 1) {
+      const updatedRows = documentRows.filter((_, i) => i !== index);
+
+      // Reset row numbers properly
+      updatedRows.forEach((row, i) => {
+        row.srNo = i + 1;
+      });
+
+      documentRowsRef.current = updatedRows;
+      setDocumentRows([...updatedRows]);
+    }
+  };
+
+  const handleFileChange = (index, file) => {
+    if (!file) return; // Ensure a file is selected
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1];
+
+      documentRowsRef.current[index].upload = {
+        filename: file.name,
+        content: base64String,
+        content_type: file.type,
+      };
+
+      setDocumentRows([...documentRowsRef.current]);
     };
+
+    reader.readAsDataURL(file);
+
+    // Reset the input field to allow re-selecting the same file
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = ""; // Clear input value
+    }
+  };
 
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section container-fluid ms-2">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Debit Note </a>
           <h5 className="mt-3">Debit Note </h5>
           <div className="row my-4 align-items-center">
@@ -169,18 +665,12 @@ const DebitNoteCreate = () => {
                                 <label>
                                   Company <span>*</span>
                                 </label>
-                                <select
-                                  className="form-control form-select"
-                                  style={{ width: "100%" }}
-                                >
-                                  <option selected="selected">Alabama</option>
-                                  <option>Alaska</option>
-                                  <option>California</option>
-                                  <option>Delaware</option>
-                                  <option>Tennessee</option>
-                                  <option>Texas</option>
-                                  <option>Washington</option>
-                                </select>
+                                <SingleSelector
+                                  options={companies}
+                                  value={selectedCompany}
+                                  onChange={handleCompanyChange}
+                                  placeholder="Select Company"
+                                />
                               </div>
                             </div>
                             <div className="col-md-4  ">
@@ -188,18 +678,13 @@ const DebitNoteCreate = () => {
                                 <label>
                                   Project <span>*</span>
                                 </label>
-                                <select
-                                  className="form-control form-select"
-                                  style={{ width: "100%" }}
-                                >
-                                  <option selected="selected">Alabama</option>
-                                  <option>Alaska</option>
-                                  <option>California</option>
-                                  <option>Delaware</option>
-                                  <option>Tennessee</option>
-                                  <option>Texas</option>
-                                  <option>Washington</option>
-                                </select>
+                                <SingleSelector
+                                  options={projects}
+                                  value={selectedProject}
+                                  onChange={handleProjectChange}
+                                  placeholder="Select Project"
+                                  isDisabled={!selectedCompany}
+                                />
                               </div>
                             </div>
                             <div className="col-md-4 ">
@@ -207,18 +692,13 @@ const DebitNoteCreate = () => {
                                 <label>
                                   Sub-Project <span>*</span>
                                 </label>
-                                <select
-                                  className="form-control form-select"
-                                  style={{ width: "100%" }}
-                                >
-                                  <option selected="selected">Alabama</option>
-                                  <option>Alaska</option>
-                                  <option>California</option>
-                                  <option>Delaware</option>
-                                  <option>Tennessee</option>
-                                  <option>Texas</option>
-                                  <option>Washington</option>
-                                </select>
+                                <SingleSelector
+                                  options={sites}
+                                  value={selectedSite}
+                                  onChange={handleSiteChange}
+                                  placeholder="Select Project"
+                                  isDisabled={!selectedCompany}
+                                />
                               </div>
                             </div>
                             <div className="col-md-4 mt-2">
@@ -283,7 +763,10 @@ const DebitNoteCreate = () => {
                               data-bs-toggle="modal"
                               data-bs-target="#selectModal"
                             >
-                              <p className="mt-2 text-decoration-underline">
+                              <p
+                                className="mt-2 text-decoration-underline"
+                                onClick={openSelectPOModal}
+                              >
                                 Select
                               </p>
                             </div>
@@ -503,65 +986,78 @@ const DebitNoteCreate = () => {
                               </tbody>
                             </table>
                           </div>
-                          <div className="d-flex justify-content-between mt-3 me-2">
-                            <h5 className=" ">Document Attachment</h5>
-                            <div
-                              className="card-tools d-flex"
-                              data-bs-toggle="modal"
-                              data-bs-target="#exampleModal"
+                          <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                            <h5 className="mt-3">
+                              Document Attachments{" "}
+                              <span style={{ color: "red", fontSize: "16px" }}>
+                                *
+                              </span>
+                            </h5>
+                            <button
+                              className="purple-btn2 mt-3"
+                              onClick={handleAddDocumentRow}
                             >
-                              <button
-                                className="purple-btn2 rounded-3"
-                                data-bs-toggle="modal"
-                                data-bs-target="#viewDocumentModal"
-                                fdprocessedid="xn3e6n"
-                                onClick={openAttachOneModal}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={20}
-                                  height={20}
-                                  fill="currentColor"
-                                  className="bi bi-plus"
-                                  viewBox="0 0 16 16"
-                                >
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                </svg>
-                                <span>Attach</span>
-                              </button>
-                            </div>
+                              <span className="material-symbols-outlined align-text-top me-2">
+                                add
+                              </span>
+                              <span>Add</span>
+                            </button>
                           </div>
-                          <div className="tbl-container mx-3 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th className="text-start">Sr. No.</th>
-                                  <th className="text-start">Document Name</th>
-                                  <th className="text-start">File Name</th>
-                                  <th className="text-start">File Type</th>
-                                  <th className="text-start">Upload Date</th>
-                                  <th className="text-start">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start">PO.pdf</td>
-                                  <td className="text-start">04-03-2024</td>
-                                  <td
-                                    className="text-decoration-underline cursor-pointer"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#RevisionModal"
-                                    onClick={openAttachTwoModal}
+
+                          <Table
+                            columns={[
+                              { label: "Sr No", key: "srNo" },
+                              { label: "Upload File", key: "upload" },
+                              { label: "Action", key: "action" },
+                              { label: "view", key: "view" },
+                            ]}
+                            data={documentRows.map((row, index) => ({
+                              srNo: index + 1,
+                              upload: (
+                                <td style={{ border: "none" }}>
+                                  {/* Hidden file input */}
+                                  <input
+                                    type="file"
+                                    id={`file-input-${index}`}
+                                    key={row?.srNo}
+                                    style={{ display: "none" }} // Hide input
+                                    onChange={(e) =>
+                                      handleFileChange(index, e.target.files[0])
+                                    }
+                                    accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                                  />
+
+                                  <label
+                                    htmlFor={`file-input-${index}`}
+                                    style={{
+                                      display: "inline-block",
+                                      width: "300px",
+                                      padding: "10px",
+                                      border: "1px solid #ccc",
+                                      borderRadius: "4px",
+                                      cursor: "pointer",
+                                      color: "#555",
+                                      backgroundColor: "#f5f5f5",
+                                      textAlign: "center",
+                                    }}
                                   >
-                                    View
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                                    {row.upload?.filename
+                                      ? row.upload.filename
+                                      : "Choose File"}
+                                  </label>
+                                </td>
+                              ),
+                              action: (
+                                <button
+                                  className="btn btn-danger"
+                                  onClick={() => handleRemoveDocumentRow(index)}
+                                  disabled={documentRows.length === 1}
+                                >
+                                  Remove
+                                </button>
+                              ),
+                            }))}
+                          />
                         </div>
                       </div>
                     </div>
@@ -627,8 +1123,8 @@ const DebitNoteCreate = () => {
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
-                                                              <Table columns={auditLogColumns} data={auditLogData} />
-                                                            </div>
+                      <Table columns={auditLogColumns} data={auditLogData} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1145,6 +1641,309 @@ const DebitNoteCreate = () => {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        centered
+        size="xl"
+        show={selectPOModal}
+        onHide={closeSelectPOModal}
+        backdrop="static"
+        keyboard={false}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Select PO</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Company</label>
+                <SingleSelector
+                  options={companies}
+                  value={selectedCompany}
+                  onChange={handleCompanyChange}
+                  placeholder="Select Company"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Project</label>
+                <SingleSelector
+                  options={projects}
+                  value={selectedProject}
+                  onChange={handleProjectChange}
+                  placeholder="Select Project"
+                  isDisabled={!selectedCompany}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Sub-Project</label>
+                <SingleSelector
+                  options={sites}
+                  value={selectedSite}
+                  onChange={handleSiteChange}
+                  placeholder="Select Sub-Project"
+                  isDisabled={!selectedProject}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>From Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.startDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>To Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.endDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Type</label>
+                <SingleSelector
+                  options={poTypes}
+                  value={
+                    poTypes.find(
+                      (type) => type.value === filterParams.poType
+                    ) || poTypes[0]
+                  }
+                  onChange={(selected) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poType: selected.value,
+                    }))
+                  }
+                  placeholder="Select PO Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={filterParams.poNumber}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poNumber: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter PO Number"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-3 justify-content-center">
+            {/* <div className="col-md-12 d-flex justify-content-end gap-2">
+                          <button
+                            className="btn btn-secondary"
+                            onClick={handleReset}
+                            disabled={loading}
+                          >
+                            Reset
+                          </button>
+                          <button
+                            className="btn btn-primary"
+                            onClick={handleSearch}
+                            disabled={loading}
+                          >
+                            Search
+                          </button>
+                        </div> */}
+            <div className="col-md-3">
+              <button className="purple-btn2 w-100" onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100" onClick={handleReset}>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="tbl-container mx-3 mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">
+                        <input
+                          type="checkbox"
+                          checked={selectedPOs.length === purchaseOrders.length}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                      <th className="text-start">PO Number</th>
+                      <th className="text-start">PO Date</th>
+                      <th className="text-start">PO Value</th>
+                      <th className="text-start">PO Type</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          Loading...
+                        </td>
+                      </tr>
+                    ) : purchaseOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No purchase orders found
+                        </td>
+                      </tr>
+                    ) : (
+                      purchaseOrders.map((po) => (
+                        <tr key={po.id}>
+                          <td className="text-start">
+                            <input
+                              type="checkbox"
+                              checked={selectedPOs.includes(po.id)}
+                              onChange={() => handleCheckboxChange(po.id)}
+                            />
+                          </td>
+                          <td className="text-start">{po.po_number}</td>
+                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">{po.total_value}</td>
+                          <td className="text-start">{po.po_type}</td>
+                          <td className="text-start">
+                            <button
+                              className="btn btn-sm btn-primary"
+                              onClick={() => handlePOSelect(po)}
+                            >
+                              Select
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {purchaseOrders.length > 0 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <div className="showing-entries"></div>
+                  <nav>
+                    <ul className="pagination">
+                      <li
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(1)}
+                          disabled={pagination.current_page === 1}
+                        >
+                          First
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page - 1)
+                          }
+                          disabled={pagination.current_page === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
+                      {getPageNumbers().map((page) => (
+                        <li
+                          key={page}
+                          className={`page-item ${
+                            page === pagination.current_page ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        </li>
+                      ))}
+                      <li
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page + 1)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Next
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.total_pages)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                  {getShowingEntriesText()}
+                </div>
+              )}
+            </div>
           </div>
         </Modal.Body>
       </Modal>
