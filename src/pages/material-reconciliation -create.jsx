@@ -66,6 +66,9 @@ const MaterialReconciliationCreate = () => {
       total_count: 0,
     });
 
+    // Refetch initial data for the table
+    fetchAllMorInventories(1, {}); // Fetch data for the first page with no filters
+
     console.log("Filters and selections have been reset.");
   };
   const [pagination, setPagination] = useState({
