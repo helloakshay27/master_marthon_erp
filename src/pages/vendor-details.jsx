@@ -1981,13 +1981,7 @@ export default function VendorDetails() {
           {
             label: "Evaluation Time",
             value: data?.event_schedule?.evaluation_time || "_",
-          },
-          {
-            label: "Delivery by",
-            value: data?.delivery_date
-              ? new Date(data.delivery_date).toLocaleString()
-              : "_",
-          },
+          }
         ];
         setOrderConfig(newOrderConfig);
 

@@ -185,14 +185,9 @@ export default function OverviewTab({
     {
       label: "Evaluation Time",
       value: overviewData?.event_schedule?.evaluation_time || "_",
-    },
-    {
-      label: "Delivery by",
-      value: new Date(overviewData?.delivery_date).toLocaleString() || "_",
-    },
+    }
   ];
 
-  console.log("materialData schedule", materialData);
 
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",

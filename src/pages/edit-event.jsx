@@ -323,7 +323,6 @@ export default function EditEvent() {
     fetchEventData();
   }, [setEventDetails]);
 
-  console.log("materialFormData:---", materialFormData);
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     setLoading(true);
@@ -918,8 +917,6 @@ export default function EditEvent() {
   }, [searchTerm]);
 
   const fetchSuggestions = async (query) => {
-    console.log("Fetching suggestions for:", materialFormData);
-
     try {
       // Extract inventory_id values from existingData
       const inventoryIds = Object.values(existingData)
