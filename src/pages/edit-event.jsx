@@ -323,11 +323,20 @@ export default function EditEvent() {
     fetchEventData();
   }, [setEventDetails]);
 
+  console.log("materialFormData:---", materialFormData);
+
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     setLoading(true);
     try {
+      // Extract unique inventory_type_id values from materialFormData
+      const inventoryIds = [
+        ...new Set(materialFormData?.map((item) => item?.inventory_type_id)),
+      ];
+
       const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+          inventoryIds
+        )}`
       );
       const data = await response.json();
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
@@ -909,9 +918,18 @@ export default function EditEvent() {
   }, [searchTerm]);
 
   const fetchSuggestions = async (query) => {
+    console.log("Fetching suggestions for:", materialFormData);
+
     try {
+      // Extract inventory_id values from existingData
+      const inventoryIds = Object.values(existingData)
+        .flatMap((subType) => Object.values(subType))
+        .map((item) => item.inventory_id);
+
       const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}`
+        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+          inventoryIds
+        )}`
       );
       const data = await response.json();
       setSuggestions(data.vendors || []);

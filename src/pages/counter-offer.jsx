@@ -31,9 +31,7 @@ export default function CounterOffer() {
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
   };
-  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);  
-  console.log("bidCounterData----", bidCounterData);
-  
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);    
   useEffect(() => {
     if (bidCounterData && Object.keys(formData).length === 0) {
       // Only set state if formData is empty to prevent infinite updates
@@ -403,8 +401,6 @@ export default function CounterOffer() {
     );
     const finalSumTotal = materialSum + gross;
 
-    console.log("Calculated sumTotal:", finalSumTotal);
-
     if (sumTotal !== finalSumTotal) {
       setSumTotal(finalSumTotal);
     }
@@ -556,10 +552,8 @@ export default function CounterOffer() {
     );
     const finalSumTotal = materialSum + gross;
 
-    console.log("Calculated finalSumTotal in handleOtherChargesInputChange:", finalSumTotal);
 
     if (sumTotal !== finalSumTotal) {
-      console.log("Updating sumTotal from handleOtherChargesInputChange:", finalSumTotal);
       setSumTotal(finalSumTotal);
     }
   };
@@ -569,8 +563,6 @@ export default function CounterOffer() {
   };
 
   const calculateGrossTotal = (updatedData) => {
-    console.log("Updated Data:", updatedData);
-
     const getValue = (label) => {
       return parseFloat(updatedData[label] || "0") || 0; // Directly access the value from updatedData
     };
@@ -602,11 +594,9 @@ export default function CounterOffer() {
     );
     const finalSumTotal = materialSum + gross;
 
-    console.log("finalSumTotal :---", finalSumTotal);
 
     // Update sumTotal only if it has changed
     if (sumTotal !== finalSumTotal) {
-      console.log("Updating sumTotal from calculateGrossTotal:", finalSumTotal);
       setSumTotal(finalSumTotal);
     }
 
@@ -615,8 +605,6 @@ export default function CounterOffer() {
     }
 
     const finalGross = gross; // Use the calculated gross directly
-    console.log("finalGross :---", finalGross);
-
     setGrossTotal(finalGross);
   };
 

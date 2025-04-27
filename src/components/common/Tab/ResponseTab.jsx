@@ -653,8 +653,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                     )
                   );
 
-                  console.log("materialData:---", materialData);
-
                   return (
                     <Accordion
                       key={ind}
@@ -1314,11 +1312,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
-
-              // console.log("Pending Bid:", pendingBid);
-
               if (pendingBid && pendingBid.bid_id) {
-                // console.log("Sending bid_id to API:", pendingBid.bid_id);
                 acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
               } else {
                 if (!pendingBid) {

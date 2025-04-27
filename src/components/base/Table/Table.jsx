@@ -59,7 +59,6 @@ export default function Table({
   }, [resetSelectedRows, onResetComplete]);
 
   useEffect(() => {
-    console.log("serializedData from table----", serializedData);
 
     // Process serializedData only when it stabilizes
     const processSerializedData = () => {
@@ -67,10 +66,8 @@ export default function Table({
         const flattenedData = serializedData.flatMap((entry) =>
           Array.isArray(entry) ? entry : [entry]
         );
-        // console.log("Flattened serializedData:", flattenedData);
         setLoadedSerializedData(flattenedData);
       } else {
-        // console.log("No serializedData provided, resetting loadedSerializedData.");
         setLoadedSerializedData([]); // Reset if serializedData is empty
       }
     };
@@ -84,11 +81,8 @@ export default function Table({
   }, [serializedData]);
 
   if (!loadedSerializedData.length && serializedData.length > 0) {
-    // console.log("Serialized data is still loading...");
     return <div>Loading data...</div>;
   }
-
-  // console.log("Loaded serializedData:", loadedSerializedData);
 
   const handleRowSelection = (rowIndex) => {
     const vendor = data[rowIndex];
@@ -247,15 +241,6 @@ export default function Table({
                         .filter((val) => val !== "")[0]; // Use the first non-empty value
 
                       const adjustedSerializedValue = serializedValue || originalValue;
-
-                      // console.log(
-                      //   `Row ${rowIndex}, Column ${valueIndex}:`,
-                      //   {
-                      //     originalValue,
-                      //     serializedValue,
-                      //     adjustedSerializedValue,
-                      //   }
-                      // );
 
                       const shouldCompare = [
                         "freight_charge_amount",

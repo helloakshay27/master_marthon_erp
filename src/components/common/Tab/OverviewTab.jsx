@@ -33,8 +33,21 @@ export default function OverviewTab({
   });
   const [error, setError] = useState(null);
   const [additionalFields, setAdditionalFields] = useState([]);
+  const [deliveryData, setDeliveryData] = useState([]);
+  const [deliverySchedule, setDeliverySchedule] = useState(false);
 
   const { eventId } = useParams();
+
+  const handledeliverySchedule = () => {
+    setDeliverySchedule(!deliverySchedule);
+  };
+
+  const deliveryColumns = [
+    { label: "Material Name", key: "material_formatted_name" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Expected Date", key: "expected_date" },
+    { label: "Expected Quantity", key: "expected_quantity" },
+  ];
 
   const participants = [
     {
@@ -100,10 +113,11 @@ export default function OverviewTab({
         const response = await axios.get(
           `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        const additionalFields = response.data.applied_bid_material_template_fields.map(field => ({
-          label: field.field_name,
-          value: ""
-        }));
+        const additionalFields =
+          response.data.applied_bid_material_template_fields.map((field) => ({
+            label: field.field_name,
+            value: "",
+          }));
         setAdditionalFields(additionalFields);
       } catch (err) {
         setError(err.message);
@@ -142,7 +156,6 @@ export default function OverviewTab({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-
   const orderConfig = [
     {
       label: "Order Type",
@@ -179,8 +192,8 @@ export default function OverviewTab({
     },
   ];
 
-  // console.log("materialData", materialData);
-  
+  console.log("materialData schedule", materialData);
+
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
     quantity: item.quantity || "_",
@@ -195,6 +208,10 @@ export default function OverviewTab({
     pmsColour: item.colour?.colour || "_",
     genericInfo: item.generic_info?.generic_info || "_",
   }));
+
+  useEffect(() => {
+    setDeliveryData(materialData?.delivery_schedule);
+  }, []);
 
   const formatValue = (value) => {
     if (typeof value === "string") {
@@ -220,7 +237,7 @@ export default function OverviewTab({
     { label: "PMS Brand", key: "pmsBrand" },
     { label: "PMS Colour", key: "pmsColour" },
     { label: "Generic Info", key: "genericInfo" },
-    ...additionalFields
+    ...additionalFields,
   ];
 
   return (
@@ -488,10 +505,7 @@ export default function OverviewTab({
           {productOpen && (
             <div id="product-sheet" className="mx-5">
               <div className="card card-body p-4 rounded-3">
-                <Table
-                  columns={columns}
-                  data={overviewDatas}
-                />
+                <Table columns={columns} data={overviewDatas} />
               </div>
             </div>
           )}
@@ -626,6 +640,74 @@ export default function OverviewTab({
                 <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
                 <p>Event Description</p>
                 <p>{overviewData.event_description}</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* New Section: Order Details */}
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#order-details"
+            role="button"
+            aria-expanded={orderDetails}
+            aria-controls="order-details"
+            onClick={handleOrderDetails}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="order-details-icon" className="icon-1">
+              {orderDetails ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Order Details
+          </a>
+          {orderDetails && (
+            <div id="order-details" className="mx-5">
+              <div className="card card-body p-4">
+                <p>Event Title</p>
+                <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
+                <p>Event Description</p>
+                <p>{overviewData.event_description}</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* New Section: Order Details */}
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#delivery-schedule"
+            role="button"
+            aria-expanded={deliverySchedule}
+            aria-controls="delivery-schedule"
+            onClick={handledeliverySchedule}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="delivery-schedule-icon" className="icon-1">
+              {deliverySchedule ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Delivery Schedule
+          </a>
+          {deliverySchedule && (
+            <div id="delivery-schedule" className="mx-5">
+              <div className="card card-body p-4">
+                {deliveryData?.length > 0 ? (
+
+                  <Table columns={deliveryColumns} data={deliveryData} />
+                )
+                : (
+                  <p className="text-center mt-4">No delivery schedule available for this event.</p>
+                )
+              }
               </div>
             </div>
           )}

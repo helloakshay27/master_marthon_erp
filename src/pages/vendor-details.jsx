@@ -219,35 +219,35 @@ export default function VendorDetails() {
   const handleInputChange = (value, rowIndex, key) => {
     const updated = [...data];
     updated[rowIndex][key] = value;
-  
+
     const price = parseFloat(updated[rowIndex].price) || 0;
     const quantityRequested = parseFloat(updated[rowIndex].quantity) || 0;
-    const quantityAvail = updated[rowIndex].quantityAvail !== undefined && updated[rowIndex].quantityAvail !== ''
-      ? parseFloat(updated[rowIndex].quantityAvail)
-      : quantityRequested; // Use quantityRequested as fallback
+    const quantityAvail =
+      updated[rowIndex].quantityAvail !== undefined &&
+      updated[rowIndex].quantityAvail !== ""
+        ? parseFloat(updated[rowIndex].quantityAvail)
+        : quantityRequested; // Use quantityRequested as fallback
 
-      
-      const discount = parseFloat(updated[rowIndex].discount) || 0;
-      const gst = parseFloat(updated[rowIndex].gst) || 0;
-      
-      const total = price * quantityAvail;
-      const realisedPrice = price - (price * discount) / 100;
+    const discount = parseFloat(updated[rowIndex].discount) || 0;
+    const gst = parseFloat(updated[rowIndex].gst) || 0;
+
+    const total = price * quantityAvail;
+    const realisedPrice = price - (price * discount) / 100;
     const realisedDiscount = (total * discount) / 100;
     const landedAmount = total - realisedDiscount;
     const realisedGst = (landedAmount * gst) / 100;
     const finalTotal = landedAmount + realisedGst;
-  
+
     updated[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
     updated[rowIndex].realisedPrice = realisedPrice.toFixed(2);
     updated[rowIndex].landedAmount = landedAmount.toFixed(2);
     updated[rowIndex].realisedGst = realisedGst.toFixed(2);
     updated[rowIndex].total = finalTotal.toFixed(2);
     updated[rowIndex].total = finalTotal.toFixed(2);
-  
+
     setData(updated);
     setGrossTotal(calculateSumTotal());
   };
-  
 
   const calculateFreightTotal = (updatedFreightData = freightData) => {
     const getFreightValue = (label) => {
@@ -401,11 +401,12 @@ export default function VendorDetails() {
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
 
   const handleOpenOtherChargesModal = () => {
-    if(isTaxRateDataChanged) {
-      setShowOtherChargesModal(true)}else {
-        toast.error("Please fill the tax details to fill other charges",)
-      }
-    } 
+    if (isTaxRateDataChanged) {
+      setShowOtherChargesModal(true);
+    } else {
+      toast.error("Please fill the tax details to fill other charges");
+    }
+  };
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
   const [bidIds, setBidIds] = useState([]);
@@ -476,140 +477,153 @@ export default function VendorDetails() {
   const [parentTaxRateData, setParentTaxRateData] = useState([]);
   const fromAllUpdateRef = useRef(false); // Track if change came from bulk update
 
+  // Utility: Calculate Tax Amount
 
-// Utility: Calculate Tax Amount
+  // Utility: Deduplicate TaxChargeType Entries
+  const deduplicateTaxCharges = (arr) => {
+    const seen = new Set();
+    return arr.filter((item) => {
+      if (seen.has(item.taxChargeType)) return false;
+      seen.add(item.taxChargeType);
+      return true;
+    });
+  };
 
+  // 🔁 Bulk Update - All Rows
+  const handleAllTaxChargeChange = (field, value, type) => {
+    fromAllUpdateRef.current = true; // 🚩 Set the flag ON
 
-// Utility: Deduplicate TaxChargeType Entries
-const deduplicateTaxCharges = (arr) => {
-  const seen = new Set();
-  return arr.filter((item) => {
-    if (seen.has(item.taxChargeType)) return false;
-    seen.add(item.taxChargeType);
-    return true;
-  });
-};
+    const updatedData = structuredClone(parentTaxRateData);
 
-// 🔁 Bulk Update - All Rows
-const handleAllTaxChargeChange = (field, value, type) => {
-  fromAllUpdateRef.current = true; // 🚩 Set the flag ON
+    updatedData.forEach((row, rowIndex) => {
+      const taxKey =
+        type === "addition"
+          ? "addition_bid_material_tax_details"
+          : "deduction_bid_material_tax_details";
 
-  const updatedData = structuredClone(parentTaxRateData);
+      if (!row[taxKey]) row[taxKey] = [];
 
-  updatedData.forEach((row, rowIndex) => {
-    const taxKey = type === "addition"
-      ? "addition_bid_material_tax_details"
-      : "deduction_bid_material_tax_details";
-
-    if (!row[taxKey]) row[taxKey] = [];
-
-    if (row[taxKey].length === 0) {
-      row[taxKey].push({
-        id: Date.now().toString(),
-        taxChargeType: "",
-        taxChargePerUom: "",
-        inclusive: false,
-        amount: "0",
-        resource_id: null,
-        resource_type: type === "addition" ? "TaxCharge" : "TaxCategory",
-      });
-    }
-
-    row[taxKey].forEach((charge) => {
-      if (field === "taxChargeType") {
-        charge.taxChargeType = value;
-
-        const optionsList = type === "addition" ? taxOptions : deductionTaxOptions;
-        const selected = optionsList.find((opt) => opt.value === value);
-
-        charge.resource_id = selected ? selected.id : null;
-        charge.resource_type = selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
+      if (row[taxKey].length === 0) {
+        row[taxKey].push({
+          id: Date.now().toString(),
+          taxChargeType: "",
+          taxChargePerUom: "",
+          inclusive: false,
+          amount: "0",
+          resource_id: null,
+          resource_type: type === "addition" ? "TaxCharge" : "TaxCategory",
+        });
       }
 
-      if (field === "taxChargePerUom") {
-        charge.taxChargePerUom = value;
-        if (!charge.inclusive && row.afterDiscountValue) {
-          const amount = calculateTaxAmount(value, row.afterDiscountValue, charge.inclusive);
-          charge.amount = amount.toFixed(2);
+      row[taxKey].forEach((charge) => {
+        if (field === "taxChargeType") {
+          charge.taxChargeType = value;
+
+          const optionsList =
+            type === "addition" ? taxOptions : deductionTaxOptions;
+          const selected = optionsList.find((opt) => opt.value === value);
+
+          charge.resource_id = selected ? selected.id : null;
+          charge.resource_type =
+            selected?.type ||
+            (type === "addition" ? "TaxCharge" : "TaxCategory");
         }
-      }
 
-      if (field === "inclusive") {
-        charge.inclusive = value;
-      }
+        if (field === "taxChargePerUom") {
+          charge.taxChargePerUom = value;
+          if (!charge.inclusive && row.afterDiscountValue) {
+            const amount = calculateTaxAmount(
+              value,
+              row.afterDiscountValue,
+              charge.inclusive
+            );
+            charge.amount = amount.toFixed(2);
+          }
+        }
+
+        if (field === "inclusive") {
+          charge.inclusive = value;
+        }
+      });
+
+      row[taxKey] = deduplicateTaxCharges(row[taxKey]);
+      row.netCost = calculateNetCost(rowIndex, updatedData);
     });
 
-    row[taxKey] = deduplicateTaxCharges(row[taxKey]);
-    row.netCost = calculateNetCost(rowIndex, updatedData);
-  });
+    console.log(
+      "Updated Tax Data (All):",
+      JSON.stringify(updatedData, null, 2)
+    );
 
-  console.log("Updated Tax Data (All):", JSON.stringify(updatedData, null, 2));
+    setParentTaxRateData(updatedData);
+    setTaxRateData(updatedData);
+    originalTaxRateDataRef.current = structuredClone(updatedData);
+  };
 
-  setParentTaxRateData(updatedData);
-  setTaxRateData(updatedData);
-  originalTaxRateDataRef.current = structuredClone(updatedData);
-};
-
-
-// ✏️ Single Row + Charge Update
-const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
-  if (fromAllUpdateRef.current) {
-    // 🛑 Skip if last update was from bulk
-    fromAllUpdateRef.current = false;
-    return;
-  }
-
-  const updatedData = structuredClone(taxRateData);
-  const originalData = structuredClone(originalTaxRateDataRef.current);
-  const targetRow = updatedData[rowIndex];
-  const originalRow = originalData[rowIndex];
-  if (!targetRow || !originalRow) return;
-
-  const taxKey = type === "addition"
-    ? "addition_bid_material_tax_details"
-    : "deduction_bid_material_tax_details";
-
-  const taxCharges = [...targetRow[taxKey]];
-  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-  if (chargeIndex === -1) return;
-
-  const charge = { ...taxCharges[chargeIndex] };
-
-  if (field === "amount") {
-    charge.amount = value;
-    if (!charge.inclusive && targetRow.afterDiscountValue) {
-      const perUOM = (
-        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-        100
-      ).toFixed(2);
-      charge.taxChargePerUom = perUOM;
+  // ✏️ Single Row + Charge Update
+  const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
+    if (fromAllUpdateRef.current) {
+      // 🛑 Skip if last update was from bulk
+      fromAllUpdateRef.current = false;
+      return;
     }
-  } else {
-    charge[field] = value;
-  }
 
-  if (!charge.inclusive && field === "taxChargePerUom") {
-    const taxAmount = calculateTaxAmount(charge.taxChargePerUom, targetRow.afterDiscountValue, charge.inclusive);
-    charge.amount = taxAmount.toFixed(2);
-  }
+    const updatedData = structuredClone(taxRateData);
+    const originalData = structuredClone(originalTaxRateDataRef.current);
+    const targetRow = updatedData[rowIndex];
+    const originalRow = originalData[rowIndex];
+    if (!targetRow || !originalRow) return;
 
-  taxCharges[chargeIndex] = charge;
-  targetRow[taxKey] = taxCharges;
-  updatedData[rowIndex] = targetRow;
+    const taxKey =
+      type === "addition"
+        ? "addition_bid_material_tax_details"
+        : "deduction_bid_material_tax_details";
 
-  const recalculated = updatedData.map((row, idx) => ({
-    ...row,
-    netCost: calculateNetCost(idx, updatedData),
-  }));
+    const taxCharges = [...targetRow[taxKey]];
+    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+    if (chargeIndex === -1) return;
 
-  console.log("Updated Tax Data (Single):", JSON.stringify(updatedData, null, 2));
+    const charge = { ...taxCharges[chargeIndex] };
 
-  setTaxRateData(recalculated);
-  originalTaxRateDataRef.current = structuredClone(recalculated);
-};
+    if (field === "amount") {
+      charge.amount = value;
+      if (!charge.inclusive && targetRow.afterDiscountValue) {
+        const perUOM = (
+          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+          100
+        ).toFixed(2);
+        charge.taxChargePerUom = perUOM;
+      }
+    } else {
+      charge[field] = value;
+    }
 
+    if (!charge.inclusive && field === "taxChargePerUom") {
+      const taxAmount = calculateTaxAmount(
+        charge.taxChargePerUom,
+        targetRow.afterDiscountValue,
+        charge.inclusive
+      );
+      charge.amount = taxAmount.toFixed(2);
+    }
 
-  
+    taxCharges[chargeIndex] = charge;
+    targetRow[taxKey] = taxCharges;
+    updatedData[rowIndex] = targetRow;
+
+    const recalculated = updatedData.map((row, idx) => ({
+      ...row,
+      netCost: calculateNetCost(idx, updatedData),
+    }));
+
+    console.log(
+      "Updated Tax Data (Single):",
+      JSON.stringify(updatedData, null, 2)
+    );
+
+    setTaxRateData(recalculated);
+    originalTaxRateDataRef.current = structuredClone(recalculated);
+  };
 
   // Update the modal tax inputs to use new handler for "Apply All"
   // const [currentIndex, setCurrentIndex] = useState(0);
@@ -1068,11 +1082,14 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     console.log("taxRateData", taxRateData);
 
     const bidMaterialsAttributes = data.map((row, index) => {
-      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
+      console.log("data of map on bid attributes", row);
+
+      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || row.quantity || 0);
       const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
       const landedAmount = rowTotal - discountAmount;
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
       const finalTotal = landedAmount + gstAmount;
+      const totalAmt = row.total || 0;
 
       const taxDetails = [
         ...(taxRateData[index]?.addition_bid_material_tax_details || []).map(
@@ -1125,16 +1142,14 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
 
       return {
         event_material_id: row.eventMaterialId,
-        quantity_available: row.quantityAvail || 0,
+        quantity_available: row.quantityAvail || row.quantity || 0,
         price: Number(row.price || 0),
         discount: Number(row.discount || 0),
         bid_material_id: row.id,
         vendor_remark: row.vendorRemark || "",
-        gst: row.gst || 0,
         realised_discount: discountAmount.toFixed(2),
-        realised_gst: gstAmount.toFixed(2),
         landed_amount: landedAmount.toFixed(2),
-        total_amount: finalTotal.toFixed(2),
+        total_amount: Number(totalAmt).toFixed(2),
         bid_material_tax_details: taxDetails,
         addition_tax_charges: (
           taxRateData[index]?.additionTaxCharges || []
@@ -1238,17 +1253,12 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     const payload = {
       bid: {
         event_vendor_id: vendorId,
-        price: 2000.0,
-        discount: 10.0,
         freight_charge_amount: freightCharge21,
         gst_on_freight: gstOnFreightt,
         realised_freight_charge_amount: realisedFreightChargeAmount,
         gross_total: grossTotal,
-        // warranty_clause: warrantyClause,
-        // payment_terms: paymentTerms,
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
-        extra: {},
         bid_materials_attributes: bidMaterialsAttributes,
         ...extractShortTableData,
         ...extractChargeTableData,
@@ -1262,6 +1272,9 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
   const handleSubmit = async () => {
     setLoading(true);
     setSubmitted(true);
+    const payload = preparePayload();
+    console.log("payload:---", payload);
+
 
     try {
       // Send POST request
@@ -1273,35 +1286,37 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
       // }
 
       const payload = preparePayload();
+      console.log("payload:---", payload);
 
-      const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-          },
-        }
-      );
 
-      toast.success("Bid Created successfully!", {
-        autoClose: 1000, // Close after 3 seconds
-      });
-      setIsBidCreated(true);
-      setRevisedBid(true); // Update `revisedBid` to true
-      // console.log("Updated revisedBid to true"); // Update state
+      // const response = await axios.post(
+      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+      //   payload,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+      //     },
+      //   }
+      // );
 
-      // console.log("Updated isBidCreated to true.");
-      // console.log("vendor ID2", vendorId);
+      // toast.success("Bid Created successfully!", {
+      //   autoClose: 1000, // Close after 3 seconds
+      // });
+      // setIsBidCreated(true);
+      // setRevisedBid(true); // Update `revisedBid` to true
+      // // console.log("Updated revisedBid to true"); // Update state
 
-      // setData(response.data.bid_materials_attributes || []);
+      // // console.log("Updated isBidCreated to true.");
+      // // console.log("vendor ID2", vendorId);
 
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1000);
+      // // setData(response.data.bid_materials_attributes || []);
+
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -1332,6 +1347,8 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
 
     try {
       const revisedBidMaterials = data.map((row, index) => {
+        console.log("data of map on bid attributes", row);
+        
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
         const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
         const landedAmount = rowTotal - discountAmount;
@@ -1433,20 +1450,23 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
         },
       };
 
-      const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-        payload
-      );
+      console.log("Prepared Payload for Revision:", payload);
+      
 
-      toast.success("Bid revised successfully!", {
-        autoClose: 1000,
-      });
+      // const response = await axios.post(
+      //   `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+      //   payload
+      // );
 
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1500);
+      // toast.success("Bid revised successfully!", {
+      //   autoClose: 1000,
+      // });
+
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
@@ -2200,31 +2220,31 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
   }, [currentIndex, bids2]);
 
   const defaultColumns = [
-      { label: "Freight Charge", key: "freightCharge" },
-      { label: "GST on Freight", key: "gstOnFreight" },
-      { label: "Realised Freight", key: "realisedFreight" },
-      {
-          label: "Realised Price",
-          key: "realisedPrice",
-          realisedPrice: (cell, rowIndex) => {
-              const price = parseFloat(data[rowIndex]?.price) || 0;
-              const discount = parseFloat(data[rowIndex]?.discount) || 0;
-  
-              // Calculate the realized discount amount
-              const realisedDiscountAmount = price - (price * discount) / 100;
-  
-              return (
-                  <input
-                      className="form-control"
-                      type="number"
-                      value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
-                      readOnly
-                      style={otherColumnsStyle}
-                      disabled
-                  />
-              );
-          },
+    { label: "Freight Charge", key: "freightCharge" },
+    { label: "GST on Freight", key: "gstOnFreight" },
+    { label: "Realised Freight", key: "realisedFreight" },
+    {
+      label: "Realised Price",
+      key: "realisedPrice",
+      realisedPrice: (cell, rowIndex) => {
+        const price = parseFloat(data[rowIndex]?.price) || 0;
+        const discount = parseFloat(data[rowIndex]?.discount) || 0;
+
+        // Calculate the realized discount amount
+        const realisedDiscountAmount = price - (price * discount) / 100;
+
+        return (
+          <input
+            className="form-control"
+            type="number"
+            value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
+            readOnly
+            style={otherColumnsStyle}
+            disabled
+          />
+        );
       },
+    },
   ];
 
   const mergedColumns = [...defaultColumns, ...bidTemplate];
@@ -2290,13 +2310,12 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
 
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
-      
     } else {
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
 
     setShowModal1(true);
-    setIsTaxRateDataChanged(true)
+    setIsTaxRateDataChanged(true);
   };
 
   const handleCloseModal = () => {
@@ -2307,7 +2326,6 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
   };
 
   // Function to add a new addition tax charge row
-
 
   const addAdditionTaxCharge = (rowIndex) => {
     const newItem = {
@@ -2324,7 +2342,6 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     );
     setTaxRateData(updatedTaxRateData);
     setParentTaxRateData(updatedTaxRateData);
-
   };
 
   const addDeductionTaxCharge = (rowIndex) => {
@@ -2380,10 +2397,10 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     let additionTaxTotal = 0;
     let deduction_bid_material_tax_detailsTotal = 0;
     let directChargesTotal = 0;
-  
+
     taxRateRow.addition_bid_material_tax_details.forEach((item) => {
       if (item.inclusive) return;
-  
+
       if (
         ["Handling Charges", "Other charges", "Freight"].includes(
           item.taxChargeType
@@ -2398,7 +2415,7 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
         additionTaxTotal += taxAmount;
       }
     });
-  
+
     taxRateRow.deduction_bid_material_tax_details.forEach((item) => {
       if (item.inclusive) return;
       const taxAmount = calculateTaxAmount(
@@ -2407,52 +2424,48 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
       );
       deduction_bid_material_tax_detailsTotal += taxAmount;
     });
-  
+
     const netCost =
       parseFloat(taxRateRow.afterDiscountValue || "0") +
       additionTaxTotal +
       directChargesTotal -
       deduction_bid_material_tax_detailsTotal;
-  
+
     return netCost.toFixed(2);
   };
-  
 
-// useEffect(() => {
-//     const updatedNetCost = calculateNetCost(tableId);
-//   },[taxRateData])
+  // useEffect(() => {
+  //     const updatedNetCost = calculateNetCost(tableId);
+  //   },[taxRateData])
 
   const calculateGrossTotal = () => {
     const total = data.reduce((acc, item) => {
       const itemTotal = parseFloat(item.total) || 0; // Ensure valid number
       return acc + itemTotal;
     }, 0);
-  
+
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
-;
   const handleSaveTaxChanges = () => {
-   
     const updatedGrossTotal = calculateGrossTotal();
     // setTaxRateData((prevState) => ({
     //   ...prevState,
     //   netCost: updatedNetCost,
     // }));
 
-    setGrossTotal(parseFloat(updatedGrossTotal));    
+    setGrossTotal(parseFloat(updatedGrossTotal));
     handleCloseModal();
-    setIsTaxRateDataChanged(true)
+    setIsTaxRateDataChanged(true);
   };
 
   const handleSaveALlTaxChanges = () => {
-   
     const updatedGrossTotal = calculateGrossTotal();
     // setTaxRateData((prevState) => ({
     //   ...prevState,
     //   netCost: updatedNetCost,
     // }));
 
-    setGrossTotal(parseFloat(updatedGrossTotal));    
+    setGrossTotal(parseFloat(updatedGrossTotal));
     handleCloseModal();
   };
 
@@ -4157,14 +4170,14 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                           data={data}
                           customRender={{
                             realisedPrice: (cell, rowIndex) => {
-                              return(
+                              return (
                                 <input
-                              value={cell || "N/A"}
-                                disabled={true}
-                                className="form-control"
-                                readonly
+                                  value={cell || "N/A"}
+                                  disabled={true}
+                                  className="form-control"
+                                  readonly
                                 />
-                              )
+                              );
                             },
                             taxRate: (cell, rowIndex) => (
                               <button
@@ -4484,8 +4497,6 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                               />
                             ),
 
-                            
-
                             gst: (cell, rowIndex) => {
                               const previousGst =
                                 previousData[rowIndex]?.gst || cell;
@@ -4566,27 +4577,41 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
 
                             quantityAvail: (cell, rowIndex) => {
                               const row = data[rowIndex];
-                              const quantityRequested = parseFloat(row.quantity) || 0;
-                              const quantityAvail = row.quantityAvail ?? ''; // editable input
+                              const quantityRequested =
+                                parseFloat(row.quantity) || 0;
+                              const quantityAvail = row.quantityAvail ?? ""; // editable input
                               const price = parseFloat(row.price) || 0;
-                            
+
                               const handleQuantityChange = (e) => {
                                 const value = parseFloat(e.target.value) || 0;
-                            
+
                                 if (value > quantityRequested) {
-                                  toast.error("The quantity available value cannot be greater than the quantity requested.");
+                                  toast.error(
+                                    "The quantity available value cannot be greater than the quantity requested."
+                                  );
                                   return;
                                 }
-                            
-                                handleInputChange(value, rowIndex, "quantityAvail");
+
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "quantityAvail"
+                                );
                               };
-                            
+
                               const showArrow =
                                 counterData &&
-                                (previousData[rowIndex]?.quantityAvail ?? '') !== (updatedData[rowIndex]?.quantityAvail ?? '');
-                            
+                                (previousData[rowIndex]?.quantityAvail ??
+                                  "") !==
+                                  (updatedData[rowIndex]?.quantityAvail ?? "");
+
                               return showArrow ? (
-                                <div style={{ display: "flex", alignItems: "center" }}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
                                   <span
                                     style={{
                                       textDecoration: "line-through",
@@ -4594,7 +4619,8 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                                       color: "gray",
                                     }}
                                   >
-                                    {previousData[rowIndex]?.quantityAvail || quantityRequested}
+                                    {previousData[rowIndex]?.quantityAvail ||
+                                      quantityRequested}
                                   </span>
                                   <span className="me-2">
                                     <svg
@@ -4615,7 +4641,8 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                                       lineHeight: "1",
                                     }}
                                   >
-                                    {updatedData[rowIndex]?.quantityAvail || quantityAvail}
+                                    {updatedData[rowIndex]?.quantityAvail ||
+                                      quantityAvail}
                                   </span>
                                 </div>
                               ) : counterData ? (
@@ -4624,7 +4651,12 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                                 <input
                                   className="form-control"
                                   type="number"
-                                  value={quantityAvail !== '' && quantityAvail !== undefined ? quantityAvail : quantityRequested}
+                                  value={
+                                    quantityAvail !== "" &&
+                                    quantityAvail !== undefined
+                                      ? quantityAvail
+                                      : quantityRequested
+                                  }
                                   onChange={handleQuantityChange}
                                   style={otherColumnsStyle}
                                   disabled={isBid}
@@ -5133,31 +5165,35 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                         />
                       </div>
                       <div className="d-flex justify-content-end align-items-start gap-3 w-100">
-  <div className="d-flex flex-column align-items-end w-100">
-    <ShortDataTable
-      data={bidTemplate}
-      editable={true}
-      onValueChange={(updated) => setShortTableData(updated)}
-    />
-    <button
-      className="purple-btn2 mt-2"
-      onClick={handleOpenOtherChargesModal}
-    >
-      Other Charges
-    </button>
-    <ChargesDataTable
-      data={chargesData}
-      showOtherChargesModal={showOtherChargesModal}
-      handleCloseOtherChargesModal={handleCloseOtherChargesModal}
-      setGrossTotal={setGrossTotal}
-      grossTotal={grossTotal}
-      editable={true}
-      onValueChange={(updated) => {
-        setChargesData(updated);
-      }}
-    />
-  </div>
-</div>
+                        <div className="d-flex flex-column align-items-end w-100">
+                          <ShortDataTable
+                            data={bidTemplate}
+                            editable={true}
+                            onValueChange={(updated) =>
+                              setShortTableData(updated)
+                            }
+                          />
+                          <button
+                            className="purple-btn2 mt-2"
+                            onClick={handleOpenOtherChargesModal}
+                          >
+                            Other Charges
+                          </button>
+                          <ChargesDataTable
+                            data={chargesData}
+                            showOtherChargesModal={showOtherChargesModal}
+                            handleCloseOtherChargesModal={
+                              handleCloseOtherChargesModal
+                            }
+                            setGrossTotal={setGrossTotal}
+                            grossTotal={grossTotal}
+                            editable={true}
+                            onValueChange={(updated) => {
+                              setChargesData(updated);
+                            }}
+                          />
+                        </div>
+                      </div>
 
                       {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
 
@@ -5503,7 +5539,9 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                       </td>
                     </tr>
 
-                    {parentTaxRateData[tableId]?.addition_bid_material_tax_details
+                    {parentTaxRateData[
+                      tableId
+                    ]?.addition_bid_material_tax_details
                       .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
@@ -5611,7 +5649,9 @@ const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
                       </td>
                     </tr>
 
-                    {parentTaxRateData[tableId]?.deduction_bid_material_tax_details
+                    {parentTaxRateData[
+                      tableId
+                    ]?.deduction_bid_material_tax_details
                       .slice(0, 1)
                       .map((item) => (
                         <tr key={item.id}>
