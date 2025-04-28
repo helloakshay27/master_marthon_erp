@@ -802,7 +802,7 @@ export default function ParticipantsTab({ data, id }) {
                                 </div>
                                 <div className="d-flex justify-content-center mt-2">
                         <button className="purple-btn1" onClick={handleInviteModalClose}>Close</button>
-                        <button className="purple-btn2" onClick={handleInviteVendor}>Save Changes</button>
+                        <button className="purple-btn2" onClick={handleInviteSubmit}>Save Changes</button>
                     </div>
             </form>
           </>
