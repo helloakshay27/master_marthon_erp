@@ -1193,10 +1193,15 @@ export default function EditEvent() {
   };
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
-    const capitalizedValue =
-      name === "gstNumber" || name === "panNumber"
-        ? value.toUpperCase()
-        : value;
+    const sanitizedValue =
+    name === "gstNumber" || name === "panNumber"
+      ? value.replace(/[^a-zA-Z0-9]/g, "") // Remove special characters
+      : value;
+
+  const capitalizedValue =
+    name === "gstNumber" || name === "panNumber"
+      ? sanitizedValue.toUpperCase() // Convert to uppercase
+      : sanitizedValue;
     setInviteVendorData((prevData) => ({
       ...prevData,
       [name]: capitalizedValue,
@@ -1855,22 +1860,22 @@ export default function EditEvent() {
               onHide={handleInviteModalClose}
               modalType={true}
               title="Invite New Vendor"
-              footerButtons={[
-                {
-                  label: "Close",
-                  onClick: handleInviteModalClose,
-                  props: {
-                    className: "purple-btn1",
-                  },
-                },
-                {
-                  label: "Save Changes",
-                  onClick: handleInviteVendor,
-                  props: {
-                    className: "purple-btn2",
-                  },
-                },
-              ]}
+              // footerButtons={[
+              //   {
+              //     label: "Close",
+              //     onClick: handleInviteModalClose,
+              //     props: {
+              //       className: "purple-btn1",
+              //     },
+              //   },
+              //   {
+              //     label: "Save Changes",
+              //     onClick: handleInviteVendor,
+              //     props: {
+              //       className: "purple-btn2",
+              //     },
+              //   },
+              // ]}
               children={
                 <>
                   <form className="p-2">
@@ -1973,6 +1978,10 @@ export default function EditEvent() {
                         value={inviteVendorData.organization || ""}
                         onChange={handleInviteVendorChange}
                       />
+                    </div>
+                    <div className="d-flex justify-content-center mt-2">
+                        <button className="purple-btn1" onClick={handleInviteModalClose}>Close</button>
+                        <button className="purple-btn2" onClick={handleInviteVendor}>Save Changes</button>
                     </div>
                   </form>
                 </>

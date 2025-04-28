@@ -77,15 +77,15 @@ export default function CreateEvent() {
   const [data, setData] = useState([
     { user: "", date: "", status: "", remark: "" },
   ]);
-   // State to manage invite vendor form data
-   const [inviteVendorData, setInviteVendorData] = useState({
+  // State to manage invite vendor form data
+  const [inviteVendorData, setInviteVendorData] = useState({
     name: "",
     email: "",
     mobile: "",
     gstNumber: "",
     panNumber: "",
     company: "",
-    organization:""
+    organization: "",
   });
 
   const [companyList, setCompanyList] = useState([]);
@@ -188,7 +188,6 @@ export default function CreateEvent() {
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
-    console.log("scheduleText", scheduleText, data.end_time_duration);
   };
 
   const handleVendorTypeModalShow = () => {
@@ -200,7 +199,6 @@ export default function CreateEvent() {
 
   const handleEventTypeChange = (e) => {
     setEventType(e.target.value);
-    log("eventType", eventType);
   };
 
   const handleTrafficChange = (value) => {
@@ -282,19 +280,21 @@ export default function CreateEvent() {
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
 
       const formattedData = vendors
-      .map((vendor) => ({
-        id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "N/A",
-        email: vendor.email || "N/A",
-        organisation: vendor.organization_name || "N/A",
-        phone: vendor.contact_number || vendor.mobile || "N/A",
-        city: vendor.city_id || "N/A",
-        tags: vendor.tags || "N/A",
-      }))
-      .filter(
-        (vendor) =>
-          !selectedVendors.some((selected) => selected.pms_supplier_id === vendor.id)
-      );
+        .map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name || "N/A",
+          email: vendor.email || "N/A",
+          organisation: vendor.organization_name || "N/A",
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+          city: vendor.city_id || "N/A",
+          tags: vendor.tags || "N/A",
+        }))
+        .filter(
+          (vendor) =>
+            !selectedVendors.some(
+              (selected) => selected.pms_supplier_id === vendor.id
+            )
+        );
 
       setTableData(formattedData);
 
@@ -397,8 +397,6 @@ export default function CreateEvent() {
 
   const handleRemoveTextarea = (id) => {
     const updatedTextareas = textareas.filter((textarea) => textarea.id !== id);
-    console.log("updatedTextareas", updatedTextareas);
-
     setTextareas([...updatedTextareas]);
   };
 
@@ -414,7 +412,6 @@ export default function CreateEvent() {
     const selectedCondition = termsOptions.find(
       (option) => String(option.value) === String(selectedOption)
     );
-    console.log("selectedCondition", selectedCondition);
 
     if (selectedCondition) {
       setTextareas(
@@ -502,7 +499,6 @@ export default function CreateEvent() {
   const [additionalFields, setAdditionalFields] = useState([]);
 
   // console.log("materialFormData:--------",materialFormData);
-  
 
   const handleSubmit = async (event) => {
     setLoading(true);
@@ -528,8 +524,6 @@ export default function CreateEvent() {
     }
 
     setSubmitted(true);
-    console.log("textareas", textareas);
-
     const eventData = {
       event: {
         event_title: eventName,
@@ -647,9 +641,6 @@ export default function CreateEvent() {
         },
       },
     };
-
-    console.log("payload:-", eventData);
-    // console.log("bidTemplate", bidTemplateFields);
 
     try {
       const response = await fetch(
@@ -783,11 +774,11 @@ export default function CreateEvent() {
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
   };
-  
+
   const handleInviteVendor = async () => {
     const errors = validateInviteVendorForm();
     if (Object.keys(errors).length > 0) return;
-  
+
     try {
       const response = await fetch(
         `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
@@ -806,21 +797,21 @@ export default function CreateEvent() {
         }
       );
       console.log("response:--", response);
-  
+
       if (response.ok) {
         const newVendor = await response.json();
         toast.success("Vendor invited successfully!");
-  
+
         const vendorData = {
           id: null,
           pms_supplier_id: newVendor?.id,
           name: newVendor?.full_name,
           phone: newVendor?.mobile,
         };
-  
+
         setSelectedVendors((prev) => [...prev, vendorData]);
         setFilteredTableData((prev) => [...prev, vendorData]);
-  
+
         setInviteVendorData({
           name: "",
           email: "",
@@ -829,7 +820,7 @@ export default function CreateEvent() {
           panNumber: "",
           company: "",
         });
-  
+
         handleInviteModalClose();
       } else {
         const errorData = await response.json();
@@ -841,14 +832,15 @@ export default function CreateEvent() {
       toast.error("An error occurred while inviting the vendor.");
     }
   };
-  
+
   const validateInviteVendorForm = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-  
+
     if (!inviteVendorData.name) {
       errors.name = "Name is required";
       toast.error(errors.name);
@@ -857,15 +849,24 @@ export default function CreateEvent() {
       errors.email = "Valid email is required";
       toast.error(errors.email);
     }
-    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+    if (
+      !inviteVendorData.mobile ||
+      !mobileRegex.test(inviteVendorData.mobile)
+    ) {
       errors.mobile = "Valid mobile number is required";
       toast.error(errors.mobile);
     }
-    if (inviteVendorData.gstNumber && !gstRegex.test(inviteVendorData.gstNumber)) {
+    if (
+      inviteVendorData.gstNumber &&
+      !gstRegex.test(inviteVendorData.gstNumber)
+    ) {
       errors.gstNumber = "Invalid GST number format";
       toast.error(errors.gstNumber);
     }
-    if (inviteVendorData.panNumber && !panRegex.test(inviteVendorData.panNumber)) {
+    if (
+      inviteVendorData.panNumber &&
+      !panRegex.test(inviteVendorData.panNumber)
+    ) {
       errors.panNumber = "Invalid PAN number format";
       toast.error(errors.panNumber);
     }
@@ -881,17 +882,23 @@ export default function CreateEvent() {
   };
 
   console.log("inviteVendorData", inviteVendorData.company);
-  
-  
-    const handleInviteVendorChange = (e) => {
-      const { name, value } = e.target;
-      const capitalizedValue =
-        name === "gstNumber" || name === "panNumber" ? value.toUpperCase() : value;
-      setInviteVendorData((prevData) => ({
-        ...prevData,
-        [name]: capitalizedValue,
-      }));
-    };
+
+  const handleInviteVendorChange = (e) => {
+    const { name, value } = e.target;
+    const sanitizedValue =
+      name === "gstNumber" || name === "panNumber"
+        ? value.replace(/[^a-zA-Z0-9]/g, "") // Remove special characters
+        : value;
+
+    const capitalizedValue =
+      name === "gstNumber" || name === "panNumber"
+        ? sanitizedValue.toUpperCase() // Convert to uppercase
+        : sanitizedValue;
+    setInviteVendorData((prevData) => ({
+      ...prevData,
+      [name]: capitalizedValue,
+    }));
+  };
 
   return (
     <>
@@ -1604,133 +1611,137 @@ export default function CreateEvent() {
               }
             />
             <DynamicModalBox
-                          show={inviteModal}
-                          onHide={handleInviteModalClose}
-                          modalType={true}
-                          title="Invite New Vendor"
-                          footerButtons={[
-                            {
-                              label: "Close",
-                              onClick: handleInviteModalClose,
-                              props: {
-                                className: "purple-btn1",
-                              },
-                            },
-                            {
-                              label: "Save Changes",
-                              onClick: handleInviteVendor,
-                              props: {
-                                className: "purple-btn2",
-                              },
-                            },
-                          ]}
-                          children={
-                            <>
-                              <form className="p-2">
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">POC - Full Name</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    name="name"
-                                    placeholder="Enter POC Name"
-                                    value={inviteVendorData.name}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">Email</label>
-                                  <input
-                                    className="form-control"
-                                    type="email"
-                                    name="email"
-                                    placeholder="Enter Email Address"
-                                    value={inviteVendorData.email}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">Phone Number</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    name="mobile"
-                                    inputMode="numeric" // mobile-friendly numeric keyboard
-                                    pattern="[0-9]*" // restricts to digits only
-                                    onKeyDown={(e) => {
-                                      // Allow only numbers
-                                      const invalidChars = ["e", "E", "+", "-", ".", ","];
-            
-                                      if (
-                                        invalidChars.includes(e.key) ||
-                                        (isNaN(Number(e.key)) &&
-                                          e.key !== "Backspace" &&
-                                          e.key !== "Delete" &&
-                                          e.key !== "ArrowLeft" &&
-                                          e.key !== "ArrowRight" &&
-                                          e.key !== "Tab")
-                                      ) {
-                                        e.preventDefault();
-                                      }
-                                    }}
-                                    placeholder="Enter Phone Number"
-                                    value={inviteVendorData.mobile}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">GST Number</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    name="gstNumber"
-                                    placeholder="Enter GST Number"
-                                    value={inviteVendorData.gstNumber || ""}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">PAN Number</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    name="panNumber"
-                                    placeholder="Enter PAN Number"
-                                    value={inviteVendorData.panNumber || ""}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">Company</label>
-                                  <SelectBox
-                                    options={companyList}
-                                    value={companyList.find(
-                                      (option) => option.value === inviteVendorData.company
-                                    )} // Ensure the selected value is displayed
-                                    onChange={(selectedOption) => {
-                                      const updatedCompany = selectedOption || null; // Get the numeric value or null
-                                      setInviteVendorData((prev) => ({
-                                        ...prev,
-                                        company: updatedCompany, // Update the company field
-                                      }));
-                                    }}
-                                  />
-                                </div>
-                                <div className="form-group mb-3">
-                                  <label className="po-fontBold">Organization</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    name="organization"
-                                    placeholder="Enter Organization Name"
-                                    value={inviteVendorData.organization || ""}
-                                    onChange={handleInviteVendorChange}
-                                  />
-                                </div>
-                              </form>
-                            </>
+              show={inviteModal}
+              onHide={handleInviteModalClose}
+              modalType={true}
+              title="Invite New Vendor"
+              // footerButtons={[
+              //   {
+              //     label: "Close",
+              //     onClick: handleInviteModalClose,
+              //     props: {
+              //       className: "purple-btn1",
+              //     },
+              //   },
+              //   {
+              //     label: "Save Changes",
+              //     onClick: handleInviteVendor,
+              //     props: {
+              //       className: "purple-btn2",
+              //     },
+              //   },
+              // ]}
+              children={
+                <>
+                  <form className="p-2">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">POC - Full Name</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="name"
+                        placeholder="Enter POC Name"
+                        value={inviteVendorData.name}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Email</label>
+                      <input
+                        className="form-control"
+                        type="email"
+                        name="email"
+                        placeholder="Enter Email Address"
+                        value={inviteVendorData.email}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Phone Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="mobile"
+                        inputMode="numeric" // mobile-friendly numeric keyboard
+                        pattern="[0-9]*" // restricts to digits only
+                        onKeyDown={(e) => {
+                          // Allow only numbers
+                          const invalidChars = ["e", "E", "+", "-", ".", ","];
+
+                          if (
+                            invalidChars.includes(e.key) ||
+                            (isNaN(Number(e.key)) &&
+                              e.key !== "Backspace" &&
+                              e.key !== "Delete" &&
+                              e.key !== "ArrowLeft" &&
+                              e.key !== "ArrowRight" &&
+                              e.key !== "Tab")
+                          ) {
+                            e.preventDefault();
                           }
-                        />
+                        }}
+                        placeholder="Enter Phone Number"
+                        value={inviteVendorData.mobile}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">GST Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="gstNumber"
+                        placeholder="Enter GST Number"
+                        value={inviteVendorData.gstNumber || ""}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">PAN Number</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="panNumber"
+                        placeholder="Enter PAN Number"
+                        value={inviteVendorData.panNumber || ""}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Company</label>
+                      <SelectBox
+                        options={companyList}
+                        value={companyList.find(
+                          (option) => option.value === inviteVendorData.company
+                        )} // Ensure the selected value is displayed
+                        onChange={(selectedOption) => {
+                          const updatedCompany = selectedOption || null; // Get the numeric value or null
+                          setInviteVendorData((prev) => ({
+                            ...prev,
+                            company: updatedCompany, // Update the company field
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Organization</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        name="organization"
+                        placeholder="Enter Organization Name"
+                        value={inviteVendorData.organization || ""}
+                        onChange={handleInviteVendorChange}
+                      />
+                    </div>
+                    <div className="d-flex justify-content-center mt-2">
+                        <button className="purple-btn1" onClick={handleInviteModalClose}>Close</button>
+                        <button className="purple-btn2" onClick={handleInviteVendor}>Save Changes</button>
+                    </div>
+                  </form>
+                </>
+              }
+            />
             <EventTypeModal
               show={eventTypeModal}
               handleDynamicExtensionBid={handleDynamicExtensionBid}

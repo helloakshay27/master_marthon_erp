@@ -1134,6 +1134,26 @@ export default function CreateRFQForm({
       );
     }
 
+    if (fieldName === "quantity") {
+      return (
+        <input
+          className="form-control"
+          type="text"
+          inputMode="numeric"
+          value={fieldValue}
+          onWheel={(e) => e.target.blur()}
+          onKeyDown={(e) => {
+            if (!/^\d$/.test(e.key) && !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) =>
+            handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
+          }
+        />
+      );
+    }
+
     if (fieldName === "rate") {
       return (
         <input
@@ -1558,14 +1578,6 @@ export default function CreateRFQForm({
                         className="form-control"
                         type="number"
                         value={cell}
-                        onChange={(e) =>
-                          handleInputChange(
-                            e.target.value,
-                            rowIndex,
-                            "quantity",
-                            sectionIndex
-                          )
-                        }
                         inputMode="numeric"
                         placeholder="Enter Quantity"
                         onKeyDown={(e) => {
@@ -1579,6 +1591,18 @@ export default function CreateRFQForm({
                             e.key === " " // Add any other characters you want to restrict
                           ) {
                             e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          if(/^\d*$/.test(value)){
+
+                            handleInputChange(
+                              e.target.value,
+                              rowIndex,
+                              "quantity",
+                              sectionIndex
+                            )
                           }
                         }}
                       />
