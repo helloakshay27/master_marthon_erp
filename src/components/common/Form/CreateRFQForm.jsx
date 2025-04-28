@@ -446,7 +446,7 @@ export default function CreateRFQForm({
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
-  console.log(existingData, "existingData");
+  // console.log(existingData, "existingData");
   
 
   useEffect(() => {

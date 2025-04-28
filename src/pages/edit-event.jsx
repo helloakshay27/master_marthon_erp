@@ -27,7 +27,6 @@ export default function EditEvent() {
   const [isService, setIsService] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
   const [publishEventModal, setPublishEventModal] = useState(false);
-  const [inventoryId, setInventoryId] = useState(0);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
   const [eventType, setEventType] = useState("");
@@ -45,6 +44,7 @@ export default function EditEvent() {
   const [end_time, setEnd_time] = useState("");
   const [start_time, setStart_time] = useState("");
   const [evaluation_time, setEvaluation_time] = useState("");
+  const [inventoryTypeId, setInventoryTypeId] = useState([]);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -240,6 +240,14 @@ export default function EditEvent() {
     setSelectedVendorProfile(profile);
   };
 
+  useEffect(() => {
+    const newlyFetchedIds = materialFormData
+      ?.filter((item) => item?.inventory_type_id)
+      ?.map((item) => item?.inventory_type_id);
+    setInventoryTypeId([...new Set(newlyFetchedIds)]); // Ensure unique IDs
+    fetchData(1, searchTerm, selectedCity); // Fetch data whenever inventoryTypeId changes
+  }, [materialFormData]); // Triggered when materialFormData changes
+
   const fetchTermsAndConditions = async () => {
     try {
       const response = await fetch(
@@ -326,106 +334,97 @@ export default function EditEvent() {
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     setLoading(true);
     try {
-      // Extract unique inventory_type_id values
-      const inventoryIds = [
-        ...new Set(
-          materialFormData
-            ?.filter((item) => item?.inventory_type_id)
-            .map((item) => item?.inventory_type_id)
-        ),
-      ];
-      console.log("materialFormData", materialFormData, inventoryIds);
-  
       let formattedData = [];
       let totalPages = 1;
   
-      if (inventoryIds.length > 0) {
-        const response = await fetch(
-          `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(inventoryIds)}`
-        );
-        const data = await response.json();
-        console.log("response with inventoryIds", data); // Debug line
-      
-        // Check if vendors exist properly
-        const vendors = Array.isArray(data.vendors) ? data.vendors : (Array.isArray(data.data?.vendors) ? data.data.vendors : []);
-        
-        formattedData = vendors.map((vendor) => ({
-          id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "N/A",
-          email: vendor.email || "N/A",
-          organisation: vendor.organization_name || "N/A",
-          phone: vendor.contact_number || vendor.mobile || "N/A",
-          city: vendor.city_id || "N/A",
-          tags: vendor.tags || "N/A",
-        }));
-        console.log("formattedData", formattedData); // Debug line
-        
-        totalPages = data?.pagination?.total_pages || data?.data?.pagination?.total_pages || 1
-        
-      setTableData(formattedData);
-      setCurrentPage(page);
-      setTotalPages(totalPages);
-      }
-       else {
-        // Call API without inventoryIds
-        const response = await fetch(
-          `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
-        );
-        const data = await response.json();
-        const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+      // Wait for the inventoryTypeId to settle (with a timeout)
+      setTimeout(async () => {
+        if (inventoryTypeId > 0) {
+          const response = await fetch(
+            `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+              inventoryTypeId
+            )}`
+          );
+          const data = await response.json();
   
-        formattedData = vendors.map((vendor) => ({
-          id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "N/A",
-          email: vendor.email || "N/A",
-          organisation: vendor.organization_name || "N/A",
-          phone: vendor.contact_number || vendor.mobile || "N/A",
-          city: vendor.city_id || "N/A",
-          tags: vendor.tags || "N/A",
-        }));
+          const vendors = Array.isArray(data.vendors)
+            ? data.vendors
+            : Array.isArray(data.data?.vendors)
+            ? data.data.vendors
+            : [];
   
-        totalPages = data?.pagination?.total_pages || 1;
-
-        // Filter out already selected vendors
-      const filteredData = formattedData.filter(
-        (vendor) =>
-          !selectedVendors.some(
-            (selected) => selected.pms_supplier_id === vendor.id
-          )
-      );
+          formattedData = vendors.map((vendor) => ({
+            id: vendor.id,
+            name: vendor.full_name || vendor.organization_name || "N/A",
+            email: vendor.email || "N/A",
+            organisation: vendor.organization_name || "N/A",
+            phone: vendor.contact_number || vendor.mobile || "N/A",
+            city: vendor.city_id || "N/A",
+            tags: vendor.tags || "N/A",
+          }));
   
-      setTableData(filteredData);
-      setCurrentPage(page);
-      setTotalPages(totalPages);
-      }
+          totalPages =
+            data?.pagination?.total_pages ||
+            data?.data?.pagination?.total_pages ||
+            1;
   
-      
+          setTableData(formattedData);
+          setSelectedVendors((prev) => {
+            const newVendors = formattedData.filter(
+              (vendor) =>
+                !prev.some(
+                  (existingVendor) => existingVendor.phone === vendor.phone
+                )
+            );
+            return [
+              ...prev,
+              ...newVendors.map((vendor) => ({ ...vendor, id: null })),
+            ];
+          });
+          setCurrentPage(page);
+          setTotalPages(totalPages);
+        } else {
+          const response = await fetch(
+            `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+          );
+          const data = await response.json();
+          const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+  
+          formattedData = vendors.map((vendor) => ({
+            id: vendor.id,
+            name: vendor.full_name || vendor.organization_name || "N/A",
+            email: vendor.email || "N/A",
+            organisation: vendor.organization_name || "N/A",
+            phone: vendor.contact_number || vendor.mobile || "N/A",
+            city: vendor.city_id || "N/A",
+            tags: vendor.tags || "N/A",
+          }));
+  
+          totalPages = data?.pagination?.total_pages || 1;
+          const filteredData = formattedData.filter(
+            (vendor) =>
+              !selectedVendors.some(
+                (selected) => selected.pms_supplier_id === vendor.id
+              )
+          );
+  
+          setTableData(filteredData);
+          setCurrentPage(page);
+          setTotalPages(totalPages);
+        }
+      }, 2000); // Delay API call by 2 seconds
+  
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
-  console.log("tableData", tableData); // Debug line
   
-
   useEffect(() => {
     fetchEventData();
     fetchData();
   }, []);
-
-  useEffect(() => {
-    // Extract unique inventory_type_id values from materialFormData, excluding null or undefined
-    const inventoryIds = [
-      ...new Set(
-        materialFormData
-          ?.filter((item) => item?.inventory_type_id) // Filter out null or undefined inventory_type_id
-          .map((item) => item?.inventory_type_id)
-      ),
-    ];
-
-    fetchData(1,"",""); // Call fetchData when inventoryIds changes
-  }, [materialFormData?.inventory_type_id]); // Add dependencies
 
   const [termsOptions, setTermsOptions] = useState([]);
 
@@ -487,6 +486,15 @@ export default function EditEvent() {
           };
         })
       );
+      // setInventoryTypeId(
+      //   ...new Set(
+      //     materialFormData
+      //       ?.filter((item) => item?.inventory_type_id)
+      //       .map((item) => item?.inventory_type_id)
+      //   )
+      // );
+      // console.log("materialFormData", materialFormData, inventoryTypeId); // Debug line
+
       setSelectedVendors(
         eventDetails?.event_vendors?.map((vendor) => ({
           id: vendor.id,
@@ -1555,6 +1563,7 @@ export default function EditEvent() {
                         <th>Comment</th>
                         <th>Remark</th>
                         <th>Status</th>
+                        <th>Created By</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1567,6 +1576,7 @@ export default function EditEvent() {
                             <td>{item.comment || "N/A"}</td>
                             <td>{item.remark || "N/A"}</td>
                             <td>{item.status || "N/A"}</td>
+                            <td>{item.created_by_name || "N/A"}</td>
                           </tr>
                         );
                       })}
