@@ -15,6 +15,8 @@ import FormatDate from "../components/FormatDate"; // Import the default styles
 import { baseURL } from "../confi/apiDomain";
 import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 import html2pdf from "html2pdf.js";
+import { auditLogColumns, specificationColumns, deliveryColumns } from "../constant/data";
+
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
@@ -40,17 +42,21 @@ export default function VendorDetails() {
   const [grossTotal, setGrossTotal] = useState(0);
   const [deliveryData, setDeliveryData] = useState([]);
   const [deliverySchedule, setDeliverySchedule] = useState(false);
-
+  const [specificationData, setSpecificationData] = useState([]);
+  const [specification, setSpecification] = useState(false);
+  const [auditLogData, setAuditLogData] = useState([]);
+  const [auditLog, setAuditLog] = useState(false);
   const handledeliverySchedule = () => {
     setDeliverySchedule(!deliverySchedule);
   };
 
-  const deliveryColumns = [
-    { label: "Material Name", key: "material_formatted_name" },
-    { label: "MOR Number", key: "mor_number" },
-    { label: "Expected Date", key: "expected_date" },
-    { label: "Expected Quantity", key: "expected_quantity" },
-  ];
+  const handleSpecification = () => {
+    setSpecification(!specification);
+  };
+
+  const handleAuditLog = () => {
+    setAuditLog(!auditLog);
+  };
 
   // conditions
   const [timeRemaining, setTimeRemaining] = useState("");
@@ -1995,8 +2001,17 @@ export default function VendorDetails() {
           },
         ];
         setOrderConfig(newOrderConfig);
-        setDeliveryData(data?.delivery_schedules || "_");        
-
+        setDeliveryData(data?.delivery_schedules || "_");
+        setSpecificationData(data?.mor_inventory_specifications);
+        const sanitizedStatusLogs = data?.status_logs?.map((log) => {
+          return Object.fromEntries(
+            Object.entries(log).map(([key, value]) => [
+              key,
+              value === null ? "N/A" : value,
+            ])
+          );
+        });
+        setAuditLogData(sanitizedStatusLogs);
         setDate(data?.event_schedule?.start_time || "");
         setEndDate(data?.event_schedule?.end_time_duration || "");
 
@@ -4041,6 +4056,120 @@ export default function VendorDetails() {
                               </div>
                             </div>
                           )}
+                        </div>
+                        <div
+                          className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+                          <a
+                            className="btn"
+                            data-bs-toggle="collapse"
+                            href="#specification"
+                            role="button"
+                            aria-expanded={specification}
+                            aria-controls="specification"
+                            onClick={handleSpecification}
+                            style={{ fontSize: "16px", fontWeight: "normal" }}
+                          >
+                            <span
+                              id="specification-icon"
+                              className="icon-1"
+                              style={{
+                                marginRight: "8px",
+                                border: "1px solid #dee2e6",
+                                paddingTop: "10px",
+                                paddingBottom: "10px",
+                                paddingLeft: "8px",
+                                paddingRight: "8px",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {specification ? (
+                                <i className="bi bi-dash-lg"></i>
+                              ) : (
+                                <i className="bi bi-plus-lg"></i>
+                              )}
+                            </span>
+                            Specification
+                          </a>
+                          {specification && (
+                            <div id="specification" className="mx-5">
+                              <div className="card card-body p-4">
+                                {specificationData?.length > 0 ? (
+                                  <Table
+                                    columns={specificationColumns}
+                                    data={specificationData}
+                                  />
+                                ) : (
+                                  <p className="text-center mt-4">
+                                    No Specification available for this
+                                    event.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+                          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#auditLog"
+            role="button"
+            aria-expanded={auditLog}
+            aria-controls="auditLog"
+            onClick={handleAuditLog}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span
+              id="audit-log-icon"
+              className="icon-1"
+              style={{
+                marginRight: "8px",
+                border: "1px solid #dee2e6",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+                paddingLeft: "8px",
+                paddingRight: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {auditLog ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Audit Log
+          </a>
+                          {auditLog && (
+                                      <div id="auditLog" className="mx-5">
+                                        <div className="card card-body p-4">
+                                          {auditLogData?.length > 0 ? (
+                                            <Table columns={auditLogColumns} data={auditLogData} />
+                                          ) : (
+                                            <p className="text-center mt-4">
+                                              No Audit Log available for this event.
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
                         </div>
                       </div>
                     </div>

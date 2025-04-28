@@ -533,12 +533,6 @@ export const documentData = [
   },
 ];
 
-export const deliveryColumns = [
-  { label: "PO Delivery Date", key: "poDeliveryDate" },
-  { label: "Sch. Delivery Qty", key: "scheduleDeliveryQty" },
-  { label: "Supplier Delivery Date", key: "supplierDeliveryDate" },
-  { label: "Supplier Delivery Qty", key: "supplierDeliveryQty" },
-];
 
 export const deliveryData = [
   {
@@ -1203,6 +1197,18 @@ export const purchaseOrderColumns = [
     { label: "Tax Applicable Cost", key: "tax_applicable_cost" },
     { label: "Total Value", key: "total_value" },
     { label: "Status", key: "status" },
+  ];
+
+  export const deliveryColumns = [
+    { label: "Material Name", key: "material_formatted_name" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Expected Date", key: "expected_date" },
+    { label: "Expected Quantity", key: "expected_quantity" },
+  ];
+
+  export const specificationColumns = [
+    { label: "Field", key: "field" },
+    { label: "Specification", key: "specification" },
   ];
 
   export const eventStatusOptions = [

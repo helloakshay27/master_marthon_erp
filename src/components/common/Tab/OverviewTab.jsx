@@ -3,6 +3,7 @@ import { EnvelopeIcon, ParticipantsIcon, ShowIcon, Table } from "../..";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../../../confi/apiDomain";
+import { auditLogColumns, specificationColumns, deliveryColumns } from "../../../constant/data";
 
 export default function OverviewTab({
   handleParticipants,
@@ -35,6 +36,10 @@ export default function OverviewTab({
   const [additionalFields, setAdditionalFields] = useState([]);
   const [deliveryData, setDeliveryData] = useState([]);
   const [deliverySchedule, setDeliverySchedule] = useState(false);
+  const [specificationData, setSpecificationData] = useState([]);
+  const [specification, setSpecification] = useState(false);
+  const [auditLogData, setAuditLogData] = useState([]);
+  const [auditLog, setAuditLog] = useState(false);
 
   const { eventId } = useParams();
 
@@ -42,12 +47,15 @@ export default function OverviewTab({
     setDeliverySchedule(!deliverySchedule);
   };
 
-  const deliveryColumns = [
-    { label: "Material Name", key: "material_formatted_name" },
-    { label: "MOR Number", key: "mor_number" },
-    { label: "Expected Date", key: "expected_date" },
-    { label: "Expected Quantity", key: "expected_quantity" },
-  ];
+  const handleSpecification = () => {
+    setSpecification(!specification);
+  };
+
+  const handleAuditLog = () => {
+    setAuditLog(!auditLog);
+  };
+
+ 
 
   const participants = [
     {
@@ -185,9 +193,8 @@ export default function OverviewTab({
     {
       label: "Evaluation Time",
       value: overviewData?.event_schedule?.evaluation_time || "_",
-    }
+    },
   ];
-
 
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
@@ -204,9 +211,19 @@ export default function OverviewTab({
     genericInfo: item.generic_info?.generic_info || "_",
   }));
 
-  useEffect(() => {    
+  useEffect(() => {
     setDeliveryData(overviewData?.delivery_schedules);
-  }, []);
+    setSpecificationData(overviewData?.mor_inventory_specifications);
+    const sanitizedStatusLogs = overviewData?.status_logs?.map((log) => {
+      return Object.fromEntries(
+        Object.entries(log).map(([key, value]) => [
+          key,
+          value === null ? "N/A" : value,
+        ])
+      );
+    });
+    setAuditLogData(sanitizedStatusLogs);
+  }, [overviewData]);
 
   const formatValue = (value) => {
     if (typeof value === "string") {
@@ -696,13 +713,107 @@ export default function OverviewTab({
             <div id="delivery-schedule" className="mx-5">
               <div className="card card-body p-4">
                 {deliveryData?.length > 0 ? (
-
                   <Table columns={deliveryColumns} data={deliveryData} />
-                )
-                : (
-                  <p className="text-center mt-4">No delivery schedule available for this event.</p>
-                )
-              }
+                ) : (
+                  <p className="text-center mt-4">
+                    No delivery schedule available for this event.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#specification"
+            role="button"
+            aria-expanded={specification}
+            aria-controls="specification"
+            onClick={handleSpecification}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span
+              id="specification-icon"
+              className="icon-1"
+              style={{
+                marginRight: "8px",
+                border: "1px solid #dee2e6",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+                paddingLeft: "8px",
+                paddingRight: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {specification ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Specification
+          </a>
+          {specification && (
+            <div id="specification" className="mx-5">
+              <div className="card card-body p-4">
+                {specificationData?.length > 0 ? (
+                  <Table
+                    columns={specificationColumns}
+                    data={specificationData}
+                  />
+                ) : (
+                  <p className="text-center mt-4">
+                    No Specification available for this event.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="col-12 my-3">
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#auditLog"
+            role="button"
+            aria-expanded={auditLog}
+            aria-controls="auditLog"
+            onClick={handleAuditLog}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span
+              id="audit-log-icon"
+              className="icon-1"
+              style={{
+                marginRight: "8px",
+                border: "1px solid #dee2e6",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+                paddingLeft: "8px",
+                paddingRight: "8px",
+                fontSize: "12px",
+              }}
+            >
+              {auditLog ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Audit Log
+          </a>
+          {auditLog && (
+            <div id="auditLog" className="mx-5">
+              <div className="card card-body p-4">
+                {auditLogData?.length > 0 ? (
+                  <Table columns={auditLogColumns} data={auditLogData} />
+                ) : (
+                  <p className="text-center mt-4">
+                    No Audit Log available for this event.
+                  </p>
+                )}
               </div>
             </div>
           )}
