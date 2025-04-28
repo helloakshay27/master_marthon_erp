@@ -378,7 +378,9 @@ export default function EditEvent() {
             );
             return [
               ...prev,
-              ...newVendors.map((vendor) => ({ ...vendor, id: null })),
+              ...newVendors.map((vendor) => ({ ...vendor, id: null,
+                pms_supplier_id: vendor.id  // Assuming pms_supplier_id is the same as id
+               })),
             ];
           });
           setCurrentPage(page);
