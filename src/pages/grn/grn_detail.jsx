@@ -286,7 +286,7 @@ const GoodReceiveNoteDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Project </label>
                       </div>
@@ -318,7 +318,7 @@ const GoodReceiveNoteDetails = () => {
                           {data?.wing ?? "-"}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                       <div className="col-6 ">
                         <label>GRN ID </label>
@@ -590,8 +590,8 @@ const GoodReceiveNoteDetails = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {item.mor_details.length > 0 ? (
-                                item.mor_details.map((detail, detailIndex) => (
+                              {item?.mor_details?.length > 0 ? (
+                                item?.mor_details?.map((detail, detailIndex) => (
                                   <tr key={detail.mor_number + detailIndex}>
                                     <td>{detail.mor_number ?? "-"}</td>
                                     <td>{detail.ordered_qty ?? "-"}</td>
@@ -622,8 +622,8 @@ const GoodReceiveNoteDetails = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {item.mor_delivery_details.length > 0 ? (
-                                item.mor_delivery_details.map(
+                              {item?.mor_delivery_details?.length > 0 ? (
+                                item.mor_delivery_details?.map(
                                   (delivery, deliveryIndex) => (
                                     <tr key={deliveryIndex}>
                                       <td>
@@ -664,8 +664,8 @@ const GoodReceiveNoteDetails = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {item.material_batches.length > 0 ? (
-                              item.material_batches.map((batch, batchIndex) => (
+                            {item.material_batches?.length > 0 ? (
+                              item.material_batches?.map((batch, batchIndex) => (
                                 <tr key={batch.batch_no + batchIndex}>
                                   <td>{batch.batch_no || "-"}</td>
                                   <td>{batch.quantity || "-"}</td>
