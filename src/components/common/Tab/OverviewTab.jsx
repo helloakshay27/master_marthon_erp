@@ -204,8 +204,8 @@ export default function OverviewTab({
     genericInfo: item.generic_info?.generic_info || "_",
   }));
 
-  useEffect(() => {
-    setDeliveryData(materialData?.delivery_schedule);
+  useEffect(() => {    
+    setDeliveryData(overviewData?.delivery_schedules);
   }, []);
 
   const formatValue = (value) => {
