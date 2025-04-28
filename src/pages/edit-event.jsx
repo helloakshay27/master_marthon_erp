@@ -323,25 +323,33 @@ export default function EditEvent() {
     fetchEventData();
   }, [setEventDetails]);
 
-
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     setLoading(true);
     try {
-      // Extract unique inventory_type_id values from materialFormData
+      // Extract unique inventory_type_id values
       const inventoryIds = [
-        ...new Set(materialFormData?.map((item) => item?.inventory_type_id)),
+        ...new Set(
+          materialFormData
+            ?.filter((item) => item?.inventory_type_id)
+            .map((item) => item?.inventory_type_id)
+        ),
       ];
-
-      const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
-          inventoryIds
-        )}`
-      );
-      const data = await response.json();
-      const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-
-      const formattedData = vendors
-        .map((vendor) => ({
+      console.log("materialFormData", materialFormData, inventoryIds);
+  
+      let formattedData = [];
+      let totalPages = 1;
+  
+      if (inventoryIds.length > 0) {
+        const response = await fetch(
+          `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(inventoryIds)}`
+        );
+        const data = await response.json();
+        console.log("response with inventoryIds", data); // Debug line
+      
+        // Check if vendors exist properly
+        const vendors = Array.isArray(data.vendors) ? data.vendors : (Array.isArray(data.data?.vendors) ? data.data.vendors : []);
+        
+        formattedData = vendors.map((vendor) => ({
           id: vendor.id,
           name: vendor.full_name || vendor.organization_name || "N/A",
           email: vendor.email || "N/A",
@@ -349,28 +357,75 @@ export default function EditEvent() {
           phone: vendor.contact_number || vendor.mobile || "N/A",
           city: vendor.city_id || "N/A",
           tags: vendor.tags || "N/A",
-        }))
-        .filter(
-          (vendor) =>
-            !selectedVendors.some(
-              (selected) => selected.pms_supplier_id === vendor.id
-            )
-        );
-
+        }));
+        console.log("formattedData", formattedData); // Debug line
+        
+        totalPages = data?.pagination?.total_pages || data?.data?.pagination?.total_pages || 1
+        
       setTableData(formattedData);
       setCurrentPage(page);
-      setTotalPages(data?.pagination?.total_pages || 1);
+      setTotalPages(totalPages);
+      }
+       else {
+        // Call API without inventoryIds
+        const response = await fetch(
+          `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        );
+        const data = await response.json();
+        const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+  
+        formattedData = vendors.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name || "N/A",
+          email: vendor.email || "N/A",
+          organisation: vendor.organization_name || "N/A",
+          phone: vendor.contact_number || vendor.mobile || "N/A",
+          city: vendor.city_id || "N/A",
+          tags: vendor.tags || "N/A",
+        }));
+  
+        totalPages = data?.pagination?.total_pages || 1;
+
+        // Filter out already selected vendors
+      const filteredData = formattedData.filter(
+        (vendor) =>
+          !selectedVendors.some(
+            (selected) => selected.pms_supplier_id === vendor.id
+          )
+      );
+  
+      setTableData(filteredData);
+      setCurrentPage(page);
+      setTotalPages(totalPages);
+      }
+  
+      
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
+  console.log("tableData", tableData); // Debug line
+  
 
   useEffect(() => {
     fetchEventData();
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Extract unique inventory_type_id values from materialFormData, excluding null or undefined
+    const inventoryIds = [
+      ...new Set(
+        materialFormData
+          ?.filter((item) => item?.inventory_type_id) // Filter out null or undefined inventory_type_id
+          .map((item) => item?.inventory_type_id)
+      ),
+    ];
+
+    fetchData(1,"",""); // Call fetchData when inventoryIds changes
+  }, [materialFormData?.inventory_type_id]); // Add dependencies
 
   const [termsOptions, setTermsOptions] = useState([]);
 

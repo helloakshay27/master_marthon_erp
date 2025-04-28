@@ -38,6 +38,19 @@ export default function VendorDetails() {
   const [currentExtraData, setCurrentExtraData] = useState({});
   const [isTaxRateDataChanged, setIsTaxRateDataChanged] = useState(false);
   const [grossTotal, setGrossTotal] = useState(0);
+  const [deliveryData, setDeliveryData] = useState([]);
+  const [deliverySchedule, setDeliverySchedule] = useState(false);
+
+  const handledeliverySchedule = () => {
+    setDeliverySchedule(!deliverySchedule);
+  };
+
+  const deliveryColumns = [
+    { label: "Material Name", key: "material_formatted_name" },
+    { label: "MOR Number", key: "mor_number" },
+    { label: "Expected Date", key: "expected_date" },
+    { label: "Expected Quantity", key: "expected_quantity" },
+  ];
 
   // conditions
   const [timeRemaining, setTimeRemaining] = useState("");
@@ -1084,7 +1097,8 @@ export default function VendorDetails() {
     const bidMaterialsAttributes = data.map((row, index) => {
       console.log("data of map on bid attributes", row);
 
-      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || row.quantity || 0);
+      const rowTotal =
+        parseFloat(row.price || 0) * (row.quantityAvail || row.quantity || 0);
       const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
       const landedAmount = rowTotal - discountAmount;
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
@@ -1275,7 +1289,6 @@ export default function VendorDetails() {
     const payload = preparePayload();
     console.log("payload:---", payload);
 
-
     try {
       // Send POST request
 
@@ -1288,35 +1301,34 @@ export default function VendorDetails() {
       const payload = preparePayload();
       console.log("payload:---", payload);
 
+      const response = await axios.post(
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+          },
+        }
+      );
 
-      // const response = await axios.post(
-      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-      //   payload,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-      //     },
-      //   }
-      // );
+      toast.success("Bid Created successfully!", {
+        autoClose: 1000, // Close after 3 seconds
+      });
+      setIsBidCreated(true);
+      setRevisedBid(true); // Update `revisedBid` to true
+      // console.log("Updated revisedBid to true"); // Update state
 
-      // toast.success("Bid Created successfully!", {
-      //   autoClose: 1000, // Close after 3 seconds
-      // });
-      // setIsBidCreated(true);
-      // setRevisedBid(true); // Update `revisedBid` to true
-      // // console.log("Updated revisedBid to true"); // Update state
+      // console.log("Updated isBidCreated to true.");
+      // console.log("vendor ID2", vendorId);
 
-      // // console.log("Updated isBidCreated to true.");
-      // // console.log("vendor ID2", vendorId);
+      // setData(response.data.bid_materials_attributes || []);
 
-      // // setData(response.data.bid_materials_attributes || []);
-
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1000);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -1348,7 +1360,7 @@ export default function VendorDetails() {
     try {
       const revisedBidMaterials = data.map((row, index) => {
         console.log("data of map on bid attributes", row);
-        
+
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
         const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
         const landedAmount = rowTotal - discountAmount;
@@ -1451,22 +1463,21 @@ export default function VendorDetails() {
       };
 
       console.log("Prepared Payload for Revision:", payload);
-      
 
-      // const response = await axios.post(
-      //   `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
-      //   payload
-      // );
+      const response = await axios.post(
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        payload
+      );
 
-      // toast.success("Bid revised successfully!", {
-      //   autoClose: 1000,
-      // });
+      toast.success("Bid revised successfully!", {
+        autoClose: 1000,
+      });
 
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1500);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1500);
     } catch (error) {
       console.error("Error revising bid:", error);
       toast.error("Failed to revise bid. Please try again.", {
@@ -1981,9 +1992,10 @@ export default function VendorDetails() {
           {
             label: "Evaluation Time",
             value: data?.event_schedule?.evaluation_time || "_",
-          }
+          },
         ];
         setOrderConfig(newOrderConfig);
+        setDeliveryData(data?.delivery_schedules || "_");        
 
         setDate(data?.event_schedule?.start_time || "");
         setEndDate(data?.event_schedule?.end_time_duration || "");
@@ -3967,6 +3979,65 @@ export default function VendorDetails() {
                                     </p>
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className="col-12 pb-4 pt-3"
+                          style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+                          <a
+                            className="btn"
+                            data-bs-toggle="collapse"
+                            href="#delivery-schedule"
+                            role="button"
+                            aria-expanded={deliverySchedule}
+                            aria-controls="delivery-schedule"
+                            onClick={handledeliverySchedule}
+                            style={{ fontSize: "16px", fontWeight: "normal" }}
+                          >
+                            <span
+                              id="delivery-schedule-icon"
+                              className="icon-1"
+                              style={{
+                                marginRight: "8px",
+                                border: "1px solid #dee2e6",
+                                paddingTop: "10px",
+                                paddingBottom: "10px",
+                                paddingLeft: "8px",
+                                paddingRight: "8px",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {deliverySchedule ? (
+                                <i className="bi bi-dash-lg"></i>
+                              ) : (
+                                <i className="bi bi-plus-lg"></i>
+                              )}
+                            </span>
+                            Delivery Schedule
+                          </a>
+                          {deliverySchedule && (
+                            <div id="delivery-schedule" className="mx-5">
+                              <div className="card card-body p-4">
+                                {deliveryData?.length > 0 ? (
+                                  <Table
+                                    columns={deliveryColumns}
+                                    data={deliveryData}
+                                  />
+                                ) : (
+                                  <p className="text-center mt-4">
+                                    No delivery schedule available for this
+                                    event.
+                                  </p>
+                                )}
                               </div>
                             </div>
                           )}
