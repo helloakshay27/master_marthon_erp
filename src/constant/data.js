@@ -263,11 +263,10 @@ export const orderSummaryData = [
 ];
 
 export const auditLogColumns = [
-  { label: "Sr.No.", key: "srno" },
-  { label: "User", key: "user" },
-  { label: "Date", key: "date" },
+  { label: "Comment", key: "comments" },
   { label: "Status", key: "status" },
-  { label: "Remark", key: "remark" },
+  { label: "Remark", key: "remarks" },
+  { label: "Created By", key: "created_by_name" },
 ];
 
 export const auditLogData = [

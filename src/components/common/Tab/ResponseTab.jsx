@@ -47,6 +47,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(false);
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
   const [showCounterOfferPopup, setShowCounterOfferPopup] = useState(false); // State for popup visibility
+  const [isOfferAccepted, setIsOfferAccepted] = useState(false); // State to track offer acceptance
 
   const navigate = useNavigate();
 
@@ -272,7 +273,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
     };
 
     fetchRemarks();
-  }, [eventId]);
+  }, [eventId, isOfferAccepted]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -348,14 +349,14 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
           },
         }
       );
+
       if (response.status === 200) {
         toast.success("Offer accepted successfully");
-        setTimeout(() => {
-          setShowCounterOfferDiv(false);
-        }, 1000);
+        setIsOfferAccepted(true); // Trigger the API call for event responses
       }
     } catch (error) {
       console.error("Error accepting offer:", error);
+      toast.error("Failed to accept the offer. Please try again.");
     }
   };
 
@@ -1297,7 +1298,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         show={showCounterOfferPopup}
         onHide={() => setShowCounterOfferPopup(false)} // Close popup
         size="md"
-        title="Counter Offer Details"
+        title="Revise Offer Details"
         footerButtons={[
           {
             label: "Decline",
@@ -1335,10 +1336,10 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         centered={true}
       >
         <div>
-          <p>{`Counter Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+          <p>{`revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
           <p>
-            A counter is pending on your bid. You cannot make any further
-            changes to your bid until you resolve the counter offer.
+            A revise is pending on your bid. You cannot make any further
+            changes to your bid until you resolve the revise offer.
           </p>
         </div>
       </DynamicModalBox>
