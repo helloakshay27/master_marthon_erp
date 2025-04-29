@@ -44,6 +44,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   });
   const [openModals, setOpenModals] = useState({});
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
+  const [bidMaterialIndex, setBidMaterialIndex] = useState(0);
   const [showCounterOfferDiv, setShowCounterOfferDiv] = useState(false);
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
   const [showCounterOfferPopup, setShowCounterOfferPopup] = useState(false); // State for popup visibility
@@ -221,11 +222,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         const response = await fetch(
           `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
         );
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         setResponse(data);
         setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
@@ -235,7 +236,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         setLoading(false);
       }
     };
-  
+
     fetchEventResponses();
   }, [isOfferAccepted]);
 
@@ -258,24 +259,23 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const handlePrev = async (vendorId) => {
     const currentIndex = activeIndexes[vendorId] ?? 0;
     const newIndex = currentIndex > 0 ? currentIndex - 1 : 0;
-  
+
     await handleCarouselChange(vendorId, newIndex);
   };
-  
 
   const handleNext = async (vendorId) => {
     const currentIndex = activeIndexes[vendorId] ?? 0;
-  
+
     // Get bid length from vendor object
     const vendor = eventVendors.find((v) => v.id === vendorId);
     const bidLength = vendor?.bid_length || 0;
-  
+
     // Limit max index to bidLength - 1
-    const newIndex = currentIndex < bidLength - 1 ? currentIndex + 1 : currentIndex;
-  
+    const newIndex =
+      currentIndex < bidLength - 1 ? currentIndex + 1 : currentIndex;
+
     await handleCarouselChange(vendorId, newIndex);
   };
-  
 
   useEffect(() => {
     const fetchRemarks = async () => {
@@ -357,13 +357,12 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
 
   const getOrdinalSuffix = (num) => {
     const j = num % 10,
-          k = num % 100;
+      k = num % 100;
     if (j === 1 && k !== 11) return "st";
     if (j === 2 && k !== 12) return "nd";
     if (j === 3 && k !== 13) return "rd";
     return "th";
   };
-  
 
   const acceptOffer = async (bidId, revisedBidId) => {
     try {
@@ -540,33 +539,33 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                     </span>
                                   </p>
                                   <div className="d-flex justify-content-center align-items-center w-100 my-2">
-                                  {activeIndex > 0 && (
-                                    <button
-                                      className="px-2 border-0"
-                                      style={{ fontSize: "1.5rem" }}
-                                      onClick={() => handlePrev(vendor.id)}
-                                    >
-                                      &lt;
-                                    </button>
-                                  )}
-                                  <div className="carousel-item-content">
-                                    {activeIndex === 0 && "Current Bid"}
-                                    {activeIndex === 1 && "Initial Bid"}
-                                    {activeIndex > 1 &&
-                                      `${activeIndex - 1}${getOrdinalSuffix(
-                                        activeIndex - 1
-                                      )} Revision`}
+                                    {activeIndex > 0 && (
+                                      <button
+                                        className="px-2 border-0"
+                                        style={{ fontSize: "1.5rem" }}
+                                        onClick={() => handlePrev(vendor.id)}
+                                      >
+                                        &lt;
+                                      </button>
+                                    )}
+                                    <div className="carousel-item-content">
+                                      {activeIndex === 0 && "Current Bid"}
+                                      {activeIndex === 1 && "Initial Bid"}
+                                      {activeIndex > 1 &&
+                                        `${activeIndex - 1}${getOrdinalSuffix(
+                                          activeIndex - 1
+                                        )} Revision`}
+                                    </div>
+                                    {activeIndex < bidLength - 1 && (
+                                      <button
+                                        className="px-2 border-0"
+                                        style={{ fontSize: "1.5rem" }}
+                                        onClick={() => handleNext(vendor.id)}
+                                      >
+                                        &gt;
+                                      </button>
+                                    )}
                                   </div>
-                                  {activeIndex < bidLength - 1 && (
-                                    <button
-                                      className="px-2 border-0"
-                                      style={{ fontSize: "1.5rem" }}
-                                      onClick={() => handleNext(vendor.id)}
-                                    >
-                                      &gt;
-                                    </button>
-                                  )}
-                                </div>
                                 </div>
                                 <button
                                   className={`purple-btn1 mt-2 ${
@@ -730,57 +729,57 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                         {
                           label: "Tax Rate",
                           key: "taxRate",
-                          render: (material) => (
-                            <button
-                              className="btn btn-link"
-                              onClick={() => handleTaxModalOpen(material, ind)}
-                            >
-                              View Tax
-                            </button>
-                          ),
                         },
                       ]}
-                      tableData={materialData.bids_values?.map((material) => {
-                        const extraData = material.extra_data || {};
+                      tableData={materialData.bids_values?.map(
+                        (material, bidIndex) => {
+                          const extraData = material.extra_data || {};
 
-                        return {
-                          bestTotalAmount: material.total_amount || "_",
-                          quantityAvailable: material.quantity_available || "_",
-                          price: material.price || "_",
-                          discount: material.discount || "_",
-                          realisedDiscount: material.realised_discount || "_",
-                          gst: material.gst || "_",
-                          realisedGST: material.realised_gst || "_",
-                          landedAmount: material.landed_amount || "_",
-                          participantAttachment:
-                            material.participant_attachment || "_",
-                          totalAmount: material.total_amount || "_",
-                          ...material.extra_columns.reduce((acc, column) => {
-                            if (extraData[column]?.value) {
-                              const value = extraData[column].value;
-                              acc[column] = Array.isArray(value)
-                                ? value
-                                    .map(
-                                      (item) =>
-                                        `${item.taxChargeType || ""}: ${
-                                          item.amount || 0
-                                        }${
-                                          item.taxChargePerUom
-                                            ? ` (${item.taxChargePerUom})`
-                                            : ""
-                                        }`
-                                    )
-                                    .join(", ")
-                                : value || "_";
-                            } else {
-                              acc[column] = "_";
-                            }
-                            return acc;
-                          }, {}),
-                          taxRate: material,
-                        };
-                      })}
-                      handleTaxButtonClick={handleShowModal}
+                          return {
+                            bestTotalAmount: material.total_amount || "_",
+                            quantityAvailable:
+                              material.quantity_available || "_",
+                            price: material.price || "_",
+                            discount: material.discount || "_",
+                            realisedDiscount: material.realised_discount || "_",
+                            gst: material.gst || "_",
+                            realisedGST: material.realised_gst || "_",
+                            landedAmount: material.landed_amount || "_",
+                            participantAttachment:
+                              material.participant_attachment || "_",
+                            totalAmount: material.total_amount || "_",
+                            ...material.extra_columns.reduce((acc, column) => {
+                              if (extraData[column]?.value) {
+                                const value = extraData[column].value;
+                                acc[column] = Array.isArray(value)
+                                  ? value
+                                      .map(
+                                        (item) =>
+                                          `${item.taxChargeType || ""}: ${
+                                            item.amount || 0
+                                          }${
+                                            item.taxChargePerUom
+                                              ? ` (${item.taxChargePerUom})`
+                                              : ""
+                                          }`
+                                      )
+                                      .join(", ")
+                                  : value || "_";
+                              } else {
+                                acc[column] = "_";
+                              }
+                              return acc;
+                            }, {}),
+                            taxRate: material,
+                            bidIndex: bidIndex,
+                          };
+                        }
+                      )}
+                      handleTaxButtonClick={(bid, str, rowIndex) => {
+                        setSelectedMaterialIndex(ind);
+                        setBidMaterialIndex(rowIndex);
+                        setShowTaxModal(true);
+                      }}
                     />
                   );
                 })}
@@ -985,8 +984,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.material_name || ""
                   }
                   readOnly
@@ -1001,8 +1000,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.event_material?.inventory_id || ""
                   }
                   readOnly
@@ -1020,8 +1019,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.price || ""
                   }
                   readOnly
@@ -1036,8 +1035,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.quantity_available || ""
                   }
                   readOnly
@@ -1055,8 +1054,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.discount || ""
                   }
                   readOnly
@@ -1071,8 +1070,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.total_amount || ""
                   }
                   readOnly
@@ -1117,11 +1116,12 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                       <td></td>
                       <td></td>
                     </tr>
-                    {segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.addition_bid_material_tax_details?.map(
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
+                          {console.log(item)}
                           <td>
                             <SelectBox
                               options={taxOptions}
@@ -1148,7 +1148,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                           <td>
                             <select
                               className="form-select"
-                              value={item.taxChargePerUom}
+                              defaultValue={item?.tax_percentage}
+                              // value={item.taxChargePerUom}
                               onChange={(e) =>
                                 handleTaxChargeChange(
                                   selectedMaterialIndex,
@@ -1204,8 +1205,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                       <td></td>
                       <td></td>
                     </tr>
-                    {segeregatedMaterialData[0]?.bids_values?.[
-                      selectedMaterialIndex
+                    {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                      bidMaterialIndex
                     ]?.deduction_bid_material_tax_details?.map(
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>

@@ -219,7 +219,7 @@ export default function Accordion({
                   taxRate: (value, rowIndex, rowData) => (
                     <button
                       className="purple-btn2"
-                      onClick={() => handleTaxButtonClick(rowData, "taxRate")}
+                      onClick={() => handleTaxButtonClick(rowData, "taxRate",rowIndex)}
                     >
                       View Tax
                     </button>
