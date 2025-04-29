@@ -1147,7 +1147,8 @@ export default function CounterOffer() {
                               <td>
                                 <select
                                   className="form-select"
-                                  value={item.taxChargePerUom}
+                                  // value={item.taxChargePerUom}
+                                  defaultValue={item?.tax_percentage}
                                   onChange={(e) =>
                                     handleTaxChargeChange(
                                       selectedMaterialIndex,
@@ -1255,7 +1256,8 @@ export default function CounterOffer() {
                                 <td>
                                   <select
                                     className="form-select"
-                                    value={item.taxChargePerUom}
+                                    // value={item.taxChargePerUom}
+                                    defaultValue={item?.tax_percentage}
                                     onChange={(e) =>
                                       handleTaxChargeChange(
                                         selectedMaterialIndex,

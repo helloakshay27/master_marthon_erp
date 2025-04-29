@@ -1122,11 +1122,12 @@ export default function VendorDetails() {
                 charge.taxChargeType.trim().toLowerCase()
             );
             return {
-              resource_id: matchedTax?.id || null, // or set to null if not found
+              resource_id: matchedTax?.id || null, 
               resource_type: matchedTax?.taxChargeType || "TaxCharge",
               amount: charge.amount,
               inclusive: charge.inclusive,
               addition: true,
+              tax_percentage: charge.taxChargePerUom,
             };
           }
         ),
@@ -1145,6 +1146,7 @@ export default function VendorDetails() {
               amount: charge.amount,
               inclusive: charge.inclusive,
               addition: false,
+              tax_percentage: charge.taxChargePerUom,
             };
           }
         ),
@@ -1388,6 +1390,7 @@ export default function VendorDetails() {
                 amount: parseFloat(charge.amount || 0), // ensure clean amount
                 inclusive: charge.inclusive,
                 addition: true,
+                tax_percentage: charge.taxChargePerUom,
               };
             }
           ),
@@ -1407,6 +1410,7 @@ export default function VendorDetails() {
                 amount: parseFloat(charge.amount || 0),
                 inclusive: charge.inclusive,
                 addition: false,
+                tax_percentage: charge.taxChargePerUom,
               };
             }
           ),
@@ -4325,8 +4329,6 @@ export default function VendorDetails() {
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
-                        {console.log("data", data)}
-
                         <Table
                           columns={[
                             { label: "Sr No", key: "srNo" },
@@ -5665,6 +5667,7 @@ export default function VendorDetails() {
       </div>
       <ToastContainer />
       {/* {console.log("revisedBid", revisedBid)} */}
+      
 
       <DynamicModalBox
         show={showModal1}
@@ -5741,7 +5744,7 @@ export default function VendorDetails() {
                       .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
-                          {/* {console.log("item:----", item, "taxOpiton")} */}
+                          {console.log("item:----", item, "taxOpiton")}
                           <td>
                             <SelectBox
                               options={taxOptions}
@@ -5764,11 +5767,11 @@ export default function VendorDetails() {
                               className="custom-select"
                             />
                           </td>
-
+                              
                           <td>
                             <select
                               className="form-select"
-                              defaultValue={item.taxChargePerUom}
+                              defaultValue={item?.tax_percentage}
                               onChange={(e) =>
                                 handleAllTaxChargeChange(
                                   "taxChargePerUom",
@@ -5783,7 +5786,9 @@ export default function VendorDetails() {
                               <option value="18%">18%</option>
                               <option value="28%">28%</option>
                             </select>
+                            
                           </td>
+
 
                           <td className="text-center">
                             <input
@@ -5871,7 +5876,7 @@ export default function VendorDetails() {
                           <td>
                             <select
                               className="form-select"
-                              value={item.taxChargePerUom}
+                              defaultValue={item?.tax_percentage}
                               onChange={(e) =>
                                 handleAllTaxChargeChange(
                                   "taxChargePerUom",
@@ -6140,7 +6145,7 @@ export default function VendorDetails() {
                       .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
-                          {/* {console.log("item:----", item, "taxOpiton",)} */}
+                          {console.log("item:----", item, "taxOpiton",)}
                           <td>
                             <SelectBox
                               options={taxOptions}
@@ -6170,7 +6175,7 @@ export default function VendorDetails() {
                             <select
                               className="form-select"
                               // value={item.taxChargePerUom}
-                              defaultValue={item.taxChargePerUom}
+                              defaultValue={item?.tax_percentage}
                               onChange={(e) =>
                                 handleTaxChargeChange(
                                   tableId,
@@ -6281,7 +6286,8 @@ export default function VendorDetails() {
                         <td>
                           <select
                             className="form-select"
-                            value={item.taxChargePerUom}
+                            // value={item.taxChargePerUom}
+                            defaultValue={item?.tax_percentage}
                             onChange={(e) =>
                               handleTaxChargeChange(
                                 tableId,
