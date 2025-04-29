@@ -295,6 +295,22 @@ export default function CounterOffer() {
     }
   };
 
+  useEffect(() => {
+    if (bidCounterData && Object.keys(formData).length === 0) {
+      const updatedMaterials = bidCounterData.bid_materials.map((item) => ({
+        ...item,
+        originalPrice: parseFloat(item.price) || 0, // Store the original price
+      }));
+      setFormData({ ...bidCounterData, bid_materials: updatedMaterials });
+  
+      const initialSumTotal = updatedMaterials.reduce(
+        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+        0
+      );
+      setSumTotal(initialSumTotal);
+    }
+  }, [bidCounterData]);
+
   const handleMaterialInputChange = (e, field, index) => {
     const value = parseFloat(e.target.value) || 0;
     const updatedMaterials = [...formData.bid_materials];
@@ -309,13 +325,15 @@ export default function CounterOffer() {
     }
 
     if (field === "price") {
-      const originalPrice =
-        parseFloat(bidCounterData?.bid_materials[index]?.price) || 0;
+      const originalPrice = updatedMaterials[index].originalPrice; // Use stored original price
+      console.log("originalPrice", originalPrice, "value", value);
+    
       if (value > originalPrice) {
-        toast.error("Price cannot be higher than already existed value.");
+        toast.error("Price cannot be higher than the original value.");
         return;
       }
-      updatedMaterials[index].allowPriceIncrease = value <= originalPrice;
+    
+      updatedMaterials[index].price = value; // Update the price
     }
 
     if (field === "discount") {

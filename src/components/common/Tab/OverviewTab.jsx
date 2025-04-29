@@ -759,12 +759,28 @@ export default function OverviewTab({
             <div id="specification" className="mx-5">
               <div className="card card-body p-4">
                 {specificationData?.length > 0 ? (
-                  <Table
-                  style={{ textAlign: "center" }}
-                className="text-center"
-                    columns={specificationColumns}
-                    data={specificationData}
-                  />
+                  <table className="tbl-container w-100">
+                                                      <thead>
+                                                        <tr>
+                                                          {specificationColumns.map((col, index) => (
+                                                            <th key={index} style={{ textAlign: "center !important" }}>
+                                                              {col.label}
+                                                            </th>
+                                                          ))}
+                                                        </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                        {specificationData.map((row, rowIndex) => (
+                                                          <tr key={rowIndex}>
+                                                            {specificationColumns.map((col, colIndex) => (
+                                                              <td key={colIndex} style={{ textAlign: "center !important" }}>
+                                                                {row[col.key]}
+                                                              </td>
+                                                            ))}
+                                                          </tr>
+                                                        ))}
+                                                      </tbody>
+                                                    </table>
                 ) : (
                   <p className="text-center mt-4">
                     No Specification available for this event.
@@ -810,7 +826,16 @@ export default function OverviewTab({
             <div id="auditLog" className="mx-5">
               <div className="card card-body p-4">
                 {auditLogData?.length > 0 ? (
-                  <Table columns={auditLogColumns} data={auditLogData} />
+                  <Table
+                  columns={[
+                    { label: "Sr No", key: "srNo" }, // Add serial number column
+                    ...auditLogColumns,
+                  ]}
+                  data={auditLogData.map((item, index) => ({
+                    ...item,
+                    srNo: index + 1, // Add serial number to each row
+                  }))}
+                />
                 ) : (
                   <p className="text-center mt-4">
                     No Audit Log available for this event.

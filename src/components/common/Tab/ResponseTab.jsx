@@ -152,70 +152,91 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
     fetchDeductionTaxes();
   }, []);
 
-  useEffect(() => {
-    const fetchRevisionData = async (
-      vendorId,
-      revisionNumber,
-      isCurrent = false
-    ) => {
-      setLoading(true);
-      setError(null);
-      try {
-        let data;
-        if (isCurrent) {
-          const response = await fetch(
-            `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
-          );
+  const fetchRevisionData = async (
+    vendorId,
+    revisionNumber,
+    isCurrent = false
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      let data;
+      if (isCurrent) {
+        const response = await fetch(
+          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        );
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const responseData = await response.json();
-
-          let data = Array.isArray(responseData.vendors)
-            ? responseData.vendors.find((vendor) => vendor.id === vendorId)
-            : null;
-
-          if (!data) {
-            throw new Error("Vendor not found or invalid response format");
-          }
-
-          setEventVendors((prev) =>
-            prev.map((vendor) =>
-              vendor.id === vendorId ? { ...vendor, ...data } : vendor
-            )
-          );
-        } else {
-          // Use revision data
-          const response = await axios.get(
-            `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
-          );
-          data = response.data;
-
-          const updatedEventVendors = eventVendors.map((vendor) => {
-            if (vendor.id === vendorId) {
-              return {
-                ...vendor,
-                bids: [
-                  {
-                    ...data,
-                    bid_materials: data.bid_materials || [],
-                  },
-                ],
-              };
-            }
-            return vendor;
-          });
-          setEventVendors(updatedEventVendors);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const responseData = await response.json();
+
+        let data = Array.isArray(responseData.vendors)
+          ? responseData.vendors.find((vendor) => vendor.id === vendorId)
+          : null;
+
+        if (!data) {
+          throw new Error("Vendor not found or invalid response format");
+        }
+
+        setEventVendors((prev) =>
+          prev.map((vendor) =>
+            vendor.id === vendorId ? { ...vendor, ...data } : vendor
+          )
+        );
+      } else {
+        // Use revision data
+        const response = await axios.get(
+          `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
+        );
+        data = response.data;
+
+        const updatedEventVendors = eventVendors.map((vendor) => {
+          if (vendor.id === vendorId) {
+            return {
+              ...vendor,
+              bids: [
+                {
+                  ...data,
+                  bid_materials: data.bid_materials || [],
+                },
+              ],
+            };
+          }
+          return vendor;
+        });
+        setEventVendors(updatedEventVendors);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    const fetchEventResponses = async () => {
+      try {
+        const response = await fetch(
+          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        );
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        setResponse(data);
+        setEventVendors(Array.isArray(data?.vendors) ? data.vendors : []);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+  
+    fetchEventResponses();
   }, [isOfferAccepted]);
 
   const handleCarouselChange = async (vendorId, selectedIndex) => {
@@ -233,6 +254,26 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
       await fetchRevisionData(vendorId, revisionNumber);
     }
   };
+
+  // const handlePrev = async (vendorId) => {
+  //   setActiveIndexes((prevIndexes) => {
+  //     const currentIndex =
+  //       prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
+  //     const newIndex = currentIndex === 0 ? 2 : currentIndex - 1;
+  //     handleCarouselChange(vendorId, newIndex);
+  //     return { ...prevIndexes, [vendorId]: newIndex };
+  //   });
+  // };
+
+  // const handleNext = async (vendorId) => {
+  //   setActiveIndexes((prevIndexes) => {
+  //     const currentIndex =
+  //       prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
+  //     const newIndex = currentIndex === 2 ? 0 : currentIndex + 1;
+  //     handleCarouselChange(vendorId, newIndex);
+  //     return { ...prevIndexes, [vendorId]: newIndex };
+  //   });
+  // };
 
   const handlePrev = async (vendorId) => {
     setActiveIndexes((prevIndexes) => {
@@ -514,33 +555,33 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                     </span>
                                   </p>
                                   <div className="d-flex justify-content-center align-items-center w-100 my-2">
-                                    {activeIndex > 0 && (
-                                      <button
-                                        className="px-2 border-0"
-                                        style={{ fontSize: "1.5rem" }}
-                                        onClick={() => handlePrev(vendor.id)}
-                                      >
-                                        &lt;
-                                      </button>
-                                    )}
-                                    <div className="carousel-item-content">
-                                      {activeIndex === 0 && "Current Bid"}
-                                      {activeIndex === 1 && "Initial Bid"}
-                                      {activeIndex > 1 &&
-                                        `${activeIndex - 1}${getOrdinalSuffix(
-                                          activeIndex - 1
-                                        )} Revision`}
-                                    </div>
-                                    {activeIndex < bidLength - 1 && (
-                                      <button
-                                        className="px-2 border-0"
-                                        style={{ fontSize: "1.5rem" }}
-                                        onClick={() => handleNext(vendor.id)}
-                                      >
-                                        &gt;
-                                      </button>
-                                    )}
+                                  {activeIndex > 0 && (
+                                    <button
+                                      className="px-2 border-0"
+                                      style={{ fontSize: "1.5rem" }}
+                                      onClick={() => handlePrev(vendor.id)}
+                                    >
+                                      &lt;
+                                    </button>
+                                  )}
+                                  <div className="carousel-item-content">
+                                    {activeIndex === 0 && "Current Bid"}
+                                    {activeIndex === 1 && "Initial Bid"}
+                                    {activeIndex > 1 &&
+                                      `${activeIndex - 1}${getOrdinalSuffix(
+                                        activeIndex - 1
+                                      )} Revision`}
                                   </div>
+                                  {activeIndex < bidLength - 1 && (
+                                    <button
+                                      className="px-2 border-0"
+                                      style={{ fontSize: "1.5rem" }}
+                                      onClick={() => handleNext(vendor.id)}
+                                    >
+                                      &gt;
+                                    </button>
+                                  )}
+                                </div>
                                 </div>
                                 <button
                                   className={`purple-btn1 mt-2 ${

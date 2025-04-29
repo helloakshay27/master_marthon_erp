@@ -13844,7 +13844,7 @@ input[type="checkbox"] {
 }
 
 .tbl-container td {
-  text-align: left!important;
+  text-align: left;
   border: 1px solid #dee2e6;
   font-family: "Poppins", sans-serif;
   font-weight: 500;

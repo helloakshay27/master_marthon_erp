@@ -391,6 +391,7 @@ export default function Table({
                   <td
                     key={cellIndex}
                     style={{
+                      textAlign: "left",
                       whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
                       overflow: enableOverflowScroll ? "hidden" : "visible",
                       textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
