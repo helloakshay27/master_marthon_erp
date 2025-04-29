@@ -21,6 +21,10 @@ const BOQList = () => {
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
   const [boqList, setBoqList] = useState(null); // State to store the fetched data
+  const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 5; // Items per page
+    const [totalEntries, setTotalEntries] = useState(0);
   const [loading2, setLoading2] = useState(true);
 
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -163,27 +167,47 @@ const BOQList = () => {
 
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   // Fetch data from the API when the component mounts
-  useEffect(() => {
-    const search = searchKeyword||"";
-    console.log("search", search)
-    
+  const fetchData = (page) => {
     axios
-      .get(`${baseURL}boq_details.json?search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-      .then((response) => {
-        setBoqList(response.data); // Set the data in state
-        setLoading2(false);
-        if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
-          setBoqDetailsSub(false); // Set to true if uom is not null
-        }
+    .get(`${baseURL}boq_details.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    .then((response) => {
+      setBoqList(response.data); // Set the data in state
+      console.log("data list ",response.data.pagination.total_entries )
+      setTotalPages(response.data?.pagination.total_pages); // Set total pages
+      setTotalEntries(response.data?.pagination.total_entries );
+      setLoading2(false);
+      if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
+        setBoqDetailsSub(false); // Set to true if uom is not null
+      }
 
-      })
-      .catch((error) => {
-        console.log('error', error)
-        setLoading2(false);
+    })
+    .catch((error) => {
+      console.log('error', error)
+      setLoading2(false);
 
-      });
+    });
+  }
 
-  }, [searchKeyword]); // Empty dependency array ensures it runs only once when the component mounts
+   
+  
+    // Fetch data on component mount and when the page changes
+    useEffect(() => {
+      fetchData(currentPage);
+    }, [currentPage]);
+  
+    // Handle page change
+    const handlePageChange = (pageNumber) => {
+      if (pageNumber > 0 && pageNumber <= totalPages) {
+        setCurrentPage(pageNumber);
+      }
+    };
+  // useEffect(() => {
+  //   const search = searchKeyword||"";
+  //   console.log("search", search)
+    
+   
+
+  // }, []); // Empty dependency array ensures it runs only once when the component mounts
 
   // console.log('boq list', boqList)
 
@@ -613,7 +637,7 @@ const BOQList = () => {
     console.log('Selected Status:', selectedOption);
   };
 
-
+  const [expandAll, setExpandAll] = useState(false);
   const handleApplyFilters = () => {
     // Extract all selected filter values
     // const categoryId = selectedCategory?.value;
@@ -679,7 +703,10 @@ const BOQList = () => {
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
+          setTotalPages(response.data?.pagination.total_pages); // Update total pages
+          setTotalEntries(response.data?.pagination.total_entries); // Update total entries
           console.log("filterrrrr",response.data)
+          setExpandAll(true)
           setShow(false)
         })
         .catch((error) => {
@@ -1072,7 +1099,7 @@ const BOQList = () => {
           placeholder="Type your keywords here"
         />
         <div className="input-group-append">
-          <button type="button" className="btn btn-md btn-default">
+          <button type="button" className="btn btn-md btn-default"  onClick={handleApplyFilters} >
             <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203"/>
               <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203"/>
@@ -1152,7 +1179,10 @@ const BOQList = () => {
                         <React.Fragment key={project.id}>
 
                           <tr>
-                            <td>{index + 1}</td>
+                            <td>
+                              {/* {index + 1} */}
+                            {(currentPage - 1) * itemsPerPage + index + 1}
+                            </td>
                             <td>
                               {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                             </td>
@@ -1160,10 +1190,13 @@ const BOQList = () => {
                               <button
                                 className="btn btn-link p-0"
                                 // onClick={handleSubProject}
-                                onClick={() => toggleProject(project.id)}
+                                // onClick={() => toggleProject(project.id)}
+                                onClick={() => {
+                                  toggleProject(project.id); // disable manual toggle when auto-expand is active
+                                }}
                                 aria-label="Toggle row visibility"
                               >
-                                {openProjectId === project.id ?
+                                {openProjectId === project.id  ?
                                   (
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -1213,7 +1246,7 @@ const BOQList = () => {
                           </tr>
                           {/* subProject  start */}
 
-                          {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
+                          {openProjectId === project.id  && project.sub_projects && project.sub_projects.map((subProject) => (
                             <React.Fragment key={subProject.id}>
                               <tr>
                                 <td></td>
@@ -3246,6 +3279,88 @@ const BOQList = () => {
 
                     </tbody>
                   </table>
+                 
+                </div>
+                <div className="d-flex justify-content-between align-items-center px-3 mt-2  mb-3">
+                  <ul className="pagination justify-content-center d-flex">
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                      >
+                        First
+                      </button>
+                    </li>
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Prev
+                      </button>
+                    </li>
+
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <li
+                        key={index + 1}
+                        className={`page-item ${
+                          currentPage === index + 1 ? "active" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(index + 1)}
+                        >
+                          {index + 1}
+                        </button>
+                      </li>
+                    ))}
+
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </button>
+                    </li>
+                  </ul>
+                  <div>
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                    {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  
+                    {totalEntries} entries
+                    {console.log(".........",itemsPerPage)}
+                  </div>
+
                 </div>
               </div>
 

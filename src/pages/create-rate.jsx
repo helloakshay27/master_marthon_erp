@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState,useEffect} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import { Modal, Button, Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
 // import Modal from "react-bootstrap/Modal";
 
 const options = [
@@ -46,23 +48,23 @@ const CreateRate = () => {
     };
 
     // Handle checkbox change
-    const handleCheckboxChange = (checkboxNum) => {
-        if (checkboxNum === 1) {
-            setCheckbox1(!checkbox1);
-            // Disable the rate input and checkbox 2 when checkbox 1 is selected
-            if (!checkbox1) {
-                setCheckbox2(false);  // Deselect checkbox 2
-                // setRate('');           // Clear rate input
-            }
-        } else if (checkboxNum === 2) {
-            setCheckbox2(!checkbox2);
-            // Disable the rate input and checkbox 1 when checkbox 2 is selected
-            if (!checkbox2) {
-                setCheckbox1(false);  // Deselect checkbox 1
-                // setRate('');           // Clear rate input
-            }
-        }
-    };
+    // const handleCheckboxChange = (checkboxNum) => {
+    //     if (checkboxNum === 1) {
+    //         setCheckbox1(!checkbox1);
+    //         // Disable the rate input and checkbox 2 when checkbox 1 is selected
+    //         if (!checkbox1) {
+    //             setCheckbox2(false);  // Deselect checkbox 2
+    //             // setRate('');           // Clear rate input
+    //         }
+    //     } else if (checkboxNum === 2) {
+    //         setCheckbox2(!checkbox2);
+    //         // Disable the rate input and checkbox 1 when checkbox 2 is selected
+    //         if (!checkbox2) {
+    //             setCheckbox1(false);  // Deselect checkbox 1
+    //             // setRate('');           // Clear rate input
+    //         }
+    //     }
+    // };
 
     // modal data dd to table 
     const [tableData, setTableData] = useState([]); // State for table rows
@@ -75,6 +77,8 @@ const CreateRate = () => {
         brand: "",
         effectiveDate: "",
         rate: "",
+        poRate: "",
+        avgRate: "",
         uom: "",
     });
 
@@ -87,11 +91,36 @@ const CreateRate = () => {
         }));
     };
 
+    // const handleSelectorChange = (field, selectedOption) => {
+    //     setFormData((prevData) => ({
+    //         ...prevData,
+    //         [field]: selectedOption?.label || "",
+    //     }));
+    // };
+
     const handleSelectorChange = (field, selectedOption) => {
         setFormData((prevData) => ({
             ...prevData,
             [field]: selectedOption?.label || "",
         }));
+    
+        if (field === "materialType") {
+            // Logic for materialType selection
+            setSelectedInventory2(selectedOption); // Set the selected inventory type
+            setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+            setInventorySubTypes2([]); // Reset the sub-types list
+            setInventoryMaterialTypes([]); // Reset the material types list
+            setSelectedInventoryMaterialTypes(null); // Clear selected material type
+        }
+    
+        if (field === "materialSubType") {
+            // Logic for materialSubType selection
+            setSelectedSubType2(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "material") {
+            // Logic for materialSubType selection
+            setSelectedInventoryMaterialTypes2(selectedOption); // Set the selected inventory sub-type
+        }
     };
 
     // Handle form submission
@@ -107,10 +136,262 @@ const CreateRate = () => {
             brand: "",
             effectiveDate: "",
             rate: "",
+            poRate: "",
+            avgRate: "",
             uom: "",
         }); // Reset form
         setShowModal(false); // Close modal
     };
+
+    const handleCheckboxChange = (checkboxNum) => {
+        if (checkboxNum === 1) {
+            setCheckbox1(!checkbox1);
+            setFormData((prevData) => ({
+                ...prevData,
+                avgRate: !checkbox1 ? prevData.rate : "", // Set avgRate if selected, clear if deselected
+            }));
+            if (!checkbox1) {
+                setCheckbox2(false); // Deselect checkbox 2
+            }
+        } else if (checkboxNum === 2) {
+            setCheckbox2(!checkbox2);
+            setFormData((prevData) => ({
+                ...prevData,
+                poRate: !checkbox2 ? prevData.rate : "", // Set poRate if selected, clear if deselected
+            }));
+            if (!checkbox2) {
+                setCheckbox1(false); // Deselect checkbox 1
+            }
+        }
+    };
+
+    // delete row 
+    const handleDeleteRow = (rowIndex) => {
+        setTableData((prevData) => prevData.filter((_, index) => index !== rowIndex));
+    };
+
+    //  project ,sub project wing api 
+
+      const [projects, setProjects] = useState([]);
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [selectedSite, setSelectedSite] = useState(null);
+      const [selectedWing, setSelectedWing] = useState(null);
+      const [wingsOptions, setWingsOptions] = useState([]);
+      const [siteOptions, setSiteOptions] = useState([]);
+      const [companies, setCompanies] = useState([]);
+    //   const [projects, setProjects] = useState([]);
+      const [selectedCompany, setSelectedCompany] = useState(null);
+    //   const [selectedProject, setSelectedProject] = useState(null);
+    //   const [selectedSite, setSelectedSite] = useState(null);
+    //   const [selectedWing, setSelectedWing] = useState(null);
+    //   const [siteOptions, setSiteOptions] = useState([]);
+    //   const [wingsOptions, setWingsOptions] = useState([]);
+  
+      // Fetch company data on component mount
+      useEffect(() => {
+          axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+              .then(response => {
+                  setCompanies(response.data.companies);
+                //   setData(response.data);  // Set the data from the API to state
+                  setLoading(false);  // Update the loading state
+              })
+              .catch(error => {
+                  console.error('Error fetching company data:', error);
+                  setLoading(false);
+              });
+      }, []);
+  
+      // Handle company selection
+      const handleCompanyChange = (selectedOption) => {
+          setSelectedCompany(selectedOption);  // Set selected company
+          setSelectedProject(null); // Reset project selection
+          setSelectedSite(null); // Reset site selection
+          setSelectedWing(null); // Reset wing selection
+          setProjects([]); // Reset projects
+          setSiteOptions([]); // Reset site options
+          setWingsOptions([]); // Reset wings options
+  
+          if (selectedOption) {
+              // Find the selected company from the list
+              const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
+              setProjects(
+                  selectedCompanyData?.projects.map(prj => ({
+                      value: prj.id,
+                      label: prj.name
+                  }))
+              );
+          }
+      };
+         // Map companies to options for the dropdown
+    const companyOptions = companies.map(company => ({
+        value: company.id,
+        label: company.company_name
+    }));
+
+    
+      // Fetch projects on mount
+    //   useEffect(() => {
+    //     // Replace this with your actual API URL
+    //     axios.get(`${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //       .then(response => {
+    //         setProjects(response.data.projects);
+    //       })
+    //       .catch(error => {
+    //         console.error("Error fetching projects:", error);
+    //       });
+    //   }, []);
+    
+      // Handle project selection change
+      const handleProjectChange = (selectedOption) => {
+        // Reset selected site and wing when a new project is selected
+        setSelectedProject(selectedOption);
+        setSelectedSite(null); // Reset selected site
+        setSelectedWing(null); // Reset selected wing
+        setWingsOptions([]); // Clear wings options
+        setSiteOptions([]);
+    
+        // Fetch sites based on the selected project
+        if (selectedOption) {
+          const selectedProjectData = projects.find(project => project.id === selectedOption.value);
+          setSiteOptions(selectedProjectData.pms_sites.map(site => ({
+            value: site.id,   // Use id as value for the site
+            label: site.name  // Display the site name
+          })));
+        }
+      };
+    
+      // Handle site selection change
+      const handleSiteChange = (selectedOption) => {
+        setSelectedSite(selectedOption);
+        setSelectedWing(null); // Reset selected wing
+        setWingsOptions([]); // Clear wings options
+    
+        // Fetch wings for the selected site
+        if (selectedOption) {
+          const selectedProjectData = projects.find(project => project.id === selectedProject.value);
+          const selectedSiteData = selectedProjectData.pms_sites.find(site => site.id === selectedOption.value);
+          setWingsOptions(selectedSiteData.pms_wings.map(wing => ({
+            value: wing.id,    // Use id as value for the wing
+            label: wing.name   // Display the wing name
+          })));
+        }
+      };
+    
+      // Handle wing selection change
+      const handleWingChange = (selectedOption) => {
+        setSelectedWing(selectedOption);
+        // You can perform further actions with the selected wing value if necessary
+      };
+    
+    //   // Mapping projects for the dropdown
+    //   const projectOptions = projects.map(project => ({
+    //     value: project.id,         // Use id as value for the project
+    //     label: project.formatted_name
+    //   }));
+
+     // material type options 
+      const [inventoryTypes, setInventoryTypes] = useState([]);  // State to hold the fetched data
+      const [selectedInventory, setSelectedInventory] = useState(null);  // State to hold selected inventory type
+      const [inventorySubTypes, setInventorySubTypes] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedSubType, setSelectedSubType] = useState(null); // State to hold selected sub-type
+      const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] = useState(null); // State to hold selected sub-type
+    
+      const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
+      const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
+      const [inventorySubTypes2, setInventorySubTypes2] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedSubType2, setSelectedSubType2] = useState(null); // State to hold selected sub-type
+      const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] = useState(null); // State to hold selected sub-type
+      // Fetching inventory types data from API on component mount
+      useEffect(() => {
+        axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+            // Map the fetched data to the format required by react-select
+            const options = response.data.map(inventory => ({
+              value: inventory.id,
+              label: inventory.name
+            }));
+            setInventoryTypes(options);  // Set the inventory types to state
+            setInventoryTypes2(options)
+          })
+          .catch(error => {
+            console.error('Error fetching inventory types:', error);
+          });
+      }, []);  // Empty dependency array to run only once on mount
+    
+    
+      // Fetch inventory sub-types when an inventory type is selected
+      useEffect(() => {
+        if (selectedInventory|| selectedInventory2) {
+        //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+    
+          axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory?.value || selectedInventory2?.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .then(response => {
+              // Map the sub-types to options for the select dropdown
+              const options = response.data.map(subType => ({
+                value: subType.id,
+                label: subType.name
+              }));
+              setInventorySubTypes(options); // Set the fetched sub-types to state
+              setInventorySubTypes2(options)
+            })
+            .catch(error => {
+              console.error('Error fetching inventory sub-types:', error);
+            });
+        }
+      }, [selectedInventory, selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+    
+      // Handler for inventory type selection change
+      const handleInventoryChange = (selectedOption) => {
+        setSelectedInventory(selectedOption); // Set the selected inventory type
+        setSelectedSubType(null); // Clear the selected sub-type when inventory type changes
+        setInventorySubTypes([]); // Reset the sub-types list
+        setInventoryMaterialTypes([])
+        setSelectedInventoryMaterialTypes(null)
+          // Update formData with the selected inventory type
+    // setFormData((prevData) => ({
+    //     ...prevData,
+    //     materialType: selectedOption?.label || "", // Update materialType in formData
+    // }));
+      };
+    
+      // Handler for inventory sub-type selection change
+      const handleSubTypeChange = (selectedOption) => {
+        setSelectedSubType(selectedOption); // Set the selected inventory sub-type
+        // setFormData((prevData) => ({
+        //     ...prevData,
+        //     materialSubType: selectedOption?.label || "", // Update materialType in formData
+        // }));
+      };
+    
+    
+    
+      // Fetch inventory Material when an inventory type is selected
+      useEffect(() => {
+        if (selectedInventory|| selectedInventory2) {
+        //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+    
+          axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory?.value|| selectedInventory?.value}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .then(response => {
+              // Map the sub-types to options for the select dropdown
+              const options = response.data.map(subType => ({
+                value: subType.id,
+                label: subType.name
+              }));
+              setInventoryMaterialTypes(options); // Set the fetched sub-types to state
+              setInventoryMaterialTypes2(options)
+            })
+            .catch(error => {
+              console.error('Error fetching inventory sub-types:', error);
+            });
+        }
+      }, [selectedInventory,selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+    
+      // Handler for inventory Material selection change
+      const handleInventoryMaterialTypeChange = (selectedOption) => {
+        setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
+      };
     return (
         <>
 
@@ -125,14 +406,12 @@ const CreateRate = () => {
 
                         <CollapsibleCard title="Create Rate">
                             <div className="card-body mt-0 pt-0">
-                                <div className="row">
+                                {/* <div className="row">
                                     <div className="col-md-4">
                                         <div className="form-group">
                                             <label>Country</label>
                                             <SingleSelector
                                                 options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Country`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
@@ -143,24 +422,42 @@ const CreateRate = () => {
                                             <label>State</label>
                                             <SingleSelector
                                                 options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select State`} // Dynamic placeholder
                                                 onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
                                 <div className="row">
-                                    <div className="col-md-4 mt-2">
+                                <div className="col-md-4 mt-2">
+                                        
                                         <div className="form-group">
-                                            <label>Project</label>
+                                            <label>Company</label>
                                             <SingleSelector
-                                                options={options}
+                                             options={companyOptions}
+                                             onChange={handleCompanyChange}
+                                             value={selectedCompany}
+                                              
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Project`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 mt-2">
+                                        
+                                        <div className="form-group">
+                                            <label>Project</label>
+                                            <SingleSelector
+                                             options={projects}
+                                             onChange={handleProjectChange}
+                                             value={selectedProject}
+                                              
+                                                // value={values[label]} // Pass current value
+                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                                placeholder={`Select Project`} // Dynamic placeholder
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
@@ -169,11 +466,14 @@ const CreateRate = () => {
                                             <label>Sub-Project</label>
 
                                             <SingleSelector
-                                                options={options}
+                                            options={siteOptions}
+                                            onChange={handleSiteChange}
+                                            value={selectedSite}
+                                                // options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Sub-Project`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
@@ -181,16 +481,18 @@ const CreateRate = () => {
                                         <div className="form-group">
                                             <label>Wing</label>
                                             <SingleSelector
-                                                options={options}
+                                              options={wingsOptions}
+                                              value={selectedWing}
+                                              onChange={handleWingChange}
+                                                // options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Wing`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="row">
+                                    {/* <div className="row"> */}
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Item Type</label>
@@ -207,11 +509,14 @@ const CreateRate = () => {
                                         <div className="form-group">
                                             <label>Material Type</label>
                                             <SingleSelector
-                                                options={options}
+                                             options={inventoryTypes}  // Provide the fetched options to the select component
+                                             onChange={handleInventoryChange}  // Update the selected inventory type
+                                             value={selectedInventory}  // Set the selected inventory type
+                                                // options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Material Type`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
@@ -219,11 +524,14 @@ const CreateRate = () => {
                                         <div className="form-group">
                                             <label>Material Sub-Type</label>
                                             <SingleSelector
-                                                options={options}
+                                             options={inventorySubTypes}
+                                             onChange={handleSubTypeChange}
+                                             value={selectedSubType}
+                                              
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Material Sub-Type`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
@@ -231,20 +539,27 @@ const CreateRate = () => {
                                         <div className="form-group">
                                             <label>Material</label>
                                             <SingleSelector
-                                                options={options}
+                                             options={inventoryMaterialTypes}
+                                             onChange={handleInventoryMaterialTypeChange}
+                                             value={selectedInventoryMaterialTypes}
+                                                // options={options}
                                                 // value={values[label]} // Pass current value
                                                 // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Material`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
-                                    <div className="col-md-2 mt-2 pt-3">
+                                    {/* <div className="col-md-2 mt-2 pt-3">
                                         <button className="purple-btn2">Go</button>
-                                    </div>
+                                    </div> */}
+                                {/* </div> */}
+                                    
                                 </div>
+                              
                             </div>
                         </CollapsibleCard>
+
                         <div className="d-flex justify-content-end mx-2">
                             <button className="purple-btn2">Bulk Upload</button>
                             <button
@@ -266,7 +581,7 @@ const CreateRate = () => {
                                 <span>Add</span>
                             </button>
                         </div>
-
+                        {/* {(JSON.stringify(tableData, null, 2))} */}
                         <div className="mx-3">
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
@@ -325,7 +640,7 @@ const CreateRate = () => {
                                                         <span className="ms-2 pt-2">
                                                             <input type="checkbox"
                                                                 checked={checkbox1}
-                                                                onChange={() => handleCheckboxChange(1)}
+                                                                onChange={() => handleCheckboxChange(1, index)}
                                                                 disabled={row.rate !== "" || checkbox2}
                                                             />
                                                         </span>
@@ -335,7 +650,7 @@ const CreateRate = () => {
                                                         <span className="ms-2 pt-2">
                                                             <input type="checkbox"
                                                                 checked={checkbox2}
-                                                                onChange={() => handleCheckboxChange(2)}
+                                                                onChange={() => handleCheckboxChange(2, index)}
                                                                 disabled={row.rate !== "" || checkbox1}
                                                             />
                                                         </span>
@@ -373,6 +688,23 @@ const CreateRate = () => {
                                                             </svg>
 
                                                         </button>
+                                                        <button
+                                                            className="btn mt-0 pt-0"
+                                                            onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
+                                                        >
+                                                            <svg
+                                                                width="16"
+                                                                height="20"
+                                                                viewBox="0 0 16 20"
+                                                                fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                            >
+                                                                <path
+                                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                                    fill="#B25657"
+                                                                />
+                                                            </svg>
+                                                        </button>
                                                     </td>
 
                                                 </tr>
@@ -384,6 +716,8 @@ const CreateRate = () => {
                                                 </td>
                                             </tr>
                                         )}
+
+
                                     </tbody>
                                 </table>
                             </div>
@@ -414,8 +748,11 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">Material Type</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.materialType)} // Bind value to state
+                                     options={inventoryTypes2}  // Provide the fetched options to the select component
+                                    //  onChange={handleInventoryChange}  // Update the selected inventory type
+                                    //  value={selectedInventory}  // Set the selected inventory type
+                                        // options={options}
+                                        value={inventoryTypes2.find((option) => option.label === formData.materialType)} // Bind value to state
                                         // value={values[label]} // Pass current value
                                         placeholder={`Select Material Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
@@ -427,8 +764,11 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">Material Sub Type</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.materialSubType)} // Bind value to state
+                                     options={inventorySubTypes2}
+                                    //  onChange={handleSubTypeChange}
+                                    //  value={selectedSubType}
+                                        // options={options}
+                                        value={inventorySubTypes2.find((option) => option.label === formData.materialSubType)} // Bind value to state
                                         // value={values[label]} // Pass current value
                                         placeholder={`Select Material Sub Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
@@ -440,8 +780,11 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">Material</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.material)} // Bind value to state
+                                      options={inventoryMaterialTypes2}
+                                    //   onChange={handleInventoryMaterialTypeChange}
+                                    //   value={selectedInventoryMaterialTypes2}
+                                        // options={options}
+                                        value={inventoryMaterialTypes2.find((option) => option.label === formData.material)} // Bind value to state
                                         // value={values[label]} // Pass current value
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
