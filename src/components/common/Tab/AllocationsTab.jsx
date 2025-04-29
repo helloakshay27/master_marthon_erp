@@ -770,6 +770,109 @@ export default function AllocationTab({ isCounterOffer }) {
                     />
                   );
                 })()}
+                {(() => {
+                                  const serializedData =
+                                    segeregatedMaterialData?.flatMap((material) =>
+                                      material?.bids_values
+                                        ?.filter(
+                                          (bid) =>
+                                            bid?.status == "pending" &&
+                                            bid?.serialized_last_bid?.event_vendor_id ===
+                                              bid?.event_vendor_id
+                                        )
+                                        ?.map((bid) => bid.serialized_last_bid)
+                                    ) || [];
+                
+                                  // Step 2: Extract charge data for table
+                                  const extractedChargeData =
+                                    eventVendors?.flatMap((vendor, vendorIndex) => {
+                                      const charges = vendor?.bids?.[0]?.charges || {};
+                                      const serializedCharges =
+                                        serializedData[vendorIndex]?.charges || {};
+                
+                                      const hasValidCharges = Object.values(charges).some(
+                                        (val) =>
+                                          (typeof val === "string" && val.trim() !== "") ||
+                                          (typeof val === "number" &&
+                                            val !== null &&
+                                            val !== undefined) ||
+                                          (typeof val === "object" &&
+                                            val !== null &&
+                                            !Array.isArray(val))
+                                      );
+                
+                                      if (!hasValidCharges) return [];
+                
+                                      const formattedCharges = {};
+                                      Object.entries(charges).forEach(([key, val]) => {
+                                        if (!Array.isArray(val)) {
+                                          const serializedValue = serializedCharges[key];
+                                          formattedCharges[key] = serializedValue
+                                            ? {
+                                                original: val?.toString().trim() || "_",
+                                                serialized:
+                                                  serializedValue?.toString().trim() || "_",
+                                              }
+                                            : val?.toString().trim() || "_";
+                                        }
+                                      });
+                
+                                      return Object.keys(formattedCharges).length > 0
+                                        ? [formattedCharges]
+                                        : [];
+                                    }) || [];
+                
+                                  // Step 3: Extract unique keys for table columns
+                                  const extractedChargeKeys = Array.from(
+                                    new Set(
+                                      extractedChargeData.flatMap((obj) => Object.keys(obj))
+                                    )
+                                  );
+                
+                                  // Step 4: Render Accordion with table data
+                                  return (
+                                    <Accordion
+                                      title="Other Charges"
+                                      isDefault={true}
+                                      // serializedData={serializedData} // Optional: used elsewhere?
+                                      tableColumn={extractedChargeKeys.map((key) => ({
+                                        label: key
+                                          .replace(/_/g, " ")
+                                          .replace(/\b\w/g, (c) => c.toUpperCase()),
+                                        key: key,
+                                      }))}
+                                      tableData={extractedChargeData.map((charge) =>
+                                        Object.fromEntries(
+                                          Object.entries(charge).map(([key, value]) => [
+                                            key,
+                                            typeof value === "object" && value.serialized ? (
+                                              <div
+                                                style={{
+                                                  display: "flex",
+                                                  flexDirection: "column",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                <span
+                                                  style={{
+                                                    textDecoration: "line-through",
+                                                    color: "red",
+                                                  }}
+                                                >
+                                                  {value.serialized}
+                                                </span>
+                                                <span style={{ margin: "0 5px" }}>→</span>
+                                                <span>{value.original}</span>
+                                              </div>
+                                            ) : (
+                                              value
+                                            ),
+                                          ])
+                                        )
+                                      )}
+                                    />
+                                  );
+                                })()}
 
                 <>
                   {poIsLoading ? (
