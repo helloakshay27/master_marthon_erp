@@ -255,45 +255,27 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
     }
   };
 
-  // const handlePrev = async (vendorId) => {
-  //   setActiveIndexes((prevIndexes) => {
-  //     const currentIndex =
-  //       prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-  //     const newIndex = currentIndex === 0 ? 2 : currentIndex - 1;
-  //     handleCarouselChange(vendorId, newIndex);
-  //     return { ...prevIndexes, [vendorId]: newIndex };
-  //   });
-  // };
-
-  // const handleNext = async (vendorId) => {
-  //   setActiveIndexes((prevIndexes) => {
-  //     const currentIndex =
-  //       prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-  //     const newIndex = currentIndex === 2 ? 0 : currentIndex + 1;
-  //     handleCarouselChange(vendorId, newIndex);
-  //     return { ...prevIndexes, [vendorId]: newIndex };
-  //   });
-  // };
-
   const handlePrev = async (vendorId) => {
-    setActiveIndexes((prevIndexes) => {
-      const currentIndex =
-        prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-      const newIndex = currentIndex === 0 ? 2 : currentIndex - 1;
-      handleCarouselChange(vendorId, newIndex);
-      return { ...prevIndexes, [vendorId]: newIndex };
-    });
+    const currentIndex = activeIndexes[vendorId] ?? 0;
+    const newIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+  
+    await handleCarouselChange(vendorId, newIndex);
   };
+  
 
   const handleNext = async (vendorId) => {
-    setActiveIndexes((prevIndexes) => {
-      const currentIndex =
-        prevIndexes[vendorId] !== undefined ? prevIndexes[vendorId] : 0;
-      const newIndex = currentIndex === 2 ? 0 : currentIndex + 1;
-      handleCarouselChange(vendorId, newIndex);
-      return { ...prevIndexes, [vendorId]: newIndex };
-    });
+    const currentIndex = activeIndexes[vendorId] ?? 0;
+  
+    // Get bid length from vendor object
+    const vendor = eventVendors.find((v) => v.id === vendorId);
+    const bidLength = vendor?.bid_length || 0;
+  
+    // Limit max index to bidLength - 1
+    const newIndex = currentIndex < bidLength - 1 ? currentIndex + 1 : currentIndex;
+  
+    await handleCarouselChange(vendorId, newIndex);
   };
+  
 
   useEffect(() => {
     const fetchRemarks = async () => {
@@ -374,11 +356,14 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   };
 
   const getOrdinalSuffix = (num) => {
-    if (num === 1) return "st";
-    if (num === 2) return "nd";
-    if (num === 3) return "rd";
+    const j = num % 10,
+          k = num % 100;
+    if (j === 1 && k !== 11) return "st";
+    if (j === 2 && k !== 12) return "nd";
+    if (j === 3 && k !== 13) return "rd";
     return "th";
   };
+  
 
   const acceptOffer = async (bidId, revisedBidId) => {
     try {
