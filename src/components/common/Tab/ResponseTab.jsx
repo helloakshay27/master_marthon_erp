@@ -152,69 +152,72 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
     fetchDeductionTaxes();
   }, []);
 
-  const fetchRevisionData = async (
-    vendorId,
-    revisionNumber,
-    isCurrent = false
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
-      let data;
-      if (isCurrent) {
-        const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const responseData = await response.json();
-
-        let data = Array.isArray(responseData.vendors)
-          ? responseData.vendors.find((vendor) => vendor.id === vendorId)
-          : null;
-
-        if (!data) {
-          throw new Error("Vendor not found or invalid response format");
-        }
-
-        setEventVendors((prev) =>
-          prev.map((vendor) =>
-            vendor.id === vendorId ? { ...vendor, ...data } : vendor
-          )
-        );
-      } else {
-        // Use revision data
-        const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
-        );
-        data = response.data;
-
-        const updatedEventVendors = eventVendors.map((vendor) => {
-          if (vendor.id === vendorId) {
-            return {
-              ...vendor,
-              bids: [
-                {
-                  ...data,
-                  bid_materials: data.bid_materials || [],
-                },
-              ],
-            };
+  useEffect(() => {
+    const fetchRevisionData = async (
+      vendorId,
+      revisionNumber,
+      isCurrent = false
+    ) => {
+      setLoading(true);
+      setError(null);
+      try {
+        let data;
+        if (isCurrent) {
+          const response = await fetch(
+            `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          );
+  
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
-          return vendor;
-        });
-        setEventVendors(updatedEventVendors);
+  
+          const responseData = await response.json();
+  
+          let data = Array.isArray(responseData.vendors)
+            ? responseData.vendors.find((vendor) => vendor.id === vendorId)
+            : null;
+  
+          if (!data) {
+            throw new Error("Vendor not found or invalid response format");
+          }
+  
+          setEventVendors((prev) =>
+            prev.map((vendor) =>
+              vendor.id === vendorId ? { ...vendor, ...data } : vendor
+            )
+          );
+        } else {
+          // Use revision data
+          const response = await axios.get(
+            `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
+          );
+          data = response.data;
+  
+          const updatedEventVendors = eventVendors.map((vendor) => {
+            if (vendor.id === vendorId) {
+              return {
+                ...vendor,
+                bids: [
+                  {
+                    ...data,
+                    bid_materials: data.bid_materials || [],
+                  },
+                ],
+              };
+            }
+            return vendor;
+          });
+          setEventVendors(updatedEventVendors);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+  }, [isOfferAccepted])
+  
 
   const handleCarouselChange = async (vendorId, selectedIndex) => {
     setActiveIndexes((prevIndexes) => ({
@@ -481,7 +484,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                         ></td>
                         {eventVendors?.map((vendor, index) => {
                           const activeIndex = activeIndexes[vendor.id] || 0;
-                          const bidLength = vendor?.bids?.length || 0;
+                          const bidLength = vendor?.bid_length || 0;
                           const hasPendingBid = vendor?.bids?.some(
                             (bid) => bid.status === "pending"
                           );
@@ -511,7 +514,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                         : ""}
                                     </span>
                                   </p>
-                                </div>
                                 <div className="d-flex justify-content-center align-items-center w-100 my-2">
                                   {activeIndex > 0 && (
                                     <button
@@ -540,10 +542,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                                     </button>
                                   )}
                                 </div>
+                                </div>
                                 <button
-                                  className={`purple-btn1 d-block mt-2 ${
+                                  className={`purple-btn1 mt-2 ${
                                     isCounterOffer ? "disabled-btn" : ""
-                                  }`}
+                                  } position-absolute bottom-0 start-50 translate-middle-x`}
                                   onClick={async () => {
                                     if (
                                       vendor?.bids?.length > 0 &&
@@ -1313,17 +1316,24 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
+              console.log(
+                "Pending Bid Details:",
+                pendingBid,
+                "Material Data:",
+                materialData
+              );
+              
               if (pendingBid && pendingBid.bid_id) {
                 acceptOffer(pendingBid.bid_id, pendingBid.original_bid_id);
               } else {
                 if (!pendingBid) {
-                  showToast("No pending bid found", "warning");
+                  toast.error("No pending bid found", "warning");
                 } else {
                   console.error(
                     "Found pending bid, but bid_id is missing:",
                     pendingBid
                   );
-                  showToast(
+                  toast.error(
                     "Error: Bid ID is undefined. Cannot proceed.",
                     "error"
                   );
@@ -1336,10 +1346,10 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         centered={true}
       >
         <div>
-          <p>{`revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+          <p>{`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
           <p>
-            A revise is pending on your bid. You cannot make any further
-            changes to your bid until you resolve the revise offer.
+            A revise is pending on your bid. You cannot make any further changes
+            to your bid until you resolve the revise offer.
           </p>
         </div>
       </DynamicModalBox>

@@ -58,14 +58,14 @@ export default function Accordion({
   ) => {    
     if (onColumnClick) {
       const bid_id = data.bid_id || data.bidId;
-      const material_id = data.material_id || data.materialId;
+      const material_id = data.id || data.id;
       const vendor_id = data.vendor_id || data.vendorId;
 
       if (Array.isArray(data.materials) && data.materials.length > 0) {
         data.materials.forEach((material) => {
           const materialData = {
             bid_id: material.bid_id || material.bidId,
-            material_id: material.material_id || material.materialId,
+            material_id: material.id || material.id,
             vendor_id: material.vendor_id || material.vendorId,
             ...material,
           };

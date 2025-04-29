@@ -62,7 +62,7 @@ export default function ErpRfqDetailPriceTrends4h() {
   }, []);
 
   useEffect(() => {
-    if (overviewData?.event_schedule?.end_time) {
+    if (overviewData?.event_schedule?.end_time) {      
       const endTime = new Date(overviewData.event_schedule.end_time).getTime();
       const currentTime = new Date().getTime();
       const timeDiff = Math.floor((endTime - currentTime) / 1000);
@@ -390,7 +390,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                   </p>
                 </div>
                 <div className="d-flex align-items-center flex-column justify-content-center text-center">
-                  {isCounter ? (
+                  {isCounter && remainingTime <= 0 ? (
                     <>
                       <button
                         className="event-participant-cardBtn d-flex align-items-center justify-content-between"

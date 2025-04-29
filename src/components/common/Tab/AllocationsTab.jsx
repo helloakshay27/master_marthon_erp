@@ -272,9 +272,11 @@ export default function AllocationTab({ isCounterOffer }) {
           if (existingVendorIndex !== -1) {
             const existingMaterials =
               updatedData[existingVendorIndex].materials;
+              console.log("updatedMaterial",existingMaterials,"updatedMaterial", updatedMaterial);
+              
             if (
               !existingMaterials.some(
-                (material) => material.materialId === updatedMaterial.materialId
+                (material) => material.id === updatedMaterial.id
               )
             ) {
               updatedData[existingVendorIndex].materials.push(updatedMaterial);

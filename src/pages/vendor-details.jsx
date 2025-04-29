@@ -729,7 +729,7 @@ export default function VendorDetails() {
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
             quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom_name,
+            unit: item.unit,
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
@@ -1024,7 +1024,8 @@ export default function VendorDetails() {
                 deduction_bid_material_tax_details:
                   material.deduction_bid_material_tax_details,
               });
-
+              console.log("counterMaterial :0----",counterMaterial, material);
+              
               return counterMaterial
                 ? {
                     bidId: counterMaterial.counter_bid_id,
@@ -1040,6 +1041,7 @@ export default function VendorDetails() {
                     realisedDiscount: counterMaterial.realised_discount,
                     gst: counterMaterial.gst,
                     realisedGst: counterMaterial.realised_gst,
+                    unit: material.unit,
                     total: counterMaterial.total_amount,
                     location: material.event_material.location,
                     vendorRemark: counterMaterial.vendor_remark,
@@ -4323,7 +4325,7 @@ export default function VendorDetails() {
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
-                        {/* {console.log("data", data) */}
+                        {console.log("data", data)}
 
                         <Table
                           columns={[

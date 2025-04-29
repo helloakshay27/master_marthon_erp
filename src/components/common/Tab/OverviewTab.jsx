@@ -760,6 +760,8 @@ export default function OverviewTab({
               <div className="card card-body p-4">
                 {specificationData?.length > 0 ? (
                   <Table
+                  style={{ textAlign: "center" }}
+                className="text-center"
                     columns={specificationColumns}
                     data={specificationData}
                   />
