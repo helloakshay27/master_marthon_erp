@@ -6,12 +6,15 @@ import { toast, ToastContainer } from "react-toastify";
 import { baseURL } from "../confi/apiDomain";
 import axios from "axios";
 import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
+import ShortDataTable from "../components/base/Table/ShortDataTable";
 
 export default function CounterOffer() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
-  const [bidCounterData, setBidCounterData] = useState(location.state?.bidCounterData || null);
+  const [bidCounterData, setBidCounterData] = useState(
+    location.state?.bidCounterData || null
+  );
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
   const [loading, setLoading] = useState(false); // Add loading state
@@ -31,7 +34,7 @@ export default function CounterOffer() {
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
   };
-  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);    
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   useEffect(() => {
     if (bidCounterData && Object.keys(formData).length === 0) {
       // Only set state if formData is empty to prevent infinite updates
@@ -211,21 +214,21 @@ export default function CounterOffer() {
   const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
 
   const handleSubmit = async () => {
-    const extractShortTableData = freightData.reduce((acc, curr) => {
-      const { counterBid, firstBid } = curr.value;
-      acc[curr.label] = counterBid || firstBid || ""; // Use updated values from freightData
+    const extractShortTableData = tableData.reduce((acc, curr) => {
+      const { label, value } = curr;
+      const { counterBid, firstBid } = value || {};
+      acc[label] = counterBid || firstBid || "";
       return acc;
     }, {});
-
-    // Merge shortTableData into extractShortTableData
+  
     Object.entries(shortTableData).forEach(([key, value]) => {
-      extractShortTableData[key] = value || ""; // Ensure the value is included in the payload
+      extractShortTableData[key] = value || ""; 
     });
 
     const extractedExtraData = formData.bid_materials.reduce((acc, item) => {
       if (item.extra_data) {
         Object.entries(item.extra_data).forEach(([key, { value }]) => {
-          acc[key] = value; // Extract only the `value` property
+          acc[key] = value; 
         });
       }
       return acc;
@@ -248,12 +251,15 @@ export default function CounterOffer() {
         discount: formData.discount,
         freight_charge_amount: formData.freight_charge_amount,
         gst_on_freight: formData.gst_on_freight,
-        realised_freight_charge_amount: shortTableData.realised_freight_charge_amount,
-        realised_other_charge_amount: shortTableData.realised_other_charge_amount,
-        realised_handling_charge_amount: shortTableData.realised_handling_charge_amount,
+        realised_freight_charge_amount:
+          shortTableData.realised_freight_charge_amount,
+        realised_other_charge_amount:
+          shortTableData.realised_other_charge_amount,
+        realised_handling_charge_amount:
+          shortTableData.realised_handling_charge_amount,
         gross_total: finalSumTotal,
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
-          const { extra_data, ...rest } = item; 
+          const { extra_data, ...rest } = item;
           return {
             ...rest,
             event_material_id: item.event_material_id,
@@ -270,6 +276,8 @@ export default function CounterOffer() {
         remark: formData.remark || "",
       },
     };
+
+    console.log("Payload:", payload); // Log the payload for debugging
 
     try {
       const response = await fetch(
@@ -302,7 +310,7 @@ export default function CounterOffer() {
         originalPrice: parseFloat(item.price) || 0, // Store the original price
       }));
       setFormData({ ...bidCounterData, bid_materials: updatedMaterials });
-  
+
       const initialSumTotal = updatedMaterials.reduce(
         (acc, item) => acc + (parseFloat(item.total_amount) || 0),
         0
@@ -327,12 +335,12 @@ export default function CounterOffer() {
     if (field === "price") {
       const originalPrice = updatedMaterials[index].originalPrice; // Use stored original price
       console.log("originalPrice", originalPrice, "value", value);
-    
+
       if (value > originalPrice) {
         toast.error("Price cannot be higher than the original value.");
         return;
       }
-    
+
       updatedMaterials[index].price = value; // Update the price
     }
 
@@ -403,7 +411,8 @@ export default function CounterOffer() {
     const updatedFormData = { ...formData, [field]: value };
 
     if (field === "freight_charge_amount" || field === "gst_on_freight") {
-      const freightCharge = parseFloat(updatedFormData.freight_charge_amount) || 0;
+      const freightCharge =
+        parseFloat(updatedFormData.freight_charge_amount) || 0;
       const gstOnFreight = parseFloat(updatedFormData.gst_on_freight) || 0;
       updatedFormData.realised_freight_charge_amount =
         freightCharge + (freightCharge * gstOnFreight) / 100;
@@ -412,7 +421,9 @@ export default function CounterOffer() {
     setFormData(updatedFormData);
 
     // Avoid redundant sumTotal calculation
-    const gross = parseFloat(updatedFormData.realised_freight_charge_amount || 0);
+    const gross = parseFloat(
+      updatedFormData.realised_freight_charge_amount || 0
+    );
     const materialSum = formData.bid_materials.reduce(
       (acc, item) => acc + (parseFloat(item.total_amount) || 0),
       0
@@ -570,7 +581,6 @@ export default function CounterOffer() {
     );
     const finalSumTotal = materialSum + gross;
 
-
     if (sumTotal !== finalSumTotal) {
       setSumTotal(finalSumTotal);
     }
@@ -580,9 +590,47 @@ export default function CounterOffer() {
     setChargesData(updated);
   };
 
+  const extra_data = {
+    "Payment Terms": {
+      value: "",
+      readonly: false,
+    },
+    "Warranty Clause": {
+      value: "",
+      readonly: false,
+    },
+    "Loading/Unloading": {
+      value: "",
+      readonly: false,
+    },
+  };
+
+  const formattedData = [
+    ...Object.entries(extra_data).map(([fieldName, fieldData]) => ({
+      label: fieldName,
+      value: { firstBid: fieldData.value || "", counterBid: "" },
+      isRequired: false,
+      isReadOnly: fieldData.readonly,
+    })),
+    ...Object.entries(formData).map(([key, value]) => ({
+      label: key,
+      value: { firstBid: value || "", counterBid: "" },
+      isRequired: false,
+      isReadOnly: false,
+    })),
+  ];
+
+  const [tableData, setTableData] = useState(formattedData);
+
+  const handleValueChange = (updatedData) => {
+    setTableData(updatedData);
+  };
+
+  console.log(formData, "formData.bid_materials");
+
   const calculateGrossTotal = (updatedData) => {
     const getValue = (label) => {
-      return parseFloat(updatedData[label] || "0") || 0; // Directly access the value from updatedData
+      return parseFloat(updatedData[label] || "0") || 0; 
     };
 
     const freight = getValue("freight_charge_amount");
@@ -597,9 +645,12 @@ export default function CounterOffer() {
     const realisedHandling = handling + (handling * gstHandling) / 100;
 
     const updatedRealizedData = { ...updatedData }; // Create a copy of the object
-    updatedRealizedData["realised_freight_charge_amount"] = realisedFreight.toFixed(2);
-    updatedRealizedData["realised_other_charge_amount"] = realisedOther.toFixed(2);
-    updatedRealizedData["realised_handling_charge_amount"] = realisedHandling.toFixed(2);
+    updatedRealizedData["realised_freight_charge_amount"] =
+      realisedFreight.toFixed(2);
+    updatedRealizedData["realised_other_charge_amount"] =
+      realisedOther.toFixed(2);
+    updatedRealizedData["realised_handling_charge_amount"] =
+      realisedHandling.toFixed(2);
 
     onValueChange(updatedRealizedData);
 
@@ -611,7 +662,6 @@ export default function CounterOffer() {
       0
     );
     const finalSumTotal = materialSum + gross;
-
 
     // Update sumTotal only if it has changed
     if (sumTotal !== finalSumTotal) {
@@ -922,8 +972,6 @@ export default function CounterOffer() {
     <div className="website-content overflow-auto">
       <div className="module-data-section">
         <div className="event-order-page">
-
-        
           <div className="d-flex align-items-center">
             <button
               type="button"
@@ -954,9 +1002,21 @@ export default function CounterOffer() {
 
           <h5 className="mt-4">Material Sheet</h5>
           <Table columns={productTableColumns} data={productTableData} />
-            <div className="d-flex justify-content-end mt-4">
-          <button onClick={handleOpenOtherChargesModal} className="purple-btn2">Other Charges</button>
-                </div>
+          <div className="d-flex justify-content-end">
+          <ShortDataTable
+            data={tableData}
+            editable={true}
+            onValueChange={handleValueChange}
+          />
+          </div>
+          <div className="d-flex justify-content-end mt-4">
+            <button
+              onClick={handleOpenOtherChargesModal}
+              className="purple-btn2"
+            >
+              Other Charges
+            </button>
+          </div>
           <div className="d-flex justify-content-end">
             <h4>Sum Total : ₹{sumTotal}</h4>
           </div>
@@ -1345,98 +1405,100 @@ export default function CounterOffer() {
             size="lg"
             modalType={true}
             footerButtons={[
-                {
-                  label: "Close",
-                  onClick: handleCloseOtherChargesModal,
-                  props: { className: "purple-btn1" },
+              {
+                label: "Close",
+                onClick: handleCloseOtherChargesModal,
+                props: { className: "purple-btn1" },
+              },
+              {
+                label: "Save",
+                onClick: () => {
+                  // Add save logic here
+                  calculateGrossTotal(shortTableData);
+                  handleCloseOtherChargesModal();
                 },
-                {
-                  label: "Save",
-                  onClick: () => {
-                    // Add save logic here
-                    calculateGrossTotal(shortTableData);
-                    handleCloseOtherChargesModal();
-                  },
-                  props: { className: "purple-btn2" },
-                },
-              ]}
+                props: { className: "purple-btn2" },
+              },
+            ]}
           >
             <div className="d-flex justify-content-end">
-            <table
-              className="tbl-container mt-4 p-4"
-              style={{ maxWidth: "100%", width: "40%" }}
-            >
-              <tbody>
-                {Object.keys(shortTableData).map((field, index) => (
-                  <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
-                    <td
-                      style={{
-                        padding: "12px",
-                        fontWeight: "bold",
-                        background: "#8b0203",
-                        color: "#fff",
-                        width: "65%",
-                      }}
-                    >
-                      {field
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase())}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px",
-                        color: "#000",
-                        textAlign: "left",
-                      }}
-                    >
-                      {field.startsWith("realised_") ? (
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={shortTableData[field] || ""}
-                          readOnly
-                          disabled
-                          style={{
-                            backgroundColor: "#f5f5f5",
-                            color: "#000",
-                          }}
-                        />
-                      ) : (
-                        <div style={{ display: "flex", alignItems: "center" }}>
+              <table
+                className="tbl-container mt-4 p-4"
+                style={{ maxWidth: "100%", width: "40%" }}
+              >
+                <tbody>
+                  {Object.keys(shortTableData).map((field, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
+                      <td
+                        style={{
+                          padding: "12px",
+                          fontWeight: "bold",
+                          background: "#8b0203",
+                          color: "#fff",
+                          width: "65%",
+                        }}
+                      >
+                        {field
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px",
+                          color: "#000",
+                          textAlign: "left",
+                        }}
+                      >
+                        {field.startsWith("realised_") ? (
                           <input
-                            type="number"
+                            type="text"
                             className="form-control"
                             value={shortTableData[field] || ""}
-                            onChange={(e) =>
-                              handleOtherChargesInputChange(
-                                field,
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
+                            readOnly
+                            disabled
                             style={{
-                              backgroundColor: "#fff",
+                              backgroundColor: "#f5f5f5",
                               color: "#000",
-                              width: "80%",
-                              marginRight: "5px",
                             }}
                           />
-                          {field.startsWith("gst_") ? (
-                            <span style={{ color: "#000" }}>%</span>
-                          ) : (
-                            <span style={{ color: "#000" }}>₹</span>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        ) : (
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={shortTableData[field] || ""}
+                              onChange={(e) =>
+                                handleOtherChargesInputChange(
+                                  field,
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              style={{
+                                backgroundColor: "#fff",
+                                color: "#000",
+                                width: "80%",
+                                marginRight: "5px",
+                              }}
+                            />
+                            {field.startsWith("gst_") ? (
+                              <span style={{ color: "#000" }}>%</span>
+                            ) : (
+                              <span style={{ color: "#000" }}>₹</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </DynamicModalBox>
           <ToastContainer />
         </div>
-        </div>
+      </div>
     </div>
   );
 }
