@@ -569,10 +569,10 @@ export default function VendorDetails() {
       row.netCost = calculateNetCost(rowIndex, updatedData);
     });
 
-    console.log(
-      "Updated Tax Data (All):",
-      JSON.stringify(updatedData, null, 2)
-    );
+    // console.log(
+    //   "Updated Tax Data (All):",
+    //   JSON.stringify(updatedData, null, 2)
+    // );
 
     setParentTaxRateData(updatedData);
     setTaxRateData(updatedData);
@@ -635,10 +635,10 @@ export default function VendorDetails() {
       netCost: calculateNetCost(idx, updatedData),
     }));
 
-    console.log(
-      "Updated Tax Data (Single):",
-      JSON.stringify(updatedData, null, 2)
-    );
+    // console.log(
+    //   "Updated Tax Data (Single):",
+    //   JSON.stringify(updatedData, null, 2)
+    // );
 
     setTaxRateData(recalculated);
     originalTaxRateDataRef.current = structuredClone(recalculated);
@@ -1018,7 +1018,7 @@ export default function VendorDetails() {
                 material.counter_bid_materials?.[currentIndex];
 
               setCurrentExtraData(material);
-              console.log("counterMaterial :0----",material);
+              // console.log("counterMaterial :0----",material);
               
               return counterMaterial
                 ? {
@@ -1094,11 +1094,9 @@ export default function VendorDetails() {
   // console.log("Parsed freight charge:", freightCharge21);
 
   const preparePayload = () => {
-    console.log("taxRateData", taxRateData);
+    // console.log("taxRateData", taxRateData);
 
     const bidMaterialsAttributes = data.map((row, index) => {
-      console.log("data of map on bid attributes", row);
-
       const rowTotal =
         parseFloat(row.price || 0) * (row.quantityAvail || row.quantity || 0);
       const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
@@ -1230,13 +1228,20 @@ export default function VendorDetails() {
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
 
-    const extractShortTableData = Array.isArray(shortTableData)
+      const extractShortTableData = Array.isArray(shortTableData)
       ? shortTableData.reduce((acc, curr) => {
           const { firstBid, counterBid } = curr.value;
-          acc[curr.label] = counterBid || firstBid;
+          acc[curr.label] = counterBid || firstBid || "_"; // Assign "_" if value is empty or null
           return acc;
         }, {})
       : {};
+    
+    // Ensure keys are present even if shortTableData is not an array
+    if (!Array.isArray(shortTableData) || Object.keys(extractShortTableData).length === 0) {
+      Object.keys(shortTableData || {}).forEach((key) => {
+        extractShortTableData[key] = "_";
+      });
+    }
     const extractChargeTableData = Array.isArray(chargesData)
       ? chargesData.reduce((acc, curr) => {
           const { firstBid, counterBid } = curr.value;
@@ -1291,7 +1296,7 @@ export default function VendorDetails() {
     setLoading(true);
     setSubmitted(true);
     const payload = preparePayload();
-    console.log("payload:---", payload);
+    // console.log("payload:---", payload);
 
     try {
       // Send POST request
@@ -1303,7 +1308,7 @@ export default function VendorDetails() {
       // }
 
       const payload = preparePayload();
-      console.log("payload:---", payload);
+      // console.log("payload:---", payload);
 
       const response = await axios.post(
         `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
@@ -1363,7 +1368,7 @@ export default function VendorDetails() {
 
     try {
       const revisedBidMaterials = data.map((row, index) => {
-        console.log("data of map on bid attributes", row);
+        // console.log("data of map on bid attributes", row);
 
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
         const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
@@ -1434,13 +1439,13 @@ export default function VendorDetails() {
         };
       });
 
-      const extractShortTableData = Array.isArray(shortTableData)
-        ? shortTableData.reduce((acc, curr) => {
-            const { firstBid, counterBid } = curr.value;
-            acc[curr.label] = counterBid || firstBid;
-            return acc;
-          }, {})
-        : {};
+      const extractShortTableData = bidTemplate.reduce((acc, curr) => {
+        const { label, value } = curr;
+        const { firstBid, counterBid } = value || {};
+        acc[label] = counterBid || firstBid || "_"; // Assign "_" if value is empty or null
+        return acc;
+      }, {});
+
       const extractChargeTableData = Array.isArray(chargesData)
         ? chargesData.reduce((acc, curr) => {
             const { firstBid, counterBid } = curr.value;
@@ -1468,7 +1473,7 @@ export default function VendorDetails() {
         },
       };
 
-      console.log("Prepared Payload for Revision:", payload);
+      // console.log("Prepared Payload for Revision:", payload, extractShortTableData);
 
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
@@ -2296,7 +2301,7 @@ export default function VendorDetails() {
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
     } else {
-      console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
+      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
 
@@ -2312,7 +2317,7 @@ export default function VendorDetails() {
       const updatedNetCost = calculateNetCost(index,taxRateData);
       updatedData[index].total = updatedNetCost;
     });
-    console.log("Updated Data:", updatedData);
+    // console.log("Updated Data:", updatedData);
     
     setData(updatedData);
     const updatedGrossTotal = calculateGrossTotal();
@@ -2499,13 +2504,13 @@ export default function VendorDetails() {
     handleCloseModal();
     setIsTaxRateDataChanged(true);
 
-    console.log(
-      "Tax Rate Data:",
-      taxRateData,
-      "Table ID:",
-      tableId,
-      updatedGrossTotal
-    );
+    // console.log(
+    //   "Tax Rate Data:",
+    //   taxRateData,
+    //   "Table ID:",
+    //   tableId,
+    //   updatedGrossTotal
+    // );
   };
 
   const handleSaveALlTaxChanges = () => {
@@ -5788,7 +5793,6 @@ export default function VendorDetails() {
                       </td>
                     </tr>
 
-                    {console.log("[parent]:----", parentTaxRateData,tableId)}
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details
