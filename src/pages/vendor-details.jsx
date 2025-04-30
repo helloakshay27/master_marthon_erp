@@ -1018,13 +1018,7 @@ export default function VendorDetails() {
                 material.counter_bid_materials?.[currentIndex];
 
               setCurrentExtraData(material);
-              setTaxRateData({
-                addition_bid_material_tax_details:
-                  material.addition_bid_material_tax_details,
-                deduction_bid_material_tax_details:
-                  material.deduction_bid_material_tax_details,
-              });
-              console.log("counterMaterial :0----",counterMaterial, material);
+              console.log("counterMaterial :0----",material);
               
               return counterMaterial
                 ? {
@@ -2281,7 +2275,7 @@ export default function VendorDetails() {
   // }, [data]);
 
   const handleOpenModal = (rowIndex) => {
-    if (originalTaxRateDataRef.current.length === 0) {
+    if (taxRateData.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
@@ -2302,6 +2296,7 @@ export default function VendorDetails() {
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
     } else {
+      console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
 
@@ -2314,10 +2309,11 @@ export default function VendorDetails() {
 
     // Apply tax changes to all items
     data.forEach((_, index) => {
-      const updatedNetCost = calculateNetCost(index);
+      const updatedNetCost = calculateNetCost(index,taxRateData);
       updatedData[index].total = updatedNetCost;
     });
-
+    console.log("Updated Data:", updatedData);
+    
     setData(updatedData);
     const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
@@ -2326,19 +2322,32 @@ export default function VendorDetails() {
 
   const handleAllTaxModal = () => {
     // Initialize tax data for all items if not already done
-    if (originalTaxRateDataRef.current.length === 0) {
+    if (parentTaxRateData?.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
+        hsnCode: selectedRow.hsnCode || "",
+        ratePerNos: selectedRow.price || "",
+        totalPoQty: selectedRow.quantityAvail || "",
+        discount: selectedRow.discount || "",
+        materialCost: selectedRow.price || "",
+        discountRate: selectedRow.realisedDiscount || "",
         afterDiscountValue: selectedRow.total || "",
-        addition_bid_material_tax_details: [],
-        deduction_bid_material_tax_details: [],
+        remark: selectedRow.vendorRemark || "",
+        addition_bid_material_tax_details:
+          selectedRow?.addition_bid_material_tax_details || [],
+        deduction_bid_material_tax_details:
+          selectedRow?.deduction_bid_material_tax_details || [],
         netCost: selectedRow.total || "",
       }));
 
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
+      setParentTaxRateData(updatedTaxRateData);
     } else {
-      setTaxRateData(structuredClone(originalTaxRateDataRef.current));
+      setTaxRateData(structuredClone(parentTaxRateData));
+      setParentTaxRateData(
+        structuredClone(parentTaxRateData)
+      );
     }
 
     setShowModal1(true);
@@ -2474,15 +2483,29 @@ export default function VendorDetails() {
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
   const handleSaveTaxChanges = () => {
-    const updatedGrossTotal = calculateGrossTotal();
-    // setTaxRateData((prevState) => ({
-    //   ...prevState,
-    //   netCost: updatedNetCost,
-    // }));
+    const updatedData = [...data];
 
+    // Update the net cost for the specific tableId (row index)
+    const updatedNetCost = calculateNetCost(tableId);
+    updatedData[tableId].total = updatedNetCost;
+
+    // Update the data state with the modified row
+    setData(updatedData);
+
+    // Recalculate the gross total after the specific update
+    const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
+
     handleCloseModal();
     setIsTaxRateDataChanged(true);
+
+    console.log(
+      "Tax Rate Data:",
+      taxRateData,
+      "Table ID:",
+      tableId,
+      updatedGrossTotal
+    );
   };
 
   const handleSaveALlTaxChanges = () => {
@@ -5765,13 +5788,13 @@ export default function VendorDetails() {
                       </td>
                     </tr>
 
+                    {console.log("[parent]:----", parentTaxRateData,tableId)}
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details
                       .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
-                          {console.log("item:----", item, "taxOpiton")}
                           <td>
                             <SelectBox
                               options={taxOptions}
@@ -5798,7 +5821,7 @@ export default function VendorDetails() {
                           <td>
                             <select
                               className="form-select"
-                              defaultValue={item?.tax_percentage}
+                              defaultValue={item?.taxChargePerUom}
                               onChange={(e) =>
                                 handleAllTaxChargeChange(
                                   "taxChargePerUom",
@@ -5813,7 +5836,7 @@ export default function VendorDetails() {
                               <option value="18%">18%</option>
                               <option value="28%">28%</option>
                             </select>
-                            
+                            {/* <p>{item?.taxChargePerUom || item?.tax_percentage}</p> */}
                           </td>
 
 
@@ -6153,7 +6176,7 @@ export default function VendorDetails() {
                                 ?.addition_bid_material_tax_details.length >= 4
                             ) {
                               toast.error(
-                                "You can only add up to 4 fields for Additional Tax & Charges.",
+                                "You can only add up to 1 fields for Additional Tax & Charges.",
                                 {
                                   autoClose: 2000,
                                 }
@@ -6167,12 +6190,12 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-
+                    {/* {console.log("item:----", taxRateData, "taxOpiton",tableId)} */}
+                        
                     {taxRateData[tableId]?.addition_bid_material_tax_details
                       .slice(0, 1)
-                      .map((item, rowIndex) => (
+                      ?.map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
-                          {console.log("item:----", item, "taxOpiton",)}
                           <td>
                             <SelectBox
                               options={taxOptions}
@@ -6202,7 +6225,7 @@ export default function VendorDetails() {
                             <select
                               className="form-select"
                               // value={item.taxChargePerUom}
-                              defaultValue={item?.tax_percentage}
+                              defaultValue={item?.taxChargePerUom}
                               onChange={(e) =>
                                 handleTaxChargeChange(
                                   tableId,
