@@ -91,17 +91,12 @@ const CreateRate = () => {
         }));
     };
 
-    // const handleSelectorChange = (field, selectedOption) => {
-    //     setFormData((prevData) => ({
-    //         ...prevData,
-    //         [field]: selectedOption?.label || "",
-    //     }));
-    // };
 
     const handleSelectorChange = (field, selectedOption) => {
         setFormData((prevData) => ({
             ...prevData,
-            [field]: selectedOption?.label || "",
+            [field]: selectedOption?.value || "",
+            [`${field}Label`]: selectedOption?.label || "",
         }));
     
         if (field === "materialType") {
@@ -109,8 +104,14 @@ const CreateRate = () => {
             setSelectedInventory2(selectedOption); // Set the selected inventory type
             setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
             setInventorySubTypes2([]); // Reset the sub-types list
-            setInventoryMaterialTypes([]); // Reset the material types list
-            setSelectedInventoryMaterialTypes(null); // Clear selected material type
+            setInventoryMaterialTypes2([]); // Reset the material types list
+            setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+            setGenericSpecifications([])
+            setSelectedGenericSpecifications(null)
+            setColors([])
+            setSelectedColors(null)
+            setInventoryBrands([])
+            setSelectedInventoryBrands(null)
         }
     
         if (field === "materialSubType") {
@@ -120,9 +121,27 @@ const CreateRate = () => {
         if (field === "material") {
             // Logic for materialSubType selection
             setSelectedInventoryMaterialTypes2(selectedOption); // Set the selected inventory sub-type
+          
+        }
+        if (field === "uom") {
+            // Logic for materialSubType selection
+            setSelectedUnit(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "genericSpecification") {
+            // Logic for materialSubType selection
+            setSelectedGenericSpecifications(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "colour") {
+            // Logic for materialSubType selection
+            setSelectedColors(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "brand") {
+            // Logic for materialSubType selection
+            setSelectedInventoryBrands(selectedOption); // Set the selected inventory sub-type
         }
     };
 
+    // console.log("form data:",formData)
     // Handle form submission
     const handleCreate = (e) => {
         e.preventDefault();
@@ -170,133 +189,113 @@ const CreateRate = () => {
         setTableData((prevData) => prevData.filter((_, index) => index !== rowIndex));
     };
 
-    //  project ,sub project wing api 
+   
+  // States to store data company, project ,subproject ,wing
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
 
-      const [projects, setProjects] = useState([]);
-      const [selectedProject, setSelectedProject] = useState(null);
-      const [selectedSite, setSelectedSite] = useState(null);
-      const [selectedWing, setSelectedWing] = useState(null);
-      const [wingsOptions, setWingsOptions] = useState([]);
-      const [siteOptions, setSiteOptions] = useState([]);
-      const [companies, setCompanies] = useState([]);
-    //   const [projects, setProjects] = useState([]);
-      const [selectedCompany, setSelectedCompany] = useState(null);
-    //   const [selectedProject, setSelectedProject] = useState(null);
-    //   const [selectedSite, setSelectedSite] = useState(null);
-    //   const [selectedWing, setSelectedWing] = useState(null);
-    //   const [siteOptions, setSiteOptions] = useState([]);
-    //   const [wingsOptions, setWingsOptions] = useState([]);
-  
-      // Fetch company data on component mount
-      useEffect(() => {
-          axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-              .then(response => {
-                  setCompanies(response.data.companies);
-                //   setData(response.data);  // Set the data from the API to state
-                  setLoading(false);  // Update the loading state
-              })
-              .catch(error => {
-                  console.error('Error fetching company data:', error);
-                  setLoading(false);
-              });
-      }, []);
-  
-      // Handle company selection
-      const handleCompanyChange = (selectedOption) => {
-          setSelectedCompany(selectedOption);  // Set selected company
-          setSelectedProject(null); // Reset project selection
-          setSelectedSite(null); // Reset site selection
-          setSelectedWing(null); // Reset wing selection
-          setProjects([]); // Reset projects
-          setSiteOptions([]); // Reset site options
-          setWingsOptions([]); // Reset wings options
-  
-          if (selectedOption) {
-              // Find the selected company from the list
-              const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
-              setProjects(
-                  selectedCompanyData?.projects.map(prj => ({
-                      value: prj.id,
-                      label: prj.name
-                  }))
-              );
-          }
-      };
-         // Map companies to options for the dropdown
-    const companyOptions = companies.map(company => ({
-        value: company.id,
-        label: company.company_name
-    }));
+  // Fetch company data on component mount
+  useEffect(() => {
+      axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          .then(response => {
+              setCompanies(response.data.companies);
+            
+          })
+          .catch(error => {
+              console.error('Error fetching company data:', error);
 
-    
-      // Fetch projects on mount
-    //   useEffect(() => {
-    //     // Replace this with your actual API URL
-    //     axios.get(`${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-    //       .then(response => {
-    //         setProjects(response.data.projects);
-    //       })
-    //       .catch(error => {
-    //         console.error("Error fetching projects:", error);
-    //       });
-    //   }, []);
-    
-      // Handle project selection change
-      const handleProjectChange = (selectedOption) => {
-        // Reset selected site and wing when a new project is selected
-        setSelectedProject(selectedOption);
-        setSelectedSite(null); // Reset selected site
-        setSelectedWing(null); // Reset selected wing
-        setWingsOptions([]); // Clear wings options
-        setSiteOptions([]);
-    
-        // Fetch sites based on the selected project
-        if (selectedOption) {
-          const selectedProjectData = projects.find(project => project.id === selectedOption.value);
-          setSiteOptions(selectedProjectData.pms_sites.map(site => ({
-            value: site.id,   // Use id as value for the site
-            label: site.name  // Display the site name
-          })));
-        }
-      };
-    
-      // Handle site selection change
-      const handleSiteChange = (selectedOption) => {
-        setSelectedSite(selectedOption);
-        setSelectedWing(null); // Reset selected wing
-        setWingsOptions([]); // Clear wings options
-    
-        // Fetch wings for the selected site
-        if (selectedOption) {
-          const selectedProjectData = projects.find(project => project.id === selectedProject.value);
-          const selectedSiteData = selectedProjectData.pms_sites.find(site => site.id === selectedOption.value);
-          setWingsOptions(selectedSiteData.pms_wings.map(wing => ({
-            value: wing.id,    // Use id as value for the wing
-            label: wing.name   // Display the wing name
-          })));
-        }
-      };
-    
-      // Handle wing selection change
-      const handleWingChange = (selectedOption) => {
-        setSelectedWing(selectedOption);
-        // You can perform further actions with the selected wing value if necessary
-      };
-    
-    //   // Mapping projects for the dropdown
-    //   const projectOptions = projects.map(project => ({
-    //     value: project.id,         // Use id as value for the project
-    //     label: project.formatted_name
-    //   }));
+          });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+      setSelectedCompany(selectedOption);  // Set selected company
+      setSelectedProject(null); // Reset project selection
+      setSelectedSite(null); // Reset site selection
+      setSelectedWing(null); // Reset wing selection
+      setProjects([]); // Reset projects
+      setSiteOptions([]); // Reset site options
+      setWingsOptions([]); // Reset wings options
+
+      if (selectedOption) {
+          // Find the selected company from the list
+          const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
+          setProjects(
+              selectedCompanyData?.projects.map(prj => ({
+                  value: prj.id,
+                  label: prj.name
+              }))
+          );
+      }
+  };
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+      setSelectedProject(selectedOption);
+      setSelectedSite(null); // Reset site selection
+      setSelectedWing(null); // Reset wing selection
+      setSiteOptions([]); // Reset site options
+      setWingsOptions([]); // Reset wings options
+
+      if (selectedOption) {
+          // Find the selected project from the list of projects of the selected company
+          const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+          const selectedProjectData = selectedCompanyData?.projects.find(project => project.id === selectedOption.value);
+
+          // Set site options based on selected project
+          setSiteOptions(
+              selectedProjectData?.pms_sites.map(site => ({
+                  value: site.id,
+                  label: site.name
+              })) || []
+          );
+      }
+  };
+
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+      setSelectedSite(selectedOption);
+      setSelectedWing(null); // Reset wing selection
+      setWingsOptions([]); // Reset wings options
+
+      if (selectedOption) {
+          // Find the selected project and site data
+          const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+          const selectedProjectData = selectedCompanyData.projects.find(project => project.id === selectedProject.value);
+          const selectedSiteData = selectedProjectData?.pms_sites.find(site => site.id === selectedOption.value);
+
+          // Set wings options based on selected site
+          setWingsOptions(
+              selectedSiteData?.pms_wings.map(wing => ({
+                  value: wing.id,
+                  label: wing.name
+              })) || []
+          );
+      }
+  };
+
+  // Handle wing selection
+  const handleWingChange = (selectedOption) => {
+      setSelectedWing(selectedOption);
+  };
+
+  // Map companies to options for the dropdown
+  const companyOptions = companies.map(company => ({
+      value: company.id,
+      label: company.company_name
+  }));
+
+
 
      // material type options 
-      const [inventoryTypes, setInventoryTypes] = useState([]);  // State to hold the fetched data
-      const [selectedInventory, setSelectedInventory] = useState(null);  // State to hold selected inventory type
-      const [inventorySubTypes, setInventorySubTypes] = useState([]); // State to hold the fetched inventory subtypes
-      const [selectedSubType, setSelectedSubType] = useState(null); // State to hold selected sub-type
-      const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]); // State to hold the fetched inventory subtypes
-      const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] = useState(null); // State to hold selected sub-type
-    
+      
       const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
       const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
       const [inventorySubTypes2, setInventorySubTypes2] = useState([]); // State to hold the fetched inventory subtypes
@@ -312,7 +311,7 @@ const CreateRate = () => {
               value: inventory.id,
               label: inventory.name
             }));
-            setInventoryTypes(options);  // Set the inventory types to state
+           
             setInventoryTypes2(options)
           })
           .catch(error => {
@@ -323,75 +322,153 @@ const CreateRate = () => {
     
       // Fetch inventory sub-types when an inventory type is selected
       useEffect(() => {
-        if (selectedInventory|| selectedInventory2) {
+        if (selectedInventory2) {
         //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
     
-          axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory?.value || selectedInventory2?.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then(response => {
               // Map the sub-types to options for the select dropdown
               const options = response.data.map(subType => ({
                 value: subType.id,
                 label: subType.name
               }));
-              setInventorySubTypes(options); // Set the fetched sub-types to state
+            
               setInventorySubTypes2(options)
             })
             .catch(error => {
               console.error('Error fetching inventory sub-types:', error);
             });
         }
-      }, [selectedInventory, selectedInventory2]); // Run this effect whenever the selectedInventory state changes
-    
-      // Handler for inventory type selection change
-      const handleInventoryChange = (selectedOption) => {
-        setSelectedInventory(selectedOption); // Set the selected inventory type
-        setSelectedSubType(null); // Clear the selected sub-type when inventory type changes
-        setInventorySubTypes([]); // Reset the sub-types list
-        setInventoryMaterialTypes([])
-        setSelectedInventoryMaterialTypes(null)
-          // Update formData with the selected inventory type
-    // setFormData((prevData) => ({
-    //     ...prevData,
-    //     materialType: selectedOption?.label || "", // Update materialType in formData
-    // }));
-      };
-    
-      // Handler for inventory sub-type selection change
-      const handleSubTypeChange = (selectedOption) => {
-        setSelectedSubType(selectedOption); // Set the selected inventory sub-type
-        // setFormData((prevData) => ({
-        //     ...prevData,
-        //     materialSubType: selectedOption?.label || "", // Update materialType in formData
-        // }));
-      };
-    
-    
+      }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
     
       // Fetch inventory Material when an inventory type is selected
       useEffect(() => {
-        if (selectedInventory|| selectedInventory2) {
+        if (selectedInventory2) {
         //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
     
-          axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory?.value|| selectedInventory?.value}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+          axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${ selectedInventory2?.value}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then(response => {
               // Map the sub-types to options for the select dropdown
               const options = response.data.map(subType => ({
                 value: subType.id,
                 label: subType.name
               }));
-              setInventoryMaterialTypes(options); // Set the fetched sub-types to state
+            
               setInventoryMaterialTypes2(options)
             })
             .catch(error => {
               console.error('Error fetching inventory sub-types:', error);
             });
         }
-      }, [selectedInventory,selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+      }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
     
-      // Handler for inventory Material selection change
-      const handleInventoryMaterialTypeChange = (selectedOption) => {
-        setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
-      };
+// umo api
+
+const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+const [selectedUnit, setSelectedUnit] = useState(null);
+// Fetching the unit of measures data on component mount
+useEffect(() => {
+  axios
+    .get(
+      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    )
+    .then((response) => {
+      // Mapping the response to the format required by react-select
+      const options = response.data.map((unit) => ({
+        value: unit.id,
+        label: unit.name,
+      }));
+      setUnitOfMeasures(options); // Save the formatted options to state
+    })
+    .catch((error) => {
+      console.error("Error fetching unit of measures:", error);
+    });
+}, []);
+
+
+// for generic specification
+  const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
+  
+  // Fetch generic specifications for materials
+  useEffect(() => {
+    
+      if (selectedInventoryMaterialTypes2) {
+        axios
+          .get(
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          )
+          .then((response) => {
+            const options = response.data.map((specification) => ({
+              value: specification.id,
+              label: specification.generic_info,
+            }));
+
+            setGenericSpecifications(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching generic specifications:", error);
+          });
+      }
+   
+  }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+
+// color
+   const [colors, setColors] = useState([]); // State to hold the fetched colors
+    const [selectedColors, setSelectedColors] = useState(null); // Holds the selected colors for each material
+    useEffect(() => {
+          if (selectedInventoryMaterialTypes2) {
+            axios
+              .get(
+                `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              )
+              .then((response) => {
+                const options = response.data.map((color) => ({
+                  value: color.id,
+                  label: color.colour,
+                }));
+                setColors(options);
+              })
+              .catch((error) => {
+                console.error("Error fetching colors:", error);
+              });
+          }
+      }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+
+      //for brand in material table
+        const [inventoryBrands, setInventoryBrands] = useState([]); // State to hold the fetched inventory brands
+        const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null); // Holds the selected brands for each material
+        useEffect(() => {
+              if (selectedInventoryMaterialTypes2) {
+                axios
+                  .get(
+                    `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                  )
+                  .then((response) => {
+                    const options = response.data.map((brand) => ({
+                      value: brand.id,
+                      label: brand.brand_name,
+                    }));
+                    setInventoryBrands(options);
+                  })
+                  .catch((error) => {
+                    console.error(
+                      "Error fetching inventory brands for material:",
+                      error
+                    );
+                  });
+              }
+          }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+
+      const payload={
+        company:selectedCompany?.value ||"",
+        project:selectedProject?.value||"",
+        subProject:selectedSite?.value||"",
+        wing: selectedWing?.value||"",
+        material:tableData||[]
+      }
+
+      console.log("payload :",payload)
     return (
         <>
 
@@ -406,42 +483,15 @@ const CreateRate = () => {
 
                         <CollapsibleCard title="Create Rate">
                             <div className="card-body mt-0 pt-0">
-                                {/* <div className="row">
-                                    <div className="col-md-4">
-                                        <div className="form-group">
-                                            <label>Country</label>
-                                            <SingleSelector
-                                                options={options}
-                                                placeholder={`Select Country`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <div className="form-group">
-                                            <label>State</label>
-                                            <SingleSelector
-                                                options={options}
-                                                placeholder={`Select State`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div> */}
                                 <div className="row">
-                                <div className="col-md-4 mt-2">
-                                        
+                                <div className="col-md-4 mt-2">   
                                         <div className="form-group">
                                             <label>Company</label>
                                             <SingleSelector
                                              options={companyOptions}
                                              onChange={handleCompanyChange}
                                              value={selectedCompany}
-                                              
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                placeholder={`Select Project`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                             placeholder={`Select Project`} // Dynamic placeholder
                                             />
                                         </div>
                                     </div>
@@ -452,28 +502,20 @@ const CreateRate = () => {
                                             <SingleSelector
                                              options={projects}
                                              onChange={handleProjectChange}
-                                             value={selectedProject}
-                                              
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
+                                             value={selectedProject}  
                                                 placeholder={`Select Project`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
+                                                
                                             />
                                         </div>
                                     </div>
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
                                             <label>Sub-Project</label>
-
                                             <SingleSelector
                                             options={siteOptions}
                                             onChange={handleSiteChange}
                                             value={selectedSite}
-                                                // options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Sub-Project`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
@@ -484,79 +526,11 @@ const CreateRate = () => {
                                               options={wingsOptions}
                                               value={selectedWing}
                                               onChange={handleWingChange}
-                                                // options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
                                                 placeholder={`Select Wing`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
                                             />
                                         </div>
                                     </div>
-                                    {/* <div className="row"> */}
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
-                                            <label>Item Type</label>
-                                            <SingleSelector
-                                                options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                placeholder={`Select Item Type`} // Dynamic placeholder
-                                                onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
-                                            <label>Material Type</label>
-                                            <SingleSelector
-                                             options={inventoryTypes}  // Provide the fetched options to the select component
-                                             onChange={handleInventoryChange}  // Update the selected inventory type
-                                             value={selectedInventory}  // Set the selected inventory type
-                                                // options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                placeholder={`Select Material Type`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
-                                            <label>Material Sub-Type</label>
-                                            <SingleSelector
-                                             options={inventorySubTypes}
-                                             onChange={handleSubTypeChange}
-                                             value={selectedSubType}
-                                              
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                placeholder={`Select Material Sub-Type`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
-                                            <label>Material</label>
-                                            <SingleSelector
-                                             options={inventoryMaterialTypes}
-                                             onChange={handleInventoryMaterialTypeChange}
-                                             value={selectedInventoryMaterialTypes}
-                                                // options={options}
-                                                // value={values[label]} // Pass current value
-                                                // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                                placeholder={`Select Material`} // Dynamic placeholder
-                                                // onChange={(selectedOption) => handleSelectorChange('project', selectedOption)}
-                                            />
-                                        </div>
-                                    </div>
-                                    {/* <div className="col-md-2 mt-2 pt-3">
-                                        <button className="purple-btn2">Go</button>
-                                    </div> */}
-                                {/* </div> */}
-                                    
                                 </div>
-                              
                             </div>
                         </CollapsibleCard>
 
@@ -596,7 +570,11 @@ const CreateRate = () => {
                                             <th className="text-start">Brand</th>
 
                                             <th className="text-start">Effective Date</th>
-                                            <th className="text-start">Rate (INR)</th>
+                                            <th className="text-start">Rate (INR)
+                                            <span className="ms-2 pt-2">
+                                                    <input type="checkbox" />
+                                                </span>
+                                            </th>
                                             <th className="text-start">AVG Rate
                                                 <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
@@ -618,12 +596,13 @@ const CreateRate = () => {
                                             tableData.map((row, index) => (
                                                 <tr key={index}>
                                                     <td> {index + 1}</td>
-                                                    <td>{row.materialType}</td>
-                                                    <td>{row.material}</td>
-                                                    <td>{row.materialSubType}</td>
-                                                    <td>{row.genericSpecification}</td>
-                                                    <td>{row.colour}</td>
-                                                    <td>{row.brand}</td>
+                                                    {console.log("materail type:", row.materialType)}
+                                                    <td>{row.materialTypeLabel}</td>
+                                                    <td>{row.materialLabel}</td>
+                                                    <td>{row.materialSubTypeLabel}</td>
+                                                    <td>{row.genericSpecificationLabel}</td>
+                                                    <td>{row.colourLabel}</td>
+                                                    <td>{row.brandLabel}</td>
                                                     <td>{row.effectiveDate}</td>
                                                     <td>
                                                         <input className="form-control" type="number"
@@ -655,9 +634,9 @@ const CreateRate = () => {
                                                             />
                                                         </span>
                                                     </td>
-                                                    <td>{row.uom}</td>
+                                                    <td>{row.uomLabel}</td>
                                                     <td className="text-start">
-                                                        <Link to="/view-rate" className="btn mt-0 pt-0">
+                                                        {/* <Link to="/view-rate" className="btn mt-0 pt-0">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 width="16"
@@ -669,9 +648,9 @@ const CreateRate = () => {
                                                                 <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
                                                                 <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
                                                             </svg>
-                                                        </Link>
-                                                        <span> <input type="checkbox" /></span>
-                                                        <button className="btn mt-0 pt-0 " onClick={() => setShowEditModal(true)}>
+                                                        </Link> */}
+                                                        {/* <span> <input type="checkbox" /></span> */}
+                                                        {/* <button className="btn mt-0 pt-0 " onClick={() => setShowEditModal(true)}>
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 width="16"
@@ -687,7 +666,7 @@ const CreateRate = () => {
                                                                 ></path>
                                                             </svg>
 
-                                                        </button>
+                                                        </button> */}
                                                         <button
                                                             className="btn mt-0 pt-0"
                                                             onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
@@ -749,14 +728,9 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Material Type</label>
                                     <SingleSelector
                                      options={inventoryTypes2}  // Provide the fetched options to the select component
-                                    //  onChange={handleInventoryChange}  // Update the selected inventory type
-                                    //  value={selectedInventory}  // Set the selected inventory type
-                                        // options={options}
-                                        value={inventoryTypes2.find((option) => option.label === formData.materialType)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                        value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
                                         placeholder={`Select Material Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -765,14 +739,9 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Material Sub Type</label>
                                     <SingleSelector
                                      options={inventorySubTypes2}
-                                    //  onChange={handleSubTypeChange}
-                                    //  value={selectedSubType}
-                                        // options={options}
-                                        value={inventorySubTypes2.find((option) => option.label === formData.materialSubType)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                        value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
                                         placeholder={`Select Material Sub Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -781,14 +750,9 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Material</label>
                                     <SingleSelector
                                       options={inventoryMaterialTypes2}
-                                    //   onChange={handleInventoryMaterialTypeChange}
-                                    //   value={selectedInventoryMaterialTypes2}
-                                        // options={options}
-                                        value={inventoryMaterialTypes2.find((option) => option.label === formData.material)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                        value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -796,25 +760,22 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">Generic Specification</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.genericSpecification)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                     options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
+                                        value={genericSpecifications.find((option) => option.value === formData.genericSpecification)} // Bind value to state
                                         placeholder={`Select Specification`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
+                                    {/* {console.log("gen:",genericSpecifications)} */}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
                                     <label className="po-fontBold">Colour</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.colour)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                      options={colors || []}
+                                        value={colors.find((option) => option.value === formData.colour)} // Bind value to stat
                                         placeholder={`Select Colour`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("colour", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -822,12 +783,10 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">Brand</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.brand)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                     options={inventoryBrands|| []}
+                                        value={inventoryBrands.find((option) => option.value === formData.brand)} // Bind value to state
                                         placeholder={`Select Brand`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("brand", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -855,12 +814,10 @@ const CreateRate = () => {
                                 <div className="form-group">
                                     <label className="po-fontBold">UOM</label>
                                     <SingleSelector
-                                        options={options}
-                                        value={options.find((option) => option.label === formData.uom)} // Bind value to state
-                                        // value={values[label]} // Pass current value
+                                        options={unitOfMeasures}
+                                        value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -906,9 +863,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Material Sub Type</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select Material Sub Type`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -917,9 +872,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Material</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select Material`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -928,9 +881,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Generic Specification</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select Specification`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -939,9 +890,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Colour</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select Colour`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -950,9 +899,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">Brand</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select Brand`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
@@ -975,9 +922,7 @@ const CreateRate = () => {
                                     <label className="po-fontBold">UOM</label>
                                     <SingleSelector
                                         options={options}
-                                        // value={values[label]} // Pass current value
                                         placeholder={`Select UOM`} // Dynamic placeholder
-                                    // onChange={(selectedOption) => handleSelectorChange('wing', selectedOption)}
                                     />
                                 </div>
                             </div>
