@@ -17,6 +17,8 @@ import ShortTable from "../../base/Table/ShortTable";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../../../confi/apiDomain";
+import DynamicModalBox from "../../base/Modal/DynamicModalBox";
+import SelectBox from "../../base/Select/SelectBox";
 
 export default function AllocationTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -52,12 +54,25 @@ export default function AllocationTab({ isCounterOffer }) {
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
   const [checkedColumns, setCheckedColumns] = useState({}); // State to track checked status of columns
   const [bulkBidId, setBulkBidId] = useState(null);
+  const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(0);
+  const [bidMaterialIndex, setBidMaterialIndex] = useState(0);
+  const [showTaxModal, setShowTaxModal] = useState(false);
+  const [taxOptions, setTaxOptions] = useState([]);
+   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); 
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
       ...prev,
       [index]: !prev[index],
     }));
+  };
+
+  const handleTaxModalClose = () => {
+    setShowTaxModal(false);
+  };
+
+  const handleSaveTaxChanges = () => {
+    setShowTaxModal(false);
   };
 
   useEffect(() => {
@@ -95,6 +110,62 @@ export default function AllocationTab({ isCounterOffer }) {
       setIsVendor(false);
     }
   };
+
+  useEffect(() => {
+      const fetchTaxes = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+  
+          if (response.data?.taxes) {
+            const formattedOptions = response.data.taxes.map((tax) => ({
+              value: tax.name,
+              label: tax.name,
+              id: tax.id,
+              taxChargeType: tax.type,
+            }));
+  
+            setTaxOptions([
+              { value: "", label: "Select Tax & Charges" },
+              ...formattedOptions,
+            ]);
+          }
+        } catch (error) {
+          console.error("Error fetching tax data:", error);
+        }
+      };
+  
+      fetchTaxes();
+    }, []);
+  
+    useEffect(() => {
+      const fetchDeductionTaxes = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+  
+          if (response.data?.taxes) {
+            const formattedOptions = response.data.taxes.map((tax) => ({
+              value: tax.name,
+              label: tax.name,
+              id: tax.id,
+              type: tax.type,
+            }));
+  
+            setDeductionTaxOptions([
+              { value: "", label: "Select Tax & Charges" },
+              ...formattedOptions,
+            ]);
+          }
+        } catch (error) {
+          console.error("Error fetching deduction tax data:", error);
+        }
+      };
+  
+      fetchDeductionTaxes();
+    }, []);
 
   useEffect(() => {
     const fetchRemarks = async () => {
@@ -637,7 +708,25 @@ export default function AllocationTab({ isCounterOffer }) {
                   </table>
                 </div>
 
-                {segeregatedMaterialData?.map((materialData, ind) => (
+                {segeregatedMaterialData?.map((materialData, ind) => {
+                  const extraColumns = Array.from(
+                    new Set(
+                      materialData.bids_values?.flatMap(
+                        (material) => material.extra_columns
+                      ) || []
+                    )
+                  );
+
+                  const extraKeys = Array.from(
+                    new Set(
+                      materialData.bids_values?.flatMap((material) =>
+                        Object.keys(material.extra || {})
+                      ) || []
+                    )
+                  );
+
+                  return(
+
                   <>
                     <Accordion
                       key={ind}
@@ -675,8 +764,22 @@ export default function AllocationTab({ isCounterOffer }) {
                         { label: "vendor name", key: "vendor_name" },
                         { label: "pms supplier id", key: "pms_supplier_id" },
                         { label: "material name", key: "material_name" },
+                        ...extraColumns
+                          .filter((column) => /^[A-Z]/.test(column))
+                          .map((column) => ({
+                            label: column
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (c) => c.toUpperCase()),
+                            key: column,
+                          })),
+                        {
+                          label: "Tax Rate",
+                          key: "taxRate",
+                        },  
                       ]}
-                      tableData={materialData.bids_values?.map((material) => {
+                      tableData={materialData.bids_values?.map((material,bidIndex) => {
+                        const extraData = material.extra_data || {};
+
                         return {
                           bestTotalAmount: material.total_amount || "_",
                           quantityAvailable: material.quantity_available || "_",
@@ -696,8 +799,37 @@ export default function AllocationTab({ isCounterOffer }) {
                           pms_supplier_id: material.pms_supplier_id,
                           material_name: material.material_name,
                           isChecked: material.isChecked || false,
+                          ...material.extra_columns.reduce((acc, column) => {
+                            if (extraData[column]?.value) {
+                              const value = extraData[column].value;
+                              acc[column] = Array.isArray(value)
+                                ? value
+                                    .map(
+                                      (item) =>
+                                        `${item.taxChargeType || ""}: ${
+                                          item.amount || 0
+                                        }${
+                                          item.taxChargePerUom
+                                            ? ` (${item.taxChargePerUom})`
+                                            : ""
+                                        }`
+                                    )
+                                    .join(", ")
+                                : value || "_";
+                            } else {
+                              acc[column] = "_";
+                            }
+                            return acc;
+                          }, {}),
+                          taxRate: material,
+                          bidIndex: bidIndex,
                         };
                       })}
+                      handleTaxButtonClick={(bid, str, rowIndex) => {
+                        setSelectedMaterialIndex(ind);
+                        setBidMaterialIndex(rowIndex);
+                        setShowTaxModal(true);
+                      }}
                       setSegeregatedMaterialData={setSegeregatedMaterialData}
                       onColumnClick={(
                         data,
@@ -717,7 +849,8 @@ export default function AllocationTab({ isCounterOffer }) {
                       accordianIndex={ind}
                     />
                   </>
-                ))}
+                  )
+})}
                 {(() => {
                   const extractedData =
                     eventVendors?.flatMap((vendor) => {
@@ -1021,6 +1154,348 @@ export default function AllocationTab({ isCounterOffer }) {
         handleClose={handleCounterModalClose}
         bidCounterData={BidCounterData}
       />
+
+      <DynamicModalBox
+              show={showTaxModal}
+              onHide={handleTaxModalClose}
+              size="lg"
+              title="View Tax & Rate"
+              footerButtons={[
+                {
+                  label: "Close",
+                  onClick: handleTaxModalClose,
+                  props: { className: "purple-btn1" },
+                },
+                {
+                  label: "Save Changes",
+                  onClick: handleSaveTaxChanges,
+                  props: { className: "purple-btn2" },
+                },
+              ]}
+              centered={true}
+            >
+              <div className="container-fluid p-0">
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Material</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.material_name || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">HSN Code</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.event_material?.inventory_id || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+      
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Rate per Nos</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.price || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Total PO Qty</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.quantity_available || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+      
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Discount(%)</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.discount || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">Material Cost</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={
+                          segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.total_amount || ""
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row mt-4">
+                  <div className="col-12">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead className="tax-table-header">
+                          <tr>
+                            <th>Tax / Charge Type</th>
+                            <th>Tax / Charges per UOM (INR)</th>
+                            <th>Inclusive</th>
+                            <th>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Total Base Cost</td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                              <input
+                                type="number"
+                                className="form-control bg-light"
+                                value={
+                                  segeregatedMaterialData[0]?.bids_values?.[
+                                    selectedMaterialIndex
+                                  ]?.total_amount || ""
+                                }
+                                readOnly
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Addition Tax & Charges</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.addition_bid_material_tax_details?.map(
+                            (item, rowIndex) => (
+                              <tr key={`${rowIndex}-${item.id}`}>
+                                {console.log(item)}
+                                <td>
+                                  <SelectBox
+                                    options={taxOptions}
+                                    defaultValue={
+                                      item.taxChargeType ||
+                                      taxOptions.find(
+                                        (option) => option.id === item.resource_id
+                                      )?.value
+                                    }
+                                    onChange={(value) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "taxChargeType",
+                                        value,
+                                        "addition"
+                                      )
+                                    }
+                                    className="custom-select"
+                                    isDisableFirstOption={true}
+                                    disabled={true}
+                                  />
+                                </td>
+                                <td>
+                                  <select
+                                    className="form-select"
+                                    defaultValue={item?.tax_percentage || item.taxChargePerUom}
+                                    // value={item.taxChargePerUom}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "taxChargePerUom",
+                                        e.target.value,
+                                        "addition"
+                                      )
+                                    }
+                                    disabled={true}
+                                  >
+                                    <option value="">Select Tax</option>
+                                    <option value="5%">5%</option>
+                                    <option value="12%">12%</option>
+                                    <option value="18%">18%</option>
+                                    <option value="28%">28%</option>
+                                  </select>
+                                </td>
+                                <td className="text-center">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={item.inclusive}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "inclusive",
+                                        e.target.checked,
+                                        "addition"
+                                      )
+                                    }
+                                    readOnly
+                                    disabled={true}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={item.amount}
+                                    onChange={(e) => {}}
+                                    readOnly
+                                    disabled={true}
+                                  />
+                                </td>
+                              </tr>
+                            )
+                          )}
+                          <tr>
+                            <td>Deduction Tax</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                            bidMaterialIndex
+                          ]?.deduction_bid_material_tax_details?.map(
+                            (item, rowIndex) => (
+                              <tr key={`${rowIndex}-${item.id}`}>
+                                <td>
+                                  <SelectBox
+                                    options={deductionTaxOptions}
+                                    defaultValue={
+                                      item.taxChargeType ||
+                                      deductionTaxOptions.find(
+                                        (option) => option.id == item.resource_id
+                                      )?.value
+                                    }
+                                    onChange={(value) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "taxChargeType",
+                                        value,
+                                        "deduction"
+                                      )
+                                    }
+                                    disabled={true}
+                                  />
+                                </td>
+                                <td>
+                                  <select
+                                    className="form-select"
+                                    value={item.taxChargePerUom}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "taxChargePerUom",
+                                        e.target.value,
+                                        "deduction"
+                                      )
+                                    }
+                                    disabled={true}
+                                  >
+                                    <option value="">Select Tax</option>
+                                    <option value="1%">1%/</option>
+                                    <option value="2%">2%</option>
+                                    <option value="10%">10%</option>
+                                  </select>
+                                </td>
+                                <td className="text-center">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={item.inclusive}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "inclusive",
+                                        e.target.checked,
+                                        "deduction"
+                                      )
+                                    }
+                                    disabled={true}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={item.amount}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        selectedMaterialIndex,
+                                        item.id,
+                                        "amount",
+                                        e.target.value,
+                                        "deduction"
+                                      )
+                                    }
+                                    readonly
+                                    disabled={true}
+                                  />
+                                </td>
+                              </tr>
+                            )
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DynamicModalBox> 
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
 import { set } from "lodash";
+import { specificationColumns } from "../constant/data";
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
@@ -92,7 +93,7 @@ export default function EditEvent() {
   const [eventDetails, setEventDetails] = useState([]);
   const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
   const [matchedTerm, setMatchedTerm] = useState({});
-
+  const [materialSelectList, setMaterialSelectList] = useState([]);
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [eventSchedule, setEventSchedule] = useState("");
@@ -103,6 +104,7 @@ export default function EditEvent() {
     { user: "", date: "", status: "", remark: "" },
   ]);
   const [statusLogData, setStatusLogData] = useState([]);
+  const [specificationData, setSpecificationData] = useState([]);
 
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
@@ -336,23 +338,23 @@ export default function EditEvent() {
     try {
       let formattedData = [];
       let totalPages = 1;
-  
+
       // Wait for the inventoryTypeId to settle (with a timeout)
       setTimeout(async () => {
-        if (inventoryTypeId > 0) {
+        if (inventoryTypeId.length > 0) {
           const response = await fetch(
             `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
               inventoryTypeId
             )}`
           );
           const data = await response.json();
-  
+
           const vendors = Array.isArray(data.vendors)
             ? data.vendors
             : Array.isArray(data.data?.vendors)
             ? data.data.vendors
             : [];
-  
+
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "N/A",
@@ -361,13 +363,14 @@ export default function EditEvent() {
             phone: vendor.contact_number || vendor.mobile || "N/A",
             city: vendor.city_id || "N/A",
             tags: vendor.tags || "N/A",
+            pms_inventory_type_id: vendor.pms_inventory_type_id,
           }));
-  
+
           totalPages =
             data?.pagination?.total_pages ||
             data?.data?.pagination?.total_pages ||
             1;
-  
+
           setTableData(formattedData);
           setSelectedVendors((prev) => {
             const newVendors = formattedData.filter(
@@ -378,9 +381,11 @@ export default function EditEvent() {
             );
             return [
               ...prev,
-              ...newVendors.map((vendor) => ({ ...vendor, id: null,
-                pms_supplier_id: vendor.id  // Assuming pms_supplier_id is the same as id
-               })),
+              ...newVendors.map((vendor) => ({
+                ...vendor,
+                id: null,
+                pms_supplier_id: vendor.id, // Assuming pms_supplier_id is the same as id
+              })),
             ];
           });
           setCurrentPage(page);
@@ -391,7 +396,7 @@ export default function EditEvent() {
           );
           const data = await response.json();
           const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-  
+
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "N/A",
@@ -401,7 +406,7 @@ export default function EditEvent() {
             city: vendor.city_id || "N/A",
             tags: vendor.tags || "N/A",
           }));
-  
+
           totalPages = data?.pagination?.total_pages || 1;
           const filteredData = formattedData.filter(
             (vendor) =>
@@ -409,20 +414,19 @@ export default function EditEvent() {
                 (selected) => selected.pms_supplier_id === vendor.id
               )
           );
-  
+
           setTableData(filteredData);
           setCurrentPage(page);
           setTotalPages(totalPages);
         }
       }, 2000); // Delay API call by 2 seconds
-  
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchEventData();
     fetchData();
@@ -506,6 +510,9 @@ export default function EditEvent() {
           pms_supplier_id: vendor.pms_supplier_id,
         }))
       );
+      // console.log("eventDetails:---",eventDetails);
+
+      setSpecificationData(eventDetails?.mor_inventory_specifications);
     }
   }, [eventDetails, termsOptions]);
 
@@ -1196,14 +1203,14 @@ export default function EditEvent() {
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
     const sanitizedValue =
-    name === "gstNumber" || name === "panNumber"
-      ? value.replace(/[^a-zA-Z0-9]/g, "") // Remove special characters
-      : value;
+      name === "gstNumber" || name === "panNumber"
+        ? value.replace(/[^a-zA-Z0-9]/g, "") // Remove special characters
+        : value;
 
-  const capitalizedValue =
-    name === "gstNumber" || name === "panNumber"
-      ? sanitizedValue.toUpperCase() // Convert to uppercase
-      : sanitizedValue;
+    const capitalizedValue =
+      name === "gstNumber" || name === "panNumber"
+        ? sanitizedValue.toUpperCase() // Convert to uppercase
+        : sanitizedValue;
     setInviteVendorData((prevData) => ({
       ...prevData,
       [name]: capitalizedValue,
@@ -1224,7 +1231,41 @@ export default function EditEvent() {
       }));
     }
   }, [eventDetails, tableData]);
+  // console.log("inventoryTypeId", inventoryTypeId);
 
+  useEffect(() => {
+    console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
+
+    const fetchMaterialTypes = async () => {
+      try {
+        const response = await fetch(
+          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        const data = await response.json();
+
+        if (response.ok && data.inventory_types) {
+          // Filter the inventory types based on inventoryTypeId
+          const filteredMaterials = data.inventory_types.filter((item) =>
+            inventoryTypeId.includes(item.value)
+          );
+
+          // Map the filtered materials to the required format
+          const formattedMaterials = filteredMaterials.map((item) => ({
+            label: item.name,
+            value: item.value,
+          }));
+
+          setMaterialSelectList(formattedMaterials);
+        }
+      } catch (error) {
+        console.error("Error fetching material types:", error);
+      }
+    };
+
+    if (inventoryTypeId.length > 0) {
+      fetchMaterialTypes();
+    }
+  }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -1349,6 +1390,39 @@ export default function EditEvent() {
                 updateAdditionalFields={setAdditionalFields}
                 isMor={false}
               />
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className=" ">Specification</h5>
+              </div>
+              <div>
+                <table className="tbl-container w-100">
+                  <thead>
+                    <tr>
+                      {specificationColumns.map((col, index) => (
+                        <th
+                          key={index}
+                          style={{ textAlign: "center !important" }}
+                        >
+                          {col.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {specificationData?.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {specificationColumns.map((col, colIndex) => (
+                          <td
+                            key={colIndex}
+                            style={{ textAlign: "center !important" }}
+                          >
+                            {row[col.key]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}
@@ -1656,27 +1730,50 @@ export default function EditEvent() {
               children={
                 <>
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="input-group w-50 position-relative">
-                      <input
-                        type="search"
-                        id="searchInput"
-                        className="tbl-search form-control"
-                        placeholder="Search Vendors"
-                        value={searchTerm}
-                        onChange={handleInputChange}
-                        onFocus={() => setIsSuggestionsVisible(true)}
-                        onBlur={() =>
-                          setTimeout(() => setIsSuggestionsVisible(false), 200)
-                        }
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="btn btn-md btn-default"
-                          onClick={handleSearchSubmit}
-                        >
-                          <SearchIcon />
-                        </button>
+                    <div className="input-group w-75 position-relative">
+                      <div className="d-flex w-100">
+                        <input
+                          type="search"
+                          id="searchInput"
+                          className="tbl-search form-control"
+                          placeholder="Search Vendors"
+                          value={searchTerm}
+                          onChange={handleInputChange}
+                          onFocus={() => setIsSuggestionsVisible(true)}
+                          onBlur={() =>
+                            setTimeout(
+                              () => setIsSuggestionsVisible(false),
+                              200
+                            )
+                          }
+                        />
+                        <div className="input-group-append">
+                          <button
+                            type="button"
+                            className="btn btn-md btn-default"
+                            onClick={handleSearchSubmit}
+                          >
+                            <SearchIcon />
+                          </button>
+                        </div>
+                        <SelectBox
+                          style={{ width: "400px" }}
+                          options={materialSelectList}
+                          onChange={(selectedOption) => {
+                            if (selectedOption) {
+                              const filteredData = filteredTableData.filter(
+                                (vendor) =>
+                                  vendor.pms_inventory_type_id.includes(
+                                    selectedOption
+                                  )
+                              );
+                              setFilteredTableData(filteredData);
+                            } else {
+                              // Reset to show all vendors if no option is selected
+                              fetchData(); // Assuming fetchData repopulates the original data
+                            }
+                          }}
+                        />
                       </div>
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul
@@ -1741,6 +1838,8 @@ export default function EditEvent() {
                       />
                     </div>
                   </div>
+                  {console.log("filteredTableData", filteredTableData)}
+
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
                     {filteredTableData.length > 0 ? (
                       <Table
@@ -1982,8 +2081,18 @@ export default function EditEvent() {
                       />
                     </div>
                     <div className="d-flex justify-content-center mt-2">
-                        <button className="purple-btn1" onClick={handleInviteModalClose}>Close</button>
-                        <button className="purple-btn2" onClick={handleInviteVendor}>Save Changes</button>
+                      <button
+                        className="purple-btn1"
+                        onClick={handleInviteModalClose}
+                      >
+                        Close
+                      </button>
+                      <button
+                        className="purple-btn2"
+                        onClick={handleInviteVendor}
+                      >
+                        Save Changes
+                      </button>
                     </div>
                   </form>
                 </>

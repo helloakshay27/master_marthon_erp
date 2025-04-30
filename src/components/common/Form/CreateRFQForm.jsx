@@ -624,7 +624,7 @@ export default function CreateRFQForm({
   }, [materialId]);
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
-    console.log("called", selected, rowIndex, sectionIndex);
+    // console.log("called", selected, rowIndex, sectionIndex);
 
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
@@ -635,7 +635,7 @@ export default function CreateRFQForm({
       console.error("Selected material not found in materials list:", selected);
       return;
     }
-    console.log(selectedMaterial, "selectedMaterial");
+    // console.log(selectedMaterial, "selectedMaterial");
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
       selectedMaterial.label;
@@ -651,7 +651,7 @@ export default function CreateRFQForm({
       selectedMaterial.type || "N/A";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
       selectedMaterial.label;
-    console.log("updatedSections", updatedSections);
+    // console.log("updatedSections", updatedSections);
 
     // Update materialId state
     setMaterialId(selectedMaterial.value);
@@ -860,7 +860,7 @@ export default function CreateRFQForm({
     setAdditionalFields(updatedAdditionalFields);
     updateAdditionalFields(updatedAdditionalFields);
     setShowAddColumnModal(false);
-    console.log("New field data:", newFieldData, updatedAdditionalFields, newField, "newField");
+    // console.log("New field data:", newFieldData, updatedAdditionalFields, newField, "newField");
     
   };
 

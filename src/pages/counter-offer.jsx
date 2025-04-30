@@ -217,7 +217,7 @@ export default function CounterOffer() {
     const extractShortTableData = tableData.reduce((acc, curr) => {
       const { label, value } = curr;
       const { counterBid, firstBid } = value || {};
-      acc[label] = counterBid || firstBid || "";
+      acc[label] = counterBid || firstBid || "_";
       return acc;
     }, {});
   
@@ -1226,7 +1226,7 @@ export default function CounterOffer() {
                                 <select
                                   className="form-select"
                                   // value={item.taxChargePerUom}
-                                  defaultValue={item?.tax_percentage}
+                                  defaultValue={item?.taxChargePerUom}
                                   onChange={(e) =>
                                     handleTaxChargeChange(
                                       selectedMaterialIndex,
@@ -1402,7 +1402,8 @@ export default function CounterOffer() {
           <DynamicModalBox
             show={showOtherChargesModal}
             onHide={handleCloseOtherChargesModal}
-            size="lg"
+            size="md"
+            title="Other Charges"
             modalType={true}
             footerButtons={[
               {
@@ -1424,7 +1425,6 @@ export default function CounterOffer() {
             <div className="d-flex justify-content-end">
               <table
                 className="tbl-container mt-4 p-4"
-                style={{ maxWidth: "100%", width: "40%" }}
               >
                 <tbody>
                   {Object.keys(shortTableData).map((field, index) => (

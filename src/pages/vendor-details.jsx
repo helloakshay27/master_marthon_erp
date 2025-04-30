@@ -1473,7 +1473,7 @@ export default function VendorDetails() {
         },
       };
 
-      // console.log("Prepared Payload for Revision:", payload, extractShortTableData);
+      console.log("Prepared Payload for Revision:", payload, extractShortTableData);
 
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
