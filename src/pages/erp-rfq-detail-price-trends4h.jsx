@@ -83,7 +83,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     const fetchCounterOfferData = async () => {
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=7398`
+          `${baseURL}rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = await response.json();
         if (data) {

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import ShortTable from "../../base/Table/ShortTable";
@@ -8,6 +8,9 @@ import { useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Toast } from "bootstrap";
+import { baseURL } from "../../../confi/apiDomain";
+import SelectBox from "../../base/Select/SelectBox";
+import axios from "axios";
 
 export default function BulkCounterOfferModalTwo({
   show,
@@ -16,10 +19,80 @@ export default function BulkCounterOfferModalTwo({
 }) {
   const [formData, setFormData] = useState({});
   const [sumTotal, setSumTotal] = useState(0);
+  const prevGrossRef = useRef(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
+  const [shortTableData, setShortTableData] = useState({});
+  const [chargesData, setChargesData] = useState({});
+  const [showTaxModal, setShowTaxModal] = useState(false);
+  const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(null);
+  const [data, setData] = useState(bidCounterData);
+  const [taxOptions, setTaxOptions] = useState([]);
+  const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
+  const [showSingleTaxModal, setShowSingleTaxModal] = useState(false);
+  const [showAllTaxModal, setShowAllTaxModal] = useState(false);
+  const originalTaxRateDataRef = useRef([]);
+  const [tableId, setTableId] = useState(0);
+  const [taxRateData, setTaxRateData] = useState([]);
   const { eventId } = useParams();
-  console.log("idddd", eventId);
+
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            taxChargeType: tax.type,
+          }));
+
+          // Adding default option at the top
+          setTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching tax data:", error);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
+
+  useEffect(() => {
+    const fetchTaxes = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            type: tax.type,
+          }));
+
+          setDeductionTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching deduction tax data:", error);
+      }
+    };
+
+    fetchTaxes();
+  }, []);
 
   // console.log("gormmm data", formData);
   useEffect(() => {
@@ -59,6 +132,11 @@ export default function BulkCounterOfferModalTwo({
 
   // const eventId = bidCounterData?.event?.id || "N/A";
 
+  const handleOpenOtherChargesModal = () => {
+    setShowOtherChargesModal(true);
+  };
+  const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
+
   const eventId2 = Array.isArray(bidCounterData?.event_materials)
     ? bidCounterData.event_materials[0]?.id || "N/A"
     : "N/A";
@@ -67,100 +145,83 @@ export default function BulkCounterOfferModalTwo({
     ? bidCounterData.event_materials[0]?.bid_materials?.[0]?.bid_id || "N/A"
     : "N/A";
 
-  // console.log("eventId:", eventId, "bidId:", bidId);
-
-  // const handleSubmit = async () => {
-  //   const payload = {
-  //     // counter_bid: {
-  //     //   event_vendor_id: formData.event_vendor_id,
-  //     //   price: formData.price,
-  //     //   discount: formData.discount,
-  //     //   freight_charge_amount: formData.freight_charge_amount,
-  //     //   gst_on_freight: formData.gst_on_freight,
-  //     //   realised_freight_charge_amount: formData.realised_freight_charge_amount,
-  //     //   gross_total: formData.gross_total,
-  //     //   warranty_clause: formData.warranty_clause,
-  //     //   payment_terms: formData.payment_terms,
-  //     //   loading_unloading_clause: formData.loading_unloading_clause,
-  //     //   counter_bid_materials_attributes: formData.event_materials.map(
-  //     //     (item) => ({
-  //     //       event_material_id: "",
-  //     //       bid_material_id: "",
-  //     //       quantity_available: item.quantity,
-  //     //       price: item.price,
-  //     //       discount: item.discount,
-  //     //       total_amount: item.total_amount,
-  //     //       realised_discount: item.realised_discount,
-  //     //       gst: item.gst,
-  //     //       realised_gst: item.realised_gst,
-  //     //       vendor_remark: item.vendor_remark,
-  //     //     })
-  //     //   ),
-  //     // },
-
-  //     counter_bid: {
-  //       event_vendor_id: 7398,
-  //       price: 500,
-  //       discount: 5,
-  //       freight_charge_amount: freight_charge_amount,
-  //       gst_on_freight: gst_on_freight,
-  //       realised_freight_charge_amount: formData.realised_freight_charge_amount,
-  //       gross_total: formData.sumTotal,
-  //       warranty_clause: formData.warranty_clause,
-  //       payment_terms: formData.payment_terms,
-  //       loading_unloading_clause: formData.loading_unloading_clause,
-  //       counter_bid_materials_attributes: [
-  //         {
-  //           event_material_id: 40,
-  //           bid_material_id: 52,
-  //           quantity_available: 50,
-  //           price: 250.0,
-  //           discount: 5.0,
-  //           total_amount: 237.5,
-  //           realised_discount: 10,
-  //           gst: 18,
-  //           realised_gst: 122,
-  //           vendor_remark: "sdjkgckjhchvjkh",
-  //         },
-  //       ],
-  //     },
-  //   };
-
-  //   const response = await fetch(
-  //     `https://marathon.lockated.com//rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(payload),
-  //     }
-  //   );
-
-  //   console.log("mmmmmmm", response);
-  //   if (response.ok) {
-  //     alert("counter bid succesfully");
-  //     handleClose();
-  //   } else {
-  //     console.error("Failed to submit counter bid");
-  //   }
-  // };
+  // console.log("bidCounterData", bidCounterData);
 
   const handleSubmit = async () => {
     setLoading(true);
+
     const counterBidMaterialsAttributes = formData?.event_materials?.map(
-      (item) => ({
-        event_material_id: item.id,
-        bid_material_id: item.bid_materials?.[0]?.bid_id || null,
-        quantity_available: parseFloat(item.quantity_available) || 0,
-        price: parseFloat(item.price) || 0,
-        discount: parseFloat(item.discount) || 0,
-        total_amount: parseFloat(item.total_amount) || 0,
-        realised_discount: parseFloat(item.realised_discount) || 0,
-        gst: parseFloat(item.gst) || 0,
-        realised_gst: parseFloat(item.realised_gst) || 0,
-        vendor_remark: item.vendor_remark || "",
-      })
+      (item, index) => {
+        const taxDetails = [
+          ...(taxRateData[index]?.addition_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = taxOptions?.find(
+                (tax) =>
+                  tax.value?.trim().toLowerCase() ===
+                  charge.taxChargeType.trim().toLowerCase()
+              );
+              return {
+                resource_id: matchedTax?.id || null, 
+                resource_type: matchedTax?.taxChargeType || "TaxCharge",
+                amount: charge.amount,
+                inclusive: charge.inclusive,
+                addition: true,
+                tax_percentage: charge.taxChargePerUom,
+              };
+            }
+          ),
+    
+          ...(taxRateData[index]?.deduction_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = deductionTaxOptions?.find(
+                (tax) =>
+                  tax.value?.trim().toLowerCase() ===
+                  charge.taxChargeType.trim().toLowerCase()
+              );
+    
+              return {
+                resource_id: matchedTax?.id || null,
+                resource_type: matchedTax?.type || "TaxCharge",
+                amount: charge.amount,
+                inclusive: charge.inclusive,
+                addition: false,
+                tax_percentage: charge.taxChargePerUom,
+              };
+            }
+          ),
+        ];
+        console.log("taxDetails",taxRateData, taxDetails);
+        
+        return {
+          event_material_id: item.id,
+          bid_material_id: item.bid_materials?.[0]?.bid_id || null,
+          quantity_available: parseFloat(item.quantity_available) || 0,
+          price: parseFloat(item.price) || 0,
+          discount: parseFloat(item.discount) || 0,
+          total_amount: parseFloat(item.total_amount) || 0,
+          realised_discount: parseFloat(item.realised_discount) || 0,
+          // gst: parseFloat(item.gst) || 0,
+          // realised_gst: parseFloat(item.realised_gst) || 0,
+          vendor_remark: item.vendor_remark || "",
+          bid_material_tax_details: taxDetails,
+          addition_tax_charges: (taxRateData[index]?.addition_bid_material_tax_details || [])?.map((charge) => ({
+            taxChargeType: charge.taxChargeType,
+            taxChargePerUom: charge.taxChargePerUom,
+            inclusive: charge.inclusive,
+            amount: charge.amount,
+          })),
+
+          deduction_tax: (taxRateData[index]?.deductionTax || []).map(
+            (charge) => ({
+              // id: isNaN(Number(charge.id)) ? null : charge.id,
+              taxChargeType: charge.taxChargeType,
+              taxChargePerUom: charge.taxChargePerUom,
+              inclusive: charge.inclusive,
+              amount: charge.amount,
+            })
+          ),
+        };
+      }
     );
 
     // setsubmitted(true);
@@ -175,36 +236,37 @@ export default function BulkCounterOfferModalTwo({
         realised_freight_charge_amount:
           parseFloat(formData.realised_freight_charge_amount) || 0,
         gross_total: sumTotal || 0,
-        warranty_clause: formData.warranty_clause || "",
-        payment_terms: formData.payment_terms || "",
-        loading_unloading_clause: formData.loading_unloading_clause || "",
+        warranty_clause: formData.warranty_clause || "_",
+        payment_terms: formData.payment_terms || "_",
+        loading_unloading_clause: formData.loading_unloading_clause || "_",
         counter_bid_materials_attributes: counterBidMaterialsAttributes,
       },
     };
 
-    try {
-      const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+    console.log("payload", payload);
 
-      if (response.ok) {
-        toast.success("Counter Bid Created successfully!", {
-          autoClose: 1000, // Close after 3 seconds
-        });
-        setTimeout(() => {
-          handleClose();
-        }, 1000); //
-      } else {
-        const errorText = await response.text();
-        toast.error(`Failed to submit counter bid: ${errorText}`);
-      }
+    try {
+      // const response = await fetch(
+      //   `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(payload),
+      //   }
+      // );
+      // if (response.ok) {
+      //   toast.success("Counter Bid Created successfully!", {
+      //     autoClose: 1000, // Close after 3 seconds
+      //   });
+      //   setTimeout(() => {
+      //     handleClose();
+      //   }, 1000); //
+      // } else {
+      //   const errorText = await response.text();
+      //   toast.error(`Failed to submit counter bid: ${errorText}`);
+      // }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
     } finally {
@@ -224,6 +286,7 @@ export default function BulkCounterOfferModalTwo({
     const gst = parseFloat(updatedMaterials[index].gst) || 0;
 
     const total = price * quantityAvail;
+    const realisedPrice = price - (price * discount) / 100;
 
     const realisedDiscount = (total * discount) / 100;
 
@@ -236,6 +299,7 @@ export default function BulkCounterOfferModalTwo({
     const finalTotal = landedAmount + realisedGst;
 
     updatedMaterials[index].realised_discount = realisedDiscount.toFixed(2);
+    updatedMaterials[index].realised_price = realisedPrice.toFixed(2);
     updatedMaterials[index].landed_amount = landedAmount.toFixed(2);
     updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
     updatedMaterials[index].total_amount = finalTotal.toFixed(2);
@@ -283,42 +347,20 @@ export default function BulkCounterOfferModalTwo({
   //   setSumTotal(totalSum);
   // };
 
-  const handleInputChange = (e, field) => {
-    const value = e.target.value;
-    const updatedFormData = { ...formData, [field]: value };
-
-    if (field === "freight_charge_amount" || field === "gst_on_freight") {
-      const freightCharge =
-        parseFloat(updatedFormData.freight_charge_amount) || 0;
-      const gstOnFreight = parseFloat(updatedFormData.gst_on_freight) || 0;
-
-      // Calculate realised freight charge
-      const realisedFreight =
-        freightCharge + (freightCharge * gstOnFreight) / 100;
-
-      // Format as string for storage
-      updatedFormData.realised_freight_charge_amount = realisedFreight;
-    }
-
-    const sumTotal = formData.event_materials?.reduce(
-      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-      0
-    );
-
-    const totalSum =
-      sumTotal +
-      parseFloat(updatedFormData.realised_freight_charge_amount || 0);
-
-    setFormData(updatedFormData);
-    setSumTotal(totalSum);
-
-    console.log("Updated Form Data:", updatedFormData);
-  };
-
   const productTableData =
-    bidCounterData?.event_materials?.map((eventMaterial, eventIndex) => ({
-      Sno: eventIndex + 1,
-      product: <span>{eventMaterial.inventory_name || "_"}</span>,
+    formData?.event_materials?.map((eventMaterial, eventIndex) => ({
+      Srno: <span>{eventIndex + 1}</span>,
+      product: (
+        // <span>{eventMaterial.inventory_name || "_"}</span>
+        <input
+          type="text"
+          className="form-control"
+          value={eventMaterial.inventory_name || "_"}
+          style={{ width: "auto" }}
+          readOnly
+          disabled
+        />
+      ),
       quantityRequested: (
         <input
           type="number"
@@ -329,17 +371,29 @@ export default function BulkCounterOfferModalTwo({
         />
       ),
       quantityAvailable: (
-        <input
-          type="number"
-          className="form-control"
-          value={eventMaterial.quantity_available || ""}
-          style={{ width: "auto" }}
-          onChange={(e) =>
-            handleMaterialInputChange(e, "quantity_available", eventIndex)
-          }
-        />
+        <>
+          <input
+            type="number"
+            className="form-control"
+            value={eventMaterial.quantity_available || ""}
+            style={{ width: "auto" }}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              const quantityRequested = eventMaterial.quantity || 0; // Ensure quantityRequested is a number
+
+              if (value > quantityRequested) {
+                toast.error(
+                  "Quantity available cannot exceed quantity requested."
+                );
+                return;
+              }
+
+              handleMaterialInputChange(e, "quantity_available", eventIndex);
+            }}
+          />
+        </>
       ),
-      bestTotalAmount: eventMaterial.best_total_amount || "_",
+      // bestTotalAmount: eventMaterial.best_total_amount || "_",
       price: (
         <input
           type="number"
@@ -376,6 +430,26 @@ export default function BulkCounterOfferModalTwo({
           disabled
         />
       ),
+      materialType: (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={eventMaterial?.material_type || "_"}
+          readOnly
+          disabled
+        />
+      ),
+      materialSubType: (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={eventMaterial?.inventory_sub_type || "_"}
+          readOnly
+          disabled
+        />
+      ),
       gst: (
         <input
           type="number"
@@ -394,7 +468,16 @@ export default function BulkCounterOfferModalTwo({
           disabled
         />
       ),
-      landedAmount: eventMaterial.landed_amount || "_",
+      landedAmount: (
+        <input
+          type="number"
+          className="form-control"
+          value={eventMaterial.landed_amount || ""}
+          style={{ width: "auto" }}
+          readOnly
+          disabled
+        />
+      ),
       vendorRemark: (
         <input
           type="text"
@@ -406,44 +489,68 @@ export default function BulkCounterOfferModalTwo({
           }
         />
       ),
-      deliveryLocation: bidCounterData?.event?.delivary_location || "N/A",
-    })) || [];
-
-  const freightData = [
-    {
-      label: "Freight Charge",
-      value: (
-        <input
-          type="number"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={formData?.freight_charge_amount || ""}
-          onChange={(e) => handleInputChange(e, "freight_charge_amount")}
-        />
-      ),
-    },
-    {
-      label: "GST on Freight",
-      value: (
-        <input
-          type="number"
-          className="form-control"
-          style={{ width: "auto" }}
-          onChange={(e) => handleInputChange(e, "gst_on_freight")}
-        />
-      ),
-    },
-    {
-      label: "Realised Freights",
-      value: (
+      deliveryLocation: (
         <input
           type="text"
-          class="form-control"
-          value={formData?.realised_freight_charge_amount || 0}
+          className="form-control"
+          value={eventMaterial?.location || ""}
+          style={{ width: "auto" }}
+          readOnly
           disabled
         />
       ),
-    },
+      pmsBrand: (
+        <input
+          type="text"
+          className="form-control"
+          value={eventMaterial?.pms_brand_name}
+          style={{ width: "auto" }}
+          readOnly
+          disabled
+        />
+      ),
+      pmsColour: (
+        <input
+          type="text"
+          className="form-control"
+          value={eventMaterial?.pms_colour_name}
+          style={{ width: "auto" }}
+          readOnly
+          disabled
+        />
+      ),
+      genericInfo: (
+        <input
+          type="text"
+          className="form-control"
+          value={eventMaterial?.generic_info_name}
+          style={{ width: "auto" }}
+          readOnly
+          disabled
+        />
+      ),
+
+      realisedPrice: (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={eventMaterial?.realised_price || "_"}
+          readOnly
+          disabled
+        />
+      ),
+      taxRate: (
+        <button
+          className="purple-btn2"
+          onClick={() => handleOpenModal(eventIndex)}
+        >
+          Select
+        </button>
+      ),
+    })) || [];
+
+  const sideTableData = [
     {
       label: "Warranty Clause",
       value: (
@@ -482,7 +589,441 @@ export default function BulkCounterOfferModalTwo({
     },
   ];
 
+  const handleInputChange = (e, field) => {
+    const value = e.target.value;
+    const updatedFormData = { ...formData, [field]: value };
+
+    if (field === "freight_charge_amount" || field === "gst_on_freight") {
+      const freightCharge =
+        parseFloat(updatedFormData.freight_charge_amount) || 0;
+      const gstOnFreight = parseFloat(updatedFormData.gst_on_freight) || 0;
+
+      // Calculate realised freight charge
+      const realisedFreight =
+        freightCharge + (freightCharge * gstOnFreight) / 100;
+
+      // Format as string for storage
+      updatedFormData.realised_freight_charge_amount = realisedFreight;
+    }
+
+    const sumTotal = formData.event_materials?.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
+    );
+
+    const totalSum =
+      sumTotal +
+      parseFloat(updatedFormData.realised_freight_charge_amount || 0);
+
+    setFormData(updatedFormData);
+    setSumTotal(totalSum);
+
+    // console.log("Updated Form Data:", updatedFormData);
+  };
+
   // console.log("Product Table Data:", productTableData);
+  useEffect(() => {
+    const extra_charges = {
+      freight_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_freight: {
+        value: "",
+        readonly: false,
+      },
+      other_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_other_charge: {
+        value: "",
+        readonly: false,
+      },
+      handling_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      gst_on_handling_charge: {
+        value: "",
+        readonly: false,
+      },
+      realised_freight_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      realised_other_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+      realised_handling_charge_amount: {
+        value: "",
+        readonly: false,
+      },
+    };
+
+    const formattedCharges = Object.entries(extra_charges).map(
+      ([fieldName, fieldData]) => ({
+        label: fieldName || "",
+        value: fieldData || "",
+        isRequired: false, // or true, if you have that info elsewhere
+        isReadOnly: fieldData.readonly,
+        fieldOwner: null, // or fetch from another object if needed
+      })
+    );
+
+    setShortTableData(
+      formattedCharges.reduce((acc, charge) => {
+        acc[charge.label] = charge.value.value;
+        return acc;
+      }, {})
+    );
+  }, []);
+  const onValueChange = (updated) => {
+    setChargesData(updated);
+  };
+
+  const calculateGrossTotal = (updatedData) => {
+    const getValue = (label) => {
+      return parseFloat(updatedData[label] || "0") || 0; // Ensure valid number
+    };
+
+    const freight = getValue("freight_charge_amount");
+    const gstFreight = getValue("gst_on_freight");
+    const other = getValue("other_charge_amount");
+    const gstOther = getValue("gst_on_other_charge");
+    const handling = getValue("handling_charge_amount");
+    const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+
+    const updatedRealizedData = { ...updatedData };
+    updatedRealizedData["realised_freight_charge_amount"] =
+      realisedFreight.toFixed(2);
+    updatedRealizedData["realised_other_charge_amount"] =
+      realisedOther.toFixed(2);
+    updatedRealizedData["realised_handling_charge_amount"] =
+      realisedHandling.toFixed(2);
+
+    onValueChange(updatedRealizedData);
+    // console.log("formData:---", typeof formData);
+
+    const gross = realisedFreight + realisedOther + realisedHandling;
+    const materialSum = formData?.event_materials?.reduce(
+      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+      0
+    );
+    const finalSumTotal = gross + (sumTotal || 0); // Ensure sumTotal is valid
+
+    if (sumTotal !== finalSumTotal) {
+      setSumTotal(finalSumTotal);
+    }
+
+    if (prevGrossRef.current === null) {
+      prevGrossRef.current = gross;
+    }
+  };
+
+  const handleOtherChargesInputChange = (field, value) => {
+    const updatedCharges = { ...shortTableData, [field]: value };
+
+    const getValue = (label) => parseFloat(updatedCharges[label] || "0") || 0;
+
+    const freight = getValue("freight_charge_amount");
+    const gstFreight = getValue("gst_on_freight");
+    const other = getValue("other_charge_amount");
+    const gstOther = getValue("gst_on_other_charge");
+    const handling = getValue("handling_charge_amount");
+    const gstHandling = getValue("gst_on_handling_charge");
+
+    const realisedFreight = freight + (freight * gstFreight) / 100;
+    const realisedOther = other + (other * gstOther) / 100;
+    const realisedHandling = handling + (handling * gstHandling) / 100;
+
+    const gross = realisedFreight + realisedOther + realisedHandling;
+
+    setShortTableData({
+      ...updatedCharges,
+      realised_freight_charge_amount: realisedFreight.toFixed(2),
+      realised_other_charge_amount: realisedOther.toFixed(2),
+      realised_handling_charge_amount: realisedHandling.toFixed(2),
+    });
+
+    const materialSum =
+      formData?.event_materials?.reduce(
+        (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+        0
+      ) || 0; // Ensure materialSum is valid
+
+    const finalSumTotal = materialSum + gross;
+
+    if (sumTotal !== finalSumTotal) {
+      setSumTotal(finalSumTotal);
+    }
+  };
+
+  const handleOpenTaxModal = (index) => {
+    setSelectedMaterialIndex(index);
+    setShowSingleTaxModal(true);
+  };
+
+  const handleCloseTaxModal = () => {
+    setShowSingleTaxModal(false);
+  };
+
+  const handleSaveTaxChanges = () => {
+    const updatedData = [...formData.event_materials];
+
+    // Update the selected material's total_amount based on the recalculated net cost
+    const updatedNetCost = calculateNetCost(tableId);
+    updatedData[tableId] = {
+      ...updatedData[tableId],
+      total_amount: parseFloat(updatedNetCost) || 0, // Ensure total_amount is a valid number
+    };
+
+    // Update the formData with the modified materials
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      event_materials: updatedData,
+    }));
+
+    // Recalculate the sumTotal by summing up all total_amount values
+    const updatedGrossTotal = updatedData.reduce((acc, item) => {
+      const netCost = parseFloat(item.total_amount) || 0; // Ensure valid number
+      return acc + netCost;
+    }, 0);
+
+    setSumTotal(updatedGrossTotal); // Update the sumTotal state
+
+    handleCloseTaxModal(); // Close the modal
+
+    console.log(
+      "Updated Tax Rate Data:",
+      updatedData,
+      "Updated Gross Total:",
+      updatedGrossTotal
+    );
+  };
+
+  const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
+    // if (fromAllUpdateRef.current) {
+    //   // 🛑 Skip if last update was from bulk
+    //   fromAllUpdateRef.current = false;
+    //   return;
+    // }
+
+    const updatedData = structuredClone(taxRateData);
+    const originalData = structuredClone(originalTaxRateDataRef.current);
+    const targetRow = updatedData[rowIndex];
+    const originalRow = originalData[rowIndex];
+    if (!targetRow || !originalRow) return;
+
+    const taxKey =
+      type === "addition"
+        ? "addition_bid_material_tax_details"
+        : "deduction_bid_material_tax_details";
+
+    const taxCharges = [...targetRow[taxKey]];
+    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+    if (chargeIndex === -1) return;
+
+    const charge = { ...taxCharges[chargeIndex] };
+
+    if (field === "amount") {
+      charge.amount = value;
+      if (!charge.inclusive && targetRow.afterDiscountValue) {
+        const perUOM = (
+          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+          100
+        ).toFixed(2);
+        charge.taxChargePerUom = perUOM;
+      }
+    } else {
+      charge[field] = value;
+    }
+
+    if (!charge.inclusive && field === "taxChargePerUom") {
+      const taxAmount = calculateTaxAmount(
+        charge.taxChargePerUom,
+        targetRow.afterDiscountValue,
+        charge.inclusive
+      );
+      charge.amount = taxAmount.toFixed(2);
+    }
+
+    taxCharges[chargeIndex] = charge;
+    targetRow[taxKey] = taxCharges;
+    updatedData[rowIndex] = targetRow;
+
+    const recalculated = updatedData.map((row, idx) => ({
+      ...row,
+      netCost: calculateNetCost(idx, updatedData),
+    }));
+
+    // console.log(
+    //   "Updated Tax Data (Single):",
+    //   JSON.stringify(updatedData, null, 2)
+    // );
+
+    setTaxRateData(recalculated);
+    originalTaxRateDataRef.current = structuredClone(recalculated);
+  };
+
+  const handleOpenModal = (rowIndex) => {
+    console.log("Opening modal for row:", rowIndex);
+
+    // Fetch the latest data for the selected row from formData
+    const selectedRow = formData?.event_materials?.[rowIndex];
+    if (!selectedRow) {
+      console.error("Selected row data not found.");
+      return;
+    }
+
+    console.log("Current bidCounterData:", bidCounterData?.event_materials);
+    console.log("Current taxRateData:", taxRateData);
+
+    // Update taxRateData with the latest values from the selected row
+    const updatedTaxRateData =
+      taxRateData.length === 0
+        ? formData?.event_materials?.map((row) => ({
+            material: row.material_formatted_name || "",
+            totalPoQty: row.quantity || "",
+            discount: row.discount || "",
+            materialCost: row.price || "",
+            discountRate: row.realised_discount || "",
+            afterDiscountValue: row.total_amount || "",
+            remark: row.vendor_remark || "",
+            addition_bid_material_tax_details:
+              row?.addition_bid_material_tax_details || [],
+            deduction_bid_material_tax_details:
+              row?.deduction_bid_material_tax_details || [],
+            netCost: row.total_amount || "",
+          }))
+        : structuredClone(taxRateData);
+
+    // Update the specific row in taxRateData with the latest values
+    updatedTaxRateData[rowIndex] = {
+      ...updatedTaxRateData[rowIndex],
+      totalPoQty: selectedRow.quantity || "",
+      discount: selectedRow.discount || "",
+      materialCost: selectedRow.price || "",
+      discountRate: selectedRow.realised_discount || "",
+      afterDiscountValue: selectedRow.total_amount || "",
+      remark: selectedRow.vendor_remark || "",
+    };
+
+    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+    setTaxRateData(updatedTaxRateData);
+
+    setTableId(rowIndex);
+    setShowSingleTaxModal(true);
+  };
+
+  const addAdditionTaxCharge = (rowIndex) => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    const updatedTaxRateData = [...taxRateData];
+    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
+      newItem
+    );
+    setTaxRateData(updatedTaxRateData);
+    // setParentTaxRateData(updatedTaxRateData);
+  };
+
+  const addDeductionTaxCharge = (rowIndex) => {
+    const newItem = {
+      id: Date.now().toString(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    const updatedTaxRateData = [...taxRateData];
+    updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.push(
+      newItem
+    );
+    setTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
+  };
+
+  const removeTaxChargeItem = (rowIndex, id, type) => {
+    const updatedTaxRateData = [...taxRateData];
+    if (type === "addition") {
+      updatedTaxRateData[rowIndex].addition_bid_material_tax_details =
+        updatedTaxRateData[rowIndex].addition_bid_material_tax_details.filter(
+          (item) => item.id !== id
+        );
+    } else {
+      updatedTaxRateData[rowIndex].deduction_bid_material_tax_details =
+        updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.filter(
+          (item) => item.id !== id
+        );
+    }
+    setTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
+  };
+
+  const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
+    if (inclusive) return 0;
+
+    const safePercentage =
+      typeof percentage === "string" ? percentage.replace("%", "") : percentage;
+    const parsedPercentage = parseFloat(safePercentage) || 0;
+    const parsedBaseAmount = parseFloat(baseAmount) || 0;
+
+    return (parsedPercentage / 100) * parsedBaseAmount;
+  };
+
+  const calculateNetCost = (rowIndex, updatedData = taxRateData) => {
+    const taxRateRow = updatedData[rowIndex];
+    let additionTaxTotal = 0;
+    let deduction_bid_material_tax_detailsTotal = 0;
+    let directChargesTotal = 0;
+
+    taxRateRow.addition_bid_material_tax_details.forEach((item) => {
+      if (item.inclusive) return;
+
+      if (
+        ["Handling Charges", "Other charges", "Freight"].includes(
+          item.taxChargeType
+        )
+      ) {
+        directChargesTotal += parseFloat(item.amount) || 0;
+      } else {
+        const taxAmount = calculateTaxAmount(
+          item.taxChargePerUom,
+          taxRateRow.afterDiscountValue
+        );
+        additionTaxTotal += taxAmount;
+      }
+    });
+
+    taxRateRow.deduction_bid_material_tax_details.forEach((item) => {
+      if (item.inclusive) return;
+      const taxAmount = calculateTaxAmount(
+        item.taxChargePerUom,
+        taxRateRow.afterDiscountValue
+      );
+      deduction_bid_material_tax_detailsTotal += taxAmount;
+    });
+
+    const netCost =
+      parseFloat(taxRateRow.afterDiscountValue || "0") +
+      additionTaxTotal +
+      directChargesTotal -
+      deduction_bid_material_tax_detailsTotal;
+
+    return netCost.toFixed(2);
+  };
 
   return (
     <>
@@ -490,7 +1031,7 @@ export default function BulkCounterOfferModalTwo({
         show={show}
         onHide={handleClose}
         title="Counter Offer"
-        size="xl"
+        size="xxl"
         // footerButtons={[
         //   {
         //     label: "Save",
@@ -527,7 +1068,13 @@ export default function BulkCounterOfferModalTwo({
         <Table columns={productTableColumns} data={productTableData} />
 
         <div className="d-flex justify-content-end">
-          <ShortTable data={freightData} />
+          <ShortTable data={sideTableData} />
+        </div>
+
+        <div className="d-flex justify-content-end mt-4">
+          <button onClick={handleOpenOtherChargesModal} className="purple-btn2">
+            Other Charges
+          </button>
         </div>
         <div className="d-flex justify-content-end">
           <h4>Sum Total : ₹{sumTotal}</h4>
@@ -541,6 +1088,899 @@ export default function BulkCounterOfferModalTwo({
             type="text"
             id="counterOfferRemarks"
           />
+        </div>
+      </DynamicModalBox>
+      <DynamicModalBox
+        show={showOtherChargesModal}
+        onHide={handleCloseOtherChargesModal}
+        size="md"
+        title="Other Charges"
+        modalType={true}
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleCloseOtherChargesModal,
+            props: { className: "purple-btn1" },
+          },
+          {
+            label: "Save",
+            onClick: () => {
+              // Add save logic here
+              calculateGrossTotal(shortTableData);
+              handleCloseOtherChargesModal();
+            },
+            props: { className: "purple-btn2" },
+          },
+        ]}
+      >
+        <div className="d-flex justify-content-end">
+          <table className="tbl-container mt-4 p-4">
+            <tbody>
+              {Object.keys(shortTableData).map((field, index) => (
+                <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td
+                    style={{
+                      padding: "12px",
+                      fontWeight: "bold",
+                      background: "#8b0203",
+                      color: "#fff",
+                      width: "65%",
+                    }}
+                  >
+                    {field
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      color: "#000",
+                      textAlign: "left",
+                    }}
+                  >
+                    {field.startsWith("realised_") ? (
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={shortTableData[field] || ""}
+                        readOnly
+                        disabled
+                        style={{
+                          backgroundColor: "#f5f5f5",
+                          color: "#000",
+                        }}
+                      />
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={shortTableData[field] || ""}
+                          onChange={(e) =>
+                            handleOtherChargesInputChange(
+                              field,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          style={{
+                            backgroundColor: "#fff",
+                            color: "#000",
+                            width: "80%",
+                            marginRight: "5px",
+                          }}
+                        />
+                        {field.startsWith("gst_") ? (
+                          <span style={{ color: "#000" }}>%</span>
+                        ) : (
+                          <span style={{ color: "#000" }}>₹</span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </DynamicModalBox>
+      <DynamicModalBox
+        show={showTaxModal}
+        onHide={handleCloseTaxModal}
+        size="lg"
+        title="View Tax & Rate"
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleCloseTaxModal,
+            props: { className: "purple-btn1" },
+          },
+          {
+            label: "Save Changes",
+            onClick: handleSaveTaxChanges,
+            props: { className: "purple-btn2" },
+          },
+        ]}
+        centered={true}
+      >
+        <div className="container-fluid p-0">
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.material_name || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">HSN Code</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.event_material?.inventory_id || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Rate per Nos</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.price || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Total PO Qty</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.quantity_available || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount(%)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.discount || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material Cost</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={
+                    bidCounterData?.bid_materials?.[selectedMaterialIndex]
+                      ?.total_amount || ""
+                  }
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="table-responsive">
+                <table className="table table-bordered">
+                  <thead className="tax-table-header">
+                    <tr>
+                      <th>Tax / Charge Type</th>
+                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Inclusive</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Total Base Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control bg-light"
+                          value={
+                            bidCounterData?.bid_materials?.[
+                              selectedMaterialIndex
+                            ]?.total_amount || ""
+                          }
+                          readOnly
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Addition Tax & Charges</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    {bidCounterData?.bid_materials?.[
+                      selectedMaterialIndex
+                    ]?.addition_bid_material_tax_details?.map(
+                      (item, rowIndex) => (
+                        <tr key={`${rowIndex}-${item.id}`}>
+                          <td>
+                            <SelectBox
+                              options={taxOptions}
+                              defaultValue={
+                                item.taxChargeType ||
+                                taxOptions.find(
+                                  (option) => option.id === item.resource_id
+                                )?.value
+                              }
+                              onChange={(value) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargeType",
+                                  value,
+                                  "addition"
+                                )
+                              }
+                              className="custom-select"
+                              isDisableFirstOption={true}
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="form-select"
+                              // value={item.taxChargePerUom}
+                              defaultValue={item?.taxChargePerUom}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                              disabled={true}
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="5%">5%</option>
+                              <option value="12%">12%</option>
+                              <option value="18%">18%</option>
+                              <option value="28%">28%</option>
+                            </select>
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "inclusive",
+                                  e.target.checked,
+                                  "addition"
+                                )
+                              }
+                              readOnly
+                              disabled={true}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={item.amount}
+                              onChange={(e) => {
+                                const baseAmount =
+                                  parseFloat(
+                                    bidCounterData?.bid_materials?.[
+                                      selectedMaterialIndex
+                                    ]?.total_amount
+                                  ) || 0;
+                                const percentage =
+                                  parseFloat(e.target.value) || 0;
+                                const calculatedAmount = item.inclusive
+                                  ? baseAmount *
+                                    (percentage / (100 + percentage))
+                                  : baseAmount * (percentage / 100);
+
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "amount",
+                                  calculatedAmount.toFixed(2),
+                                  "addition"
+                                );
+                              }}
+                              readOnly
+                              disabled={true}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    )}
+                    <tr>
+                      <td>Deduction Tax</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                    {bidCounterData?.bid_materials?.[
+                      selectedMaterialIndex
+                    ]?.deduction_bid_material_tax_details?.map(
+                      (item, rowIndex) => (
+                        <>
+                          <tr key={item.id}>
+                            <td>
+                              <SelectBox
+                                options={deductionTaxOptions}
+                                defaultValue={
+                                  item.taxChargeType ||
+                                  deductionTaxOptions.find(
+                                    (option) => option.id == item.resource_id
+                                  ).value
+                                }
+                                onChange={(value) =>
+                                  handleTaxChargeChange(
+                                    selectedMaterialIndex,
+                                    item.id,
+                                    "taxChargeType",
+                                    value,
+                                    "deduction"
+                                  )
+                                }
+                                disabled={true}
+                              />
+                            </td>
+                            <td>
+                              <select
+                                className="form-select"
+                                // value={item.taxChargePerUom}
+                                defaultValue={item?.tax_percentage}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    selectedMaterialIndex,
+                                    item.id,
+                                    "taxChargePerUom",
+                                    e.target.value,
+                                    "deduction"
+                                  )
+                                }
+                                disabled={true}
+                              >
+                                <option value="">Select Tax</option>
+                                <option value="1%">1%/</option>
+                                <option value="2%">2%</option>
+                                <option value="10%">10%</option>
+                              </select>
+                            </td>
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={item.inclusive}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    selectedMaterialIndex,
+                                    item.id,
+                                    "inclusive",
+                                    e.target.checked,
+                                    "deduction"
+                                  )
+                                }
+                                disabled={true}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={item.amount}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    selectedMaterialIndex,
+                                    item.id,
+                                    "amount",
+                                    e.target.value,
+                                    "deduction"
+                                  )
+                                }
+                                readonly
+                                disabled={true}
+                              />
+                            </td>
+                          </tr>
+                        </>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DynamicModalBox>
+
+      <DynamicModalBox
+        show={showSingleTaxModal}
+        onHide={handleCloseTaxModal}
+        size="lg"
+        title="View Tax & Rate"
+        footerButtons={[
+          {
+            label: "Close",
+            onClick: handleCloseTaxModal,
+            props: {
+              className: "purple-btn1",
+            },
+          },
+          {
+            label: "Save Changes",
+            onClick: handleSaveTaxChanges,
+            props: {
+              className: "purple-btn2",
+            },
+          },
+        ]}
+        centered={true}
+      >
+        <div className="container-fluid p-0">
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.material || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">HSN Code</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.hsnCode || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Rate per Nos</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.ratePerNos || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Total PO Qty</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.totalPoQty || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount (%)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.discount || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Material Cost</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.materialCost || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Discount Rate</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.discountRate || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">
+                  After Discount Value
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={taxRateData[tableId]?.afterDiscountValue || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-bold">Remark</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={taxRateData[tableId]?.remark || ""}
+                  readOnly
+                  disabled={true}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Charges Table */}
+          <div className="row mt-4">
+            <div className="col-12">
+              <div className="table-responsive">
+                <table className="table table-bordered">
+                  <thead className="tax-table-header">
+                    <tr>
+                      <th>Tax / Charge Type</th>
+                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Inclusive</th>
+                      <th>Amount</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Total Base Cost Row */}
+                    <tr>
+                      <td>Total Base Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control "
+                          value={taxRateData[tableId]?.afterDiscountValue}
+                          readOnly
+                          disabled={true}
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+
+                    {/* Addition Tax & Charges Row */}
+                    <tr>
+                      <td>Addition Tax & Charges</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => {
+                            if (
+                              taxRateData[tableId]
+                                ?.addition_bid_material_tax_details.length >= 4
+                            ) {
+                              toast.error(
+                                "You can only add up to 1 fields for Additional Tax & Charges.",
+                                {
+                                  autoClose: 2000,
+                                }
+                              );
+                            } else {
+                              addAdditionTaxCharge(tableId);
+                            }
+                          }}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+                    {/* {console.log("item:----", taxRateData, "taxOpiton",tableId)} */}
+
+                    {taxRateData[tableId]?.addition_bid_material_tax_details
+                      .slice(0, 1)
+                      ?.map((item, rowIndex) => (
+                        <tr key={`${rowIndex}-${item.id}`}>
+                          <td>
+                            <SelectBox
+                              options={taxOptions}
+                              defaultValue={
+                                item.taxChargeType ||
+                                taxOptions.find(
+                                  (option) => option.id === item.resource_id
+                                )?.value
+                              }
+                              onChange={(value) => {
+                                const selectedOption = taxOptions.find(
+                                  (option) => option.value === value
+                                );
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "taxChargeType",
+                                  selectedOption?.value,
+                                  "addition"
+                                );
+                              }}
+                              className="custom-select"
+                            />
+                          </td>
+
+                          <td>
+                            <select
+                              className="form-select"
+                              // value={item.taxChargePerUom}
+                              defaultValue={item?.taxChargePerUom}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="5%">5%</option>
+                              <option value="12%">12%</option>
+                              <option value="18%">18%</option>
+                              <option value="28%">28%</option>
+                            </select>
+                          </td>
+
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "inclusive",
+                                  e.target.checked,
+                                  "addition"
+                                )
+                              }
+                            />
+                          </td>
+
+                          <td>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={item.amount}
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "amount",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                            />
+                          </td>
+
+                          <td className="text-center">
+                            <button
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() =>
+                                removeTaxChargeItem(
+                                  tableId,
+                                  item.id,
+                                  "addition"
+                                )
+                              }
+                            >
+                              <span>×</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+
+                    <tr>
+                      <td>Deduction Tax</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => addDeductionTaxCharge(tableId)}
+                        >
+                          <span>+</span>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {taxRateData[
+                      tableId
+                    ]?.deduction_bid_material_tax_details.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <SelectBox
+                            options={deductionTaxOptions}
+                            defaultValue={
+                              deductionTaxOptions.find(
+                                (option) => option.id == item.resource_id
+                              ).value
+                            }
+                            onChange={(value) =>
+                              handleTaxChargeChange(
+                                tableId,
+                                item.id,
+                                "taxChargeType",
+                                value,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            // value={item.taxChargePerUom}
+                            defaultValue={item?.tax_percentage}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                tableId,
+                                item.id,
+                                "taxChargePerUom",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="1%">1%</option>
+                            <option value="2%">2%</option>
+                            <option value="10%">10%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                tableId,
+                                item.id,
+                                "inclusive",
+                                e.target.checked,
+                                "deduction" // Pass either "addition" or "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={item.amount}
+                            onChange={(e) =>
+                              handleTaxChargeChange(
+                                tableId,
+                                item.id,
+                                "amount",
+                                e.target.value,
+                                "deduction"
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
+                              removeTaxChargeItem(tableId, item.id, "deduction")
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td>Net Cost</td>
+                      <td></td>
+                      <td></td>
+                      <td className="text-center">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={taxRateData[tableId]?.netCost}
+                          readOnly
+                          disabled={true}
+                        />
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </DynamicModalBox>
       <ToastContainer />
