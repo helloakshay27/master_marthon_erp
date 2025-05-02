@@ -1,19 +1,38 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
-import {
-  Table
-} from "../components";
+import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import axios from "axios";
 
 const CreditNoteDetails = () => {
   const [showRows, setShowRows] = useState(false);
+  const [creditNoteData, setCreditNoteData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-   // tax table functionality
+  // Fetch credit note data
+  useEffect(() => {
+    const fetchCreditNoteData = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/credit_notes/1"
+        );
+        setCreditNoteData(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-   const [rows, setRows] = useState([
+    fetchCreditNoteData();
+  }, []);
+
+  // tax table functionality
+  const [rows, setRows] = useState([
     {
       id: 1,
       type: "TDS 1",
@@ -35,12 +54,7 @@ const CreditNoteDetails = () => {
 
   // Calculate Sub Total (Addition)
   const calculateSubTotal = () => {
-    return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
-  };
-  // tax table functionality
-   // Function to handle tab change
-   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
+    return rows.reduce((total, row) => total + row.amount, 0).toFixed(2);
   };
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -59,6 +73,10 @@ const CreditNoteDetails = () => {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!creditNoteData) return <div>No data found</div>;
 
   return (
     <>
@@ -80,7 +98,7 @@ const CreditNoteDetails = () => {
                 >
                   <section className="mor p-2 pt-2">
                     <div className="row justify-content-center my-4">
-                    <div className="col-md-10">
+                      <div className="col-md-10">
                         <div className="progress-steps">
                           <div className="top">
                             <div className="progress">
@@ -109,7 +127,6 @@ const CreditNoteDetails = () => {
                             </div>
                           </div>
                           <div className="buttons d-m">
-                            {/* Prev Button */}
                             <button
                               className={`btn btn-prev ${
                                 currentStep === 1 ? "disabled" : ""
@@ -119,7 +136,6 @@ const CreditNoteDetails = () => {
                             >
                               Prev
                             </button>
-                            {/* Next Button */}
                             <button
                               className={`btn btn-next ${
                                 currentStep === totalSteps ? "disabled" : ""
@@ -133,362 +149,478 @@ const CreditNoteDetails = () => {
                         </div>
                       </div>
                     </div>
-                  
-                      {/* form-select EXAMPLE */}
-                      <div
-                        className="card card-default"
-                        id="mor-material-details"
-                      >
-                        <div className="card-body">
-                          <div className="details_page">
-                            <div className="row px-3">
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Company</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Marathon
-                                  </label>
-                                </div>
+
+                    <div
+                      className="card card-default"
+                      id="mor-material-details"
+                    >
+                      <div className="card-body">
+                        <div className="details_page">
+                          <div className="row px-3">
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Company</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Project</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Neo Valley
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.company || "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Sub-Project </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Neo Valley- Building
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Project</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Credit Note Number</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Demo Note
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.project || "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Credit Note Date</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    1/4/24
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Sub-Project</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Created On</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    2/4/24
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.sub_project || "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>PO / WO Nunber</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    PO 251
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Credit Note Number</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>PO / WO Date</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    4/4/24
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.credit_note_no || "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>PO Value</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    6000.00{" "}
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Credit Note Date</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Supplier Name</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Shreeram Ceramics
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.credit_note_date
+                                    ? new Date(
+                                        creditNoteData.credit_note_date
+                                      ).toLocaleDateString()
+                                    : "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>GSTN No.</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    GST5448784
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Created On</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>PAN Number</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    PAN6545154
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.created_at
+                                    ? new Date(
+                                        creditNoteData.created_at
+                                      ).toLocaleDateString()
+                                    : "-"}
+                                </label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Credit Note Amount</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    INR 3000
-                                  </label>
-                                </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>PO / WO Number</label>
                               </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Remark</label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">
-                                      <span className="text-dark">:</span>
-                                    </span>
-                                    Demo remark
-                                  </label>
-                                </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.purchase_order_id || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>PO / WO Date</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.po_date
+                                    ? new Date(
+                                        creditNoteData.po_date
+                                      ).toLocaleDateString()
+                                    : "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>PO Value</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.po_value || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Supplier Name</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.supplier_name || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>GSTN No.</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.gstn_no || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>PAN Number</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.pan_number || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Credit Note Amount</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.credit_note_amount || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Status</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.status || "-"}
+                                </label>
+                              </div>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Remark</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.remark || "-"}
+                                </label>
                               </div>
                             </div>
                           </div>
-                          <div className="d-flex justify-content-between mt-3 me-2">
-                            <h5 className=" ">Tax Details</h5>
-                          </div>
-                          <div className="tbl-container mx-3 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th className="text-start">
-                                    Tax / Charge Type
-                                  </th>
-                                  <th className="text-start">
-                                    Tax / Charges per UOM (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Inclusive / Exclusive
-                                  </th>
-                                  <th className="text-start">Amount</th>
-                                  <th className="text-start">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Static Rows */}
-                                <tr>
-                                  <th className="text-start">
-                                  Total Base Cost
-                                  </th>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start">3000</td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">
+                        </div>
+                        <div className="d-flex justify-content-between mt-3 me-2">
+                          <h5 className=" ">Tax Details</h5>
+                        </div>
+                        <div className="tbl-container mx-3 mt-3">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">
+                                  Tax / Charge Type
+                                </th>
+                                <th className="text-start">
+                                  Tax / Charges per UOM (INR)
+                                </th>
+                                <th className="text-start">
+                                  Inclusive / Exclusive
+                                </th>
+                                <th className="text-start">Amount</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">Total Base Cost</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start">
+                                  {creditNoteData.credit_note_amount || "-"}
+                                </td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">
                                   Addition Tax & Charges
-                                  </th>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td onClick={toggleRows}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        transform: showRows
-                                          ? "rotate(45deg)"
-                                          : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
-                                    >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
-                                  </td>
-                                </tr>
-                                {/* Dynamic Rows */}
-                                {showRows &&
-                                  rows.map((row) => (
-                                    <tr>
+                                </th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td />
+                              </tr>
+                              {/* Dynamic Rows for Addition Tax */}
+                              {creditNoteData.taxes_and_charges &&
+                                creditNoteData.taxes_and_charges
+                                  .filter((tax) => tax.addition)
+                                  .map((tax) => (
+                                    <tr key={tax.id}>
                                       <td className="text-start">
-                                        <select className="form-control form-select">
-                                          <option selected>{row.type}</option>
-                                          <option>Other Type</option>
-                                        </select>
+                                        {tax.remarks || "-"}
                                       </td>
                                       <td className="text-start">
-                                        <select className="form-control form-select">
-                                          <option selected>
-                                            {row.charges}
-                                          </option>
-                                          <option>Other Charges</option>
-                                        </select>
+                                        {tax.percentage
+                                          ? `${tax.percentage}%`
+                                          : "-"}
                                       </td>
-                                     
-                                      <td><input type="checkbox" /></td>
-                                     
-                                      <td>00.0</td>
-                                      <td
-                                        className="text-start"
-                                        onClick={() => deleteRow(row.id)}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="16"
-                                          height="16"
-                                          fill="currentColor"
-                                          className="bi bi-dash-circle"
-                                          viewBox="0 0 16 16"
-                                          style={{
-                                            transition: "transform 0.3s ease",
-                                          }}
-                                        >
-                                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                        </svg>
+                                      <td>
+                                        <input
+                                          type="checkbox"
+                                          checked={tax.inclusive}
+                                          disabled
+                                        />
                                       </td>
+                                      <td>{tax.amount || "-"}</td>
+                                      <td />
                                     </tr>
                                   ))}
-                                {/* Dynamic Sub Total Row */}
-                                {/* Static Rows */}
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">
+                                  Sub Total A (Addition)
+                                </th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {creditNoteData.taxes_and_charges &&
+                                    creditNoteData.taxes_and_charges
+                                      .filter((tax) => tax.addition)
+                                      .reduce(
+                                        (total, tax) =>
+                                          total + (parseFloat(tax.amount) || 0),
+                                        0
+                                      )
+                                      .toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Gross Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {(
+                                    parseFloat(
+                                      creditNoteData.credit_note_amount || 0
+                                    ) +
+                                    (creditNoteData.taxes_and_charges &&
+                                      creditNoteData.taxes_and_charges
+                                        .filter((tax) => tax.addition)
+                                        .reduce(
+                                          (total, tax) =>
+                                            total +
+                                            (parseFloat(tax.amount) || 0),
+                                          0
+                                        ))
+                                  ).toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Deduction Tax</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start" />
+                                <td />
+                              </tr>
+                              {/* Dynamic Rows for Deduction Tax */}
+                              {creditNoteData.taxes_and_charges &&
+                                creditNoteData.taxes_and_charges
+                                  .filter((tax) => !tax.addition)
+                                  .map((tax) => (
+                                    <tr key={tax.id}>
+                                      <td className="text-start">
+                                        {tax.remarks || "-"}
+                                      </td>
+                                      <td className="text-start">
+                                        {tax.percentage
+                                          ? `${tax.percentage}%`
+                                          : "-"}
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="checkbox"
+                                          checked={tax.inclusive}
+                                          disabled
+                                        />
+                                      </td>
+                                      <td>{tax.amount || "-"}</td>
+                                      <td />
+                                    </tr>
+                                  ))}
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">
+                                  Sub Total B (Deductions)
+                                </th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {creditNoteData.taxes_and_charges &&
+                                    creditNoteData.taxes_and_charges
+                                      .filter((tax) => !tax.addition)
+                                      .reduce(
+                                        (total, tax) =>
+                                          total + (parseFloat(tax.amount) || 0),
+                                        0
+                                      )
+                                      .toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Payable Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {(
+                                    parseFloat(
+                                      creditNoteData.credit_note_amount || 0
+                                    ) +
+                                    (creditNoteData.taxes_and_charges &&
+                                      creditNoteData.taxes_and_charges
+                                        .filter((tax) => tax.addition)
+                                        .reduce(
+                                          (total, tax) =>
+                                            total +
+                                            (parseFloat(tax.amount) || 0),
+                                          0
+                                        )) -
+                                    (creditNoteData.taxes_and_charges &&
+                                      creditNoteData.taxes_and_charges
+                                        .filter((tax) => !tax.addition)
+                                        .reduce(
+                                          (total, tax) =>
+                                            total +
+                                            (parseFloat(tax.amount) || 0),
+                                          0
+                                        ))
+                                  ).toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="d-flex justify-content-between mt-3 me-2">
+                          <h5 className=" ">Document Attachment</h5>
+                        </div>
+                        <div className="tbl-container mx-3 mt-3">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">Sr. No.</th>
+                                <th className="text-start">Document Name</th>
+                                <th className="text-start">File Name</th>
+                                <th className="text-start">File Type</th>
+                                <th className="text-start">Upload Date</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {creditNoteData.attachments &&
+                              creditNoteData.attachments.length > 0 ? (
+                                creditNoteData.attachments.map(
+                                  (attachment, index) => (
+                                    <tr key={attachment.id}>
+                                      <td className="text-start">
+                                        {index + 1}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.relation}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.filename}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.content_type}
+                                      </td>
+                                      <td className="text-start">
+                                        {new Date(
+                                          attachment.created_at
+                                        ).toLocaleDateString()}
+                                      </td>
+                                      <td className="text-decoration-underline cursor-pointer">
+                                        <a
+                                          href={`https://marathon.lockated.com/attachments/${attachment.id}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          View
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  )
+                                )
+                              ) : (
                                 <tr>
-                                  <th className="text-start">Sub Total A (Addition)</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start">3540</td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">Gross Amount</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start">3540</td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">Deduction Tax</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start" />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="d-flex justify-content-between mt-3 me-2">
-                            <h5 className=" ">Document Attachment</h5>
-                          </div>
-                          <div className="tbl-container mx-3 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th className="text-start">Sr. No.</th>
-                                  <th className="text-start">Document Name</th>
-                                  <th className="text-start">File Name</th>
-                                  <th className="text-start">File Type</th>
-                                  <th className="text-start">Upload Date</th>
-                                  <th className="text-start">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start">PO.pdf</td>
-                                  <td className="text-start">04-03-2024</td>
-                                  <td
-                                    className="text-decoration-underline cursor-pointer"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#RevisionModal"
-                                  >
-                                    View
+                                  <td colSpan="6" className="text-center">
+                                    No attachments found
                                   </td>
                                 </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                              )}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
-                  
+                    </div>
                   </section>
                 </div>
                 <div className="row w-100">
@@ -550,9 +682,9 @@ const CreditNoteDetails = () => {
                 <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
-                      <div className="mx-0">
-                        <Table columns={auditLogColumns} data={auditLogData} />
-                      </div>
+                    <div className="mx-0">
+                      <Table columns={auditLogColumns} data={auditLogData} />
+                    </div>
                   </div>
                 </div>
               </div>

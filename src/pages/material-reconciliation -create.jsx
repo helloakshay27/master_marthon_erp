@@ -411,11 +411,61 @@ const MaterialReconciliationCreate = () => {
   }, []);
 
   // Function to fetch MOR inventories with filters
-  const fetchAllMorInventories = async (page = 1, filters = {}) => {
+  // const fetchAllMorInventories = async (page = 1, filters = {}) => {
+  //   setLoading(true);
+  //   try {
+  //     // Start with base URL and page
+  //     let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSize}`;
+
+  //     // Add filters to URL if they exist
+  //     if (filters.material_type_id) {
+  //       url += `&q[material_type_id]=${filters.material_type_id}`;
+  //     }
+  //     if (filters.material_sub_type_id) {
+  //       url += `&q[material_sub_type_id]=${filters.material_sub_type_id}`;
+  //     }
+  //     if (filters.material_id) {
+  //       url += `&q[material_id]=${filters.material_id}`;
+  //     }
+  //     if (filters.brand_id) {
+  //       url += `&q[brand_id]=${filters.brand_id}`;
+  //     }
+  //     if (filters.uom_id) {
+  //       url += `&q[uom_id]=${filters.uom_id}`;
+  //     }
+  //     if (filters.generic_specification_id) {
+  //       url += `&q[generic_specification_id]=${filters.generic_specification_id}`;
+  //     }
+  //     if (filters.colour_id) {
+  //       url += `&q[colour_id]=${filters.colour_id}`;
+  //     }
+
+  //     console.log("Fetching URL:", url);
+  //     const response = await axios.get(url);
+  //     setMorInventories(response.data.inventories);
+  //     setPagination({
+  //       current_page: response.data.pagination.current_page,
+  //       next_page: response.data.pagination.next_page,
+  //       prev_page: response.data.pagination.prev_page,
+  //       total_pages: response.data.pagination.total_pages,
+  //       total_count: response.data.pagination.total_count,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching MOR inventories:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchAllMorInventories = async (
+    page = 1,
+    filters = {},
+    pageSizeOverride = pageSize
+  ) => {
     setLoading(true);
     try {
       // Start with base URL and page
-      let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSize}`;
+      let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSizeOverride}`;
 
       // Add filters to URL if they exist
       if (filters.material_type_id) {
@@ -458,10 +508,19 @@ const MaterialReconciliationCreate = () => {
   };
 
   // Function to handle page size change
+  // const handlePageSizeChange = (e) => {
+  //   const newPageSize = parseInt(e.target.value);
+  //   setPageSize(newPageSize);
+  //   fetchAllMorInventories(1, {}); // Reset to first page with new page size
+  // };
   const handlePageSizeChange = (e) => {
-    const newPageSize = parseInt(e.target.value);
-    setPageSize(newPageSize);
-    fetchAllMorInventories(1, {}); // Reset to first page with new page size
+    const newPageSize = parseInt(e.target.value, 10); // Get the new page size
+    setPageSize(newPageSize); // Update the page size state
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1, // Reset to the first page
+    }));
+    fetchAllMorInventories(1, {}, newPageSize); // Fetch data for the first page with the new page size
   };
 
   // Handler for Go button click
@@ -1248,8 +1307,8 @@ const MaterialReconciliationCreate = () => {
                 >
                   <option value="5">5</option>
                   <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
+                  <option value="20">15</option>
+                  <option value="50">20</option>
                 </select>
                 <span>entries</span>
               </div>
