@@ -92,6 +92,7 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route path="/credit-note-create" element={<CreditNoteCreate />} />
           <Route path="/approvals-list" element={<ApprovalsList />} />
           <Route path="/edit-approvals" element={<EditApprovals />} />
           <Route path="/add-approvals" element={<AddApprovals />} />
@@ -376,7 +377,7 @@ function App() {
               path="/bill-verification-list"
               element={<BillVerificationList />}
             />
-            <Route path="/credit-note-create" element={<CreditNoteCreate />} />
+          
             <Route
               path="/credit-note-details"
               element={<CreditNoteDetails />}

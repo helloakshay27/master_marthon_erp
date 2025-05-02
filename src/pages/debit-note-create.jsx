@@ -749,7 +749,7 @@ const DebitNoteCreate = () => {
                             </div>
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
-                                <label>PO / WO Nunber</label>
+                                <label>PO / WO Number</label>
                                 <input
                                   className="form-control"
                                   type="number"
