@@ -6,11 +6,13 @@ import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 const creditnotecreate = () => {
+  const navigate = useNavigate();
   const [showRows, setShowRows] = useState(false);
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
@@ -506,9 +508,9 @@ const creditnotecreate = () => {
   };
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "Select Charges", inclusive: false, amount: '', isEditable: false ,addition: true, },
-    { id: 2, type: "Other charges", percentage: "Select Charges", inclusive: false, amount: '', isEditable: false,addition: true, },
-    { id: 3, type: "Freight", percentage: "Select Charges", inclusive: false, amount: ' ', isEditable: false ,addition: true, },
+    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, },
+    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, },
+    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -542,10 +544,10 @@ const creditnotecreate = () => {
       },
     ]);
   };
-// Function to calculate the subtotal of addition rows
-const calculateSubTotal = () => {
-  return rows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
-};
+  // Function to calculate the subtotal of addition rows
+  const calculateSubTotal = () => {
+    return rows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+  };
 
   // Delete a row
   const deleteRow = (id) => {
@@ -584,10 +586,20 @@ const calculateSubTotal = () => {
   const addDeductionRow = () => {
     if (deductionRows.length === 0) {
       setDeductionRows([
-        { id: 1, type: "", percentage: "", inclusive: false, amount: "" ,addition: false,},
+        { id: 1, type: "", percentage: "", inclusive: false, amount: "", addition: false, },
       ]);
     }
   };
+  // Function to calculate the subtotal of deduction rows
+const calculateDeductionSubTotal = () => {
+  return deductionRows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+};
+// Function to calculate the payable amount
+const calculatePayableAmount = () => {
+  const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(selectedPO?.total_value) || 0);
+  const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
+  return (grossAmount - deductionSubTotal).toFixed(2);
+};
 
   const deleteDeductionRow = (id) => {
     setDeductionRows((prevRows) => prevRows.filter((row) => row.id !== id));
@@ -619,140 +631,141 @@ const calculateSubTotal = () => {
     },
   ];
 
-   const [remark, setRemark] = useState("");
-    const [comment, setComment] = useState("");
-    console.log("status:",status)
-    // Step 2: Handle status change
-    const handleStatusChange = (selectedOption) => {
-      // setStatus(e.target.value);
-      setStatus(selectedOption.value);
-      handleStatusChange(selectedOption); // Handle status change
-    };
-  
-    // Step 3: Handle remark change
-    const handleRemarkChange = (e) => {
-      setRemark(e.target.value);
-    };
-  
-    const handleCommentChange = (e) => {
-      setComment(e.target.value);
-    };
+  const [remark, setRemark] = useState("");
+  const [comment, setComment] = useState("");
+  console.log("status:", status)
+  // Step 2: Handle status change
+  const handleStatusChange = (selectedOption) => {
+    // setStatus(e.target.value);
+    setStatus(selectedOption.value);
+    handleStatusChange(selectedOption); // Handle status change
+  };
 
-     const [remark2, setRemark2] = useState("");
-     // Step 3: Handle remark change
+  // Step 3: Handle remark change
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const handleCommentChange = (e) => {
+    setComment(e.target.value);
+  };
+
+  const [remark2, setRemark2] = useState("");
+  // Step 3: Handle remark change
   const handleRemarkChange2 = (e) => {
     setRemark2(e.target.value);
   };
-console.log("remark:",remark2)
-const [creditNoteDate, setCreditNoteDate] = useState(""); // State to store the date
-const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store the amount
+  console.log("remark:", remark2)
+  const [creditNoteDate, setCreditNoteDate] = useState(""); // State to store the date
+  const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store the amount
 
+  const payload = {
+
+    credit_note: {
+      company_id: selectedCompany?.value || "",
+      site_id: selectedSite?.value || "",
+      project_id: selectedProject?.value || "",
+      purchase_order_id: selectedPO?.id || "",
+      credit_note_no: "DN-001",
+      credit_note_date: creditNoteDate || "",
+      credit_note_amount: creditNoteAmount || 0,
+      remark: remark2 || "",
+      status: "draft",
+      // created_by_id: 1,
+      taxes_and_charges: [
+        // {
+        //   inclusive: true,
+        //   amount: 50.00,
+        //   remarks: "Tax 1",
+        //   addition: true,
+        //   percentage: 5
+        // }
+
+        ...rows.map((row) => ({
+          inclusive: row.inclusive,
+          amount: parseFloat(row.amount) || 0,
+          remarks: row.type,
+          addition: row.addition,
+          percentage: parseFloat(row.percentage) || 0,
+        })),
+        ...deductionRows.map((row) => ({
+          inclusive: row.inclusive,
+          amount: parseFloat(row.amount) || 0,
+          remarks: row.type,
+          addition: row.addition || false, // Ensure addition is false for deductions
+          percentage: parseFloat(row.percentage) || 0,
+        })),
+      ],
+      // attachments: [
+      //   {
+      //     filename: "invoice.pdf",
+      //     content: "data:application/pdf;base64,JVBERi0xLjQKJ...",
+      //     content_type: "application/pdf"
+      //   }
+      // ]
+
+      attachments: documentRows.map((row) => ({
+        filename: row.upload?.filename || "",
+        content: row.upload?.content || "",
+        content_type: row.upload?.content_type || "",
+      })),
+    }
+
+
+  };
+
+  console.log("payload:", payload)
+  console.log("addition tax:", rows)
+
+  const handleSubmit = async () => {
     const payload = {
-      
-        credit_note: {
-          company_id: selectedCompany?.value|| "",
-          site_id: selectedSite?.value ||"",
-          project_id: selectedProject?.value || "",
-          purchase_order_id: selectedPO?.id || "",
-          credit_note_no: "DN-001",
-          credit_note_date: creditNoteDate || "",
-          credit_note_amount: creditNoteAmount || 0,
-          remark: remark2|| "",
-          status: "draft",
-          // created_by_id: 1,
-          taxes_and_charges: [
-            // {
-            //   inclusive: true,
-            //   amount: 50.00,
-            //   remarks: "Tax 1",
-            //   addition: true,
-            //   percentage: 5
-            // }
-
-            ...rows.map((row) => ({
-              inclusive: row.inclusive,
-              amount: parseFloat(row.amount) || 0,
-              remarks: row.type,
-              addition: row.addition,
-              percentage: parseFloat(row.percentage) || 0,
-            })),
-            ...deductionRows.map((row) => ({
-              inclusive: row.inclusive,
-              amount: parseFloat(row.amount) || 0,
-              remarks: row.type,
-              addition: row.addition || false, // Ensure addition is false for deductions
-              percentage: parseFloat(row.percentage) || 0,
-            })),
-          ],
-          // attachments: [
-          //   {
-          //     filename: "invoice.pdf",
-          //     content: "data:application/pdf;base64,JVBERi0xLjQKJ...",
-          //     content_type: "application/pdf"
-          //   }
-          // ]
-
-          attachments: documentRows.map((row) => ({
-            filename: row.upload?.filename || "",
-            content: row.upload?.content || "",
-            content_type: row.upload?.content_type || "",
+      credit_note: {
+        company_id: selectedCompany?.value || "",
+        site_id: selectedSite?.value || "",
+        project_id: selectedProject?.value || "",
+        purchase_order_id: selectedPO?.id || "",
+        credit_note_no: "DN-001",
+        credit_note_date: creditNoteDate || "",
+        credit_note_amount: creditNoteAmount || 0,
+        remark: remark2 || "",
+        status: "draft",
+        taxes_and_charges: [
+          ...rows.map((row) => ({
+            inclusive: row.inclusive,
+            amount: parseFloat(row.amount) || 0,
+            remarks: row.type,
+            addition: row.addition,
+            percentage: parseFloat(row.percentage) || 0,
           })),
-        }
-      
-      
-    };
-   
-    console.log("payload:",payload)
-    console.log("addition tax:",rows)
-
-    const handleSubmit = async () => {
-      const payload = {
-        credit_note: {
-          company_id: selectedCompany?.value || "",
-          site_id: selectedSite?.value || "",
-          project_id: selectedProject?.value || "",
-          purchase_order_id: selectedPO?.id || "",
-          credit_note_no: "DN-001",
-          credit_note_date: creditNoteDate || "",
-          credit_note_amount: creditNoteAmount || 0,
-          remark: remark2 || "",
-          status: "draft",
-          taxes_and_charges: [
-            ...rows.map((row) => ({
-              inclusive: row.inclusive,
-              amount: parseFloat(row.amount) || 0,
-              remarks: row.type,
-              addition: row.addition,
-              percentage: parseFloat(row.percentage) || 0,
-            })),
-            ...deductionRows.map((row) => ({
-              inclusive: row.inclusive,
-              amount: parseFloat(row.amount) || 0,
-              remarks: row.type,
-              addition: row.addition || false,
-              percentage: parseFloat(row.percentage) || 0,
-            })),
-          ],
-          attachments: documentRows.map((row) => ({
-            filename: row.upload?.filename || "",
-            content: row.upload?.content || "",
-            content_type: row.upload?.content_type || "",
+          ...deductionRows.map((row) => ({
+            inclusive: row.inclusive,
+            amount: parseFloat(row.amount) || 0,
+            remarks: row.type,
+            addition: row.addition || false,
+            percentage: parseFloat(row.percentage) || 0,
           })),
-        },
-      };
-    
-      try {
-        const response = await axios.post(
-          "https://marathon.lockated.com/credit_notes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-          payload
-        );
-        console.log("Response:", response.data);
-        alert("Credit Note submitted successfully!");
-      } catch (error) {
-        console.error("Error submitting Credit Note:", error);
-        alert("Failed to submit Credit Note. Please try again.");
-      }
+        ],
+        attachments: documentRows.map((row) => ({
+          filename: row.upload?.filename || "",
+          content: row.upload?.content || "",
+          content_type: row.upload?.content_type || "",
+        })),
+      },
     };
+
+    try {
+      const response = await axios.post(
+        "https://marathon.lockated.com/credit_notes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        payload
+      );
+      console.log("Response:", response.data);
+      alert("Credit Note submitted successfully!");
+      navigate("/credit-note-list"); // Navigate to the list page
+    } catch (error) {
+      console.error("Error submitting Credit Note:", error);
+      alert("Failed to submit Credit Note. Please try again.");
+    }
+  };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -881,7 +894,7 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                               <div className="form-group">
                                 <label>Credit Note Number</label>
                                 <input
-                                 disabled
+                                  disabled
                                   className="form-control"
                                   type="text"
                                   placeholder=""
@@ -900,8 +913,8 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
 
                                     type="date"
                                     name="creditNoteDate"
-                                  value={creditNoteDate} // Bind to state
-                                  onChange={(e) => setCreditNoteDate(e.target.value)} // Update state on change
+                                    value={creditNoteDate} // Bind to state
+                                    onChange={(e) => setCreditNoteDate(e.target.value)} // Update state on change
                                   />
                                 </div>
                               </div>
@@ -1096,6 +1109,12 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                         options={taxTypes.map((type) => ({
                                           value: type.name,
                                           label: type.name,
+                                          isDisabled:
+                                            // Disable "Handling Charges", "Other charges", "Freight" for all rows
+                                            ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
+                                            // Disable "SGST", "CGST", "IGST" if already selected in another row
+                                            (["SGST", "CGST", "IGST"].includes(type.name) &&
+                                              rows.some((r) => r.type === type.name && r.id !== row.id)),
                                         }))}
                                         value={{ value: row.type, label: row.type }}
                                         onChange={(selectedOption) =>
@@ -1106,21 +1125,41 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                           )
                                         }
                                         placeholder="Select Type"
+                                        isDisabled={!row.isEditable} // Disable if not editable
                                       />
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
-                                        <select
-                                          className="form-control form-select"
-                                          value={row.percentage}
-                                          onChange={(e) =>
-                                            setRows((prevRows) =>
-                                              prevRows.map((r) =>
-                                                r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                              )
-                                            )
-                                          }
-                                        >
+            //                             <select
+            //                               className="form-control form-select"
+            //                               value={row.percentage}
+            //                               onChange={(e) =>
+            //                                 const percentage = parseFloat(e.target.value) || 0;
+            // const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+            //                                 setRows((prevRows) =>
+            //                                   prevRows.map((r) =>
+            //                                     r.id === row.id ? { ...r, percentage: e.target.value } : r
+            //                                   )
+            //                                 )
+            //                               }
+            //                             >
+
+<select
+          className="form-control form-select"
+          value={row.percentage}
+          onChange={(e) => {
+            const percentage = parseFloat(e.target.value) || 0;
+            const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+
+            setRows((prevRows) =>
+              prevRows.map((r) =>
+                r.id === row.id
+                  ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                  : r
+              )
+            );
+          }}
+        >
                                           <option value="">Select Tax</option>
                                           <option value="5%">5%</option>
                                           <option value="12%">12%</option>
@@ -1156,6 +1195,7 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                         type="number"
                                         className="form-control"
                                         value={row.amount}
+                                        disabled={row.percentage !== ""}
                                         onChange={(e) =>
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
@@ -1189,7 +1229,8 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                     </td>
                                   </tr>
                                 ))}
-<tr>
+
+                                <tr>
                                   <th className="text-start">Sub Total A (Addition)</th>
                                   <td className="text-start" />
                                   <td className="" />
@@ -1248,17 +1289,34 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                       />
                                     </td>
                                     <td className="text-start">
-                                      <select
+                                      {/* <select
                                         className="form-control form-select"
                                         value={row.percentage}
                                         onChange={(e) =>
+                                          
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id ? { ...r, percentage: e.target.value } : r
                                             )
                                           )
                                         }
-                                      >
+                                      > */}
+                                         <select
+        className="form-control form-select"
+        value={row.percentage}
+        onChange={(e) => {
+          const percentage = parseFloat(e.target.value) || 0;
+          const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+
+          setDeductionRows((prevRows) =>
+            prevRows.map((r) =>
+              r.id === row.id
+                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                : r
+            )
+          );
+        }}
+      >
                                         {console.log("percent deduction", row.percentage)}
                                         <option value="">Select Tax</option>
                                         <option value="1%">1%</option>
@@ -1326,14 +1384,14 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                                   <th className="text-start">Sub Total B (Deductions)</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{/* {calculateSubTotal()} */}</td>
+                                  <td className="text-start">{calculateDeductionSubTotal()}</td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Payable Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start"></td>
+                                  <td className="text-start">{calculatePayableAmount()}</td>
                                   <td />
                                 </tr>
 
@@ -1457,30 +1515,30 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                     </div>
                   </div>
                 </div>
-                
 
-                 <div className="row mt-4 justify-content-end align-items-center mx-2">
-                                <div className="col-md-3">
-                                  <div className="form-group d-flex gap-3 align-items-center mx-3">
-                                    <label style={{ fontSize: "0.95rem", color: "black" }}>
-                                      Status
-                                    </label>
-                                    <SingleSelector
-                                      options={statusOptions}
-                                      onChange={handleStatusChange}
-                                      value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
-                                      placeholder="Select Status"
-                                      isClearable={false}
-                                      isDisabled={true} // Disable the selector
-                                      classNamePrefix="react-select"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
+
+                <div className="row mt-4 justify-content-end align-items-center mx-2">
+                  <div className="col-md-3">
+                    <div className="form-group d-flex gap-3 align-items-center mx-3">
+                      <label style={{ fontSize: "0.95rem", color: "black" }}>
+                        Status
+                      </label>
+                      <SingleSelector
+                        options={statusOptions}
+                        onChange={handleStatusChange}
+                        value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                        placeholder="Select Status"
+                        isClearable={false}
+                        isDisabled={true} // Disable the selector
+                        classNamePrefix="react-select"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="row mt-2 justify-content-end w-100">
-                  {/* <div className="col-md-2">
+                  <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
-                  </div> */}
+                  </div>
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
@@ -1488,14 +1546,14 @@ const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store t
                     <button className="purple-btn1 w-100">Cancel</button>
                   </div>
                 </div>
-                {/* <div className="row mt-2 w-100">
+                <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
                       <Table columns={auditLogColumns} data={auditLogData} />
                     </div>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>

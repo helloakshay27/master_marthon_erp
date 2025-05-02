@@ -6,8 +6,10 @@ import { Modal, Button } from "react-bootstrap";
 import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const CreditNoteDetails = () => {
+  const { id } = useParams();
   const [showRows, setShowRows] = useState(false);
   const [creditNoteData, setCreditNoteData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,7 @@ const CreditNoteDetails = () => {
     const fetchCreditNoteData = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/credit_notes/1?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `https://marathon.lockated.com/credit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setCreditNoteData(response.data);
         setLoading(false);
@@ -29,7 +31,7 @@ const CreditNoteDetails = () => {
     };
 
     fetchCreditNoteData();
-  }, []);
+  }, [id]);
 
   // tax table functionality
   const [rows, setRows] = useState([

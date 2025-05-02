@@ -7,6 +7,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { Link } from "react-router-dom";
 
 const CreditNoteList = () => {
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
@@ -443,8 +444,11 @@ const CreditNoteList = () => {
                           <td className="text-start">
                             {note.sub_project || "-"}
                           </td>
-                          <td className="text-start">
+                          <td className="text-start boq-id-link">
                             {note.credit_note_no || "-"}
+                            <Link to={`/credit-note-details/${note.id}`} className="text-decoration-none">
+    {note.credit_note_no || "-"}
+  </Link>
                           </td>
                           <td className="text-start">
                             {note.credit_note_date

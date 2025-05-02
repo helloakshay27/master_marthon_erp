@@ -257,7 +257,7 @@ function App() {
             />
             <Route path="/credit-note-create" element={<CreditNoteCreate />} />
             <Route
-              path="/credit-note-details"
+              path="/credit-note-details/:id"
               element={<CreditNoteDetails />}
             />
             <Route path="/credit-note-list" element={<CreditNoteList />} />
