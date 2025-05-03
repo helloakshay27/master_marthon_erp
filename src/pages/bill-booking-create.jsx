@@ -19,6 +19,150 @@ const BillBookingCreate = () => {
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
   const navigate = useNavigate();
+  const [creditNoteAmount, setCreditNoteAmount] = useState(null);
+
+  const [rows, setRows] = useState([
+    {
+      id: 1,
+      type: "Handling Charges",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: false,
+      addition: true,
+    },
+    {
+      id: 2,
+      type: "Other charges",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: false,
+      addition: true,
+    },
+    {
+      id: 3,
+      type: "Freight",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: false,
+      addition: true,
+    },
+    {
+      id: 4,
+      type: "IGST",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: true,
+      addition: true,
+    },
+  ]);
+  const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+
+  // Fetch tax types from API
+  useEffect(() => {
+    const fetchTaxTypes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
+      } catch (error) {
+        console.error("Error fetching tax types:", error);
+      }
+    };
+
+    fetchTaxTypes();
+  }, []);
+  // console.log("tax types:", taxTypes)
+  const addRow = () => {
+    setRows((prevRows) => [
+      ...prevRows,
+      {
+        id: prevRows.length + 1,
+        type: "",
+        percentage: "0",
+        inclusive: false,
+        amount: "",
+        isEditable: true,
+        addition: true,
+      },
+    ]);
+  };
+  // Function to calculate the subtotal of addition rows
+  const calculateSubTotal = () => {
+    return rows
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
+  };
+
+  // Delete a row
+  const deleteRow = (id) => {
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+
+  // deduction
+  const [deductionRows, setDeductionRows] = useState([
+    // { id: 1, type: "", charges: "", inclusive: false, amount: 0.0 },
+  ]);
+  // const addDeductionRow = () => {
+  //   setDeductionRows((prevRows) => [
+  //     ...prevRows,
+  //     { id: prevRows.length + 1, type: "", charges: "", inclusive: false, amount: 0.0 },
+  //   ]);
+  // };
+
+  const [deductionTypes, setDeductionTypes] = useState([]); // State to store tax types
+
+  // Fetch tax types from API
+  useEffect(() => {
+    const fetchTaxTypes = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
+      } catch (error) {
+        console.error("Error fetching tax types:", error);
+      }
+    };
+
+    fetchTaxTypes();
+  }, []);
+
+  const addDeductionRow = () => {
+    if (deductionRows.length === 0) {
+      setDeductionRows([
+        {
+          id: 1,
+          type: "",
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          addition: false,
+        },
+      ]);
+    }
+  };
+  // Function to calculate the subtotal of deduction rows
+  const calculateDeductionSubTotal = () => {
+    return deductionRows
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
+  };
+  // Function to calculate the payable amount
+  const calculatePayableAmount = () => {
+    const grossAmount =
+      parseFloat(selectedGRN?.base_cost || 0) + parseFloat(calculateSubTotal());
+    const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
+    return (grossAmount - deductionSubTotal).toFixed(2);
+  };
+
+  const deleteDeductionRow = (id) => {
+    setDeductionRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
 
   // Add new state for taxes
   const [taxes, setTaxes] = useState([]);
@@ -70,11 +214,9 @@ const BillBookingCreate = () => {
   };
   //   modal
   const openSelectPOModal = () => {
-    if (!selectedCompany) {
-      alert("Please select a company first");
-      return;
-    }
     setselectPOModal(true);
+    // Fetch all POs without company filter
+    fetchPurchaseOrders();
   };
   // const closeSelectPOModal = () => setselectPOModal(false);
 
@@ -122,9 +264,9 @@ const BillBookingCreate = () => {
     setDeductions(deductions.filter((deduction) => deduction.id !== id));
   };
 
-  const [rows, setRows] = useState([
-    { id: 1, type: "TDS 1", charges: "100", inclusive: false, amount: 50.0 },
-  ]);
+  // const [rows, setRows] = useState([
+  //   { id: 1, type: "TDS 1", charges: "100", inclusive: false, amount: 50.0 },
+  // ]);
   const [showRows, setShowRows] = useState(true);
 
   // Add New Row
@@ -210,18 +352,17 @@ const BillBookingCreate = () => {
       current_page: page,
     }));
 
-    // Fetch data for the new page without any filters
-    if (selectedCompany) {
-      fetchPurchaseOrders(
-        selectedCompany.value,
-        null, // Don't pass project on page change
-        null, // Don't pass site on page change
-        {
-          page: page,
-          pageSize: 10,
-        }
-      );
-    }
+    // Fetch data for the new page with current filters
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: page,
+        pageSize: 10,
+      }
+    );
   };
 
   const getPageNumbers = () => {
@@ -257,8 +398,10 @@ const BillBookingCreate = () => {
       setLoading(true);
       let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
-      // Always add company filter
-      url += `&q[company_id_eq]=${companyId}`;
+      // Add company filter only if company is selected
+      if (companyId) {
+        url += `&q[company_id_eq]=${companyId}`;
+      }
 
       // Only add project and site filters if they are provided
       if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
@@ -610,7 +753,6 @@ const BillBookingCreate = () => {
               <th>Base cost</th>
               <th>Net Taxes</th>
               <th>Net Charges</th>
-              <th>Qty</th>
               <th className="text-start">All Inclusive Cost</th>
               <th className="text-start">Action</th>
             </tr>
@@ -631,7 +773,6 @@ const BillBookingCreate = () => {
                 <td>{grn.base_cost}</td>
                 <td>{grn.net_taxes}</td>
                 <td>{grn.net_charges}</td>
-                <td>{grn.qty || "-"}</td>
                 <td>{grn.all_inc_tax}</td>
                 <td>
                   <button
@@ -1032,6 +1173,97 @@ const BillBookingCreate = () => {
     calculateTaxDetailsTotal();
   }, [otherDeductions, otherAdditions, taxDeductionData, taxDetailsData]);
 
+  // Update rows when selectedGRN changes
+  useEffect(() => {
+    const defaultRows = [
+      {
+        id: 1,
+        type: "Handling Charges",
+        percentage: "",
+        inclusive: false,
+        amount: "",
+        isEditable: false,
+        addition: true,
+      },
+      {
+        id: 2,
+        type: "Other charges",
+        percentage: "",
+        inclusive: false,
+        amount: "",
+        isEditable: false,
+        addition: true,
+      },
+      {
+        id: 3,
+        type: "Freight",
+        percentage: "",
+        inclusive: false,
+        amount: "",
+        isEditable: false,
+        addition: true,
+      },
+    ];
+
+    if (
+      selectedGRN?.addition_tax_charges &&
+      selectedGRN.addition_tax_charges.length > 0
+    ) {
+      const taxCharges = selectedGRN.addition_tax_charges;
+      setRows((prevRows) => {
+        // Create a map of existing rows by type
+        const existingRows = new Map(prevRows.map((row) => [row.type, row]));
+
+        // Update or add rows based on API response
+        const updatedRows = taxCharges.map((tax, index) => ({
+          id: index + 1,
+          type: tax.tax_name,
+          percentage: tax.tax_charge_per_uom || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          isEditable: ![
+            "Handling Charges",
+            "Other charges",
+            "Freight",
+          ].includes(tax.tax_name),
+          addition: true,
+        }));
+
+        // Add any default rows that weren't in the API response
+        defaultRows.forEach((row) => {
+          if (!existingRows.has(row.type)) {
+            updatedRows.push(row);
+          }
+        });
+
+        return updatedRows;
+      });
+    } else {
+      // If no tax charges in API, show default rows
+      setRows(defaultRows);
+    }
+  }, [selectedGRN]);
+
+  // Update deductionRows when selectedGRN changes
+  useEffect(() => {
+    if (
+      selectedGRN?.deduction_taxes &&
+      selectedGRN.deduction_taxes.length > 0
+    ) {
+      const deductionTaxes = selectedGRN.deduction_taxes;
+      setDeductionRows((prevRows) => {
+        return deductionTaxes.map((tax, index) => ({
+          id: index + 1,
+          type: tax.tax_name,
+          percentage: tax.tax_charge_per_uom || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          addition: false,
+        }));
+      });
+    }
+  }, [selectedGRN]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1090,11 +1322,11 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-1 pt-2 mt-4">
+                  {/* <div className="col-md-1 pt-2 mt-4">
                     <p className="mt-2 text-decoration-underline">
                       View Details
                     </p>
-                  </div>
+                  </div> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -1107,7 +1339,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-3 mt-2">
                     <div className="form-group">
                       <label>PO Number</label>
                       {/* <SingleSelector
@@ -1366,7 +1598,7 @@ const BillBookingCreate = () => {
                       <tr>
                         <th className="text-start">Total</th>
                         <td />
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) =>
                               acc + (parseFloat(grn.all_inc_tax) || 0),
@@ -1374,34 +1606,34 @@ const BillBookingCreate = () => {
                           )}
                         </td>
                         <td />
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) =>
                               acc + (parseFloat(grn.base_cost) || 0),
                             0
                           )}
                         </td>
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) =>
                               acc + (parseFloat(grn.net_taxes) || 0),
                             0
                           )}
                         </td>
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) =>
                               acc + (parseFloat(grn.net_charges) || 0),
                             0
                           )}
                         </td>
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) => acc + (parseFloat(grn.qty) || 0),
                             0
                           )}
                         </td>
-                        <td>
+                        <td className="text-start">
                           {selectedGRNs.reduce(
                             (acc, grn) =>
                               acc + (parseFloat(grn.all_inc_tax) || 0),
@@ -2477,7 +2709,7 @@ const BillBookingCreate = () => {
                   Search
                 </button>
               </div>
-              <div className="col-md-3">
+              {/* <div className="col-md-3">
                 <button
                   className="purple-btn2 w-100"
                   onClick={() => {
@@ -2490,7 +2722,7 @@ const BillBookingCreate = () => {
                 >
                   Select All
                 </button>
-              </div>
+              </div> */}
               <div className="col-md-3">
                 <button className="purple-btn1 w-100" onClick={handleReset}>
                   Reset
@@ -2906,383 +3138,382 @@ const BillBookingCreate = () => {
             <table className="w-100">
               <thead>
                 <tr>
-                  <th>Tax / Charge Type</th>
-                  <th>Tax / Charges per UOM (INR)</th>
-                  <th>Inclusive / Exclusive</th>
-                  <th>Amount</th>
-                  <th>Action</th>
+                  <th className="text-start">Tax / Charge Type</th>
+                  <th className="text-start">Tax / Charges per UOM (INR)</th>
+                  <th className="text-start">Inclusive / Exclusive</th>
+                  <th className="text-start">Amount</th>
+                  <th className="text-start">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {/* Base Cost Row */}
+                {/* Static Rows for Addition Tax */}
                 <tr>
-                  <th>Total Base Cost</th>
-                  <td></td>
-                  <td></td>
-                  <td>{selectedGRN?.base_cost || 0}</td>
-                  <td></td>
+                  <th className="text-start">Total Base Cost</th>
+                  <td className="text-start" />
+                  <td className="text-start" />
+                  <td className="text-start">
+                    {" "}
+                    {selectedGRN?.base_cost || ""}
+                  </td>
+                  <td />
                 </tr>
-
-                {/* Addition Tax & Charges Section */}
                 <tr>
-                  <th>Addition Tax & Charges</th>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
+                  <th className="text-start">Addition Tax & Charges</th>
+                  <td className="text-start" />
+                  <td className="text-start" />
+                  <td className="text-start" />
+                  <td onClick={addRow}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-plus-circle"
+                      viewBox="0 0 16 16"
+                      style={{
+                        transform: showRows ? "rotate(45deg)" : "none",
+                        transition: "transform 0.3s ease",
+                      }}
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                  </td>
                 </tr>
-
-                {formData.charges.map((charge) => (
-                  <tr key={charge.id}>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={charge.tax_name}
-                        readOnly
-                        disabled
+                {/* Dynamic Rows for Addition Tax */}
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td className="text-start">
+                      <SingleSelector
+                        options={taxTypes.map((type) => ({
+                          value: type.name,
+                          label: type.name,
+                          isDisabled:
+                            // Disable "Handling Charges", "Other charges", "Freight" for all rows
+                            [
+                              "Handling Charges",
+                              "Other charges",
+                              "Freight",
+                            ].includes(type.name) ||
+                            // Disable "SGST", "CGST", "IGST" if already selected in another row
+                            (["SGST", "CGST", "IGST"].includes(type.name) &&
+                              rows.some(
+                                (r) => r.type === type.name && r.id !== row.id
+                              )),
+                        }))}
+                        value={{ value: row.type, label: row.type }}
+                        onChange={(selectedOption) =>
+                          setRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? { ...r, type: selectedOption.value }
+                                : r
+                            )
+                          )
+                        }
+                        placeholder="Select Type"
+                        isDisabled={!row.isEditable} // Disable if not editable
                       />
                     </td>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={charge.tax_charge_per_uom}
-                        readOnly
-                        disabled
-                      />
+                    <td className="text-start">
+                      {row.isEditable ? (
+                        <select
+                          className="form-control form-select"
+                          value={row.percentage}
+                          onChange={(e) => {
+                            const percentage =
+                              parseFloat(e.target.value.split(" ")[1]) || 0;
+                            const amount =
+                              ((selectedGRN?.base_cost || 0) * percentage) /
+                              100;
+
+                            setRows((prevRows) =>
+                              prevRows.map((r) =>
+                                r.id === row.id
+                                  ? {
+                                      ...r,
+                                      percentage: e.target.value,
+                                      amount: amount.toFixed(2),
+                                    }
+                                  : r
+                              )
+                            );
+                          }}
+                        >
+                          <option value="">Select Tax</option>
+                          {row.type === "IGST" && (
+                            <>
+                              <option value="IGST 5%">IGST 5%</option>
+                              <option value="IGST 12%">IGST 12%</option>
+                              <option value="IGST 18%">IGST 18%</option>
+                              <option value="IGST 28%">IGST 28%</option>
+                            </>
+                          )}
+                          {row.type === "SGST" && (
+                            <>
+                              <option value="SGST 5%">SGST 5%</option>
+                              <option value="SGST 12%">SGST 12%</option>
+                              <option value="SGST 18%">SGST 18%</option>
+                              <option value="SGST 28%">SGST 28%</option>
+                            </>
+                          )}
+                          {row.type === "CGST" && (
+                            <>
+                              <option value="CGST 5%">CGST 5%</option>
+                              <option value="CGST 12%">CGST 12%</option>
+                              <option value="CGST 18%">CGST 18%</option>
+                              <option value="CGST 28%">CGST 28%</option>
+                            </>
+                          )}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={row.percentage}
+                          disabled
+                        />
+                      )}
                     </td>
                     <td>
                       <input
                         type="checkbox"
-                        checked={charge.inclusive}
-                        disabled={charge.tax_type !== "Charge"}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            charges: prev.charges.map((c) =>
-                              c.id === charge.id
-                                ? { ...c, inclusive: e.target.checked }
-                                : c
-                            ),
-                          }));
-                        }}
+                        checked={row.inclusive}
+                        onChange={(e) =>
+                          setRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? { ...r, inclusive: e.target.checked }
+                                : r
+                            )
+                          )
+                        }
                       />
                     </td>
                     <td>
-                      {charge.tax_type === "Charge" ? (
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={charge.amount || ""}
-                          onChange={(e) => {
-                            const newAmount =
-                              e.target.value === ""
-                                ? ""
-                                : parseFloat(e.target.value);
-                            setFormData((prev) => ({
-                              ...prev,
-                              charges: prev.charges.map((c) =>
-                                c.id === charge.id
-                                  ? { ...c, amount: newAmount }
-                                  : c
-                              ),
-                            }));
-                          }}
-                        />
-                      ) : (
-                        charge.amount || ""
-                      )}
-                    </td>
-                    <td></td>
-                  </tr>
-                ))}
-
-                <tr>
-                  <th>Sub Total A (Addition)</th>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    {formData.charges.reduce((acc, curr) => {
-                      // Only add non-inclusive charges to the total
-                      if (curr.tax_type === "Charge" && curr.inclusive) {
-                        return acc;
-                      }
-                      return acc + (parseFloat(curr.amount) || 0);
-                    }, 0)}
-                  </td>
-                  <td></td>
-                </tr>
-
-                {/* Gross Amount Row */}
-                <tr>
-                  <th>Gross Amount</th>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    {(selectedGRN?.base_cost || 0) +
-                      formData.charges.reduce((acc, curr) => {
-                        // Only add non-inclusive charges to the total
-                        if (curr.tax_type === "Charge" && curr.inclusive) {
-                          return acc;
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={row.amount}
+                        disabled={row.percentage !== ""}
+                        onChange={(e) =>
+                          setRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? {
+                                    ...r,
+                                    amount: parseFloat(e.target.value) || 0,
+                                  }
+                                : r
+                            )
+                          )
                         }
-                        return acc + (parseFloat(curr.amount) || 0);
-                      }, 0)}
-                  </td>
-                  <td></td>
-                </tr>
-
-                {/* Deduction Tax Section */}
-                <tr>
-                  <th>Deduction Tax</th>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    <button
-                      className="btn btn-light p-0 border-0"
-                      onClick={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          deductions: [
-                            ...prev.deductions,
-                            {
-                              id: Date.now(),
-                              tax_id: null,
-                              tax_name: "",
-                              tax_charge_per_uom: "",
-                              inclusive: false,
-                              amount: "",
-                              tax_type: "TaxCategory",
-                              isNew: true, // Add flag to identify new deductions
-                            },
-                          ],
-                        }));
-                      }}
+                      />
+                    </td>
+                    <td
+                      className="text-start"
+                      onClick={() => deleteRow(row.id)}
+                      style={{ cursor: "pointer", color: "black" }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
+                        width="16"
+                        height="16"
                         fill="currentColor"
-                        className="bi bi-plus-circle"
+                        className="bi bi-dash-circle"
                         viewBox="0 0 16 16"
-                        style={{ cursor: "pointer" }}
+                        style={{
+                          transition: "transform 0.3s ease",
+                        }}
                       >
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
                       </svg>
-                    </button>
-                  </td>
-                </tr>
-
-                {formData.deductions.map((deduction) => (
-                  <tr key={deduction.id}>
-                    <td>
-                      {deduction.isNew ? (
-                        <select
-                          className="form-control form-select"
-                          value={deduction.tax_id || ""}
-                          onChange={(e) => {
-                            const selectedTax = taxOptions.find(
-                              (tax) => tax.value === e.target.value
-                            );
-                            setFormData((prev) => ({
-                              ...prev,
-                              deductions: prev.deductions.map((d) =>
-                                d.id === deduction.id
-                                  ? {
-                                      ...d,
-                                      tax_id: e.target.value,
-                                      tax_name: selectedTax
-                                        ? selectedTax.label
-                                        : "",
-                                      tax_type: "TaxCategory",
-                                    }
-                                  : d
-                              ),
-                            }));
-                          }}
-                        >
-                          <option value="">Select Tax Type</option>
-                          {taxOptions.map((tax) => {
-                            // Check for duplicates based on tax_name
-                            const isAlreadySelected =
-                              formData.deductions &&
-                              formData.deductions.length > 0
-                                ? formData.deductions.some(
-                                    (d) =>
-                                      d.tax_name === tax.label &&
-                                      d.id !== deduction.id
-                                  )
-                                : false;
-
-                            return (
-                              <option
-                                key={tax.value}
-                                value={tax.value}
-                                disabled={isAlreadySelected}
-                                style={{
-                                  color: isAlreadySelected ? "#999" : "inherit",
-                                }}
-                              >
-                                {tax.label}{" "}
-                                {isAlreadySelected ? "(Already Selected)" : ""}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={deduction.tax_name}
-                          readOnly
-                        />
-                      )}
-                    </td>
-                    <td>
-                      {deduction.isNew ? (
-                        <select
-                          className="form-control form-select"
-                          value={deduction.tax_charge_per_uom || ""}
-                          onChange={(e) => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              deductions: prev.deductions.map((d) =>
-                                d.id === deduction.id
-                                  ? { ...d, tax_charge_per_uom: e.target.value }
-                                  : d
-                              ),
-                            }));
-                          }}
-                        >
-                          <option value="">Select Percentage</option>
-                          {percentageOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={deduction.tax_charge_per_uom}
-                          readOnly
-                        />
-                      )}
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={deduction.inclusive}
-                        disabled={deduction.tax_type !== "Charge"}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            deductions: prev.deductions.map((d) =>
-                              d.id === deduction.id
-                                ? { ...d, inclusive: e.target.checked }
-                                : d
-                            ),
-                          }));
-                        }}
-                      />
-                    </td>
-                    <td>
-                      {deduction.tax_type === "Charge" ? (
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={deduction.amount || ""}
-                          onChange={(e) => {
-                            const newAmount =
-                              e.target.value === ""
-                                ? ""
-                                : parseFloat(e.target.value);
-                            setFormData((prev) => ({
-                              ...prev,
-                              deductions: prev.deductions.map((d) =>
-                                d.id === deduction.id
-                                  ? { ...d, amount: newAmount }
-                                  : d
-                              ),
-                            }));
-                          }}
-                        />
-                      ) : (
-                        deduction.amount || ""
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-light p-0 border-0"
-                        onClick={() => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            deductions: prev.deductions.filter(
-                              (d) => d.id !== deduction.id
-                            ),
-                          }));
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          className="bi bi-dash-circle"
-                          viewBox="0 0 16 16"
-                          style={{ cursor: "pointer" }}
-                        >
-                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                        </svg>
-                      </button>
                     </td>
                   </tr>
                 ))}
 
                 <tr>
-                  <th>Sub Total B (Deductions)</th>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    {formData.deductions.reduce((acc, curr) => {
-                      // Only add non-inclusive deductions to the total
-                      if (curr.tax_type === "Charge" && curr.inclusive) {
-                        return acc;
-                      }
-                      return acc + (parseFloat(curr.amount) || 0);
-                    }, 0)}
-                  </td>
-                  <td></td>
+                  <th className="text-start">Sub Total A (Addition)</th>
+                  <td className="text-start" />
+                  <td className="" />
+                  <td className="text-start">{calculateSubTotal()}</td>
+                  <td />
                 </tr>
-
-                {/* Payable Amount */}
                 <tr>
-                  <th>Payable Amount</th>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    {(selectedGRN?.base_cost || 0) +
-                      formData.charges.reduce((acc, curr) => {
-                        // Only add non-inclusive charges to the total
-                        if (curr.tax_type === "Charge" && curr.inclusive) {
-                          return acc;
-                        }
-                        return acc + (parseFloat(curr.amount) || 0);
-                      }, 0) -
-                      formData.deductions.reduce((acc, curr) => {
-                        // Only subtract non-inclusive deductions from the total
-                        if (curr.tax_type === "Charge" && curr.inclusive) {
-                          return acc;
-                        }
-                        return acc + (parseFloat(curr.amount) || 0);
-                      }, 0)}
+                  <th className="text-start">Gross Amount</th>
+                  <td className="text-start" />
+                  <td className="" />
+                  <td className="text-start">
+                    {(
+                      parseFloat(calculateSubTotal()) +
+                      (parseFloat(selectedGRN?.base_cost) || 0)
+                    ).toFixed(2)}
                   </td>
-                  <td></td>
+                  <td />
+                </tr>
+                {/* Deduction Tax Section */}
+                <tr>
+                  <th className="text-start">Deduction Tax</th>
+                  <td className="text-start" />
+                  <td className="" />
+                  <td className="text-start" />
+                  <td onClick={addDeductionRow}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-plus-circle"
+                      viewBox="0 0 16 16"
+                      style={{
+                        // transform: showDeductionRows ? "rotate(45deg)" : "none",
+                        transition: "transform 0.3s ease",
+                      }}
+                    >
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                  </td>
+                </tr>
+                {/* Dynamic Rows for Deduction Tax */}
+                {deductionRows.map((row) => (
+                  <tr key={row.id}>
+                    <td className="text-start">
+                      <SingleSelector
+                        options={deductionTypes.map((type) => ({
+                          value: type.name,
+                          label: type.name,
+                        }))}
+                        value={{ value: row.type, label: row.type }}
+                        onChange={(selectedOption) =>
+                          setDeductionRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? { ...r, type: selectedOption.value }
+                                : r
+                            )
+                          )
+                        }
+                        placeholder="Select Type"
+                      />
+                    </td>
+                    <td className="text-start">
+                      {/* <select
+                                                  className="form-control form-select"
+                                                  value={row.percentage}
+                                                  onChange={(e) =>
+                                                    
+                                                    setDeductionRows((prevRows) =>
+                                                      prevRows.map((r) =>
+                                                        r.id === row.id ? { ...r, percentage: e.target.value } : r
+                                                      )
+                                                    )
+                                                  }
+                                                > */}
+                      <select
+                        className="form-control form-select"
+                        value={row.percentage}
+                        onChange={(e) => {
+                          const percentage =
+                            parseFloat(e.target.value.split(" ")[1]) || 0;
+                          const amount =
+                            ((selectedGRN?.base_cost || 0) * percentage) / 100;
+
+                          setDeductionRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? {
+                                    ...r,
+                                    percentage: e.target.value,
+                                    amount: amount.toFixed(2),
+                                  }
+                                : r
+                            )
+                          );
+                        }}
+                      >
+                        <option value="">Select Tax</option>
+                        {row.type === "TDS" && (
+                          <>
+                            <option value="TDS 1%">TDS 1%</option>
+                            <option value="TDS 2%">TDS 2%</option>
+                            <option value="TDS 10%">TDS 10%</option>
+                          </>
+                        )}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={row.inclusive}
+                        onChange={(e) =>
+                          setDeductionRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? { ...r, inclusive: e.target.checked }
+                                : r
+                            )
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={row.amount}
+                        disabled
+                        onChange={(e) =>
+                          setDeductionRows((prevRows) =>
+                            prevRows.map((r) =>
+                              r.id === row.id
+                                ? {
+                                    ...r,
+                                    amount: parseFloat(e.target.value) || 0,
+                                  }
+                                : r
+                            )
+                          )
+                        }
+                      />
+                    </td>
+                    <td
+                      className="text-start"
+                      onClick={() => deleteDeductionRow(row.id)}
+                      style={{ cursor: "pointer", color: "black" }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        className="bi bi-dash-circle"
+                        viewBox="0 0 16 16"
+                        style={{
+                          transition: "transform 0.3s ease",
+                        }}
+                      >
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                      </svg>
+                    </td>
+                  </tr>
+                ))}
+                {/* Static Rows */}
+                <tr>
+                  <th className="text-start">Sub Total B (Deductions)</th>
+                  <td className="text-start" />
+                  <td className="" />
+                  <td className="text-start">{calculateDeductionSubTotal()}</td>
+                  <td />
+                </tr>
+                <tr>
+                  <th className="text-start">Payable Amount</th>
+                  <td className="text-start" />
+                  <td className="" />
+                  <td className="text-start">{calculatePayableAmount()}</td>
+                  <td />
                 </tr>
               </tbody>
             </table>
