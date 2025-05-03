@@ -546,7 +546,9 @@ const creditnotecreate = () => {
   };
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
-    return rows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+    return rows
+    .filter((row) => !row.inclusive)
+    .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
   };
 
   // Delete a row
@@ -592,7 +594,9 @@ const creditnotecreate = () => {
   };
   // Function to calculate the subtotal of deduction rows
 const calculateDeductionSubTotal = () => {
-  return deductionRows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+  return deductionRows
+  .filter((row) => !row.inclusive)
+  .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
 };
 // Function to calculate the payable amount
 const calculatePayableAmount = () => {
@@ -715,7 +719,7 @@ const calculatePayableAmount = () => {
   };
 
   console.log("payload:", payload)
-  console.log("addition tax:", rows)
+  console.log("addition tax rows:", rows)
 
   const handleSubmit = async () => {
     const payload = {
@@ -736,6 +740,8 @@ const calculatePayableAmount = () => {
             remarks: row.type,
             addition: row.addition,
             percentage: parseFloat(row.percentage) || 0,
+            // resource_id: row.resource_id || null,
+            // resource_type: row.resource_type || ""
           })),
           ...deductionRows.map((row) => ({
             inclusive: row.inclusive,
@@ -1112,15 +1118,24 @@ const calculatePayableAmount = () => {
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
                                             ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
-                                            // Disable "SGST", "CGST", "IGST" if already selected in another row
-                                            (["SGST", "CGST", "IGST"].includes(type.name) &&
-                                              rows.some((r) => r.type === type.name && r.id !== row.id)),
+
+                                            // Disable "IGST" if "SGST" or "CGST" is selected in any row
+            (type.name === "IGST" &&
+              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+            // Disable "SGST" and "CGST" if "IGST" is selected in any row
+            (["SGST", "CGST"].includes(type.name) &&
+              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+                                            
                                         }))}
                                         value={{ value: row.type, label: row.type }}
                                         onChange={(selectedOption) =>
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                              r.id === row.id ? { ...r, 
+                                                type: selectedOption.value,
+                                                resource_id: selectedOption.value, // Set the selected tax ID
+                                                resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
+                                               } : r
                                             )
                                           )
                                         }

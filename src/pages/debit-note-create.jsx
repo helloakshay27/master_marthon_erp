@@ -616,7 +616,9 @@ const DebitNoteCreate = () => {
     };
     // Function to calculate the subtotal of addition rows
     const calculateSubTotal = () => {
-      return rows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      return rows
+      .filter((row) => !row.inclusive)
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
     };
   
     // Delete a row
@@ -662,7 +664,9 @@ const DebitNoteCreate = () => {
     };
     // Function to calculate the subtotal of deduction rows
   const calculateDeductionSubTotal = () => {
-    return deductionRows.reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+    return deductionRows
+    .filter((row) => !row.inclusive)
+    .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
   };
   // Function to calculate the payable amount
   const calculatePayableAmount = () => {

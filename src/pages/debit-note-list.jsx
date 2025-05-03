@@ -356,6 +356,24 @@ const DebitNoteList = () => {
 
   console.log("selected bill id array :", selectedBoqDetails)
 
+   //card filter
+    const fetchFilteredData2 = (status) => {
+      const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
+        status ? `&q[status_eq]=${status}` : ""
+      }`;
+    
+      axios
+        .get(url)
+        .then((response) => {
+          setDebitNotes(response.data.debit_notes);
+          setMeta(response.data.meta)
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered data:", error);
+        });
+    };
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
@@ -371,6 +389,7 @@ const DebitNoteList = () => {
                   <div
                     className="content-box tab-button active"
                     data-tab="total"
+                    onClick={() => fetchFilteredData2("")} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Total</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
@@ -378,7 +397,9 @@ const DebitNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div className="content-box tab-button" data-tab="draft"
+                   onClick={() => fetchFilteredData2("draft")} // Fetch data with status "draft"
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Draft
                     </h4>
@@ -386,7 +407,7 @@ const DebitNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div className="content-box tab-button" data-tab="draft"  onClick={() => fetchFilteredData2("verified")}>
                     <h4 className="content-box-title fw-semibold">
                       Verified
                     </h4>
@@ -397,6 +418,7 @@ const DebitNoteList = () => {
                   <div
                     className="content-box tab-button"
                     data-tab="pending-approval"
+                    onClick={() => fetchFilteredData2("submited")}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">{meta?.submited_count}</p>
@@ -406,6 +428,7 @@ const DebitNoteList = () => {
                   <div
                     className="content-box tab-button"
                     data-tab="self-overdue"
+                    onClick={() => fetchFilteredData2("approved")}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">{meta?.approved_count}</p>
@@ -415,13 +438,13 @@ const DebitNoteList = () => {
                   <div
                     className="content-box tab-button"
                     data-tab="self-overdue"
+                    onClick={() => fetchFilteredData2("proceed")}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">{meta?.proceed_count}</p>
                   </div>
                 </div>
               </div>
-
 
             </div>
           </div>
@@ -700,11 +723,13 @@ const DebitNoteList = () => {
                               : "-"}
                           </td>
                           <td className="text-start">{note.po_number || "-"}</td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
+                          <td className="text-start">  {note.po_date
+                                ? new Date(note.po_date).toLocaleDateString()
+                                : "-"}</td>
+                          <td className="text-start">{note.po_value || "-"}</td>
                           <td className="text-start">{note.pms_supplier || "-"}</td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
+                          <td className="text-start">{note.gstin || "-"}</td>
+                          <td className="text-start">{note.pan_no || "-"}</td>
                           <td className="text-start">{note.debit_note_amount || "-"}</td>
                           <td className="text-start"></td>
                           <td className="text-start"></td>
