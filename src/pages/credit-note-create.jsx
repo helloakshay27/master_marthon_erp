@@ -547,8 +547,8 @@ const creditnotecreate = () => {
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
     return rows
-    .filter((row) => !row.inclusive)
-    .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      .filter((row) => !row.inclusive)
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
   };
 
   // Delete a row
@@ -593,17 +593,17 @@ const creditnotecreate = () => {
     }
   };
   // Function to calculate the subtotal of deduction rows
-const calculateDeductionSubTotal = () => {
-  return deductionRows
-  .filter((row) => !row.inclusive)
-  .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
-};
-// Function to calculate the payable amount
-const calculatePayableAmount = () => {
-  const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
-  const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
-  return (grossAmount - deductionSubTotal).toFixed(2);
-};
+  const calculateDeductionSubTotal = () => {
+    return deductionRows
+      .filter((row) => !row.inclusive)
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+  };
+  // Function to calculate the payable amount
+  const calculatePayableAmount = () => {
+    const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
+    const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
+    return (grossAmount - deductionSubTotal).toFixed(2);
+  };
 
   const deleteDeductionRow = (id) => {
     setDeductionRows((prevRows) => prevRows.filter((row) => row.id !== id));
@@ -1120,22 +1120,37 @@ const calculatePayableAmount = () => {
                                             ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
 
                                             // Disable "IGST" if "SGST" or "CGST" is selected in any row
-            (type.name === "IGST" &&
-              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
-            // Disable "SGST" and "CGST" if "IGST" is selected in any row
-            (["SGST", "CGST"].includes(type.name) &&
-              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
-                                            
+                                            (type.name === "IGST" &&
+                                              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+                                            // Disable "SGST" and "CGST" if "IGST" is selected in any row
+                                            (["SGST", "CGST"].includes(type.name) &&
+                                              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+
                                         }))}
                                         value={{ value: row.type, label: row.type }}
+                                        // onChange={(selectedOption) =>
+                                        //   setRows((prevRows) =>
+                                        //     prevRows.map((r) =>
+                                        //       r.id === row.id ? { ...r, 
+                                        //         type: selectedOption.value,
+                                        //         resource_id: selectedOption.value, // Set the selected tax ID
+                                        //         resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
+                                        //        } : r
+                                        //     )
+                                        //   )
+                                        // }
+
                                         onChange={(selectedOption) =>
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, 
-                                                type: selectedOption.value,
-                                                resource_id: selectedOption.value, // Set the selected tax ID
-                                                resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
-                                               } : r
+                                              r.id === row.id
+                                                ? {
+                                                  ...r,
+                                                  type: selectedOption?.value || "", // Handle null or undefined
+                                                  resource_id: selectedOption?.value || null, // Handle null or undefined
+                                                  resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
+                                                }
+                                                : r
                                             )
                                           )
                                         }
@@ -1145,36 +1160,36 @@ const calculatePayableAmount = () => {
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
-            //                             <select
-            //                               className="form-control form-select"
-            //                               value={row.percentage}
-            //                               onChange={(e) =>
-            //                                 const percentage = parseFloat(e.target.value) || 0;
-            // const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
-            //                                 setRows((prevRows) =>
-            //                                   prevRows.map((r) =>
-            //                                     r.id === row.id ? { ...r, percentage: e.target.value } : r
-            //                                   )
-            //                                 )
-            //                               }
-            //                             >
+                                        //                             <select
+                                        //                               className="form-control form-select"
+                                        //                               value={row.percentage}
+                                        //                               onChange={(e) =>
+                                        //                                 const percentage = parseFloat(e.target.value) || 0;
+                                        // const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+                                        //                                 setRows((prevRows) =>
+                                        //                                   prevRows.map((r) =>
+                                        //                                     r.id === row.id ? { ...r, percentage: e.target.value } : r
+                                        //                                   )
+                                        //                                 )
+                                        //                               }
+                                        //                             >
 
-<select
-          className="form-control form-select"
-          value={row.percentage}
-          onChange={(e) => {
-            const percentage = parseFloat(e.target.value) || 0;
-            const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                        <select
+                                          className="form-control form-select"
+                                          value={row.percentage}
+                                          onChange={(e) => {
+                                            const percentage = parseFloat(e.target.value) || 0;
+                                            const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-            setRows((prevRows) =>
-              prevRows.map((r) =>
-                r.id === row.id
-                  ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
-                  : r
-              )
-            );
-          }}
-        >
+                                            setRows((prevRows) =>
+                                              prevRows.map((r) =>
+                                                r.id === row.id
+                                                  ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                  : r
+                                              )
+                                            );
+                                          }}
+                                        >
                                           <option value="">Select Tax</option>
                                           <option value="5%">5%</option>
                                           <option value="12%">12%</option>
@@ -1316,22 +1331,22 @@ const calculatePayableAmount = () => {
                                           )
                                         }
                                       > */}
-                                         <select
-        className="form-control form-select"
-        value={row.percentage}
-        onChange={(e) => {
-          const percentage = parseFloat(e.target.value) || 0;
-          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                      <select
+                                        className="form-control form-select"
+                                        value={row.percentage}
+                                        onChange={(e) => {
+                                          const percentage = parseFloat(e.target.value) || 0;
+                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-          setDeductionRows((prevRows) =>
-            prevRows.map((r) =>
-              r.id === row.id
-                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
-                : r
-            )
-          );
-        }}
-      >
+                                          setDeductionRows((prevRows) =>
+                                            prevRows.map((r) =>
+                                              r.id === row.id
+                                                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                : r
+                                            )
+                                          );
+                                        }}
+                                      >
                                         {console.log("percent deduction", row.percentage)}
                                         <option value="">Select Tax</option>
                                         <option value="1%">1%</option>
