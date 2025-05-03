@@ -445,7 +445,7 @@ const CreditNoteList = () => {
                             {note.sub_project || "-"}
                           </td>
                           <td className="text-start boq-id-link">
-                            {note.credit_note_no || "-"}
+                            {/* {note.credit_note_no || "-"} */}
                             <Link to={`/credit-note-details/${note.id}`} className="text-decoration-none">
     {note.credit_note_no || "-"}
   </Link>
