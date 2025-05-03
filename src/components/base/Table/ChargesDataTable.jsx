@@ -361,8 +361,10 @@ export default function ChargesDataTable({
           onClick: () => {
             // Calculate the gross total as the sum of realisedAmount values
             const updatedGrossTotal = chargesData.reduce((total, charge) => {
-              const realisedAmount = parseFloat(charge?.value?.realisedAmount || 0);
-              
+              const realisedAmount = parseFloat(
+                charge?.value?.realisedAmount || 0
+              );
+
               return grossTotal + realisedAmount;
             }, 0);
 
@@ -437,7 +439,9 @@ export default function ChargesDataTable({
                     className="form-control"
                     value={
                       data[index]?.value
-                        ? parseFloat(data[index].value.realisedAmount).toFixed(2)
+                        ? parseFloat(data[index].value.realisedAmount).toFixed(
+                            2
+                          )
                         : "0.00"
                     }
                     readOnly
@@ -577,6 +581,11 @@ export default function ChargesDataTable({
                         )
                       }
                       className="custom-select"
+                      disabledOptions={chargesTaxRate[
+                        selectedTableId
+                      ]?.addition_bid_material_tax_details.map(
+                        (item) => item.taxChargeType
+                      )} // Pass selected options to disable
                     />
                   </td>
                   <td>
@@ -689,19 +698,23 @@ export default function ChargesDataTable({
               ]?.deduction_bid_material_tax_details?.map((item) => (
                 <tr key={item.id}>
                   <td>
-                    <SelectBox
-                      options={deductionTaxOptions}
-                      defaultValue={item.taxChargeType}
-                      onChange={(value) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "taxChargeType",
-                          value,
-                          "deduction"
-                        )
-                      }
-                    />
+                  <SelectBox
+  options={deductionTaxOptions}
+  defaultValue={item.taxChargeType}
+  onChange={(value) =>
+    handleTaxChargeChange(
+      selectedTableId,
+      item.id,
+      "taxChargeType",
+      value,
+      "deduction"
+    )
+  }
+  className="custom-select"
+  disabledOptions={chargesTaxRate[selectedTableId]?.deduction_bid_material_tax_details.map(
+    (item) => item.taxChargeType
+  )} // Pass selected options to disable
+/>
                   </td>
                   <td>
                     <select

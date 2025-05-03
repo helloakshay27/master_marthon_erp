@@ -82,8 +82,9 @@ export default function SelectBox({
   const formattedOptions = options.map((option, index) => ({
     ...option,
     isDisabled:
-      (isDisableFirstOption && index === 0) ||
-      disabledOptions.includes(option.label), // Disable if label is in the array
+      (isDisableFirstOption && index === 0) || // Disable the first option if required
+      disabledOptions.includes(option.value) || // Disable options based on the disabledOptions array
+      selectedOption?.value === option.value, // Disable the currently selected option
   }));
 
   const handleChange = (selectedOption) => {
