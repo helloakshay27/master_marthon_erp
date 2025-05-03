@@ -110,7 +110,7 @@ const DebitNoteDetails = () => {
     
         try {
           const response = await axios.patch(
-            `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+            `${baseURL}debit_notes/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
             payload, // The request body containing status and remarks
             {
               headers: {
@@ -118,7 +118,7 @@ const DebitNoteDetails = () => {
               },
             }
           );
-          await fetchDetails();
+          await fetchCreditNoteData();
     
           if (response.status === 200) {
             console.log("Status updated successfully:", response.data);
@@ -188,6 +188,9 @@ const DebitNoteDetails = () => {
      setCurrentStep(currentStep - 1);
    }
  };
+
+
+ 
  
   return (
   <>

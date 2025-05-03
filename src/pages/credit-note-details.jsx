@@ -270,7 +270,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.company || "-"}
+                                  {creditNoteData.company_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -283,7 +283,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.project || "-"}
+                                  {creditNoteData.project_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -296,7 +296,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.sub_project || "-"}
+                                  {creditNoteData.site_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -399,7 +399,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.supplier_name || "-"}
+                                  {creditNoteData.pms_supplier || "-"}
                                 </label>
                               </div>
                             </div>
@@ -412,7 +412,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.gstn_no || "-"}
+                                  {creditNoteData.gstin || "-"}
                                 </label>
                               </div>
                             </div>
@@ -425,7 +425,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.pan_number || "-"}
+                                  {creditNoteData.pan_no || "-"}
                                 </label>
                               </div>
                             </div>
