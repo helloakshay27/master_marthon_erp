@@ -1243,12 +1243,23 @@ export default function VendorDetails() {
       });
     }
     const extractChargeTableData = Array.isArray(chargesData)
-      ? chargesData.reduce((acc, curr) => {
-          const { firstBid, counterBid } = curr.value;
-          acc[curr.label] = counterBid || firstBid;
-          return acc;
-        }, {})
-      : {};
+        ? chargesData.slice(0, 3).map((charge) => ({ // Limit to first 3 elements
+            charge_id: charge.charge_id,
+            amount: charge.amount,
+            realised_amount: charge.realised_amount,
+            taxes_with_charges: charge.taxes_with_charges.map((tax) => ({
+              resource_id: tax.resource_id,
+              resource_type: tax.resource_type,
+              amount: tax.amount,
+              inclusive: tax.inclusive,
+              addition: tax.addition,
+            })),
+            value: {
+              firstBid: charge.value.firstBid,
+              realisedAmount: charge.value.realisedAmount,
+            },
+          }))
+        : [];
 
     // const mappedBidMaterials = bid.bid_materials_attributes.map((material) => {
     //   const mappedTaxDetails = material.addition_tax_charges.map((charge) => {
@@ -1283,8 +1294,8 @@ export default function VendorDetails() {
         loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
         bid_materials_attributes: bidMaterialsAttributes,
+        charges:extractChargeTableData,
         ...extractShortTableData,
-        ...extractChargeTableData,
       },
     };
 
@@ -1447,12 +1458,23 @@ export default function VendorDetails() {
       }, {});
 
       const extractChargeTableData = Array.isArray(chargesData)
-        ? chargesData.reduce((acc, curr) => {
-            const { firstBid, counterBid } = curr.value;
-            acc[curr.label] = counterBid || firstBid;
-            return acc;
-          }, {})
-        : {};
+        ? chargesData.slice(0, 3).map((charge) => ({ // Limit to first 3 elements
+            charge_id: charge.charge_id,
+            amount: charge.amount,
+            realised_amount: charge.realised_amount,
+            taxes_with_charges: charge.taxes_with_charges.map((tax) => ({
+              resource_id: tax.resource_id,
+              resource_type: tax.resource_type,
+              amount: tax.amount,
+              inclusive: tax.inclusive,
+              addition: tax.addition,
+            })),
+            value: {
+              firstBid: charge.value.firstBid,
+              realisedAmount: charge.value.realisedAmount,
+            },
+          }))
+        : [];
 
       const payload = {
         revised_bid: {
@@ -1468,8 +1490,8 @@ export default function VendorDetails() {
           loading_unloading_clause: "",
           remark: remark,
           revised_bid_materials_attributes: revisedBidMaterials,
+          charges:extractChargeTableData,
           ...extractShortTableData,
-          ...extractChargeTableData,
         },
       };
 
