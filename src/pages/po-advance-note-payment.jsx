@@ -342,22 +342,64 @@ const PoAdvanceNotePayment = () => {
       value: "draft",
     },
     {
+      label: "Submitted",
+      value: "submitted",
+    },
+    {
       label: "Verified",
       value: "verified",
-    },
-    {
-      label: "Submited",
-      value: "submited",
-    },
-    {
-      label: "Proceed",
-      value: "proceed",
     },
     {
       label: "Approved",
       value: "approved",
     },
+    {
+      label: "Proceed",
+      value: "proceed",
+    },
   ];
+
+  const [status, setStatus] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [comments, setComments] = useState("");
+  const [adminComment, setAdminComment] = useState("");
+  const [attachments, setAttachments] = useState([]);
+
+  const handleSubmit = async () => {
+    const attachments = documentRows
+      .filter((row) => row.upload) // Ensure only rows with uploaded files are included
+      .map((row) => ({
+        filename: row.upload.filename,
+        content: row.upload.content,
+        content_type: row.upload.content_type,
+      }));
+
+    const payload = {
+      status_log: {
+        // status: "Approved", // Replace with dynamic status if needed
+        // remarks: "Status updated to Approved", // Replace with dynamic remarks if needed
+        // comments: "All checks passed", // Replace with dynamic comments if needed
+        // admin_comment: "Approved by admin", // Replace with dynamic admin comment if needed
+        status, // Dynamically pass the selected status
+        remarks, // Dynamically pass the entered remarks
+        comments, // Dynamically pass the entered comments
+        admin_comment: "adminComment", // Dynamically pass the admin comment if needed
+      },
+      attachments,
+    };
+
+    try {
+      const response = await axios.patch(
+        "https://marathon.lockated.com/advance_notes/3/update_status",
+        payload
+      );
+      console.log("Status updated successfully:", response.data);
+      alert("Status updated successfully!");
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status.");
+    }
+  };
 
   return (
     <>
@@ -1545,6 +1587,8 @@ const PoAdvanceNotePayment = () => {
                           rows={3}
                           placeholder="Enter ..."
                           defaultValue={""}
+                          value={remarks}
+                          onChange={(e) => setRemarks(e.target.value)}
                         />
                       </div>
                     </div>
@@ -1558,6 +1602,8 @@ const PoAdvanceNotePayment = () => {
                           rows={3}
                           placeholder="Enter ..."
                           defaultValue={""}
+                          value={comments}
+                          onChange={(e) => setComments(e.target.value)}
                         />
                       </div>
                     </div>
@@ -1569,14 +1615,20 @@ const PoAdvanceNotePayment = () => {
                         <select
                           className="form-control form-select"
                           style={{ width: "100%" }}
+                          value={status} // Bind the value to the status state
+                          onChange={(e) => setStatus(e.target.value)} // Update the status state on change
                         >
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
+                          {/* {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))} */}
+                          <option value="">Select Status</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Draft">Draft</option>
+                          <option value="Submitted">Submitted</option>
+                          <option value="Verified">Verified</option>
+                          <option value="Proceed">Proceed</option>
                         </select>
                       </div>
                     </div>
@@ -1586,7 +1638,12 @@ const PoAdvanceNotePayment = () => {
                       <button className="purple-btn2 w-100">Print</button>
                     </div>
                     <div className="col-md-2">
-                      <button className="purple-btn2 w-100">Submit</button>
+                      <button
+                        className="purple-btn2 w-100"
+                        onClick={handleSubmit}
+                      >
+                        Submit
+                      </button>
                     </div>
                     <div className="col-md-2">
                       <button className="purple-btn1 w-100">Cancel</button>
