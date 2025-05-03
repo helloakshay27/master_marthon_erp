@@ -596,7 +596,7 @@ const calculateDeductionSubTotal = () => {
 };
 // Function to calculate the payable amount
 const calculatePayableAmount = () => {
-  const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(selectedPO?.total_value) || 0);
+  const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
   const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
   return (grossAmount - deductionSubTotal).toFixed(2);
 };
@@ -657,7 +657,7 @@ const calculatePayableAmount = () => {
   };
   console.log("remark:", remark2)
   const [creditNoteDate, setCreditNoteDate] = useState(""); // State to store the date
-  const [creditNoteAmount, setCreditNoteAmount] = useState(0); // State to store the amount
+  const [creditNoteAmount, setCreditNoteAmount] = useState(null); // State to store the amount
 
   const payload = {
 
@@ -1075,7 +1075,7 @@ const calculatePayableAmount = () => {
                                   <th className="text-start">Total Base Cost</th>
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td className="text-start"> {selectedPO?.total_value || ""}</td>
+                                  <td className="text-start"> {creditNoteAmount || ""}</td>
                                   <td />
                                 </tr>
                                 <tr>
@@ -1149,7 +1149,7 @@ const calculatePayableAmount = () => {
           value={row.percentage}
           onChange={(e) => {
             const percentage = parseFloat(e.target.value) || 0;
-            const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+            const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
             setRows((prevRows) =>
               prevRows.map((r) =>
@@ -1241,7 +1241,7 @@ const calculatePayableAmount = () => {
                                   <th className="text-start">Gross Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(selectedPO?.total_value) || 0)).toFixed(2)}</td>
+                                  <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
                                   <td />
                                 </tr>
                                 {/* Deduction Tax Section */}
@@ -1306,7 +1306,7 @@ const calculatePayableAmount = () => {
         value={row.percentage}
         onChange={(e) => {
           const percentage = parseFloat(e.target.value) || 0;
-          const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
+          const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
           setDeductionRows((prevRows) =>
             prevRows.map((r) =>
