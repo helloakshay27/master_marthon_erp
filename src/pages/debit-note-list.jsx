@@ -7,9 +7,14 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { Link } from "react-router-dom";
 
 const DebitNoteList = () => {
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+  const [debitNotes, setDebitNotes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+  
 
   // Static data for SingleSelector (this will be replaced by API data later)
 
@@ -117,6 +122,29 @@ const DebitNoteList = () => {
     value: company.id,
     label: company.company_name,
   }));
+
+
+  // Fetch credit notes data
+    useEffect(() => {
+      const fetchCreditNotes = async () => {
+        try {
+          const response = await axios.get(
+            "https://marathon.lockated.com/debit_notes?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+          setDebitNotes(response.data.debit_notes);
+          setLoading(false);
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+  
+      fetchCreditNotes();
+    }, []);
+    console.log("debit list data:",debitNotes)
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
   return (
     <>
       <div className="website-content overflow-auto">
@@ -390,7 +418,7 @@ const DebitNoteList = () => {
                       <th className="text-start">Sub Project</th>
                       <th className="text-start">Debit Note No.</th>
                       <th className="text-start">Date</th>
-                      <th className="text-start">Credit Note Type</th>
+                      <th className="text-start">Debit Note Type</th>
                       <th className="text-start">Created On</th>
                       <th className="text-start">PO No.</th>
                       <th className="text-start">PO Date</th>
@@ -408,32 +436,61 @@ const DebitNoteList = () => {
                       <th className="text-start">Due At</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      <td className="text-start">1</td>
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                    </tr>
+                  <tbody>  
+
+                    {debitNotes.length > 0 ? (
+        debitNotes?.map((note, index) => (
+          <tr key={note.id}>
+            <td className="text-start">
+              <input type="checkbox" />
+            </td>
+            <td className="text-start">{index + 1}</td>
+            <td className="text-start">{note.company_name || "-"}</td>
+            <td className="text-start">{note.project_name || "-"}</td>
+            <td className="text-start">{note.site_name || "-"}</td>
+            <td className="text-start boq-id-link">
+                <Link to={`/debit-note-details/${note.id}`} className="">
+                {note.debit_note_no || "-"}
+                </Link>
+            </td>
+            <td className="text-start">
+              {note.debit_note_date
+                ? new Date(note.debit_note_date).toLocaleDateString()
+                : "-"}
+            </td>
+            <td className="text-start">
+              {/* {note.created_at
+                ? new Date(note.created_at).toLocaleDateString()
+                : "-"} */}
+            </td>
+            <td className="text-start">
+              {note.created_at
+                ? new Date(note.created_at).toLocaleDateString()
+                : "-"}
+            </td>
+            <td className="text-start">{note.po_number || "-"}</td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+            <td className="text-start">{note.pms_supplier || "-"}</td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+            <td className="text-start">{note.debit_note_amount || "-"}</td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+            <td className="text-start">{note.status || "-"}</td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+            <td className="text-start"></td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="12" className="text-center">
+            No debit notes found
+          </td>
+        </tr>
+      )}
                   </tbody>
                 </table>
               </div>

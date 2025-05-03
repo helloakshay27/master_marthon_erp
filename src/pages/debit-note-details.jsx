@@ -1,14 +1,144 @@
 import React from 'react'
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import {
   Table
 } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import SingleSelector from '../components/base/Select/SingleSelector';
 const DebitNoteDetails = () => {
-  const [showRows, setShowRows] = useState(false);
+  // const [showRows, setShowRows] = useState(false);
+    const { id } = useParams();
+    const [showRows, setShowRows] = useState(false);
+    const [debitNoteData, setDebitNoteData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+     const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
+  
+    // Fetch credit note data
+    useEffect(() => {
+      const fetchCreditNoteData = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/debit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          setDebitNoteData(response.data);
+          setStatus(response.data.status)
+          setLoading(false);
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+  
+      fetchCreditNoteData();
+    }, [id]);
+    console.log("status:",status)
+
+    const statusOptions = [
+      {
+        label: "Select Status",
+        value: "",
+      },
+      {
+        label: "Draft",
+        value: "draft",
+      },
+      {
+        label: "Verified",
+        value: "verified",
+      },
+      {
+        label: "Submited",
+        value: "submited",
+      },
+      {
+        label: "Proceed",
+        value: "proceed",
+      },
+      {
+        label: "Approved",
+        value: "approved",
+      },
+    ];
+
+    const [remark, setRemark] = useState("");
+      const [comment, setComment] = useState("");
+      // console.log("status:",status)
+      // Step 2: Handle status change
+      const handleStatusChange = (selectedOption) => {
+        // setStatus(e.target.value);
+        setStatus(selectedOption.value);
+        handleStatusChange(selectedOption); // Handle status change
+      };
+    
+      // Step 3: Handle remark change
+      const handleRemarkChange = (e) => {
+        setRemark(e.target.value);
+      };
+    
+      const handleCommentChange = (e) => {
+        setComment(e.target.value);
+      };
+    
+      const payload = {
+        status_log: {
+          status: status,
+          remarks: remark,
+          comments: comment,
+        },
+      };
+    
+      console.log("detail status change", payload);
+
+      const handleSubmit = async () => {
+        // Prepare the payload for the API
+        const payload = {
+          status_log: {
+            status: status,
+            remarks: remark,
+            comments: comment,
+          },
+        };
+    
+        console.log("detail status change", payload);
+        setLoading(true);
+    
+        try {
+          const response = await axios.patch(
+            `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+            payload, // The request body containing status and remarks
+            {
+              headers: {
+                "Content-Type": "application/json", // Set the content type header
+              },
+            }
+          );
+          await fetchDetails();
+    
+          if (response.status === 200) {
+            console.log("Status updated successfully:", response.data);
+            setRemark("");
+            // alert('Status updated successfully');
+            // Handle success (e.g., update the UI, reset fields, etc.)
+            toast.success("Status updated successfully!");
+          } else {
+            console.log("Error updating status:", response.data);
+            toast.error("Failed to update status.");
+            // Handle error (e.g., show an error message)
+          }
+        } catch (error) {
+          console.error("Request failed:", error);
+          // Handle network or other errors (e.g., show an error message)
+        } finally {
+          setLoading(false);
+        }
+      };
+    
 
   // tax table functionality
 
@@ -58,6 +188,7 @@ const DebitNoteDetails = () => {
      setCurrentStep(currentStep - 1);
    }
  };
+ 
   return (
   <>
   <div className="website-content overflow-auto">
@@ -149,7 +280,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Marathon
+                                    {debitNoteData?.company_name || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -162,7 +293,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Neo Valley
+                                    {debitNoteData?.project_name || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -175,7 +306,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Neo Valley- Building
+                                    {debitNoteData?.site_name || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -188,7 +319,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Demo Note
+                                    {debitNoteData?.debit_note_no || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -201,7 +332,9 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    1/4/24
+                                    {debitNoteData?.debit_note_date
+                ? new Date(debitNoteData.debit_note_date).toLocaleDateString()
+                : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -214,20 +347,22 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    2/4/24
+                                    {debitNoteData?.created_at
+                ? new Date(debitNoteData.created_at).toLocaleDateString()
+                : "-"}
                                   </label>
                                 </div>
                               </div>
                               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                                 <div className="col-6 ">
-                                  <label>PO / WO Nunber</label>
+                                  <label>PO / WO Number</label>
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    PO 251
+                                    {debitNoteData?.po_number || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -240,7 +375,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    4/4/24
+                                    
                                   </label>
                                 </div>
                               </div>
@@ -253,7 +388,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    6000.00{" "}
+                                    
                                   </label>
                                 </div>
                               </div>
@@ -266,7 +401,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Shreeram Ceramics
+                                    {debitNoteData?.pms_supplier || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -279,7 +414,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    GST5448784
+                                    
                                   </label>
                                 </div>
                               </div>
@@ -292,7 +427,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    PAN6545154
+                                    
                                   </label>
                                 </div>
                               </div>
@@ -305,7 +440,9 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    INR 3000
+                                    {debitNoteData?.debit_note_amount
+                ? ` ${debitNoteData.debit_note_amount}`
+                : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -318,7 +455,7 @@ const DebitNoteDetails = () => {
                                     <span className="me-3">
                                       <span className="text-dark">:</span>
                                     </span>
-                                    Demo remark
+                                    {debitNoteData?.remark || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -352,7 +489,7 @@ const DebitNoteDetails = () => {
                                   </th>
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td className="text-start">3000</td>
+                                  <td className="text-start"></td>
                                   <td />
                                 </tr>
                                 <tr>
@@ -403,7 +540,7 @@ const DebitNoteDetails = () => {
                                      
                                       <td><input type="checkbox" /></td>
                                      
-                                      <td>00.0</td>
+                                      <td></td>
                                       <td
                                         className="text-start"
                                         onClick={() => deleteRow(row.id)}
@@ -431,14 +568,14 @@ const DebitNoteDetails = () => {
                                   <th className="text-start">Sub Total A (Addition)</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">3540</td>
+                                  <td className="text-start"></td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Gross Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">3540</td>
+                                  <td className="text-start"></td>
                                   <td />
                                 </tr>
                                 <tr>
@@ -467,20 +604,47 @@ const DebitNoteDetails = () => {
                                 </tr>
                               </thead>
                               <tbody>
+                                {debitNoteData?.attachments &&
+                              debitNoteData?.attachments.length > 0 ? (
+                                debitNoteData?.attachments?.map(
+                                  (attachment, index) => (
+                                    <tr key={attachment.id}>
+                                      <td className="text-start">
+                                        {index + 1}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.relation}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.filename}
+                                      </td>
+                                      <td className="text-start">
+                                        {attachment.content_type}
+                                      </td>
+                                      <td className="text-start">
+                                        {new Date(
+                                          attachment.created_at
+                                        ).toLocaleDateString()}
+                                      </td>
+                                      <td className="text-decoration-underline cursor-pointer">
+                                        <a
+                                          href={`https://marathon.lockated.com/attachments/${attachment.id}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          View
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  )
+                                )
+                              ) : (
                                 <tr>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start">PO.pdf</td>
-                                  <td className="text-start">04-03-2024</td>
-                                  <td
-                                    className="text-decoration-underline cursor-pointer"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#RevisionModal"
-                                  >
-                                    View
+                                  <td colSpan="6" className="text-center">
+                                    No attachments found
                                   </td>
                                 </tr>
+                              )}
                               </tbody>
                             </table>
                           </div>
@@ -498,6 +662,8 @@ const DebitNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={remark}
+                        onChange={handleRemarkChange}
                       />
                     </div>
                   </div>
@@ -511,41 +677,45 @@ const DebitNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={comment}
+                        onChange={handleCommentChange}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="row mt-4 justify-content-end align-items-center w-100">
-                  <div className="col-md-3">
-                    <div className="form-group d-flex gap-3 align-items-center">
-                      <label style={{ fontSize: "1.1rem" }}>status</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
+                 <div className="row mt-4 justify-content-end align-items-center mx-2">
+                                <div className="col-md-3">
+                                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                                      Status
+                                    </label>
+                                    <SingleSelector
+                                      options={statusOptions}
+                                      onChange={handleStatusChange}
+                                      // options.find(option => option.value === status)
+                                      // value={filteredOptions.find(option => option.value === status)}
+                                      value={statusOptions.find(
+                                        (option) => option.value === status
+                                      )}
+                                      placeholder="Select Status"
+                                      isClearable={false}
+                                      classNamePrefix="react-select"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
                 <div className="row mt-2 justify-content-end w-100">
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn2 w-100">Submit</button>
+                    <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
                     <button className="purple-btn1 w-100">Cancel</button>
                   </div>
                 </div>
-                <div className="row mt-2 w-100">
+                <div className="row mt-2 w-100 mb-5">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">

@@ -68,7 +68,7 @@ const CreditNoteList = () => {
         const response = await axios.get(
           "https://marathon.lockated.com/credit_notes?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
         );
-        setCreditNotes(response.data);
+        setCreditNotes(response.data.credit_notes);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -78,7 +78,7 @@ const CreditNoteList = () => {
 
     fetchCreditNotes();
   }, []);
-
+console.log("credit list:",creditNotes)
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
@@ -446,7 +446,7 @@ const CreditNoteList = () => {
                           </td>
                           <td className="text-start boq-id-link">
                             {/* {note.credit_note_no || "-"} */}
-                            <Link to={`/credit-note-details/${note.id}`} className="text-decoration-none">
+                            <Link to={`/credit-note-details/${note.id}`} className="">
     {note.credit_note_no || "-"}
   </Link>
                           </td>
