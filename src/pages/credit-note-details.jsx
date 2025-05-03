@@ -8,31 +8,33 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { baseURL } from "../confi/apiDomain";
 const CreditNoteDetails = () => {
   const { id } = useParams();
   const [showRows, setShowRows] = useState(false);
   const [creditNoteData, setCreditNoteData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
+  const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
   // Fetch credit note data
+  const fetchCreditNoteData = async () => {
+    try {
+      const response = await axios.get(
+        `https://marathon.lockated.com/credit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      setCreditNoteData(response.data);
+      setStatus(response.data.status)
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchCreditNoteData = async () => {
-      try {
-        const response = await axios.get(
-          `https://marathon.lockated.com/credit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        setCreditNoteData(response.data);
-        setStatus(response.data.status)
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
 
-    fetchCreditNoteData();
+
+    fetchCreditNoteData(id);
   }, [id]);
 
   // tax table functionality
@@ -107,24 +109,36 @@ const CreditNoteDetails = () => {
   ];
 
   const [remark, setRemark] = useState("");
-    const [comment, setComment] = useState("");
-    // console.log("status:",status)
-    // Step 2: Handle status change
-    const handleStatusChange = (selectedOption) => {
-      // setStatus(e.target.value);
-      setStatus(selectedOption.value);
-      handleStatusChange(selectedOption); // Handle status change
-    };
-  
-    // Step 3: Handle remark change
-    const handleRemarkChange = (e) => {
-      setRemark(e.target.value);
-    };
-  
-    const handleCommentChange = (e) => {
-      setComment(e.target.value);
-    };
-  
+  const [comment, setComment] = useState("");
+  // console.log("status:",status)
+  // Step 2: Handle status change
+  const handleStatusChange = (selectedOption) => {
+    // setStatus(e.target.value);
+    setStatus(selectedOption.value);
+    handleStatusChange(selectedOption); // Handle status change
+  };
+
+  // Step 3: Handle remark change
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const handleCommentChange = (e) => {
+    setComment(e.target.value);
+  };
+
+  const payload = {
+    status_log: {
+      status: status,
+      remarks: remark,
+      comments: comment,
+    },
+  };
+
+  console.log("detail status change", payload);
+
+  const handleSubmit = async () => {
+    // Prepare the payload for the API
     const payload = {
       status_log: {
         status: status,
@@ -132,53 +146,41 @@ const CreditNoteDetails = () => {
         comments: comment,
       },
     };
-  
-    console.log("detail status change", payload);
 
-    const handleSubmit = async () => {
-      // Prepare the payload for the API
-      const payload = {
-        status_log: {
-          status: status,
-          remarks: remark,
-          comments: comment,
-        },
-      };
-  
-      console.log("detail status change", payload);
-      setLoading(true);
-  
-      try {
-        const response = await axios.patch(
-          `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-          payload, // The request body containing status and remarks
-          {
-            headers: {
-              "Content-Type": "application/json", // Set the content type header
-            },
-          }
-        );
-        await fetchDetails();
-  
-        if (response.status === 200) {
-          console.log("Status updated successfully:", response.data);
-          setRemark("");
-          // alert('Status updated successfully');
-          // Handle success (e.g., update the UI, reset fields, etc.)
-          toast.success("Status updated successfully!");
-        } else {
-          console.log("Error updating status:", response.data);
-          toast.error("Failed to update status.");
-          // Handle error (e.g., show an error message)
+    console.log("detail status change", payload);
+    setLoading(true);
+
+    try {
+      const response = await axios.patch(
+        `${baseURL}credit_notes/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload, // The request body containing status and remarks
+        {
+          headers: {
+            "Content-Type": "application/json", // Set the content type header
+          },
         }
-      } catch (error) {
-        console.error("Request failed:", error);
-        // Handle network or other errors (e.g., show an error message)
-      } finally {
-        setLoading(false);
+      );
+      await fetchCreditNoteData();
+
+      if (response.status === 200) {
+        console.log("Status updated successfully:", response.data);
+        setRemark("");
+        // alert('Status updated successfully');
+        // Handle success (e.g., update the UI, reset fields, etc.)
+        toast.success("Status updated successfully!");
+      } else {
+        console.log("Error updating status:", response.data);
+        toast.error("Failed to update status.");
+        // Handle error (e.g., show an error message)
       }
-    };
-  
+    } catch (error) {
+      console.error("Request failed:", error);
+      // Handle network or other errors (e.g., show an error message)
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -210,9 +212,8 @@ const CreditNoteDetails = () => {
                             <div className="progress">
                               <span
                                 style={{
-                                  width: `${
-                                    ((currentStep - 1) / (totalSteps - 1)) * 100
-                                  }%`,
+                                  width: `${((currentStep - 1) / (totalSteps - 1)) * 100
+                                    }%`,
                                 }}
                               ></span>
                             </div>
@@ -220,9 +221,8 @@ const CreditNoteDetails = () => {
                               {[...Array(totalSteps)].map((_, index) => (
                                 <div className="layer1" key={index}>
                                   <div
-                                    className={`step ${
-                                      currentStep > index + 1 ? "active" : ""
-                                    }`}
+                                    className={`step ${currentStep > index + 1 ? "active" : ""
+                                      }`}
                                     data-step={index + 1}
                                   >
                                     <span></span>
@@ -234,18 +234,16 @@ const CreditNoteDetails = () => {
                           </div>
                           <div className="buttons d-m">
                             <button
-                              className={`btn btn-prev ${
-                                currentStep === 1 ? "disabled" : ""
-                              }`}
+                              className={`btn btn-prev ${currentStep === 1 ? "disabled" : ""
+                                }`}
                               onClick={handlePrev}
                               disabled={currentStep === 1}
                             >
                               Prev
                             </button>
                             <button
-                              className={`btn btn-next ${
-                                currentStep === totalSteps ? "disabled" : ""
-                              }`}
+                              className={`btn btn-next ${currentStep === totalSteps ? "disabled" : ""
+                                }`}
                               onClick={handleNext}
                               disabled={currentStep === totalSteps}
                             >
@@ -326,8 +324,8 @@ const CreditNoteDetails = () => {
                                   </span>
                                   {creditNoteData.credit_note_date
                                     ? new Date(
-                                        creditNoteData.credit_note_date
-                                      ).toLocaleDateString()
+                                      creditNoteData.credit_note_date
+                                    ).toLocaleDateString()
                                     : "-"}
                                 </label>
                               </div>
@@ -343,8 +341,8 @@ const CreditNoteDetails = () => {
                                   </span>
                                   {creditNoteData.created_at
                                     ? new Date(
-                                        creditNoteData.created_at
-                                      ).toLocaleDateString()
+                                      creditNoteData.created_at
+                                    ).toLocaleDateString()
                                     : "-"}
                                 </label>
                               </div>
@@ -373,8 +371,8 @@ const CreditNoteDetails = () => {
                                   </span>
                                   {creditNoteData.po_date
                                     ? new Date(
-                                        creditNoteData.po_date
-                                      ).toLocaleDateString()
+                                      creditNoteData.po_date
+                                    ).toLocaleDateString()
                                     : "-"}
                                 </label>
                               </div>
@@ -475,131 +473,131 @@ const CreditNoteDetails = () => {
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Tax Details</h5>
                         </div>
-                      
+
                         <div className="tbl-container mx-3 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th className="text-start">
-                                    Tax / Charge Type
-                                  </th>
-                                  <th className="text-start">
-                                    Tax / Charges per UOM (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Inclusive / Exclusive
-                                  </th>
-                                  <th className="text-start">Amount</th>
-                                  <th className="text-start">Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Static Rows */}
-                                <tr>
-                                  <th className="text-start">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">
+                                  Tax / Charge Type
+                                </th>
+                                <th className="text-start">
+                                  Tax / Charges per UOM (INR)
+                                </th>
+                                <th className="text-start">
+                                  Inclusive / Exclusive
+                                </th>
+                                <th className="text-start">Amount</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">
                                   Total Base Cost
-                                  </th>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start"></td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">
+                                </th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start"></td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">
                                   Addition Tax & Charges
-                                  </th>
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td className="text-start" />
-                                  <td onClick={toggleRows}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        transform: showRows
-                                          ? "rotate(45deg)"
-                                          : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
+                                </th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td onClick={toggleRows}>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    className="bi bi-plus-circle"
+                                    viewBox="0 0 16 16"
+                                    style={{
+                                      transform: showRows
+                                        ? "rotate(45deg)"
+                                        : "none",
+                                      transition: "transform 0.3s ease",
+                                    }}
+                                  >
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                  </svg>
+                                </td>
+                              </tr>
+                              {/* Dynamic Rows */}
+                              {showRows &&
+                                rows.map((row) => (
+                                  <tr>
+                                    <td className="text-start">
+                                      <select className="form-control form-select">
+                                        <option selected>{row.type}</option>
+                                        <option>Other Type</option>
+                                      </select>
+                                    </td>
+                                    <td className="text-start">
+                                      <select className="form-control form-select">
+                                        <option selected>
+                                          {row.charges}
+                                        </option>
+                                        <option>Other Charges</option>
+                                      </select>
+                                    </td>
+
+                                    <td><input type="checkbox" /></td>
+
+                                    <td></td>
+                                    <td
+                                      className="text-start"
+                                      onClick={() => deleteRow(row.id)}
                                     >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
-                                  </td>
-                                </tr>
-                                {/* Dynamic Rows */}
-                                {showRows &&
-                                  rows.map((row) => (
-                                    <tr>
-                                      <td className="text-start">
-                                        <select className="form-control form-select">
-                                          <option selected>{row.type}</option>
-                                          <option>Other Type</option>
-                                        </select>
-                                      </td>
-                                      <td className="text-start">
-                                        <select className="form-control form-select">
-                                          <option selected>
-                                            {row.charges}
-                                          </option>
-                                          <option>Other Charges</option>
-                                        </select>
-                                      </td>
-                                     
-                                      <td><input type="checkbox" /></td>
-                                     
-                                      <td></td>
-                                      <td
-                                        className="text-start"
-                                        onClick={() => deleteRow(row.id)}
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        fill="currentColor"
+                                        className="bi bi-dash-circle"
+                                        viewBox="0 0 16 16"
+                                        style={{
+                                          transition: "transform 0.3s ease",
+                                        }}
                                       >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="16"
-                                          height="16"
-                                          fill="currentColor"
-                                          className="bi bi-dash-circle"
-                                          viewBox="0 0 16 16"
-                                          style={{
-                                            transition: "transform 0.3s ease",
-                                          }}
-                                        >
-                                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                        </svg>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                {/* Dynamic Sub Total Row */}
-                                {/* Static Rows */}
-                                <tr>
-                                  <th className="text-start">Sub Total A (Addition)</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start"></td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">Gross Amount</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start"></td>
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <th className="text-start">Deduction Tax</th>
-                                  <td className="text-start" />
-                                  <td className="" />
-                                  <td className="text-start" />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                      </svg>
+                                    </td>
+                                  </tr>
+                                ))}
+                              {/* Dynamic Sub Total Row */}
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">Sub Total A (Addition)</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start"></td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Gross Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start"></td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Deduction Tax</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start" />
+                                <td />
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Document Attachment</h5>
                         </div>
@@ -617,7 +615,7 @@ const CreditNoteDetails = () => {
                             </thead>
                             <tbody>
                               {creditNoteData.attachments &&
-                              creditNoteData.attachments.length > 0 ? (
+                                creditNoteData.attachments.length > 0 ? (
                                 creditNoteData.attachments.map(
                                   (attachment, index) => (
                                     <tr key={attachment.id}>
@@ -673,6 +671,8 @@ const CreditNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={remark}
+                        onChange={handleRemarkChange}
                       />
                     </div>
                   </div>
@@ -686,31 +686,33 @@ const CreditNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={comment}
+                        onChange={handleCommentChange}
                       />
                     </div>
                   </div>
                 </div>
-                  <div className="row mt-4 justify-content-end align-items-center mx-2">
-                                                <div className="col-md-3">
-                                                  <div className="form-group d-flex gap-3 align-items-center mx-3">
-                                                    <label style={{ fontSize: "0.95rem", color: "black" }}>
-                                                      Status
-                                                    </label>
-                                                    <SingleSelector
-                                                      options={statusOptions}
-                                                      onChange={handleStatusChange}
-                                                      // options.find(option => option.value === status)
-                                                      // value={filteredOptions.find(option => option.value === status)}
-                                                      value={statusOptions.find(
-                                                        (option) => option.value === status
-                                                      )}
-                                                      placeholder="Select Status"
-                                                      isClearable={false}
-                                                      classNamePrefix="react-select"
-                                                    />
-                                                  </div>
-                                                </div>
-                                              </div>
+                <div className="row mt-4 justify-content-end align-items-center mx-2">
+                  <div className="col-md-3">
+                    <div className="form-group d-flex gap-3 align-items-center mx-3">
+                      <label style={{ fontSize: "0.95rem", color: "black" }}>
+                        Status
+                      </label>
+                      <SingleSelector
+                        options={statusOptions}
+                        onChange={handleStatusChange}
+                        // options.find(option => option.value === status)
+                        // value={filteredOptions.find(option => option.value === status)}
+                        value={statusOptions.find(
+                          (option) => option.value === status
+                        )}
+                        placeholder="Select Status"
+                        isClearable={false}
+                        classNamePrefix="react-select"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="row mt-2 justify-content-end w-100">
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
@@ -726,7 +728,45 @@ const CreditNoteDetails = () => {
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
-                      <Table columns={auditLogColumns} data={auditLogData} />
+
+                      <div className="tbl-container mt-1">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th>Sr.No.</th>
+                              <th>User</th>
+                              <th>Date</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {creditNoteData?.status_logs?.map((log, index) => (
+                              <tr key={log.id}>
+                                <td className="text-start">{index + 1}</td>
+                                <td className="text-start">{""}</td>
+                                <td className="text-start">
+                                  {log.created_at
+                                    ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      // second: "2-digit",
+                                      hour12: true,
+                                    })}`
+                                    : ""}
+                                </td>
+                                <td className="text-start">{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+                                <td className="text-start">{log.remarks || ""}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
                     </div>
                   </div>
                 </div>

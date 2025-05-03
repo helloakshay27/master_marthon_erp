@@ -8,12 +8,19 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const CreditNoteList = () => {
+  const navigate = useNavigate(); // Initialize navigation
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [creditNotes, setCreditNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Items per page
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   // Static data for SingleSelector (this will be replaced by API data later)
 
@@ -61,24 +68,40 @@ const CreditNoteList = () => {
       });
   }, []);
 
-  // Fetch credit notes data
-  useEffect(() => {
-    const fetchCreditNotes = async () => {
-      try {
-        const response = await axios.get(
-          "https://marathon.lockated.com/credit_notes?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        setCreditNotes(response.data.credit_notes);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
 
-    fetchCreditNotes();
-  }, []);
-console.log("credit list:",creditNotes)
+  const fetchCreditNotes = async (page) => {
+
+    try {
+      setLoading(true); // Start loading
+      const response = await axios.get(
+        `https://marathon.lockated.com/credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      setCreditNotes(response.data.credit_notes);
+      setMeta(response.data.meta)
+      setTotalPages(response.data.meta.total_pages); // Set total pages
+      setTotalEntries(response.data.meta.total_count);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+  // Fetch credit notes data
+  const [totalEntries, setTotalEntries] = useState(0);
+  useEffect(() => {
+
+
+    fetchCreditNotes(currentPage);
+  }, [currentPage]);
+  // console.log("credit list:",creditNotes)
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
@@ -139,9 +162,196 @@ console.log("credit list:",creditNotes)
     value: company.id,
     label: company.company_name,
   }));
+  // filter
+  const fetchFilteredData = () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+    const search = searchKeyword || "";
+    console.log("ids filter:", companyId, projectId, siteId)
+    const url = `${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+    // console.log("url:",url)
+    axios
+      .get(url)
+      .then((response) => {
+        setCreditNotes(response.data.credit_notes);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+        setMeta(response.data.meta)
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+  const handleReset = () => {
+    // Clear selected filters
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    // Fetch unfiltered data
+    axios
+      .get(`${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then((response) => {
+        setCreditNotes(response.data.credit_notes);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+        setMeta(response.data.meta)
+      })
+      .catch((error) => {
+        console.error("Error resetting data:", error);
+      });
+  };
+
+  //  bulk action 
+  //bulkaction options 
+  const options = [
+    {
+      label: 'Select Status',
+      value: '',
+    },
+    {
+      label: 'Draft',
+      value: 'draft',
+    },
+    {
+      label: 'Verified',
+      value: 'verified',
+    },
+    {
+      label: 'Submited',
+      value: 'submited',
+    },
+    {
+      label: 'Proceed',
+      value: 'proceed',
+    },
+    {
+      label: 'Approved',
+      value: 'approved',
+    },
+
+  ];
+
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+  // const [boqList, setBoqList] = useState([]);
+  // const [loading, setLoading] = useState(false);
+
+  // Handle input changes
+  const handleStatusChange = (selectedOption) => {
+    // const { name, value } = e.target;
+    // if (name === "fromStatus") {
+    //   setFromStatus(selectedOption.value);
+    // } else if (name === "toStatus") {
+    //   setToStatus(selectedOption.value);
+    // }
+
+    setFromStatus(selectedOption.value);
+  };
+
+  // Handle status change for 'To Status'
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
+  };
+
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const [selectedBoqDetails, setSelectedBoqDetails] = useState("");
+
+  console.log("data for bulk action")
+  const handleSubmit = () => {
+    console.log("data for bulk action");
+
+    if (!fromStatus || !toStatus) {
+      alert("Please select both 'From Status' and 'To Status'.");
+      return;
+    }
+
+    // Prepare data to send
+    const data = {
+      credit_ids: selectedBoqDetails,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data);
+
+    // Send data to API using axios
+    axios
+      .patch(
+        `${baseURL}credit_notes/update_bulk_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        data
+      )
+      .then((response) => {
+        console.log('Success:', response.data);
+        alert('Status updated successfully ....');
+        // Fetch data again after successful update
+        fetchCreditNotes(currentPage);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+  // Fetch the data when 'fromStatus' changes
+  useEffect(() => {
+    if (fromStatus) { // Only fetch data if a status is selected
+      setLoading(true); // Show loading state while fetching
+      axios
+        .get(`${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .then((response) => {
+          setCreditNotes(response.data.credit_notes);
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+          setMeta(response.data.meta)
+        })
+        .catch((error) => {
+          console.error("Error resetting data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading when request is complete
+        });
+    }
+  }, [fromStatus]);  // This will run every time 'fromStatus' changes
+
+
+
+  // State to track selected bill detail IDs
+  const handleCheckboxChange = (boqDetailId) => {
+    // setSelectedBoqDetails((prevSelected) => {
+    //   const selectedArray = prevSelected ? prevSelected.split(",").map(Number) : [];
+    //   if (selectedArray.includes(boqDetailId)) {
+    //     // If already selected, remove it from the string
+    //     const updatedArray = selectedArray.filter((id) => id !== boqDetailId);
+    //     return updatedArray.join(",");
+    //   } else {
+    //     // If not selected, add it to the string
+    //     const updatedArray = [...selectedArray, boqDetailId];
+    //     return updatedArray.join(",");
+    //   }
+    // });
+
+
+    setSelectedBoqDetails((prevSelected) => {
+      if (prevSelected.includes(boqDetailId)) {
+        // If already selected, remove it from the array
+        return prevSelected.filter((id) => id !== boqDetailId);
+      } else {
+        // If not selected, add it to the array
+        return [...prevSelected, boqDetailId];
+      }
+    });
+  };
+
+  console.log("selected bill id array :", selectedBoqDetails)
+
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
 
   return (
     <>
@@ -151,20 +361,32 @@ console.log("credit list:",creditNotes)
           <h5 className="mt-4 fw-bold">Credit Note List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
-              <div className="row separteinto5 justify-content-start">
+
+              <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
                     className="content-box tab-button active"
                     data-tab="total"
                   >
-                    <h4 className="content-box-title ">Total</h4>
-                    <p className="content-box-sub">150</p>
+                    <h4 className="content-box-title fw-semibold">Total</h4>
+                    <p className="content-box-sub">{meta?.total_count}</p>
+                    {/* {console.log("meta data ", billData)} */}
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title ">Pending</h4>
-                    <p className="content-box-sub">4</p>
+                    <h4 className="content-box-title fw-semibold">
+                      Draft
+                    </h4>
+                    <p className="content-box-sub">{meta?.draft_count}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div className="content-box tab-button" data-tab="draft">
+                    <h4 className="content-box-title fw-semibold">
+                      Verified
+                    </h4>
+                    <p className="content-box-sub">{meta?.verified_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -172,8 +394,8 @@ console.log("credit list:",creditNotes)
                     className="content-box tab-button"
                     data-tab="pending-approval"
                   >
-                    <h4 className="content-box-title ">Draft</h4>
-                    <p className="content-box-sub">2</p>
+                    <h4 className="content-box-title fw-semibold">Submit</h4>
+                    <p className="content-box-sub">{meta?.submited_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -181,8 +403,8 @@ console.log("credit list:",creditNotes)
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title ">Self Overdue</h4>
-                    <p className="content-box-sub">2</p>
+                    <h4 className="content-box-title fw-semibold">Approved</h4>
+                    <p className="content-box-sub">{meta?.approved_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -190,8 +412,8 @@ console.log("credit list:",creditNotes)
                     className="content-box tab-button"
                     data-tab="self-overdue"
                   >
-                    <h4 className="content-box-title ">Processed</h4>
-                    <p className="content-box-sub">2</p>
+                    <h4 className="content-box-title fw-semibold">Proceed</h4>
+                    <p className="content-box-sub">{meta?.proceed_count}</p>
                   </div>
                 </div>
               </div>
@@ -199,7 +421,7 @@ console.log("credit list:",creditNotes)
           </div>
           <div className="tab-content1 active" id="total-content">
             {/* Total Content Here */}
-            <div className="card mt-3 pb-4">
+            <div className="card mt-3 pb-3 mb-5">
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                 <div className="row">
                   <div className="col-md-3">
@@ -250,7 +472,8 @@ console.log("credit list:",creditNotes)
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
                     <button
                       className="purple-btn2"
-                      // onClick={fetchFilteredData}
+                      onClick={fetchFilteredData}
+
                     >
                       Go
                     </button>
@@ -258,125 +481,128 @@ console.log("credit list:",creditNotes)
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
                     <button
                       className="purple-btn2"
-                      //  onClick={handleReset}
+                      onClick={handleReset}
                     >
                       Reset
                     </button>
                   </div>
                 </div>
               </CollapsibleCard>
-              <div className="card mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={bulkActionDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
+
+              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
+                <div className="card-body mt-0 pt-0">
+                  <div className="row align-items-center">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>From Status</label>
+                        <SingleSelector
+                          options={options}
+                          // value={options.value}
+                          value={options.find(option => option.value === fromStatus)}
+                          onChange={handleStatusChange}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {bulkActionDetails && (
-                  <div className="card-body mt-0 pt-0">
-                    <div className="row align-items-center">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>From Status</label>
-                          <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue}
-                            onChange={handleChange}
-                          />
-                        </div>
-                        <div className="form-group mt-3">
-                          <label>To Status</label>
-                          <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue} // Passing selected value to SingleSelector
-                            onChange={handleChange} // Handle change event
-                          />
-                        </div>
                       </div>
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>Remark</label>
-                          <textarea
-                            className="form-control"
-                            rows={4}
-                            placeholder="Enter ..."
-                            defaultValue={""}
-                          />
-                        </div>
-                      </div>
-                      <div className="offset-md-1 col-md-2">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
-                          Submit
-                        </button>
+                      <div className="form-group mt-3">
+                        <label>To Status</label>
+                        <SingleSelector
+                          options={options}
+                          // value={options.value}
+                          onChange={handleToStatusChange}
+                          value={options.find(option => option.value === toStatus)}
+                          // onChange={handleStatusChange}
+                          // options.find(option => option.value === status)
+                          // value={filteredOptions.find(option => option.value === status)}
+                          // value={options.find(option => option.value === status)}
+                          // value={selectedSite}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
+                        />
                       </div>
                     </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>Remark</label>
+                        <textarea
+                          className="form-control"
+                          rows={4}
+                          placeholder="Enter ..."
+                          defaultValue={""}
+                          value={remark}
+                          onChange={handleRemarkChange}
+                        />
+                      </div>
+                    </div>
+                    <div className="offset-md-1 col-md-2">
+                      <button
+                        className="purple-btn2 m-0"
+                        style={{ color: "white" }}
+                        onClick={handleSubmit}
+                      >
+                        Submit
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div className="row mt-2">
-                <div className="col-md-5 ms-3">
+                </div>
+              </CollapsibleCard>
+
+
+
+              <div className="d-flex justify-content-between align-items-center me-2 mt-4">
+                {/* Search Input */}
+                <div className="col-md-4">
                   <form>
-                    <div className="input-group">
+                    <div className="input-group ms-3">
                       <input
                         type="search"
+                        id="searchInput"
+                        // value={searchKeyword}
+                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button
-                          type="submit"
-                          className="btn btn-md btn-default"
-                        >
-                          <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                              fill="#8B0203"
-                            />
-                            <path
-                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                              fill="#8B0203"
-                            />
+                        <button type="button" className="btn btn-md btn-default">
+                          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
+                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
                           </svg>
                         </button>
                       </div>
                     </div>
                   </form>
                 </div>
+
+                {/* Buttons & Filter Section */}
                 <div className="col-md-6">
                   <div className="d-flex justify-content-end align-items-center gap-3">
+                    {/* Filter Icon */}
+                    {/* <button className="btn btn-md btn-default">
+                      <svg
+                        width={28}
+                        height={28}
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                          fill="#8B0203"
+                        />
+                      </svg>
+                    </button> */}
+
                     {/* Create BOQ Button */}
-                    <button
-                      className="purple-btn2"
-                      // onClick={() => navigate("/bill-booking-create")}
+                    <button className="purple-btn2"
+                      onClick={() => navigate("/credit-note-create")}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -393,157 +619,228 @@ console.log("credit list:",creditNotes)
                   </div>
                 </div>
               </div>
-
-              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                <table
-                  style={{
-                    width: "max-content",
-                    maxHeight: "max-content",
-                    height: "auto",
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="text-start">
-                        <input type="checkbox" />
-                      </th>
-                      <th className="text-start">Sr.No.</th>
-                      <th className="text-start">Company</th>
-                      <th className="text-start">Project</th>
-                      <th className="text-start">Sub Project</th>
-                      <th className="text-start">Debit Note No.</th>
-                      <th className="text-start">Date</th>
-                      <th className="text-start">Credit Note Type</th>
-                      <th className="text-start">Created On</th>
-                      <th className="text-start">PO No.</th>
-                      <th className="text-start">PO Date</th>
-                      <th className="text-start">PO Value</th>
-                      <th className="text-start">Supplier Name</th>
-                      <th className="text-start">GSTIN No.</th>
-                      <th className="text-start">PAN No.</th>
-                      <th className="text-start">Debit Note Ammount</th>
-                      <th className="text-start">Deduction Tax</th>
-                      <th className="text-start">Addition Tax</th>
-                      <th className="text-start">Total Amount</th>
-                      <th className="text-start">Status</th>
-                      <th className="text-start">Due Date</th>
-                      <th className="text-start">Overdue</th>
-                      <th className="text-start">Due At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {creditNotes.length > 0 ? (
-                      creditNotes.map((note, index) => (
-                        <tr key={note.id}>
-                          <td className="text-start">
-                            <input type="checkbox" />
-                          </td>
-                          <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{note.company || "-"}</td>
-                          <td className="text-start">{note.project || "-"}</td>
-                          <td className="text-start">
-                            {note.sub_project || "-"}
-                          </td>
-                          <td className="text-start boq-id-link">
-                            {/* {note.credit_note_no || "-"} */}
-                            <Link to={`/credit-note-details/${note.id}`} className="">
-    {note.credit_note_no || "-"}
-  </Link>
-                          </td>
-                          <td className="text-start">
-                            {note.credit_note_date
-                              ? new Date(
+              {!loading && !error && (
+                <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
+                  <table
+                    style={{
+                      width: "max-content",
+                      maxHeight: "max-content",
+                      height: "auto",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th className="text-start">
+                          <input type="checkbox" />
+                        </th>
+                        <th className="text-start">Sr.No.</th>
+                        <th className="text-start">Company</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Sub Project</th>
+                        <th className="text-start">Debit Note No.</th>
+                        <th className="text-start">Date</th>
+                        <th className="text-start">Credit Note Type</th>
+                        <th className="text-start">Created On</th>
+                        <th className="text-start">PO No.</th>
+                        <th className="text-start">PO Date</th>
+                        <th className="text-start">PO Value</th>
+                        <th className="text-start">Supplier Name</th>
+                        <th className="text-start">GSTIN No.</th>
+                        <th className="text-start">PAN No.</th>
+                        <th className="text-start">Debit Note Ammount</th>
+                        <th className="text-start">Deduction Tax</th>
+                        <th className="text-start">Addition Tax</th>
+                        <th className="text-start">Total Amount</th>
+                        <th className="text-start">Status</th>
+                        <th className="text-start">Due Date</th>
+                        <th className="text-start">Overdue</th>
+                        <th className="text-start">Due At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {creditNotes.length > 0 ? (
+                        creditNotes.map((note, index) => (
+                          <tr key={note.id}>
+                            <td className="text-start">
+                              <input
+                                className="ms-1 me-1 mb-1"
+                                type="checkbox"
+                                checked={selectedBoqDetails.includes(note.id)} // Check if this ID is selected
+                                onChange={() => handleCheckboxChange(note.id)} // Handle checkbox change
+                              />
+                            </td>
+                            <td className="text-start">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                            {/* {console.log("credit index:", (currentPage - 1) * itemsPerPage + index + 1)} */}
+                            <td className="text-start">{note.company_name || "-"}</td>
+                            <td className="text-start">{note.project_name || "-"}</td>
+                            <td className="text-start">
+                              {note.site_name || "-"}
+                            </td>
+                            <td className="text-start boq-id-link">
+                              {/* {note.credit_note_no || "-"} */}
+                              <Link to={`/credit-note-details/${note.id}`} className="">
+                                {note.credit_note_no || "-"}
+                              </Link>
+                            </td>
+                            <td className="text-start">
+                              {note.credit_note_date
+                                ? new Date(
                                   note.credit_note_date
                                 ).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.credit_note_type || "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.created_at
-                              ? new Date(note.created_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.purchase_order_id || "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.po_date
-                              ? new Date(note.po_date).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">{note.po_value || "-"}</td>
-                          <td className="text-start">
-                            {note.supplier_name || "-"}
-                          </td>
-                          <td className="text-start">{note.gstin_no || "-"}</td>
-                          <td className="text-start">{note.pan_no || "-"}</td>
-                          <td className="text-start">
-                            {note.credit_note_amount || "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.taxes_and_charges &&
-                              note.taxes_and_charges
-                                .filter((tax) => !tax.addition)
-                                .reduce(
-                                  (total, tax) =>
-                                    total + (parseFloat(tax.amount) || 0),
-                                  0
-                                )
-                                .toFixed(2)}
-                          </td>
-                          <td className="text-start">
-                            {note.taxes_and_charges &&
-                              note.taxes_and_charges
-                                .filter((tax) => tax.addition)
-                                .reduce(
-                                  (total, tax) =>
-                                    total + (parseFloat(tax.amount) || 0),
-                                  0
-                                )
-                                .toFixed(2)}
-                          </td>
-                          <td className="text-start">
-                            {(
-                              parseFloat(note.credit_note_amount || 0) +
-                              (note.taxes_and_charges &&
-                                note.taxes_and_charges
-                                  .filter((tax) => tax.addition)
-                                  .reduce(
-                                    (total, tax) =>
-                                      total + (parseFloat(tax.amount) || 0),
-                                    0
-                                  )) -
-                              (note.taxes_and_charges &&
+                                : "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.credit_note_type || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.created_at
+                                ? new Date(note.created_at).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.purchase_order_id || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_date
+                                ? new Date(note.po_date).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="text-start">{note.po_value || "-"}</td>
+                            <td className="text-start">
+                              {note.supplier_name || "-"}
+                            </td>
+                            <td className="text-start">{note.gstin_no || "-"}</td>
+                            <td className="text-start">{note.pan_no || "-"}</td>
+                            <td className="text-start">
+                              {note.credit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.taxes_and_charges &&
                                 note.taxes_and_charges
                                   .filter((tax) => !tax.addition)
                                   .reduce(
                                     (total, tax) =>
                                       total + (parseFloat(tax.amount) || 0),
                                     0
-                                  ))
-                            ).toFixed(2)}
+                                  )
+                                  .toFixed(2)}
+                            </td>
+                            <td className="text-start">
+                              {note.taxes_and_charges &&
+                                note.taxes_and_charges
+                                  .filter((tax) => tax.addition)
+                                  .reduce(
+                                    (total, tax) =>
+                                      total + (parseFloat(tax.amount) || 0),
+                                    0
+                                  )
+                                  .toFixed(2)}
+                            </td>
+                            <td className="text-start">
+                              {(
+                                parseFloat(note.credit_note_amount || 0) +
+                                (note.taxes_and_charges &&
+                                  note.taxes_and_charges
+                                    .filter((tax) => tax.addition)
+                                    .reduce(
+                                      (total, tax) =>
+                                        total + (parseFloat(tax.amount) || 0),
+                                      0
+                                    )) -
+                                (note.taxes_and_charges &&
+                                  note.taxes_and_charges
+                                    .filter((tax) => !tax.addition)
+                                    .reduce(
+                                      (total, tax) =>
+                                        total + (parseFloat(tax.amount) || 0),
+                                      0
+                                    ))
+                              ).toFixed(2)}
+                            </td>
+                            <td className="text-start">{note.status || "-"}</td>
+                            <td className="text-start">
+                              {note.due_date
+                                ? new Date(note.due_date).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="text-start">{note.overdue || "-"}</td>
+                            <td className="text-start">{note.due_at || "-"}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="23" className="text-center">
+                            No credit notes found
                           </td>
-                          <td className="text-start">{note.status || "-"}</td>
-                          <td className="text-start">
-                            {note.due_date
-                              ? new Date(note.due_date).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">{note.overdue || "-"}</td>
-                          <td className="text-start">{note.due_at || "-"}</td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="23" className="text-center">
-                          No credit notes found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
+                  entries
+                </div>
               </div>
             </div>
           </div>

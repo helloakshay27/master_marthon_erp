@@ -263,6 +263,7 @@ export const orderSummaryData = [
 ];
 
 export const auditLogColumns = [
+  { label: "Sr.No.", key: "srno" },
   { label: "Created By", key: "created_by_name" },
   { label: "Status", key: "status" },
   { label: "Remark", key: "remarks" },
