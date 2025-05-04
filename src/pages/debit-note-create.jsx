@@ -578,9 +578,9 @@ const DebitNoteCreate = () => {
 
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, },
-    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, },
-    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, },
+    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true,resource_id:2,resource_type: "TaxCharge"  },
+    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true,resource_id:4,resource_type: "TaxCharge" },
+    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true,resource_id:5,resource_type: "TaxCharge"  },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -754,6 +754,8 @@ const DebitNoteCreate = () => {
           remarks: row.type,
           addition: row.addition,
           percentage: parseFloat(row.percentage) || 0,
+           resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
         })),
         ...deductionRows.map((row) => ({
           inclusive: row.inclusive,
@@ -761,6 +763,8 @@ const DebitNoteCreate = () => {
           remarks: row.type,
           addition: row.addition || false, // Ensure addition is false for deductions
           percentage: parseFloat(row.percentage) || 0,
+           resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
         })),
       ],
 
@@ -796,6 +800,8 @@ const DebitNoteCreate = () => {
             remarks: row.type,
             addition: row.addition,
             percentage: parseFloat(row.percentage) || 0,
+             resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
           })),
           ...deductionRows.map((row) => ({
             inclusive: row.inclusive,
@@ -803,6 +809,8 @@ const DebitNoteCreate = () => {
             remarks: row.type,
             addition: row.addition || false, // Ensure addition is false for deductions
             percentage: parseFloat(row.percentage) || 0,
+             resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
           })),
         ],
 
@@ -1166,6 +1174,8 @@ const DebitNoteCreate = () => {
                                         options={taxTypes.map((type) => ({
                                           value: type.name,
                                           label: type.name,
+                                          id:type.id,
+                                          tax:type.type,
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
                                             ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
@@ -1196,6 +1206,8 @@ const DebitNoteCreate = () => {
                                                 ? {
                                                   ...r,
                                                   type: selectedOption?.value || "", // Handle null or undefined
+                                                  resource_id: selectedOption?.id || null, // Handle null or undefined
+                                                    resource_type: selectedOption?.tax || "", // Handle null or undefined
                                                   // resource_id: selectedOption?.value || null, // Handle null or undefined
                                                   // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
                                                 }
@@ -1355,12 +1367,27 @@ const DebitNoteCreate = () => {
                                         options={deductionTypes.map((type) => ({
                                           value: type.name,
                                           label: type.name,
+                                          id:type.id,
+                                          tax:type.type,
                                         }))}
                                         value={{ value: row.type, label: row.type }}
+                                        // onChange={(selectedOption) =>
+                                        //   setDeductionRows((prevRows) =>
+                                        //     prevRows.map((r) =>
+                                        //       r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                        //     )
+                                        //   )
+                                        // }
+
+
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                              r.id === row.id ? { ...r, 
+                                                type: selectedOption?.value || "", // Handle null or undefined
+                                                resource_id: selectedOption?.id || null, // Handle null or undefined
+                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                               } : r
                                             )
                                           )
                                         }

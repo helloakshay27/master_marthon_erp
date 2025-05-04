@@ -474,130 +474,146 @@ const CreditNoteDetails = () => {
                           <h5 className=" ">Tax Details</h5>
                         </div>
 
+
+
                         <div className="tbl-container mx-3 mt-3">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th className="text-start">
-                                  Tax / Charge Type
-                                </th>
-                                <th className="text-start">
-                                  Tax / Charges per UOM (INR)
-                                </th>
-                                <th className="text-start">
-                                  Inclusive / Exclusive
-                                </th>
-                                <th className="text-start">Amount</th>
-                                <th className="text-start">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {/* Static Rows */}
-                              <tr>
-                                <th className="text-start">
-                                  Total Base Cost
-                                </th>
-                                <td className="text-start" />
-                                <td className="text-start" />
-                                <td className="text-start"></td>
-                                <td />
-                              </tr>
-                              <tr>
-                                <th className="text-start">
-                                  Addition Tax & Charges
-                                </th>
-                                <td className="text-start" />
-                                <td className="text-start" />
-                                <td className="text-start" />
-                                <td onClick={toggleRows}>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    className="bi bi-plus-circle"
-                                    viewBox="0 0 16 16"
-                                    style={{
-                                      transform: showRows
-                                        ? "rotate(45deg)"
-                                        : "none",
-                                      transition: "transform 0.3s ease",
-                                    }}
-                                  >
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                  </svg>
-                                </td>
-                              </tr>
-                              {/* Dynamic Rows */}
-                              {showRows &&
-                                rows.map((row) => (
-                                  <tr>
-                                    <td className="text-start">
-                                      <select className="form-control form-select">
-                                        <option selected>{row.type}</option>
-                                        <option>Other Type</option>
-                                      </select>
-                                    </td>
-                                    <td className="text-start">
-                                      <select className="form-control form-select">
-                                        <option selected>
-                                          {row.charges}
-                                        </option>
-                                        <option>Other Charges</option>
-                                      </select>
-                                    </td>
+  <table className="w-100">
+    <thead>
+      <tr>
+        <th className="text-start">Tax / Charge Type</th>
+        <th className="text-start">Tax / Charges per UOM (INR)</th>
+        <th className="text-start">Inclusive / Exclusive</th>
+        <th className="text-start">Amount</th>
+        <th className="text-start">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {/* Static Rows */}
+      <tr>
+        <th className="text-start">Total Base Cost</th>
+        <td className="text-start" />
+        <td className="text-start" />
+        <td className="text-start">{creditNoteData.credit_note_amount}</td>
+        <td />
+      </tr>
 
-                                    <td><input type="checkbox" /></td>
+      {/* Addition Tax & Charges */}
+      <tr>
+        <th className="text-start">Addition Tax & Charges</th>
+        <td className="text-start" />
+        <td className="text-start" />
+        <td className="text-start" />
+        <td />
+      </tr>
+      {creditNoteData.taxes_and_charges
+        .filter((tax) => tax.addition) // Filter for addition: true
+        .map((tax) => (
+          <tr key={tax.id}>
+            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.percentage}%</td>
+            <td className="text-start">
+              {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
+              <input
+          type="checkbox"
+          checked={tax.inclusive} // Set checkbox checked based on `inclusive`
+          disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
+        />
+            </td>
+            <td className="text-start">{tax.amount}</td>
+            <td />
+          </tr>
+        ))}
 
-                                    <td></td>
-                                    <td
-                                      className="text-start"
-                                      onClick={() => deleteRow(row.id)}
-                                    >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                        style={{
-                                          transition: "transform 0.3s ease",
-                                        }}
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
-                                    </td>
-                                  </tr>
-                                ))}
-                              {/* Dynamic Sub Total Row */}
-                              {/* Static Rows */}
-                              <tr>
-                                <th className="text-start">Sub Total A (Addition)</th>
-                                <td className="text-start" />
-                                <td className="" />
-                                <td className="text-start"></td>
-                                <td />
-                              </tr>
-                              <tr>
-                                <th className="text-start">Gross Amount</th>
-                                <td className="text-start" />
-                                <td className="" />
-                                <td className="text-start"></td>
-                                <td />
-                              </tr>
-                              <tr>
-                                <th className="text-start">Deduction Tax</th>
-                                <td className="text-start" />
-                                <td className="" />
-                                <td className="text-start" />
-                                <td />
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+      {/* Sub Total A */}
+      <tr>
+        <th className="text-start">Sub Total A (Addition)</th>
+        <td className="text-start" />
+        <td className="" />
+        <td className="text-start">
+          {creditNoteData.taxes_and_charges
+            .filter((tax) => tax.addition)
+            .reduce((total, tax) => total + parseFloat(tax.amount), 0)
+            .toFixed(2)}
+        </td>
+        <td />
+      </tr>
+
+      {/* Gross Amount */}
+      <tr>
+        <th className="text-start">Gross Amount</th>
+        <td className="text-start" />
+        <td className="" />
+        <td className="text-start">
+{(
+  creditNoteData.taxes_and_charges
+    .filter((tax) => tax.addition)
+    .reduce((total, tax) => total + parseFloat(tax.amount), 0) +
+  parseFloat(creditNoteData.credit_note_amount || 0)
+).toFixed(2)}
+        </td>
+        <td />
+      </tr>
+
+      {/* Deduction Tax */}
+      <tr>
+        <th className="text-start">Deduction Tax</th>
+        <td className="text-start" />
+        <td className="text-start" />
+        <td className="text-start" />
+        <td />
+      </tr>
+      {creditNoteData.taxes_and_charges
+        .filter((tax) => !tax.addition) // Filter for addition: false
+        .map((tax) => (
+          <tr key={tax.id}>
+            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.percentage}%</td>
+            <td className="text-start">
+              {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
+              <input
+          type="checkbox"
+          checked={tax.inclusive} // Set checkbox checked based on `inclusive`
+          disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
+        />
+            </td>
+            <td className="text-start">{tax.amount}</td>
+            <td />
+          </tr>
+        ))}
+
+      {/* Sub Total B */}
+      <tr>
+        <th className="text-start">Sub Total B (Deductions)</th>
+        <td className="text-start" />
+        <td className="" />
+        <td className="text-start">
+          {creditNoteData.taxes_and_charges
+            .filter((tax) => !tax.addition)
+            .reduce((total, tax) => total + parseFloat(tax.amount), 0)
+            .toFixed(2)}
+        </td>
+        <td />
+      </tr>
+
+      {/* Gross Amount */}
+      <tr>
+        <th className="text-start">Payable Amount</th>
+        <td className="text-start" />
+        <td className="" />
+        <td className="text-start">
+          {(
+            creditNoteData.taxes_and_charges.reduce(
+              (total, tax) =>
+                total + (tax.addition ? parseFloat(tax.amount) : -parseFloat(tax.amount)),
+              0
+            ) + creditNoteData.credit_note_amount
+          ).toFixed(2)}
+        </td>
+        <td />
+      </tr>
+    </tbody>
+  </table>
+</div>
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Document Attachment</h5>
                         </div>
