@@ -343,7 +343,7 @@ export default function AllocationTab({ isCounterOffer }) {
           if (existingVendorIndex !== -1) {
             const existingMaterials =
               updatedData[existingVendorIndex].materials;
-              console.log("updatedMaterial",existingMaterials,"updatedMaterial", updatedMaterial);
+              // console.log("updatedMaterial",existingMaterials,"updatedMaterial", updatedMaterial);
               
             if (
               !existingMaterials.some(
@@ -1320,7 +1320,6 @@ export default function AllocationTab({ isCounterOffer }) {
                           ]?.addition_bid_material_tax_details?.map(
                             (item, rowIndex) => (
                               <tr key={`${rowIndex}-${item.id}`}>
-                                {console.log(item)}
                                 <td>
                                   <SelectBox
                                     options={taxOptions}

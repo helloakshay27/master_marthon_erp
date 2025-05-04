@@ -11,8 +11,10 @@ export default function ChargesDataTable({
   showOtherChargesModal,
   handleCloseOtherChargesModal,
   isTaxRateDataChanged,
+  calculateGrossTotal,
   ...rest
 }) {
+  console.log("chargesData:-----", data);
   const prevGrossRef = useRef(null);
   const [chargesData, setChargesData] = useState([]);
   const [additionalTaxOptions, setAdditionalTaxOptions] = useState([]);
@@ -21,18 +23,30 @@ export default function ChargesDataTable({
   const [chargesTaxRate, setChargesTaxRate] = useState({}); // State for tax rate data
   const [selectedTableId, setSelectedTableId] = useState(null); // State for selected table ID
 
+  useEffect(() => {
+    // Initialize chargesTaxRate with data from props
+    const initialChargesTaxRate = data.reduce((acc, item, index) => {
+      acc[index] = {
+        afterDiscountValue: parseFloat(item.amount) || 0,
+        taxes_and_charges: item.taxes_and_charges || [],
+        netCost: item.realised_amount || 0,
+      };
+      return acc;
+    }, {});
+    setChargesTaxRate(initialChargesTaxRate);
+  }, [data]);
+
   const handleOpenTaxModal = (tableId) => {
     setSelectedTableId(tableId);
 
     // Dynamically set the Total Base Cost based on the selected charge
-    const selectedCharge = data[tableId]?.value?.firstBid || 0;
+    const selectedCharge = data[tableId]?.amount || 0;
     setChargesTaxRate((prev) => {
       const updated = { ...prev };
       if (!updated[tableId]) {
         updated[tableId] = {
           afterDiscountValue: parseFloat(selectedCharge) || 0,
-          addition_bid_material_tax_details: [],
-          deduction_bid_material_tax_details: [],
+          taxes_and_charges: [],
         };
       } else {
         updated[tableId].afterDiscountValue = parseFloat(selectedCharge) || 0;
@@ -62,31 +76,30 @@ export default function ChargesDataTable({
     let deductionTaxTotal = 0;
     let directChargesTotal = 0;
 
-    taxRateRow.addition_bid_material_tax_details.forEach((item) => {
+    taxRateRow.taxes_and_charges.forEach((item) => {
       if (item.inclusive) return;
 
-      if (
-        ["Handling Charges", "Other charges", "Freight"].includes(
-          item.taxChargeType
-        )
-      ) {
-        directChargesTotal += parseFloat(item.amount) || 0;
+      if (item.addition) {
+        if (
+          ["Handling Charges", "Other charges", "Freight"].includes(
+            item.resource_id
+          )
+        ) {
+          directChargesTotal += parseFloat(item.amount) || 0;
+        } else {
+          const taxAmount = calculateTaxAmount(
+            item.percentage,
+            taxRateRow.afterDiscountValue
+          );
+          additionTaxTotal += taxAmount;
+        }
       } else {
         const taxAmount = calculateTaxAmount(
-          item.taxChargePerUom,
+          item.percentage,
           taxRateRow.afterDiscountValue
         );
-        additionTaxTotal += taxAmount;
+        deductionTaxTotal += taxAmount;
       }
-    });
-
-    taxRateRow.deduction_bid_material_tax_details.forEach((item) => {
-      if (item.inclusive) return;
-      const taxAmount = calculateTaxAmount(
-        item.taxChargePerUom,
-        taxRateRow.afterDiscountValue
-      );
-      deductionTaxTotal += taxAmount;
     });
 
     const netCost =
@@ -98,17 +111,12 @@ export default function ChargesDataTable({
     return netCost.toFixed(2);
   };
 
-  const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
+  const handleTaxChargeChange = (rowIndex, id, field, value) => {
     const updatedData = { ...chargesTaxRate };
     const targetRow = updatedData[rowIndex];
     if (!targetRow) return;
 
-    const taxKey =
-      type === "addition"
-        ? "addition_bid_material_tax_details"
-        : "deduction_bid_material_tax_details";
-
-    const taxCharges = [...targetRow[taxKey]];
+    const taxCharges = [...targetRow.taxes_and_charges];
     const chargeIndex = taxCharges.findIndex((item) => item.id === id);
     if (chargeIndex === -1) return;
 
@@ -121,15 +129,15 @@ export default function ChargesDataTable({
           (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
           100
         ).toFixed(2);
-        charge.taxChargePerUom = perUOM;
+        charge.percentage = perUOM;
       }
     } else {
       charge[field] = value;
     }
 
-    if (!charge.inclusive && field === "taxChargePerUom") {
+    if (!charge.inclusive && field === "percentage") {
       const taxAmount = calculateTaxAmount(
-        charge.taxChargePerUom,
+        charge.percentage,
         targetRow.afterDiscountValue,
         charge.inclusive
       );
@@ -137,7 +145,7 @@ export default function ChargesDataTable({
     }
 
     taxCharges[chargeIndex] = charge;
-    targetRow[taxKey] = taxCharges;
+    targetRow.taxes_and_charges = taxCharges;
     updatedData[rowIndex] = targetRow;
 
     const recalculatedNetCost = calculateNetCost(rowIndex, updatedData);
@@ -157,7 +165,7 @@ export default function ChargesDataTable({
       updatedData[selectedTableId].value = {};
     }
 
-    updatedData[selectedTableId].value.realisedAmount = updatedNetCost;
+    updatedData[selectedTableId].realised_amount = updatedNetCost;
 
     // Synchronize chargesTaxRate with latest realised value
     setChargesTaxRate((prev) => {
@@ -174,47 +182,23 @@ export default function ChargesDataTable({
       const updatedCharges = [...prev];
       updatedCharges[selectedTableId] = {
         ...updatedCharges[selectedTableId],
-        value: { ...updatedData[selectedTableId]?.value },
+        realised_amount: updatedData[selectedTableId]?.realised_amount,
       };
       return updatedCharges;
     });
 
     // Construct payload
-    const accumulatedPayload = updatedData.map((row, index) => {
+    const accumulatedPayload = updatedData.map((row, index) => {      
       const chargeId = chargesData[index]?.id || null;
-      const additionTaxes =
-        chargesTaxRate[index]?.addition_bid_material_tax_details?.map(
-          (item) => ({
-            resource_id: item.taxChargeType,
-            resource_type: "TaxCategory",
-            amount: item.amount,
-            inclusive: item.inclusive,
-            addition: true,
-          })
-        ) || [];
-
-      const deductionTaxes =
-        chargesTaxRate[index]?.deduction_bid_material_tax_details?.map(
-          (item) => ({
-            resource_id: item.taxChargeType,
-            resource_type: "TaxCategory",
-            amount: item.amount,
-            inclusive: item.inclusive,
-            addition: false,
-          })
-        ) || [];
 
       return {
         charge_id: chargeId,
-        amount: row.value?.firstBid || "0", // User input
+        amount: row.amount || "0", // User input
         realised_amount:
-          row.value?.realisedAmount || row.value?.firstBid || "0", // Calculated amount
-        taxes_with_charges: [...additionTaxes, ...deductionTaxes],
-        value: row.value || {},
+        row?.realised_amount|| row?.amount || "0", // Calculated amount
+        taxes_and_charges: chargesTaxRate[index]?.taxes_and_charges || [],
       };
     });
-
-    console.log("payload:-----", accumulatedPayload);
 
     onValueChange(accumulatedPayload);
 
@@ -269,11 +253,11 @@ export default function ChargesDataTable({
   const handleInputChange = (index, e) => {
     const updated = [...data];
 
-    if (!updated[index]?.value) {
+    if (!updated[index]?.amount) {
       updated[index] = { ...updated[index], value: {} };
     }
 
-    updated[index].value.firstBid = e.target.value;
+    updated[index].amount = e.target.value;
 
     onValueChange(updated); // Let parent know
   };
@@ -302,48 +286,6 @@ export default function ChargesDataTable({
     return addition - deduction;
   };
 
-  const calculateGrossTotal = (updatedData) => {
-    const getValue = (label) => {
-      const row = updatedData.find((row) => row.label === label);
-      return parseFloat(row?.value?.firstBid || "0") || 0;
-    };
-
-    const freight = getValue("freight_charge_amount");
-    const gstFreight = getValue("gst_on_freight");
-    const other = getValue("other_charge_amount");
-    const gstOther = getValue("gst_on_other_charge");
-    const handling = getValue("handling_charge_amount");
-    const gstHandling = getValue("gst_on_handling_charge");
-
-    const realisedFreight = freight + (freight * gstFreight) / 100;
-    const realisedOther = other + (other * gstOther) / 100;
-    const realisedHandling = handling + (handling * gstHandling) / 100;
-
-    const updatedRealizedData = updatedData.map((row) => {
-      if (row.label === "realised_freight_charge_amount") {
-        return { ...row, value: { ...row.value, firstBid: realisedFreight } };
-      }
-      if (row.label === "realised_other_charge_amount") {
-        return { ...row, value: { ...row.value, firstBid: realisedOther } };
-      }
-      if (row.label === "realised_handling_charge_amount") {
-        return { ...row, value: { ...row.value, firstBid: realisedHandling } };
-      }
-      return row;
-    });
-
-    onValueChange(updatedRealizedData);
-
-    const gross = realisedFreight + realisedOther + realisedHandling;
-
-    if (prevGrossRef.current === null) {
-      prevGrossRef.current = grossTotal;
-    }
-
-    const finalGross = prevGrossRef.current + gross;
-    setGrossTotal(finalGross);
-  };
-
   return (
     <DynamicModalBox
       show={showOtherChargesModal}
@@ -362,13 +304,15 @@ export default function ChargesDataTable({
             // Calculate the gross total as the sum of realisedAmount values
             const updatedGrossTotal = chargesData.reduce((total, charge) => {
               const realisedAmount = parseFloat(
-                charge?.value?.realisedAmount || 0
+                charge?.realised_amount || 0
               );
-
-              return grossTotal + realisedAmount;
+              return total + realisedAmount;
             }, 0);
 
-            setGrossTotal(updatedGrossTotal); // Update the gross total in the parent component
+            const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
+            console.log("calcGrossTotal:-----", calcGrossTotal, updatedGrossTotal, calcGrossTotal + updatedGrossTotal);
+             // Get the current gross total from the parent component
+            setGrossTotal(calcGrossTotal + updatedGrossTotal); // Update the gross total in the parent component
             handleCloseOtherChargesModal(); // Close the modal
           },
           props: { className: "purple-btn2" },
@@ -412,7 +356,7 @@ export default function ChargesDataTable({
                       <input
                         type="number"
                         className="form-control"
-                        value={data[index]?.value?.firstBid || ""}
+                        value={data[index]?.amount || ""}
                         onChange={(e) => handleInputChange(index, e)}
                         style={{
                           backgroundColor: "#fff",
@@ -422,7 +366,7 @@ export default function ChargesDataTable({
                       />
                     </div>
                   ) : (
-                    data[index]?.value?.firstBid || ""
+                    data[index]?.amount || ""
                   )}
                 </td>
 
@@ -438,10 +382,8 @@ export default function ChargesDataTable({
                     type="number"
                     className="form-control"
                     value={
-                      data[index]?.value
-                        ? parseFloat(data[index].value.realisedAmount).toFixed(
-                            2
-                          )
+                      data[index]?.amount
+                        ? parseFloat(data[index].realised_amount).toFixed(2)
                         : "0.00"
                     }
                     readOnly
@@ -543,18 +485,16 @@ export default function ChargesDataTable({
                       const updated = { ...chargesTaxRate };
                       if (!updated[selectedTableId]) {
                         updated[selectedTableId] = {
-                          addition_bid_material_tax_details: [],
-                          deduction_bid_material_tax_details: [],
+                          taxes_and_charges: [],
                         };
                       }
-                      updated[
-                        selectedTableId
-                      ].addition_bid_material_tax_details.push({
+                      updated[selectedTableId].taxes_and_charges.push({
                         id: Date.now(),
-                        taxChargeType: "",
-                        taxChargePerUom: "",
+                        resource_id: "",
+                        percentage: "",
                         inclusive: false,
                         amount: "",
+                        addition: true,
                       });
                       setChargesTaxRate(updated);
                     }}
@@ -563,104 +503,97 @@ export default function ChargesDataTable({
                   </button>
                 </td>
               </tr>
-              {chargesTaxRate[
-                selectedTableId
-              ]?.addition_bid_material_tax_details?.map((item, rowIndex) => (
-                <tr key={`${rowIndex}-${item.id}`}>
-                  <td>
-                    <SelectBox
-                      options={additionalTaxOptions}
-                      defaultValue={item.taxChargeType}
-                      onChange={(value) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "taxChargeType",
-                          value,
-                          "addition"
-                        )
-                      }
-                      className="custom-select"
-                      disabledOptions={chargesTaxRate[
-                        selectedTableId
-                      ]?.addition_bid_material_tax_details.map(
-                        (item) => item.taxChargeType
-                      )} // Pass selected options to disable
-                    />
-                  </td>
-                  <td>
-                    <select
-                      className="form-select"
-                      defaultValue={item?.taxChargePerUom}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "taxChargePerUom",
-                          e.target.value,
-                          "addition"
-                        )
-                      }
-                    >
-                      <option value="">Select Tax</option>
-                      <option value="5%">5%</option>
-                      <option value="12%">12%</option>
-                      <option value="18%">18%</option>
-                      <option value="28%">28%</option>
-                    </select>
-                  </td>
-                  <td className="text-center">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      checked={item.inclusive}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "inclusive",
-                          e.target.checked,
-                          "addition"
-                        )
-                      }
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={item.amount}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "amount",
-                          e.target.value,
-                          "addition"
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="text-center">
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => {
-                        const updated = { ...chargesTaxRate };
-                        updated[
+              {chargesTaxRate[selectedTableId]?.taxes_and_charges
+                ?.filter((item) => item.addition)
+                ?.map((item, rowIndex) => (
+                  <tr key={`${rowIndex}-${item.id}`}>
+                    <td>
+                      <SelectBox
+                        options={additionalTaxOptions}
+                        defaultValue={item.resource_id}
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "resource_id",
+                            value
+                          )
+                        }
+                        className="custom-select"
+                        disabledOptions={chargesTaxRate[
                           selectedTableId
-                        ].addition_bid_material_tax_details = updated[
-                          selectedTableId
-                        ].addition_bid_material_tax_details.filter(
-                          (tax) => tax.id !== item.id
-                        );
-                        setChargesTaxRate(updated);
-                      }}
-                    >
-                      <span>×</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                        ]?.taxes_and_charges
+                          ?.filter((item) => item.addition)
+                          ?.map((item) => item.resource_id)} // Pass selected options to disable
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        defaultValue={item?.percentage}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "percentage",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">Select Tax</option>
+                        <option value="5%">5%</option>
+                        <option value="12%">12%</option>
+                        <option value="18%">18%</option>
+                        <option value="28%">28%</option>
+                      </select>
+                    </td>
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={item.inclusive}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "inclusive",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={item.amount}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "amount",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => {
+                          const updated = { ...chargesTaxRate };
+                          updated[selectedTableId].taxes_and_charges =
+                            updated[selectedTableId].taxes_and_charges.filter(
+                              (tax) => tax.id !== item.id
+                            );
+                          setChargesTaxRate(updated);
+                        }}
+                      >
+                        <span>×</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               <tr>
                 <td>Deduction Tax</td>
                 <td></td>
@@ -673,18 +606,16 @@ export default function ChargesDataTable({
                       const updated = { ...chargesTaxRate };
                       if (!updated[selectedTableId]) {
                         updated[selectedTableId] = {
-                          addition_bid_material_tax_details: [],
-                          deduction_bid_material_tax_details: [],
+                          taxes_and_charges: [],
                         };
                       }
-                      updated[
-                        selectedTableId
-                      ].deduction_bid_material_tax_details.push({
+                      updated[selectedTableId].taxes_and_charges.push({
                         id: Date.now(),
-                        taxChargeType: "",
-                        taxChargePerUom: "",
+                        resource_id: "",
+                        percentage: "",
                         inclusive: false,
                         amount: "",
+                        addition: false,
                       });
                       setChargesTaxRate(updated);
                     }}
@@ -693,101 +624,96 @@ export default function ChargesDataTable({
                   </button>
                 </td>
               </tr>
-              {chargesTaxRate[
-                selectedTableId
-              ]?.deduction_bid_material_tax_details?.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                  <SelectBox
-  options={deductionTaxOptions}
-  defaultValue={item.taxChargeType}
-  onChange={(value) =>
-    handleTaxChargeChange(
-      selectedTableId,
-      item.id,
-      "taxChargeType",
-      value,
-      "deduction"
-    )
-  }
-  className="custom-select"
-  disabledOptions={chargesTaxRate[selectedTableId]?.deduction_bid_material_tax_details.map(
-    (item) => item.taxChargeType
-  )} // Pass selected options to disable
-/>
-                  </td>
-                  <td>
-                    <select
-                      className="form-select"
-                      defaultValue={item?.taxChargePerUom}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "taxChargePerUom",
-                          e.target.value,
-                          "deduction"
-                        )
-                      }
-                    >
-                      <option value="">Select Tax</option>
-                      <option value="1%">1%</option>
-                      <option value="2%">2%</option>
-                      <option value="10%">10%</option>
-                    </select>
-                  </td>
-                  <td className="text-center">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      checked={item.inclusive}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "inclusive",
-                          e.target.checked,
-                          "deduction"
-                        )
-                      }
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={item.amount}
-                      onChange={(e) =>
-                        handleTaxChargeChange(
-                          selectedTableId,
-                          item.id,
-                          "amount",
-                          e.target.value,
-                          "deduction"
-                        )
-                      }
-                    />
-                  </td>
-                  <td className="text-center">
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => {
-                        const updated = { ...chargesTaxRate };
-                        updated[
+              {chargesTaxRate[selectedTableId]?.taxes_and_charges
+                ?.filter((item) => !item.addition)
+                ?.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <SelectBox
+                        options={deductionTaxOptions}
+                        defaultValue={item.resource_id}
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "resource_id",
+                            value
+                          )
+                        }
+                        className="custom-select"
+                        disabledOptions={chargesTaxRate[
                           selectedTableId
-                        ].deduction_bid_material_tax_details = updated[
-                          selectedTableId
-                        ].deduction_bid_material_tax_details.filter(
-                          (tax) => tax.id !== item.id
-                        );
-                        setChargesTaxRate(updated);
-                      }}
-                    >
-                      <span>×</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                        ]?.taxes_and_charges
+                          ?.filter((item) => !item.addition)
+                          ?.map((item) => item.resource_id)} // Pass selected options to disable
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        defaultValue={item?.percentage}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "percentage",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">Select Tax</option>
+                        <option value="1%">1%</option>
+                        <option value="2%">2%</option>
+                        <option value="10%">10%</option>
+                      </select>
+                    </td>
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={item.inclusive}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "inclusive",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={item.amount}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "amount",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => {
+                          const updated = { ...chargesTaxRate };
+                          updated[selectedTableId].taxes_and_charges =
+                            updated[selectedTableId].taxes_and_charges.filter(
+                              (tax) => tax.id !== item.id
+                            );
+                          setChargesTaxRate(updated);
+                        }}
+                      >
+                        <span>×</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               <tr>
                 <td>Net Cost</td>
                 <td></td>

@@ -15,8 +15,11 @@ import FormatDate from "../components/FormatDate"; // Import the default styles
 import { baseURL } from "../confi/apiDomain";
 import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 import html2pdf from "html2pdf.js";
-import { auditLogColumns, specificationColumns, deliveryColumns } from "../constant/data";
-
+import {
+  auditLogColumns,
+  specificationColumns,
+  deliveryColumns,
+} from "../constant/data";
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
@@ -977,7 +980,9 @@ export default function VendorDetails() {
           );
 
           setBidTemplate(formattedData);
-          setChargesData(formattedCharges);
+          setChargesData(
+            bidResponse.data.bids[currentIndex].charges_with_taxes
+          );
 
           const previousData = firstBid.bid_materials.map((material) => ({
             bidId: material.bid_id,
@@ -1019,7 +1024,7 @@ export default function VendorDetails() {
 
               setCurrentExtraData(material);
               // console.log("counterMaterial :0----",material);
-              
+
               return counterMaterial
                 ? {
                     bidId: counterMaterial.counter_bid_id,
@@ -1114,7 +1119,7 @@ export default function VendorDetails() {
                 charge.taxChargeType.trim().toLowerCase()
             );
             return {
-              resource_id: matchedTax?.id || null, 
+              resource_id: matchedTax?.id || null,
               resource_type: matchedTax?.taxChargeType || "TaxCharge",
               amount: charge.amount,
               inclusive: charge.inclusive,
@@ -1228,38 +1233,45 @@ export default function VendorDetails() {
       getFreightDataValue("Loading / Unloading *", "firstBid") ||
       "Loading at supplier's location, unloading at buyer's location";
 
-      const extractShortTableData = Array.isArray(shortTableData)
+    const extractShortTableData = Array.isArray(shortTableData)
       ? shortTableData.reduce((acc, curr) => {
-          const { firstBid, counterBid } = curr.value;
-          acc[curr.label] = counterBid || firstBid || "_"; // Assign "_" if value is empty or null
+          const { firstBid, counterBid } = curr.value || {};
+          acc[curr.label] = counterBid || firstBid || "_";
           return acc;
         }, {})
       : {};
-    
-    // Ensure keys are present even if shortTableData is not an array
-    if (!Array.isArray(shortTableData) || Object.keys(extractShortTableData).length === 0) {
-      Object.keys(shortTableData || {}).forEach((key) => {
+
+    // Ensure required keys exist with "_" as default
+    const requiredKeys = [
+      "Warranty Clause",
+      "Payment Terms",
+      "Loading/Unloading",
+    ];
+
+    requiredKeys.forEach((key) => {
+      if (!(key in extractShortTableData)) {
         extractShortTableData[key] = "_";
-      });
-    }
+      }
+    });
+
+    console.log(chargesData, "chargesData");
+
     const extractChargeTableData = Array.isArray(chargesData)
-        ? chargesData.slice(0, 3).map((charge) => ({ // Limit to first 3 elements
-            charge_id: charge.charge_id,
-            amount: charge.amount,
-            realised_amount: charge.realised_amount,
-            taxes_with_charges: charge.taxes_with_charges.map((tax) => ({
-              resource_id: tax.resource_id,
-              resource_type: tax.resource_type,
-              amount: tax.amount,
-              inclusive: tax.inclusive,
-              addition: tax.addition,
-            })),
-            value: {
-              firstBid: charge.value.firstBid,
-              realisedAmount: charge.value.realisedAmount,
-            },
-          }))
-        : [];
+      ? chargesData?.slice(0, 3)?.map((charge) => ({
+          // Limit to first 3 elements
+          charge_id: charge.charge_id,
+          amount: charge.amount,
+          realised_amount: charge.realised_amount,
+          taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
+            resource_id: tax.resource_id,
+            resource_type: tax.resource_type || "TaxCategory",
+            amount: tax.amount,
+            inclusive: tax.inclusive || false,
+            addition: tax.addition,
+            percentage: tax.percentage,
+          })),
+        }))
+      : [];
 
     // const mappedBidMaterials = bid.bid_materials_attributes.map((material) => {
     //   const mappedTaxDetails = material.addition_tax_charges.map((charge) => {
@@ -1291,13 +1303,14 @@ export default function VendorDetails() {
         gst_on_freight: gstOnFreightt,
         realised_freight_charge_amount: realisedFreightChargeAmount,
         gross_total: grossTotal,
-        loading_unloading_clause: loadingUnloadingClause,
+        // loading_unloading_clause: loadingUnloadingClause,
         remark: remark,
         bid_materials_attributes: bidMaterialsAttributes,
-        charges:extractChargeTableData,
+        charges: extractChargeTableData,
         ...extractShortTableData,
       },
     };
+    console.log("extractChargeTableData:---", extractChargeTableData);
 
     // console.log("Prepared Payload:", payload);
     return payload;
@@ -1307,7 +1320,7 @@ export default function VendorDetails() {
     setLoading(true);
     setSubmitted(true);
     const payload = preparePayload();
-    // console.log("payload:---", payload);
+    console.log("payload:---", payload);
 
     try {
       // Send POST request
@@ -1450,29 +1463,43 @@ export default function VendorDetails() {
         };
       });
 
-      const extractShortTableData = bidTemplate.reduce((acc, curr) => {
-        const { label, value } = curr;
-        const { firstBid, counterBid } = value || {};
-        acc[label] = counterBid || firstBid || "_"; // Assign "_" if value is empty or null
-        return acc;
-      }, {});
+      const extractShortTableData = Array.isArray(shortTableData)
+      ? shortTableData.reduce((acc, curr) => {
+          const { firstBid, counterBid } = curr.value || {};
+          acc[curr.label] = counterBid || firstBid || "_";
+          return acc;
+        }, {})
+      : {};
+
+    // Ensure required keys exist with "_" as default
+    const requiredKeys = [
+      "Warranty Clause",
+      "Payment Terms",
+      "Loading/Unloading",
+    ];
+
+    requiredKeys.forEach((key) => {
+      if (!(key in extractShortTableData)) {
+        extractShortTableData[key] = "_";
+      }
+    });
+
+      console.log("chargesData:---", chargesData);
 
       const extractChargeTableData = Array.isArray(chargesData)
-        ? chargesData.slice(0, 3).map((charge) => ({ // Limit to first 3 elements
+        ? chargesData.slice(0, 3).map((charge) => ({
+            // Limit to first 3 elements
             charge_id: charge.charge_id,
             amount: charge.amount,
             realised_amount: charge.realised_amount,
-            taxes_with_charges: charge.taxes_with_charges.map((tax) => ({
+            taxes_and_charges: charge.taxes_and_charges?.map((tax) => ({
               resource_id: tax.resource_id,
               resource_type: tax.resource_type,
               amount: tax.amount,
-              inclusive: tax.inclusive,
+              inclusive: tax.inclusive || false,
               addition: tax.addition,
+              percentage: tax.percentage,
             })),
-            value: {
-              firstBid: charge.value.firstBid,
-              realisedAmount: charge.value.realisedAmount,
-            },
           }))
         : [];
 
@@ -1490,12 +1517,16 @@ export default function VendorDetails() {
           loading_unloading_clause: "",
           remark: remark,
           revised_bid_materials_attributes: revisedBidMaterials,
-          charges:extractChargeTableData,
+          charges: extractChargeTableData,
           ...extractShortTableData,
         },
       };
 
-      console.log("Prepared Payload for Revision:", payload, extractShortTableData);
+      console.log(
+        "Prepared Payload for Revision:",
+        payload,
+        extractChargeTableData
+      );
 
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
@@ -2336,11 +2367,11 @@ export default function VendorDetails() {
 
     // Apply tax changes to all items
     data.forEach((_, index) => {
-      const updatedNetCost = calculateNetCost(index,taxRateData);
+      const updatedNetCost = calculateNetCost(index, taxRateData);
       updatedData[index].total = updatedNetCost;
     });
     // console.log("Updated Data:", updatedData);
-    
+
     setData(updatedData);
     const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
@@ -2372,9 +2403,7 @@ export default function VendorDetails() {
       setParentTaxRateData(updatedTaxRateData);
     } else {
       setTaxRateData(structuredClone(parentTaxRateData));
-      setParentTaxRateData(
-        structuredClone(parentTaxRateData)
-      );
+      setParentTaxRateData(structuredClone(parentTaxRateData));
     }
 
     setShowModal1(true);
@@ -4161,29 +4190,45 @@ export default function VendorDetails() {
                                   <table className="tbl-container w-100">
                                     <thead>
                                       <tr>
-                                        {specificationColumns.map((col, index) => (
-                                          <th key={index} style={{ textAlign: "center !important" }}>
-                                            {col.label}
-                                          </th>
-                                        ))}
+                                        {specificationColumns.map(
+                                          (col, index) => (
+                                            <th
+                                              key={index}
+                                              style={{
+                                                textAlign: "center !important",
+                                              }}
+                                            >
+                                              {col.label}
+                                            </th>
+                                          )
+                                        )}
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {specificationData.map((row, rowIndex) => (
-                                        <tr key={rowIndex}>
-                                          {specificationColumns.map((col, colIndex) => (
-                                            <td key={colIndex} style={{ textAlign: "center !important" }}>
-                                              {row[col.key]}
-                                            </td>
-                                          ))}
-                                        </tr>
-                                      ))}
+                                      {specificationData.map(
+                                        (row, rowIndex) => (
+                                          <tr key={rowIndex}>
+                                            {specificationColumns.map(
+                                              (col, colIndex) => (
+                                                <td
+                                                  key={colIndex}
+                                                  style={{
+                                                    textAlign:
+                                                      "center !important",
+                                                  }}
+                                                >
+                                                  {row[col.key]}
+                                                </td>
+                                              )
+                                            )}
+                                          </tr>
+                                        )
+                                      )}
                                     </tbody>
                                   </table>
                                 ) : (
                                   <p className="text-center mt-4">
-                                    No Specification available for this
-                                    event.
+                                    No Specification available for this event.
                                   </p>
                                 )}
                               </div>
@@ -4201,58 +4246,58 @@ export default function VendorDetails() {
                           }}
                         >
                           <a
-            className="btn"
-            data-bs-toggle="collapse"
-            href="#auditLog"
-            role="button"
-            aria-expanded={auditLog}
-            aria-controls="auditLog"
-            onClick={handleAuditLog}
-            style={{ fontSize: "16px", fontWeight: "normal" }}
-          >
-            <span
-              id="audit-log-icon"
-              className="icon-1"
-              style={{
-                marginRight: "8px",
-                border: "1px solid #dee2e6",
-                paddingTop: "10px",
-                paddingBottom: "10px",
-                paddingLeft: "8px",
-                paddingRight: "8px",
-                fontSize: "12px",
-              }}
-            >
-              {auditLog ? (
-                <i className="bi bi-dash-lg"></i>
-              ) : (
-                <i className="bi bi-plus-lg"></i>
-              )}
-            </span>
-            Audit Log
-          </a>
+                            className="btn"
+                            data-bs-toggle="collapse"
+                            href="#auditLog"
+                            role="button"
+                            aria-expanded={auditLog}
+                            aria-controls="auditLog"
+                            onClick={handleAuditLog}
+                            style={{ fontSize: "16px", fontWeight: "normal" }}
+                          >
+                            <span
+                              id="audit-log-icon"
+                              className="icon-1"
+                              style={{
+                                marginRight: "8px",
+                                border: "1px solid #dee2e6",
+                                paddingTop: "10px",
+                                paddingBottom: "10px",
+                                paddingLeft: "8px",
+                                paddingRight: "8px",
+                                fontSize: "12px",
+                              }}
+                            >
+                              {auditLog ? (
+                                <i className="bi bi-dash-lg"></i>
+                              ) : (
+                                <i className="bi bi-plus-lg"></i>
+                              )}
+                            </span>
+                            Audit Log
+                          </a>
                           {auditLog && (
-                                      <div id="auditLog" className="mx-5">
-                                        <div className="card card-body p-4">
-                                          {auditLogData?.length > 0 ? (
-                                            <Table
-                                            columns={[
-                                              { label: "Sr No", key: "srNo" }, // Add serial number column
-                                              ...auditLogColumns,
-                                            ]}
-                                            data={auditLogData.map((item, index) => ({
-                                              ...item,
-                                              srNo: index + 1, // Add serial number to each row
-                                            }))}
-                                          />
-                                          ) : (
-                                            <p className="text-center mt-4">
-                                              No Audit Log available for this event.
-                                            </p>
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
+                            <div id="auditLog" className="mx-5">
+                              <div className="card card-body p-4">
+                                {auditLogData?.length > 0 ? (
+                                  <Table
+                                    columns={[
+                                      { label: "Sr No", key: "srNo" }, // Add serial number column
+                                      ...auditLogColumns,
+                                    ]}
+                                    data={auditLogData.map((item, index) => ({
+                                      ...item,
+                                      srNo: index + 1, // Add serial number to each row
+                                    }))}
+                                  />
+                                ) : (
+                                  <p className="text-center mt-4">
+                                    No Audit Log available for this event.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -5462,6 +5507,7 @@ export default function VendorDetails() {
                             }
                             setGrossTotal={setGrossTotal}
                             grossTotal={grossTotal}
+                            calculateGrossTotal={calculateGrossTotal}
                             editable={true}
                             onValueChange={(updated) => {
                               setChargesData(updated);
@@ -5744,7 +5790,6 @@ export default function VendorDetails() {
       </div>
       <ToastContainer />
       {/* {console.log("revisedBid", revisedBid)} */}
-      
 
       <DynamicModalBox
         show={showModal1}
@@ -5843,7 +5888,7 @@ export default function VendorDetails() {
                               className="custom-select"
                             />
                           </td>
-                              
+
                           <td>
                             <select
                               className="form-select"
@@ -5864,7 +5909,6 @@ export default function VendorDetails() {
                             </select>
                             {/* <p>{item?.taxChargePerUom || item?.tax_percentage}</p> */}
                           </td>
-
 
                           <td className="text-center">
                             <input
@@ -6217,7 +6261,7 @@ export default function VendorDetails() {
                       </td>
                     </tr>
                     {/* {console.log("item:----", taxRateData, "taxOpiton",tableId)} */}
-                        
+
                     {taxRateData[tableId]?.addition_bid_material_tax_details
                       .slice(0, 1)
                       ?.map((item, rowIndex) => (

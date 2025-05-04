@@ -7,6 +7,7 @@ import { baseURL } from "../confi/apiDomain";
 import axios from "axios";
 import DynamicModalBox from "../components/base/Modal/DynamicModalBox";
 import ShortDataTable from "../components/base/Table/ShortDataTable";
+import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 
 export default function CounterOffer() {
   const navigate = useNavigate();
@@ -27,10 +28,11 @@ export default function CounterOffer() {
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
   const [shortTableData, setShortTableData] = useState({});
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
-  const [chargesData, setChargesData] = useState({}); // State for charges data
+  const [chargesData, setChargesData] = useState([]); // State for charges data
   const [grossTotal, setGrossTotal] = useState(0); // State for gross total
   const prevGrossRef = useRef(null); // Ref for previous gross total
-
+  console.log("bidCounterData:---",bidCounterData);
+  
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
   };
@@ -44,6 +46,9 @@ export default function CounterOffer() {
         0
       );
       setSumTotal(initialSumTotal);
+    }
+    if(bidCounterData?.charges_with_taxes){
+      setChargesData(bidCounterData?.charges_with_taxes);
     }
   }, [bidCounterData]); // Removed formData from dependencies to prevent unnecessary updates
 
@@ -214,21 +219,31 @@ export default function CounterOffer() {
   const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
 
   const handleSubmit = async () => {
-    const extractShortTableData = tableData.reduce((acc, curr) => {
-      const { label, value } = curr;
-      const { counterBid, firstBid } = value || {};
-      acc[label] = counterBid || firstBid || "_";
-      return acc;
-    }, {});
-  
-    Object.entries(shortTableData).forEach(([key, value]) => {
-      extractShortTableData[key] = value || ""; 
+    const extractShortTableData = Array.isArray(shortTableData)
+      ? shortTableData.reduce((acc, curr) => {
+          const { firstBid, counterBid } = curr.value || {};
+          acc[curr.label] = counterBid || firstBid || "_";
+          return acc;
+        }, {})
+      : {};
+
+    // Ensure required keys exist with "_" as default
+    const requiredKeys = [
+      "Warranty Clause",
+      "Payment Terms",
+      "Loading/Unloading",
+    ];
+
+    requiredKeys.forEach((key) => {
+      if (!(key in extractShortTableData)) {
+        extractShortTableData[key] = "_";
+      }
     });
 
     const extractedExtraData = formData.bid_materials.reduce((acc, item) => {
       if (item.extra_data) {
         Object.entries(item.extra_data).forEach(([key, { value }]) => {
-          acc[key] = value; 
+          acc[key] = value;
         });
       }
       return acc;
@@ -242,6 +257,22 @@ export default function CounterOffer() {
       0
     );
     const finalSumTotal = materialSum + grossTotal;
+    const extractChargeTableData = Array.isArray(chargesData)
+      ? chargesData?.slice(0, 3)?.map((charge) => ({
+          // Limit to first 3 elements
+          charge_id: charge.charge_id,
+          amount: charge.amount,
+          realised_amount: charge.realised_amount,
+          taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
+            resource_id: tax.resource_id,
+            resource_type: tax.resource_type,
+            amount: tax.amount,
+            inclusive: tax.inclusive || false,
+            addition: tax.addition,
+            percentage: tax.percentage,
+          })),
+        }))
+      : [];
 
     // Include updated changes in the payload
     const payload = {
@@ -249,14 +280,14 @@ export default function CounterOffer() {
         event_vendor_id: formData.event_vendor_id,
         price: formData.price,
         discount: formData.discount,
-        freight_charge_amount: formData.freight_charge_amount,
-        gst_on_freight: formData.gst_on_freight,
-        realised_freight_charge_amount:
-          shortTableData.realised_freight_charge_amount,
-        realised_other_charge_amount:
-          shortTableData.realised_other_charge_amount,
-        realised_handling_charge_amount:
-          shortTableData.realised_handling_charge_amount,
+        // freight_charge_amount: formData.freight_charge_amount,
+        // gst_on_freight: formData.gst_on_freight,
+        // realised_freight_charge_amount:
+        //   shortTableData.realised_freight_charge_amount,
+        // realised_other_charge_amount:
+        //   shortTableData.realised_other_charge_amount,
+        // realised_handling_charge_amount:
+        //   shortTableData.realised_handling_charge_amount,
         gross_total: finalSumTotal,
         counter_bid_materials_attributes: formData.bid_materials.map((item) => {
           const { extra_data, ...rest } = item;
@@ -273,6 +304,7 @@ export default function CounterOffer() {
           };
         }),
         ...extractShortTableData, // Include short table data
+        charges: extractChargeTableData, // Include charges data
         remark: formData.remark || "",
       },
     };
@@ -628,52 +660,63 @@ export default function CounterOffer() {
 
   console.log(formData, "formData.bid_materials");
 
-  const calculateGrossTotal = (updatedData) => {
-    const getValue = (label) => {
-      return parseFloat(updatedData[label] || "0") || 0; 
-    };
+  // const calculateGrossTotal = (updatedData) => {
+  //   const getValue = (label) => {
+  //     return parseFloat(updatedData[label] || "0") || 0;
+  //   };
 
-    const freight = getValue("freight_charge_amount");
-    const gstFreight = getValue("gst_on_freight");
-    const other = getValue("other_charge_amount");
-    const gstOther = getValue("gst_on_other_charge");
-    const handling = getValue("handling_charge_amount");
-    const gstHandling = getValue("gst_on_handling_charge");
+  //   const freight = getValue("freight_charge_amount");
+  //   const gstFreight = getValue("gst_on_freight");
+  //   const other = getValue("other_charge_amount");
+  //   const gstOther = getValue("gst_on_other_charge");
+  //   const handling = getValue("handling_charge_amount");
+  //   const gstHandling = getValue("gst_on_handling_charge");
 
-    const realisedFreight = freight + (freight * gstFreight) / 100;
-    const realisedOther = other + (other * gstOther) / 100;
-    const realisedHandling = handling + (handling * gstHandling) / 100;
+  //   const realisedFreight = freight + (freight * gstFreight) / 100;
+  //   const realisedOther = other + (other * gstOther) / 100;
+  //   const realisedHandling = handling + (handling * gstHandling) / 100;
 
-    const updatedRealizedData = { ...updatedData }; // Create a copy of the object
-    updatedRealizedData["realised_freight_charge_amount"] =
-      realisedFreight.toFixed(2);
-    updatedRealizedData["realised_other_charge_amount"] =
-      realisedOther.toFixed(2);
-    updatedRealizedData["realised_handling_charge_amount"] =
-      realisedHandling.toFixed(2);
+  //   const updatedRealizedData = { ...updatedData }; // Create a copy of the object
+  //   updatedRealizedData["realised_freight_charge_amount"] =
+  //     realisedFreight.toFixed(2);
+  //   updatedRealizedData["realised_other_charge_amount"] =
+  //     realisedOther.toFixed(2);
+  //   updatedRealizedData["realised_handling_charge_amount"] =
+  //     realisedHandling.toFixed(2);
 
-    onValueChange(updatedRealizedData);
+  //   onValueChange(updatedRealizedData);
 
-    const gross = realisedFreight + realisedOther + realisedHandling;
+  //   const gross = realisedFreight + realisedOther + realisedHandling;
 
-    // Calculate the final sum total
-    const materialSum = formData.bid_materials.reduce(
-      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-      0
-    );
-    const finalSumTotal = materialSum + gross;
+  //   // Calculate the final sum total
+  //   const materialSum = formData.bid_materials.reduce(
+  //     (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+  //     0
+  //   );
+  //   const finalSumTotal = materialSum + gross;
 
-    // Update sumTotal only if it has changed
-    if (sumTotal !== finalSumTotal) {
-      setSumTotal(finalSumTotal);
-    }
+  //   // Update sumTotal only if it has changed
+  //   if (sumTotal !== finalSumTotal) {
+  //     setSumTotal(finalSumTotal);
+  //   }
 
-    if (prevGrossRef.current === null) {
-      prevGrossRef.current = grossTotal;
-    }
+  //   if (prevGrossRef.current === null) {
+  //     prevGrossRef.current = grossTotal;
+  //   }
 
-    const finalGross = gross; // Use the calculated gross directly
-    setGrossTotal(finalGross);
+  //   const finalGross = gross; // Use the calculated gross directly
+  //   setGrossTotal(finalGross);
+  // };
+
+  const calculateGrossTotal = () => {
+    console.log("bidCounterData:---",bidCounterData, formData);
+    
+    const total = formData.bid_total_amount.reduce((acc, item) => {
+      const itemTotal = parseFloat(item) || 0; // Ensure valid number
+      return acc + itemTotal;
+    }, 0);
+
+    return total.toFixed(2); // Return the total as a string with two decimal places
   };
 
   const productTableColumns = [
@@ -1003,11 +1046,11 @@ export default function CounterOffer() {
           <h5 className="mt-4">Material Sheet</h5>
           <Table columns={productTableColumns} data={productTableData} />
           <div className="d-flex justify-content-end">
-          <ShortDataTable
-            data={tableData}
-            editable={true}
-            onValueChange={handleValueChange}
-          />
+            <ShortDataTable
+              data={tableData}
+              editable={true}
+              onValueChange={handleValueChange}
+            />
           </div>
           <div className="d-flex justify-content-end mt-4">
             <button
@@ -1016,6 +1059,18 @@ export default function CounterOffer() {
             >
               Other Charges
             </button>
+            <ChargesDataTable
+              data={chargesData}
+              showOtherChargesModal={showOtherChargesModal}
+              handleCloseOtherChargesModal={handleCloseOtherChargesModal}
+              setGrossTotal={setSumTotal}
+              grossTotal={sumTotal}
+              editable={true}
+              onValueChange={(updated) => {
+                setChargesData(updated);
+              }}
+              calculateGrossTotal={calculateGrossTotal}
+            />
           </div>
           <div className="d-flex justify-content-end">
             <h4>Sum Total : ₹{sumTotal}</h4>
@@ -1399,7 +1454,7 @@ export default function CounterOffer() {
               </div>
             </div>
           </DynamicModalBox>
-          <DynamicModalBox
+          {/* <DynamicModalBox
             show={showOtherChargesModal}
             onHide={handleCloseOtherChargesModal}
             size="md"
@@ -1495,7 +1550,7 @@ export default function CounterOffer() {
                 </tbody>
               </table>
             </div>
-          </DynamicModalBox>
+          </DynamicModalBox> */}
           <ToastContainer />
         </div>
       </div>
