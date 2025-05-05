@@ -1046,15 +1046,9 @@ export default function AllocationTab({ isCounterOffer }) {
                                     label: "Realised Discount",
                                     key: "realisedDiscount",
                                   },
-                                  { label: "GST", key: "gst" },
-                                  { label: "Realised GST", key: "realisedGST" },
                                   {
                                     label: "Landed Amount",
                                     key: "landedAmount",
-                                  },
-                                  {
-                                    label: "Participant Attachment",
-                                    key: "participantAttachment",
                                   },
                                   { label: "Total Amount", key: "totalAmount" },
                                 ]}

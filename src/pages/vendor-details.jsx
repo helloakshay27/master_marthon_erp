@@ -732,7 +732,7 @@ export default function VendorDetails() {
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
             quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.unit,
+            unit: item.uom_name, 
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
@@ -1479,12 +1479,14 @@ export default function VendorDetails() {
     ];
 
     requiredKeys.forEach((key) => {
-      if (!(key in extractShortTableData)) {
-        extractShortTableData[key] = "_";
+      if (!(key in extractShortTableData) || !extractShortTableData[key]) {
+        
+        extractShortTableData[key] = bidTemplate?.find(
+          (item) => item.label === key
+        )?.value?.firstBid || "_";
       }
     });
 
-      console.log("chargesData:---", chargesData);
 
       const extractChargeTableData = Array.isArray(chargesData)
         ? chargesData.slice(0, 3).map((charge) => ({
@@ -1512,9 +1514,6 @@ export default function VendorDetails() {
           gst_on_freight: 0,
           realised_freight_charge_amount: 0,
           gross_total: grossTotal,
-          // warranty_clause: "",
-          payment_terms: "",
-          loading_unloading_clause: "",
           remark: remark,
           revised_bid_materials_attributes: revisedBidMaterials,
           charges: extractChargeTableData,
@@ -2433,7 +2432,7 @@ export default function VendorDetails() {
       newItem
     );
     setTaxRateData(updatedTaxRateData);
-    // setParentTaxRateData(updatedTaxRateData);
+    setParentTaxRateData(updatedTaxRateData);
     console.log("Updated Tax Rate Data:", updatedTaxRateData);
   };
 
@@ -5841,21 +5840,7 @@ export default function VendorDetails() {
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                              // addAdditionTaxCharge(tableId);
-                              const newItem = {
-                                id: Date.now().toString(),
-                                taxChargeType: "",
-                                taxChargePerUom: "",
-                                inclusive: false,
-                                amount: "",
-                              };
-                          
-                              const updatedTaxRateData = [...taxRateData];
-                              updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
-                                newItem
-                              );
-                              // setTaxRateData(updatedTaxRateData);
-                              setParentTaxRateData(updatedTaxRateData);
+                              addAdditionTaxCharge(tableId);
                           }}
                         >
                           <span>+</span>
@@ -5869,6 +5854,10 @@ export default function VendorDetails() {
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
                           <td>
+                            {console.log("item:----", item.taxChargeType, "resource:-", item.resource_id, "taxOpiton", tableId, parentTaxRateData[tableId]
+                                  ?.addition_bid_material_tax_details?.map(
+                                  (item) => item.resource_id
+                                ))}
                             <SelectBox
                               options={taxOptions}
                               defaultValue={
@@ -5891,7 +5880,7 @@ export default function VendorDetails() {
                               disabledOptions={
                                 parentTaxRateData[tableId]
                                   ?.addition_bid_material_tax_details?.map(
-                                  (item) => item.taxChargeType
+                                  (item) => item.resource_id || item?.taxChargeType
                                 )
                               }
                             />
