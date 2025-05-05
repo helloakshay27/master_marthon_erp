@@ -310,7 +310,7 @@ export default function EditEvent() {
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
   console.log("tableData", tableData);
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending");
 
@@ -1753,7 +1753,7 @@ export default function EditEvent() {
                           </button>
                         </div>
                         <div className="w-25">
-                          <MultiSelector
+                          {/* <MultiSelector
                             options={materialSelectList}
                             onChange={async (selectedOptions) => {
                               if (selectedOptions && selectedOptions.length > 0) {
@@ -1788,6 +1788,93 @@ export default function EditEvent() {
                                 } catch (error) {
                                   console.error("Error fetching full vendor data:", error);
                                 }
+                              }
+                            }}
+                          /> */}
+                          <MultiSelector
+                            options={materialSelectList}
+                            onChange={async (selectedOptions) => {
+                              try {
+                                if (
+                                  selectedOptions &&
+                                  selectedOptions.length > 0
+                                ) {
+                                  // Extract selected values and format them into an array
+                                  const selectedValues = selectedOptions.map(
+                                    (option) => option.value
+                                  );
+
+                                  // Call the API with the selected values
+                                  const response = await fetch(
+                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+                                      selectedValues
+                                    )}`
+                                  );
+
+                                  const data = await response.json();
+                                  const vendors = Array.isArray(data.vendors)
+                                    ? data.vendors
+                                    : [];
+                                  const formattedData = vendors.map(
+                                    (vendor) => ({
+                                      id: vendor.id,
+                                      name:
+                                        vendor.full_name ||
+                                        vendor.organization_name ||
+                                        "N/A",
+                                      email: vendor.email || "N/A",
+                                      organisation:
+                                        vendor.organization_name || "N/A",
+                                      phone:
+                                        vendor.contact_number ||
+                                        vendor.mobile ||
+                                        "N/A",
+                                      city: vendor.city_id || "N/A",
+                                      tags: vendor.tags || "N/A",
+                                      pms_inventory_type_id:
+                                        vendor.pms_inventory_type_id,
+                                    })
+                                  );
+
+                                  setFilteredTableData(formattedData);
+                                } else {
+                                  // If no option is selected, reset to show all vendors
+                                  const response = await fetch(
+                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+                                  );
+
+                                  const data = await response.json();
+                                  const vendors = Array.isArray(data.vendors)
+                                    ? data.vendors
+                                    : [];
+                                  const formattedData = vendors.map(
+                                    (vendor) => ({
+                                      id: vendor.id,
+                                      name:
+                                        vendor.full_name ||
+                                        vendor.organization_name ||
+                                        "N/A",
+                                      email: vendor.email || "N/A",
+                                      organisation:
+                                        vendor.organization_name || "N/A",
+                                      phone:
+                                        vendor.contact_number ||
+                                        vendor.mobile ||
+                                        "N/A",
+                                      city: vendor.city_id || "N/A",
+                                      tags: vendor.tags || "N/A",
+                                      pms_inventory_type_id:
+                                        vendor.pms_inventory_type_id,
+                                    })
+                                  );
+
+                                  setFilteredTableData(formattedData);
+                                }
+                              } catch (error) {
+                                console.error(
+                                  "Error fetching vendor data:",
+                                  error
+                                );
                               }
                             }}
                           />
