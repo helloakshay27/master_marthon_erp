@@ -41,7 +41,7 @@ export default function VendorDetails() {
   const originalTaxRateDataRef = useRef([]);
   const [extraData, setExtraData] = useState({});
   const [currentExtraData, setCurrentExtraData] = useState({});
-  // const [isTaxRateDataChanged, setIsTaxRateDataChanged] = useState(false);
+  const [isTaxRateDataChanged, setIsTaxRateDataChanged] = useState(false);
   const [grossTotal, setGrossTotal] = useState(0);
   const [deliveryData, setDeliveryData] = useState([]);
   const [deliverySchedule, setDeliverySchedule] = useState(false);
@@ -423,11 +423,11 @@ export default function VendorDetails() {
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
 
   const handleOpenOtherChargesModal = () => {
-    // if (isTaxRateDataChanged) {
+    if (isTaxRateDataChanged) {
       setShowOtherChargesModal(true);
-    // } else {
-    //   toast.error("Please fill the tax details to fill other charges");
-    // }
+    } else {
+      toast.error("Please fill the tax details to fill other charges");
+    }
   };
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
@@ -2407,7 +2407,7 @@ export default function VendorDetails() {
     }
 
     setShowModal1(true);
-    // setIsTaxRateDataChanged(true);
+    setIsTaxRateDataChanged(true);
   };
 
   const handleCloseModal = () => {
@@ -2433,7 +2433,8 @@ export default function VendorDetails() {
       newItem
     );
     setTaxRateData(updatedTaxRateData);
-    setParentTaxRateData(updatedTaxRateData);
+    // setParentTaxRateData(updatedTaxRateData);
+    console.log("Updated Tax Rate Data:", updatedTaxRateData);
   };
 
   const addDeductionTaxCharge = (rowIndex) => {
@@ -2553,7 +2554,7 @@ export default function VendorDetails() {
     setGrossTotal(parseFloat(updatedGrossTotal));
 
     handleCloseModal();
-    // setIsTaxRateDataChanged(true);
+    setIsTaxRateDataChanged(true);
 
     // console.log(
     //   "Tax Rate Data:",
@@ -5840,19 +5841,21 @@ export default function VendorDetails() {
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                            if (
-                              taxRateData[tableId]
-                                ?.addition_bid_material_tax_details.length >= 1
-                            ) {
-                              toast.error(
-                                "You can only add up to 1 fields for Additional Tax & Charges.",
-                                {
-                                  autoClose: 2000,
-                                }
+                              // addAdditionTaxCharge(tableId);
+                              const newItem = {
+                                id: Date.now().toString(),
+                                taxChargeType: "",
+                                taxChargePerUom: "",
+                                inclusive: false,
+                                amount: "",
+                              };
+                          
+                              const updatedTaxRateData = [...taxRateData];
+                              updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
+                                newItem
                               );
-                            } else {
-                              addAdditionTaxCharge(tableId);
-                            }
+                              // setTaxRateData(updatedTaxRateData);
+                              setParentTaxRateData(updatedTaxRateData);
                           }}
                         >
                           <span>+</span>
@@ -5863,7 +5866,6 @@ export default function VendorDetails() {
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details
-                      .slice(0, 1)
                       .map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
                           <td>
@@ -5886,6 +5888,12 @@ export default function VendorDetails() {
                                 );
                               }}
                               className="custom-select"
+                              disabledOptions={
+                                parentTaxRateData[tableId]
+                                  ?.addition_bid_material_tax_details?.map(
+                                  (item) => item.taxChargeType
+                                )
+                              }
                             />
                           </td>
 
@@ -5950,19 +5958,7 @@ export default function VendorDetails() {
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                            if (
-                              taxRateData[tableId]
-                                ?.addition_bid_material_tax_details.length >= 2
-                            ) {
-                              toast.error(
-                                "You can only add up to 1 fields for Additional Tax & Charges.",
-                                {
-                                  autoClose: 2000,
-                                }
-                              );
-                            } else {
                               addDeductionTaxCharge(tableId);
-                            }
                           }}
                         >
                           <span>+</span>
@@ -5973,7 +5969,6 @@ export default function VendorDetails() {
                     {parentTaxRateData[
                       tableId
                     ]?.deduction_bid_material_tax_details
-                      .slice(0, 1)
                       .map((item) => (
                         <tr key={item.id}>
                           <td>
@@ -5989,6 +5984,12 @@ export default function VendorDetails() {
                                   "taxChargeType",
                                   value,
                                   "deduction"
+                                )
+                              }
+                              disabledOptions={
+                                parentTaxRateData[tableId]
+                                  ?.deduction_bid_material_tax_details?.map(
+                                  (item) => item.taxChargeType
                                 )
                               }
                             />
@@ -6241,19 +6242,19 @@ export default function VendorDetails() {
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                            if (
-                              taxRateData[tableId]
-                                ?.addition_bid_material_tax_details.length >= 4
-                            ) {
-                              toast.error(
-                                "You can only add up to 1 fields for Additional Tax & Charges.",
-                                {
-                                  autoClose: 2000,
-                                }
-                              );
-                            } else {
+                            // if (
+                            //   taxRateData[tableId]
+                            //     ?.addition_bid_material_tax_details.length >= 4
+                            // ) {
+                            //   toast.error(
+                            //     "You can only add up to 1 fields for Additional Tax & Charges.",
+                            //     {
+                            //       autoClose: 2000,
+                            //     }
+                            //   );
+                            // } else {
                               addAdditionTaxCharge(tableId);
-                            }
+                            // }
                           }}
                         >
                           <span>+</span>
@@ -6263,7 +6264,6 @@ export default function VendorDetails() {
                     {/* {console.log("item:----", taxRateData, "taxOpiton",tableId)} */}
 
                     {taxRateData[tableId]?.addition_bid_material_tax_details
-                      .slice(0, 1)
                       ?.map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
                           <td>
@@ -6288,6 +6288,7 @@ export default function VendorDetails() {
                                 );
                               }}
                               className="custom-select"
+                              disabledOptions={taxRateData[tableId]?.addition_bid_material_tax_details?.map((item) => item.taxChargeType)}
                             />
                           </td>
 
@@ -6401,6 +6402,7 @@ export default function VendorDetails() {
                                 "deduction"
                               )
                             }
+                            disabledOptions={taxRateData[tableId]?.deduction_bid_material_tax_details?.map((item) => item.taxChargeType)}
                           />
                         </td>
                         <td>
