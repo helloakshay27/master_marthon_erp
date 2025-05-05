@@ -14,7 +14,7 @@ export default function ChargesDataTable({
   calculateGrossTotal,
   ...rest
 }) {
-  console.log("chargesData:-----", data);
+  // console.log("chargesData:-----", data);
   const prevGrossRef = useRef(null);
   const [chargesData, setChargesData] = useState([]);
   const [additionalTaxOptions, setAdditionalTaxOptions] = useState([]);

@@ -1121,7 +1121,6 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                     ]?.addition_bid_material_tax_details?.map(
                       (item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
-                          {console.log(item)}
                           <td>
                             <SelectBox
                               options={taxOptions}

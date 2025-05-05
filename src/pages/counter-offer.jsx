@@ -265,7 +265,7 @@ export default function CounterOffer() {
           realised_amount: charge.realised_amount,
           taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
             resource_id: tax.resource_id,
-            resource_type: tax.resource_type,
+            resource_type: tax.resource_type || "TaxCategory",
             amount: tax.amount,
             inclusive: tax.inclusive || false,
             addition: tax.addition,

@@ -11,6 +11,7 @@ import { Toast } from "bootstrap";
 import { baseURL } from "../../../confi/apiDomain";
 import SelectBox from "../../base/Select/SelectBox";
 import axios from "axios";
+import ChargesDataTable from "../../base/Table/ChargesDataTable";
 
 export default function BulkCounterOfferModalTwo({
   show,
@@ -23,8 +24,8 @@ export default function BulkCounterOfferModalTwo({
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
-  const [shortTableData, setShortTableData] = useState({});
-  const [chargesData, setChargesData] = useState({});
+  const [shortTableData, setShortTableData] = useState([]);
+  // const [chargesData, setChargesData] = useState({});
   const [showTaxModal, setShowTaxModal] = useState(false);
   const [selectedMaterialIndex, setSelectedMaterialIndex] = useState(null);
   const [data, setData] = useState(bidCounterData);
@@ -224,6 +225,23 @@ export default function BulkCounterOfferModalTwo({
       }
     );
 
+    const extractChargeTableData = Array.isArray(shortTableData)
+      ? shortTableData?.slice(0, 3)?.map((charge) => ({
+          // Limit to first 3 elements
+          charge_id: charge.charge_id,
+          amount: charge.amount,
+          realised_amount: charge.realised_amount,
+          taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
+            resource_id: tax.resource_id,
+            resource_type: tax.resource_type || "TaxCategory",
+            amount: tax.amount,
+            inclusive: tax.inclusive || false,
+            addition: tax.addition,
+            percentage: tax.percentage,
+          })),
+        }))
+      : [];
+
     // setsubmitted(true);
 
     const payload = {
@@ -240,33 +258,34 @@ export default function BulkCounterOfferModalTwo({
         payment_terms: formData.payment_terms || "_",
         loading_unloading_clause: formData.loading_unloading_clause || "_",
         counter_bid_materials_attributes: counterBidMaterialsAttributes,
+        charges: extractChargeTableData
       },
     };
 
     console.log("payload", payload);
 
     try {
-      // const response = await fetch(
-      //   `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(payload),
-      //   }
-      // );
-      // if (response.ok) {
-      //   toast.success("Counter Bid Created successfully!", {
-      //     autoClose: 1000, // Close after 3 seconds
-      //   });
-      //   setTimeout(() => {
-      //     handleClose();
-      //   }, 1000); //
-      // } else {
-      //   const errorText = await response.text();
-      //   toast.error(`Failed to submit counter bid: ${errorText}`);
-      // }
+      const response = await fetch(
+        `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (response.ok) {
+        toast.success("Counter Bid Created successfully!", {
+          autoClose: 1000, // Close after 3 seconds
+        });
+        setTimeout(() => {
+          handleClose();
+        }, 1000); //
+      } else {
+        const errorText = await response.text();
+        toast.error(`Failed to submit counter bid: ${errorText}`);
+      }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
     } finally {
@@ -673,57 +692,65 @@ export default function BulkCounterOfferModalTwo({
     );
 
     setShortTableData(
-      formattedCharges.reduce((acc, charge) => {
-        acc[charge.label] = charge.value.value;
-        return acc;
-      }, {})
+      formattedCharges
     );
   }, []);
   const onValueChange = (updated) => {
-    setChargesData(updated);
+    setShortTableData(updated);
   };
 
-  const calculateGrossTotal = (updatedData) => {
-    const getValue = (label) => {
-      return parseFloat(updatedData[label] || "0") || 0; // Ensure valid number
-    };
+  // const calculateGrossTotal = (updatedData) => {
+  //   const getValue = (label) => {
+  //     return parseFloat(updatedData[label] || "0") || 0; // Ensure valid number
+  //   };
 
-    const freight = getValue("freight_charge_amount");
-    const gstFreight = getValue("gst_on_freight");
-    const other = getValue("other_charge_amount");
-    const gstOther = getValue("gst_on_other_charge");
-    const handling = getValue("handling_charge_amount");
-    const gstHandling = getValue("gst_on_handling_charge");
+  //   const freight = getValue("freight_charge_amount");
+  //   const gstFreight = getValue("gst_on_freight");
+  //   const other = getValue("other_charge_amount");
+  //   const gstOther = getValue("gst_on_other_charge");
+  //   const handling = getValue("handling_charge_amount");
+  //   const gstHandling = getValue("gst_on_handling_charge");
 
-    const realisedFreight = freight + (freight * gstFreight) / 100;
-    const realisedOther = other + (other * gstOther) / 100;
-    const realisedHandling = handling + (handling * gstHandling) / 100;
+  //   const realisedFreight = freight + (freight * gstFreight) / 100;
+  //   const realisedOther = other + (other * gstOther) / 100;
+  //   const realisedHandling = handling + (handling * gstHandling) / 100;
 
-    const updatedRealizedData = { ...updatedData };
-    updatedRealizedData["realised_freight_charge_amount"] =
-      realisedFreight.toFixed(2);
-    updatedRealizedData["realised_other_charge_amount"] =
-      realisedOther.toFixed(2);
-    updatedRealizedData["realised_handling_charge_amount"] =
-      realisedHandling.toFixed(2);
+  //   const updatedRealizedData = { ...updatedData };
+  //   updatedRealizedData["realised_freight_charge_amount"] =
+  //     realisedFreight.toFixed(2);
+  //   updatedRealizedData["realised_other_charge_amount"] =
+  //     realisedOther.toFixed(2);
+  //   updatedRealizedData["realised_handling_charge_amount"] =
+  //     realisedHandling.toFixed(2);
 
-    onValueChange(updatedRealizedData);
-    // console.log("formData:---", typeof formData);
+  //   onValueChange(updatedRealizedData);
+  //   // console.log("formData:---", typeof formData);
 
-    const gross = realisedFreight + realisedOther + realisedHandling;
-    const materialSum = formData?.event_materials?.reduce(
-      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-      0
-    );
-    const finalSumTotal = gross + (sumTotal || 0); // Ensure sumTotal is valid
+  //   const gross = realisedFreight + realisedOther + realisedHandling;
+  //   const materialSum = formData?.event_materials?.reduce(
+  //     (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+  //     0
+  //   );
+  //   const finalSumTotal = gross + (sumTotal || 0); // Ensure sumTotal is valid
 
-    if (sumTotal !== finalSumTotal) {
-      setSumTotal(finalSumTotal);
-    }
+  //   if (sumTotal !== finalSumTotal) {
+  //     setSumTotal(finalSumTotal);
+  //   }
 
-    if (prevGrossRef.current === null) {
-      prevGrossRef.current = gross;
-    }
+  //   if (prevGrossRef.current === null) {
+  //     prevGrossRef.current = gross;
+  //   }
+  // };
+
+  const calculateGrossTotal = () => {
+    console.log("bidCounterData:---",bidCounterData, formData);
+    
+    const total = formData.event_materials.reduce((acc, material) => {
+      const itemTotal = parseFloat(material.total_amount) || 0;// Ensure valid number
+      return acc + itemTotal;
+    }, 0);
+
+    return total.toFixed(2); // Return the total as a string with two decimal places
   };
 
   const handleOtherChargesInputChange = (field, value) => {
@@ -1076,6 +1103,18 @@ export default function BulkCounterOfferModalTwo({
             Other Charges
           </button>
         </div>
+        <ChargesDataTable 
+        data={shortTableData}
+        showOtherChargesModal={showOtherChargesModal}
+        handleCloseOtherChargesModal={handleCloseOtherChargesModal}
+        setGrossTotal={setSumTotal}
+        grossTotal={sumTotal}
+        editable={true}
+        onValueChange={(updated) => {
+          setShortTableData(updated);
+        }}
+        calculateGrossTotal={calculateGrossTotal}
+        />
         <div className="d-flex justify-content-end">
           <h4>Sum Total : ₹{sumTotal}</h4>
         </div>
@@ -1090,7 +1129,7 @@ export default function BulkCounterOfferModalTwo({
           />
         </div>
       </DynamicModalBox>
-      <DynamicModalBox
+      {/* <DynamicModalBox
         show={showOtherChargesModal}
         onHide={handleCloseOtherChargesModal}
         size="md"
@@ -1182,7 +1221,7 @@ export default function BulkCounterOfferModalTwo({
             </tbody>
           </table>
         </div>
-      </DynamicModalBox>
+      </DynamicModalBox> */}
       <DynamicModalBox
         show={showTaxModal}
         onHide={handleCloseTaxModal}
