@@ -661,38 +661,6 @@ export default function OverviewTab({
           <a
             className="btn"
             data-bs-toggle="collapse"
-            href="#order-details"
-            role="button"
-            aria-expanded={orderDetails}
-            aria-controls="order-details"
-            onClick={handleOrderDetails}
-            style={{ fontSize: "16px", fontWeight: "normal" }}
-          >
-            <span id="order-details-icon" className="icon-1">
-              {orderDetails ? (
-                <i className="bi bi-dash-lg"></i>
-              ) : (
-                <i className="bi bi-plus-lg"></i>
-              )}
-            </span>
-            Order Details
-          </a>
-          {orderDetails && (
-            <div id="order-details" className="mx-5">
-              <div className="card card-body p-4">
-                <p>Event Title</p>
-                <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
-                <p>Event Description</p>
-                <p>{overviewData.event_description}</p>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* New Section: Order Details */}
-        <div className="col-12 my-3">
-          <a
-            className="btn"
-            data-bs-toggle="collapse"
             href="#delivery-schedule"
             role="button"
             aria-expanded={deliverySchedule}
