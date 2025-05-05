@@ -6,6 +6,7 @@ import {
   EventScheduleModal,
   EventTypeModal,
   SearchIcon,
+  MultiSelector,
   SelectBox,
   Table,
 } from "../components";
@@ -308,7 +309,8 @@ export default function EditEvent() {
   const [totalPages, setTotalPages] = useState(1); // Default total pages
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
-
+  console.log("tableData", tableData);
+  
   const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending");
 
@@ -1735,7 +1737,7 @@ export default function EditEvent() {
                         <input
                           type="search"
                           id="searchInput"
-                          className="tbl-search form-control"
+                          className="tbl-search form-control w-75"
                           placeholder="Search Vendors"
                           value={searchTerm}
                           onChange={handleInputChange}
@@ -1756,24 +1758,46 @@ export default function EditEvent() {
                             <SearchIcon />
                           </button>
                         </div>
-                        <SelectBox
-                          style={{ width: "400px" }}
-                          options={materialSelectList}
-                          onChange={(selectedOption) => {
-                            if (selectedOption) {
-                              const filteredData = filteredTableData.filter(
-                                (vendor) =>
-                                  vendor.pms_inventory_type_id.includes(
-                                    selectedOption
+                        <div className="w-25">
+                          <MultiSelector
+                            options={materialSelectList}
+                            onChange={async (selectedOptions) => {
+                              if (selectedOptions && selectedOptions.length > 0) {
+                                const selectedValues = selectedOptions.map((option) => option.value);
+                                const filteredData = tableData.filter((vendor) =>
+                                  selectedValues.some((value) =>
+                                    Array.isArray(vendor.pms_inventory_type_id)
+                                      ? vendor.pms_inventory_type_id.includes(value)
+                                      : vendor.pms_inventory_type_id === value
                                   )
-                              );
-                              setFilteredTableData(filteredData);
-                            } else {
-                              // Reset to show all vendors if no option is selected
-                              fetchData(); // Assuming fetchData repopulates the original data
-                            }
-                          }}
-                        />
+                                );
+                                setFilteredTableData(filteredData);
+                              } else {
+                                // Reset to show all vendors if no option is selected
+                                try {
+                                  const response = await fetch(
+                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+                                  );
+                                  const data = await response.json();
+                                  const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+                                  const formattedData = vendors.map((vendor) => ({
+                                    id: vendor.id,
+                                    name: vendor.full_name || vendor.organization_name || "N/A",
+                                    email: vendor.email || "N/A",
+                                    organisation: vendor.organization_name || "N/A",
+                                    phone: vendor.contact_number || vendor.mobile || "N/A",
+                                    city: vendor.city_id || "N/A",
+                                    tags: vendor.tags || "N/A",
+                                    pms_inventory_type_id: vendor.pms_inventory_type_id,
+                                  }));
+                                  setFilteredTableData(formattedData); // Reset to the full data
+                                } catch (error) {
+                                  console.error("Error fetching full vendor data:", error);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul

@@ -41,7 +41,7 @@ export default function VendorDetails() {
   const originalTaxRateDataRef = useRef([]);
   const [extraData, setExtraData] = useState({});
   const [currentExtraData, setCurrentExtraData] = useState({});
-  const [isTaxRateDataChanged, setIsTaxRateDataChanged] = useState(false);
+  // const [isTaxRateDataChanged, setIsTaxRateDataChanged] = useState(false);
   const [grossTotal, setGrossTotal] = useState(0);
   const [deliveryData, setDeliveryData] = useState([]);
   const [deliverySchedule, setDeliverySchedule] = useState(false);
@@ -423,11 +423,11 @@ export default function VendorDetails() {
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
 
   const handleOpenOtherChargesModal = () => {
-    if (isTaxRateDataChanged) {
+    // if (isTaxRateDataChanged) {
       setShowOtherChargesModal(true);
-    } else {
-      toast.error("Please fill the tax details to fill other charges");
-    }
+    // } else {
+    //   toast.error("Please fill the tax details to fill other charges");
+    // }
   };
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
@@ -2407,7 +2407,7 @@ export default function VendorDetails() {
     }
 
     setShowModal1(true);
-    setIsTaxRateDataChanged(true);
+    // setIsTaxRateDataChanged(true);
   };
 
   const handleCloseModal = () => {
@@ -2553,7 +2553,7 @@ export default function VendorDetails() {
     setGrossTotal(parseFloat(updatedGrossTotal));
 
     handleCloseModal();
-    setIsTaxRateDataChanged(true);
+    // setIsTaxRateDataChanged(true);
 
     // console.log(
     //   "Tax Rate Data:",
