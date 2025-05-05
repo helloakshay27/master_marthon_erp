@@ -1246,13 +1246,7 @@ export default function EditEvent() {
         const data = await response.json();
 
         if (response.ok && data.inventory_types) {
-          // Filter the inventory types based on inventoryTypeId
-          const filteredMaterials = data.inventory_types.filter((item) =>
-            inventoryTypeId.includes(item.value)
-          );
-
-          // Map the filtered materials to the required format
-          const formattedMaterials = filteredMaterials.map((item) => ({
+          const formattedMaterials = data.inventory_types?.map((item) => ({
             label: item.name,
             value: item.value,
           }));
