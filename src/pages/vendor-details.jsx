@@ -732,7 +732,7 @@ export default function VendorDetails() {
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
             quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom_name, 
+            unit: item.uom_name || item.unit, 
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
@@ -999,7 +999,7 @@ export default function VendorDetails() {
             gst: material.gst,
             realisedGst: material.realised_gst,
             total: material.total_amount,
-            unit: material.event_material.uom_name,
+            unit: material.event_material.uom_name || material.event_material.uom || material.event_material.unit,
             location: material.event_material.location,
             vendorRemark: material.vendor_remark,
             landedAmount: material.landed_amount,
