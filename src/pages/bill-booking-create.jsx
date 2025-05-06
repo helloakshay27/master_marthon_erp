@@ -906,7 +906,11 @@ const BillBookingCreate = () => {
     { value: "Import", label: "Import" },
   ];
 
-  const [selectedPOType, setSelectedPOType] = useState(null);
+  // const [selectedPOType, setSelectedPOType] = useState(null);
+  const [selectedPOType, setSelectedPOType] = useState({
+    value: "Domestic",
+    label: "Domestic",
+  });
 
   // Add E-Invoice options
   const eInvoiceOptions = [
@@ -1516,7 +1520,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-3">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Type of Certificate</label>
                       <SingleSelector
@@ -1842,7 +1846,7 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Retention Details:</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
@@ -1862,7 +1866,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Current advance deduction:</h5>
                 </div>
@@ -1884,8 +1888,8 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                </div>
-                <div className="row">
+                  {/* </div> */}
+                  {/* <div className="row"> */}
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Other Deduction</label>
@@ -1905,7 +1909,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-8">
+                  <div className="col-md-4">
                     <div className="form-group">
                       <label>Other Deduction Remark</label>
                       <textarea
@@ -1946,7 +1950,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-8 mt-2">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Other Addition Remark</label>
                       <textarea
@@ -2058,7 +2062,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-8 mt-2">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Remark</label>
                       <textarea
@@ -2110,7 +2114,7 @@ const BillBookingCreate = () => {
                     </div>
                   </div> */}
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted:</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
@@ -2150,7 +2154,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Payment Details</h5>
                 </div>
@@ -3202,15 +3206,25 @@ const BillBookingCreate = () => {
                               )),
                         }))}
                         value={{ value: row.type, label: row.type }}
-                        onChange={(selectedOption) =>
+                        // onChange={(selectedOption) =>
+                        //   setRows((prevRows) =>
+                        //     prevRows.map((r) =>
+                        //       r.id === row.id
+                        //         ? { ...r, type: selectedOption.value || "" }
+                        //         : r
+                        //     )
+                        //   )
+                        // }
+                        onChange={(selectedOption) => {
+                          console.log("Selected Option:", selectedOption);
                           setRows((prevRows) =>
                             prevRows.map((r) =>
                               r.id === row.id
-                                ? { ...r, type: selectedOption.value }
+                                ? { ...r, type: selectedOption?.value || "" }
                                 : r
                             )
-                          )
-                        }
+                          );
+                        }}
                         placeholder="Select Type"
                         isDisabled={!row.isEditable} // Disable if not editable
                       />
