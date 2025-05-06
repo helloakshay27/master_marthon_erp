@@ -352,7 +352,7 @@ const GoodReceiveNoteDetails = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                       <div className="col-6 ">
                         <label>To Store </label>
                       </div>
@@ -362,7 +362,7 @@ const GoodReceiveNoteDetails = () => {
                           {data?.to_store ?? "-"}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                       <div className="col-6 ">
                         <label>Supplier</label>
