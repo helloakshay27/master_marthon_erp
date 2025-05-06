@@ -2,10 +2,12 @@ import React from "react";
 export default function ShortDataTable({
   data,
   editable = false,
+  disabled = false, // New prop for disabling inputs
   onValueChange,
   ...rest
 }) {
   const handleInputChange = (index, newValue) => {
+    if (!editable || disabled) return; // Prevent changes if not editable or disabled
     console.log("Input value:", newValue);
 
     const updatedData = [...data];
@@ -88,7 +90,16 @@ export default function ShortDataTable({
                 {row.label}
               </td>
               <td style={{ padding: "12px", color: "#000", textAlign: "left" }}>
-                {editable ? (
+                {disabled ? (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={firstBid || ""}
+                    readOnly
+                    disabled={disabled}
+                    style={{ backgroundColor: "#f5f5f5", color: "#000" }}
+                  />
+                ) : editable ? (
                   <input
                     type="text"
                     className="form-control"
@@ -130,7 +141,6 @@ export default function ShortDataTable({
                 )}
               </td>
             </tr>
-
           );
         })}
       </tbody>

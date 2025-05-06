@@ -31,8 +31,10 @@ export default function CounterOffer() {
   const [chargesData, setChargesData] = useState([]); // State for charges data
   const [grossTotal, setGrossTotal] = useState(0); // State for gross total
   const prevGrossRef = useRef(null); // Ref for previous gross total
-  console.log("bidCounterData:---",bidCounterData);
-  
+  const [tableData, setTableData] = useState([]); // State for ShortDataTable data
+
+  console.log("bidCounterData:---", bidCounterData);
+
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
   };
@@ -47,12 +49,20 @@ export default function CounterOffer() {
       );
       setSumTotal(initialSumTotal);
     }
-    if(bidCounterData?.charges_with_taxes){
+    if (bidCounterData?.charges_with_taxes) {
       setChargesData(bidCounterData?.charges_with_taxes);
     }
-  }, [bidCounterData]); // Removed formData from dependencies to prevent unnecessary updates
 
-  useEffect(() => {
+    if (bidCounterData?.extra_data) {
+      const formattedExtraData = Object.entries(bidCounterData.extra_data).map(
+        ([key, { value }]) => ({
+          label: key,
+          value: { firstBid: value || "", counterBid: "" },
+        })
+      );
+      setTableData(formattedExtraData);
+    }
+
     if (
       bidCounterData?.applied_event_template?.applied_bid_template_fields &&
       freightData.length === 0 // Only set state if freightData is empty to prevent infinite updates
@@ -652,65 +662,15 @@ export default function CounterOffer() {
     })),
   ];
 
-  const [tableData, setTableData] = useState(formattedData);
-
   const handleValueChange = (updatedData) => {
     setTableData(updatedData);
   };
 
   console.log(formData, "formData.bid_materials");
 
-  // const calculateGrossTotal = (updatedData) => {
-  //   const getValue = (label) => {
-  //     return parseFloat(updatedData[label] || "0") || 0;
-  //   };
-
-  //   const freight = getValue("freight_charge_amount");
-  //   const gstFreight = getValue("gst_on_freight");
-  //   const other = getValue("other_charge_amount");
-  //   const gstOther = getValue("gst_on_other_charge");
-  //   const handling = getValue("handling_charge_amount");
-  //   const gstHandling = getValue("gst_on_handling_charge");
-
-  //   const realisedFreight = freight + (freight * gstFreight) / 100;
-  //   const realisedOther = other + (other * gstOther) / 100;
-  //   const realisedHandling = handling + (handling * gstHandling) / 100;
-
-  //   const updatedRealizedData = { ...updatedData }; // Create a copy of the object
-  //   updatedRealizedData["realised_freight_charge_amount"] =
-  //     realisedFreight.toFixed(2);
-  //   updatedRealizedData["realised_other_charge_amount"] =
-  //     realisedOther.toFixed(2);
-  //   updatedRealizedData["realised_handling_charge_amount"] =
-  //     realisedHandling.toFixed(2);
-
-  //   onValueChange(updatedRealizedData);
-
-  //   const gross = realisedFreight + realisedOther + realisedHandling;
-
-  //   // Calculate the final sum total
-  //   const materialSum = formData.bid_materials.reduce(
-  //     (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-  //     0
-  //   );
-  //   const finalSumTotal = materialSum + gross;
-
-  //   // Update sumTotal only if it has changed
-  //   if (sumTotal !== finalSumTotal) {
-  //     setSumTotal(finalSumTotal);
-  //   }
-
-  //   if (prevGrossRef.current === null) {
-  //     prevGrossRef.current = grossTotal;
-  //   }
-
-  //   const finalGross = gross; // Use the calculated gross directly
-  //   setGrossTotal(finalGross);
-  // };
-
   const calculateGrossTotal = () => {
-    console.log("bidCounterData:---",bidCounterData, formData);
-    
+    console.log("bidCounterData:---", bidCounterData, formData);
+
     const total = formData.bid_total_amount.reduce((acc, item) => {
       const itemTotal = parseFloat(item) || 0; // Ensure valid number
       return acc + itemTotal;
@@ -1048,7 +1008,7 @@ export default function CounterOffer() {
           <div className="d-flex justify-content-end">
             <ShortDataTable
               data={tableData}
-              editable={true}
+              disabled={true} // Use the new disabled prop
               onValueChange={handleValueChange}
             />
           </div>
@@ -1454,103 +1414,6 @@ export default function CounterOffer() {
               </div>
             </div>
           </DynamicModalBox>
-          {/* <DynamicModalBox
-            show={showOtherChargesModal}
-            onHide={handleCloseOtherChargesModal}
-            size="md"
-            title="Other Charges"
-            modalType={true}
-            footerButtons={[
-              {
-                label: "Close",
-                onClick: handleCloseOtherChargesModal,
-                props: { className: "purple-btn1" },
-              },
-              {
-                label: "Save",
-                onClick: () => {
-                  // Add save logic here
-                  calculateGrossTotal(shortTableData);
-                  handleCloseOtherChargesModal();
-                },
-                props: { className: "purple-btn2" },
-              },
-            ]}
-          >
-            <div className="d-flex justify-content-end">
-              <table
-                className="tbl-container mt-4 p-4"
-              >
-                <tbody>
-                  {Object.keys(shortTableData).map((field, index) => (
-                    <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
-                      <td
-                        style={{
-                          padding: "12px",
-                          fontWeight: "bold",
-                          background: "#8b0203",
-                          color: "#fff",
-                          width: "65%",
-                        }}
-                      >
-                        {field
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase())}
-                      </td>
-                      <td
-                        style={{
-                          padding: "12px",
-                          color: "#000",
-                          textAlign: "left",
-                        }}
-                      >
-                        {field.startsWith("realised_") ? (
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={shortTableData[field] || ""}
-                            readOnly
-                            disabled
-                            style={{
-                              backgroundColor: "#f5f5f5",
-                              color: "#000",
-                            }}
-                          />
-                        ) : (
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <input
-                              type="number"
-                              className="form-control"
-                              value={shortTableData[field] || ""}
-                              onChange={(e) =>
-                                handleOtherChargesInputChange(
-                                  field,
-                                  parseFloat(e.target.value) || 0
-                                )
-                              }
-                              style={{
-                                backgroundColor: "#fff",
-                                color: "#000",
-                                width: "80%",
-                                marginRight: "5px",
-                              }}
-                            />
-                            {field.startsWith("gst_") ? (
-                              <span style={{ color: "#000" }}>%</span>
-                            ) : (
-                              <span style={{ color: "#000" }}>₹</span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </DynamicModalBox> */}
           <ToastContainer />
         </div>
       </div>

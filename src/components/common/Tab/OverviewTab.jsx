@@ -721,7 +721,7 @@ export default function OverviewTab({
                 <i className="bi bi-plus-lg"></i>
               )}
             </span>
-            Specification
+            Dynamic Details
           </a>
           {specification && (
             <div id="specification" className="mx-5">
@@ -751,7 +751,7 @@ export default function OverviewTab({
                                                     </table>
                 ) : (
                   <p className="text-center mt-4">
-                    No Specification available for this event.
+                    No Dynamic Details available for this event.
                   </p>
                 )}
               </div>

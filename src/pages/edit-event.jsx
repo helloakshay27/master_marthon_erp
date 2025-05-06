@@ -1387,7 +1387,7 @@ export default function EditEvent() {
                 isMor={false}
               />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className=" ">Specification</h5>
+                <h5 className=" ">Dynamic Details</h5>
               </div>
               <div>
                 <table className="tbl-container w-100">
