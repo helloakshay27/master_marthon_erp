@@ -18,7 +18,7 @@ import SelectBox from "../../base/Select/SelectBox";
 import { set } from "lodash";
 import { toast, ToastContainer } from "react-toastify"; // Ensure toast is imported
 
-export default function ResponseTab({ isCounterOffer, reminderData }) {
+export default function ResponseTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
   const [counterModal, setCounterModal] = useState(false);
   const [BidCounterData, setBidCounterData] = useState(null);
@@ -49,6 +49,56 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
   const [showCounterOfferPopup, setShowCounterOfferPopup] = useState(false); // State for popup visibility
   const [isOfferAccepted, setIsOfferAccepted] = useState(false); // State to track offer acceptance
+
+  const [participants, setParticipants] = useState([]);
+  const [currentReminderPage, setCurrentReminderPage] = useState(1);
+  const reminderPageSize = 10; // Number of items per page
+  const [totalReminderPages, setTotalReminderPages] = useState(1);
+
+  const fetchParticipants = async (page = 1) => {
+    try {
+      const response = await fetch(
+        `${baseURL}rfq/events/${eventId}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setParticipants(data?.event_vendors || []);
+      setTotalReminderPages(data?.pagination?.total_pages || 1);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchParticipants(currentReminderPage);
+  }, [currentReminderPage]);
+
+  const handleReminderPageChange = (page) => {
+    if (page >= 1 && page <= totalReminderPages) {
+      setCurrentReminderPage(page);
+    }
+  };
+
+  const getReminderPageRange = () => {
+    const range = [];
+    const maxPagesToShow = 5;
+    let start = Math.max(1, currentReminderPage - 2);
+    let end = Math.min(totalReminderPages, start + maxPagesToShow - 1);
+
+    if (end - start < maxPagesToShow - 1) {
+      start = Math.max(1, end - maxPagesToShow + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+    return range;
+  };
 
   const navigate = useNavigate();
 
@@ -364,11 +414,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
     return "th";
   };
 
-  const acceptOffer = async (bidId, revisedBidId) => {
+  const acceptOffer = async (bidId, revisedBidId, status) => {
     try {
       const response = await axios.put(
         `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        { status: "accepted" },
+        { status },
         {
           headers: {
             Accept: "application/json, text/plain, */*",
@@ -378,12 +428,23 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
       );
 
       if (response.status === 200) {
-        toast.success("Offer accepted successfully");
+        toast.success(
+          status === "accepted"
+            ? "Offer accepted successfully"
+            : "Offer declined successfully"
+        );
         setIsOfferAccepted(true); // Trigger the API call for event responses
       }
     } catch (error) {
-      console.error("Error accepting offer:", error);
-      toast.error("Failed to accept the offer. Please try again.");
+      console.error(
+        `Error ${status === "accepted" ? "accepting" : "declining"} offer:`,
+        error
+      );
+      toast.error(
+        `Failed to ${
+          status === "accepted" ? "accept" : "decline"
+        } the offer. Please try again.`
+      );
     }
   };
 
@@ -395,7 +456,7 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
 
       if (response.status === 200) {
         // Mark the button as clicked
-        reminderData.event_vendors[index].clicked = true;
+        participants[index].clicked = true;
         setShowDeliveryStatsModal((prev) => !prev); // Trigger re-render
         toast.success("Reminder sent successfully!"); // Success message
       }
@@ -984,9 +1045,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.material_name || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.material_name || ""
                   }
                   readOnly
                   disabled={true}
@@ -1000,9 +1060,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.event_material?.inventory_id || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.event_material
+                      ?.inventory_id || ""
                   }
                   readOnly
                   disabled={true}
@@ -1019,9 +1079,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.price || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.price || ""
                   }
                   readOnly
                   disabled={true}
@@ -1035,9 +1094,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.quantity_available || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.quantity_available ||
+                    ""
                   }
                   readOnly
                   disabled={true}
@@ -1054,9 +1113,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.discount || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.discount || ""
                   }
                   readOnly
                   disabled={true}
@@ -1070,9 +1128,8 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   type="text"
                   className="form-control"
                   value={
-                    segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
-                      bidMaterialIndex
-                    ]?.total_amount || ""
+                    segeregatedMaterialData[selectedMaterialIndex]
+                      ?.bids_values?.[bidMaterialIndex]?.total_amount || ""
                   }
                   readOnly
                   disabled={true}
@@ -1116,7 +1173,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                       <td></td>
                       <td></td>
                     </tr>
-                    {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                    {segeregatedMaterialData[
+                      selectedMaterialIndex
+                    ]?.bids_values?.[
                       bidMaterialIndex
                     ]?.addition_bid_material_tax_details?.map(
                       (item, rowIndex) => (
@@ -1204,7 +1263,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                       <td></td>
                       <td></td>
                     </tr>
-                    {segeregatedMaterialData[selectedMaterialIndex]?.bids_values?.[
+                    {segeregatedMaterialData[
+                      selectedMaterialIndex
+                    ]?.bids_values?.[
                       bidMaterialIndex
                     ]?.deduction_bid_material_tax_details?.map(
                       (item, rowIndex) => (
@@ -1305,9 +1366,9 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
         modalType={true}
       >
         <div>
-          {reminderData?.event_vendors?.map((item, index) => (
-            <div key={index}>
-              <div className="d-flex justify-content-between align-items-center mb-2">
+          {participants?.map((item, index) => (
+            <div key={item.id}>
+              <div className="d-flex justify-content-between align-items-center">
                 <p className="mb-0">{item.full_name}</p>
                 <button
                   className={item.clicked ? "purple-btn2" : "purple-btn1"} // Toggle class
@@ -1316,9 +1377,100 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
                   {item.clicked ? "Reminder Sent" : "Send Reminder"}
                 </button>
               </div>
-              {index < reminderData.event_vendors.length - 1 && <hr />}
+              {index < reminderPageSize - 1 && <hr />}
             </div>
           ))}
+          {totalReminderPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+              <ul className="pagination justify-content-center d-flex">
+                <li
+                  className={`page-item ${
+                    currentReminderPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handleReminderPageChange(1)}
+                  >
+                    First
+                  </button>
+                </li>
+
+                <li
+                  className={`page-item ${
+                    currentReminderPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      handleReminderPageChange(currentReminderPage - 1)
+                    }
+                  >
+                    Prev
+                  </button>
+                </li>
+
+                {getReminderPageRange().map((page) => (
+                  <li
+                    key={page}
+                    className={`page-item ${
+                      currentReminderPage === page ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handleReminderPageChange(page)}
+                    >
+                      {page}
+                    </button>
+                  </li>
+                ))}
+
+                <li
+                  className={`page-item ${
+                    currentReminderPage === totalReminderPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      handleReminderPageChange(currentReminderPage + 1)
+                    }
+                  >
+                    Next
+                  </button>
+                </li>
+
+                <li
+                  className={`page-item ${
+                    currentReminderPage === totalReminderPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handleReminderPageChange(totalReminderPages)}
+                  >
+                    Last
+                  </button>
+                </li>
+              </ul>
+              <div>
+                <p>
+                  Showing{" "}
+                  {participants.length > 0
+                    ? (currentReminderPage - 1) * reminderPageSize + 1
+                    : 0}{" "}
+                  to{" "}
+                  {Math.min(
+                    currentReminderPage * reminderPageSize,
+                    totalReminderPages * reminderPageSize
+                  )}{" "}
+                  of {totalReminderPages * reminderPageSize} entries
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </DynamicModalBox>
 
@@ -1331,7 +1483,11 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
           {
             label: "Decline",
             onClick: () => {
-              setShowCounterOfferPopup(false);
+              acceptOffer(
+                pendingBid.id,
+                pendingBid.original_bid_id,
+                "rejected"
+              );
             },
             props: { className: "purple-btn1" },
           },
@@ -1343,20 +1499,13 @@ export default function ResponseTab({ isCounterOffer, reminderData }) {
               );
 
               if (pendingBid && pendingBid.id) {
-                acceptOffer(pendingBid.id, pendingBid.original_bid_id);
+                acceptOffer(
+                  pendingBid.id,
+                  pendingBid.original_bid_id,
+                  "accepted"
+                );
               } else {
-                if (!pendingBid) {
-                  toast.error("No pending bid found", "warning");
-                } else {
-                  console.error(
-                    "Found pending bid, but bid_id is missing:",
-                    pendingBid
-                  );
-                  toast.error(
-                    "Error: Bid ID is undefined. Cannot proceed.",
-                    "error"
-                  );
-                }
+                toast.error("No pending bid found to accept.");
               }
             },
             props: { className: "purple-btn2" },

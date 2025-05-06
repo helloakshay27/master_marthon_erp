@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../../../confi/apiDomain";
 import { se } from "date-fns/locale";
 
-export default function ParticipantsTab({ data, id }) {
+export default function ParticipantsTab({ id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,6 +37,11 @@ export default function ParticipantsTab({ data, id }) {
   const [companyList, setCompanyList] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]); // State for selected tags
   const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [participants, setParticipants] = useState([]);
+  const [error, setError] = useState(null);
+  const [currentParticipantPage, setCurrentParticipantPage] = useState(1);
+  const [totalParticipantPages, setTotalParticipantPages] = useState(1);
+  const participantPageSize = 10; // or as per backend pagination
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
     { value: "MIVAN MA", label: "MIVAN MA" },
@@ -58,7 +63,8 @@ export default function ParticipantsTab({ data, id }) {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const mobileRegex = /^[6-9]\d{9}$/;
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     if (!inviteForm.name) {
@@ -87,6 +93,28 @@ export default function ParticipantsTab({ data, id }) {
     }
     return errors;
   };
+
+  const handleParticipantPageChange = (page) => {
+    if (page >= 1 && page <= totalParticipantPages) {
+      setCurrentParticipantPage(page);
+    }
+  };
+
+  const getPageParticipantRange = () => {
+    const range = [];
+    const maxPagesToShow = 5;
+    let start = Math.max(1, currentParticipantPage - 2);
+    let end = Math.min(totalParticipantPages, start + maxPagesToShow - 1);
+  
+    if (end - start < maxPagesToShow - 1) {
+      start = Math.max(1, end - maxPagesToShow + 1);
+    }
+  
+    for (let i = start; i <= end; i++) {
+      range.push(i);
+    }
+    return range;
+  };  
 
   const handleInviteInputChange = (e) => {
     const { name, value } = e.target;
@@ -168,21 +196,48 @@ export default function ParticipantsTab({ data, id }) {
   };
 
   useEffect(() => {
-    const formattedData = (data?.event_vendors || []).map((vendor, index) => ({
-      key: vendor.id,
-      serialNumber: index + 1,
-      name: vendor.pms_supplier.full_name,
-      phone: vendor.pms_supplier.mobile,
-      email: vendor.pms_supplier.email,
-      organisation: vendor.organization_name,
-    }));
+    const fetchParticipants = async () => {
+      try {
+        const response = await fetch(
+          `${baseURL}rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${currentParticipantPage}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+  
+        setParticipants(data || []);
+        setTotalParticipantPages(data?.pagination?.total_pages || 1);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchParticipants();
+  }, [id, currentParticipantPage]);
+  
+
+  useEffect(() => {
+    const formattedData = (participants?.event_vendors || []).map(
+      (vendor, index) => ({
+        key: vendor.id,
+        serialNumber: index + 1,
+        name: vendor.pms_supplier.full_name,
+        phone: vendor.pms_supplier.mobile,
+        email: vendor.pms_supplier.email,
+        organisation: vendor.organization_name,
+      })
+    );
     setVendorData(formattedData);
-  }, [data, vendorData]);
+  }, [participants, vendorData]);
 
   useEffect(() => {
     setFilteredData(
-      Array.isArray(data?.event_vendors)
-        ? data.event_vendors.map((vendor) => {
+      Array.isArray(participants?.event_vendors)
+        ? participants.event_vendors.map((vendor) => {
             const { organization_name, contact_number, email } =
               vendor.pms_supplier || {};
             return {
@@ -193,7 +248,7 @@ export default function ParticipantsTab({ data, id }) {
           })
         : []
     );
-  }, [data]);
+  }, [participants]);
 
   useEffect(() => {
     fetch(
@@ -469,11 +524,128 @@ export default function ParticipantsTab({ data, id }) {
               </button>
             </div>
             {vendorData?.length > 0 ? (
-              <>
-                <Table columns={participantsTabColumns} data={vendorData} />
-              </>
+              <div className="tbl-container">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr No</th>
+                    <th>Name</th>
+                    <th>Mob No.</th>
+                    <th>Email</th>
+                    <th>Organisation</th>
+                  </tr>
+                </thead>
+                <tbody >
+                  {vendorData.map((vendor, index) => (
+                    <tr key={vendor.key}>
+                      <td style={{ textAlign: "left" }}>{(currentParticipantPage - 1) * participantPageSize + index + 1}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.name}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.phone}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.email}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.organisation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
             ) : (
               <div className="text-center mt-4">No data found</div>
+            )}
+            {totalParticipantPages > 1 && (
+              <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li
+                    className={`page-item ${
+                      currentParticipantPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handleParticipantPageChange(1)}
+                    >
+                      First
+                    </button>
+                  </li>
+
+                  <li
+                    className={`page-item ${
+                      currentParticipantPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        handleParticipantPageChange(currentParticipantPage - 1)
+                      }
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {getPageParticipantRange().map((page) => (
+                    <li
+                      key={page}
+                      className={`page-item ${
+                        currentParticipantPage === page ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handleParticipantPageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${
+                      currentParticipantPage === totalParticipantPages
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        handleParticipantPageChange(currentParticipantPage + 1)
+                      }
+                    >
+                      Next
+                    </button>
+                  </li>
+
+                  <li
+                    className={`page-item ${
+                      currentParticipantPage === totalParticipantPages
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handleParticipantPageChange(totalParticipantPages)}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+
+                <div>
+                  <p>
+                    Showing{" "}
+                    {vendorData.length > 0
+                      ? (currentParticipantPage - 1) * participantPageSize + 1
+                      : 0}{" "}
+                    to{" "}
+                    {Math.min(
+                      currentParticipantPage * participantPageSize,
+                      totalParticipantPages * participantPageSize
+                    )}{" "}
+                    of {totalParticipantPages * participantPageSize} entries
+                  </p>
+                </div>
+              </div>
             )}
           </div>
           <DynamicModalBox
