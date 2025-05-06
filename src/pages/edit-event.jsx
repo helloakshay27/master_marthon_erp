@@ -243,13 +243,13 @@ export default function EditEvent() {
     setSelectedVendorProfile(profile);
   };
 
-  useEffect(() => {
-    const newlyFetchedIds = materialFormData
-      ?.filter((item) => item?.inventory_type_id)
-      ?.map((item) => item?.inventory_type_id);
-    setInventoryTypeId([...new Set(newlyFetchedIds)]); // Ensure unique IDs
-    fetchData(1, searchTerm, selectedCity); // Fetch data whenever inventoryTypeId changes
-  }, [materialFormData]); // Triggered when materialFormData changes
+  // useEffect(() => {
+  //   const newlyFetchedIds = materialFormData
+  //     ?.filter((item) => item?.inventory_type_id)
+  //     ?.map((item) => item?.inventory_type_id);
+  //   setInventoryTypeId([...new Set(newlyFetchedIds)]); // Ensure unique IDs
+  //   fetchData(1, searchTerm, selectedCity); // Fetch data whenever inventoryTypeId changes
+  // }, [materialFormData]); // Triggered when materialFormData changes
 
   const fetchTermsAndConditions = async () => {
     try {
@@ -1258,9 +1258,9 @@ export default function EditEvent() {
       }
     };
 
-    if (inventoryTypeId.length > 0) {
+    // if (inventoryTypeId.length > 0) {
       fetchMaterialTypes();
-    }
+    // }
   }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
   return (
     <>

@@ -27,6 +27,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const [materialData, setMaterialData] = useState({});
   const [bidId, setBidId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isLoadingOffer, setIsLoadingOffer] = useState(false); // State for loader
   const [error, setError] = useState(null);
   const handle = useFullScreenHandle();
   const [activeIndexes, setActiveIndexes] = useState({});
@@ -415,6 +416,7 @@ export default function ResponseTab({ isCounterOffer }) {
   };
 
   const acceptOffer = async (bidId, revisedBidId, status) => {
+    setIsLoadingOffer(true); // Show loader
     try {
       const response = await axios.put(
         `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -445,6 +447,8 @@ export default function ResponseTab({ isCounterOffer }) {
           status === "accepted" ? "accept" : "decline"
         } the offer. Please try again.`
       );
+    } finally {
+      setIsLoadingOffer(false); // Hide loader
     }
   };
 
@@ -778,6 +782,10 @@ export default function ResponseTab({ isCounterOffer }) {
                           key: "realisedDiscount",
                         },
                         { label: "Landed Amount", key: "landedAmount" },
+                        {
+                          label: "Realised Tax Amount",
+                          key: "realised_tax_amount",
+                        },
                         { label: "Total Amount", key: "totalAmount" },
                         ...extraColumns
                           .filter((column) => /^[A-Z]/.test(column))
@@ -808,6 +816,10 @@ export default function ResponseTab({ isCounterOffer }) {
                             landedAmount: material.landed_amount || "_",
                             participantAttachment:
                               material.participant_attachment || "_",
+                            realised_tax_amount:
+                              parseFloat(material.realised_tax_amount).toFixed(
+                                2
+                              ) || "_",
                             totalAmount: material.total_amount || "_",
                             ...material.extra_columns.reduce((acc, column) => {
                               if (extraData[column]?.value) {
@@ -1484,7 +1496,7 @@ export default function ResponseTab({ isCounterOffer }) {
             label: "Decline",
             onClick: () => {
               acceptOffer(
-                pendingBid.id,
+                pendingBid.bid_id,
                 pendingBid.original_bid_id,
                 "rejected"
               );
@@ -1497,10 +1509,13 @@ export default function ResponseTab({ isCounterOffer }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
+              {
+                console.log("pendingBid:---", pendingBid);
+              }
 
-              if (pendingBid && pendingBid.id) {
+              if (pendingBid && pendingBid.bid_id) {
                 acceptOffer(
-                  pendingBid.id,
+                  pendingBid.bid_id,
                   pendingBid.original_bid_id,
                   "accepted"
                 );
@@ -1513,13 +1528,25 @@ export default function ResponseTab({ isCounterOffer }) {
         ]}
         centered={true}
       >
-        <div>
-          <p>{`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
-          <p>
-            A Revise is pending on your bid. You cannot make any further changes
-            to your bid until you resolve the revise offer.
-          </p>
-        </div>
+        {isLoadingOffer ? (
+          <div className="loader-container">
+            <div className="lds-ring">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <p>Loading...</p>
+          </div>
+        ) : (
+          <div>
+            <p>{`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
+            <p>
+              A Revise is pending on your bid. You cannot make any further
+              changes to your bid until you resolve the revise offer.
+            </p>
+          </div>
+        )}
       </DynamicModalBox>
       <ToastContainer />
     </div>

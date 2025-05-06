@@ -18,6 +18,7 @@ export const SegregatedBidMaterials = (inputArray) => {
           vendor_ids: [],
           additionTaxData: material.addition_bid_material_tax_details,
           deductionTaxData: material.deduction_bid_material_tax_details,
+          realised_tax_amount: material.realised_tax_amount,
         });
       }
       const materialData = materialMap.get(material.event_material_id);

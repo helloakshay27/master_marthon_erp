@@ -221,6 +221,7 @@ export default function Table({
                         realisedDiscount: "realised_discount",
                         landedAmount: "total_amount",
                         totalAmount: "total_amount",
+                        realised_tax_amount: "realised_tax_amount",
                       };
 
                       // Fetch serialized value based on key mapping
@@ -259,6 +260,7 @@ export default function Table({
                         "totalAmount",
                         "price",
                         "discount",
+                        "realised_tax_amount"
                       ].includes(columns[rowIndex]?.key);
 
                       return (
