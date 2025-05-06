@@ -163,7 +163,7 @@ const AddWorkSubCategory = () => {
                     Main Category <span>*</span>
                   </label>
                   <SingleSelector
-                    options={workCategories.map((category) => ({
+                    options={workCategories?.map((category) => ({
                       value: category.id,
                       label: category.name,
                       work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
