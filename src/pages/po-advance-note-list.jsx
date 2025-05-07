@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
@@ -290,6 +291,7 @@ const PoAdvanceNoteList = () => {
     // }
 
     setFromStatus(selectedOption.value);
+    fetchTableData({ status: selectedOption.value });
   };
 
   // Handle status change for 'To Status'
@@ -302,12 +304,38 @@ const PoAdvanceNoteList = () => {
   };
 
   // Handle checkbox selection
+  // const handleCheckboxChange = (id) => {
+  //   setSelectedIds((prev) => {
+  //     if (prev.includes(id)) {
+  //       return prev.filter((item) => item !== id);
+  //     } else {
+  //       return [...prev, id];
+  //     }
+  //   });
+  // };
+  const [selectAll, setSelectAll] = useState(false); // State to track "select all" checkbox
+  // const [selectedIds, setSelectedIds] = useState([]); // State to track selected rows
+
+  // Handle "select all" checkbox change
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      // If already selected, deselect all
+      setSelectedIds([]);
+    } else {
+      // Select all rows
+      const allIds = creditNotes.map((note) => note.id);
+      setSelectedIds(allIds);
+    }
+    setSelectAll(!selectAll); // Toggle "select all" state
+  };
+
+  // Handle individual checkbox change
   const handleCheckboxChange = (id) => {
     setSelectedIds((prev) => {
       if (prev.includes(id)) {
-        return prev.filter((item) => item !== id);
+        return prev.filter((item) => item !== id); // Deselect the row
       } else {
-        return [...prev, id];
+        return [...prev, id]; // Select the row
       }
     });
   };
@@ -685,7 +713,7 @@ const PoAdvanceNoteList = () => {
                   </div>
                 </div>
               </div> */}
-              <div className="d-flex justify-content-end me-3">
+              {/* <div className="d-flex justify-content-end me-3">
                 <button
                   className="purple-btn2 m-0 p-1 px-3"
                   // onClick={openFilterModal}
@@ -694,10 +722,10 @@ const PoAdvanceNoteList = () => {
                     <span className="material-symbols-outlined align-text-top me-2">
                       add{" "}
                     </span>
-                    Add
+                    Adds
                   </div>
                 </button>
-              </div>
+              </div> */}
               <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
                 <table
                   style={{
@@ -709,12 +737,16 @@ const PoAdvanceNoteList = () => {
                   <thead>
                     <tr>
                       <th className="text-start">
-                        <input type="checkbox" />
+                        <input
+                          type="checkbox"
+                          checked={selectAll} // Bind to "select all" state
+                          onChange={handleSelectAllChange} // Handle "select all" change
+                        />
                       </th>
                       <th className="text-start">Sr.No.</th>
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
-                      <th className="text-start">Sub-Project</th>
+                      {/* <th className="text-start">Sub-Project</th> */}
                       <th className="text-start">Debit Note No.</th>
                       <th className="text-start">Date</th>
                       <th className="text-start">Credit Note Type</th>
@@ -763,9 +795,15 @@ const PoAdvanceNoteList = () => {
                           </td>
                           <td className="text-start">-</td>
                           <td className="text-start">-</td>
-                          <td className="text-start">-</td>
-                          <td className="text-start">
+                          {/* <td className="text-start">-</td> */}
+                          {/* <td className="text-start">
                             {note.advance_number || "-"}
+                          </td> */}
+
+                          <td className="text-start">
+                            <Link to={`/po-advance-note-payment/${note.id}`}>
+                              {note.advance_number || "-"}
+                            </Link>
                           </td>
                           <td className="text-start">
                             {note.invoice_date
@@ -790,12 +828,8 @@ const PoAdvanceNoteList = () => {
                           <td className="text-start">
                             {note.supplier_name || "-"}
                           </td>
-                          <td className="text-start">
-                            {note.gst_number || "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.pan_number || "-"}
-                          </td>
+                          <td className="text-start">{note.gstin || "-"}</td>
+                          <td className="text-start">{note.pan_no || "-"}</td>
                           <td className="text-start">
                             {note.advance_amount || "-"}
                           </td>

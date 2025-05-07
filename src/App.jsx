@@ -98,7 +98,7 @@ function App() {
           <Route path="/add-approvals" element={<AddApprovals />} />
           <Route path="/create-BOQ" element={<CreateBOQ />} />
           <Route path="/boq-edit-new/:id" element={<EditBOQNew />} />
-          <Route path="/boq-amend/:id" element={<BoqAmend />} />
+          <Route path="/boq-amend/:id" element={<BoqAmend />} />
           <Route path="/create-BOQ" element={<BoqAmendSub />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
           <Route path="/view-BOQ" element={<BOQList />} />
@@ -262,7 +262,10 @@ function App() {
             />
             <Route path="/credit-note-list" element={<CreditNoteList />} />
             <Route path="/debit-note-create" element={<DebitNoteCreate />} />
-            <Route path="/debit-note-details/:id" element={<DebitNoteDetails />} />
+            <Route
+              path="/debit-note-details/:id"
+              element={<DebitNoteDetails />}
+            />
             <Route path="/debit-note-list" element={<DebitNoteList />} />
             <Route
               path="/po-advance-note-details"
@@ -377,7 +380,7 @@ function App() {
               path="/bill-verification-list"
               element={<BillVerificationList />}
             />
-          
+
             <Route
               path="/credit-note-details"
               element={<CreditNoteDetails />}
@@ -386,12 +389,12 @@ function App() {
             <Route path="/debit-note-create" element={<DebitNoteCreate />} />
             <Route path="/debit-note-details" element={<DebitNoteDetails />} />
             <Route path="/debit-note-list" element={<DebitNoteList />} />
-            <Route
+            {/* <Route
               path="/po-advance-note-details"
               element={<POAdvanceNoteDetails />}
-            />
+            /> */}
             <Route
-              path="/po-advance-note-payment"
+              path="/po-advance-note-payment/:id"
               element={<PoAdvanceNotePayment />}
             />
             <Route

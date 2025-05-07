@@ -421,8 +421,20 @@ const PoAdvanceNotePayment = () => {
 
   return (
     <>
-      <div className="main-concent">
-        <div className="website-content overflow-auto">
+      <div
+        className="main-concent"
+        style={{
+          overflowX: "hidden",
+          width: "100%",
+        }}
+      >
+        <div
+          className="website-content "
+          style={{
+            maxWidth: "100%",
+            overflowX: "hidden",
+          }}
+        >
           <div className="module-data-section container-fluid ms-2">
             <a href="">Home &gt; Billing &amp; Accounts &gt; Advance </a>
             <h5 className="mt-3">Advance </h5>
@@ -591,16 +603,13 @@ const PoAdvanceNotePayment = () => {
 
                       <div className="row">
                         {/* form-select EXAMPLE */}
-                        <div
-                          className="card card-default"
-                          id="mor-material-details"
-                        >
+                        <div className="card">
                           <div className="card-body mt-0">
-                            <div className=" d-flex justify-content-end">
+                            {/* <div className=" d-flex justify-content-end">
                               <a href="#" className="text-decoration-underline">
                                 Existing Allocated PO &amp; Advance
                               </a>
-                            </div>
+                            </div> */}
                             <div className="row">
                               <div className="col-md-4 ">
                                 <div className="form-group">
@@ -617,6 +626,7 @@ const PoAdvanceNotePayment = () => {
                                       )?.company_name || ""
                                     }
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -644,10 +654,11 @@ const PoAdvanceNotePayment = () => {
                                         )?.name || ""
                                     }
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
-                              <div className="col-md-4 mt-2">
+                              <div className="col-md-4">
                                 <div className="form-group">
                                   <label>Advance Number</label>
                                   <input
@@ -656,6 +667,7 @@ const PoAdvanceNotePayment = () => {
                                     placeholder="Default input"
                                     value={advanceNote?.advance_number || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -670,10 +682,11 @@ const PoAdvanceNotePayment = () => {
                                       advanceNote?.certificate_number || ""
                                     }
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
-                              <div className="col-md-3 mt-2">
+                              <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>PO Number</label>
                                   <input
@@ -685,14 +698,14 @@ const PoAdvanceNotePayment = () => {
                                   />
                                 </div>
                               </div>
-                              <div className="col-md-1 pt-4">
+                              {/* <div className="col-md-1 pt-4">
                                 <p
                                   className="mt-2 text-decoration-underline cursor-pointer"
-                                  // onClick={openSelectPOModal}
+                                  onClick={openSelectPOModal}
                                 >
-                                  {/* Select */}
+                                  Select
                                 </p>
-                              </div>
+                              </div> */}
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>PO Date</label>
@@ -702,6 +715,7 @@ const PoAdvanceNotePayment = () => {
                                     name="po_date"
                                     value={advanceNote?.po_date || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -714,6 +728,7 @@ const PoAdvanceNotePayment = () => {
                                     name="po_value"
                                     value={advanceNote?.po_value || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -727,6 +742,7 @@ const PoAdvanceNotePayment = () => {
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.performa_number || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -739,6 +755,7 @@ const PoAdvanceNotePayment = () => {
                                     placeholder=""
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.performa_amount || ""}
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -754,17 +771,18 @@ const PoAdvanceNotePayment = () => {
                                       className="form-control"
                                       type="text"
                                       value={advanceNote?.invoice_date || ""}
+                                      disabled
                                     />
-                                    <span className="input-group-addon">
+                                    {/* <span className="input-group-addon">
                                       <i
                                         className="fa-solid fa-calendar-days"
                                         style={{ color: "#8B0203" }}
                                       />{" "}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 </div>
                               </div>
-                              <div className="col-md-3 mt-2">
+                              <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>Supplier Name</label>
                                   <input
@@ -773,10 +791,11 @@ const PoAdvanceNotePayment = () => {
                                     placeholder=""
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.supplier_name || ""}
+                                    disabled
                                   />
                                 </div>
                               </div>
-                              <div
+                              {/* <div
                                 className="col-md-1 pt-4"
                                 data-bs-toggle="modal"
                                 data-bs-target="#selectModal"
@@ -784,7 +803,7 @@ const PoAdvanceNotePayment = () => {
                                 <p className="mt-2 text-decoration-underline">
                                   View Details
                                 </p>
-                              </div>
+                              </div> */}
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>GSTIN Number</label>
@@ -792,8 +811,9 @@ const PoAdvanceNotePayment = () => {
                                     className="form-control"
                                     type="text"
                                     name="gstin_number"
-                                    value={advanceNote?.gst_number || ""}
+                                    value={advanceNote?.gstin || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -804,8 +824,9 @@ const PoAdvanceNotePayment = () => {
                                     className="form-control"
                                     type="text"
                                     name="pan_number"
-                                    value={advanceNote?.pan_number || ""}
+                                    value={advanceNote?.pan_no || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -821,6 +842,7 @@ const PoAdvanceNotePayment = () => {
                                       advanceNote?.advance_percentage || ""
                                     }
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -834,6 +856,7 @@ const PoAdvanceNotePayment = () => {
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.advance_amount || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -847,6 +870,7 @@ const PoAdvanceNotePayment = () => {
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.net_payable || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -858,6 +882,7 @@ const PoAdvanceNotePayment = () => {
                                     type="text"
                                     value={advanceNote?.payment_mode || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -871,6 +896,7 @@ const PoAdvanceNotePayment = () => {
                                     fdprocessedid="qv9ju9"
                                     value={advanceNote?.payee_name || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
@@ -889,13 +915,14 @@ const PoAdvanceNotePayment = () => {
                                         advanceNote?.expected_payment_date || ""
                                       }
                                       readOnly
+                                      disabled
                                     />
-                                    <span className="input-group-addon">
+                                    {/* <span className="input-group-addon">
                                       <i
                                         className="fa-solid fa-calendar-days"
                                         style={{ color: "#8B0203" }}
                                       />{" "}
-                                    </span>
+                                    </span> */}
                                   </div>
                                 </div>
                               </div>
@@ -909,6 +936,7 @@ const PoAdvanceNotePayment = () => {
                                     defaultValue={""}
                                     value={advanceNote?.remark || ""}
                                     readOnly
+                                    disabled
                                   />
                                 </div>
                               </div>
