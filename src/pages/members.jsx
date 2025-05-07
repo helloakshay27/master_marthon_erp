@@ -380,6 +380,7 @@ function Members() {
                     Bill Verification List
                   </Link>
                 </li>
+                <h5>___Credit Note___</h5>
                 <li>
                   <Link to="/credit-note-create">Credit Note Create</Link>
                 </li>
@@ -389,15 +390,17 @@ function Members() {
                 <li>
                   <Link to="/credit-note-list">Credit Note List</Link>
                 </li>
+                <h5>___Debit Note___</h5>
                 <li>
                   <Link to="/debit-note-create">Debit Note Create</Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/debit-note-details">Debit Note Details</Link>
-                </li>
+                </li> */}
                 <li>
                   <Link to="/debit-note-list">Debit Note List</Link>
                 </li>
+                <h5>___PO Advance___</h5>
                 <li>
                   <Link to="/po-advance-note-details">
                     PO Advance Note Details

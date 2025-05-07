@@ -509,7 +509,7 @@ const CreditNoteDetails = () => {
         .filter((tax) => tax.addition) // Filter for addition: true
         .map((tax) => (
           <tr key={tax.id}>
-            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.tax_name}</td>
             <td className="text-start">{tax.percentage}%</td>
             <td className="text-start">
               {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
@@ -566,7 +566,7 @@ const CreditNoteDetails = () => {
         .filter((tax) => !tax.addition) // Filter for addition: false
         .map((tax) => (
           <tr key={tax.id}>
-            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.tax_name}</td>
             <td className="text-start">{tax.percentage}%</td>
             <td className="text-start">
               {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}

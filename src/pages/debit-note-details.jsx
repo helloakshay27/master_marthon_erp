@@ -10,6 +10,7 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import SingleSelector from '../components/base/Select/SingleSelector';
+import { baseURL } from '../confi/apiDomain';
 const DebitNoteDetails = () => {
   // const [showRows, setShowRows] = useState(false);
     const { id } = useParams();
@@ -501,7 +502,7 @@ const DebitNoteDetails = () => {
         ?.filter((tax) => tax.addition) // Filter for addition: true
         .map((tax) => (
           <tr key={tax.id}>
-            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.tax_name}</td>
             <td className="text-start">{tax.percentage}%</td>
             <td className="text-start">
               {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
@@ -558,7 +559,7 @@ const DebitNoteDetails = () => {
         .filter((tax) => !tax.addition) // Filter for addition: false
         .map((tax) => (
           <tr key={tax.id}>
-            <td className="text-start">{tax.remarks}</td>
+            <td className="text-start">{tax.tax_name}</td>
             <td className="text-start">{tax.percentage}%</td>
             <td className="text-start">
               {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
