@@ -541,7 +541,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
   return (
     <div
-      className="tab-pane fade"
+      className="tab-pane fade allocation"
       id="allocation"
       role="tabpanel"
       aria-labelledby="allocation-tab"

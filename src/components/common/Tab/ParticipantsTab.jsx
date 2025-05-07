@@ -467,7 +467,7 @@ export default function ParticipantsTab({ id }) {
   };
 
   return (
-    <div>
+    <>
       {isLoading ? ( // Display loader when isLoading is true
         <div className="loader-container">
           <div className="lds-ring">
@@ -484,13 +484,12 @@ export default function ParticipantsTab({ id }) {
         </div>
       ) : (
         <div
-          className="tab-pane fade"
+          className="tab-pane fade participants"
           id="participants"
           role="tabpanel"
           aria-labelledby="participants-tab"
           tabIndex={0}
-        >
-          <div>
+        >          
             <div className="d-flex justify-content-between mt-4 align-items-center">
               <div className="input-group">
                 <input
@@ -647,7 +646,7 @@ export default function ParticipantsTab({ id }) {
                 </div>
               </div>
             )}
-          </div>
+          
           <DynamicModalBox
             size="xl"
             title="All Vendors"
@@ -1002,6 +1001,6 @@ export default function ParticipantsTab({ id }) {
         </div>
       )}
       <ToastContainer />
-    </div>
+    </>
   );
 }
