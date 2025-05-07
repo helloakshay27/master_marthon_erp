@@ -839,10 +839,10 @@ const DebitNoteCreate = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid ms-2">
+        <div className="module-data-section  ms-2">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Debit Note </a>
           <h5 className="mt-3">Debit Note </h5>
-          <div className="row my-4 align-items-center">
+          <div className="row container-fluid my-4 align-items-center">
             <div className="col-md-12 px-2">
               <div
                 className="tab-content mor-content active"
@@ -1123,7 +1123,7 @@ const DebitNoteCreate = () => {
                             <h5 className=" ">Tax Details</h5>
                           </div>
 
-                          <div className="tbl-container mx-3 mt-3">
+                          <div className="tbl-container mt-3">
                             <table className="w-100">
                               <thead>
                                 <tr>
@@ -1505,7 +1505,7 @@ const DebitNoteCreate = () => {
                               </tbody>
                             </table>
                           </div>
-                          <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                          <div className="d-flex justify-content-between align-items-end  mt-5">
                             <h5 className="mt-3">
                               Document Attachments{" "}
                               <span style={{ color: "red", fontSize: "16px" }}>

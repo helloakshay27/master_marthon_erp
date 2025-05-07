@@ -739,7 +739,7 @@ const BOQList = () => {
     setSelectedStatus(null);
     setSelectedUnit(null);
     // Optionally, reset other states like `searchKeyword` if needed
-    console.log("Filters reset");
+    // console.log("Filters reset");
   };
   
   return (
