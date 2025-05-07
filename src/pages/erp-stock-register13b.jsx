@@ -475,8 +475,11 @@ const ErpStockRegister13B = () => {
 
 .tbl-container {
 
-height: 300px !important;
+height: 350px !important;
 
+}
+.css-5n0k77:last-child{
+display:none !important;
 }
 
 
