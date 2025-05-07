@@ -1495,11 +1495,17 @@ export default function ResponseTab({ isCounterOffer }) {
           {
             label: "Decline",
             onClick: () => {
+              const pendingBid = materialData?.bids_values?.find(
+                (bid) => bid.status === "pending"
+              );
+              if(pendingBid && pendingBid.bid_id) {
+                console.log("pendingBid:---", pendingBid);
+                
               acceptOffer(
                 pendingBid.bid_id,
                 pendingBid.original_bid_id,
                 "rejected"
-              );
+              )}
             },
             props: { className: "purple-btn1" },
           },
