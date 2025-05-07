@@ -436,6 +436,7 @@ export default function ResponseTab({ isCounterOffer }) {
             : "Offer declined successfully"
         );
         setIsOfferAccepted(true); // Trigger the API call for event responses
+        setShowCounterOfferPopup(false); // Close the popup
       }
     } catch (error) {
       console.error(
@@ -1498,11 +1499,11 @@ export default function ResponseTab({ isCounterOffer }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
-              if(pendingBid && pendingBid.bid_id) {
+              if(pendingBid && pendingBid.id) {
                 console.log("pendingBid:---", pendingBid);
                 
               acceptOffer(
-                pendingBid.bid_id,
+                pendingBid.id,
                 pendingBid.original_bid_id,
                 "rejected"
               )}
@@ -1519,9 +1520,9 @@ export default function ResponseTab({ isCounterOffer }) {
                 console.log("pendingBid:---", pendingBid);
               }
 
-              if (pendingBid && pendingBid.bid_id) {
+              if (pendingBid && pendingBid.id) {
                 acceptOffer(
-                  pendingBid.bid_id,
+                  pendingBid.id,
                   pendingBid.original_bid_id,
                   "accepted"
                 );
