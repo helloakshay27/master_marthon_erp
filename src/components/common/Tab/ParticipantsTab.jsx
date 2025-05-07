@@ -21,6 +21,7 @@ export default function ParticipantsTab({ id }) {
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isVendorLoading, setIsVendorLoading] = useState(false);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [resetSelectedRows, setResetSelectedRows] = useState(false);
   const [selectedCity, setSelectedCity] = useState([]);
@@ -105,16 +106,16 @@ export default function ParticipantsTab({ id }) {
     const maxPagesToShow = 5;
     let start = Math.max(1, currentParticipantPage - 2);
     let end = Math.min(totalParticipantPages, start + maxPagesToShow - 1);
-  
+
     if (end - start < maxPagesToShow - 1) {
       start = Math.max(1, end - maxPagesToShow + 1);
     }
-  
+
     for (let i = start; i <= end; i++) {
       range.push(i);
     }
     return range;
-  };  
+  };
 
   const handleInviteInputChange = (e) => {
     const { name, value } = e.target;
@@ -204,9 +205,9 @@ export default function ParticipantsTab({ id }) {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
-  
+
         setParticipants(data || []);
         setTotalParticipantPages(data?.pagination?.total_pages || 1);
       } catch (err) {
@@ -215,10 +216,9 @@ export default function ParticipantsTab({ id }) {
         setLoading(false);
       }
     };
-  
+
     fetchParticipants();
   }, [id, currentParticipantPage]);
-  
 
   useEffect(() => {
     const formattedData = (participants?.event_vendors || []).map(
@@ -357,6 +357,7 @@ export default function ParticipantsTab({ id }) {
   const handleSaveButtonClick = async () => {
     if (isSaving) return;
     setIsSaving(true);
+    setIsVendorLoading(true); // Start loader
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
 
     const url = `${baseURL}rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
@@ -367,6 +368,7 @@ export default function ParticipantsTab({ id }) {
       const response = await fetch(url, {
         method: "POST",
       });
+      setVendorModal(false);
 
       if (response.ok) {
         const updatedTableData = tableData.filter(
@@ -381,7 +383,7 @@ export default function ParticipantsTab({ id }) {
         setVendorData(updatedVendorData);
 
         setSelectedVendors((prev) => [...prev, ...selectedRows]);
-        setVendorModal(false);
+
         setSelectedRows([]);
         setResetSelectedRows(true);
         toast.success("Vendors added successfully!", {
@@ -397,6 +399,7 @@ export default function ParticipantsTab({ id }) {
       });
     } finally {
       setIsSaving(false);
+      setIsVendorLoading(false); // Stop loader
     }
   };
 
@@ -489,164 +492,190 @@ export default function ParticipantsTab({ id }) {
           role="tabpanel"
           aria-labelledby="participants-tab"
           tabIndex={0}
-        >          
-            <div className="d-flex justify-content-between mt-4 align-items-center">
-              <div className="input-group">
-                <input
-                  type="search"
-                  id="searchInput"
-                  className="w-50 tbl-search"
-                  placeholder="Type your vendors here"
-                  style={{ paddingLeft: "10px" }}
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-                <div className="input-group-append">
-                  <button
-                    type="button"
-                    className="btn btn-md btn-default"
-                    onClick={handleSearchClick}
-                  >
-                    <SearchIcon />
-                  </button>
-                </div>
+        >
+          <div className="d-flex justify-content-between mt-4 align-items-center">
+            <div className="input-group">
+              <input
+                type="search"
+                id="searchInput"
+                className="w-50 tbl-search"
+                placeholder="Type your vendors here"
+                style={{ paddingLeft: "10px" }}
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              <div className="input-group-append">
+                <button
+                  type="button"
+                  className="btn btn-md btn-default"
+                  onClick={handleSearchClick}
+                >
+                  <SearchIcon />
+                </button>
               </div>
-              <div className="d-flex align-items-center"></div>
-              <button
-                className="purple-btn2 mt-3"
-                onClick={handleVendorTypeModalShow}
-              >
-                <span className="material-symbols-outlined align-text-top me-2">
-                  add
-                </span>
-                <span>Add</span>
-              </button>
             </div>
-            {vendorData?.length > 0 ? (
+            <div className="d-flex align-items-center"></div>
+            <button
+              className="purple-btn2 mt-3"
+              onClick={handleVendorTypeModalShow}
+            >
+              <span className="material-symbols-outlined align-text-top me-2">
+                add
+              </span>
+              <span>Add</span>
+            </button>
+          </div>
+          {vendorData?.length > 0 ? (
+            !isVendorLoading ? (
               <div className="tbl-container">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>Sr No</th>
-                    <th>Name</th>
-                    <th>Mob No.</th>
-                    <th>Email</th>
-                    <th>Organisation</th>
-                  </tr>
-                </thead>
-                <tbody >
-                  {vendorData.map((vendor, index) => (
-                    <tr key={vendor.key}>
-                      <td style={{ textAlign: "left" }}>{(currentParticipantPage - 1) * participantPageSize + index + 1}</td>
-                      <td style={{ textAlign: "left" }}>{vendor.name}</td>
-                      <td style={{ textAlign: "left" }}>{vendor.phone}</td>
-                      <td style={{ textAlign: "left" }}>{vendor.email}</td>
-                      <td style={{ textAlign: "left" }}>{vendor.organisation}</td>
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th>Sr No</th>
+                      <th>Name</th>
+                      <th>Mob No.</th>
+                      <th>Email</th>
+                      <th>Organisation</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {vendorData.map((vendor, index) => (
+                      <tr key={vendor.key}>
+                        <td style={{ textAlign: "left" }}>
+                          {(currentParticipantPage - 1) * participantPageSize +
+                            index +
+                            1}
+                        </td>
+                        <td style={{ textAlign: "left" }}>{vendor.name}</td>
+                        <td style={{ textAlign: "left" }}>{vendor.phone}</td>
+                        <td style={{ textAlign: "left" }}>{vendor.email}</td>
+                        <td style={{ textAlign: "left" }}>
+                          {vendor.organisation}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <div className="text-center mt-4">No data found</div>
-            )}
-            {totalParticipantPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                <ul className="pagination justify-content-center d-flex">
-                  <li
-                    className={`page-item ${
-                      currentParticipantPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handleParticipantPageChange(1)}
-                    >
-                      First
-                    </button>
-                  </li>
-
-                  <li
-                    className={`page-item ${
-                      currentParticipantPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handleParticipantPageChange(currentParticipantPage - 1)
-                      }
-                    >
-                      Prev
-                    </button>
-                  </li>
-
-                  {getPageParticipantRange().map((page) => (
-                    <li
-                      key={page}
-                      className={`page-item ${
-                        currentParticipantPage === page ? "active" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handleParticipantPageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    </li>
-                  ))}
-
-                  <li
-                    className={`page-item ${
-                      currentParticipantPage === totalParticipantPages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handleParticipantPageChange(currentParticipantPage + 1)
-                      }
-                    >
-                      Next
-                    </button>
-                  </li>
-
-                  <li
-                    className={`page-item ${
-                      currentParticipantPage === totalParticipantPages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handleParticipantPageChange(totalParticipantPages)}
-                    >
-                      Last
-                    </button>
-                  </li>
-                </ul>
-
-                <div>
-                  <p>
-                    Showing{" "}
-                    {vendorData.length > 0
-                      ? (currentParticipantPage - 1) * participantPageSize + 1
-                      : 0}{" "}
-                    to{" "}
-                    {Math.min(
-                      currentParticipantPage * participantPageSize,
-                      totalParticipantPages * participantPageSize
-                    )}{" "}
-                    of {totalParticipantPages * participantPageSize} entries
-                  </p>
+              <>
+                <div className="loader-container">
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>Loading...</p>
                 </div>
+              </>
+            )
+          ) : (
+            <div className="text-center mt-4">No data found</div>
+          )}
+          {totalParticipantPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+              <ul className="pagination justify-content-center d-flex">
+                <li
+                  className={`page-item ${
+                    currentParticipantPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handleParticipantPageChange(1)}
+                  >
+                    First
+                  </button>
+                </li>
+
+                <li
+                  className={`page-item ${
+                    currentParticipantPage === 1 ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      handleParticipantPageChange(currentParticipantPage - 1)
+                    }
+                  >
+                    Prev
+                  </button>
+                </li>
+
+                {getPageParticipantRange().map((page) => (
+                  <li
+                    key={page}
+                    className={`page-item ${
+                      currentParticipantPage === page ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handleParticipantPageChange(page)}
+                    >
+                      {page}
+                    </button>
+                  </li>
+                ))}
+
+                <li
+                  className={`page-item ${
+                    currentParticipantPage === totalParticipantPages
+                      ? "disabled"
+                      : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      handleParticipantPageChange(currentParticipantPage + 1)
+                    }
+                  >
+                    Next
+                  </button>
+                </li>
+
+                <li
+                  className={`page-item ${
+                    currentParticipantPage === totalParticipantPages
+                      ? "disabled"
+                      : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() =>
+                      handleParticipantPageChange(totalParticipantPages)
+                    }
+                  >
+                    Last
+                  </button>
+                </li>
+              </ul>
+
+              <div>
+                <p>
+                  Showing{" "}
+                  {vendorData.length > 0
+                    ? (currentParticipantPage - 1) * participantPageSize + 1
+                    : 0}{" "}
+                  to{" "}
+                  {Math.min(
+                    currentParticipantPage * participantPageSize,
+                    totalParticipantPages * participantPageSize
+                  )}{" "}
+                  of {totalParticipantPages * participantPageSize} entries
+                </p>
               </div>
-            )}
-          
+            </div>
+          )}
+
           <DynamicModalBox
             size="xl"
             title="All Vendors"
@@ -665,197 +694,218 @@ export default function ParticipantsTab({ id }) {
               },
             ]}
             children={
-              <>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="input-group w-50 position-relative">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="tbl-search form-control"
-                      placeholder="Search Vendors"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      onFocus={() => setIsSuggestionsVisible(true)}
-                      onBlur={() =>
-                        setTimeout(() => setIsSuggestionsVisible(false), 200)
-                      }
-                    />
-                    <div className="input-group-append">
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        onClick={handleSearchClick}
-                      >
-                        <SearchIcon />
-                      </button>
+              isVendorLoading ? (
+                <>
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
                     </div>
-                    {isSuggestionsVisible && suggestions.length > 0 && (
-                      <ul
-                        className="suggestions-list position-absolute bg-white border rounded w-100"
-                        style={{ zIndex: 1000, top: "100%" }}
+                    <p>Loading...</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="input-group w-50 position-relative">
+                      <input
+                        type="search"
+                        id="searchInput"
+                        className="tbl-search form-control"
+                        placeholder="Search Vendors"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => setIsSuggestionsVisible(true)}
+                        onBlur={() =>
+                          setTimeout(() => setIsSuggestionsVisible(false), 200)
+                        }
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
+                          onClick={handleSearchClick}
+                        >
+                          <SearchIcon />
+                        </button>
+                      </div>
+                      {isSuggestionsVisible && suggestions.length > 0 && (
+                        <ul
+                          className="suggestions-list position-absolute bg-white border rounded w-100"
+                          style={{ zIndex: 1000, top: "100%" }}
+                        >
+                          {suggestions.map((suggestion) => (
+                            <li
+                              key={suggestion.id}
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              className="p-2 cursor-pointer"
+                            >
+                              {suggestion.name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="d-flex">
+                      <button
+                        className="purple-btn2 viewBy-main-child2P mb-0"
+                        onClick={handleInviteModalShow}
                       >
-                        {suggestions.map((suggestion) => (
-                          <li
-                            key={suggestion.id}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className="p-2 cursor-pointer"
-                          >
-                            {suggestion.name}
-                          </li>
-                        ))}
-                      </ul>
+                        <i className="bi bi-person-plus"></i>
+                        <span className="ms-2">Invite</span>
+                      </button>
+
+                      <PopupBox
+                        title="Filter by"
+                        show={showPopup}
+                        onClose={() => setShowPopup(false)}
+                        footerButtons={[
+                          {
+                            label: "Cancel",
+                            onClick: () => setShowPopup(false),
+                            props: {
+                              className: "purple-btn1",
+                            },
+                          },
+                          {
+                            label: "Apply",
+                            onClick: handleApply,
+                            props: {
+                              className: "purple-btn2",
+                            },
+                          },
+                        ]}
+                        children={
+                          <div>
+                            <div style={{ marginBottom: "12px" }}>
+                              <SelectBox
+                                label={"City"}
+                                options={citiesList}
+                                defaultValue={""}
+                                onChange={handleCityChange}
+                                isDisableFirstOption={true}
+                              />
+                            </div>
+                          </div>
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                    {filteredTableData.length > 0 ? (
+                      <Table
+                        columns={participantsTabColumns}
+                        showCheckbox={true}
+                        data={filteredTableData.map((vendor, index) => ({
+                          ...vendor,
+                          srNo: (currentPage - 1) * pageSize + index + 1,
+                        }))}
+                        handleCheckboxChange={handleCheckboxChange}
+                        isRowSelected={isVendorSelected}
+                        resetSelectedRows={resetSelectedRows}
+                        onResetComplete={() => setResetSelectedRows(false)}
+                        onRowSelect={undefined}
+                        cellClass="text-start"
+                        currentPage={currentPage}
+                        pageSize={pageSize}
+                      />
+                    ) : (
+                      <p>No vendors found</p>
                     )}
                   </div>
-                  <div className="d-flex">
-                    <button
-                      className="purple-btn2 viewBy-main-child2P mb-0"
-                      onClick={handleInviteModalShow}
-                    >
-                      <i className="bi bi-person-plus"></i>
-                      <span className="ms-2">Invite</span>
-                    </button>
-
-                    <PopupBox
-                      title="Filter by"
-                      show={showPopup}
-                      onClose={() => setShowPopup(false)}
-                      footerButtons={[
-                        {
-                          label: "Cancel",
-                          onClick: () => setShowPopup(false),
-                          props: {
-                            className: "purple-btn1",
-                          },
-                        },
-                        {
-                          label: "Apply",
-                          onClick: handleApply,
-                          props: {
-                            className: "purple-btn2",
-                          },
-                        },
-                      ]}
-                      children={
-                        <div>
-                          <div style={{ marginBottom: "12px" }}>
-                            <SelectBox
-                              label={"City"}
-                              options={citiesList}
-                              defaultValue={""}
-                              onChange={handleCityChange}
-                              isDisableFirstOption={true}
-                            />
-                          </div>
-                        </div>
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                  {filteredTableData.length > 0 ? (
-                    <Table
-                      columns={participantsTabColumns}
-                      showCheckbox={true}
-                      data={filteredTableData.map((vendor, index) => ({
-                        ...vendor,
-                        srNo: (currentPage - 1) * pageSize + index + 1,
-                      }))}
-                      handleCheckboxChange={handleCheckboxChange}
-                      isRowSelected={isVendorSelected}
-                      resetSelectedRows={resetSelectedRows}
-                      onResetComplete={() => setResetSelectedRows(false)}
-                      onRowSelect={undefined}
-                      cellClass="text-start"
-                      currentPage={currentPage}
-                      pageSize={pageSize}
-                    />
-                  ) : (
-                    <p>No vendors found</p>
-                  )}
-                </div>
-                <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                  <ul className="pagination justify-content-center d-flex ">
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        First
-                      </button>
-                    </li>
-
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Prev
-                      </button>
-                    </li>
-
-                    {getPageRange().map((pageNumber) => (
+                  <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                    <ul className="pagination justify-content-center d-flex ">
                       <li
-                        key={pageNumber}
                         className={`page-item ${
-                          currentPage === pageNumber ? "active" : ""
+                          currentPage === 1 ? "disabled" : ""
                         }`}
                       >
                         <button
                           className="page-link"
-                          onClick={() => handlePageChange(pageNumber)}
+                          onClick={() => handlePageChange(1)}
                         >
-                          {pageNumber}
+                          First
                         </button>
                       </li>
-                    ))}
 
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                      <li
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
                       >
-                        Next
-                      </button>
-                    </li>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
 
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
+                      {getPageRange().map((pageNumber) => (
+                        <li
+                          key={pageNumber}
+                          className={`page-item ${
+                            currentPage === pageNumber ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(pageNumber)}
+                          >
+                            {pageNumber}
+                          </button>
+                        </li>
+                      ))}
+
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
                       >
-                        Last
-                      </button>
-                    </li>
-                  </ul>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
 
-                  <div>
-                    <p>
-                      Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                      {Math.min(currentPage * pageSize, totalPages * pageSize)}{" "}
-                      of {totalPages * pageSize} entries
-                    </p>
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+
+                    <div>
+                      <p>
+                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
+                        {Math.min(
+                          currentPage * pageSize,
+                          totalPages * pageSize
+                        )}{" "}
+                        of {totalPages * pageSize} entries
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </>
+                </>
+              )
             }
           />
 
