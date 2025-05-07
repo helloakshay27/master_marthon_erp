@@ -334,6 +334,9 @@ export default function CounterOffer() {
       );
       if (response.ok) {
         toast.success("Counter bid submitted successfully!"); // Display success message
+        setTimeout(() => {
+          navigate(-1); // Navigate back after a delay
+        }, 500); // Adjust the delay as needed
       } else {
         throw new Error("Failed to submit counter bid");
       }
@@ -1004,56 +1007,72 @@ export default function CounterOffer() {
           </div>
 
           <h5 className="mt-4">Material Sheet</h5>
-          <Table columns={productTableColumns} data={productTableData} />
-          <div className="d-flex justify-content-end">
-            <ShortDataTable
-              data={tableData}
-              disabled={true} // Use the new disabled prop
-              onValueChange={handleValueChange}
-            />
-          </div>
-          <div className="d-flex justify-content-end mt-4">
-            <button
-              onClick={handleOpenOtherChargesModal}
-              className="purple-btn2"
-            >
-              Other Charges
-            </button>
-            <ChargesDataTable
-              data={chargesData}
-              showOtherChargesModal={showOtherChargesModal}
-              handleCloseOtherChargesModal={handleCloseOtherChargesModal}
-              setGrossTotal={setSumTotal}
-              grossTotal={sumTotal}
-              editable={true}
-              onValueChange={(updated) => {
-                setChargesData(updated);
-              }}
-              calculateGrossTotal={calculateGrossTotal}
-            />
-          </div>
-          <div className="d-flex justify-content-end">
-            <h4>Sum Total : ₹{sumTotal}</h4>
-          </div>
+          {loading ? (
+            <>
+              <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Loading...</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <Table columns={productTableColumns} data={productTableData} />
+              <div className="d-flex justify-content-end">
+                <ShortDataTable
+                  data={tableData}
+                  disabled={true} // Use the new disabled prop
+                  onValueChange={handleValueChange}
+                />
+              </div>
+              <div className="d-flex justify-content-end mt-4">
+                <button
+                  onClick={handleOpenOtherChargesModal}
+                  className="purple-btn2"
+                >
+                  Other Charges
+                </button>
+                <ChargesDataTable
+                  data={chargesData}
+                  showOtherChargesModal={showOtherChargesModal}
+                  handleCloseOtherChargesModal={handleCloseOtherChargesModal}
+                  setGrossTotal={setSumTotal}
+                  grossTotal={sumTotal}
+                  editable={true}
+                  onValueChange={(updated) => {
+                    setChargesData(updated);
+                  }}
+                  calculateGrossTotal={calculateGrossTotal}
+                />
+              </div>
+              <div className="d-flex justify-content-end">
+                <h4>Sum Total : ₹{sumTotal}</h4>
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="counterOfferRemarks">Counter Offer Remarks</label>
-            <input
-              className="form-control"
-              placeholder="Enter your remarks here"
-              type="text"
-              id="counterOfferRemarks"
-            />
-          </div>
-          <div className="d-flex justify-content-end mt-4">
-            <button
-              className="purple-btn2"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? "Submitting..." : "Submit"}
-            </button>
-          </div>
+              <div className="form-group">
+                <label htmlFor="counterOfferRemarks">
+                  Counter Offer Remarks
+                </label>
+                <input
+                  className="form-control"
+                  placeholder="Enter your remarks here"
+                  type="text"
+                  id="counterOfferRemarks"
+                />
+              </div>
+              <div className="d-flex justify-content-end mt-4">
+                <button
+                  className="purple-btn2"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                </button>
+              </div>
+            </>
+          )}
 
           <DynamicModalBox
             show={showTaxModal}
