@@ -42,44 +42,10 @@ const PoAdvanceNotePayment = () => {
     );
   };
 
-  // const [rows, setRows] = useState([
-  //   {
-  //     id: 1,
-  //     type: "Tax Type 1",
-  //     charges: "200",
-  //     inclusive: false,
-  //     amount: 50.0,
-  //   },
-  //   {
-  //     id: 2,
-  //     type: "Tax Type 2",
-  //     charges: "200",
-  //     inclusive: true,
-  //     amount: 75.0,
-  //   },
-  //   {
-  //     id: 3,
-  //     type: "Tax Type 3",
-  //     charges: "300",
-  //     inclusive: false,
-  //     amount: 25.0,
-  //   },
-  // ]);
-
   // Toggle visibility of rows
   const toggleRows = () => {
     setShowRows((prev) => !prev);
   };
-
-  // // Delete a specific row
-  // const deleteRow = (id) => {
-  //   setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  // };
-
-  // // Calculate Sub Total (Addition)
-  // const calculateSubTotal = () => {
-  //   return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
-  // };
 
   const [pageSize, setPageSize] = useState(5);
   const [projects, setProjects] = useState([]);
@@ -619,12 +585,7 @@ const PoAdvanceNotePayment = () => {
                                   <input
                                     className="form-control"
                                     type="text"
-                                    value={
-                                      companies.find(
-                                        (company) =>
-                                          company.id === advanceNote?.company_id
-                                      )?.company_name || ""
-                                    }
+                                    value={advanceNote?.company_name}
                                     readOnly
                                     disabled
                                   />
@@ -640,19 +601,7 @@ const PoAdvanceNotePayment = () => {
                                     className="form-control"
                                     type="text"
                                     // value={advanceNote?.project_id || ""}
-                                    value={
-                                      companies
-                                        .find(
-                                          (company) =>
-                                            company.id ===
-                                            advanceNote?.company_id
-                                        )
-                                        ?.projects.find(
-                                          (project) =>
-                                            project.id ===
-                                            advanceNote?.project_id
-                                        )?.name || ""
-                                    }
+                                    value={advanceNote?.project_name || ""}
                                     readOnly
                                     disabled
                                   />

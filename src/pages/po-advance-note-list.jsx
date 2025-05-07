@@ -793,8 +793,8 @@ const PoAdvanceNoteList = () => {
                           <td className="text-start">
                             {index + 1 + (currentPage - 1) * itemsPerPage}
                           </td>
-                          <td className="text-start">-</td>
-                          <td className="text-start">-</td>
+                          <td className="text-start">{note.company_name}</td>
+                          <td className="text-start">{note.project_name}</td>
                           {/* <td className="text-start">-</td> */}
                           {/* <td className="text-start">
                             {note.advance_number || "-"}
@@ -810,7 +810,9 @@ const PoAdvanceNoteList = () => {
                               ? new Date(note.invoice_date).toLocaleDateString()
                               : "-"}
                           </td>
-                          <td className="text-start">-</td>
+                          <td className="text-start">
+                            {note.payment_mode || ""}
+                          </td>
                           <td className="text-start">
                             {note.created_at
                               ? new Date(note.created_at).toLocaleDateString()
