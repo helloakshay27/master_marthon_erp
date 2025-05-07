@@ -241,33 +241,43 @@ export default function VendorDetails() {
   const handleInputChange = (value, rowIndex, key) => {
     const updated = [...data];
     updated[rowIndex][key] = value;
-
+  
     const price = parseFloat(updated[rowIndex].price) || 0;
     const quantityRequested = parseFloat(updated[rowIndex].quantity) || 0;
     const quantityAvail =
       updated[rowIndex].quantityAvail !== undefined &&
-        updated[rowIndex].quantityAvail !== ""
+      updated[rowIndex].quantityAvail !== ""
         ? parseFloat(updated[rowIndex].quantityAvail)
         : quantityRequested; // Use quantityRequested as fallback
-
+  
     const discount = parseFloat(updated[rowIndex].discount) || 0;
     const gst = parseFloat(updated[rowIndex].gst) || 0;
-
+  
     const total = price * quantityAvail;
     const realisedPrice = price - (price * discount) / 100;
     const realisedDiscount = (total * discount) / 100;
     const landedAmount = total - realisedDiscount;
     const realisedGst = (landedAmount * gst) / 100;
     const finalTotal = landedAmount + realisedGst;
-
+  
     updated[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
     updated[rowIndex].realisedPrice = realisedPrice.toFixed(2);
     updated[rowIndex].landedAmount = landedAmount.toFixed(2);
     updated[rowIndex].realisedGst = realisedGst.toFixed(2);
     updated[rowIndex].total = finalTotal.toFixed(2);
-    updated[rowIndex].total = finalTotal.toFixed(2);
-
+  
     setData(updated);
+  
+    // Update taxRateData to sync landedAmount
+    const updatedTaxRateData = [...taxRateData];
+    if (updatedTaxRateData[rowIndex]) {
+      updatedTaxRateData[rowIndex].afterDiscountValue = finalTotal.toFixed(2);
+      updatedTaxRateData[rowIndex].landedAmount = landedAmount.toFixed(2); // Sync landedAmount
+    }
+    setTaxRateData(updatedTaxRateData);
+
+    console.log("updatedTaxRateData", updatedTaxRateData);
+  
     setGrossTotal(calculateSumTotal());
   };
 
@@ -653,6 +663,21 @@ export default function VendorDetails() {
     setTaxRateData(recalculated);
     originalTaxRateDataRef.current = structuredClone(recalculated);
   };
+
+  useEffect(() => {
+    if (taxRateData.length > 0) {
+      const updatedData = [...data];
+  
+      taxRateData.forEach((_, index) => {
+        const updatedNetCost = calculateNetCost(index, taxRateData);
+        updatedData[index].total = updatedNetCost;
+      });
+  
+      setData(updatedData);
+      const updatedGrossTotal = calculateGrossTotal();
+      setGrossTotal(parseFloat(updatedGrossTotal));
+    }
+  }, [taxRateData]);
 
   // Update the modal tax inputs to use new handler for "Apply All"
   // const [currentIndex, setCurrentIndex] = useState(0);
@@ -2339,30 +2364,30 @@ export default function VendorDetails() {
   // }, [data]);
 
   const handleOpenModal = (rowIndex) => {
-    if (taxRateData.length === 0) {
-      const updatedTaxRateData = data.map((selectedRow) => ({
-        material: selectedRow.section || "",
-        hsnCode: selectedRow.hsnCode || "",
-        ratePerNos: selectedRow.price || "",
-        totalPoQty: selectedRow.quantityAvail || "",
-        discount: selectedRow.discount || "",
-        materialCost: selectedRow.price || "",
-        discountRate: selectedRow.realisedDiscount || "",
-        afterDiscountValue: selectedRow.total || "",
-        remark: selectedRow.vendorRemark || "",
-        addition_bid_material_tax_details:
-          selectedRow?.addition_bid_material_tax_details || [],
-        deduction_bid_material_tax_details:
-          selectedRow?.deduction_bid_material_tax_details || [],
-        netCost: selectedRow.total || "",
-      }));
+    // if (taxRateData.length === 0) {
+    //   const updatedTaxRateData = data.map((selectedRow) => ({
+    //     material: selectedRow.section || "",
+    //     hsnCode: selectedRow.hsnCode || "",
+    //     ratePerNos: selectedRow.price || "",
+    //     totalPoQty: selectedRow.quantityAvail || "",
+    //     discount: selectedRow.discount || "",
+    //     materialCost: selectedRow.price || "",
+    //     discountRate: selectedRow.realisedDiscount || "",
+    //     afterDiscountValue: selectedRow.total || "",
+    //     remark: selectedRow.vendorRemark || "",
+    //     addition_bid_material_tax_details:
+    //       selectedRow?.addition_bid_material_tax_details || [],
+    //     deduction_bid_material_tax_details:
+    //       selectedRow?.deduction_bid_material_tax_details || [],
+    //     netCost: selectedRow.total || "",
+    //   }));
 
-      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-      setTaxRateData(updatedTaxRateData);
-    } else {
-      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
-      setTaxRateData(structuredClone(originalTaxRateDataRef.current));
-    }
+    //   originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+    //   setTaxRateData(updatedTaxRateData);
+    // } else {
+    //   // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
+    //   setTaxRateData(structuredClone(originalTaxRateDataRef.current));
+    // }
 
     setTableId(rowIndex);
     setShowModal(true);
@@ -2386,31 +2411,31 @@ export default function VendorDetails() {
 
   const handleAllTaxModal = () => {
     // Initialize tax data for all items if not already done
-    if (parentTaxRateData?.length === 0) {
-      const updatedTaxRateData = data.map((selectedRow) => ({
-        material: selectedRow.section || "",
-        hsnCode: selectedRow.hsnCode || "",
-        ratePerNos: selectedRow.price || "",
-        totalPoQty: selectedRow.quantityAvail || "",
-        discount: selectedRow.discount || "",
-        materialCost: selectedRow.price || "",
-        discountRate: selectedRow.realisedDiscount || "",
-        afterDiscountValue: selectedRow.total || "",
-        remark: selectedRow.vendorRemark || "",
-        addition_bid_material_tax_details:
-          selectedRow?.addition_bid_material_tax_details || [],
-        deduction_bid_material_tax_details:
-          selectedRow?.deduction_bid_material_tax_details || [],
-        netCost: selectedRow.total || "",
-      }));
+    // if (parentTaxRateData?.length === 0) {
+    //   const updatedTaxRateData = data.map((selectedRow) => ({
+    //     material: selectedRow.section || "",
+    //     hsnCode: selectedRow.hsnCode || "",
+    //     ratePerNos: selectedRow.price || "",
+    //     totalPoQty: selectedRow.quantityAvail || "",
+    //     discount: selectedRow.discount || "",
+    //     materialCost: selectedRow.price || "",
+    //     discountRate: selectedRow.realisedDiscount || "",
+    //     afterDiscountValue: selectedRow.total || "",
+    //     remark: selectedRow.vendorRemark || "",
+    //     addition_bid_material_tax_details:
+    //       selectedRow?.addition_bid_material_tax_details || [],
+    //     deduction_bid_material_tax_details:
+    //       selectedRow?.deduction_bid_material_tax_details || [],
+    //     netCost: selectedRow.total || "",
+    //   }));
 
-      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-      setTaxRateData(updatedTaxRateData);
-      setParentTaxRateData(updatedTaxRateData);
-    } else {
-      setTaxRateData(structuredClone(parentTaxRateData));
-      setParentTaxRateData(structuredClone(parentTaxRateData));
-    }
+    //   originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+    //   setTaxRateData(updatedTaxRateData);
+    //   setParentTaxRateData(updatedTaxRateData);
+    // } else {
+    //   setTaxRateData(structuredClone(parentTaxRateData));
+    //   setParentTaxRateData(structuredClone(parentTaxRateData));
+    // }
 
     setShowModal1(true);
     setIsTaxRateDataChanged(true);
