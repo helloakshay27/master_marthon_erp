@@ -5985,7 +5985,7 @@ export default function VendorDetails() {
                           <td>
                             <select
                               className="form-select"
-                              defaultValue={item?.tax_percentage}
+                              defaultValue={item?.taxChargePerUom}
                               onChange={(e) =>
                                 handleAllTaxChargeChange(
                                   "taxChargePerUom",
@@ -6399,7 +6399,7 @@ export default function VendorDetails() {
                           <select
                             className="form-select"
                             // value={item.taxChargePerUom}
-                            defaultValue={item?.tax_percentage}
+                            defaultValue={item?.taxChargePerUom}
                             onChange={(e) =>
                               handleTaxChargeChange(
                                 tableId,
