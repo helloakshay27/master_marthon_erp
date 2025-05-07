@@ -253,16 +253,11 @@ const ErpStockRegister13B = () => {
         const response = await fetch(
           `${baseURL}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(
             searchTerm
-          )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${
-            selectedIds.genericInfos
-          }&q[material_type_id]=${
-            selectedIds.materialTypes
-          }&q[material_sub_type_id]=${
-            selectedIds.materialSubTypes
-          }&q[brand_id]=&q[uom_id]=${
-            selectedIds.unitOfMeasures
-          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${
-            selectedIds.grnNumbers
+          )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${selectedIds.genericInfos
+          }&q[material_type_id]=${selectedIds.materialTypes
+          }&q[material_sub_type_id]=${selectedIds.materialSubTypes
+          }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
+          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
           }&page=${page}&per_page=${pageSize}`
         );
 
@@ -436,7 +431,7 @@ const ErpStockRegister13B = () => {
 
   useEffect(() => {
     fetchData(
-`${baseURL}pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      `${baseURL}pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
       setGenericInfos
     );
     fetchData(
@@ -475,6 +470,19 @@ const ErpStockRegister13B = () => {
   if (loading) return <div>Loading...</div>;
   return (
     <>
+      <style type="text/css">
+        {`
+
+.tbl-container {
+
+height: 300px !important;
+
+}
+
+
+
+`}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section px-3">
           <p>Home &gt; Store &gt; Store Operations &gt; Stock Register</p>
@@ -530,11 +538,11 @@ const ErpStockRegister13B = () => {
                           value={
                             companies.find((c) => c.id === selectedCompany)
                               ? {
-                                  value: selectedCompany,
-                                  label: companies.find(
-                                    (c) => c.id === selectedCompany
-                                  ).company_name,
-                                }
+                                value: selectedCompany,
+                                label: companies.find(
+                                  (c) => c.id === selectedCompany
+                                ).company_name,
+                              }
                               : null
                           }
                           placeholder="Select Company"
@@ -745,7 +753,7 @@ const ErpStockRegister13B = () => {
               className="tbl-container  px-1 mt-3"
               style={{
                 width: "max-congent",
-                maxHeight: "max-content",
+                height: "300px !important",
                 boxShadow: "unset",
               }}
             >
@@ -753,34 +761,35 @@ const ErpStockRegister13B = () => {
                 rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
-                autoHeight
+                autoHeight={false} // IMPORTANT: disable autoHeight for scroll
                 getRowId={(row) => row.id}
               />
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                padding={2}
-              >
-                <Pagination
-                  count={pagination.total_pages || 1} // Use API's total pages
-                  page={page}
-                  onChange={(event, value) => setPage(value)} // Update page state
-                  siblingCount={1}
-                  boundaryCount={1}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
-                  disabled={pagination.total_pages <= 1} // Disable if only one page
-                />
 
-                {/* Dynamic Entries Info */}
-                <Typography variant="body2">
-                  Showing {startEntry} to {endEntry} of {pagination.total_count}{" "}
-                  entries
-                </Typography>
-              </Stack>
             </div>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              padding={2}
+            >
+              <Pagination
+                count={pagination.total_pages || 1} // Use API's total pages
+                page={page}
+                onChange={(event, value) => setPage(value)} // Update page state
+                siblingCount={1}
+                boundaryCount={1}
+                color="primary"
+                showFirstButton
+                showLastButton
+                disabled={pagination.total_pages <= 1} // Disable if only one page
+              />
+
+              {/* Dynamic Entries Info */}
+              <Typography variant="body2">
+                Showing {startEntry} to {endEntry} of {pagination.total_count}{" "}
+                entries
+              </Typography>
+            </Stack>
           </div>
         </div>
       </div>
@@ -1032,42 +1041,6 @@ const ErpStockRegister13B = () => {
   );
 };
 
-<style type="text/css">
-  {`
-  .setting-modal .modal-dialog {
-position: fixed;
-right: 0;
-top: 0;
-margin: 0;
-height: 100%;
-width: 40%;
-}
 
-.setting-modal .modal-sm {
-width: 300px;
-height: auto;
-margin: auto;
-}
-
-.setting-modal .modal-content {
-height: 100%;
-border: 0;
-border-radius: 0;
-}
-
-.modal-centered-custom {
-display: flex;
-justify-content: center;
-align-items: center;
-height: 100vh;
-width: 100%;
-}
-
-.modal-centered-custom .modal-content {
-margin: auto;
-}
-
-`}
-</style>;
 
 export default ErpStockRegister13B;
