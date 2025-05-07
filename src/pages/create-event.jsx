@@ -31,6 +31,7 @@ export default function CreateEvent() {
   const [submitted, setSubmitted] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const [isInvite, setIsInvite] = useState(false);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -775,9 +776,13 @@ export default function CreateEvent() {
     setEventStatus(selectedOption);
   };
 
-  const handleInviteVendor = async () => {
+  const handleInviteVendor = async (event) => {
+    event.preventDefault();
+
     const errors = validateInviteVendorForm();
     if (Object.keys(errors).length > 0) return;
+
+    setIsInvite(true);
 
     try {
       const response = await fetch(
@@ -807,6 +812,7 @@ export default function CreateEvent() {
           pms_supplier_id: newVendor?.id,
           name: newVendor?.full_name,
           phone: newVendor?.mobile,
+          organisation: newVendor?.organization_name,
         };
 
         setSelectedVendors((prev) => [...prev, vendorData]);
@@ -830,6 +836,8 @@ export default function CreateEvent() {
     } catch (error) {
       console.error("Error:", error);
       toast.error("An error occurred while inviting the vendor.");
+    } finally {
+      setIsInvite(false);
     }
   };
 
@@ -1078,7 +1086,23 @@ export default function CreateEvent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedVendors.length > 0 ? (
+                      {isInvite ? (
+                        <>
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Loading...</p>
+                          </div>
+                        </>
+                      ) : selectedVendors.length > 0 ? (
                         selectedVendors
                           .filter(
                             (vendor, index, self) =>
@@ -1108,7 +1132,8 @@ export default function CreateEvent() {
                             No vendors selected
                           </td>
                         </tr>
-                      )}
+                      )
+                      }
                     </tbody>
                   </table>
                 </div>

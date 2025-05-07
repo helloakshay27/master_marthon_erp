@@ -47,6 +47,7 @@ export default function EditEvent() {
   const [start_time, setStart_time] = useState("");
   const [evaluation_time, setEvaluation_time] = useState("");
   const [inventoryTypeId, setInventoryTypeId] = useState([]);
+  const [isInvite, setIsInvite] = useState(false);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -1146,9 +1147,13 @@ export default function EditEvent() {
       .catch((error) => console.error("Error fetching company list:", error));
   }, []);
 
-  const handleInviteVendor = async () => {
+  const handleInviteVendor = async (event) => {
+    event.preventDefault(); // Prevent page reload
+
     const errors = validateInviteVendorForm();
     if (Object.keys(errors).length > 0) return;
+
+    setIsInvite(true); // ✅ Start loader
 
     try {
       const response = await fetch(
@@ -1177,6 +1182,7 @@ export default function EditEvent() {
           pms_supplier_id: newVendor?.id,
           name: newVendor?.full_name,
           phone: newVendor?.mobile,
+          organisation: newVendor?.organization_name,
         };
 
         setSelectedVendors((prev) => [...prev, vendorData]);
@@ -1200,8 +1206,11 @@ export default function EditEvent() {
     } catch (error) {
       console.error("Error:", error);
       toast.error("An error occurred while inviting the vendor.");
+    } finally {
+      setIsInvite(false); // ✅ Stop loader
     }
   };
+
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
     const sanitizedValue =
@@ -1259,7 +1268,7 @@ export default function EditEvent() {
     };
 
     // if (inventoryTypeId.length > 0) {
-      fetchMaterialTypes();
+    fetchMaterialTypes();
     // }
   }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
   return (
@@ -1455,7 +1464,23 @@ export default function EditEvent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedVendors?.length === 0 ? (
+                      {isInvite ? (
+                        <>
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Loading...</p>
+                          </div>
+                        </>
+                      ) : selectedVendors?.length === 0 ? (
                         <tr>
                           <td colSpan="5" className="text-center">
                             No vendors selected

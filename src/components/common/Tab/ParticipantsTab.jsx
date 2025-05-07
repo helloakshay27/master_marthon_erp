@@ -471,21 +471,6 @@ export default function ParticipantsTab({ id }) {
 
   return (
     <>
-      {isLoading ? ( // Display loader when isLoading is true
-        <div className="loader-container">
-          <div className="lds-ring">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-          <p>Loading...</p>
-        </div>
-      ) : (
         <div
           className="tab-pane fade participants"
           id="participants"
@@ -526,7 +511,7 @@ export default function ParticipantsTab({ id }) {
             </button>
           </div>
           {vendorData?.length > 0 ? (
-            !isVendorLoading ? (
+            !isVendorLoading || !isLoading ? (
               <div className="tbl-container">
                 <table className="w-100">
                   <thead>
@@ -550,7 +535,7 @@ export default function ParticipantsTab({ id }) {
                         <td style={{ textAlign: "left" }}>{vendor.phone}</td>
                         <td style={{ textAlign: "left" }}>{vendor.email}</td>
                         <td style={{ textAlign: "left" }}>
-                          {vendor.organisation}
+                          {vendor.organisation || "N/A"}
                         </td>
                       </tr>
                     ))}
@@ -1049,7 +1034,7 @@ export default function ParticipantsTab({ id }) {
             }
           />
         </div>
-      )}
+      
       <ToastContainer />
     </>
   );
