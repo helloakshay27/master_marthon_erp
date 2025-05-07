@@ -189,10 +189,10 @@ const CreditNoteDetails = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section  ms-2">
           <a href="">Home &gt; Billing &amp; Accounts &gt; Credit Note </a>
           <h5 className="mt-3">Credit Note </h5>
-          <div className="row my-4 align-items-center">
+          <div className="row container-fluid my-4 align-items-center">
             <div className="col-md-12 px-2">
               <div
                 className="tab-content mor-content active"
@@ -476,7 +476,7 @@ const CreditNoteDetails = () => {
 
 
 
-                        <div className="tbl-container mx-3 mt-3">
+                        <div className="tbl-container mt-3">
   <table className="w-100">
     <thead>
       <tr>
@@ -617,7 +617,7 @@ const CreditNoteDetails = () => {
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Document Attachment</h5>
                         </div>
-                        <div className="tbl-container mx-3 mt-3">
+                        <div className="tbl-container  mt-3">
                           <table className="w-100">
                             <thead>
                               <tr>
@@ -678,8 +678,8 @@ const CreditNoteDetails = () => {
                     </div>
                   </section>
                 </div>
-                <div className="row w-100">
-                  <div className="col-md-12">
+                <div className="row w-100 ">
+                  <div className="col-md-12 mx-2">
                     <div className="form-group">
                       <label>Remark</label>
                       <textarea
@@ -694,7 +694,7 @@ const CreditNoteDetails = () => {
                   </div>
                 </div>
                 <div className="row w-100">
-                  <div className="col-md-12">
+                  <div className="col-md-12 mx-2 mt-2">
                     <div className="form-group">
                       <label>Comments</label>
                       <textarea

@@ -570,7 +570,7 @@ const BOQList = () => {
         useEffect(() => {
           axios
             .get(
-              `${baseURL}work_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              `${baseURL}work_categories/work_categories_and_subcategories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             ) // Replace with your API endpoint
             .then((response) => {
               setWorkCategories(response.data.work_categories); // Save the categories to state
@@ -733,7 +733,14 @@ const BOQList = () => {
   //     });
   // }, [searchKeyword]);
 
- 
+  const handleResetFilters = () => {
+    setSelectedCategory(null);
+    setSelectedSubCategory(null);
+    setSelectedStatus(null);
+    setSelectedUnit(null);
+    // Optionally, reset other states like `searchKeyword` if needed
+    console.log("Filters reset");
+  };
   
   return (
     <>
@@ -3415,6 +3422,7 @@ const BOQList = () => {
                 className="resetCSS"
                 style={{ fontSize: "14px", textDecoration: "underline" }}
                 to="#"
+                onClick={handleResetFilters} 
               >
                 Reset
               </Link>

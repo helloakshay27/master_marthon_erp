@@ -513,10 +513,11 @@ const CreateBOQ = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}work_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}work_categories/work_categories_and_subcategories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       ) // Replace with your API endpoint
       .then((response) => {
         setWorkCategories(response.data.work_categories); // Save the categories to state
+        console.log("work cat:",response.data.work_categories)
       })
       .catch((error) => {
         console.error("Error fetching work categories:", error);
