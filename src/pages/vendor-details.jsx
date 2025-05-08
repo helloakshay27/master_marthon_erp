@@ -2345,7 +2345,6 @@ export default function VendorDetails() {
   // }, [data]);
 
   const handleOpenModal = (rowIndex) => {
-    if (taxRateData.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
@@ -2365,10 +2364,7 @@ export default function VendorDetails() {
 
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
-    } else {
-      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
-      setTaxRateData(structuredClone(originalTaxRateDataRef.current));
-    }
+   
 
     setTableId(rowIndex);
     setShowModal(true);
