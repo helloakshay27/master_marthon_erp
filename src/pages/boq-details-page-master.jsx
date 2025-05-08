@@ -1248,7 +1248,10 @@ const BOQDetailsPageMaster = () => {
                           </td>
                           <td>{log.item_name}</td>
                           <td>{log.version_number}</td>
-                          <td>{log.status.charAt(0).toUpperCase() + log.status.slice(1)}</td>
+                          <td>
+                            {/* {log.status.charAt(0).toUpperCase() + log.status.slice(1)} */}
+                          {log.amendment_status}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

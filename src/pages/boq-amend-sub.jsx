@@ -1774,7 +1774,7 @@ console.log("sub item in delete case:,", boqSubItems)
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
-                              Generic Specification <span>*</span>
+                              Generic Specification
                             </th>
                             <th
                               rowSpan={2}
@@ -1792,7 +1792,7 @@ console.log("sub item in delete case:,", boqSubItems)
                               rowSpan={2}
                               style={{ width: "350px", whiteSpace: "nowrap" }}
                             >
-                              UOM
+                              UOM <span>*</span>
                             </th>
                             {/* <th rowSpan={2}>Cost QTY</th> */}
                             <th className="text-center" colSpan={2}>
@@ -2029,7 +2029,7 @@ console.log("sub item in delete case:,", boqSubItems)
                             <tr>
                               <td
                                 colSpan="12"
-                                className="text-center"
+                                className="text-start"
                               // style={{ paddingLeft: "400px" }}
                               >
                                 No materials added yet.
@@ -2041,7 +2041,7 @@ console.log("sub item in delete case:,", boqSubItems)
                     </div>
                   </div>
                   <div className="row mt-3 mx-3">
-                    <p>
+                    <p  className="text-start">
                       <button
                         style={{ color: "var(--red)" }}
                         className="fw-bold text-decoration-underline border-0 bg-white"
@@ -2165,7 +2165,7 @@ console.log("sub item in delete case:,", boqSubItems)
                             rowSpan={2}
                             style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
-                            Generic Specification <span>*</span>
+                            Generic Specification
                           </th>
                           <th
                             rowSpan={2}
@@ -2183,7 +2183,7 @@ console.log("sub item in delete case:,", boqSubItems)
                             rowSpan={2}
                             style={{ width: "350px", whiteSpace: "nowrap" }}
                           >
-                            UOM
+                            UOM <span>*</span>
                           </th>
                           {/* <th rowSpan={2}>Cost QTY</th> */}
                           <th className="text-center" colSpan={2}>
@@ -2438,7 +2438,7 @@ console.log("sub item in delete case:,", boqSubItems)
                           <tr>
                             <td
                               colSpan="12"
-                              className="text-center"
+                              className="text-start"
                             // style={{ paddingLeft: "400px" }}
                             >
                               No asset added yet.
@@ -2450,7 +2450,7 @@ console.log("sub item in delete case:,", boqSubItems)
                   </div>
                 </div>
                 <div className="row mt-3 mx-3">
-                  <p>
+                  <p  className="text-start">
                     <button
                       style={{ color: "var(--red)" }}
                       className="fw-bold text-decoration-underline border-0 bg-white"
