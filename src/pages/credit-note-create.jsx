@@ -424,7 +424,7 @@ const creditnotecreate = () => {
   const fetchCompanies = async () => {
     try {
       const response = await axios.get(
-        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       const formattedCompanies = response.data.companies.map((company) => ({
         value: company.id,
@@ -519,7 +519,7 @@ const creditnotecreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -553,7 +553,16 @@ const creditnotecreate = () => {
 
   // Delete a row
   const deleteRow = (id) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    setRows((prevRows) =>
+      prevRows.filter((row, index) => {
+        // Prevent deletion of the first three rows
+        if (index < 3) {
+          return true;
+        }
+        return row.id !== id;
+      })
+    );
   };
 
   // deduction
@@ -574,7 +583,7 @@ const creditnotecreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -767,7 +776,7 @@ const calculatePayableAmount = () => {
 
     try {
       const response = await axios.post(
-        "https://marathon.lockated.com/credit_notes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}credit_notes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       );
       console.log("Response:", response.data);
@@ -2329,7 +2338,7 @@ const calculatePayableAmount = () => {
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">
                             <button
-                              className="btn btn-sm btn-primary"
+                              className="purple-btn2"
                               onClick={() => handlePOSelect(po)}
                             >
                               Select
