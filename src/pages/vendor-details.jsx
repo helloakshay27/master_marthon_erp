@@ -594,6 +594,17 @@ export default function VendorDetails() {
     originalTaxRateDataRef.current = structuredClone(updatedData);
   };
 
+
+  useEffect(() => {
+
+console.log("originalTaxRateDataRef Base", originalTaxRateDataRef);
+console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
+
+
+
+  } , [originalTaxRateDataRef.current, taxRateData])
+  ;
+
   // ✏️ Single Row + Charge Update
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
     if (fromAllUpdateRef.current) {
@@ -6299,7 +6310,7 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                         </button>
                       </td>
                     </tr>
-                    {console.log("item:----", taxRateData[tableId]?.addition_bid_material_tax_details, "taxOpiton",tableId)}
+                    {/* {console.log("item:----", taxRateData[tableId]?.addition_bid_material_tax_details, "taxOpiton",tableId)} */}
 
                     {taxRateData[tableId]?.addition_bid_material_tax_details
                       ?.map((item, rowIndex) => (

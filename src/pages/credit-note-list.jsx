@@ -21,6 +21,7 @@ const CreditNoteList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
   // Static data for SingleSelector (this will be replaced by API data later)
 
@@ -74,7 +75,7 @@ const CreditNoteList = () => {
     try {
       setLoading(true); // Start loading
       const response = await axios.get(
-        `https://marathon.lockated.com/credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setCreditNotes(response.data.credit_notes);
       setMeta(response.data.meta)
@@ -384,9 +385,11 @@ const CreditNoteList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
                     data-tab="total"
-                    onClick={() => fetchFilteredData2("")} // Fetch all data (no status filter)
+                    onClick={() => {
+                      setActiveTab("total")
+                      fetchFilteredData2("")}} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Total</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
@@ -394,8 +397,10 @@ const CreditNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft"
-                   onClick={() => fetchFilteredData2("draft")} // Fetch data with status "draft"
+                  <div className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`} data-tab="draft"
+                   onClick={() => {
+                    setActiveTab("draft")
+                    fetchFilteredData2("draft")}} // Fetch data with status "draft"
                   >
                     <h4 className="content-box-title fw-semibold">
                       Draft
@@ -404,7 +409,9 @@ const CreditNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft"  onClick={() => fetchFilteredData2("verified")}>
+                  <div className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`} data-tab="draft" 
+                   onClick={() => {
+                    setActiveTab("verified"); fetchFilteredData2("verified")}}>
                     <h4 className="content-box-title fw-semibold">
                       Verified
                     </h4>
@@ -413,9 +420,12 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
+                    className={`content-box tab-button ${activeTab === "submited" ? "active" : ""}`}
                     data-tab="pending-approval"
-                    onClick={() => fetchFilteredData2("submited")}
+                    onClick={() => 
+                      {
+                        setActiveTab("submited"); 
+                      fetchFilteredData2("submited")}}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">{meta?.submited_count}</p>
@@ -423,9 +433,12 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
                     data-tab="self-overdue"
-                    onClick={() => fetchFilteredData2("approved")}
+                    onClick={() =>
+                      {
+                        setActiveTab("approved");
+                       fetchFilteredData2("approved")}}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">{meta?.approved_count}</p>
@@ -433,9 +446,10 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
+                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
                     data-tab="self-overdue"
-                    onClick={() => fetchFilteredData2("proceed")}
+                    onClick={() =>{
+                      setActiveTab("proceed"); fetchFilteredData2("proceed")}}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">{meta?.proceed_count}</p>

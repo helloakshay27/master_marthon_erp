@@ -25,7 +25,7 @@ const DebitNoteDetails = () => {
       const fetchCreditNoteData = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/debit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}debit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           setDebitNoteData(response.data);
           setStatus(response.data.status)
