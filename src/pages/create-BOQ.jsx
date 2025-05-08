@@ -1690,12 +1690,12 @@ const CreateBOQ = () => {
       return !genericSpecification || genericSpecification === "";
     });
 
-    if (invalidGenericSpecification || invalidAssetGenericSpecification) {
-      toast.error(
-        "Generic Specification is required for all materials and assets."
-      );
-      return; // Exit function if validation fails
-    }
+    // if (invalidGenericSpecification || invalidAssetGenericSpecification) {
+    //   toast.error(
+    //     "Generic Specification is required for all materials and assets."
+    //   );
+    //   return; // Exit function if validation fails
+    // }
     // sub type validation
     const invalidSubType = materials.some((material, index) => {
       // Get the selected generic specification for this material
@@ -1707,6 +1707,22 @@ const CreateBOQ = () => {
     if (invalidSubType) {
       toast.error(
         "Material Sub-Type is required for all materials."
+      );
+      return; // Exit function if validation fails
+    }
+
+
+    const invalidUnit = materials.some((material, index) => {
+      // Get the selected generic specification for this material
+      const unit = selectedUnit2[index];
+
+      // Check if the generic specification is invalid (empty or undefined)
+      return !unit || unit === "";
+    });
+
+    if (invalidUnit ) {
+      toast.error(
+        "UOM is required for all materials and assets."
       );
       return; // Exit function if validation fails
     }
@@ -2017,7 +2033,7 @@ const CreateBOQ = () => {
         let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
         boqSubItem.materials.forEach((material) => {
-          const genericInfoId = material.generic_info_id ?? ""; // Ensure it's never undefined
+          const genericInfoId = material.uom_id ?? ""; // Ensure it's never undefined
 
           if (!genericInfoId) {
             subItemHasErrors = true; // Mark that there's an error for this sub-item
@@ -2026,7 +2042,7 @@ const CreateBOQ = () => {
 
         if (subItemHasErrors) {
           hasErrors2 = true; // Mark that there are global errors
-          toast.error(`Generic Specification is required for all materials in BoQ Sub Item ${i + 1}.`);
+          toast.error(`UOM is required for all materials in BoQ Sub Item ${i + 1}.`);
         }
       });
 
@@ -2538,10 +2554,10 @@ const CreateBOQ = () => {
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material Type</th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Material</th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Material Sub-Type  <span>*</span></th>
-                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification <span>*</span></th>
+                                  <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Generic Specification</th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Colour </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>Brand </th>
-                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM</th>
+                                  <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>UOM <span>*</span></th>
                                   {/* <th rowSpan={2}>Cost QTY</th> */}
                                   <th className="text-center" colSpan={2}>Cost</th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>Wastage%</th>
@@ -2785,7 +2801,7 @@ const CreateBOQ = () => {
                                     Assest Sub-Type
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
-                                    Generic Specification <span>*</span>
+                                    Generic Specification 
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     Colour
@@ -2794,7 +2810,7 @@ const CreateBOQ = () => {
                                     Brand
                                   </th>
                                   <th rowSpan={2} style={{ width: "200px", whiteSpace: "nowrap" }}>
-                                    UOM
+                                    UOM <span>*</span>
                                   </th>
                                   <th className="text-center" colSpan={2}>
                                     Cost
