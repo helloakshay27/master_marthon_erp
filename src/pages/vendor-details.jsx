@@ -595,15 +595,7 @@ export default function VendorDetails() {
   };
 
 
-  useEffect(() => {
 
-console.log("originalTaxRateDataRef Base", originalTaxRateDataRef);
-console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
-
-
-
-  } , [originalTaxRateDataRef.current, taxRateData])
-  ;
 
   // ✏️ Single Row + Charge Update
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
@@ -2357,6 +2349,13 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
 
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
+      if (!data.some((selectedRow) => selectedRow.total)) {
+        toast.error("Enter the total Price to proceed.", {
+          autoClose: 2000,
+        });
+        return; // Exit if afterDiscountValue is empty
+      }
+
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
@@ -2374,10 +2373,12 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
         netCost: selectedRow.total || "",
       }));
 
-      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+      console.log("Updated Tax Rate Data:", updatedTaxRateData);
+
+      // originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
     } else {
-      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
+      // console.log("Updated Tax Rate Data:", data);
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
 
@@ -2404,6 +2405,13 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
   const handleAllTaxModal = () => {
     // Initialize tax data for all items if not already done
     if (parentTaxRateData?.length === 0) {
+
+      if (!data.some((selectedRow) => selectedRow.total)) {
+        toast.error("Enter the total Price to proceed.", {
+          autoClose: 2000,
+        });
+        return; // Exit if afterDiscountValue is empty
+      }
       const updatedTaxRateData = data.map((selectedRow) => ({
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
@@ -2434,6 +2442,8 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
   };
 
   const handleCloseModal = () => {
+    // Update the reference with the latest taxRateData
+    originalTaxRateDataRef.current = structuredClone(taxRateData);
     setShowModal(false);
   };
   const handleCloseModal1 = () => {
@@ -2663,15 +2673,15 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
       taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
     );
   }, [parentTaxRateData, taxRateData]);
-  
+
   const additionBidMaterialTaxDetails =
     parentTaxRateData[tableId]?.addition_bid_material_tax_details || [];
-  
+
   const matchedTaxNames = additionBidMaterialTaxDetails
     .map((item) => {
       const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
       // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
-      if(matchedTax && !matchedParentTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
+      if (matchedTax && !matchedParentTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
         matchedParentTaxNamesArray.push(matchedTax.value);
       }
       return matchedTax ? matchedTax.value : null;
@@ -2679,25 +2689,25 @@ console.log("originalTaxRateDataRef Currrent", originalTaxRateDataRef.current);
     .filter((name) => name !== null);
 
 
-  
+
   // Get the addition bid material tax details
-const singleAdditionBidMaterialTaxDetails =
-taxRateData[tableId]?.addition_bid_material_tax_details || [];
+  const singleAdditionBidMaterialTaxDetails =
+    taxRateData[tableId]?.addition_bid_material_tax_details || [];
 
-// Dynamically compute singleMatchedTaxNames without using state
-const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
-.map((item) => {
-  const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
-  // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
+  // Dynamically compute singleMatchedTaxNames without using state
+  const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
+    .map((item) => {
+      const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
+      // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
 
-  // Push the matched tax name into the external array if it exists
-  if (matchedTax && !matchedTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
-    matchedTaxNamesArray.push(matchedTax.value);
-  }
+      // Push the matched tax name into the external array if it exists
+      if (matchedTax && !matchedTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
+        matchedTaxNamesArray.push(matchedTax.value);
+      }
 
-  return matchedTax ? matchedTax.value : null;
-})
-.filter((name) => name !== null);
+      return matchedTax ? matchedTax.value : null;
+    })
+    .filter((name) => name !== null);
 
   return (
     <div className="">
@@ -5799,14 +5809,13 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                           currentIndex !== 0 || // Disable if it's not the Current Bid
                           submitted
                         }
-                        className={`button ${
-                          isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
-                            ? "disabled-btn"
-                            : "button-enabled"
+                        className={`button ${isBid ||
+                          loading ||
+                          counterData > 0 ||
+                          currentIndex !== 0 ||
+                          submitted
+                          ? "disabled-btn"
+                          : "button-enabled"
                           }`}
                         style={{
                           backgroundColor:
@@ -6419,7 +6428,8 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                             </button>
                           </td>
                         </tr>
-                      ))}
+                      )
+                      )}
 
                     <tr>
                       <td>Deduction Tax</td>
