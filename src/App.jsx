@@ -92,6 +92,42 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route path="/bill-booking-create" element={<BillBookingCreate />} />
+          <Route
+            path="/bill-booking-details/:id"
+            element={<BillBookingDetails />}
+          />
+          <Route path="/bill-entry-details" element={<BillEntryDetails />} />
+          <Route path="/bill-booking-list" element={<BillBookingList />} />
+          <Route
+            path="/bill-payment-details"
+            element={<BillPaymentDetails />}
+          />
+          <Route path="/credit-note-create" element={<CreditNoteCreate />} />
+          <Route
+            path="/credit-note-details/:id"
+            element={<CreditNoteDetails />}
+          />
+          <Route path="/credit-note-list" element={<CreditNoteList />} />
+          <Route path="/debit-note-create" element={<DebitNoteCreate />} />
+          <Route
+            path="/debit-note-details/:id"
+            element={<DebitNoteDetails />}
+          />
+          <Route path="/debit-note-list" element={<DebitNoteList />} />
+          <Route
+            path="/po-advance-note-details"
+            element={<POAdvanceNoteDetails />}
+          />
+          <Route
+            path="/po-advance-note-payment"
+            element={<PoAdvanceNotePayment />}
+          />
+          <Route
+            path="/po-advance-note-payment/:id"
+            element={<PoAdvanceNotePayment />}
+          />
+          <Route path="/po-advance-note-list" element={<PoAdvanceNoteList />} />
           {/* <Route path="/credit-note-create" element={<CreditNoteCreate />} /> */}
           <Route path="/approvals-list" element={<ApprovalsList />} />
           <Route path="/edit-approvals" element={<EditApprovals />} />
@@ -238,10 +274,7 @@ function App() {
               path="/bill-payment-create"
               element={<BillPaymentCreate />}
             />
-            <Route
-              path="/bill-payment-details"
-              element={<BillPaymentDetails />}
-            />
+
             <Route path="/bill-payment-list" element={<BillPaymentList />} />
             <Route
               path="/bill-verification-create"
@@ -255,30 +288,7 @@ function App() {
               path="/bill-verification-list"
               element={<BillVerificationList />}
             />
-            <Route path="/credit-note-create" element={<CreditNoteCreate />} />
-            <Route
-              path="/credit-note-details/:id"
-              element={<CreditNoteDetails />}
-            />
-            <Route path="/credit-note-list" element={<CreditNoteList />} />
-            <Route path="/debit-note-create" element={<DebitNoteCreate />} />
-            <Route
-              path="/debit-note-details/:id"
-              element={<DebitNoteDetails />}
-            />
-            <Route path="/debit-note-list" element={<DebitNoteList />} />
-            <Route
-              path="/po-advance-note-details"
-              element={<POAdvanceNoteDetails />}
-            />
-            <Route
-              path="/po-advance-note-payment"
-              element={<PoAdvanceNotePayment />}
-            />
-            <Route
-              path="/po-advance-note-list"
-              element={<PoAdvanceNoteList />}
-            />
+
             <Route
               path="/stock_register_detail/:id"
               element={<ErpStockRegisterCreationDetail13C />}
@@ -393,10 +403,7 @@ function App() {
               path="/po-advance-note-details"
               element={<POAdvanceNoteDetails />}
             /> */}
-            <Route
-              path="/po-advance-note-payment/:id"
-              element={<PoAdvanceNotePayment />}
-            />
+
             <Route
               path="/po-advance-note-list"
               element={<PoAdvanceNoteList />}

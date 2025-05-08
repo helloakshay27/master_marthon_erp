@@ -336,9 +336,9 @@ function Members() {
             <div className="m-3">
               <h1>Billing & Accounts</h1>
               <ul>
-                <li>
+                {/* <li>
                   <Link to="/bill-booking-details">Bill Booking Details </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link to="/bill-entry-details">Bill Entry Details</Link>
                 </li>
@@ -353,9 +353,9 @@ function Members() {
                     Bill Entry List Sub Page
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/bill-booking-create">Bill Booking Create</Link>
-                </li>
+                </li> */}
                 <li>
                   <Link to="/bill-payment-create">Bill Payment Create</Link>
                 </li>
@@ -380,6 +380,16 @@ function Members() {
                     Bill Verification List
                   </Link>
                 </li>
+
+                <h5>____Bill Booking____</h5>
+                <li>
+                  <Link to="/bill-booking-list">Bill Booking List</Link>
+                </li>
+
+                <li>
+                  <Link to="/bill-booking-create">Bill Booking Create</Link>
+                </li>
+
                 <h5>___Credit Note___</h5>
                 <li>
                   <Link to="/credit-note-create">Credit Note Create</Link>
