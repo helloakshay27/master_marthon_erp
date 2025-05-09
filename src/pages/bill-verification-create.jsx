@@ -3,6 +3,7 @@ import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState } from "react";
+import SingleSelector from "../components/base/Select/SingleSelector";
 import {
   Table
 } from "../components";
@@ -16,10 +17,37 @@ const BillVerificationCreate = () => {
 
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
+
+  const statusOptions = [
+    {
+      label: "Select Status",
+      value: "",
+    },
+    {
+      label: "Draft",
+      value: "draft",
+    },
+    {
+      label: "Verified",
+      value: "verified",
+    },
+    {
+      label: "Submited",
+      value: "submited",
+    },
+    {
+      label: "Proceed",
+      value: "proceed",
+    },
+    {
+      label: "Approved",
+      value: "approved",
+    },
+  ];
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section mx-2">
           <a href="">
             Home &gt; Billing &gt; Bill Verification List &gt; Update Bill
             Information
@@ -77,7 +105,7 @@ const BillVerificationCreate = () => {
               <li className="nav-item" role="presentation" />
             </ul>
           </div>
-          <div className="row my-4 align-items-center">
+          <div className="row align-items-center container-fluid mb-5 ">
             <div className="col-md-12 ">
               <div className="card p-3 mx-2">
                 <div className="row">
@@ -251,7 +279,7 @@ const BillVerificationCreate = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-5 ">
                   <h5 className=" ">Supporting Documents</h5>
                   <div className="card-tools d-flex">
                     <button
@@ -274,7 +302,7 @@ const BillVerificationCreate = () => {
                     </div>
                   </div>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -464,7 +492,8 @@ const BillVerificationCreate = () => {
                   </table>
                 </div>
               </div>
-              <div className="row">
+              <div className="mx-1">
+              <div className="row ">
                 <div className="col-md-12">
                   <div className="form-group">
                     <label>Remark</label>
@@ -477,7 +506,7 @@ const BillVerificationCreate = () => {
                   </div>
                 </div>
               </div>
-              <div className="row">
+              <div className="row mt-2">
                 <div className="col-md-12">
                   <div className="form-group">
                     <label>Comments</label>
@@ -490,7 +519,8 @@ const BillVerificationCreate = () => {
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
+              </div>
+              {/* <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Assigned To User</p>
                 <div className="dropdown">
                   <button
@@ -520,38 +550,46 @@ const BillVerificationCreate = () => {
                     </li>
                   </ul>
                 </div>
-              </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Received for Verification
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              </div> */}
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                                <div className="col-md-3">
+                                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                                    <label 
+                                    style={{ fontSize: "0.95rem", color: "black",whiteSpace: "nowrap", }}
+                                    >
+                                    Assigned To User
+                                    </label>
+                                    <SingleSelector
+                                      options={statusOptions}
+                                      // onChange={handleStatusChange}
+                                      // value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                                      placeholder="Select Status"
+                                      // isClearable={false}
+                                      // isDisabled={true} // Disable the selector
+                                      classNamePrefix="react-select"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                <div className="row mt-4 justify-content-end align-items-center mx-2">
+                                <div className="col-md-3">
+                                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                                      Status
+                                    </label>
+                                    <SingleSelector
+                                      options={statusOptions}
+                                      // onChange={handleStatusChange}
+                                      // value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                                      placeholder="Select Status"
+                                      // isClearable={false}
+                                      // isDisabled={true} // Disable the selector
+                                      classNamePrefix="react-select"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
                   <button className="purple-btn2 w-100">Submit</button>
@@ -560,11 +598,13 @@ const BillVerificationCreate = () => {
                   <button className="purple-btn1 w-100">Cancel</button>
                 </div>
               </div>
+              <div className="mb-5">
               <h5 className=" mt-3">Audit Log</h5>
-              <div className="px-3">
+              <div className="">
                  <div className="mx-0">
                                                          <Table columns={auditLogColumns} data={auditLogData} />
                                                        </div>
+              </div>
               </div>
             </div>
           </div>
