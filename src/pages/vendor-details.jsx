@@ -2375,10 +2375,10 @@ export default function VendorDetails() {
 
       console.log("Updated Tax Rate Data:", updatedTaxRateData);
 
-      // originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
     } else {
-      // console.log("Updated Tax Rate Data:", data);
+      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
       setTaxRateData(structuredClone(originalTaxRateDataRef.current));
     }
 
@@ -5810,12 +5810,12 @@ export default function VendorDetails() {
                           submitted
                         }
                         className={`button ${isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted
-                          ? "disabled-btn"
-                          : "button-enabled"
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                            ? "disabled-btn"
+                            : "button-enabled"
                           }`}
                         style={{
                           backgroundColor:
