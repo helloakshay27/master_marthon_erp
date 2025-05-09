@@ -413,7 +413,9 @@ const BillBookingCreate = () => {
       if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
       if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
       if (filters?.poType) url += `&q[po_type_eq]=${filters.poType}`;
-      if (filters?.selectedPOIds?.length > 0) {
+
+      // Only add selectedPOIds filter if we're not changing pages
+      if (filters?.selectedPOIds?.length > 0 && !filters.page) {
         url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
       }
 
@@ -1268,6 +1270,26 @@ const BillBookingCreate = () => {
     }
   }, [selectedGRN]);
 
+  const [pendingAdvances, setPendingAdvances] = useState([]);
+
+  useEffect(() => {
+    const fetchPendingAdvances = async () => {
+      if (selectedPO?.id) {
+        try {
+          const response = await axios.get(
+            `${baseURL}advance_notes?q[purchase_order__id_eq]=${selectedPO.id}`
+          );
+          setPendingAdvances(response.data.advance_notes || []);
+        } catch (error) {
+          console.error("Error fetching pending advances:", error);
+          setPendingAdvances([]);
+        }
+      }
+    };
+
+    fetchPendingAdvances();
+  }, [selectedPO]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1668,16 +1690,42 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start"> 1</td>
-                        <td className="text-start" />
-                        <td className="text-start"> </td>
-                        <td className="text-start" />
-                        <td className="text-start text-decoration-underline" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+                      {pendingAdvances.length > 0 ? (
+                        pendingAdvances.map((advance, index) => (
+                          <tr key={index}>
+                            <td className="text-start">
+                              {advance.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.paid_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.adjusted_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.balance_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.current_adjustment || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.net_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.certificate_no || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="8">
+                            No pending advances found.
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <th className="text-start">Total</th>
                         <td />
@@ -2080,7 +2128,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Expected Payment Date</label>
                       <input
@@ -2090,8 +2138,8 @@ const BillBookingCreate = () => {
                         fdprocessedid="qv9ju9"
                       />
                     </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
+                  </div> */}
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Processed Date</label>
                       <input
@@ -2100,9 +2148,9 @@ const BillBookingCreate = () => {
                         placeholder=""
                         fdprocessedid="qv9ju9"
                       />
-                    </div>
-                  </div>
-                  {/* <div className="col-md-4 mt-2">
+                    </div> */}
+                </div>
+                {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Status</label>
                       <input
@@ -2113,8 +2161,8 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div> */}
-                </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                {/* </div> */}
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted:</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
@@ -2141,20 +2189,48 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start">1</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+                      {pendingAdvances.length > 0 ? (
+                        pendingAdvances.map((advance, index) => (
+                          <tr key={index}>
+                            <td className="text-start">{advance.id || "-"}</td>
+                            <td className="text-start">
+                              {advance.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.debit_note_for_advance || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.advance_adjusted_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.advance_outstanding_till_certificate_date ||
+                                "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.advance_outstanding_till_current_date ||
+                                "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.this_recovery || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="9">
+                            No advance adjusted data found.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
-                </div> */}
+                </div>
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Payment Details</h5>
                 </div>
@@ -2189,7 +2265,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Debit Note</h5>
                 </div>
@@ -2230,7 +2306,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div> */}
+                </div>
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                   <div

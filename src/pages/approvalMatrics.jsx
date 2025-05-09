@@ -582,8 +582,8 @@ const ApprovalMatrics = () => {
         </ul>
         <div className="tab-content" id="myTabContent">
           <div className="mt-2 p-2">
-            <a href="#">Setup &gt; Configurations Setup </a>
-            <h5 className="mt-2">INVOICE APPROVALS</h5>
+            <a href="#">Setup &gt; Admin &gt; Configurations Setup </a>
+            <h5 className="mt-2">APPROVAL MATRIX</h5>
             <div className="d-flex btn-search row me-1">
               <div className="col-lg-6 col-md-12 colsm-12 d-flex flex-wrap">
                 <button

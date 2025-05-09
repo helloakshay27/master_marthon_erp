@@ -5,8 +5,8 @@ export default function ApprovalsList() {
   const navigate = useNavigate();
   return (
     <div className="p-4">
-      <p style={{ color: "#8b0203" }}>Setup &gt; Invoice Approvals</p>
-      <h3>INVOICE APPROVALS </h3>
+      <p style={{ color: "#8b0203" }}>Setup &gt; Admin &gt; Approvals Matrix</p>
+      <h3> APPROVAL MATRIX </h3>
 
       <div className="row">
         <div className="col-6">
