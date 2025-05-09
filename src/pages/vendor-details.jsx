@@ -2670,7 +2670,7 @@ export default function VendorDetails() {
     console.log(
       "parent",
       parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
-      taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
+      taxRateData[tableId]?.addition_bid_material_tax_details.resource_id, taxRateData
     );
   }, [parentTaxRateData, taxRateData]);
 
