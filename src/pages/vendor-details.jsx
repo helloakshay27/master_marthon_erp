@@ -517,40 +517,40 @@ export default function VendorDetails() {
   const handleAllTaxChargeChange = (field, value, type, id) => {
     // Clone the current taxRateData to avoid mutating state directly
     const updatedData = structuredClone(parentTaxRateData);
-
+  
     // Determine the target key based on the type (addition or deduction)
     const taxKey =
       type === "addition"
         ? "addition_bid_material_tax_details"
         : "deduction_bid_material_tax_details";
-
+  
     // Find the tax entry in the first row by its ID
     const firstRow = updatedData[0];
     if (!firstRow || !firstRow[taxKey]) return;
-
+  
     const taxEntryIndex = firstRow[taxKey].findIndex(
       (charge) => charge.id === id
     );
     if (taxEntryIndex === -1) return;
-
+  
     // Update the specific field for the matching tax entry in the first row
     const taxEntry = firstRow[taxKey][taxEntryIndex];
     if (field === "taxChargeType") {
       taxEntry.taxChargeType = value;
-
+  
       // Update resource_id and resource_type based on the selected tax option
       const optionsList =
         type === "addition" ? taxOptions : deductionTaxOptions;
       const selected = optionsList.find((opt) => opt.value === value);
-
+  
       taxEntry.resource_id = selected ? selected.id : null;
       taxEntry.resource_type =
         selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
     }
-
+  
     if (field === "taxChargePerUom") {
       taxEntry.taxChargePerUom = value;
-
+  
       // Recalculate the amount if applicable
       if (!taxEntry.inclusive && firstRow.afterDiscountValue) {
         const amount = calculateTaxAmount(
@@ -561,20 +561,20 @@ export default function VendorDetails() {
         taxEntry.amount = amount.toFixed(2);
       }
     }
-
+  
     if (field === "inclusive") {
       taxEntry.inclusive = value;
     }
-
+  
     // Apply the updated tax entry to all rows
     updatedData.forEach((row) => {
       if (!row[taxKey]) row[taxKey] = [];
-
+  
       // Find the tax entry in the current row by its ID
       const rowTaxEntryIndex = row[taxKey].findIndex(
         (charge) => charge.id === id
       );
-
+  
       if (rowTaxEntryIndex !== -1) {
         // Update the existing tax entry
         row[taxKey][rowTaxEntryIndex] = { ...taxEntry };
@@ -582,11 +582,11 @@ export default function VendorDetails() {
         // Add the tax entry if it doesn't exist
         row[taxKey].push({ ...taxEntry });
       }
-
+  
       // Recalculate the net cost for the row
       row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData);
     });
-
+  
     console.log(updatedData, "updatedData after bulk update");
     // Update the state with the modified data
     setTaxRateData(updatedData);
@@ -6018,78 +6018,78 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                     {parentTaxRateData[
                       tableId
                     ]?.deduction_bid_material_tax_details.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <SelectBox
-                            options={deductionTaxOptions}
-                            defaultValue={
-                              deductionTaxOptions.find(
-                                (option) => option.id == item.resource_id
-                              ).value
-                            }
-                            onChange={(value) =>
-                              handleAllTaxChargeChange(
-                                "taxChargeType",
-                                value,
+                        <tr key={item.id}>
+                          <td>
+                            <SelectBox
+                              options={deductionTaxOptions}
+                              defaultValue={
+                                deductionTaxOptions.find(
+                                  (option) => option.id == item.resource_id
+                                ).value
+                              }
+                              onChange={(value) =>
+                                handleAllTaxChargeChange(
+                                  "taxChargeType",
+                                  value,
                                 "deduction",
                                 item.id
-                              )
-                            }
+                                )
+                              }
                             disabledOptions={parentTaxRateData[
                               tableId
                             ]?.deduction_bid_material_tax_details?.map(
                               (item) =>
                                 item.taxChargeType || item.resource_id || "SGST"
                             )}
-                          />
-                        </td>
-                        <td>
-                          <select
-                            className="form-select"
+                            />
+                          </td>
+                          <td>
+                            <select
+                              className="form-select"
                             defaultValue={item?.taxChargePerUom}
-                            onChange={(e) =>
-                              handleAllTaxChargeChange(
-                                "taxChargePerUom",
-                                e.target.value,
+                              onChange={(e) =>
+                                handleAllTaxChargeChange(
+                                  "taxChargePerUom",
+                                  e.target.value,
                                 "deduction",
                                 item.id
-                              )
-                            }
-                          >
-                            <option value="">Select Tax</option>
-                            <option value="1%">1%</option>
-                            <option value="2%">2%</option>
-                            <option value="10%">10%</option>
-                          </select>
-                        </td>
-                        <td className="text-center">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={item.inclusive}
-                            onChange={(e) =>
-                              handleAllTaxChargeChange(
-                                "inclusive",
-                                e.target.checked,
+                                )
+                              }
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="1%">1%</option>
+                              <option value="2%">2%</option>
+                              <option value="10%">10%</option>
+                            </select>
+                          </td>
+                          <td className="text-center">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={item.inclusive}
+                              onChange={(e) =>
+                                handleAllTaxChargeChange(
+                                  "inclusive",
+                                  e.target.checked,
                                 "deduction", // Pass either "addition" or "deduction"
                                 item.id
-                              )
-                            }
-                          />
-                        </td>
+                                )
+                              }
+                            />
+                          </td>
 
-                        <td className="text-center">
-                          <button
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() =>
+                          <td className="text-center">
+                            <button
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() =>
                               removeTaxChargeItem(tableId, item.id, "deduction")
-                            }
-                          >
-                            <span>×</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                              }
+                            >
+                              <span>×</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
