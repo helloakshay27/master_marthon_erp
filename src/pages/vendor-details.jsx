@@ -37,7 +37,9 @@ export default function VendorDetails() {
   const [taxOptions, setTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
   const [matchedTaxNamesArray, setMatchedTaxNamesArray] = useState([]);
-  const [matchedParentTaxNamesArray, setMatchedParentTaxNamesArray] = useState([]);
+  const [matchedParentTaxNamesArray, setMatchedParentTaxNamesArray] = useState(
+    []
+  );
   const [terms, setTerms] = useState([]); // To store terms and
   const [shortTableData, setShortTableData] = useState({});
   const originalTaxRateDataRef = useRef([]);
@@ -517,40 +519,40 @@ export default function VendorDetails() {
   const handleAllTaxChargeChange = (field, value, type, id) => {
     // Clone the current taxRateData to avoid mutating state directly
     const updatedData = structuredClone(parentTaxRateData);
-  
+
     // Determine the target key based on the type (addition or deduction)
     const taxKey =
       type === "addition"
         ? "addition_bid_material_tax_details"
         : "deduction_bid_material_tax_details";
-  
+
     // Find the tax entry in the first row by its ID
     const firstRow = updatedData[0];
     if (!firstRow || !firstRow[taxKey]) return;
-  
+
     const taxEntryIndex = firstRow[taxKey].findIndex(
       (charge) => charge.id === id
     );
     if (taxEntryIndex === -1) return;
-  
+
     // Update the specific field for the matching tax entry in the first row
     const taxEntry = firstRow[taxKey][taxEntryIndex];
     if (field === "taxChargeType") {
       taxEntry.taxChargeType = value;
-  
+
       // Update resource_id and resource_type based on the selected tax option
       const optionsList =
         type === "addition" ? taxOptions : deductionTaxOptions;
       const selected = optionsList.find((opt) => opt.value === value);
-  
+
       taxEntry.resource_id = selected ? selected.id : null;
       taxEntry.resource_type =
         selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
     }
-  
+
     if (field === "taxChargePerUom") {
       taxEntry.taxChargePerUom = value;
-  
+
       // Recalculate the amount if applicable
       if (!taxEntry.inclusive && firstRow.afterDiscountValue) {
         const amount = calculateTaxAmount(
@@ -561,20 +563,20 @@ export default function VendorDetails() {
         taxEntry.amount = amount.toFixed(2);
       }
     }
-  
+
     if (field === "inclusive") {
       taxEntry.inclusive = value;
     }
-  
+
     // Apply the updated tax entry to all rows
     updatedData.forEach((row) => {
       if (!row[taxKey]) row[taxKey] = [];
-  
+
       // Find the tax entry in the current row by its ID
       const rowTaxEntryIndex = row[taxKey].findIndex(
         (charge) => charge.id === id
       );
-  
+
       if (rowTaxEntryIndex !== -1) {
         // Update the existing tax entry
         row[taxKey][rowTaxEntryIndex] = { ...taxEntry };
@@ -582,11 +584,11 @@ export default function VendorDetails() {
         // Add the tax entry if it doesn't exist
         row[taxKey].push({ ...taxEntry });
       }
-  
+
       // Recalculate the net cost for the row
       row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData);
     });
-  
+
     console.log(updatedData, "updatedData after bulk update");
     // Update the state with the modified data
     setTaxRateData(updatedData);
@@ -655,14 +657,21 @@ export default function VendorDetails() {
     //   JSON.stringify(updatedData, null, 2)
     // );
 
-     // Update matched tax names dynamically
-  const matchedTax = taxOptions.find((tax) => tax.value === charge.taxChargeType);
-  if (matchedTax) {
-    console.log("Matched Tax:EDCFGVTRGH", matchedTax.value, taxOptions, charge);
-    
-    matchedTaxNamesArray.push(matchedTax?.value); // Push matched tax name to the array
-    // console.log("Matched Tax:", matchedTax, mat);
-  }
+    // Update matched tax names dynamically
+    const matchedTax = taxOptions.find(
+      (tax) => tax.value === charge.taxChargeType
+    );
+    if (matchedTax) {
+      console.log(
+        "Matched Tax:EDCFGVTRGH",
+        matchedTax.value,
+        taxOptions,
+        charge
+      );
+
+      matchedTaxNamesArray.push(matchedTax?.value); // Push matched tax name to the array
+      // console.log("Matched Tax:", matchedTax, mat);
+    }
 
     setTaxRateData(recalculated);
     originalTaxRateDataRef.current = structuredClone(recalculated);
@@ -2661,41 +2670,47 @@ export default function VendorDetails() {
       taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
     );
   }, [parentTaxRateData, taxRateData]);
-  
+
   const additionBidMaterialTaxDetails =
     parentTaxRateData[tableId]?.addition_bid_material_tax_details || [];
-  
+
   const matchedTaxNames = additionBidMaterialTaxDetails
     .map((item) => {
       const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
       // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
-      if(matchedTax && !matchedParentTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
+      if (
+        matchedTax &&
+        !matchedParentTaxNamesArray.includes(matchedTax.value) &&
+        matchedTax.value !== ""
+      ) {
         matchedParentTaxNamesArray.push(matchedTax.value);
       }
       return matchedTax ? matchedTax.value : null;
     })
     .filter((name) => name !== null);
 
-
-  
   // Get the addition bid material tax details
-const singleAdditionBidMaterialTaxDetails =
-taxRateData[tableId]?.addition_bid_material_tax_details || [];
+  const singleAdditionBidMaterialTaxDetails =
+    taxRateData[tableId]?.addition_bid_material_tax_details || [];
 
-// Dynamically compute singleMatchedTaxNames without using state
-const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
-.map((item) => {
-  const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
-  // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
+  // Dynamically compute singleMatchedTaxNames without using state
+  const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
+    .map((item) => {
+      const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
+      // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
 
-  // Push the matched tax name into the external array if it exists
-  if (matchedTax && !matchedTaxNamesArray.includes(matchedTax.value) && matchedTax.value !== "") {
-    matchedTaxNamesArray.push(matchedTax.value);
-  }
+      // Push the matched tax name into the external array if it exists
+      if (
+        matchedTax &&
+        !matchedTaxNamesArray.includes(matchedTax.value) &&
+        matchedTax.value !== ""
+      ) {
+        matchedTaxNamesArray.push(matchedTax.value);
+      }
 
-  return matchedTax ? matchedTax.value : null;
-})
-.filter((name) => name !== null);
+      return matchedTax ? matchedTax.value : null;
+    })
+    .filter((name) => name !== null);
 
   return (
     <div className="">
@@ -5939,7 +5954,30 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                                 );
                               }}
                               className="custom-select"
-                              disabledOptions={matchedParentTaxNamesArray}
+                              disabledOptions={
+                                taxRateData[
+                                  tableId
+                                ]?.addition_bid_material_tax_details?.map(
+                                  (item) => {
+                                    if (
+                                      item.taxChargeType === "CGST" ||
+                                      item.taxChargeType === "SGST"
+                                    ) {
+                                      return "IGST";
+                                    }
+
+                                    // Disable CGST and SGST if IGST is selected
+                                    if (item.taxChargeType === "IGST") {
+                                      return ["CGST", "SGST"];
+                                    }
+
+                                    return (
+                                      item.taxChargeType ||
+                                      matchedParentTaxNamesArray
+                                    );
+                                  }
+                                ) || []
+                              }
                             />
                           </td>
 
@@ -6018,78 +6056,78 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                     {parentTaxRateData[
                       tableId
                     ]?.deduction_bid_material_tax_details.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <SelectBox
-                              options={deductionTaxOptions}
-                              defaultValue={
-                                deductionTaxOptions.find(
-                                  (option) => option.id == item.resource_id
-                                ).value
-                              }
-                              onChange={(value) =>
-                                handleAllTaxChargeChange(
-                                  "taxChargeType",
-                                  value,
+                      <tr key={item.id}>
+                        <td>
+                          <SelectBox
+                            options={deductionTaxOptions}
+                            defaultValue={
+                              deductionTaxOptions.find(
+                                (option) => option.id == item.resource_id
+                              ).value
+                            }
+                            onChange={(value) =>
+                              handleAllTaxChargeChange(
+                                "taxChargeType",
+                                value,
                                 "deduction",
                                 item.id
-                                )
-                              }
+                              )
+                            }
                             disabledOptions={parentTaxRateData[
                               tableId
                             ]?.deduction_bid_material_tax_details?.map(
                               (item) =>
                                 item.taxChargeType || item.resource_id || "SGST"
                             )}
-                            />
-                          </td>
-                          <td>
-                            <select
-                              className="form-select"
+                          />
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
                             defaultValue={item?.taxChargePerUom}
-                              onChange={(e) =>
-                                handleAllTaxChargeChange(
-                                  "taxChargePerUom",
-                                  e.target.value,
+                            onChange={(e) =>
+                              handleAllTaxChargeChange(
+                                "taxChargePerUom",
+                                e.target.value,
                                 "deduction",
                                 item.id
-                                )
-                              }
-                            >
-                              <option value="">Select Tax</option>
-                              <option value="1%">1%</option>
-                              <option value="2%">2%</option>
-                              <option value="10%">10%</option>
-                            </select>
-                          </td>
-                          <td className="text-center">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              checked={item.inclusive}
-                              onChange={(e) =>
-                                handleAllTaxChargeChange(
-                                  "inclusive",
-                                  e.target.checked,
+                              )
+                            }
+                          >
+                            <option value="">Select Tax</option>
+                            <option value="1%">1%</option>
+                            <option value="2%">2%</option>
+                            <option value="10%">10%</option>
+                          </select>
+                        </td>
+                        <td className="text-center">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={item.inclusive}
+                            onChange={(e) =>
+                              handleAllTaxChargeChange(
+                                "inclusive",
+                                e.target.checked,
                                 "deduction", // Pass either "addition" or "deduction"
                                 item.id
-                                )
-                              }
-                            />
-                          </td>
+                              )
+                            }
+                          />
+                        </td>
 
-                          <td className="text-center">
-                            <button
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() =>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() =>
                               removeTaxChargeItem(tableId, item.id, "deduction")
-                              }
-                            >
-                              <span>×</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                            }
+                          >
+                            <span>×</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -6308,8 +6346,13 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                         </button>
                       </td>
                     </tr>
-                    {console.log("item:----", taxRateData, "taxOpiton",tableId)}
-                          {/* {console.log("matched:--",matchedTaxNamesArray)} */}
+                    {console.log(
+                      "item:----",
+                      taxRateData,
+                      "taxOpiton",
+                      tableId
+                    )}
+                    {/* {console.log("matched:--",matchedTaxNamesArray)} */}
                     {taxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details?.map(
@@ -6328,6 +6371,8 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                                 const selectedOption = taxOptions.find(
                                   (option) => option.value === value
                                 );
+
+                                // Handle the selected option
                                 handleTaxChargeChange(
                                   tableId,
                                   item.id,
@@ -6342,10 +6387,22 @@ const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
                                   tableId
                                 ]?.addition_bid_material_tax_details?.map(
                                   (item) => {
-                                    // Use `taxChargeType` if it exists, otherwise match `resource_id` with `taxOptions`
                                     const matchedOption = taxOptions.find(
                                       (option) => option.id === item.resource_id
                                     );
+
+                                    // Disable IGST if CGST or SGST is selected
+                                    if (
+                                      item.taxChargeType === "CGST" ||
+                                      item.taxChargeType === "SGST"
+                                    ) {
+                                      return "IGST";
+                                    }
+
+                                    // Disable CGST and SGST if IGST is selected
+                                    if (item.taxChargeType === "IGST") {
+                                      return ["CGST", "SGST"];
+                                    }
 
                                     return (
                                       item.taxChargeType || matchedOption?.value
