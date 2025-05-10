@@ -2,7 +2,10 @@ import React from "react";
 import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
 import {
   Table
 } from "../components";
@@ -16,10 +19,131 @@ const BillVerificationCreate = () => {
 
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
+
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [sites, setSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companies, setCompanies] = useState([]);
+
+  const handleProjectChange = (value) => {
+    setSelectedProject(value);
+    setSelectedSite(null);
+    setSites(
+      value?.sites?.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
+  };
+
+  const handleSiteChange = (value) => {
+    setSelectedSite(value);
+  };
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects(
+      selectedOption?.projects?.map((project) => ({
+        value: project.id,
+        label: project.name,
+        sites: project.pms_sites,
+      })) || []
+    );
+    setSites([]);
+  };
+
+  const fetchProjects = async (companyId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}`
+      );
+      setProjects(
+        response.data.projects.map((project) => ({
+          value: project.id,
+          label: project.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  const fetchSites = async (projectId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
+      );
+      setSites(
+        response.data.sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProject?.value) {
+      fetchSites(selectedProject.value);
+    }
+  }, [selectedProject]);
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      const formattedCompanies = response.data.companies.map((company) => ({
+        value: company.id,
+        label: company.company_name,
+        projects: company.projects,
+      }));
+      setCompanies(formattedCompanies);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const statusOptions = [
+    {
+      label: "Select Status",
+      value: "",
+    },
+    {
+      label: "Draft",
+      value: "draft",
+    },
+    {
+      label: "Verified",
+      value: "verified",
+    },
+    {
+      label: "Submited",
+      value: "submited",
+    },
+    {
+      label: "Proceed",
+      value: "proceed",
+    },
+    {
+      label: "Approved",
+      value: "approved",
+    },
+  ];
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+        <div className="module-data-section mx-2">
           <a href="">
             Home &gt; Billing &gt; Bill Verification List &gt; Update Bill
             Information
@@ -77,62 +201,51 @@ const BillVerificationCreate = () => {
               <li className="nav-item" role="presentation" />
             </ul>
           </div>
-          <div className="row my-4 align-items-center">
+          <div className="row align-items-center container-fluid mb-5 mt-5 ">
             <div className="col-md-12 ">
               <div className="card p-3 mx-2">
                 <div className="row">
-                  <div className="col-md-4">
+                  
+                  <div className="col-md-4 ">
                     <div className="form-group">
-                      <label>Company</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      <label>
+                        Company <span>*</span>
+                      </label>
+                      <SingleSelector
+                        options={companies}
+                        value={selectedCompany}
+                        onChange={handleCompanyChange}
+                        placeholder="Select Company"
+                      />
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-4  ">
                     <div className="form-group">
-                      <label>Project</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      <label>
+                        Project <span>*</span>
+                      </label>
+                      <SingleSelector
+                        options={projects}
+                        value={selectedProject}
+                        onChange={handleProjectChange}
+                        placeholder="Select Project"
+                        isDisabled={!selectedCompany}
+                      />
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-4 ">
                     <div className="form-group">
-                      <label>Sub Project</label>
-                      <select
-                        className="form-control form-select"
-                        style={{ width: "100%" }}
-                        fdprocessedid="3x7jfv"
-                      >
-                        <option selected="selected">Alabama</option>
-                        <option>Alaska</option>
-                        <option>California</option>
-                        <option>Delaware</option>
-                        <option>Tennessee</option>
-                        <option>Texas</option>
-                        <option>Washington</option>
-                      </select>
+                      <label>
+                        Sub-Project <span>*</span>
+                      </label>
+
+                      <SingleSelector
+                        options={sites}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder={`Select Sub-Project`} // Dynamic placeholder
+                        isDisabled={!selectedCompany}
+                      />
                     </div>
                   </div>
                   <div className="col-md-3 mt-2">
@@ -251,7 +364,7 @@ const BillVerificationCreate = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-5 ">
                   <h5 className=" ">Supporting Documents</h5>
                   <div className="card-tools d-flex">
                     <button
@@ -274,7 +387,7 @@ const BillVerificationCreate = () => {
                     </div>
                   </div>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -464,33 +577,35 @@ const BillVerificationCreate = () => {
                   </table>
                 </div>
               </div>
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Remark</label>
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
+              <div className="mx-1">
+                <div className="row ">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Remark</label>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        placeholder="Enter ..."
+                        defaultValue={""}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row mt-2">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Comments</label>
+                      <textarea
+                        className="form-control"
+                        rows={2}
+                        placeholder="Enter ..."
+                        defaultValue={""}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Comments</label>
-                    <textarea
-                      className="form-control"
-                      rows={2}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
+              {/* <div className="d-flex justify-content-end align-items-center gap-3">
                 <p className="">Assigned To User</p>
                 <div className="dropdown">
                   <button
@@ -520,36 +635,44 @@ const BillVerificationCreate = () => {
                     </li>
                   </ul>
                 </div>
+              </div> */}
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label
+                      style={{ fontSize: "0.95rem", color: "black", whiteSpace: "nowrap", }}
+                    >
+                      Assigned To User
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      // onChange={handleStatusChange}
+                      // value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                      placeholder="Select User"
+                      // isClearable={false}
+                      // isDisabled={true} // Disable the selector
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Status</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Received for Verification
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
+
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      // onChange={handleStatusChange}
+                      // value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                      placeholder="Select Status"
+                      // isClearable={false}
+                      // isDisabled={true} // Disable the selector
+                      classNamePrefix="react-select"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
@@ -560,11 +683,13 @@ const BillVerificationCreate = () => {
                   <button className="purple-btn1 w-100">Cancel</button>
                 </div>
               </div>
-              <h5 className=" mt-3">Audit Log</h5>
-              <div className="px-3">
-                 <div className="mx-0">
-                                                         <Table columns={auditLogColumns} data={auditLogData} />
-                                                       </div>
+              <div className="mb-5">
+                <h5 className=" mt-3">Audit Log</h5>
+                <div className="">
+                  <div className="mx-0">
+                    <Table columns={auditLogColumns} data={auditLogData} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -585,39 +710,39 @@ const BillVerificationCreate = () => {
           <h5>Attach Other Document</h5>
         </Modal.Header>
         <Modal.Body>
-        <div className="row">
-    <div className="col-md-12">
-      <div className="form-group">
-        <label>Name of the Document</label>
-        <input
-          className="form-control"
-          type=""
-          placeholder=""
-          fdprocessedid="qv9ju9"
-        />
-      </div>
-    </div>
-    <div className="col-md-12 mt-2">
-      <div className="form-group">
-        <form action="/upload" method="post" encType="multipart/form-data">
-          {/* <label for="fileInput">Choose File:</label> */}
-          <input type="file" id="fileInput" name="attachment" />
-        </form>
-      </div>
-    </div>
-  </div>
-  <div className="row mt-2 justify-content-center">
-    <div className="col-md-4">
-      <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-        Attach
-      </button>
-    </div>
-    <div className="col-md-4">
-      <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-        Cancel
-      </button>
-    </div>
-  </div>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                <input
+                  className="form-control"
+                  type=""
+                  placeholder=""
+                  fdprocessedid="qv9ju9"
+                />
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <form action="/upload" method="post" encType="multipart/form-data">
+                  {/* <label for="fileInput">Choose File:</label> */}
+                  <input type="file" id="fileInput" name="attachment" />
+                </form>
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
       {/* attach modal */}

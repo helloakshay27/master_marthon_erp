@@ -809,8 +809,10 @@ const InvoiceApproval = () => {
             href="/assets/mail_room.debug-e60240217d99fc10e84cb08195762eaefdebfa65453cfc4907927bd997f6f9e5.css"
           />
           <div className="ms-3 mt-3" data-select2-id="select2-data-191-fles">
-            <p>Setup &gt; Invoice Approvals</p>
-            <h5 className="mt-2">INVOICE APPROVAL</h5>
+            {/* <p>Setup &gt; Invoice Approvals</p>
+            <h5 className="mt-2">INVOICE APPROVAL</h5> */}
+            <a href="#">Setup &gt; Admin &gt; Configurations Setup </a>
+            <h5 className="mt-2">APPROVAL MATRIX</h5>
             <div
               className="container-fluid p-3"
               data-select2-id="select2-data-190-iiua"

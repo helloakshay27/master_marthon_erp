@@ -6,8 +6,10 @@ import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
+import { useNavigate } from "react-router-dom";
 
 const BillVerificationList = () => {
+  const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
 
   // Static data for SingleSelector (this will be replaced by API data later)
@@ -196,167 +198,116 @@ const BillVerificationList = () => {
                   </div>
                 </div>
               </CollapsibleCard>
-              <div className="card mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3>
-                  <div className="card-tools">
-                    <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
-                      onClick={bulkActionDropdown}
-                    >
-                      <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                        <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
+
+              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
+                <div className="card-body mt-0 pt-0">
+                  <div className="row align-items-center">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>From Status</label>
+                        <SingleSelector
+                          options={companyOptions}
+                          selectedValue={selectedValue}
+                          onChange={handleChange}
                         />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {bulkActionDetails && (
-                  <div className="card-body mt-0 pt-0">
-                    <div className="row align-items-center">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>From Status</label>
-                          <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue}
-                            onChange={handleChange}
-                          />
-                        </div>
-                        <div className="form-group mt-3">
-                          <label>To Status</label>
-                          <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue} // Passing selected value to SingleSelector
-                            onChange={handleChange} // Handle change event
-                          />
-                        </div>
                       </div>
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>Remark</label>
-                          <textarea
-                            className="form-control"
-                            rows={4}
-                            placeholder="Enter ..."
-                            defaultValue={""}
-                          />
-                        </div>
-                      </div>
-                      <div className="offset-md-1 col-md-2">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
-                          Submit
-                        </button>
+                      <div className="form-group mt-3">
+                        <label>To Status</label>
+                        <SingleSelector
+                          options={companyOptions}
+                          selectedValue={selectedValue} // Passing selected value to SingleSelector
+                          onChange={handleChange} // Handle change event
+                        />
                       </div>
                     </div>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>Remark</label>
+                        <textarea
+                          className="form-control"
+                          rows={4}
+                          placeholder="Enter ..."
+                          defaultValue={""}
+                        />
+                      </div>
+                    </div>
+                    <div className="offset-md-1 col-md-2">
+                      <button
+                        className="purple-btn2 m-0"
+                        style={{ color: "white" }}
+                        onClick={() => (window.location.href = "#")}
+                      >
+                        Submit
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div className="row mt-2">
-                <div className="col-md-5 ms-3">
+                </div>
+              </CollapsibleCard>
+
+              <div className="d-flex justify-content-between align-items-center me-2 mt-4">
+                {/* Search Input */}
+                <div className="col-md-4">
                   <form>
-                    <div className="input-group">
+                    <div className="input-group ms-3">
                       <input
                         type="search"
+                        id="searchInput"
+                        // value={searchKeyword}
+                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button
-                          type="submit"
-                          className="btn btn-md btn-default"
-                        >
-                          <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                              fill="#8B0203"
-                            />
-                            <path
-                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                              fill="#8B0203"
-                            />
+                        <button type="button" className="btn btn-md btn-default">
+                          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
+                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
                           </svg>
                         </button>
                       </div>
                     </div>
                   </form>
                 </div>
+
+                {/* Buttons & Filter Section */}
                 <div className="col-md-6">
-                  <div className="row justify-content-end">
-                    <div className="col-md-5">
-                      <div className="row justify-content-end px-3">
-                        <div className="col-md-3">
-                          <button
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#sidebarModal"
-                            onClick={openFilterModal}
-                          >
-                            <FilterIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button type="submit" className="btn btn-md">
-                            <StarIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button
-                            id="downloadButton"
-                            type="submit"
-                            className="btn btn-md"
-                          >
-                            <DownloadIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button
-                            type="submit"
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#settings"
-                            onClick={openLayoutModal}
-                          >
-                            <SettingIcon />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-4"></div>
+                  <div className="d-flex justify-content-end align-items-center gap-3">
+                    {/* Filter Icon */}
+                    {/* <button className="btn btn-md btn-default">
+                      <svg
+                        width={28}
+                        height={28}
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                          fill="#8B0203"
+                        />
+                      </svg>
+                    </button> */}
+
+                    {/* Create BOQ Button */}
+                    <button className="purple-btn2"
+                      onClick={() => navigate("/bill-verification-create")}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="white"
+                        className="bi bi-plus"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                      </svg>
+                      <span> Add</span>
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <div className="d-flex justify-content-end me-3">
-                <button className="purple-btn2 m-0 p-1 px-3">
-                  <div style={{ color: "white" }}>
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add{" "}
-                    </span>
-                    Add
-                  </div>
-                </button>
               </div>
               <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
                 <table

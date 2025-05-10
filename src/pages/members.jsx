@@ -339,12 +339,13 @@ function Members() {
                 {/* <li>
                   <Link to="/bill-booking-details">Bill Booking Details </Link>
                 </li> */}
+                <h5>___Bill Entry___</h5>
                 <li>
                   <Link to="/bill-entry-details">Bill Entry Details</Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/bill-booking-list">Bill Booking List</Link>
-                </li>
+                </li> */}
                 <li>
                   <Link to="/bill-entry-list">Bill Entry List</Link>
                 </li>
@@ -356,15 +357,7 @@ function Members() {
                 {/* <li>
                   <Link to="/bill-booking-create">Bill Booking Create</Link>
                 </li> */}
-                <li>
-                  <Link to="/bill-payment-create">Bill Payment Create</Link>
-                </li>
-                <li>
-                  <Link to="/bill-payment-details">Bill Payment Details</Link>
-                </li>
-                <li>
-                  <Link to="/bill-payment-list">Bill payment List</Link>
-                </li>
+                <h5>___Bill Verification___</h5>
                 <li>
                   <Link to="/bill-verification-create">
                     Bill Verification Create
@@ -379,6 +372,16 @@ function Members() {
                   <Link to="bill-verification-list">
                     Bill Verification List
                   </Link>
+                </li>
+                <h5>___Bill Payment___</h5>
+                <li>
+                  <Link to="/bill-payment-create">Bill Payment Create</Link>
+                </li>
+                <li>
+                  <Link to="/bill-payment-details">Bill Payment Details</Link>
+                </li>
+                <li>
+                  <Link to="/bill-payment-list">Bill payment List</Link>
                 </li>
 
                 <h5>____Bill Booking____</h5>
