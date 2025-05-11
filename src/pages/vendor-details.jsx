@@ -2358,9 +2358,77 @@ export default function VendorDetails() {
 
   const mergedColumns = [...defaultColumns, ...bidTemplate];
 
-  // useEffect(() => {
-  //   console.log("Received Data in Table:", data);
-  // }, [data]);
+  useEffect(() => {
+  if (data.length > 0) {
+    const updatedTaxRateData = data.map((selectedRow, index) => {
+      const existingRow = taxRateData[index] || {}; // Retain existing data if available
+
+      // Use `quantity` if `quantityAvail` is 0
+      const quantityAvail =
+        parseFloat(selectedRow.quantityAvail || 0) > 0
+          ? parseFloat(selectedRow.quantityAvail)
+          : parseFloat(selectedRow.quantity || 0);
+
+      // Calculate the afterDiscountValue
+      const price = parseFloat(selectedRow.price || 0);
+      const discount = parseFloat(selectedRow.discount || 0);
+      const total = price * quantityAvail;
+      const discountAmount = (total * discount) / 100;
+      const afterDiscountValue = total - discountAmount;
+
+      // Recalculate the amounts for addition and deduction tax details
+      const additionTaxDetails = (selectedRow.addition_bid_material_tax_details || []).map((tax) => {
+        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+        const amount = tax.inclusive
+          ? 0 // If inclusive, set amount to 0
+          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+        return { ...tax, amount };
+      });
+
+      const deductionTaxDetails = (selectedRow.deduction_bid_material_tax_details || []).map((tax) => {
+        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+        const amount = tax.inclusive
+          ? 0 // If inclusive, set amount to 0
+          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+        return { ...tax, amount };
+      });
+
+      // Calculate the net cost
+      const additionTaxTotal = additionTaxDetails.reduce(
+        (sum, tax) => sum + parseFloat(tax.amount || 0),
+        0
+      );
+      const deductionTaxTotal = deductionTaxDetails.reduce(
+        (sum, tax) => sum + parseFloat(tax.amount || 0),
+        0
+      );
+      const netCost = afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+
+      return {
+        ...existingRow, // Keep all existing fields
+        material: selectedRow.section || "",
+        ratePerNos: selectedRow.price || "",
+        totalPoQty: quantityAvail.toString(), // Use the resolved quantity
+        discount: selectedRow.discount || "",
+        materialCost: selectedRow.price || "",
+        discountRate: discountAmount.toFixed(2),
+        afterDiscountValue: afterDiscountValue.toFixed(2),
+        remark: selectedRow.vendorRemark || "",
+        addition_bid_material_tax_details: additionTaxDetails,
+        deduction_bid_material_tax_details: deductionTaxDetails,
+        netCost: netCost.toFixed(2),
+      };
+    });
+
+    // Update the `taxRateData` state
+    setTaxRateData(updatedTaxRateData);
+
+    // Optionally update the reference for original data
+    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+
+    console.log("Updated Tax Rate Data from useEffect:", updatedTaxRateData);
+  }
+}, [data]);// Dependency array ensures this runs when `data` changes
 
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
@@ -2459,7 +2527,7 @@ export default function VendorDetails() {
     };
 
     const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
+    updatedTaxRateData[rowIndex]?.addition_bid_material_tax_details?.push(
       newItem
     );
     setTaxRateData(updatedTaxRateData);
@@ -2663,13 +2731,13 @@ export default function VendorDetails() {
     fetchTaxes();
   }, []);
 
-  useEffect(() => {
-    console.log(
-      "parent",
-      parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
-      taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
-    );
-  }, [parentTaxRateData, taxRateData]);
+  // useEffect(() => {
+  //   console.log(
+  //     "parent",
+  //     parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
+  //     taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
+  //   );
+  // }, [parentTaxRateData, taxRateData]);
 
   const additionBidMaterialTaxDetails =
     parentTaxRateData[tableId]?.addition_bid_material_tax_details || [];
@@ -6346,12 +6414,6 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    {console.log(
-                      "item:----",
-                      taxRateData,
-                      "taxOpiton",
-                      tableId
-                    )}
                     {/* {console.log("matched:--",matchedTaxNamesArray)} */}
                     {taxRateData[
                       tableId
@@ -6505,7 +6567,7 @@ export default function VendorDetails() {
 
                     {taxRateData[
                       tableId
-                    ]?.deduction_bid_material_tax_details.map((item) => (
+                    ]?.deduction_bid_material_tax_details?.map((item) => (
                       <tr key={item.id}>
                         <td>
                           <SelectBox
