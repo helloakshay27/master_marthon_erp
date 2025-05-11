@@ -188,14 +188,13 @@ export default function ChargesDataTable({
     });
 
     // Construct payload
-    const accumulatedPayload = updatedData.map((row, index) => {      
+    const accumulatedPayload = updatedData.map((row, index) => {
       const chargeId = chargesData[index]?.id || null;
 
       return {
         charge_id: chargeId,
         amount: row.amount || "0", // User input
-        realised_amount:
-        row?.realised_amount|| row?.amount || "0", // Calculated amount
+        realised_amount: row?.realised_amount || row?.amount || "0", // Calculated amount
         taxes_and_charges: chargesTaxRate[index]?.taxes_and_charges || [],
       };
     });
@@ -303,15 +302,18 @@ export default function ChargesDataTable({
           onClick: () => {
             // Calculate the gross total as the sum of realisedAmount values
             const updatedGrossTotal = chargesData.reduce((total, charge) => {
-              const realisedAmount = parseFloat(
-                charge?.realised_amount || 0
-              );
+              const realisedAmount = parseFloat(charge?.realised_amount || 0);
               return total + realisedAmount;
             }, 0);
 
             const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
-            console.log("calcGrossTotal:-----", calcGrossTotal, updatedGrossTotal, calcGrossTotal + updatedGrossTotal);
-             // Get the current gross total from the parent component
+            console.log(
+              "calcGrossTotal:-----",
+              calcGrossTotal,
+              updatedGrossTotal,
+              calcGrossTotal + updatedGrossTotal
+            );
+            // Get the current gross total from the parent component
             setGrossTotal(calcGrossTotal + updatedGrossTotal); // Update the gross total in the parent component
             handleCloseOtherChargesModal(); // Close the modal
           },
@@ -520,11 +522,23 @@ export default function ChargesDataTable({
                           )
                         }
                         className="custom-select"
-                        disabledOptions={chargesTaxRate[
-                          selectedTableId
-                        ]?.taxes_and_charges
-                          ?.filter((item) => item.addition)
-                          ?.map((item) => item.resource_id)} // Pass selected options to disable
+                        disabledOptions={(
+                          chargesTaxRate[
+                            selectedTableId
+                          ]?.taxes_and_charges?.reduce((acc, item) => {
+                            if (item.resource_id === 20) {
+                              acc.push(19, 18); // Disable CGST and SGST
+                            } else if (
+                              item.resource_id === 19 ||
+                              item.resource_id === 18
+                            ) {
+                              acc.push(20); // Disable IGST
+                            }
+                            return acc;
+                          }, []) || []
+                        ).filter(
+                          (value, index, self) => self.indexOf(value) === index
+                        )} //]] Remove duplicates
                       />
                     </td>
                     <td>
@@ -582,10 +596,11 @@ export default function ChargesDataTable({
                         className="btn btn-outline-danger btn-sm"
                         onClick={() => {
                           const updated = { ...chargesTaxRate };
-                          updated[selectedTableId].taxes_and_charges =
-                            updated[selectedTableId].taxes_and_charges.filter(
-                              (tax) => tax.id !== item.id
-                            );
+                          updated[selectedTableId].taxes_and_charges = updated[
+                            selectedTableId
+                          ].taxes_and_charges.filter(
+                            (tax) => tax.id !== item.id
+                          );
                           setChargesTaxRate(updated);
                         }}
                       >
@@ -702,10 +717,11 @@ export default function ChargesDataTable({
                         className="btn btn-outline-danger btn-sm"
                         onClick={() => {
                           const updated = { ...chargesTaxRate };
-                          updated[selectedTableId].taxes_and_charges =
-                            updated[selectedTableId].taxes_and_charges.filter(
-                              (tax) => tax.id !== item.id
-                            );
+                          updated[selectedTableId].taxes_and_charges = updated[
+                            selectedTableId
+                          ].taxes_and_charges.filter(
+                            (tax) => tax.id !== item.id
+                          );
                           setChargesTaxRate(updated);
                         }}
                       >
