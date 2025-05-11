@@ -23,6 +23,7 @@ import {
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
+  const effectRan = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bids, setBids] = useState([]); // State to store the bids
   const [isBid, setIsBid] = useState(false);
@@ -1142,6 +1143,7 @@ export default function VendorDetails() {
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
       const finalTotal = landedAmount + gstAmount;
       const totalAmt = row.total || 0;
+      console.log(taxRateData, "taxRateData");
 
       const taxDetails = [
         ...(taxRateData[index]?.addition_bid_material_tax_details || []).map(
@@ -1357,44 +1359,37 @@ export default function VendorDetails() {
 
     try {
       // Send POST request
-
       // Validate mandatory fields
       // if (!validateMandatoryFields() || !validateTableData()) {
       //   setLoading(false);
       //   return; // Stop further execution if validation fails
       // }
-
-      const payload = preparePayload();
-      // console.log("payload:---", payload);
-
-      const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-          },
-        }
-      );
-
-      toast.success("Bid Created successfully!", {
-        autoClose: 1000, // Close after 3 seconds
-      });
-      setIsBidCreated(true);
-      setRevisedBid(true); // Update `revisedBid` to true
-      // console.log("Updated revisedBid to true"); // Update state
-
-      // console.log("Updated isBidCreated to true.");
-      // console.log("vendor ID2", vendorId);
-
-      // setData(response.data.bid_materials_attributes || []);
-
-      setTimeout(() => {
-        navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-      }, 1000);
+      // const payload = preparePayload();
+      // // console.log("payload:---", payload);
+      // const response = await axios.post(
+      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+      //   payload,
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+      //     },
+      //   }
+      // );
+      // toast.success("Bid Created successfully!", {
+      //   autoClose: 1000, // Close after 3 seconds
+      // });
+      // setIsBidCreated(true);
+      // setRevisedBid(true); // Update `revisedBid` to true
+      // // console.log("Updated revisedBid to true"); // Update state
+      // // console.log("Updated isBidCreated to true.");
+      // // console.log("vendor ID2", vendorId);
+      // // setData(response.data.bid_materials_attributes || []);
+      // setTimeout(() => {
+      //   navigate(
+      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //   );
+      // }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -2358,10 +2353,87 @@ export default function VendorDetails() {
 
   const mergedColumns = [...defaultColumns, ...bidTemplate];
 
-  // useEffect(() => {
-  //   console.log("Received Data in Table:", data);
-  // }, [data]);
+  useEffect(() => {
+    if (!effectRan.current) {
+      effectRan.current = true;
 
+      if (data.length > 0) {
+        const updatedTaxRateData = data.map((selectedRow, index) => {
+          // Your existing logic for updating taxRateData
+          const existingRow = taxRateData[index] || {};
+          const quantityAvail =
+            parseFloat(selectedRow.quantityAvail || 0) > 0
+              ? parseFloat(selectedRow.quantityAvail)
+              : parseFloat(selectedRow.quantity || 0);
+
+          const price = parseFloat(selectedRow.price || 0);
+          const discount = parseFloat(selectedRow.discount || 0);
+          const total = price * quantityAvail;
+          const discountAmount = (total * discount) / 100;
+          const afterDiscountValue = total - discountAmount;
+
+          const additionTaxDetails = (
+            taxRateData[index]?.addition_bid_material_tax_details || []
+          ).map((tax) => {
+            const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+            const amount = tax.inclusive
+              ? 0
+              : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+            return { ...tax, amount };
+          });
+
+          const deductionTaxDetails = (
+            taxRateData[index]?.deduction_bid_material_tax_details || []
+          ).map((tax) => {
+            const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+            const amount = tax.inclusive
+              ? 0
+              : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+            return { ...tax, amount };
+          });
+
+          const additionTaxTotal = additionTaxDetails.reduce(
+            (sum, tax) => sum + parseFloat(tax.amount || 0),
+            0
+          );
+          const deductionTaxTotal = deductionTaxDetails.reduce(
+            (sum, tax) => sum + parseFloat(tax.amount || 0),
+            0
+          );
+          const netCost =
+            afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+
+          return {
+            ...existingRow,
+            material: selectedRow.section || "",
+            ratePerNos: selectedRow.price || "",
+            totalPoQty: quantityAvail.toString(),
+            discount: selectedRow.discount || "",
+            materialCost: selectedRow.price || "",
+            discountRate: discountAmount.toFixed(2),
+            afterDiscountValue: afterDiscountValue.toFixed(2),
+            remark: selectedRow.vendorRemark || "",
+            addition_bid_material_tax_details: additionTaxDetails,
+            deduction_bid_material_tax_details: deductionTaxDetails,
+            netCost: netCost.toFixed(2),
+          };
+        });
+
+        setTaxRateData(updatedTaxRateData);
+
+        const updatedData = data.map((row, index) => ({
+          ...row,
+          addition_bid_material_tax_details:
+            updatedTaxRateData[index]?.addition_bid_material_tax_details || [],
+          deduction_bid_material_tax_details:
+            updatedTaxRateData[index]?.deduction_bid_material_tax_details || [],
+        }));
+        setData(updatedData);
+
+        originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+      }
+    }
+  }, [data]);
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
@@ -2459,7 +2531,7 @@ export default function VendorDetails() {
     };
 
     const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex].addition_bid_material_tax_details.push(
+    updatedTaxRateData[rowIndex]?.addition_bid_material_tax_details?.push(
       newItem
     );
     setTaxRateData(updatedTaxRateData);
@@ -2663,13 +2735,13 @@ export default function VendorDetails() {
     fetchTaxes();
   }, []);
 
-  useEffect(() => {
-    console.log(
-      "parent",
-      parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
-      taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
-    );
-  }, [parentTaxRateData, taxRateData]);
+  // useEffect(() => {
+  //   console.log(
+  //     "parent",
+  //     parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
+  //     taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
+  //   );
+  // }, [parentTaxRateData, taxRateData]);
 
   const additionBidMaterialTaxDetails =
     parentTaxRateData[tableId]?.addition_bid_material_tax_details || [];
@@ -6346,12 +6418,6 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    {console.log(
-                      "item:----",
-                      taxRateData,
-                      "taxOpiton",
-                      tableId
-                    )}
                     {/* {console.log("matched:--",matchedTaxNamesArray)} */}
                     {taxRateData[
                       tableId
@@ -6505,7 +6571,7 @@ export default function VendorDetails() {
 
                     {taxRateData[
                       tableId
-                    ]?.deduction_bid_material_tax_details.map((item) => (
+                    ]?.deduction_bid_material_tax_details?.map((item) => (
                       <tr key={item.id}>
                         <td>
                           <SelectBox
