@@ -2434,6 +2434,7 @@ export default function VendorDetails() {
       }
     }
   }, [data]);
+
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
       const updatedTaxRateData = data.map((selectedRow) => ({
