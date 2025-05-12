@@ -1290,6 +1290,35 @@ const BillBookingCreate = () => {
     fetchPendingAdvances();
   }, [selectedPO]);
 
+  const [creditNotes, setCreditNotes] = useState([]);
+  const [debitNotes, setDebitNotes] = useState([]);
+
+  useEffect(() => {
+    const fetchCreditAndDebitNotes = async () => {
+      if (selectedPO?.id) {
+        try {
+          // Fetch Credit Notes
+          const creditResponse = await axios.get(
+            `${baseURL}credit_notes?q[purchase_order__id_eq]=${selectedPO.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          setCreditNotes(creditResponse.data.credit_notes || []);
+
+          // Fetch Debit Notes
+          const debitResponse = await axios.get(
+            `${baseURL}debit_notes?q[purchase_order__id_eq]=${selectedPO.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          setDebitNotes(debitResponse.data.debit_notes || []);
+        } catch (error) {
+          console.error("Error fetching credit or debit notes:", error);
+          setCreditNotes([]);
+          setDebitNotes([]);
+        }
+      }
+    };
+
+    fetchCreditAndDebitNotes();
+  }, [selectedPO]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -2292,18 +2321,119 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
+                      {debitNotes.length > 0 ? (
+                        debitNotes.map((note, index) => (
+                          <tr key={index}>
+                            <td className="text-start">
+                              {note.debit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.debit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.recovery_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.waive_off_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.reason_type || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.this_recovery || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="10">
+                            No debit notes found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Credit Note</h5>
+                </div>
+                <div className="tbl-container mx-3 mt-3">
+                  <table className="w-100">
+                    <thead>
                       <tr>
-                        <td className="text-start">1</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
+                        <th className="text-start">Credit Note No.</th>
+                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Credi Note Amount</th>
+                        <th className="text-start">
+                          Credit Note Recovery Till Date
+                        </th>
+                        <th className="text-start">Waive off Till Date</th>
+                        <th className="text-start">
+                          Outstanding Amount (Certificate Date)
+                        </th>
+                        <th className="text-start">
+                          Outstanding Amount (Current Date)
+                        </th>
+                        <th className="text-start">Credit Note Reason Type</th>
+                        <th className="text-start">This Recovery</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {creditNotes.length > 0 ? (
+                        creditNotes.map((note, index) => (
+                          <tr key={index}>
+                            <td className="text-start">
+                              {note.credit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.credit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.recovery_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.waive_off_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.reason_type || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.this_recovery || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="10">
+                            No credit notes found.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

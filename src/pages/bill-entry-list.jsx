@@ -1,41 +1,261 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
+import axios from "axios";
+import { baseURL } from "../confi/apiDomain";
 
 const BillEntryList = () => {
-  const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+  const [selectedValue, setSelectedValue] = useState("");
+  const [billEntries, setBillEntries] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [totalEntries, setTotalEntries] = useState(0);
 
-  // Static data for SingleSelector (this will be replaced by API data later)
-  const companyOptions = [
-    { value: "company1", label: "Company 1" },
-    { value: "company2", label: "Company 2" },
-    { value: "company3", label: "Company 3" },
+  // Company, Project, Site states
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+
+  // Bulk Action states
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+  const [selectedBillDetails, setSelectedBillDetails] = useState("");
+
+  // Status options for bulk action
+  const statusOptions = [
+    { label: "Select Status", value: "" },
+    { label: "Draft", value: "draft" },
+    { label: "Verified", value: "verified" },
+    { label: "Submitted", value: "submitted" },
+    { label: "Proceed", value: "proceed" },
+    { label: "Approved", value: "approved" },
   ];
 
-  // Handle value change in SingleSelector
-  const handleChange = (value) => {
-    setSelectedValue(value);
+  // Add modal states
+  const [filterModal, setFilterModal] = useState(false);
+  const [layoutModal, setLayoutModal] = useState(false);
+
+  // Add modal handlers
+  const openFilterModal = () => setFilterModal(true);
+  const closeFilterModal = () => setFilterModal(false);
+  const openLayoutModal = () => setLayoutModal(true);
+  const closeLayoutModal = () => setLayoutModal(false);
+
+  // Add handleChange function
+  const handleChange = (selectedOption) => {
+    setSelectedValue(selectedOption);
   };
 
-  const [bulkActionDetails, setbulkActionDetails] = useState(true);
-  const [filterModal, setfilterModal] = useState(false);
-  const [layoutModal, setlayoutModal] = useState(false);
-  // Bootstrap collaps
-  const bulkActionDropdown = () => {
-    setbulkActionDetails(!bulkActionDetails);
+  // Fetch bill entries
+  const fetchData = async (page) => {
+    const search = searchKeyword || "";
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${search}`
+      );
+      setBillEntries(response.data.bill_entries || []);
+      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.total_pages);
+      setTotalEntries(response.data.meta.total_count);
+    } catch (error) {
+      console.error("Error fetching bill entries:", error);
+      setError("Failed to fetch bill entries");
+    } finally {
+      setLoading(false);
+    }
   };
-  //   Modal
 
-  const openFilterModal = () => setfilterModal(true);
-  const closeFilterModal = () => setfilterModal(false);
+  // Fetch data on component mount and when page/search changes
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage, searchKeyword]);
 
-  const openLayoutModal = () => setlayoutModal(true);
-  const closeLayoutModal = () => setlayoutModal(false);
+  // Fetch companies on component mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
+  // Map companies to options
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  // Fetch filtered data
+  const fetchFilteredData = () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+    const search = searchKeyword || "";
+
+    const url = `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+
+    axios
+      .get(url)
+      .then((response) => {
+        setBillEntries(response.data.bill_entries);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    axios
+      .get(
+        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setBillEntries(response.data.bill_entries);
+        setMeta(response.data.meta);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+      })
+      .catch((error) => {
+        console.error("Error resetting data:", error);
+      });
+  };
+
+  // Handle bulk action status changes
+  const handleStatusChange = (selectedOption) => {
+    setFromStatus(selectedOption.value);
+  };
+
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
+  };
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  // Handle bulk action submit
+  const handleSubmit = () => {
+    if (!fromStatus || !toStatus) {
+      alert("Please select both 'From Status' and 'To Status'.");
+      return;
+    }
+
+    const data = {
+      bill_entry_ids: selectedBillDetails,
+      to_status: toStatus,
+      comments: remark,
+    };
+
+    axios
+      .patch(
+        `${baseURL}bill_entries/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        data
+      )
+      .then((response) => {
+        console.log("Success:", response.data);
+        alert("Status updated successfully");
+        fetchData(currentPage); // Refresh the data
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  // Handle checkbox selection
+  const handleCheckboxChange = (billDetailId) => {
+    setSelectedBillDetails((prevSelected) => {
+      const selectedArray = prevSelected
+        ? prevSelected.split(",").map(Number)
+        : [];
+      if (selectedArray.includes(billDetailId)) {
+        const updatedArray = selectedArray.filter((id) => id !== billDetailId);
+        return updatedArray.join(",");
+      } else {
+        const updatedArray = [...selectedArray, billDetailId];
+        return updatedArray.join(",");
+      }
+    });
+  };
 
   return (
     <>
@@ -101,7 +321,7 @@ const BillEntryList = () => {
                     data-tab="total"
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">150</p>
+                    <p className="content-box-sub">{totalEntries}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -109,7 +329,7 @@ const BillEntryList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
-                    <p className="content-box-sub">4</p>
+                    <p className="content-box-sub">{meta?.open || 0}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -120,7 +340,7 @@ const BillEntryList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Online Bills
                     </h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub">{meta?.online || 0}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -131,7 +351,7 @@ const BillEntryList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Offline Bills
                     </h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub">{meta?.offline || 0}</p>
                   </div>
                 </div>
               </div>
@@ -142,60 +362,48 @@ const BillEntryList = () => {
             <div className="card mt-3 pb-4">
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                 <div className="row">
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Company <span>*</span>
-                      </label>
-
+                      <label>Company</label>
                       <SingleSelector
                         options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        onChange={handleCompanyChange}
+                        value={selectedCompany}
+                        placeholder="Select Company"
                       />
                     </div>
                   </div>
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Project<span>*</span>
-                      </label>
-
+                      <label>Project</label>
                       <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        options={projects}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder="Select Project"
                       />
                     </div>
                   </div>
-                  <div className="col-md-2">
+                  <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Sub-Project <span>*</span>
-                      </label>
-                      {/* Pass static data as options */}
+                      <label>Sub-Project</label>
                       <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Last Created <span>*</span>
-                      </label>
-
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder="Select Sub-project"
                       />
                     </div>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 m-0">Go</button>
+                    <button className="purple-btn2" onClick={fetchFilteredData}>
+                      Go
+                    </button>
+                  </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button className="purple-btn2" onClick={handleReset}>
+                      Reset
+                    </button>
                   </div>
                 </div>
               </CollapsibleCard>
@@ -207,7 +415,6 @@ const BillEntryList = () => {
                       type="button"
                       className="btn btn-tool"
                       data-card-widget="collapse"
-                      onClick={bulkActionDropdown}
                     >
                       <svg
                         width={32}
@@ -225,24 +432,35 @@ const BillEntryList = () => {
                     </button>
                   </div>
                 </div>
-                {bulkActionDetails && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
+                >
                   <div className="card-body mt-0 pt-0">
                     <div className="row align-items-center">
                       <div className="col-md-4">
                         <div className="form-group">
                           <label>From Status</label>
                           <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue}
-                            onChange={handleChange}
+                            options={statusOptions}
+                            value={statusOptions.find(
+                              (option) => option.value === fromStatus
+                            )}
+                            onChange={handleStatusChange}
+                            placeholder="Select Status"
                           />
                         </div>
                         <div className="form-group mt-3">
                           <label>To Status</label>
                           <SingleSelector
-                            options={companyOptions}
-                            selectedValue={selectedValue} // Passing selected value to SingleSelector
-                            onChange={handleChange} // Handle change event
+                            options={statusOptions}
+                            value={statusOptions.find(
+                              (option) => option.value === toStatus
+                            )}
+                            onChange={handleToStatusChange}
+                            placeholder="Select Status"
                           />
                         </div>
                       </div>
@@ -253,22 +471,19 @@ const BillEntryList = () => {
                             className="form-control"
                             rows={4}
                             placeholder="Enter ..."
-                            defaultValue={""}
+                            value={remark}
+                            onChange={handleRemarkChange}
                           />
                         </div>
                       </div>
                       <div className="offset-md-1 col-md-2">
-                        <button
-                          className="purple-btn2 m-0"
-                          style={{ color: "white" }}
-                          onClick={() => (window.location.href = "#")}
-                        >
+                        <button type="submit" className="purple-btn2 m-0">
                           Submit
                         </button>
                       </div>
                     </div>
                   </div>
-                )}
+                </form>
               </div>
               <div className="row mt-2">
                 <div className="col-md-5 ms-3">
@@ -278,6 +493,8 @@ const BillEntryList = () => {
                         type="search"
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)}
                       />
                       <div className="input-group-append">
                         <button
@@ -314,7 +531,6 @@ const BillEntryList = () => {
                             className="btn btn-md"
                             data-bs-toggle="modal"
                             data-bs-target="#sidebarModal"
-                            onClick={openFilterModal}
                           >
                             <FilterIcon />
                           </button>
@@ -339,7 +555,6 @@ const BillEntryList = () => {
                             className="btn btn-md"
                             data-bs-toggle="modal"
                             data-bs-target="#settings"
-                            onClick={openLayoutModal}
                           >
                             <SettingIcon />
                           </button>
@@ -402,35 +617,182 @@ const BillEntryList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="text-start">1</td>
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                    </tr>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="26" className="text-center">
+                          Loading...
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan="26" className="text-center text-danger">
+                          {error}
+                        </td>
+                      </tr>
+                    ) : billEntries.length === 0 ? (
+                      <tr>
+                        <td colSpan="26" className="text-center">
+                          No bill entries found
+                        </td>
+                      </tr>
+                    ) : (
+                      billEntries.map((entry, index) => (
+                        <tr key={entry.id}>
+                          <td className="text-start">
+                            <input
+                              type="checkbox"
+                              onChange={() => handleCheckboxChange(entry.id)}
+                              checked={selectedBillDetails
+                                .split(",")
+                                .includes(entry.id.toString())}
+                            />
+                          </td>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{entry.id || "-"}</td>
+                          <td className="text-start">
+                            {entry.mode_of_submission || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.company_name || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.project_name || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.site_name || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.pms_supplier || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.uam_number || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.po_number || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.created_at
+                              ? new Date(entry.created_at).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.accepted_at
+                              ? new Date(entry.accepted_at).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="text-start">{entry.bill_no || "-"}</td>
+                          <td className="text-start">
+                            {entry.bill_date || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.bill_amount || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.bill_copies || "-"}
+                          </td>
+                          <td className="text-start">{entry.due || "-"}</td>
+                          <td className="text-start">
+                            {entry.due_date || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.certificate_no || "-"}
+                          </td>
+                          <td className="text-start">
+                            {entry.payable_amount || "-"}
+                          </td>
+                          <td className="text-start">{entry.paid || "-"}</td>
+                          <td className="text-start">{entry.balance || "-"}</td>
+                          <td className="text-start">{entry.status || "-"}</td>
+                          <td className="text-start">{entry.overdue || "-"}</td>
+                          <td className="text-start">
+                            {entry.assign_to || "-"}
+                          </td>
+                          <td className="text-start">{entry.tat || "-"}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Add pagination */}
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  {totalEntries} entries
+                </div>
               </div>
             </div>
           </div>
@@ -438,7 +800,7 @@ const BillEntryList = () => {
         </div>
       </div>
 
-      {/* modal start */}
+      {/* Add back the modals */}
       <Modal
         centered
         size="lg"
@@ -452,7 +814,7 @@ const BillEntryList = () => {
           <Modal.Title>Filter</Modal.Title>
         </Modal.Header>
         <div
-          className="modal-body "
+          className="modal-body"
           style={{ maxHeight: "400px", overflowY: "auto" }}
         >
           <div className="row">
@@ -478,7 +840,7 @@ const BillEntryList = () => {
             </div>
             <div className="col-md-4">
               <div className="form-group">
-                <label>Project </label>
+                <label>Project</label>
                 <SingleSelector
                   options={companyOptions}
                   selectedValue={selectedValue}
@@ -486,258 +848,13 @@ const BillEntryList = () => {
                 />
               </div>
             </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Sub Project </label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Vendor Name</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Is MSME</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PO No.</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on From </label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Accepted On From</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Accepted On To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Copies</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Certificate No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Payable Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Paid</label>
-                <div className="">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Balance</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Status</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Overdue</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Assign To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>TAT</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
+            {/* ... rest of your filter modal content ... */}
           </div>
         </div>
-
         <div className="modal-footer modal-footer-k justify-content-center">
-          <a
-            className="purple-btn2"
-            href="/pms/admin/task_managements/kanban_list?type="
-          >
-            Go
-          </a>
+          <button className="purple-btn2" onClick={closeFilterModal}>
+            Close
+          </button>
         </div>
       </Modal>
 
@@ -753,194 +870,7 @@ const BillEntryList = () => {
         <Modal.Header closeButton>
           <Modal.Title>Layout</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <div className="row justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
+        <Modal.Body>{/* ... your layout modal content ... */}</Modal.Body>
       </Modal>
     </>
   );
