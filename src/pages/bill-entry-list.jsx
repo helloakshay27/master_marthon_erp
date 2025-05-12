@@ -8,6 +8,8 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const BillEntryList = () => {
   const [selectedValue, setSelectedValue] = useState("");
@@ -34,6 +36,7 @@ const BillEntryList = () => {
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
   const [selectedBillDetails, setSelectedBillDetails] = useState("");
+  const navigate = useNavigate();
 
   // Status options for bulk action
   const statusOptions = [
@@ -522,7 +525,20 @@ const BillEntryList = () => {
                     </div>
                   </form>
                 </div>
-                <div className="col-md-6">
+                <div className=" col md-3 d-flex justify-content-end me-4">
+                  <button
+                    className="purple-btn2 m-0 p-1 px-3"
+                    onClick={() => navigate("/bill-entry-list-sub-page")}
+                  >
+                    <div style={{ color: "white" }}>
+                      <span className="material-symbols-outlined align-text-top me-2">
+                        add{" "}
+                      </span>
+                      Add
+                    </div>
+                  </button>
+                </div>
+                {/* <div className="col-md-6">
                   <div className="row justify-content-end">
                     <div className="col-md-5">
                       <div className="row justify-content-end px-3">
@@ -563,19 +579,9 @@ const BillEntryList = () => {
                     </div>
                     <div className="col-md-4"></div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
-              <div className="d-flex justify-content-end me-3">
-                <button className="purple-btn2 m-0 p-1 px-3">
-                  <div style={{ color: "white" }}>
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add{" "}
-                    </span>
-                    Add
-                  </div>
-                </button>
-              </div>
               <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
                 <table
                   style={{
@@ -590,7 +596,7 @@ const BillEntryList = () => {
                         <input type="checkbox" />
                       </th>
                       <th className="text-start">Sr.No.</th>
-                      <th className="text-start">ID</th>
+
                       <th className="text-start">Mode of Submission</th>
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
@@ -648,7 +654,7 @@ const BillEntryList = () => {
                             />
                           </td>
                           <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{entry.id || "-"}</td>
+                          {/* <td className="text-start">{entry.id || "-"}</td> */}
                           <td className="text-start">
                             {entry.mode_of_submission || "-"}
                           </td>
@@ -667,8 +673,19 @@ const BillEntryList = () => {
                           <td className="text-start">
                             {entry.uam_number || "-"}
                           </td>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             {entry.po_number || "-"}
+                          </td> */}
+
+                          <td className="text-start">
+                            {/* PO No. column with redirect */}
+                            {entry.po_number && entry.id ? (
+                              <Link to={`/bill-entry-details/${entry.id}`}>
+                                {entry.po_number}
+                              </Link>
+                            ) : (
+                              "-"
+                            )}
                           </td>
                           <td className="text-start">
                             {entry.created_at

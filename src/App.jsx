@@ -265,7 +265,10 @@ function App() {
               path="/bill-booking-details"
               element={<BillBookingDetails />}
             />
-            <Route path="/bill-entry-details" element={<BillEntryDetails />} />
+            <Route
+              path="/bill-entry-details/:id"
+              element={<BillEntryDetails />}
+            />
             <Route path="/bill-booking-list" element={<BillBookingList />} />
             <Route path="/bill-entry-list" element={<BillEntryList />} />
             <Route

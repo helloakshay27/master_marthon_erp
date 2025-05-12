@@ -912,51 +912,76 @@ export default function AllocationTab({ isCounterOffer }) {
                   );
                 })()}
                 {(() => {
-                  const extractedChargeData =
-                    eventVendors?.flatMap((vendor) => {
-                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
-                      return charges.map((charge) => ({
-                        amount: charge.amount || "_",
-                        realisedAmount: charge.realised_amount || "_",
-                        taxDetails: charge.taxes_and_charges || [],
-                      }));
-                    }) || [];
-
-                  // const handleTaxModalOpen = (taxDetails) => {
-                  //   setShowTaxModal(true);
-                  //   setTaxModalData(taxDetails);
-                  // };
-                  const handleChargesTaxModalOpen = (taxDetails) => {
-                    setShowChargesTaxModal(true);
-                    setChargesTaxModalData(taxDetails);
-                  };
-
-                  return (
-                    <Accordion
-                      title="Other Charges"
-                      isDefault={true}
-                      tableColumn={[
-                        { label: "Amount", key: "amount" },
-                        { label: "Realised Amount", key: "realisedAmount" },
-                        { label: "Tax Details", key: "taxDetails" },
-                      ]}
-                      tableData={extractedChargeData.map((charge) => ({
-                        ...charge,
-                        taxDetails: (
-                          <button
-                            className="purple-btn2"
-                            onClick={() =>
-                              handleChargesTaxModalOpen(charge.taxDetails)
-                            }
-                          >
-                            View Tax
-                          </button>
-                        ),
-                      }))}
-                    />
-                  );
-                })()}
-
+                                  const extractedChargeData =
+                                    eventVendors?.flatMap((vendor) => {
+                                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
+                                      return charges.map((charge) => ({
+                                        amount: charge.amount || "-",
+                                        realised_amount: charge.realised_amount || 0,
+                                        taxDetails: charge.taxes_and_charges || [],
+                                        charge_id: charge.charge_id, // ✅ include charge_id
+                                      }));
+                                    }) || [];
+                
+                                  const handleChargesTaxModalOpen = (taxDetails) => {
+                                    setShowChargesTaxModal(true);
+                                    setChargesTaxModalData(taxDetails);
+                                  };
+                
+                                  return (
+                                    <Accordion
+                                      title="Other Charges"
+                                      isDefault={true}
+                                      tableColumn={[
+                                        {
+                                          label: "Handling Charge Amount",
+                                          key: "handlingAmount",
+                                        },
+                                        { label: "Other Charge Amount", key: "otherAmount" },
+                                        { label: "Freight Amount", key: "freightAmount" },
+                                        { label: "Realised Amount", key: "realisedAmount" },
+                                        { label: "Tax Details", key: "taxDetails" },
+                                      ]}
+                                      tableData={[
+                                        {
+                                          handlingAmount:
+                                            extractedChargeData.find((c) => c.charge_id === 2)
+                                              ?.amount || "-",
+                                          otherAmount:
+                                            extractedChargeData.find((c) => c.charge_id === 4)
+                                              ?.amount || "-",
+                                          freightAmount:
+                                            extractedChargeData.find((c) => c.charge_id === 5)
+                                              ?.amount || "-",
+                                          realisedAmount:
+                                            extractedChargeData.reduce(
+                                              (acc, curr) =>
+                                                [2, 4, 5].includes(curr.charge_id)
+                                                  ? acc + Number(curr.realised_amount || 0)
+                                                  : acc,
+                                              0
+                                            ) || "-",
+                                          taxDetails: (
+                                            <button
+                                              className="purple-btn2"
+                                              onClick={() =>
+                                                handleChargesTaxModalOpen(
+                                                  extractedChargeData
+                                                    .filter((c) =>
+                                                      [2, 4, 5].includes(c.charge_id)
+                                                    )
+                                                    .flatMap((c) => c.taxDetails)
+                                                )
+                                              }
+                                            >
+                                              View Tax
+                                            </button>
+                                          ),
+                                        },
+                                      ]}
+                                    />
+                                  );
+                                })()}
                 <>
                   {poIsLoading ? (
                     <Loader />
