@@ -915,76 +915,66 @@ export default function ResponseTab({ isCounterOffer }) {
                 })()}
 
                 {(() => {
-                  const extractedChargeData =
-                    eventVendors?.flatMap((vendor) => {
-                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
-                      return charges.map((charge) => ({
-                        amount: charge.amount || "-",
-                        realised_amount: charge.realised_amount || 0,
-                        taxDetails: charge.taxes_and_charges || [],
-                        charge_id: charge.charge_id, // ✅ include charge_id
-                      }));
-                    }) || [];
+  const extractedChargeData =
+    eventVendors?.flatMap((vendor) => {
+      const charges = vendor?.bids?.[0]?.extra?.charges || [];
+      return charges.map((charge) => ({
+        charge_id: charge.charge_id,
+        amount: Number(charge.amount || 0),
+        realisedAmount: Number(charge.realised_amount || 0),
+        taxDetails: charge.taxes_and_charges || [],
+      }));
+    }) || [];
 
-                  const handleChargesTaxModalOpen = (taxDetails) => {
-                    setShowChargesTaxModal(true);
-                    setChargesTaxModalData(taxDetails);
-                  };
+  const handleChargesTaxModalOpen = (taxDetails) => {
+    setShowChargesTaxModal(true);
+    setChargesTaxModalData(taxDetails);
+  };
 
-                  return (
-                    <Accordion
-                      title="Other Charges"
-                      isDefault={true}
-                      tableColumn={[
-                        {
-                          label: "Handling Charge Amount",
-                          key: "handlingAmount",
-                        },
-                        { label: "Other Charge Amount", key: "otherAmount" },
-                        { label: "Freight Amount", key: "freightAmount" },
-                        { label: "Realised Amount", key: "realisedAmount" },
-                        { label: "Tax Details", key: "taxDetails" },
-                      ]}
-                      tableData={[
-                        {
-                          handlingAmount:
-                            extractedChargeData.find((c) => c.charge_id === 2)
-                              ?.amount || "-",
-                          otherAmount:
-                            extractedChargeData.find((c) => c.charge_id === 4)
-                              ?.amount || "-",
-                          freightAmount:
-                            extractedChargeData.find((c) => c.charge_id === 5)
-                              ?.amount || "-",
-                          realisedAmount:
-                            extractedChargeData.reduce(
-                              (acc, curr) =>
-                                [2, 4, 5].includes(curr.charge_id)
-                                  ? acc + Number(curr.realised_amount || 0)
-                                  : acc,
-                              0
-                            ) || "-",
-                          taxDetails: (
-                            <button
-                              className="purple-btn2"
-                              onClick={() =>
-                                handleChargesTaxModalOpen(
-                                  extractedChargeData
-                                    .filter((c) =>
-                                      [2, 4, 5].includes(c.charge_id)
-                                    )
-                                    .flatMap((c) => c.taxDetails)
-                                )
-                              }
-                            >
-                              View Tax
-                            </button>
-                          ),
-                        },
-                      ]}
-                    />
-                  );
-                })()}
+  const renderAccordion = (title, chargeId) => {
+    const data = extractedChargeData.filter(
+      (c) => c.charge_id === chargeId
+    );
+
+    if (data.length === 0) return null;
+
+    return (
+      <Accordion
+        key={chargeId}
+        title={title}
+        isDefault={true}
+        tableColumn={[
+          { label: "Amount", key: "amount" },
+          { label: "Realised Amount", key: "realisedAmount" },
+          { label: "Tax Details", key: "taxDetails" },
+        ]}
+        tableData={data.map((charge) => ({
+          amount: charge.amount || "-",
+          realisedAmount: charge.realisedAmount || "-",
+          taxDetails: (
+            <button
+              className="purple-btn2"
+              onClick={() =>
+                handleChargesTaxModalOpen(charge.taxDetails)
+              }
+            >
+              View Tax
+            </button>
+          ),
+        }))}
+      />
+    );
+  };
+
+  const accordions = [
+    renderAccordion("Handling Charges", 2),
+    renderAccordion("Other Charges", 4),
+    renderAccordion("Freight Charges", 5),
+  ].filter(Boolean); // remove nulls
+
+  return accordions.length > 0 ? <>{accordions}</> : null;
+})()}
+
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
