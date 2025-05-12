@@ -392,7 +392,7 @@ function App() {
               element={<BillVerificationCreate />}
             />
             <Route
-              path="/bill-verification-details"
+              path="/bill-verification-details/:id"
               element={<BillVerificationDetails />}
             />
             <Route

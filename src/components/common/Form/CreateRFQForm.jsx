@@ -1015,6 +1015,7 @@ export default function CreateRFQForm({
           <input
             className="form-control rounded-2"
             type={field.field_type === "integer" ? "number" : "text"}
+            min='0'
             value={fieldValue}
             onChange={(e) => handleFieldChange(e.target.value)}
           /></>
@@ -1577,6 +1578,7 @@ export default function CreateRFQForm({
                       <input
                         className="form-control"
                         type="number"
+                        min="0"
                         value={cell}
                         inputMode="numeric"
                         placeholder="Enter Quantity"
@@ -1611,6 +1613,7 @@ export default function CreateRFQForm({
                       <input
                         className="form-control"
                         type="number"
+                        min="0"
                         value={cell}
                         onKeyDown={(e) => {
                           if (
@@ -1643,6 +1646,7 @@ export default function CreateRFQForm({
                       <input
                         className="form-control"
                         type="number"
+                        min="0"
                         value={cell}
                         onChange={(e) =>
                           handleInputChange(

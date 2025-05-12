@@ -140,6 +140,268 @@ const BillVerificationCreate = () => {
       value: "approved",
     },
   ];
+
+  //po 
+   const [selectPOModal, setselectPOModal] = useState(false);
+    const [purchaseOrders, setPurchaseOrders] = useState([]);
+    const [selectedPO, setSelectedPO] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const openSelectPOModal = () => {
+      setselectPOModal(true);
+    };
+  
+    const closeSelectPOModal = () => {
+      setselectPOModal(false);
+    };
+  
+    const [pageSize, setPageSize] = useState(5);
+    // const [projects, setProjects] = useState([]);
+    // const [selectedProject, setSelectedProject] = useState(null);
+    // const [sites, setSites] = useState([]);
+    // const [selectedSite, setSelectedSite] = useState(null);
+    // const [selectedCompany, setSelectedCompany] = useState(null);
+    // const [companies, setCompanies] = useState([]);
+    const [selectedPOs, setSelectedPOs] = useState([]);
+    const [poTypes, setPoTypes] = useState([
+      { value: "", label: "All" },
+      { value: "Domestic", label: "Domestic" },
+      { value: "ROPO", label: "ROPO" },
+      { value: "Import", label: "Import" },
+    ]);
+  
+    // add row & delete row
+  
+    const [filterParams, setFilterParams] = useState({
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+      projectId: "",
+      siteId: "",
+    });
+    const [pagination, setPagination] = useState({
+      current_page: 1,
+      next_page: 2,
+      prev_page: null,
+      total_pages: 1,
+      total_count: 0,
+      per_page: 5,
+    });
+  
+    const handlePOSelect = (po) => {
+      setSelectedPO(po);
+      setFilterParams((prev) => ({
+        ...prev,
+        selectedPOIds: [po.id],
+      }));
+  
+      // Update form fields with selected PO details
+      if (po) {
+        // Update PO Date
+        const poDateInput = document.querySelector('input[name="po_date"]');
+        if (poDateInput) {
+          poDateInput.value = po.po_date;
+        }
+  
+        // Update PO Value
+        const poValueInput = document.querySelector('input[name="po_value"]');
+        if (poValueInput) {
+          poValueInput.value = po.total_value;
+        }
+  
+        // Update GSTIN Number
+        const gstinInput = document.querySelector('input[name="gstin_number"]');
+        if (gstinInput) {
+          gstinInput.value = po.gstin || "";
+        }
+  
+        // Update PAN Number
+        const panInput = document.querySelector('input[name="pan_number"]');
+        if (panInput) {
+          panInput.value = po.pan || "";
+        }
+      }
+  
+      closeSelectPOModal();
+    };
+  
+    const handleCheckboxChange = (poId) => {
+      setSelectedPOs((prev) => {
+        if (prev.includes(poId)) {
+          return prev.filter((id) => id !== poId);
+        } else {
+          return [...prev, poId];
+        }
+      });
+    };
+  
+    const handleSelectAll = (event) => {
+      if (event.target.checked) {
+        setSelectedPOs(purchaseOrders.map((po) => po.id));
+      } else {
+        setSelectedPOs([]);
+      }
+    };
+  
+    // Fetch initial PO data when component mounts
+    useEffect(() => {
+      fetchPurchaseOrders(null, null, null, {
+        page: 1,
+        pageSize: pageSize,
+      });
+    }, []);
+  
+    const fetchPurchaseOrders = async (
+      companyId = null,
+      projectId = null,
+      siteId = null,
+      filters = {
+        startDate: "",
+        endDate: "",
+        poType: "",
+        poNumber: "",
+        selectedPOIds: [],
+        supplierId: "",
+        page: 1,
+        pageSize: 5,
+      }
+    ) => {
+      try {
+        setLoading(true);
+        let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+  
+        // Add filters only if they are provided
+        if (companyId) url += `&q[company_id_eq]=${companyId}`;
+        if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
+        if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+        if (filters?.supplierId)
+          url += `&q[supplier_id_eq]=${filters.supplierId}`;
+        if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
+        if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
+        if (filters?.selectedPOIds?.length > 0) {
+          url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+        }
+  
+        // Always add pagination parameters
+        url += `&page=${filters.page || 1}`;
+        url += `&per_page=${filters.pageSize || 5}`;
+  
+        const response = await axios.get(url);
+        setPurchaseOrders(response.data.purchase_orders);
+  
+        if (response.data.pagination) {
+          setPagination({
+            current_page: parseInt(response.data.pagination.current_page) || 1,
+            next_page: parseInt(response.data.pagination.next_page) || null,
+            prev_page: parseInt(response.data.pagination.prev_page) || null,
+            total_pages: parseInt(response.data.pagination.total_pages) || 1,
+            total_count: parseInt(response.data.pagination.total_count) || 0,
+            per_page: parseInt(response.data.pagination.per_page) || 5,
+          });
+        }
+      } catch (err) {
+        setError("Failed to fetch purchase orders");
+        console.error("Error fetching purchase orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const handleSearch = () => {
+      setPagination((prev) => ({
+        ...prev,
+        current_page: 1,
+      }));
+  
+      fetchPurchaseOrders(
+        selectedCompany?.value,
+        selectedProject?.value,
+        selectedSite?.value,
+        {
+          ...filterParams,
+          page: 1,
+          pageSize: pageSize,
+        }
+      );
+    };
+  
+    const handleReset = () => {
+      setFilterParams({
+        startDate: "",
+        endDate: "",
+        poType: "",
+        poNumber: "",
+        selectedPOIds: [],
+      });
+      setSelectedCompany(null);
+      setSelectedProject(null);
+      setSelectedSite(null);
+      setProjects([]);
+      setSites([]);
+      setPagination((prev) => ({
+        ...prev,
+        current_page: 1,
+      }));
+      fetchPurchaseOrders(null, null, null, {
+        page: 1,
+        pageSize: pageSize,
+      });
+    };
+  
+    const getPageNumbers = () => {
+      const pages = [];
+      const startPage = Math.max(1, pagination.current_page - 2);
+      const endPage = Math.min(
+        pagination.total_pages,
+        pagination.current_page + 2
+      );
+  
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      return pages;
+    };
+  
+    const handlePageChange = (page) => {
+      setPagination((prev) => ({
+        ...prev,
+        current_page: page,
+      }));
+  
+      fetchPurchaseOrders(
+        selectedCompany?.value,
+        selectedProject?.value,
+        selectedSite?.value,
+        {
+          ...filterParams,
+          page: page,
+          pageSize: pageSize,
+        }
+      );
+    };
+  
+    // Function to handle tab change
+    const handleTabChange = (tabId) => {
+      setActiveTab(tabId);
+    };
+  
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 4;
+
+    const getShowingEntriesText = () => {
+      if (!pagination.total_count) return "No entries found";
+  
+      const start = (pagination.current_page - 1) * pagination.per_page + 1;
+      const end = Math.min(
+        start + pagination.per_page - 1,
+        pagination.total_count
+      );
+  
+      return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
+    };
+  
+  
   return (
     <>
       <div className="website-content overflow-auto">
@@ -248,44 +510,51 @@ const BillVerificationCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3 mt-2">
-                    <div className="form-group">
-                      <label>Vendor Name</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-1 mt-2">
-                    <p className="mt-2 text-decoration-underline">
-                      View Details
-                    </p>
-                  </div>
                   <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>PO Number</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Bill Number</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
+  <div className="form-group">
+    <label>Vendor Name</label>
+    <input
+      className="form-control"
+      type="text"
+      placeholder=""
+      fdprocessedid="qv9ju9"
+      value={selectedPO?.supplier_name || ""}
+      disabled
+    />
+  </div>
+</div>
+<div className="col-md-3 mt-2">
+  <div className="form-group">
+    <label>PO Number</label>
+    <input
+      className="form-control"
+      type="number"
+      placeholder=""
+      fdprocessedid="qv9ju9"
+      value={selectedPO?.po_number || ""}
+      disabled
+    />
+  </div>
+</div>
+<div className="col-md-1 mt-2">
+  <p className="mt-2 text-decoration-underline"
+   onClick={openSelectPOModal}
+  >Select</p>
+</div>
+<div className="col-md-4 mt-2">
+  <div className="form-group">
+    <label>Bill Number</label>
+    <input
+      className="form-control"
+      type="number"
+      placeholder=""
+      fdprocessedid="qv9ju9"
+    />
+  </div>
+</div>
+                 
+                  
+                  
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Acceptance Date</label>
@@ -695,6 +964,314 @@ const BillVerificationCreate = () => {
           </div>
         </div>
       </div>
+
+      {/* po modal */}
+         <Modal
+              centered
+              size="xl"
+              show={selectPOModal}
+              onHide={closeSelectPOModal}
+              backdrop="static"
+              keyboard={false}
+              // className="modal-centered-custom"
+            >
+              <Modal.Header closeButton>
+                <h5>Select PO</h5>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="row">
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Company</label>
+                      <SingleSelector
+                        options={companies}
+                        value={selectedCompany}
+                        onChange={handleCompanyChange}
+                        placeholder="Select Company"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Project</label>
+                      <SingleSelector
+                        options={projects}
+                        value={selectedProject}
+                        onChange={handleProjectChange}
+                        placeholder="Select Project"
+                        isDisabled={!selectedCompany}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>Sub-Project</label>
+                      <SingleSelector
+                        options={sites}
+                        value={selectedSite}
+                        onChange={handleSiteChange}
+                        placeholder="Select Sub-Project"
+                        isDisabled={!selectedProject}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>From Date</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={filterParams.startDate}
+                        onChange={(e) =>
+                          setFilterParams((prev) => ({
+                            ...prev,
+                            startDate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>To Date</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={filterParams.endDate}
+                        onChange={(e) =>
+                          setFilterParams((prev) => ({
+                            ...prev,
+                            endDate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>PO Type</label>
+                      <SingleSelector
+                        options={poTypes}
+                        value={
+                          poTypes.find(
+                            (type) => type.value === filterParams.poType
+                          ) || poTypes[0]
+                        }
+                        onChange={(selected) =>
+                          setFilterParams((prev) => ({
+                            ...prev,
+                            poType: selected.value,
+                          }))
+                        }
+                        placeholder="Select PO Type"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>PO Number</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={filterParams.poNumber}
+                        onChange={(e) =>
+                          setFilterParams((prev) => ({
+                            ...prev,
+                            poNumber: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter PO Number"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row mt-3 justify-content-center">
+                  {/* <div className="col-md-12 d-flex justify-content-end gap-2">
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={handleReset}
+                                  disabled={loading}
+                                >
+                                  Reset
+                                </button>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={handleSearch}
+                                  disabled={loading}
+                                >
+                                  Search
+                                </button>
+                              </div> */}
+                  <div className="col-md-3">
+                    <button className="purple-btn2 w-100" onClick={handleSearch}>
+                      Search
+                    </button>
+                  </div>
+                  <div className="col-md-3">
+                    <button className="purple-btn1 w-100" onClick={handleReset}>
+                      Reset
+                    </button>
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-12">
+                    <div className="tbl-container mx-3 mt-3">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th className="text-start">
+                              <input
+                                type="checkbox"
+                                checked={selectedPOs.length === purchaseOrders.length}
+                                onChange={handleSelectAll}
+                              />
+                            </th>
+                            {/* <th></th> */}
+                            <th className="text-start">Sr.No</th>
+                            <th className="text-start">PO Number</th>
+                            <th className="text-start">PO Date</th>
+                            <th className="text-start">PO Value</th>
+                            <th className="text-start">PO Type</th>
+                            <th className="text-start">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {loading ? (
+                            <tr>
+                              <td colSpan="6" className="text-center">
+                                Loading...
+                              </td>
+                            </tr>
+                          ) : purchaseOrders.length === 0 ? (
+                            <tr>
+                              <td colSpan="6" className="text-center">
+                                No purchase orders found
+                              </td>
+                            </tr>
+                          ) : (
+                            purchaseOrders.map((po, index) => (
+                              <tr key={po.id}>
+                                <td className="text-start">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedPOs.includes(po.id)}
+                                    onChange={() => handleCheckboxChange(po.id)}
+                                  />
+                                </td>
+                                <td className="text-start">{index + 1}</td>
+                                <td className="text-start">{po.po_number}</td>
+                                <td className="text-start">{po.po_date}</td>
+                                <td className="text-start">{po.total_value}</td>
+                                <td className="text-start">{po.po_type}</td>
+                                <td className="text-start">
+                                  <button
+                                    className="purple-btn2"
+                                    onClick={() => handlePOSelect(po)}
+                                  >
+                                    Select
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {purchaseOrders.length > 0 && (
+                      <div className="d-flex justify-content-between align-items-center mt-3">
+                        <div className="showing-entries"></div>
+                        <nav>
+                          <ul className="pagination">
+                            <li
+                              className={`page-item ${
+                                pagination.current_page === 1 ? "disabled" : ""
+                              }`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() => handlePageChange(1)}
+                                disabled={pagination.current_page === 1}
+                              >
+                                First
+                              </button>
+                            </li>
+                            <li
+                              className={`page-item ${
+                                pagination.current_page === 1 ? "disabled" : ""
+                              }`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() =>
+                                  handlePageChange(pagination.current_page - 1)
+                                }
+                                disabled={pagination.current_page === 1}
+                              >
+                                Prev
+                              </button>
+                            </li>
+                            {getPageNumbers().map((page) => (
+                              <li
+                                key={page}
+                                className={`page-item ${
+                                  page === pagination.current_page ? "active" : ""
+                                }`}
+                              >
+                                <button
+                                  className="page-link"
+                                  onClick={() => handlePageChange(page)}
+                                >
+                                  {page}
+                                </button>
+                              </li>
+                            ))}
+                            <li
+                              className={`page-item ${
+                                pagination.current_page === pagination.total_pages
+                                  ? "disabled"
+                                  : ""
+                              }`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() =>
+                                  handlePageChange(pagination.current_page + 1)
+                                }
+                                disabled={
+                                  pagination.current_page === pagination.total_pages
+                                }
+                              >
+                                Next
+                              </button>
+                            </li>
+                            <li
+                              className={`page-item ${
+                                pagination.current_page === pagination.total_pages
+                                  ? "disabled"
+                                  : ""
+                              }`}
+                            >
+                              <button
+                                className="page-link"
+                                onClick={() =>
+                                  handlePageChange(pagination.total_pages)
+                                }
+                                disabled={
+                                  pagination.current_page === pagination.total_pages
+                                }
+                              >
+                                Last
+                              </button>
+                            </li>
+                          </ul>
+                        </nav>
+                        {getShowingEntriesText()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal>
 
       {/* attach modal */}
       <Modal

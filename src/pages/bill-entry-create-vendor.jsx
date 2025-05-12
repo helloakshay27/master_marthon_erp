@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "../components";
+import { DownloadIcon, Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { Modal } from "react-bootstrap";
 import { useState } from "react";
@@ -12,6 +12,12 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 const BillEntryCreateVendorPage = () => {
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
 
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
@@ -63,6 +69,21 @@ const BillEntryCreateVendorPage = () => {
     total_count: 0,
     per_page: 5,
   });
+
+  const [formData, setFormData] = useState({
+    bill_no: "",
+    bill_date: "",
+    bill_amount: "",
+    vendor_remark: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handlePOSelect = (po) => {
     setSelectedPO(po);
@@ -386,6 +407,129 @@ const BillEntryCreateVendorPage = () => {
     return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
   };
 
+  const handleAttachDocument = () => {
+    if (newDocument.document_type && newDocument.attachments.length > 0) {
+      // Check if document type already exists
+      const existingDocIndex = documents.findIndex(
+        (doc) => doc.document_type === newDocument.document_type
+      );
+
+      if (existingDocIndex !== -1) {
+        // If document type exists, append new attachments
+        const updatedDocuments = [...documents];
+        updatedDocuments[existingDocIndex].attachments = [
+          ...updatedDocuments[existingDocIndex].attachments,
+          ...newDocument.attachments,
+        ];
+        setDocuments(updatedDocuments);
+      } else {
+        // If document type doesn't exist, add new document
+        setDocuments((prev) => [...prev, newDocument]);
+      }
+
+      // Reset new document state
+      setNewDocument({
+        document_type: "",
+        attachments: [],
+      });
+      closeattachModal();
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
+          {
+            filename: file.name,
+            content_type: file.type,
+            content: event.target.result,
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDocumentCountClick = (documentType) => {
+    const doc = documents.find((d) => d.document_type === documentType);
+    if (doc) {
+      setSelectedDocument(doc);
+      setviewDocumentModal(true);
+    }
+  };
+
+  const handleBillEntrySubmit = async () => {
+    try {
+      // Validate required fields
+      if (!selectedPO?.id) {
+        alert("Please select a Purchase Order");
+        return;
+      }
+      if (!formData.bill_no) {
+        alert("Please enter Bill Number");
+        return;
+      }
+      if (!formData.bill_date) {
+        alert("Please enter Bill Date");
+        return;
+      }
+      if (!formData.bill_amount) {
+        alert("Please enter Bill Amount");
+        return;
+      }
+      if (documents.length === 0) {
+        alert("Please attach at least one document");
+        return;
+      }
+
+      // Create payload
+      const payload = {
+        bill_entry: {
+          purchase_order_id: selectedPO.id,
+          bill_no: formData.bill_no,
+          bill_date: formData.bill_date,
+          bill_amount: parseFloat(formData.bill_amount),
+          status: "draft",
+          vendor_remark: formData.vendor_remark,
+          documents: documents.map((doc) => ({
+            document_type: doc.document_type,
+            attachments: doc.attachments.map((attachment) => ({
+              filename: attachment.filename,
+              content_type: attachment.content_type,
+              content: attachment.content,
+            })),
+          })),
+        },
+      };
+
+      // Make API call
+      const response = await axios.post(
+        `${baseURL}bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
+      );
+
+      if (response.data) {
+        alert("Bill entry created successfully");
+        // Reset form
+        setFormData({
+          bill_no: "",
+          bill_date: "",
+          bill_amount: "",
+          vendor_remark: "",
+        });
+        setSelectedPO(null);
+        setDocuments([]);
+      }
+    } catch (error) {
+      console.error("Error creating bill entry:", error);
+      alert("Failed to create bill entry. Please try again.");
+    }
+  };
+
   return (
     <>
       <div className="website-content">
@@ -466,8 +610,10 @@ const BillEntryCreateVendorPage = () => {
                       <input
                         className="form-control"
                         type="text"
+                        name="bill_no"
+                        value={formData.bill_no}
+                        onChange={handleInputChange}
                         placeholder=""
-                        fdprocessedid="qv9ju9"
                       />
                     </div>
                   </div>
@@ -477,20 +623,24 @@ const BillEntryCreateVendorPage = () => {
                       <input
                         className="form-control"
                         type="date"
+                        name="bill_date"
+                        value={formData.bill_date}
+                        onChange={handleInputChange}
                         placeholder=""
-                        fdprocessedid="qv9ju9"
                       />
                     </div>
                   </div>
 
-                  <div className="col-md-3 mt-2">
+                  <div className="col-md-3 ">
                     <div className="form-group">
                       <label>Bill Amount</label>
                       <input
                         className="form-control"
                         type="text"
+                        name="bill_amount"
+                        value={formData.bill_amount}
+                        onChange={handleInputChange}
                         placeholder=""
-                        fdprocessedid="qv9ju9"
                       />
                     </div>
                   </div>
@@ -502,8 +652,10 @@ const BillEntryCreateVendorPage = () => {
                       <textarea
                         className="form-control"
                         rows={2}
+                        name="vendor_remark"
+                        value={formData.vendor_remark}
+                        onChange={handleInputChange}
                         placeholder="Enter ..."
-                        defaultValue={""}
                       />
                     </div>
                   </div>
@@ -559,13 +711,10 @@ const BillEntryCreateVendorPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="tbl-container  mt-3">
+                <div className="tbl-container mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th>
-                          <input type="checkbox" />
-                        </th>
                         <th className="text-start">Sr. No.</th>
                         <th className="text-start">Document Name</th>
                         <th className="text-start">No. of Documents</th>
@@ -573,188 +722,72 @@ const BillEntryCreateVendorPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td className="text-start">1</td>
-                        <td className="text-start">Tax Invoice</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td className="text-start">2</td>
-                        <td className="text-start">
-                          Site acknowledged challan / Challan cum Invoice
-                        </td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td className="text-start">3</td>
-                        <td className="text-start">Weighment slips</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td className="text-start">4</td>
-                        <td className="text-start"> Lorry receipt</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <input type="checkbox" />
-                        </td>
-                        <td className="text-start">5</td>
-                        <td className="text-start">E Way bill</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td> </td>
-                        <td className="text-start">6</td>
-                        <td className="text-start">E Invoice</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td> </td>
-                        <td className="text-start">7</td>
-                        <td className="text-start">Warranty</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
-                      <tr>
-                        <td />
-                        <td className="text-start">8</td>
-                        <td className="text-start">MTC</td>
-                        <td
-                          className="text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                          onClick={openviewDocumentModal}
-                        >
-                          3
-                        </td>
-                        <td
-                          className="text-start text-decoration-underline"
-                          data-bs-toggle="modal"
-                          data-bs-target="#RevisionModal"
-                          onClick={openattachModal}
-                        >
-                          Attach
-                        </td>
-                      </tr>
+                      {documents.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" className="text-center">
+                            No documents added yet
+                          </td>
+                        </tr>
+                      ) : (
+                        documents.map((doc, index) => (
+                          <tr key={index}>
+                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">{doc.document_type}</td>
+                            <td
+                              className="text-start"
+                              style={{ cursor: "pointer" }}
+                              onClick={() =>
+                                handleDocumentCountClick(doc.document_type)
+                              }
+                            >
+                              {doc.attachments.length}
+                            </td>
+                            <td className="text-start">
+                              <button
+                                className="text-decoration-underline border-0 bg-transparent"
+                                onClick={() => {
+                                  setNewDocument((prev) => ({
+                                    ...prev,
+                                    document_type: doc.document_type,
+                                  }));
+                                  openattachModal();
+                                }}
+                              >
+                                Attach
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
+                </div>
+                <div className="row mt-2 justify-content-center">
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleBillEntrySubmit}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={() => {
+                        setFormData({
+                          bill_no: "",
+                          bill_date: "",
+                          bill_amount: "",
+                          vendor_remark: "",
+                        });
+                        setSelectedPO(null);
+                        setDocuments([]);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -766,7 +799,10 @@ const BillEntryCreateVendorPage = () => {
         centered
         size="lg"
         show={viewDocumentModal}
-        onHide={closeviewDocumentModal}
+        onHide={() => {
+          setviewDocumentModal(false);
+          setSelectedDocument(null);
+        }}
         backdrop="true"
         keyboard={true}
         className="modal-centered-custom"
@@ -777,18 +813,18 @@ const BillEntryCreateVendorPage = () => {
         <Modal.Body>
           <div>
             <div className="d-flex justify-content-between mt-3 me-2">
-              <h5 className=" ">Latest Documents</h5>
-              <div
-                className="card-tools d-flex"
-                data-bs-toggle="modal"
-                data-bs-target="#exampleModal"
-              >
+              <h5>Latest Documents</h5>
+              <div className="card-tools d-flex">
                 <button
                   className="purple-btn2 rounded-3"
-                  data-bs-toggle="modal"
-                  data-bs-target="#RevisionModal"
-                  fdprocessedid="xn3e6n"
-                  onClick={openattachModal}
+                  onClick={() => {
+                    setviewDocumentModal(false);
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: selectedDocument?.document_type,
+                    }));
+                    openattachModal();
+                  }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -817,26 +853,33 @@ const BillEntryCreateVendorPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>MTC</td>
-                    <td>Material test Cert 1.pdf</td>
-                    <td>01-03-2024</td>
-                    <td>vendor user</td>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#comments-modal"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td>vendor user</td>
+                      <td>
+                        <button
+                          className="border-0 bg-transparent"
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `data:${attachment.content_type};base64,${attachment.content}`;
+                            link.download = attachment.filename;
+                            link.click();
+                          }}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-            <div className=" mt-3 me-2">
-              <h5 className=" ">Document Attachment History</h5>
+            <div className="mt-3 me-2">
+              <h5>Document Attachment History</h5>
             </div>
             <div className="tbl-container px-0">
               <table className="w-100">
@@ -851,28 +894,41 @@ const BillEntryCreateVendorPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>MTC</td>
-                    <td>Material test Cert 1.pdf</td>
-                    <td>01-03-2024</td>
-                    <td>vendor user</td>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#comments-modal"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td>vendor user</td>
+                      <td>
+                        <button
+                          className="border-0 bg-transparent"
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `data:${attachment.content_type};base64,${attachment.content}`;
+                            link.download = attachment.filename;
+                            link.click();
+                          }}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => {
+                  setviewDocumentModal(false);
+                  setSelectedDocument(null);
+                }}
+              >
                 Close
               </button>
             </div>
@@ -898,34 +954,46 @@ const BillEntryCreateVendorPage = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 <input
+                  type="text"
                   className="form-control"
-                  type=""
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
+                  value={newDocument.document_type}
+                  onChange={(e) =>
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter document name"
                 />
               </div>
             </div>
             <div className="col-md-12 mt-2">
               <div className="form-group">
-                <form
-                  action="/upload"
-                  method="post"
-                  encType="multipart/form-data"
-                >
-                  {/* <label for="fileInput">Choose File:</label> */}
-                  <input type="file" id="fileInput" name="attachment" />
-                </form>
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
               </div>
             </div>
           </div>
           <div className="row mt-2 justify-content-center">
             <div className="col-md-4">
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
                 Attach
               </button>
             </div>
             <div className="col-md-4">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
                 Cancel
               </button>
             </div>

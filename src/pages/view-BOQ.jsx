@@ -168,6 +168,7 @@ const BOQList = () => {
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   // Fetch data from the API when the component mounts
   const fetchData = (page) => {
+    setLoading(true);
     axios
     .get(`${baseURL}boq_details.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
     .then((response) => {
@@ -176,6 +177,7 @@ const BOQList = () => {
       setTotalPages(response.data?.pagination.total_pages); // Set total pages
       setTotalEntries(response.data?.pagination.total_entries );
       setLoading2(false);
+      setLoading(false);
       if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
         setBoqDetailsSub(false); // Set to true if uom is not null
       }
@@ -184,6 +186,7 @@ const BOQList = () => {
     .catch((error) => {
       console.log('error', error)
       setLoading2(false);
+      setLoading(false);
 
     });
   }
@@ -3507,6 +3510,19 @@ const BOQList = () => {
           </button>
         </div>
       </Modal>
+      {/* Loader */}
+{loading && (
+  <div id="full-screen-loader" className="full-screen-loader">
+    <div className="loader-container">
+      <img
+        src="https://newerp.marathonrealty.com/assets/loader.gif"
+        alt="Loading..."
+        width={50}
+      />
+      <h5>Please wait</h5>
+    </div>
+  </div>
+)}
 
       {/* copy modal */}
       {/* <Modal
