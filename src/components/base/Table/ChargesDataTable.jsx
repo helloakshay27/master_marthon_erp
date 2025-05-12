@@ -357,7 +357,7 @@ export default function ChargesDataTable({
                     <div>
                       <input
                         type="number"
-                        min='0'
+                        min="0"
                         className="form-control"
                         value={data[index]?.amount || ""}
                         onChange={(e) => handleInputChange(index, e)}
@@ -383,7 +383,7 @@ export default function ChargesDataTable({
                 >
                   <input
                     type="number"
-                    min='0'
+                    min="0"
                     className="form-control"
                     value={
                       data[index]?.amount
@@ -467,7 +467,7 @@ export default function ChargesDataTable({
                 <td>
                   <input
                     type="number"
-                    min='0'
+                    min="0"
                     className="form-control"
                     value={
                       chargesTaxRate[selectedTableId]?.afterDiscountValue || ""
@@ -529,18 +529,25 @@ export default function ChargesDataTable({
                           chargesTaxRate[
                             selectedTableId
                           ]?.taxes_and_charges?.reduce((acc, item) => {
+                            // Disable CGST and SGST if IGST is selected
                             if (item.resource_id === 20) {
                               acc.push(19, 18); // Disable CGST and SGST
-                            } else if (
-                              item.resource_id === 19 ||
-                              item.resource_id === 18
-                            ) {
-                              acc.push(20); // Disable IGST
                             }
+
+                            // Disable IGST and CGST if CGST is selected
+                            if (item.resource_id === 19) {
+                              acc.push(19, 20); // Disable CGST and IGST
+                            }
+
+                            // Disable IGST and SGST if SGST is selected
+                            if (item.resource_id === 18) {
+                              acc.push(18, 20); // Disable SGST and IGST
+                            }
+
                             return acc;
                           }, []) || []
                         ).filter(
-                          (value, index, self) => self.indexOf(value) === index
+                          (value, index, self) => self.indexOf(value) === index // Remove duplicates
                         )} //]] Remove duplicates
                       />
                     </td>

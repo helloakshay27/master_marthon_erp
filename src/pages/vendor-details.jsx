@@ -2341,7 +2341,7 @@ export default function VendorDetails() {
           <input
             className="form-control"
             type="number"
-            min='0'
+            min="0"
             value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
             readOnly
             style={otherColumnsStyle}
@@ -4941,7 +4941,7 @@ export default function VendorDetails() {
                                 <input
                                   className="form-control"
                                   type="number"
-                                  min='0'
+                                  min="0"
                                   value={previousDiscount}
                                   onChange={(e) =>
                                     handleInputChange(
@@ -4959,7 +4959,7 @@ export default function VendorDetails() {
                               <input
                                 className="form-control"
                                 type="number"
-                                min='0'
+                                min="0"
                                 value={cell}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -6031,30 +6031,42 @@ export default function VendorDetails() {
                                 );
                               }}
                               className="custom-select"
-                              disabledOptions={
-                                taxRateData[
-                                  tableId
-                                ]?.addition_bid_material_tax_details?.map(
-                                  (item) => {
-                                    if (
-                                      item.taxChargeType === "CGST" ||
-                                      item.taxChargeType === "SGST"
-                                    ) {
-                                      return "IGST";
-                                    }
+                              disabledOptions={(
+  taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+    (acc, item) => {
+      const matchedOption = taxOptions.find(
+        (option) => option.id === item.resource_id
+      );
 
-                                    // Disable CGST and SGST if IGST is selected
-                                    if (item.taxChargeType === "IGST") {
-                                      return ["CGST", "SGST"];
-                                    }
+      const taxType = item.taxChargeType;
 
-                                    return (
-                                      item.taxChargeType ||
-                                      matchedParentTaxNamesArray
-                                    );
-                                  }
-                                ) || []
-                              }
+      // Disable CGST and IGST if CGST is selected
+      if (taxType === "CGST") {
+        acc.push("CGST", "IGST");
+      }
+
+      // Disable SGST and IGST if SGST is selected
+      if (taxType === "SGST") {
+        acc.push("SGST", "IGST");
+      }
+
+      // Disable CGST and SGST if IGST is selected
+      if (taxType === "IGST") {
+        acc.push("CGST", "SGST");
+      }
+
+      // Add taxType or matched option value as fallback
+      if (taxType) {
+        acc.push(taxType);
+      } else if (matchedOption?.value) {
+        acc.push(matchedOption.value);
+      }
+
+      return acc;
+    },
+    []
+  ) || []
+).filter((value, index, self) => self.indexOf(value) === index)}
                             />
                           </td>
 
@@ -6453,34 +6465,42 @@ export default function VendorDetails() {
                                 );
                               }}
                               className="custom-select"
-                              disabledOptions={
-                                taxRateData[
-                                  tableId
-                                ]?.addition_bid_material_tax_details?.map(
-                                  (item) => {
-                                    const matchedOption = taxOptions.find(
-                                      (option) => option.id === item.resource_id
-                                    );
+                              disabledOptions={(
+  taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+    (acc, item) => {
+      const matchedOption = taxOptions.find(
+        (option) => option.id === item.resource_id
+      );
 
-                                    // Disable IGST if CGST or SGST is selected
-                                    if (
-                                      item.taxChargeType === "CGST" ||
-                                      item.taxChargeType === "SGST"
-                                    ) {
-                                      return "IGST";
-                                    }
+      const taxType = item.taxChargeType;
 
-                                    // Disable CGST and SGST if IGST is selected
-                                    if (item.taxChargeType === "IGST") {
-                                      return ["CGST", "SGST"];
-                                    }
+      // Disable CGST and IGST if CGST is selected
+      if (taxType === "CGST") {
+        acc.push("CGST", "IGST");
+      }
 
-                                    return (
-                                      item.taxChargeType || matchedOption?.value
-                                    );
-                                  }
-                                ) || []
-                              }
+      // Disable SGST and IGST if SGST is selected
+      if (taxType === "SGST") {
+        acc.push("SGST", "IGST");
+      }
+
+      // Disable CGST and SGST if IGST is selected
+      if (taxType === "IGST") {
+        acc.push("CGST", "SGST");
+      }
+
+      // Add taxType or matched option value as fallback
+      if (taxType) {
+        acc.push(taxType);
+      } else if (matchedOption?.value) {
+        acc.push(matchedOption.value);
+      }
+
+      return acc;
+    },
+    []
+  ) || []
+).filter((value, index, self) => self.indexOf(value) === index)}
                             />
                           </td>
 
