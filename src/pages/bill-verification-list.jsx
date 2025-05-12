@@ -50,25 +50,35 @@ const BillVerificationList = () => {
   const itemsPerPage = 10; // Items per page
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  useEffect(() => {
-    const fetchBillEntries = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          "https://marathon.lockated.com/bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        setBillEntries(response.data.bill_entries);
-        setMeta(response.data.meta)
-      } catch (err) {
-        setError("Failed to fetch bill entries");
-        console.error("Error fetching bill entries:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchBillEntries = async (page) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `https://marathon.lockated.com/bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      setBillEntries(response.data.bill_entries);
+      setMeta(response.data.meta)
+    } catch (err) {
+      setError("Failed to fetch bill entries");
+      console.error("Error fetching bill entries:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+   // Fetch credit notes data
+    const [totalEntries, setTotalEntries] = useState(0);
 
-    fetchBillEntries();
-  }, []);
+  useEffect(() => {
+    
+    fetchBillEntries(currentPage);
+  }, [currentPage]);
+
+   // Handle page change
+   const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -177,7 +187,7 @@ const BillVerificationList = () => {
               </div>
             </div>
           </div>
-          <div className="tab-content1 active" id="total-content">
+          <div className="tab-content1 active mb-5" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
@@ -439,6 +449,70 @@ const BillVerificationList = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
+                  entries
+                </div>
               </div>
             </div>
           </div>
