@@ -1,8 +1,31 @@
 import React from "react";
 import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+
+// Then use id in your API URL
 
 const BillEntryDetails = () => {
+  const [billDetails, setBillDetails] = useState(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchBillDetails = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setBillDetails(response.data);
+        console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
+      } catch (error) {
+        console.error("Failed to fetch bill entry details", error);
+      }
+    };
+    fetchBillDetails();
+  }, [id]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -23,7 +46,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.pms_supplier || "-"}
                         </label>
                       </div>
                     </div>
@@ -33,7 +57,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.po_number || "-"}
                         </label>
                       </div>
                     </div>
@@ -43,7 +68,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.bill_no || "-"}
                         </label>
                       </div>
                     </div>
@@ -53,7 +79,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.bill_date || "-"}
                         </label>
                       </div>
                     </div>
@@ -63,7 +90,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.bill_amount || "-"}
                         </label>
                       </div>
                     </div>
@@ -73,7 +101,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.vendor_remark || "-"}
                         </label>
                       </div>
                     </div>
@@ -83,7 +112,8 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.remark || "-"}
                         </label>
                       </div>
                     </div>
@@ -93,54 +123,57 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-6">
                         <label className="text">
-                          <span className="me-3">:-</span>Demo
+                          <span className="me-3">:-</span>
+                          {billDetails?.comments || "-"}
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Assigned To User</p>
-                <div className="dropdown">
-                  <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
-                  >
-                    Shamshik
-                  </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
               <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
+                <p className="mb-0">Assigned To user</p>
+                <select
+                  className="form-select purple-btn2"
+                  style={{ width: "150px" }}
+                  // value={formData.status || "draft"}
+                  // onChange={(e) =>
+                  //   setFormData((prev) => ({
+                  //     ...prev,
+                  //     status: e.target.value,
+                  //   }))
+                  // }
+                >
+                  <option value="draft">Draft</option>
+                  <option value="verified">Verified</option>
+                  <option value="approved">Approved</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="proceed">Proceed</option>
+                </select>
+              </div>
+              <div className="d-flex justify-content-end align-items-center">
                 <p className="mb-0">Status</p>
                 <select
                   className="form-select purple-btn2"
                   style={{ width: "150px" }}
+                  // value={formData.status || "draft"}
+                  // onChange={(e) =>
+                  //   setFormData((prev) => ({
+                  //     ...prev,
+                  //     status: e.target.value,
+                  //   }))
+                  // }
                 >
-                  <option value="draft">PO Draft</option>
-                  <option value="accept">Accept</option>
-                  <option value="reject">Reject</option>
-                  <option value="submit">Submit</option>
+                  {/* <select
+                  className="form-select"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                > */}
+                  <option value="draft">Draft</option>
+                  <option value="verified">Verified</option>
+                  <option value="approved">Approved</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="proceed">Proceed</option>
                 </select>
               </div>
               <h5 className=" mt-3">Audit Log</h5>

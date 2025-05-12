@@ -341,7 +341,7 @@ function Members() {
                 </li> */}
                 <h5>___Bill Entry___</h5>
                 <li>
-                  <Link to="/bill-entry-details">Bill Entry Details</Link>
+                  <Link to="/bill-entry-details/:id">Bill Entry Details</Link>
                 </li>
                 {/* <li>
                   <Link to="/bill-booking-list">Bill Booking List</Link>
