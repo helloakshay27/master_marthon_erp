@@ -85,11 +85,8 @@ import AddWorkSubCategory from "./pages/add-work-sub-category";
 import BoqAmend from "./pages/boq-amend";
 import BoqAmendSub from "./pages/boq-amend-sub";
 import CounterOffer from "./pages/counter-offer";
-<<<<<<< Updated upstream
 import BillVerificationEdit from "./pages/bill-verification-edit";
-=======
 import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
->>>>>>> Stashed changes
 
 function App() {
   return (
@@ -399,7 +396,7 @@ function App() {
               path="/bill-verification-list"
               element={<BillVerificationList />}
             />
-             <Route
+            <Route
               path="/bill-verification-edit"
               element={<BillVerificationEdit />}
             />
