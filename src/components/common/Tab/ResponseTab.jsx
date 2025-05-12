@@ -35,6 +35,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const [segeregatedMaterialData, setSegeregatedMaterialData] = useState([]);
   const tableRef = useRef(null);
   const [showTaxModal, setShowTaxModal] = useState(false);
+  const [showChargesTaxModal, setShowChargesTaxModal] = useState(false);
   const [taxOptions, setTaxOptions] = useState([]); // State for tax options
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]); // State for deduction tax options
   const [participationSummary, setParticipationSummary] = useState({
@@ -50,6 +51,8 @@ export default function ResponseTab({ isCounterOffer }) {
   const [showDeliveryStatsModal, setShowDeliveryStatsModal] = useState(false); // State for Delivery Stats Modal
   const [showCounterOfferPopup, setShowCounterOfferPopup] = useState(false); // State for popup visibility
   const [isOfferAccepted, setIsOfferAccepted] = useState(false); // State to track offer acceptance
+  const [taxModalData, setTaxModalData] = useState([]); // State for tax modal data
+  const [chargesTaxModalData, setChargesTaxModalData] = useState([]); // State for tax modal data
 
   const [participants, setParticipants] = useState([]);
   const [currentReminderPage, setCurrentReminderPage] = useState(1);
@@ -912,105 +915,47 @@ export default function ResponseTab({ isCounterOffer }) {
                 })()}
 
                 {(() => {
-                  const serializedData =
-                    segeregatedMaterialData?.flatMap((material) =>
-                      material?.bids_values
-                        ?.filter(
-                          (bid) =>
-                            bid?.status == "pending" &&
-                            bid?.serialized_last_bid?.event_vendor_id ===
-                              bid?.event_vendor_id
-                        )
-                        ?.map((bid) => bid.serialized_last_bid)
-                    ) || [];
-
-                  // Step 2: Extract charge data for table
                   const extractedChargeData =
-                    eventVendors?.flatMap((vendor, vendorIndex) => {
-                      const charges = vendor?.bids?.[0]?.charges || {};
-                      const serializedCharges =
-                        serializedData[vendorIndex]?.charges || {};
-
-                      const hasValidCharges = Object.values(charges).some(
-                        (val) =>
-                          (typeof val === "string" && val.trim() !== "") ||
-                          (typeof val === "number" &&
-                            val !== null &&
-                            val !== undefined) ||
-                          (typeof val === "object" &&
-                            val !== null &&
-                            !Array.isArray(val))
-                      );
-
-                      if (!hasValidCharges) return [];
-
-                      const formattedCharges = {};
-                      Object.entries(charges).forEach(([key, val]) => {
-                        if (!Array.isArray(val)) {
-                          const serializedValue = serializedCharges[key];
-                          formattedCharges[key] = serializedValue
-                            ? {
-                                original: val?.toString().trim() || "_",
-                                serialized:
-                                  serializedValue?.toString().trim() || "_",
-                              }
-                            : val?.toString().trim() || "_";
-                        }
-                      });
-
-                      return Object.keys(formattedCharges).length > 0
-                        ? [formattedCharges]
-                        : [];
+                    eventVendors?.flatMap((vendor) => {
+                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
+                      return charges.map((charge) => ({
+                        amount: charge.amount || "_",
+                        realisedAmount: charge.realised_amount || "_",
+                        taxDetails: charge.taxes_and_charges || [],
+                      }));
                     }) || [];
 
-                  // Step 3: Extract unique keys for table columns
-                  const extractedChargeKeys = Array.from(
-                    new Set(
-                      extractedChargeData.flatMap((obj) => Object.keys(obj))
-                    )
-                  );
+                  // const handleTaxModalOpen = (taxDetails) => {
+                  //   setShowTaxModal(true);
+                  //   setTaxModalData(taxDetails);
+                  // };
+                  const handleChargesTaxModalOpen = (taxDetails) => {
+                    setShowChargesTaxModal(true);
+                    setChargesTaxModalData(taxDetails);
+                  };
 
-                  // Step 4: Render Accordion with table data
                   return (
                     <Accordion
                       title="Other Charges"
                       isDefault={true}
-                      // serializedData={serializedData} // Optional: used elsewhere?
-                      tableColumn={extractedChargeKeys.map((key) => ({
-                        label: key
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (c) => c.toUpperCase()),
-                        key: key,
+                      tableColumn={[
+                        { label: "Amount", key: "amount" },
+                        { label: "Realised Amount", key: "realisedAmount" },
+                        { label: "Tax Details", key: "taxDetails" },
+                      ]}
+                      tableData={extractedChargeData.map((charge) => ({
+                        ...charge,
+                        taxDetails: (
+                          <button
+                            className="purple-btn2"
+                            onClick={() =>
+                              handleChargesTaxModalOpen(charge.taxDetails)
+                            }
+                          >
+                            View Tax
+                          </button>
+                        ),
                       }))}
-                      tableData={extractedChargeData.map((charge) =>
-                        Object.fromEntries(
-                          Object.entries(charge).map(([key, value]) => [
-                            key,
-                            typeof value === "object" && value.serialized ? (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    textDecoration: "line-through",
-                                    color: "red",
-                                  }}
-                                >
-                                  {value.serialized}
-                                </span>
-                                <span style={{ margin: "0 5px" }}>→</span>
-                                <span>{value.original}</span>
-                              </div>
-                            ) : (
-                              value
-                            ),
-                          ])
-                        )
-                      )}
                     />
                   );
                 })()}
@@ -1375,7 +1320,7 @@ export default function ResponseTab({ isCounterOffer }) {
         show={showDeliveryStatsModal}
         onHide={() => setShowDeliveryStatsModal(false)} // Close modal
         title="Delivery Stats"
-        size="md"
+        size="lg"
         modalType={true}
       >
         <div>
@@ -1499,14 +1444,15 @@ export default function ResponseTab({ isCounterOffer }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
-              if(pendingBid && pendingBid.id) {
+              if (pendingBid && pendingBid.id) {
                 console.log("pendingBid:---", pendingBid);
-                
-              acceptOffer(
-                pendingBid.id,
-                pendingBid.original_bid_id,
-                "rejected"
-              )}
+
+                acceptOffer(
+                  pendingBid.id,
+                  pendingBid.original_bid_id,
+                  "rejected"
+                );
+              }
             },
             props: { className: "purple-btn1" },
           },
@@ -1554,6 +1500,208 @@ export default function ResponseTab({ isCounterOffer }) {
             </p>
           </div>
         )}
+      </DynamicModalBox>
+
+      <DynamicModalBox
+        show={showChargesTaxModal}
+        onHide={() => setShowChargesTaxModal(false)}
+        size="lg"
+        title="Tax Details"
+        centered={true}
+      >
+        <div className="table-responsive">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Tax/Charge Type</th>
+                <th>Tax Percentage</th>
+                <th className="text-center">Inclusive</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Addition Tax & Charges */}
+              <tr>
+                <td>Addition Tax & Charges</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              {chargesTaxModalData
+                ?.filter((item) => item.addition)
+                ?.map((item, rowIndex) => (
+                  <tr key={`addition-${rowIndex}-${item.id}`}>
+                    <td>
+                      <SelectBox
+                        options={taxOptions}
+                        defaultValue={
+                          item.taxChargeType ||
+                          taxOptions.find(
+                            (option) => option.id === item.resource_id
+                          )?.value
+                        }
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "taxChargeType",
+                            value,
+                            "addition"
+                          )
+                        }
+                        className="custom-select"
+                        isDisableFirstOption={true}
+                        disabled={true}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        defaultValue={
+                          item.percentage || item.taxChargePerUom
+                        }
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "taxChargePerUom",
+                            e.target.value,
+                            "addition"
+                          )
+                        }
+                        disabled={true}
+                      >
+                        <option value="">Select Tax</option>
+                        <option value="5%">5%</option>
+                        <option value="12%">12%</option>
+                        <option value="18%">18%</option>
+                        <option value="28%">28%</option>
+                      </select>
+                    </td>
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={item.inclusive}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "inclusive",
+                            e.target.checked,
+                            "addition"
+                          )
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={item.amount}
+                        onChange={(e) => {}}
+                        readOnly
+                        disabled={true}
+                      />
+                    </td>
+                  </tr>
+                ))}
+
+              {/* Deduction Tax */}
+              <tr>
+                <td>Deduction Tax</td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              {chargesTaxModalData
+                ?.filter((item) => !item.addition)
+                ?.map((item, rowIndex) => (
+                  <tr key={`deduction-${rowIndex}-${item.id}`}>
+                    <td>
+                      <SelectBox
+                        options={deductionTaxOptions}
+                        defaultValue={
+                          item.taxChargeType ||
+                          deductionTaxOptions.find(
+                            (option) => option.id === item.resource_id
+                          )?.value
+                        }
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "taxChargeType",
+                            value,
+                            "deduction"
+                          )
+                        }
+                        disabled={true}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        value={item.taxChargePerUom || item.percentage}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "taxChargePerUom",
+                            e.target.value,
+                            "deduction"
+                          )
+                        }
+                        disabled={true}
+                      >
+                        <option value="">Select Tax</option>
+                        <option value="1%">1%</option>
+                        <option value="2%">2%</option>
+                        <option value="10%">10%</option>
+                      </select>
+                    </td>
+                    <td className="text-center">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={item.inclusive}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "inclusive",
+                            e.target.checked,
+                            "deduction"
+                          )
+                        }
+                        disabled={true}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={item.amount}
+                        onChange={(e) =>
+                          handleTaxChargeChange(
+                            selectedMaterialIndex,
+                            item.id,
+                            "amount",
+                            e.target.value,
+                            "deduction"
+                          )
+                        }
+                        readOnly
+                        disabled={true}
+                      />
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </DynamicModalBox>
       <ToastContainer />
     </div>
