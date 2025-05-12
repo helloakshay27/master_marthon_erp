@@ -10,7 +10,7 @@ import {
   Table
 } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
-const BillVerificationCreate = () => {
+const BillVerificationEdit = () => {
   const [remarkModal, setremarkModal] = useState(false);
   const [attachModal, setattachModal] = useState(false);
 
@@ -148,7 +148,7 @@ const BillVerificationCreate = () => {
             Home &gt; Billing &gt; Bill Verification List &gt; Update Bill
             Information
           </a>
-          <h5 className="mt-3">Create Bill Information</h5>
+          <h5 className="mt-3">Update Bill Information</h5>
           <div className="mor-tabs mt-4">
             <ul
               className="nav nav-pills mb-3 justify-content-center"
@@ -778,4 +778,4 @@ const BillVerificationCreate = () => {
   );
 };
 
-export default BillVerificationCreate;
+export default BillVerificationEdit;

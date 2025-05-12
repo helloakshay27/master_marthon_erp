@@ -373,6 +373,11 @@ function Members() {
                     Bill Verification List
                   </Link>
                 </li>
+                <li>
+                  <Link to="/bill-verification-edit">
+                    Bill Verification Edit
+                  </Link>
+                </li>
                 <h5>___Bill Payment___</h5>
                 <li>
                   <Link to="/bill-payment-create">Bill Payment Create</Link>

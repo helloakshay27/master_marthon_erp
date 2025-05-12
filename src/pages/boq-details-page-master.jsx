@@ -26,7 +26,7 @@ const BOQDetailsPageMaster = () => {
   const [loading, setLoading] = useState(true);  // State for loading indicator
   const [error, setError] = useState(null);  // State for handling errors
 
-  const [status, setStatus] = useState(boqDetails?.status); // Assuming boqDetails.status is initially available
+  const [status, setStatus] = useState(''); // Assuming boqDetails.status is initially available
   const [remark, setRemark] = useState('');
   const [initialStatus, setInitialStatus] = useState('');
   const [loading2, setLoading2] = useState(false);  // State for loading indicator
@@ -76,6 +76,7 @@ const BOQDetailsPageMaster = () => {
 
 
   //   modal
+   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
 
@@ -89,8 +90,8 @@ const BOQDetailsPageMaster = () => {
 
       // Assuming the API returns data based on the id (you may need to adjust based on your response)
       setBoqDetails(response.data);
-      setStatus(response.data.status || '');
-      setInitialStatus(response.data.status || '');
+      setStatus(response.data.selected_status || '');
+      setInitialStatus(response.data.selected_status || '');
       setLoading(false);
       // setBoqDetailsSub(response.data.uom)
       if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
@@ -103,6 +104,7 @@ const BOQDetailsPageMaster = () => {
     }
   };
 
+  console.log("status:", status, initialStatus)
   useEffect(() => {
     // Fetch the data when the component mounts or when 'id' changes
 
@@ -142,7 +144,8 @@ const BOQDetailsPageMaster = () => {
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
     setStatus(selectedOption.value);
-    handleStatusChange(selectedOption); // Handle status change
+    console.log("Selected Status:", selectedOption.value); // Optional: Log the selected status for debugging
+    // handleStatusChange(selectedOption); // Handle status change
   };
 
   // Step 3: Handle remark change
@@ -236,28 +239,35 @@ const BOQDetailsPageMaster = () => {
 
 
   // Filter out the current selected value (boqDetails.status) from the options list
-  const options = [
-    {
-      label: 'Select Status',
-      value: '',
-      isDisabled: false,
-    },
-    {
-      label: 'Draft',
-      value: 'draft',
-      isDisabled: boqDetails.status === 'draft',
-    },
-    {
-      label: 'Submitted',
-      value: 'submitted',
-      isDisabled: boqDetails.status === 'submitted',
-    },
-    {
-      label: 'Approved',
-      value: 'approved',
-      isDisabled: boqDetails.status === 'approved',
-    },
-  ];
+  // const options = [
+  //   {
+  //     label: 'Select Status',
+  //     value: '',
+  //     isDisabled: false,
+  //   },
+  //   {
+  //     label: 'Draft',
+  //     value: 'draft',
+  //     isDisabled: boqDetails.status === 'draft',
+  //   },
+  //   {
+  //     label: 'Submitted',
+  //     value: 'submitted',
+  //     isDisabled: boqDetails.status === 'submitted',
+  //   },
+  //   {
+  //     label: 'Approved',
+  //     value: 'approved',
+  //     isDisabled: boqDetails.status === 'approved',
+  //   },
+  // ];
+
+  const options = boqDetails.status_list.map((status) => ({
+    label: status,
+    value: status.toLowerCase(), // Convert the status to lowercase for the value
+    // isDisabled: boqDetails.disabled, // Disable the option if it matches the current status
+  }));
+  console.log("options:", options)
   // Filter out the current status from the options
   // const filteredOptions = options?.filter(option => option.value !== boqDetails.status);
 
@@ -265,11 +275,11 @@ const BOQDetailsPageMaster = () => {
   // ? options.filter(option => option.value === 'approved') 
   // : options;
 
-  const filteredOptions = boqDetails.status === 'draft'
-    ? options // Show all options when in draft
-    : boqDetails.status === 'submitted'
-      ? options.filter(option => option.value !== 'draft') // Hide "Draft" after submission
-      : options.filter(option => option.value === 'approved'); // Only show "Approved" if already approved
+  // const filteredOptions = boqDetails.status === 'draft'
+  //   ? options // Show all options when in draft
+  //   : boqDetails.status === 'submitted'
+  //     ? options.filter(option => option.value !== 'draft') // Hide "Draft" after submission
+  //     : options.filter(option => option.value === 'approved'); // Only show "Approved" if already approved
 
 
 
@@ -405,7 +415,23 @@ const BOQDetailsPageMaster = () => {
             )}
           </div>
           <CollapsibleCard title="BOQ Details">
-
+          <div className="d-flex justify-content-end m-2">
+          {boqDetails?.approval_logs?.length > 0 && (
+                  <div className="col-md-2 nav-item">
+                    <button
+                      className="purple-btn2"
+                      onClick={openModal}
+                      style={{
+                        backgroundColor:
+                          boqDetails?.status === "approved" ? "green" : "",
+                        border: "none",
+                      }}
+                    >
+                      <span>Approval Logs</span>
+                    </button>
+                  </div>
+                )}
+                </div>
             <div className="row px-3 mt-2">
               <div className="col-md-12 mb-3 row">
                 <div className="col-md-10">
@@ -1107,16 +1133,18 @@ const BOQDetailsPageMaster = () => {
 
 
                   <SingleSelector
-                    // options={options}
-                    options={filteredOptions}
+                    options={options}
+                    // options={filteredOptions}
                     onChange={handleStatusChange}
                     // options.find(option => option.value === status)
                     // value={filteredOptions.find(option => option.value === status)}
-                    value={options.find(option => option.value === status)}
+                    value={options.find(option => option.value === status.toLowerCase())}
                     // value={selectedSite}
                     placeholder={`Select Status`} // Dynamic placeholder
+                    isDisabled={boqDetails.disabled}
                     classNamePrefix="react-select"
                   />
+                  {console.log("status", status)}
                 </div>
               </div>
             </div>
@@ -1241,8 +1269,8 @@ const BOQDetailsPageMaster = () => {
                           <td>{index + 1}</td>
                           <td>
                             <Link to={`/boq-details-page-master/${log.id}`}
-                             className="boq-id-link"
-                              >
+                              className="boq-id-link"
+                            >
                               {log.id}
                             </Link>
                           </td>
@@ -1250,7 +1278,7 @@ const BOQDetailsPageMaster = () => {
                           <td>{log.version_number}</td>
                           <td>
                             {/* {log.status.charAt(0).toUpperCase() + log.status.slice(1)} */}
-                          {log.amendment_status}
+                            {log.amendment_status}
                           </td>
                         </tr>
                       ))}
@@ -1273,19 +1301,81 @@ const BOQDetailsPageMaster = () => {
 
 
       {/* Modal start */}
-      <Modal size="lg" show={showModal} onHide={closeModal} centered>
+      <Modal size="xl" show={showModal} onHide={closeModal} centered>
         <Modal.Header closeButton>
-          <h5>BOQ Documents</h5>
+          <h5>Approval Log</h5>
         </Modal.Header>
         <Modal.Body>
-          <div>
-            {/* Thumbnail Images */}
+
+        <div className="row mt-2 px-2">
+                  <div className="col-12">
+                    <div className="tbl-container me-2 mt-3">
+                      {/* Check if approval_logs is empty or undefined */}
+                      {!boqDetails?.approval_logs ||
+                      boqDetails?.approval_logs.length === 0 ? (
+                        // Display a message if no logs are available
+                        <div className="text-center py-4">
+                          <p className="text-muted">
+                            No approval logs available.
+                          </p>
+                        </div>
+                      ) : (
+                        // Render the table if logs are available
+                        <table className="w-100" style={{ width: "100%" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: "66px !important" }}>
+                                Sr.No.
+                              </th>
+                              <th>Approval Level</th>
+                              <th>Approved By</th>
+                              <th>Date</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                              <th>Users</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {boqDetails?.approval_logs.map((log, id) => (
+                              <tr key={id}>
+                                <td>{id + 1}</td>
+                                <td>{log.approval_level}</td>
+                                <td>{log.approved_by}</td>
+                                <td>{log.date}</td>
+                                <td>
+                                  <span
+                                    className="px-2 py-1 rounded text-white"
+                                    style={{
+                                      backgroundColor:
+                                        log.status === "Pending"
+                                          ? "red"
+                                          : "green",
+                                    }}
+                                  >
+                                    {log.status}
+                                  </span>
+                                </td>
+
+                                <td>
+                                  <p>{log.remark}</p>
+                                </td>
+                                <td>{log.users}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+          {/* <div>
+           
             <img src="#" className="img-thumbnail" alt="Document 1" />
             <img src="#" className="img-thumbnail" alt="Document 2" />
-          </div>
+          </div> */}
 
           {/* Documents Table */}
-          <div className="tbl-container mx-3 mt-1">
+          {/* <div className="tbl-container mx-3 mt-1">
             <table className="w-100">
               <thead>
                 <tr>
@@ -1300,7 +1390,7 @@ const BOQDetailsPageMaster = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </div> */}
         </Modal.Body>
       </Modal>
 
@@ -1392,6 +1482,7 @@ const BOQDetailsPageMaster = () => {
           </div>
         </Modal.Body>
       </Modal>
+
     </>
   );
 };
