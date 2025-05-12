@@ -85,6 +85,7 @@ import AddWorkSubCategory from "./pages/add-work-sub-category";
 import BoqAmend from "./pages/boq-amend";
 import BoqAmendSub from "./pages/boq-amend-sub";
 import CounterOffer from "./pages/counter-offer";
+import BillVerificationEdit from "./pages/bill-verification-edit";
 
 function App() {
   return (
@@ -389,6 +390,10 @@ function App() {
             <Route
               path="/bill-verification-list"
               element={<BillVerificationList />}
+            />
+             <Route
+              path="/bill-verification-edit"
+              element={<BillVerificationEdit />}
             />
 
             <Route
