@@ -61,6 +61,12 @@ export default function AllocationTab({ isCounterOffer }) {
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
   const [chargesTaxModalData, setChargesTaxModalData] = useState([]);
   const [showChargesTaxModal, setShowChargesTaxModal] = useState(false);
+  const [showAllocatedChargesTaxModal, setShowAllocatedChargesTaxModal] =
+    useState(false);
+  const [
+    showAllocatedChargesTaxModalData,
+    setShowAllocatedChargesTaxModalData,
+  ] = useState([]);
 
   const toggleAccordion = (index) => {
     setOpenAccordions((prev) => ({
@@ -266,6 +272,10 @@ export default function AllocationTab({ isCounterOffer }) {
       );
 
       const responseData = response.data;
+      if (responseData?.bids?.length > 0) {
+        const lastBid = responseData.bids[responseData.bids.length - 1];
+        setShowAllocatedChargesTaxModalData(lastBid?.tax_with_charge || []);
+      }
 
       if (responseData?.bid_materials?.length === 0) {
         setSelectedData((prevSelectedData) =>
@@ -912,76 +922,67 @@ export default function AllocationTab({ isCounterOffer }) {
                   );
                 })()}
                 {(() => {
-                                  const extractedChargeData =
-                                    eventVendors?.flatMap((vendor) => {
-                                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
-                                      return charges.map((charge) => ({
-                                        amount: charge.amount || "-",
-                                        realised_amount: charge.realised_amount || 0,
-                                        taxDetails: charge.taxes_and_charges || [],
-                                        charge_id: charge.charge_id, // ✅ include charge_id
-                                      }));
-                                    }) || [];
-                
-                                  const handleChargesTaxModalOpen = (taxDetails) => {
-                                    setShowChargesTaxModal(true);
-                                    setChargesTaxModalData(taxDetails);
-                                  };
-                
-                                  return (
-                                    <Accordion
-                                      title="Other Charges"
-                                      isDefault={true}
-                                      tableColumn={[
-                                        {
-                                          label: "Handling Charge Amount",
-                                          key: "handlingAmount",
-                                        },
-                                        { label: "Other Charge Amount", key: "otherAmount" },
-                                        { label: "Freight Amount", key: "freightAmount" },
-                                        { label: "Realised Amount", key: "realisedAmount" },
-                                        { label: "Tax Details", key: "taxDetails" },
-                                      ]}
-                                      tableData={[
-                                        {
-                                          handlingAmount:
-                                            extractedChargeData.find((c) => c.charge_id === 2)
-                                              ?.amount || "-",
-                                          otherAmount:
-                                            extractedChargeData.find((c) => c.charge_id === 4)
-                                              ?.amount || "-",
-                                          freightAmount:
-                                            extractedChargeData.find((c) => c.charge_id === 5)
-                                              ?.amount || "-",
-                                          realisedAmount:
-                                            extractedChargeData.reduce(
-                                              (acc, curr) =>
-                                                [2, 4, 5].includes(curr.charge_id)
-                                                  ? acc + Number(curr.realised_amount || 0)
-                                                  : acc,
-                                              0
-                                            ) || "-",
-                                          taxDetails: (
-                                            <button
-                                              className="purple-btn2"
-                                              onClick={() =>
-                                                handleChargesTaxModalOpen(
-                                                  extractedChargeData
-                                                    .filter((c) =>
-                                                      [2, 4, 5].includes(c.charge_id)
-                                                    )
-                                                    .flatMap((c) => c.taxDetails)
-                                                )
-                                              }
-                                            >
-                                              View Tax
-                                            </button>
-                                          ),
-                                        },
-                                      ]}
-                                    />
-                                  );
-                                })()}
+  const extractedChargeData =
+    eventVendors?.flatMap((vendor) => {
+      const charges = vendor?.bids?.[0]?.extra?.charges || [];
+      return charges.map((charge) => ({
+        charge_id: charge.charge_id,
+        amount: Number(charge.amount || 0),
+        realisedAmount: Number(charge.realised_amount || 0),
+        taxDetails: charge.taxes_and_charges || [],
+      }));
+    }) || [];
+
+  const handleChargesTaxModalOpen = (taxDetails) => {
+    setShowChargesTaxModal(true);
+    setChargesTaxModalData(taxDetails);
+  };
+
+  const renderAccordion = (title, chargeId) => {
+    const data = extractedChargeData.filter(
+      (c) => c.charge_id === chargeId
+    );
+
+    if (data.length === 0) return null;
+
+    return (
+      <Accordion
+        key={chargeId}
+        title={title}
+        isDefault={true}
+        tableColumn={[
+          { label: "Amount", key: "amount" },
+          { label: "Realised Amount", key: "realisedAmount" },
+          { label: "Tax Details", key: "taxDetails" },
+        ]}
+        tableData={data.map((charge) => ({
+          amount: charge.amount || "-",
+          realisedAmount: charge.realisedAmount || "-",
+          taxDetails: (
+            <button
+              className="purple-btn2"
+              onClick={() =>
+                handleChargesTaxModalOpen(charge.taxDetails)
+              }
+            >
+              View Tax
+            </button>
+          ),
+        }))}
+      />
+    );
+  };
+
+  const accordions = [
+    renderAccordion("Handling Charges", 2),
+    renderAccordion("Other Charges", 4),
+    renderAccordion("Freight Charges", 5),
+  ].filter(Boolean); // remove nulls
+
+  return accordions.length > 0 ? <>{accordions}</> : null;
+})()}
+
+
                 <>
                   {poIsLoading ? (
                     <Loader />
@@ -1031,22 +1032,56 @@ export default function AllocationTab({ isCounterOffer }) {
                                 isHorizontal={false}
                               />
 
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "flex-end",
-                                  marginTop: "20px",
-                                }}
-                              >
-                                <ShortTable
-                                  data={
-                                    dummyData.find(
-                                      (d) => d.vendorId === vendorData.vendorId
-                                    )?.data || []
-                                  }
-                                  editable={false}
-                                />
-                              </div>
+                              {(() => {
+  const allocatedCharges = showAllocatedChargesTaxModalData || [];
+
+  const renderAccordion = (title, chargeId) => {
+    const chargeData = allocatedCharges.filter(
+      (charge) => charge.charge_id === chargeId
+    );
+
+    if (chargeData.length === 0) return null;
+
+    return (
+      <Accordion
+        key={chargeId}
+        title={title}
+        isDefault={true}
+        tableColumn={[
+          { label: "Amount", key: "amount" },
+          { label: "Realised Amount", key: "realised_amount" },
+          { label: "Tax Details", key: "tax_button" },
+        ]}
+        tableData={chargeData.map((charge) => ({
+          amount: charge.amount || "-",
+          realised_amount: charge.realised_amount || "-",
+          tax_button: (
+            <button
+              className="purple-btn2"
+              onClick={() => {
+                setShowChargesTaxModal(true);
+                setChargesTaxModalData(charge.taxes_and_charges || []);
+              }}
+            >
+              View Tax
+            </button>
+          ),
+        }))}
+      />
+    );
+  };
+
+  const accordions = [
+    renderAccordion("Handling Charges", 2),
+    renderAccordion("Other Charges", 4),
+    renderAccordion("Freight Charges", 5),
+  ].filter(Boolean); // remove nulls
+
+  return accordions.length > 0 ? (
+    <div className="mt-4">{accordions}</div>
+  ) : null;
+})()}
+
                               <div
                                 style={{
                                   display: "flex",
@@ -1124,7 +1159,7 @@ export default function AllocationTab({ isCounterOffer }) {
         bidCounterData={BidCounterData}
       />
 
-<DynamicModalBox
+      <DynamicModalBox
         show={showChargesTaxModal}
         onHide={() => setShowChargesTaxModal(false)}
         size="lg"
@@ -1179,9 +1214,7 @@ export default function AllocationTab({ isCounterOffer }) {
                     <td>
                       <select
                         className="form-select"
-                        defaultValue={
-                          item.percentage || item.taxChargePerUom
-                        }
+                        defaultValue={item.percentage || item.taxChargePerUom}
                         onChange={(e) =>
                           handleTaxChargeChange(
                             selectedMaterialIndex,
