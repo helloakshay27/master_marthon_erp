@@ -1,12 +1,14 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 const BillVerificationList = () => {
   const navigate = useNavigate();
@@ -37,6 +39,45 @@ const BillVerificationList = () => {
   const bulkActionDropdown = () => {
     setbulkActionDetails(!bulkActionDetails);
   };
+
+  //list api
+  const [billEntries, setBillEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Items per page
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  useEffect(() => {
+    const fetchBillEntries = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          "https://marathon.lockated.com/bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        setBillEntries(response.data.bill_entries);
+        setMeta(response.data.meta)
+      } catch (err) {
+        setError("Failed to fetch bill entries");
+        console.error("Error fetching bill entries:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBillEntries();
+  }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
 
   return (
     <>
@@ -102,7 +143,7 @@ const BillVerificationList = () => {
                     data-tab="total"
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">150</p>
+                    <p className="content-box-sub">{meta?.total_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -110,7 +151,7 @@ const BillVerificationList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
-                    <p className="content-box-sub">4</p>
+                    <p className="content-box-sub">{""}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -121,7 +162,7 @@ const BillVerificationList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Received for Verification
                     </h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub"></p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -130,7 +171,7 @@ const BillVerificationList = () => {
                     data-tab="self-overdue"
                   >
                     <h4 className="content-box-title fw-semibold">Verified</h4>
-                    <p className="content-box-sub">2</p>
+                    <p className="content-box-sub"></p>
                   </div>
                 </div>
               </div>
@@ -291,7 +332,7 @@ const BillVerificationList = () => {
                     </button> */}
 
                     {/* Create BOQ Button */}
-                    <button className="purple-btn2"
+                    {/* <button className="purple-btn2"
                       onClick={() => navigate("/bill-verification-create")}
                     >
                       <svg
@@ -305,7 +346,7 @@ const BillVerificationList = () => {
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                       </svg>
                       <span> Add</span>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -323,7 +364,7 @@ const BillVerificationList = () => {
                         <input type="checkbox" />
                       </th>
                       <th className="text-start">Sr.No.</th>
-                      <th className="text-start">ID</th>
+                      {/* <th className="text-start">ID</th> */}
                       <th className="text-start">Mode of Submission</th>
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
@@ -350,35 +391,52 @@ const BillVerificationList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="text-start">
-                        <input type="checkbox" />
-                      </td>
-                      <td className="text-start">1</td>
-                      <td className="text-start" />
-                      <td className="text-start">Offline</td>
-                      <td className="text-start">Marathon</td>
-                      <td className="text-start">Neo Project</td>
-                      <td className="text-start">Neo Valley- Building</td>
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start">123</td>
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start" />
-                      <td className="text-start">1000</td>
-                      <td className="text-start">250</td>
-                      <td className="text-start">750</td>
-                      <td className="text-start">Draft</td>
-                      <td className="text-start">-3</td>
-                      <td className="text-start">Sandeep</td>
-                      <td className="text-start" />
-                    </tr>
+                    {billEntries.map((entry, index) => (
+                      <tr key={entry.id}>
+                        <td className="text-start">
+                          <input type="checkbox" />
+                        </td>
+                        <td className="text-start boq-id-link">
+                          <Link
+                            to={`/bill-verification-details/${entry.id}`}
+                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                            {index + 1}
+                          </Link>
+                        </td>
+                        {/* <td className="text-start" /> */}
+                        <td className="text-start"></td>
+                        <td className="text-start">{entry.company_name}</td>
+                        <td className="text-start">{entry.project_name || ""}</td>
+                        <td className="text-start">{entry.site_name || ""}</td>
+                        <td className="text-start">{entry.pms_supplier}</td>
+                        <td className="text-start" > </td>
+                        <td className="text-start">{entry.po_number}</td>
+                        <td className="text-start">{new Date(entry.created_at).toLocaleDateString()}</td>
+                        <td className="text-start"></td>
+                        <td className="text-start boq-id-link">
+                          <Link
+                            to={`/bill-verification-details/${entry.id}`}
+                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                            {entry.bill_no}
+                          </Link>
+                        </td>
+                        <td className="text-start">{new Date(entry.bill_date).toLocaleDateString()}</td>
+                        <td className="text-start">{entry.bill_amount}</td>
+                        <td className="text-start" > </td>
+                        <td className="text-start" > </td>
+                        <td className="text-start" > </td>
+                        <td className="text-start"></td>
+                        <td className="text-start"></td>
+                        <td className="text-start"></td>
+                        <td className="text-start"></td>
+                        <td className="text-start">
+                          {/* {entry.status} */}
+                          {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}
+                        </td>
+                        <td className="text-start"></td>
+                        <td className="text-start" > </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
