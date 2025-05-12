@@ -28,7 +28,7 @@ import BillBookingDetails from "./pages/bill-booking-details";
 import BillEntryDetails from "./pages/bill-entry-details";
 import BillBookingList from "./pages/bill-booking-list";
 import BillEntryList from "./pages/bill-entry-list";
-import BillEntryListSubPage from "./pages/bill-entry-list-sub-page";
+import BillEntryListSubPage from "./pages/bill-entry-create-page";
 import BillBookingCreate from "./pages/bill-booking-create";
 import PoAdvanceNotePayment from "./pages/po-advance-note-payment";
 import PoAdvanceNoteList from "./pages/po-advance-note-list";
@@ -85,7 +85,11 @@ import AddWorkSubCategory from "./pages/add-work-sub-category";
 import BoqAmend from "./pages/boq-amend";
 import BoqAmendSub from "./pages/boq-amend-sub";
 import CounterOffer from "./pages/counter-offer";
+<<<<<<< Updated upstream
 import BillVerificationEdit from "./pages/bill-verification-edit";
+=======
+import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
+>>>>>>> Stashed changes
 
 function App() {
   return (
@@ -127,6 +131,10 @@ function App() {
           <Route
             path="/po-advance-note-payment/:id"
             element={<PoAdvanceNotePayment />}
+          />
+          <Route
+            path="/bill-entry-vendor-create"
+            element={<BillEntryCreateVendorPage />}
           />
           <Route path="/po-advance-note-list" element={<PoAdvanceNoteList />} />
           {/* <Route path="/credit-note-create" element={<CreditNoteCreate />} /> */}
