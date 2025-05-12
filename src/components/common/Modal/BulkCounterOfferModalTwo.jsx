@@ -383,6 +383,7 @@ export default function BulkCounterOfferModalTwo({
       quantityRequested: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.quantity || ""}
           style={{ width: "auto" }}
@@ -393,6 +394,7 @@ export default function BulkCounterOfferModalTwo({
         <>
           <input
             type="number"
+            min="0"
             className="form-control"
             value={eventMaterial.quantity_available || ""}
             style={{ width: "auto" }}
@@ -416,6 +418,7 @@ export default function BulkCounterOfferModalTwo({
       price: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.price || ""}
           style={{ width: "auto" }}
@@ -425,6 +428,7 @@ export default function BulkCounterOfferModalTwo({
       totalAmount: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.total_amount || ""}
           style={{ width: "auto" }}
@@ -434,6 +438,7 @@ export default function BulkCounterOfferModalTwo({
       discount: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.discount || ""}
           style={{ width: "auto" }}
@@ -443,6 +448,7 @@ export default function BulkCounterOfferModalTwo({
       realisedDiscount: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.realised_discount || ""}
           style={{ width: "auto" }}
@@ -472,6 +478,7 @@ export default function BulkCounterOfferModalTwo({
       gst: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.gst || ""}
           style={{ width: "auto" }}
@@ -481,6 +488,7 @@ export default function BulkCounterOfferModalTwo({
       realisedGst: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.realised_gst || ""}
           style={{ width: "auto" }}
@@ -490,6 +498,7 @@ export default function BulkCounterOfferModalTwo({
       landedAmount: (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={eventMaterial.landed_amount || ""}
           style={{ width: "auto" }}
@@ -1361,6 +1370,7 @@ export default function BulkCounterOfferModalTwo({
                       <td>
                         <input
                           type="number"
+                          min="0"
                           className="form-control bg-light"
                           value={
                             bidCounterData?.bid_materials?.[
@@ -1754,6 +1764,7 @@ export default function BulkCounterOfferModalTwo({
                       <td>
                         <input
                           type="number"
+                          min="0"
                           className="form-control "
                           value={taxRateData[tableId]?.afterDiscountValue}
                           readOnly

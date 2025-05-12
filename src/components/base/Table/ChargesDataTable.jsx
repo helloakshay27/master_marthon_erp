@@ -357,6 +357,7 @@ export default function ChargesDataTable({
                     <div>
                       <input
                         type="number"
+                        min='0'
                         className="form-control"
                         value={data[index]?.amount || ""}
                         onChange={(e) => handleInputChange(index, e)}
@@ -382,6 +383,7 @@ export default function ChargesDataTable({
                 >
                   <input
                     type="number"
+                    min='0'
                     className="form-control"
                     value={
                       data[index]?.amount
@@ -465,6 +467,7 @@ export default function ChargesDataTable({
                 <td>
                   <input
                     type="number"
+                    min='0'
                     className="form-control"
                     value={
                       chargesTaxRate[selectedTableId]?.afterDiscountValue || ""

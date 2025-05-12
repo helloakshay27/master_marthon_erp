@@ -1364,32 +1364,32 @@ export default function VendorDetails() {
       //   setLoading(false);
       //   return; // Stop further execution if validation fails
       // }
-      // const payload = preparePayload();
-      // // console.log("payload:---", payload);
-      // const response = await axios.post(
-      //   `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
-      //   payload,
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
-      //     },
-      //   }
-      // );
-      // toast.success("Bid Created successfully!", {
-      //   autoClose: 1000, // Close after 3 seconds
-      // });
-      // setIsBidCreated(true);
-      // setRevisedBid(true); // Update `revisedBid` to true
-      // // console.log("Updated revisedBid to true"); // Update state
-      // // console.log("Updated isBidCreated to true.");
-      // // console.log("vendor ID2", vendorId);
-      // // setData(response.data.bid_materials_attributes || []);
-      // setTimeout(() => {
-      //   navigate(
-      //     "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //   );
-      // }, 1000);
+      const payload = preparePayload();
+      // console.log("payload:---", payload);
+      const response = await axios.post(
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer YOUR_TOKEN_HERE`, // Replace with your auth token
+          },
+        }
+      );
+      toast.success("Bid Created successfully!", {
+        autoClose: 1000, // Close after 3 seconds
+      });
+      setIsBidCreated(true);
+      setRevisedBid(true); // Update `revisedBid` to true
+      // console.log("Updated revisedBid to true"); // Update state
+      // console.log("Updated isBidCreated to true.");
+      // console.log("vendor ID2", vendorId);
+      // setData(response.data.bid_materials_attributes || []);
+      setTimeout(() => {
+        navigate(
+          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
       toast.error("Failed to create bid. Please try again.", {
@@ -2341,6 +2341,7 @@ export default function VendorDetails() {
           <input
             className="form-control"
             type="number"
+            min='0'
             value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
             readOnly
             style={otherColumnsStyle}
@@ -4857,6 +4858,7 @@ export default function VendorDetails() {
                                 <input
                                   className="form-control"
                                   type="number"
+                                  min="0"
                                   value={previousPrice}
                                   onChange={(e) =>
                                     handleInputChange(
@@ -4939,6 +4941,7 @@ export default function VendorDetails() {
                                 <input
                                   className="form-control"
                                   type="number"
+                                  min='0'
                                   value={previousDiscount}
                                   onChange={(e) =>
                                     handleInputChange(
@@ -4956,6 +4959,7 @@ export default function VendorDetails() {
                               <input
                                 className="form-control"
                                 type="number"
+                                min='0'
                                 value={cell}
                                 onChange={(e) =>
                                   handleInputChange(

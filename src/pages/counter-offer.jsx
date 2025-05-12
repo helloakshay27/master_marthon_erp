@@ -427,6 +427,23 @@ export default function CounterOffer() {
     updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
     updatedMaterials[index].total_amount = finalTotal.toFixed(2);
 
+    // Recalculate addition and deduction tax percentages
+    const baseAmount = parseFloat(updatedMaterials[index].total_amount) || 0;
+
+    updatedMaterials[index].addition_bid_material_tax_details?.forEach((item) => {
+      const percentage = parseFloat(item.taxChargePerUom) || 0;
+      item.amount = item.inclusive
+        ? (baseAmount * percentage) / (100 + percentage)
+        : (baseAmount * percentage) / 100;
+    });
+
+    updatedMaterials[index].deduction_bid_material_tax_details?.forEach((item) => {
+      const percentage = parseFloat(item.taxChargePerUom) || 0;
+      item.amount = item.inclusive
+        ? (baseAmount * percentage) / (100 + percentage)
+        : (baseAmount * percentage) / 100;
+    });
+
     // Disable price if discount is modified, and vice versa
     if (field === "price") {
       updatedMaterials[index].disableDiscount = true;
@@ -772,6 +789,7 @@ export default function CounterOffer() {
       const quantityRequested = (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={item.quantity_requested}
           style={{ width: "auto" }}
@@ -783,6 +801,7 @@ export default function CounterOffer() {
       const quantityAvailable = (
         <input
           type="number"
+          min="0"
           className="form-control"
           value={item.quantity_available}
           style={{ width: "auto" }}
@@ -806,6 +825,7 @@ export default function CounterOffer() {
       const price = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.price}
@@ -817,6 +837,7 @@ export default function CounterOffer() {
       const totalAmount = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.total_amount}
@@ -828,6 +849,7 @@ export default function CounterOffer() {
       const discount = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.discount}
@@ -839,6 +861,7 @@ export default function CounterOffer() {
       const realisedDiscount = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.realised_discount}
@@ -861,6 +884,7 @@ export default function CounterOffer() {
       const gst = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.gst}
@@ -871,6 +895,7 @@ export default function CounterOffer() {
       const realisedGst = (
         <input
           type="number"
+          min="0"
           className="form-control"
           style={{ width: "auto" }}
           value={item.realised_gst}
@@ -1213,6 +1238,7 @@ export default function CounterOffer() {
                           <td>
                             <input
                               type="number"
+                              min="0"
                               className="form-control bg-light"
                               value={
                                 formData?.bid_materials?.[selectedMaterialIndex]

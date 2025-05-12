@@ -418,31 +418,50 @@ export default function ParticipantsTab({ id }) {
     setInviteModal(false);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleIndividualSearchChange = (e) => {
+    const searchValue = e.target.value.toLowerCase();
+    setSearchTerm(searchValue);
 
-    if (e.target.value === "") {
-      setSuggestions([]);
-      setIsSuggestionsVisible(false);
+    if (searchValue === "") {
+      setFilteredTableData(vendorData); // Reset to original data
+      setSuggestions([]); // Clear suggestions
     } else {
-      const filteredSuggestions = vendorData.filter(
+      const filteredResults = vendorData.filter(
         (vendor) =>
-          vendor.full_name
-            ?.toLowerCase()
-            .includes(e.target.value.toLowerCase()) ||
-          vendor.mobile?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-          vendor.email?.toLowerCase().includes(e.target.value.toLowerCase())
+          vendor.name?.toLowerCase().includes(searchValue) ||
+          vendor.phone?.toLowerCase().includes(searchValue) ||
+          vendor.email?.toLowerCase().includes(searchValue)
       );
-      setSuggestions(filteredSuggestions);
-
-      setIsSuggestionsVisible(true);
+      setFilteredTableData(filteredResults); // Update filtered data
+      setSuggestions(filteredResults); // Update suggestions
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.name);
-    setIsSuggestionsVisible(false);
-    fetchData(1, suggestion.name, selectedCity);
+    setFilteredTableData([suggestion]); // Show only the selected suggestion
+    setSuggestions([]); // Clear suggestions
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+
+    if (e.target.value === "") {
+      setSuggestions([]);
+      setFilteredTableData(tableData); // Reset filtered data to all table data
+      setIsSuggestionsVisible(false);
+    } else {
+      const allData = [...tableData, ...vendorData]; // Combine data from all pages
+      const filteredSuggestions = allData.filter(
+        (vendor) =>
+          vendor.name?.toLowerCase().includes(e.target.value.toLowerCase()) ||
+          vendor.phone?.toLowerCase().includes(e.target.value.toLowerCase()) ||
+          vendor.email?.toLowerCase().includes(e.target.value.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions);
+      setFilteredTableData(filteredSuggestions); // Update filtered data
+      setIsSuggestionsVisible(true);
+    }
   };
 
   const handleSearchClick = () => {
@@ -471,78 +490,236 @@ export default function ParticipantsTab({ id }) {
 
   return (
     <>
-        <div
-          className="tab-pane fade participants"
-          id="participants"
-          role="tabpanel"
-          aria-labelledby="participants-tab"
-          tabIndex={0}
-        >
-          <div className="d-flex justify-content-between mt-4 align-items-center">
-            <div className="input-group">
-              <input
-                type="search"
-                id="searchInput"
-                className="w-50 tbl-search"
-                placeholder="Type your vendors here"
-                style={{ paddingLeft: "10px" }}
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              <div className="input-group-append">
-                <button
-                  type="button"
-                  className="btn btn-md btn-default"
-                  onClick={handleSearchClick}
-                >
-                  <SearchIcon />
-                </button>
-              </div>
+      <div
+        className="tab-pane fade participants"
+        id="participants"
+        role="tabpanel"
+        aria-labelledby="participants-tab"
+        tabIndex={0}
+      >
+        <div className="d-flex justify-content-between mt-4 align-items-center">
+          <div className="input-group position-relative">
+            <input
+              type="search"
+              id="searchInput"
+              className="w-50 tbl-search"
+              placeholder="Type your vendors here"
+              style={{ paddingLeft: "10px" }}
+              value={searchTerm}
+              onChange={handleIndividualSearchChange}
+            />
+            <div className="input-group-append">
+              <button
+                type="button"
+                className="btn btn-md btn-default"
+                onClick={() => setFilteredTableData(vendorData)} // Reset table data on button click
+              >
+                <SearchIcon />
+              </button>
             </div>
-            <div className="d-flex align-items-center"></div>
-            <button
-              className="purple-btn2 mt-3"
-              onClick={handleVendorTypeModalShow}
-            >
-              <span className="material-symbols-outlined align-text-top me-2">
-                add
-              </span>
-              <span>Add</span>
-            </button>
+            {suggestions.length > 0 && (
+              <ul
+                className="suggestions-list position-absolute bg-white border rounded w-100"
+                style={{
+                  zIndex: 1000,
+                  top: "100%",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                }}
+              >
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="p-2 cursor-pointer"
+                  >
+                    {suggestion.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          {vendorData?.length > 0 ? (
-            !isVendorLoading || !isLoading ? (
-              <div className="tbl-container">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr No</th>
-                      <th>Name</th>
-                      <th>Mob No.</th>
-                      <th>Email</th>
-                      <th>Organisation</th>
+          <div className="d-flex align-items-center"></div>
+          <button
+            className="purple-btn2 mt-3"
+            onClick={handleVendorTypeModalShow}
+          >
+            <span className="material-symbols-outlined align-text-top me-2">
+              add
+            </span>
+            <span>Add</span>
+          </button>
+        </div>
+        {vendorData?.length > 0 ? (
+          !isVendorLoading || !isLoading ? (
+            <div className="tbl-container">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr No</th>
+                    <th>Name</th>
+                    <th>Mob No.</th>
+                    <th>Email</th>
+                    <th>Organisation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTableData.map((vendor, index) => (
+                    <tr key={vendor.key}>
+                      <td style={{ textAlign: "left" }}>
+                        {(currentParticipantPage - 1) * participantPageSize +
+                          index +
+                          1}
+                      </td>
+                      <td style={{ textAlign: "left" }}>{vendor.name}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.phone}</td>
+                      <td style={{ textAlign: "left" }}>{vendor.email}</td>
+                      <td style={{ textAlign: "left" }}>
+                        {vendor.organisation || "N/A"}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {vendorData.map((vendor, index) => (
-                      <tr key={vendor.key}>
-                        <td style={{ textAlign: "left" }}>
-                          {(currentParticipantPage - 1) * participantPageSize +
-                            index +
-                            1}
-                        </td>
-                        <td style={{ textAlign: "left" }}>{vendor.name}</td>
-                        <td style={{ textAlign: "left" }}>{vendor.phone}</td>
-                        <td style={{ textAlign: "left" }}>{vendor.email}</td>
-                        <td style={{ textAlign: "left" }}>
-                          {vendor.organisation || "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <>
+              <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Loading...</p>
               </div>
-            ) : (
+            </>
+          )
+        ) : (
+          <div className="text-center mt-4">No data found</div>
+        )}
+        {totalParticipantPages > 1 && (
+          <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+            <ul className="pagination justify-content-center d-flex">
+              <li
+                className={`page-item ${
+                  currentParticipantPage === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handleParticipantPageChange(1)}
+                >
+                  First
+                </button>
+              </li>
+
+              <li
+                className={`page-item ${
+                  currentParticipantPage === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() =>
+                    handleParticipantPageChange(currentParticipantPage - 1)
+                  }
+                >
+                  Prev
+                </button>
+              </li>
+
+              {getPageParticipantRange().map((page) => (
+                <li
+                  key={page}
+                  className={`page-item ${
+                    currentParticipantPage === page ? "active" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handleParticipantPageChange(page)}
+                  >
+                    {page}
+                  </button>
+                </li>
+              ))}
+
+              <li
+                className={`page-item ${
+                  currentParticipantPage === totalParticipantPages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() =>
+                    handleParticipantPageChange(currentParticipantPage + 1)
+                  }
+                >
+                  Next
+                </button>
+              </li>
+
+              <li
+                className={`page-item ${
+                  currentParticipantPage === totalParticipantPages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() =>
+                    handleParticipantPageChange(totalParticipantPages)
+                  }
+                >
+                  Last
+                </button>
+              </li>
+            </ul>
+
+            <div>
+              <p>
+                Showing{" "}
+                {vendorData.length > 0
+                  ? (currentParticipantPage - 1) * participantPageSize + 1
+                  : 0}{" "}
+                to{" "}
+                {Math.min(
+                  currentParticipantPage * participantPageSize,
+                  totalParticipantPages * participantPageSize
+                )}{" "}
+                of {totalParticipantPages * participantPageSize} entries
+              </p>
+            </div>
+          </div>
+        )}
+
+        <DynamicModalBox
+          size="xl"
+          title="All Vendors"
+          show={vendorModal}
+          onHide={handleVendorTypeModalClose}
+          footerButtons={[
+            {
+              label: "Cancel",
+              onClick: handleVendorTypeModalClose,
+              props: { className: "purple-btn1" },
+            },
+            {
+              label: "Save",
+              onClick: handleSaveButtonClick,
+              props: { className: "purple-btn2" },
+            },
+          ]}
+          children={
+            isVendorLoading ? (
               <>
                 <div className="loader-container">
                   <div className="lds-ring">
@@ -558,483 +735,351 @@ export default function ParticipantsTab({ id }) {
                   <p>Loading...</p>
                 </div>
               </>
-            )
-          ) : (
-            <div className="text-center mt-4">No data found</div>
-          )}
-          {totalParticipantPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-              <ul className="pagination justify-content-center d-flex">
-                <li
-                  className={`page-item ${
-                    currentParticipantPage === 1 ? "disabled" : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => handleParticipantPageChange(1)}
-                  >
-                    First
-                  </button>
-                </li>
-
-                <li
-                  className={`page-item ${
-                    currentParticipantPage === 1 ? "disabled" : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() =>
-                      handleParticipantPageChange(currentParticipantPage - 1)
-                    }
-                  >
-                    Prev
-                  </button>
-                </li>
-
-                {getPageParticipantRange().map((page) => (
-                  <li
-                    key={page}
-                    className={`page-item ${
-                      currentParticipantPage === page ? "active" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handleParticipantPageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                ))}
-
-                <li
-                  className={`page-item ${
-                    currentParticipantPage === totalParticipantPages
-                      ? "disabled"
-                      : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() =>
-                      handleParticipantPageChange(currentParticipantPage + 1)
-                    }
-                  >
-                    Next
-                  </button>
-                </li>
-
-                <li
-                  className={`page-item ${
-                    currentParticipantPage === totalParticipantPages
-                      ? "disabled"
-                      : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() =>
-                      handleParticipantPageChange(totalParticipantPages)
-                    }
-                  >
-                    Last
-                  </button>
-                </li>
-              </ul>
-
-              <div>
-                <p>
-                  Showing{" "}
-                  {vendorData.length > 0
-                    ? (currentParticipantPage - 1) * participantPageSize + 1
-                    : 0}{" "}
-                  to{" "}
-                  {Math.min(
-                    currentParticipantPage * participantPageSize,
-                    totalParticipantPages * participantPageSize
-                  )}{" "}
-                  of {totalParticipantPages * participantPageSize} entries
-                </p>
-              </div>
-            </div>
-          )}
-
-          <DynamicModalBox
-            size="xl"
-            title="All Vendors"
-            show={vendorModal}
-            onHide={handleVendorTypeModalClose}
-            footerButtons={[
-              {
-                label: "Cancel",
-                onClick: handleVendorTypeModalClose,
-                props: { className: "purple-btn1" },
-              },
-              {
-                label: "Save",
-                onClick: handleSaveButtonClick,
-                props: { className: "purple-btn2" },
-              },
-            ]}
-            children={
-              isVendorLoading ? (
-                <>
-                  <div className="loader-container">
-                    <div className="lds-ring">
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                    <p>Loading...</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="input-group w-50 position-relative">
-                      <input
-                        type="search"
-                        id="searchInput"
-                        className="tbl-search form-control"
-                        placeholder="Search Vendors"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        onFocus={() => setIsSuggestionsVisible(true)}
-                        onBlur={() =>
-                          setTimeout(() => setIsSuggestionsVisible(false), 200)
-                        }
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="btn btn-md btn-default"
-                          onClick={handleSearchClick}
-                        >
-                          <SearchIcon />
-                        </button>
-                      </div>
-                      {isSuggestionsVisible && suggestions.length > 0 && (
-                        <ul
-                          className="suggestions-list position-absolute bg-white border rounded w-100"
-                          style={{ zIndex: 1000, top: "100%" }}
-                        >
-                          {suggestions.map((suggestion) => (
-                            <li
-                              key={suggestion.id}
-                              onClick={() => handleSuggestionClick(suggestion)}
-                              className="p-2 cursor-pointer"
-                            >
-                              {suggestion.name}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    <div className="d-flex">
-                      <button
-                        className="purple-btn2 viewBy-main-child2P mb-0"
-                        onClick={handleInviteModalShow}
-                      >
-                        <i className="bi bi-person-plus"></i>
-                        <span className="ms-2">Invite</span>
-                      </button>
-
-                      <PopupBox
-                        title="Filter by"
-                        show={showPopup}
-                        onClose={() => setShowPopup(false)}
-                        footerButtons={[
-                          {
-                            label: "Cancel",
-                            onClick: () => setShowPopup(false),
-                            props: {
-                              className: "purple-btn1",
-                            },
-                          },
-                          {
-                            label: "Apply",
-                            onClick: handleApply,
-                            props: {
-                              className: "purple-btn2",
-                            },
-                          },
-                        ]}
-                        children={
-                          <div>
-                            <div style={{ marginBottom: "12px" }}>
-                              <SelectBox
-                                label={"City"}
-                                options={citiesList}
-                                defaultValue={""}
-                                onChange={handleCityChange}
-                                isDisableFirstOption={true}
-                              />
-                            </div>
-                          </div>
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    {filteredTableData.length > 0 ? (
-                      <Table
-                        columns={participantsTabColumns}
-                        showCheckbox={true}
-                        data={filteredTableData.map((vendor, index) => ({
-                          ...vendor,
-                          srNo: (currentPage - 1) * pageSize + index + 1,
-                        }))}
-                        handleCheckboxChange={handleCheckboxChange}
-                        isRowSelected={isVendorSelected}
-                        resetSelectedRows={resetSelectedRows}
-                        onResetComplete={() => setResetSelectedRows(false)}
-                        onRowSelect={undefined}
-                        cellClass="text-start"
-                        currentPage={currentPage}
-                        pageSize={pageSize}
-                      />
-                    ) : (
-                      <p>No vendors found</p>
-                    )}
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center px-1 mt-2">
-                    <ul className="pagination justify-content-center d-flex ">
-                      <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(1)}
-                        >
-                          First
-                        </button>
-                      </li>
-
-                      <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          Prev
-                        </button>
-                      </li>
-
-                      {getPageRange().map((pageNumber) => (
-                        <li
-                          key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() => handlePageChange(pageNumber)}
-                          >
-                            {pageNumber}
-                          </button>
-                        </li>
-                      ))}
-
-                      <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Next
-                        </button>
-                      </li>
-
-                      <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Last
-                        </button>
-                      </li>
-                    </ul>
-
-                    <div>
-                      <p>
-                        Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
-                        {Math.min(
-                          currentPage * pageSize,
-                          totalPages * pageSize
-                        )}{" "}
-                        of {totalPages * pageSize} entries
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )
-            }
-          />
-
-          <DynamicModalBox
-            show={inviteModal}
-            onHide={handleInviteModalClose}
-            modalType={true}
-            title="Invite New Vendor"
-            children={
+            ) : (
               <>
-                <form className="p-2" onSubmit={handleInviteSubmit}>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">POC - Full Name</label>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="input-group w-50 position-relative">
                     <input
-                      className="form-control"
-                      type="text"
-                      name="name"
-                      placeholder="Enter POC Name"
-                      value={inviteForm.name}
-                      onChange={handleInviteInputChange}
+                      type="search"
+                      id="searchInput"
+                      className="tbl-search form-control"
+                      placeholder="Search Vendors"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      onFocus={() => setIsSuggestionsVisible(true)}
+                      onBlur={() =>
+                        setTimeout(() => setIsSuggestionsVisible(false), 200)
+                      }
                     />
-                    {formErrors.name && (
-                      <small className="text-danger">{formErrors.name}</small>
+                    <div className="input-group-append">
+                      <button
+                        type="button"
+                        className="btn btn-md btn-default"
+                        onClick={handleSearchClick}
+                      >
+                        <SearchIcon />
+                      </button>
+                    </div>
+                    {isSuggestionsVisible && suggestions.length > 0 && (
+                      <ul
+                        className="suggestions-list position-absolute bg-white border rounded w-100"
+                        style={{
+                          zIndex: 1000,
+                          top: "100%",
+                          maxHeight: "200px",
+                          overflowY: "auto",
+                        }}
+                      >
+                        {suggestions.map((suggestion, id) => (
+                          <li
+                            key={id}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="p-2 cursor-pointer"
+                          >
+                            {suggestion.name}
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Email</label>
-                    <input
-                      className="form-control"
-                      type="email"
-                      name="email"
-                      placeholder="Enter Email Address"
-                      value={inviteForm.email}
-                      onChange={handleInviteInputChange}
-                    />
-                    {formErrors.email && (
-                      <small className="text-danger">{formErrors.email}</small>
-                    )}
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Phone Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      name="mobile"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      onKeyDown={(e) => {
-                        const invalidChars = ["e", "E", "+", "-", ".", ","];
-                        if (
-                          invalidChars.includes(e.key) ||
-                          (isNaN(Number(e.key)) &&
-                            e.key !== "Backspace" &&
-                            e.key !== "Delete" &&
-                            e.key !== "ArrowLeft" &&
-                            e.key !== "ArrowRight" &&
-                            e.key !== "Tab")
-                        ) {
-                          e.preventDefault();
-                        }
-                      }}
-                      placeholder="Enter Phone Number"
-                      value={inviteForm.mobile}
-                      onChange={handleInviteInputChange}
-                    />
-                    {formErrors.mobile && (
-                      <small className="text-danger">{formErrors.mobile}</small>
-                    )}
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">GST Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      name="gstNumber"
-                      placeholder="Enter GST Number"
-                      value={inviteForm.gstNumber || ""}
-                      onChange={handleInviteInputChange}
-                    />
-                    {formErrors.gstNumber && (
-                      <small className="text-danger">
-                        {formErrors.gstNumber}
-                      </small>
-                    )}
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">PAN Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      name="panNumber"
-                      placeholder="Enter PAN Number"
-                      value={inviteForm.panNumber || ""}
-                      onChange={handleInviteInputChange}
-                    />
-                    {formErrors.panNumber && (
-                      <small className="text-danger">
-                        {formErrors.panNumber}
-                      </small>
-                    )}
-                  </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Company</label>
-                    <SelectBox
-                      options={companyList}
-                      onChange={(selectedOption) =>
-                        setInviteForm((prev) => ({
-                          ...prev,
-                          company: selectedOption,
-                        }))
+                  <div className="d-flex">
+                    <button
+                      className="purple-btn2 viewBy-main-child2P mb-0"
+                      onClick={handleInviteModalShow}
+                    >
+                      <i className="bi bi-person-plus"></i>
+                      <span className="ms-2">Invite</span>
+                    </button>
+
+                    <PopupBox
+                      title="Filter by"
+                      show={showPopup}
+                      onClose={() => setShowPopup(false)}
+                      footerButtons={[
+                        {
+                          label: "Cancel",
+                          onClick: () => setShowPopup(false),
+                          props: {
+                            className: "purple-btn1",
+                          },
+                        },
+                        {
+                          label: "Apply",
+                          onClick: handleApply,
+                          props: {
+                            className: "purple-btn2",
+                          },
+                        },
+                      ]}
+                      children={
+                        <div>
+                          <div style={{ marginBottom: "12px" }}>
+                            <SelectBox
+                              label={"City"}
+                              options={citiesList}
+                              defaultValue={""}
+                              onChange={handleCityChange}
+                              isDisableFirstOption={true}
+                            />
+                          </div>
+                        </div>
                       }
                     />
                   </div>
-                  <div className="form-group mb-3">
-                    <label className="po-fontBold">Organization</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      name="organization"
-                      placeholder="Enter Organization Name"
-                      value={inviteForm.organization || ""}
-                      onChange={handleInviteInputChange}
+                </div>
+                <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                  {filteredTableData.length > 0 ? (
+                    <Table
+                      columns={participantsTabColumns}
+                      showCheckbox={true}
+                      data={filteredTableData.map((vendor, index) => ({
+                        ...vendor,
+                        srNo: (currentPage - 1) * pageSize + index + 1,
+                      }))}
+                      handleCheckboxChange={handleCheckboxChange}
+                      isRowSelected={isVendorSelected}
+                      resetSelectedRows={resetSelectedRows}
+                      onResetComplete={() => setResetSelectedRows(false)}
+                      onRowSelect={undefined}
+                      cellClass="text-start"
+                      currentPage={currentPage}
+                      pageSize={pageSize}
                     />
-                  </div>
-                  <div className="d-flex justify-content-center mt-2">
-                    <button
-                      className="purple-btn1"
-                      onClick={handleInviteModalClose}
+                  ) : (
+                    <p>No vendors found</p>
+                  )}
+                </div>
+                <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                  <ul className="pagination justify-content-center d-flex ">
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
                     >
-                      Close
-                    </button>
-                    <button
-                      className="purple-btn2"
-                      onClick={handleInviteSubmit}
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(1)}
+                      >
+                        First
+                      </button>
+                    </li>
+
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
                     >
-                      Save Changes
-                    </button>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Prev
+                      </button>
+                    </li>
+
+                    {getPageRange().map((pageNumber) => (
+                      <li
+                        key={pageNumber}
+                        className={`page-item ${
+                          currentPage === pageNumber ? "active" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      </li>
+                    ))}
+
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </button>
+                    </li>
+                  </ul>
+
+                  <div>
+                    <p>
+                      Showing {currentPage * pageSize - (pageSize - 1)} to{" "}
+                      {Math.min(
+                        currentPage * pageSize,
+                        totalPages * pageSize
+                      )}{" "}
+                      of {totalPages * pageSize} entries
+                    </p>
                   </div>
-                </form>
+                </div>
               </>
-            }
-          />
-        </div>
-      
+            )
+          }
+        />
+
+        <DynamicModalBox
+          show={inviteModal}
+          onHide={handleInviteModalClose}
+          modalType={true}
+          title="Invite New Vendor"
+          children={
+            <>
+              <form className="p-2" onSubmit={handleInviteSubmit}>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">POC - Full Name</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="name"
+                    placeholder="Enter POC Name"
+                    value={inviteForm.name}
+                    onChange={handleInviteInputChange}
+                  />
+                  {formErrors.name && (
+                    <small className="text-danger">{formErrors.name}</small>
+                  )}
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">Email</label>
+                  <input
+                    className="form-control"
+                    type="email"
+                    name="email"
+                    placeholder="Enter Email Address"
+                    value={inviteForm.email}
+                    onChange={handleInviteInputChange}
+                  />
+                  {formErrors.email && (
+                    <small className="text-danger">{formErrors.email}</small>
+                  )}
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">Phone Number</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="mobile"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      const invalidChars = ["e", "E", "+", "-", ".", ","];
+                      if (
+                        invalidChars.includes(e.key) ||
+                        (isNaN(Number(e.key)) &&
+                          e.key !== "Backspace" &&
+                          e.key !== "Delete" &&
+                          e.key !== "ArrowLeft" &&
+                          e.key !== "ArrowRight" &&
+                          e.key !== "Tab")
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    placeholder="Enter Phone Number"
+                    value={inviteForm.mobile}
+                    onChange={handleInviteInputChange}
+                  />
+                  {formErrors.mobile && (
+                    <small className="text-danger">{formErrors.mobile}</small>
+                  )}
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">GST Number</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="gstNumber"
+                    placeholder="Enter GST Number"
+                    value={inviteForm.gstNumber || ""}
+                    onChange={handleInviteInputChange}
+                  />
+                  {formErrors.gstNumber && (
+                    <small className="text-danger">
+                      {formErrors.gstNumber}
+                    </small>
+                  )}
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">PAN Number</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="panNumber"
+                    placeholder="Enter PAN Number"
+                    value={inviteForm.panNumber || ""}
+                    onChange={handleInviteInputChange}
+                  />
+                  {formErrors.panNumber && (
+                    <small className="text-danger">
+                      {formErrors.panNumber}
+                    </small>
+                  )}
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">Company</label>
+                  <SelectBox
+                    options={companyList}
+                    onChange={(selectedOption) =>
+                      setInviteForm((prev) => ({
+                        ...prev,
+                        company: selectedOption,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="form-group mb-3">
+                  <label className="po-fontBold">Organization</label>
+                  <input
+                    className="form-control"
+                    type="text"
+                    name="organization"
+                    placeholder="Enter Organization Name"
+                    value={inviteForm.organization || ""}
+                    onChange={handleInviteInputChange}
+                  />
+                </div>
+                <div className="d-flex justify-content-center mt-2">
+                  <button
+                    className="purple-btn1"
+                    onClick={handleInviteModalClose}
+                  >
+                    Close
+                  </button>
+                  <button
+                    className="purple-btn2"
+                    onClick={handleInviteSubmit}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </>
+          }
+        />
+      </div>
+
       <ToastContainer />
     </>
   );
