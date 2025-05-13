@@ -704,419 +704,207 @@ export default function VendorDetails() {
   // const nextBid = currentIndex < bids.length - 1 ? currentIndex + 1 : "No bid";
 
   const fetchEventData = async () => {
-    try {
-      // Step 1: Fetch the initial API to get `revised_bid`
-      const initialResponse = await axios.get(
-        `${baseURL}/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
-      );
+  try {
+    // Step 1: Fetch the initial API to get `revised_bid`
+    const initialResponse = await axios.get(
+      `${baseURL}/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
+    );
 
-      const initialData = initialResponse.data;
-      const eventMaterials = initialData.event_materials || [];
-      const revisedBid = initialData.revised_bid;
+    const initialData = initialResponse.data;
+    const eventMaterials = initialData.event_materials || [];
+    const revisedBid = initialData.revised_bid;
 
-      // Step 0: Store the revised bid in state
-      setRevisedBid(revisedBid);
+    // Step 0: Store the revised bid in state
+    setRevisedBid(revisedBid);
 
-      // Step 1: Collect all unique keys from extra_data
-      const uniqueAdditionalColumns = new Set();
+    // Step 1: Collect all unique keys from extra_data
+    const uniqueAdditionalColumns = new Set();
 
-      eventMaterials.forEach((item) => {
-        const extraKeys = Object.keys(item.extra_data || {});
-        extraKeys.forEach((key) => {
-          uniqueAdditionalColumns.add(key);
+    eventMaterials.forEach((item) => {
+      const extraKeys = Object.keys(item.extra_data || {});
+      extraKeys.forEach((key) => {
+        uniqueAdditionalColumns.add(key);
+      });
+    });
+
+    // Step 2: Convert keys to array of { key, label } objects
+    const additionalColumns = Array.from(uniqueAdditionalColumns).map((key) => ({
+      key,
+      label: key
+        .replace(/_/g, " ") // Convert snake_case to space
+        .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space in camelCase
+        .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize each word
+    }));
+
+    // Set the additional columns in state
+    setAdditionalColumns(additionalColumns);
+
+    if (!revisedBid) {
+      const processedData = eventMaterials.map((item) => {
+        const flatExtraData = Object.entries(item.extra_data || {}).reduce(
+          (acc, [key, valObj]) => {
+            acc[key] = valObj?.value || "";
+            return acc;
+          },
+          {}
+        );
+        const bidMaterial = item.bid_materials?.[0];
+
+        // Map the row data
+        const rowData = {
+          pmsBrand: item.pms_brand_name,
+          pmsColour: item.pms_colour_name,
+          genericInfo: item.generic_info_name,
+          eventMaterialId: item.id,
+          descriptionOfItem: item.inventory_name,
+          quantity: item.quantity,
+          quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
+          unit: item.uom_name || item.unit,
+          location: item.location,
+          rate: item.rate || "", // Placeholder if rate is not available
+          section: item.material_type,
+          subSection: item.inventory_sub_type,
+          amount: item.amount,
+          totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
+          attachment: null, // Placeholder for attachment
+          varient: item.material_type, // Use extracted material_type
+          extra_data: flatExtraData,
+          revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
+        };
+
+        // Add `extra` data dynamically to the row
+        additionalColumns.forEach((col) => {
+          rowData[col.key] = bidMaterial?.extra_data?.[col.key] || ""; // Add extra column data
         });
+
+        return rowData;
       });
 
-      // Step 2: Convert keys to array of { key, label } objects
-      const additionalColumns = Array.from(uniqueAdditionalColumns).map(
-        (key) => ({
-          key,
-          label: key
-            .replace(/_/g, " ") // Convert snake_case to space
-            .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space in camelCase
-            .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize each word
-        })
+      setData(processedData);
+    } else {
+      // Step 2: Fetch the bid data if `revised_bid` is true
+      const bidResponse = await axios.get(
+        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
       );
 
-      // Step 3: Set the additional columns in state
-      setAdditionalColumns(additionalColumns);
+      const bids = bidResponse.data.bids;
+      setBids(bids); // Store all bids in state
 
-      if (!revisedBid) {
-        setAdditionalColumns(additionalColumns);
-
-        const processedData = eventMaterials.map((item) => {
-          const flatExtraData = Object.entries(item.extra_data || {}).reduce(
-            (acc, [key, valObj]) => {
-              acc[key] = valObj?.value || "";
-              return acc;
-            },
-            {}
-          );
-          const bidMaterial = item.bid_materials?.[0];
-
-          // Map the row data
-          const rowData = {
-            pmsBrand: item.pms_brand_name,
-            pmsColour: item.pms_colour_name,
-            genericInfo: item.generic_info_name,
-            eventMaterialId: item.id,
-            descriptionOfItem: item.inventory_name,
-            quantity: item.quantity,
-            quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom_name || item.unit,
-            location: item.location,
-            rate: item.rate || "", // Placeholder if rate is not available
-            section: item.material_type,
-            subSection: item.inventory_sub_type,
-            amount: item.amount,
-            totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
-            attachment: null, // Placeholder for attachment
-            varient: item.material_type, // Use extracted material_type
-            extra_data: flatExtraData,
-            revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
-          };
-
-          // Add `extra` data dynamically to the row
-          additionalColumns.forEach((col) => {
-            rowData[col.key] = bidMaterial?.extra_data?.[col.key] || ""; // Add extra column data
-          });
-
-          return rowData;
-        });
-
-        const extra_data = {
-          "Payment Terms": {
-            value: "",
-            readonly: false,
-          },
-          "Warranty Clause": {
-            value: "",
-            readonly: false,
-          },
-          "Loading/Unloading": {
-            value: "",
-            readonly: false,
-          },
-        };
-        const extra_charges = {
-          freight_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-          gst_on_freight: {
-            value: "",
-            readonly: false,
-          },
-          other_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-          gst_on_other_charge: {
-            value: "",
-            readonly: false,
-          },
-          handling_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-          gst_on_handling_charge: {
-            value: "",
-            readonly: false,
-          },
-          realised_freight_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-          realised_other_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-          realised_handling_charge_amount: {
-            value: "",
-            readonly: false,
-          },
-        };
-
-        const formattedData = Object.entries(extra_data).map(
-          ([fieldName, fieldData]) => ({
-            label: fieldName || "",
-            value: { firstBid: fieldData.value || "", counterBid: "" },
-            isRequired: false, // or true, if you have that info elsewhere
-            isReadOnly: fieldData.readonly,
-            fieldOwner: null, // or fetch from another object if needed
-          })
-        );
-        const formattedCharges = Object.entries(extra_charges).map(
-          ([fieldName, fieldData]) => ({
-            label: fieldName || "",
-            value: fieldData || "",
-            isRequired: false, // or true, if you have that info elsewhere
-            isReadOnly: fieldData.readonly,
-            fieldOwner: null, // or fetch from another object if needed
-          })
-        );
-
-        setChargesData(formattedCharges);
-
-        setBidTemplate(formattedData);
-
-        setData(processedData);
-      } else {
-        // Step 2: Fetch the bid data if `revised_bid` is true
-        const bidResponse = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
-        );
-        setCounterData(
-          bidResponse.data?.bids[currentIndex]?.counter_bids.length
-        );
-        setCounterId(
-          bidResponse.data?.bids[currentIndex]?.counter_bids[currentIndex]?.id
-        );
-        setBidIds(bidResponse.data.bids[currentIndex].id);
-
-        const bids = bidResponse.data.bids;
-        setBids(bids);
-
-        setGrossTotal(bidResponse.data.bids[currentIndex].gross_total);
-
-        // console.log("bids", bids);
-
-        // Process only the first element of the bids array
-        if (bids.length > 0) {
-          // const firstBid = bids[0];
-
-          const processFreightData = (bid) => {
-            const counterBid = bid.counter_bids?.[currentIndex]; // Check if counter bid exists
-
-            // Process data with both first bid and counter bid
-            return [
-              {
-                label: "Freight Charge",
-                value: {
-                  firstBid: bid.freight_charge_amount || "",
-                  counterBid: counterBid?.freight_charge_amount || "",
-                },
-              },
-              {
-                label: "GST on Freight",
-                value: {
-                  firstBid: bid.gst_on_freight || "",
-                  counterBid: counterBid?.gst_on_freight || "",
-                },
-              },
-              {
-                label: "Realised Freight",
-                value: {
-                  firstBid: bid.realised_freight_charge_amount || "",
-                  counterBid: counterBid?.realised_freight_charge_amount || "",
-                },
-              },
-              {
-                label: "Warranty Clause *",
-                value: {
-                  firstBid: bid.warranty_clause || "",
-                  counterBid: counterBid?.warranty_clause || "",
-                },
-              },
-              {
-                label: "Payment Terms *",
-                value: {
-                  firstBid: bid.payment_terms || "",
-                  counterBid: counterBid?.payment_terms || "",
-                },
-              },
-              {
-                label: "Loading / Unloading *",
-                value: {
-                  firstBid: bid.loading_unloading_clause || "",
-                  counterBid: counterBid?.loading_unloading_clause || "",
-                },
-              },
-            ];
-          };
-
-          // Example usage
-          const firstBid = bids[currentIndex];
-          const freightData = processFreightData(firstBid);
-          // console.log("Processed Freight Data: ", freightData);
-          setFreightData(freightData);
-          const additionTaxCharges =
-            firstBid.bid_materials[0]?.extra?.addition_tax_charges || [];
-          const deductionTax =
-            firstBid.bid_materials[0]?.extra?.deduction_tax || [];
-
-          setExtraData({ additionTaxCharges, deductionTax });
-          const formattedData = Object.entries(firstBid.extra_data).map(
-            ([fieldName, fieldData]) => ({
-              label: fieldName,
-              value: { firstBid: fieldData.value || "", counterBid: "" },
-              isRequired: false, // or true, if you have that info elsewhere
-              isReadOnly: fieldData.readonly,
-              fieldOwner: null, // or fetch from another object if needed
-            })
-          );
-
-          const extra_charges = {
-            freight_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-            gst_on_freight: {
-              value: "",
-              readonly: false,
-            },
-            other_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-            gst_on_other_charge: {
-              value: "",
-              readonly: false,
-            },
-            handling_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-            gst_on_handling_charge: {
-              value: "",
-              readonly: false,
-            },
-            realised_freight_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-            realised_other_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-            realised_handling_charge_amount: {
-              value: "",
-              readonly: false,
-            },
-          };
-
-          // Filter only keys that exist in extra_charges
-          const filteredFirstBid = Object.entries(firstBid).filter(([key]) =>
-            Object.keys(extra_charges).includes(key)
-          );
-
-          // Map and format the filtered data
-          const formattedCharges = filteredFirstBid.map(
-            ([fieldName, fieldData]) => ({
-              label: fieldName,
-              value: {
-                firstBid: fieldData || "",
-              },
-            })
-          );
-
-          setBidTemplate(formattedData);
-          setChargesData(
-            bidResponse.data.bids[currentIndex].charges_with_taxes
-          );
-
-          const previousData = firstBid.bid_materials.map((material) => ({
-            bidId: material.bid_id,
-            eventMaterialId: material.event_material_id,
-            descriptionOfItem: material.material_name,
-            varient: material.material_type,
-            quantity: material.event_material.quantity,
-            quantityAvail: material.quantity_available,
-            price: material.price,
-            discount: material.discount,
-            section: material.event_material.material_type,
-            subSection: material.event_material.inventory_sub_type,
-            realisedDiscount: material.realised_discount,
-            gst: material.gst,
-            realisedGst: material.realised_gst,
-            total: material.total_amount,
-            unit:
-              material.event_material.uom_name ||
-              material.event_material.uom ||
-              material.event_material.unit,
-            location: material.event_material.location,
-            vendorRemark: material.vendor_remark,
-            landedAmount: material.landed_amount,
-            pmsBrand: material.event_material.pms_brand_name,
-            pmsColour: material.event_material.pms_colour_name,
-            genericInfo: material.event_material.generic_info_name,
-            extra_data: material.extra_data || {}, // Include extra_data
-            newField: formattedData || "", // Example of accessing a new field
-            addition_bid_material_tax_details:
-              material.addition_bid_material_tax_details,
-            deduction_bid_material_tax_details:
-              material.deduction_bid_material_tax_details,
-          }));
-
-          // Map updated data (counter_bid_materials)
-          // console.log("firstBid.bid_materials", firstBid);
-
-          const updatedData = firstBid.bid_materials
-            .map((material) => {
-              const counterMaterial =
-                material.counter_bid_materials?.[currentIndex];
-
-              setCurrentExtraData(material);
-              // console.log("counterMaterial :0----",material);
-
-              return counterMaterial
-                ? {
-                    bidId: counterMaterial.counter_bid_id,
-                    eventMaterialId: counterMaterial.event_material_id,
-                    descriptionOfItem: counterMaterial.material_name,
-                    varient: material.material_type,
-                    quantity: material.event_material.quantity,
-                    quantityAvail: counterMaterial.quantity_available,
-                    price: counterMaterial.price,
-                    section: material.event_material.material_type,
-                    subSection: material.event_material.inventory_sub_type,
-                    discount: counterMaterial.discount,
-                    realisedDiscount: counterMaterial.realised_discount,
-                    gst: counterMaterial.gst,
-                    realisedGst: counterMaterial.realised_gst,
-                    unit: material.unit,
-                    total: counterMaterial.total_amount,
-                    location: material.event_material.location,
-                    vendorRemark: counterMaterial.vendor_remark,
-                    landedAmount: counterMaterial.landed_amount,
-                    pmsBrand: material.pms_brand_name,
-                    pmsColour: material.pms_colour_name,
-                    genericInfo: material.generic_info_name,
-                    extra_data: material.event_material.extra_data || {}, // Include extra_data
-                    deduction_bid_material_tax_details:
-                      counterMaterial.deduction_bid_material_tax_details,
-                    addition_bid_material_tax_details:
-                      counterMaterial.addition_bid_material_tax_details,
-                  }
-                : null; // Handle missing counter bids
-            })
-            .filter(Boolean); // Remove null entries if counter bids are missing
-
-          setPreviousData(previousData);
-          setUpdatedData(updatedData);
-          setData(updatedData.length > 0 ? updatedData : previousData);
-
-          const bidIds = previousData.map((material) => material.bidId);
-
-          // Store the bidIds in a state
-          setBidIds(bidIds); // Use your state setter for the bidIds
-          // console.log("previous data", previousData);
-          // console.log("updated data", updatedData);
-
-          // // console.log("Mapped first bid data: ", mappedData);
-          // setData(mappedData); // Assuming you want to set this data to state
-        } else {
-          // console.log("No bids available");
-        }
+      // Set initial data for the first bid
+      if (bids.length > 0) {
+        updateDataForCurrentIndex(bids, 0); // Initialize with the first bid
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
     }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+// Function to update data based on the current index
+const updateDataForCurrentIndex = (bids, index) => {
+  const currentBid = bids[index];
+
+  if (!currentBid) return;
+
+  const processFreightData = (bid) => {
+    const counterBid = bid.counter_bids?.[currentIndex]; // Check if counter bid exists
+
+    // Process data with both first bid and counter bid
+    return [
+      {
+        label: "Freight Charge",
+        value: {
+          firstBid: bid.freight_charge_amount || "",
+          counterBid: counterBid?.freight_charge_amount || "",
+        },
+      },
+      {
+        label: "GST on Freight",
+        value: {
+          firstBid: bid.gst_on_freight || "",
+          counterBid: counterBid?.gst_on_freight || "",
+        },
+      },
+      {
+        label: "Realised Freight",
+        value: {
+          firstBid: bid.realised_freight_charge_amount || "",
+          counterBid: counterBid?.realised_freight_charge_amount || "",
+        },
+      },
+      {
+        label: "Warranty Clause *",
+        value: {
+          firstBid: bid.warranty_clause || "",
+          counterBid: counterBid?.warranty_clause || "",
+        },
+      },
+      {
+        label: "Payment Terms *",
+        value: {
+          firstBid: bid.payment_terms || "",
+          counterBid: counterBid?.payment_terms || "",
+        },
+      },
+      {
+        label: "Loading / Unloading *",
+        value: {
+          firstBid: bid.loading_unloading_clause || "",
+          counterBid: counterBid?.loading_unloading_clause || "",
+        },
+      },
+    ];
   };
 
-  useEffect(() => {
-    fetchEventData();
-  }, [eventId, currentIndex]);
+  const freightData = processFreightData(currentBid);
+  setFreightData(freightData);
+
+  const previousData = currentBid.bid_materials.map((material) => ({
+    bidId: material.bid_id,
+    eventMaterialId: material.event_material_id,
+    descriptionOfItem: material.material_name,
+    varient: material.material_type,
+    quantity: material.event_material.quantity,
+    quantityAvail: material.quantity_available,
+    price: material.price,
+    discount: material.discount,
+    section: material.event_material.material_type,
+    subSection: material.event_material.inventory_sub_type,
+    realisedDiscount: material.realised_discount,
+    gst: material.gst,
+    realisedGst: material.realised_gst,
+    total: material.total_amount,
+    unit:
+      material.event_material.uom_name ||
+      material.event_material.uom ||
+      material.event_material.unit,
+    location: material.event_material.location,
+    vendorRemark: material.vendor_remark,
+    landedAmount: material.landed_amount,
+    pmsBrand: material.event_material.pms_brand_name,
+    pmsColour: material.event_material.pms_colour_name,
+    genericInfo: material.event_material.generic_info_name,
+    extra_data: material.extra_data || {}, // Include extra_data
+  }));
+
+  setData(previousData);
+  setGrossTotal(currentBid.gross_total);
+  setCounterData(currentBid.counter_bids?.length || 0);
+  setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
+  setBidIds(currentBid.id);
+};
+
+// Effect to fetch data only once
+useEffect(() => {
+  fetchEventData();
+}, [eventId]);
+
+// Effect to update data when currentIndex changes
+useEffect(() => {
+  if (bids.length > 0) {
+    updateDataForCurrentIndex(bids, currentIndex);
+  }
+}, [currentIndex, bids]);
 
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
