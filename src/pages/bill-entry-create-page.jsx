@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "../components";
+import { Table, DownloadIcon } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { Modal } from "react-bootstrap";
 import { useState } from "react";
@@ -365,10 +365,90 @@ const BillEntryListSubPage = () => {
     return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
   };
 
+  const [attachModal, setattachModal] = useState(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const openattachModal = () => setattachModal(true);
+  const closeattachModal = () => setattachModal(false);
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+
+  const handleAttachDocument = () => {
+    if (newDocument.document_type && newDocument.attachments.length > 0) {
+      // Check if document type already exists
+      const existingDocIndex = documents.findIndex(
+        (doc) => doc.document_type === newDocument.document_type
+      );
+
+      if (existingDocIndex !== -1) {
+        // If document type exists, append new attachments
+        const updatedDocuments = [...documents];
+        updatedDocuments[existingDocIndex].attachments = [
+          ...updatedDocuments[existingDocIndex].attachments,
+          ...newDocument.attachments,
+        ];
+        setDocuments(updatedDocuments);
+      } else {
+        // If document type doesn't exist, add new document
+        setDocuments((prev) => [...prev, newDocument]);
+      }
+
+      // Reset new document state
+      setNewDocument({
+        document_type: "",
+        attachments: [],
+      });
+      closeattachModal();
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
+          {
+            filename: file.name,
+            content_type: file.type,
+            content: event.target.result,
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDocumentCountClick = (documentType) => {
+    const doc = documents.find((d) => d.document_type === documentType);
+    if (doc) {
+      setSelectedDocument(doc);
+      setviewDocumentModal(true);
+    }
+  };
+
   const [billDate, setBillDate] = useState("");
   const [billAmount, setBillAmount] = useState("");
   const [vendorRemark, setVendorRemark] = useState("");
   const [status, setStatus] = useState("draft");
+
+  const [formData, setFormData] = useState({
+    bill_no: "",
+    bill_date: "",
+    bill_amount: "",
+    vendor_remark: "",
+  });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleBillEntrySubmit = async () => {
     if (!selectedPO) {
@@ -376,26 +456,44 @@ const BillEntryListSubPage = () => {
       return;
     }
 
+    // const payload = {
+    //   bill_entry: {
+    //     purchase_order_id: selectedPO.id,
+    //     bill_no: "BILL-2025-001", // Replace with dynamic value if needed
+    //     bill_date: billDate, // Use dynamic value from input
+    //     bill_amount: parseFloat(billAmount), // Use dynamic value from input
+    //     status: status, // Use dynamic value from input
+    //     vendor_remark: vendorRemark, // Use dynamic value from input
+    //     // documents: [
+    //     //   {
+    //     //     document_type: "Invoice",
+    //     //     attachments: [
+    //     //       {
+    //     //         filename: "invoice.pdf", // Replace with dynamic value if needed
+    //     //         content_type: "application/pdf",
+    //     //         content: "data:application/pdf;base64,JVBERi0xLjQKJ..." // Replace with actual base64 content
+    //     //       }
+    //     //     ]
+    //     //   }
+    //     // ]
+    //   },
+    // };
     const payload = {
       bill_entry: {
         purchase_order_id: selectedPO.id,
-        bill_no: "BILL-2025-001", // Replace with dynamic value if needed
-        bill_date: billDate, // Use dynamic value from input
-        bill_amount: parseFloat(billAmount), // Use dynamic value from input
-        status: status, // Use dynamic value from input
-        vendor_remark: vendorRemark, // Use dynamic value from input
-        // documents: [
-        //   {
-        //     document_type: "Invoice",
-        //     attachments: [
-        //       {
-        //         filename: "invoice.pdf", // Replace with dynamic value if needed
-        //         content_type: "application/pdf",
-        //         content: "data:application/pdf;base64,JVBERi0xLjQKJ..." // Replace with actual base64 content
-        //       }
-        //     ]
-        //   }
-        // ]
+        bill_no: formData.bill_no,
+        bill_date: formData.bill_date,
+        bill_amount: parseFloat(formData.bill_amount),
+        status: "draft",
+        vendor_remark: formData.vendor_remark,
+        documents: documents.map((doc) => ({
+          document_type: doc.document_type,
+          attachments: doc.attachments.map((attachment) => ({
+            filename: attachment.filename,
+            content_type: attachment.content_type,
+            content: attachment.content,
+          })),
+        })),
       },
     };
 
@@ -412,190 +510,201 @@ const BillEntryListSubPage = () => {
     }
   };
   return (
-    <>
-      <div className="website-content">
-        <div className="module-data-section ms-2 mt-1">
-          <a href="">
-            Home &gt; Security &gt; Bill Entry List &gt; Bill Submission (For
-            Billing User)
-          </a>
-          <h5 className="mt-3"> Bill Submission (For Billing User)</h5>
-          <div className="row align-items-center container-fluid">
-            <div className="col-md-12 ">
-              <div className="card p-3 mt-2">
-                <div className="row">
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Vendor Name</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        value={selectedPO?.supplier_name || ""}
-                        disabled
-                      />
-                    </div>
+    <div className="website-content">
+      <div className="module-data-section ms-2 mt-1">
+        <a href="">
+          Home &gt; Security &gt; Bill Entry List &gt; Bill Submission (For
+          Billing User)
+        </a>
+        <h5 className="mt-3"> Bill Submission (For Billing User)</h5>
+        <div className="row align-items-center container-fluid">
+          <div className="col-md-12">
+            <div className="card p-3 mt-2">
+              <div className="row">
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Vendor Name</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder=""
+                      fdprocessedid="qv9ju9"
+                      value={selectedPO?.supplier_name || ""}
+                      disabled
+                    />
                   </div>
-                  {/* <div className="col-md-1">
-                    <p className="mt-2 text-decoration-underline">
-                      View Details
-                    </p>
-                  </div> */}
-
-                  {/* <div className="row"> */}
-                  <div className="col-md-2 ">
-                    <div className="form-group">
-                      <label>PO Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        value={selectedPO?.po_number || ""}
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
-                      />
-                    </div>
+                </div>
+                <div className="col-md-2">
+                  <div className="form-group">
+                    <label>PO Number</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={selectedPO?.po_number || ""}
+                      placeholder=""
+                      fdprocessedid="qv9ju9"
+                      disabled
+                    />
                   </div>
-                  <div
-                    className="col-md-1 pt-4"
-                    data-bs-toggle="modal"
-                    data-bs-target="#selectModal"
+                </div>
+                <div className="col-md-1 pt-4">
+                  <p
+                    className="mt-2 text-decoration-underline"
+                    onClick={openSelectPOModal}
                   >
-                    <p
-                      className="mt-2 text-decoration-underline"
-                      onClick={openSelectPOModal}
-                    >
-                      Select
-                    </p>
+                    Select
+                  </p>
+                </div>
+                <div className="col-md-3 ">
+                  <div className="form-group">
+                    <label>Bill Number</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      name="bill_no"
+                      value={formData.bill_no}
+                      onChange={handleInputChange}
+                      placeholder=""
+                      disabled
+                    />
                   </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Bill Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        disabled
-                      />
-                    </div>
+                </div>
+                <div className="col-md-3 ">
+                  <div className="form-group">
+                    <label>Bill Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      name="bill_date"
+                      value={formData.bill_date}
+                      onChange={handleInputChange}
+                      placeholder=""
+                    />
                   </div>
-                  <div className="col-md-3 ">
-                    <div className="form-group">
-                      <label>Bill Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        value={billDate}
-                        onChange={(e) => setBillDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                </div>
 
-                  {/* <div className="row"> */}
-                  <div className="col-md-3 mt-3">
-                    <div className="form-group">
-                      <label>Bill Amount</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        value={billAmount}
-                        onChange={(e) => setBillAmount(e.target.value)}
-                      />
-                    </div>
+                <div className="col-md-3 mt-4 ">
+                  <div className="form-group">
+                    <label>Bill Amount</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      name="bill_amount"
+                      value={formData.bill_amount}
+                      onChange={handleInputChange}
+                      placeholder=""
+                    />
                   </div>
-                  <div className="col-md-3 mt-3">
-                    <div className="form-group">
-                      <label>Vendor Remark</label>
-                      <input
-                        className="form-control"
-                        rows={2}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                        value={vendorRemark}
-                        onChange={(e) => setVendorRemark(e.target.value)}
-                      />
-                    </div>
+                </div>
+
+                {/* <div className="row"> */}
+                <div className="col-md-3 mt-4">
+                  <div className="form-group">
+                    <label>Vendor Remark</label>
+                    <textarea
+                      className="form-control"
+                      rows={1}
+                      name="vendor_remark"
+                      value={formData.vendor_remark}
+                      onChange={handleInputChange}
+                      placeholder="Enter ..."
+                    />
+                  </div>
+                </div>
+                {/* </div> */}
+                {/* <div className="row"> */}
+                <div className="col-md-3 mt-4">
+                  <div className="form-group">
+                    <label>Remark</label>
+                    <textarea
+                      className="form-control"
+                      rows={1}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                    />
                   </div>
                   {/* </div> */}
-                  {/* <div className="row"> */}
-                  <div className="col-md-3 mt-3">
-                    <div className="form-group">
-                      <label>Remark</label>
-                      <input
-                        className="form-control"
-                        rows={2}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                      />
-                    </div>
-                    {/* </div> */}
-                  </div>
-                  {/* <div className="row"> */}
-                  <div className="col-md-3 mt-3">
-                    <div className="form-group">
-                      <label>Comments</label>
-                      <input
-                        className="form-control"
-                        rows={2}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                      />
-                    </div>
-                    {/* </div> */}
+                </div>
+                {/* <div className="row"> */}
+                <div className="col-md-3 mt-4">
+                  <div className="form-group">
+                    <label>Comments</label>
+                    <textarea
+                      className="form-control"
+                      rows={1}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                    />
                   </div>
                   {/* </div> */}
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="mb-0">Assigned To user</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                  // value={formData.status || "draft"}
-                  // onChange={(e) =>
-                  //   setFormData((prev) => ({
-                  //     ...prev,
-                  //     status: e.target.value,
-                  //   }))
-                  // }
-                >
-                  <option value="draft">Draft</option>
-                  <option value="verified">Verified</option>
-                  <option value="approved">Approved</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="proceed">Proceed</option>
-                </select>
+              {/* </div> */}
+              <div className="d-flex justify-content-between mt-5">
+                <h5 className=" ">Supporting Documents</h5>
+                <div className="card-tools d-flex">
+                  <div>
+                    <button
+                      className="purple-btn2 me-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#RevisionModal"
+                      onClick={openattachModal}
+                    >
+                      Attach Other
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center">
-                <p className="mb-0">Status</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                  // value={formData.status || "draft"}
-                  // onChange={(e) =>
-                  //   setFormData((prev) => ({
-                  //     ...prev,
-                  //     status: e.target.value,
-                  //   }))
-                  // }
-                >
-                  {/* <select
-                  className="form-select"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                > */}
-                  <option value="draft">Draft</option>
-                  <option value="verified">Verified</option>
-                  <option value="approved">Approved</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="proceed">Proceed</option>
-                </select>
+              <div className="tbl-container mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">Sr. No.</th>
+                      <th className="text-start">Document Name</th>
+                      <th className="text-start">No. of Documents</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="text-center">
+                          No documents added yet
+                        </td>
+                      </tr>
+                    ) : (
+                      documents.map((doc, index) => (
+                        <tr key={index}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td
+                            className="text-start"
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              handleDocumentCountClick(doc.document_type)
+                            }
+                          >
+                            {doc.attachments.length}
+                          </td>
+                          <td className="text-start">
+                            <button
+                              className="text-decoration-underline border-0 bg-transparent"
+                              onClick={() => {
+                                setNewDocument((prev) => ({
+                                  ...prev,
+                                  document_type: doc.document_type,
+                                }));
+                                openattachModal();
+                              }}
+                            >
+                              Attach
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
               <div className="row mt-2 justify-content-center">
                 <div className="col-md-2">
@@ -618,6 +727,212 @@ const BillEntryListSubPage = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={() => {
+          setviewDocumentModal(false);
+          setSelectedDocument(null);
+        }}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5>Latest Documents</h5>
+              <div className="card-tools d-flex">
+                <button
+                  className="purple-btn2 rounded-3"
+                  onClick={() => {
+                    setviewDocumentModal(false);
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: selectedDocument?.document_type,
+                    }));
+                    openattachModal();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td>vendor user</td>
+                      <td>
+                        <button
+                          className="border-0 bg-transparent"
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `data:${attachment.content_type};base64,${attachment.content}`;
+                            link.download = attachment.filename;
+                            link.click();
+                          }}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-3 me-2">
+              <h5>Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td>vendor user</td>
+                      <td>
+                        <button
+                          className="border-0 bg-transparent"
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `data:${attachment.content_type};base64,${attachment.content}`;
+                            link.download = attachment.filename;
+                            link.click();
+                          }}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => {
+                  setviewDocumentModal(false);
+                  setSelectedDocument(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Other Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newDocument.document_type}
+                  onChange={(e) =>
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter document name"
+                />
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
       <Modal
         centered
         size="xl"
@@ -625,7 +940,6 @@ const BillEntryListSubPage = () => {
         onHide={closeSelectPOModal}
         backdrop="static"
         keyboard={false}
-        // className="modal-centered-custom"
       >
         <Modal.Header closeButton>
           <h5>Select PO</h5>
@@ -738,22 +1052,6 @@ const BillEntryListSubPage = () => {
             </div>
           </div>
           <div className="row mt-3 justify-content-center">
-            {/* <div className="col-md-12 d-flex justify-content-end gap-2">
-                          <button
-                            className="btn btn-secondary"
-                            onClick={handleReset}
-                            disabled={loading}
-                          >
-                            Reset
-                          </button>
-                          <button
-                            className="btn btn-primary"
-                            onClick={handleSearch}
-                            disabled={loading}
-                          >
-                            Search
-                          </button>
-                        </div> */}
             <div className="col-md-3">
               <button className="purple-btn2 w-100" onClick={handleSearch}>
                 Search
@@ -778,7 +1076,6 @@ const BillEntryListSubPage = () => {
                           onChange={handleSelectAll}
                         />
                       </th>
-                      {/* <th></th> */}
                       <th className="text-start">Sr.No</th>
                       <th className="text-start">PO Number</th>
                       <th className="text-start">PO Date</th>
@@ -924,7 +1221,7 @@ const BillEntryListSubPage = () => {
           </div>
         </Modal.Body>
       </Modal>
-    </>
+    </div>
   );
 };
 

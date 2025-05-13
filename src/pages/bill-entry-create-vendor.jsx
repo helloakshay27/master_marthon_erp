@@ -22,9 +22,7 @@ const BillEntryCreateVendorPage = () => {
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
 
-  const openviewDocumentModal = () => setviewDocumentModal(true);
-  const closeviewDocumentModal = () => setviewDocumentModal(false);
-
+  
   const [selectPOModal, setselectPOModal] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
