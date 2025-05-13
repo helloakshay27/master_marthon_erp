@@ -148,18 +148,41 @@ export default function OverviewTab({
 
   const calculateOrderDuration = (start, end) => {
     const startTime = new Date(start);
-    const endTime = new Date(end);
-    const duration = new Date(endTime - startTime);
-    const hours = duration.getUTCHours();
-    const minutes = duration.getUTCMinutes();
-    const seconds = duration.getUTCSeconds();
-    return `${hours}h ${minutes}m ${seconds}s`;
-  };
+    const endTime = end ? new Date(end) : null; // Handle undefined endTime
+
+    console.log("Start Time:", startTime);
+    console.log("End Time:", endTime);
+
+    // Validate startTime and endTime
+    if (isNaN(startTime.getTime()) || !endTime || isNaN(endTime.getTime())) {
+        return "Invalid duration: Invalid date format";
+    }
+
+    // Check if endTime is earlier than startTime
+    if (endTime < startTime) {
+        console.warn("End time is earlier than start time. Please check the data source.");
+        return "Invalid duration: End time is earlier than start time";
+    }
+
+    const durationInMs = endTime - startTime;
+
+    const days = Math.floor(durationInMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((durationInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((durationInMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((durationInMs % (1000 * 60)) / 1000);
+
+    // Format the duration for better UX
+    const parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+
+    return parts.length > 0 ? parts.join(" ") : "0s";
+};
 
   const startTime = overviewData?.event_schedule?.start_time;
 
-  const endTime = overviewData?.event_schedule?.end_time_duration;
-
+  const endTime = overviewData?.event_schedule?.end_time;
   // const OrderEndTime = new Date(endTime);
   const formatDocDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };

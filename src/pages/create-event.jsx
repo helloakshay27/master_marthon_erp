@@ -1660,7 +1660,7 @@ export default function CreateEvent() {
                 <>
                   <form className="p-2">
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">POC - Full Name</label>
+                      <label className="po-fontBold">POC - Full Name <span style={{ color: "red" }}>*</span> </label>
                       <input
                         className="form-control"
                         type="text"
@@ -1671,7 +1671,7 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Email</label>
+                      <label className="po-fontBold">Email <span style={{ color: "red" }}>*</span></label>
                       <input
                         className="form-control"
                         type="email"
@@ -1682,7 +1682,7 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Phone Number</label>
+                      <label className="po-fontBold">Phone Number <span style={{ color: "red" }}>*</span></label>
                       <input
                         className="form-control"
                         type="text"
@@ -1733,7 +1733,7 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Company</label>
+                      <label className="po-fontBold">Company <span style={{ color: "red" }}>*</span></label>
                       <SelectBox
                         options={companyList}
                         value={companyList.find(
@@ -1749,7 +1749,7 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Organization</label>
+                      <label className="po-fontBold">Organization <span style={{ color: "red" }}>*</span></label>
                       <input
                         className="form-control"
                         type="text"
