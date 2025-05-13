@@ -168,9 +168,9 @@ const BillVerificationList = () => {
       const siteId = selectedSite?.value || "";
       const search = searchKeyword || "";
       console.log("ids filter:", companyId, projectId, siteId)
-      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_company_id_eq]=${companyId}&q[purchase_order_project_id_eq]=${projectId}&q[purchase_order_site_id_eq]=${siteId}`;
   
-      // console.log("url:",url)
+      console.log("url:",url)
       axios
         .get(url)
         .then((response) => {
@@ -204,13 +204,13 @@ const BillVerificationList = () => {
     };
   
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  // if (error) {
+  //   return <p>{error}</p>;
+  // }
 
 
   return (
@@ -651,6 +651,22 @@ const BillVerificationList = () => {
           </div>
         </div>
       </div>
+
+      {loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>Loading...</p>
+                      </div>
+                    )}
 
       {/* modal start */}
       <Modal

@@ -84,7 +84,19 @@ const BillVerificationDetails = () => {
   ];
 
   if (!billDetails) {
-    return <div>Loading...</div>;
+    return <div className="loader-container">
+    <div className="lds-ring">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <p>loading..</p>
+  </div>;
   }
 
   const handleStatusChange = (selectedOption) => {
@@ -207,7 +219,7 @@ console.log("payload update:",payload)
   return (
  <>
   <div className="website-content overflow-auto">
-  <div className="module-data-section ms-2 mt-2 ">
+  <div className="module-data-section ms-2 mt-3 ">
     <a href="">
       Home &gt; Billing &gt; Bill Verification List &gt; Update Bill Information
       (Details)
@@ -227,7 +239,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.company_name || ""}
+                    {billDetails?.company_name || ""}
                   </label>
                 </div>
               </div>
@@ -240,7 +252,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.project_name || ""}
+                    {billDetails?.project_name || ""}
                   </label>
                 </div>
               </div>
@@ -253,7 +265,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.site_name || ""}
+                    {billDetails?.site_name || ""}
                   </label>
                 </div>
               </div>
@@ -266,7 +278,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.pms_supplier || ""}
+                    {billDetails?.pms_supplier || ""}
                   </label>
                 </div>
               </div>
@@ -279,7 +291,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.po_number || ""}
+                    {billDetails?.po_number || ""}
                   </label>
                 </div>
               </div>
@@ -292,7 +304,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.bill_no || ""}
+                    {billDetails?.bill_no || ""}
                   </label>
                 </div>
               </div>
@@ -318,7 +330,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.bill_date || ""}
+                    {billDetails?.bill_date || ""}
                   </label>
                 </div>
               </div>
@@ -357,7 +369,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.bill_amount || ""}
+                    {billDetails?.bill_amount || ""}
                   </label>
                 </div>
               </div>
@@ -370,7 +382,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.bill_date || ""}
+                    {billDetails?.bill_date || ""}
                   </label>
                 </div>
               </div>
@@ -383,7 +395,7 @@ console.log("payload update:",payload)
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {billDetails.vendor_remark || ""}
+                    {billDetails?.vendor_remark || ""}
                   </label>
                 </div>
               </div>
@@ -424,14 +436,14 @@ console.log("payload update:",payload)
                       </tr>
                     </thead>
                     <tbody>
-                      {documents.length === 0 ? (
+                      {documents?.length === 0 ? (
                         <tr>
                           <td colSpan="4" className="text-center">
                             No documents added yet
                           </td>
                         </tr>
                       ) : (
-                        documents.map((doc, index) => (
+                        documents?.map((doc, index) => (
                           <tr key={index}>
                             <td className="text-start">{index + 1}</td>
                             <td className="text-start">{doc.document_type}</td>
@@ -598,7 +610,7 @@ console.log("payload update:",payload)
   </div>
 </div>
  {/* Loader */}
-{loading && (
+{/* {loading && (
 <div id="full-screen-loader" className="full-screen-loader">
 <div className="loader-container">
   <img
@@ -609,7 +621,24 @@ console.log("payload update:",payload)
   <h5>Please wait</h5>
 </div>
 </div>
-      )}
+      )} */}
+
+
+{loading && (
+                      <div className="loader-container">
+                        <div className="lds-ring">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                        <p>Updating...</p>
+                      </div>
+                    )}
 
 {/* attach document */}
 

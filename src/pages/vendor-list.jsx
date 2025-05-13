@@ -1065,14 +1065,14 @@ export default function VendorListPage() {
                                   )}
                                 </td>
                                 <td>{event.created_by || "N/A"}</td>
-                                <td>
+                                <td style={{textTransform:'capitalize'}}>
                                   {event.event_type_detail?.event_type || "N/A"}
                                 </td>
                                 <td>
                                   {event.event_type_detail?.event_configuration ||
                                     "N/A"}
                                 </td>
-                                <td>{event.status || "N/A"}</td>
+                                <td style={{textTransform:'capitalize'}}>{event.status || "N/A"}</td>
                                 <td>
                                   <button
                                     className="btn "
