@@ -69,7 +69,12 @@ export default function ResponseTab({ isCounterOffer }) {
       }
 
       const data = await response.json();
-      setParticipants(data?.event_vendors || []);
+      setParticipants(
+        (data?.event_vendors || []).map((participant) => ({
+          ...participant,
+          selected: false,
+        }))
+      );
       setTotalReminderPages(data?.pagination?.total_pages || 1);
     } catch (err) {
       setError(err.message);
@@ -456,21 +461,54 @@ export default function ResponseTab({ isCounterOffer }) {
     }
   };
 
-  const handleSendReminder = async (vendorId, index) => {
+  const handleSendReminder = async (vendorIds, isSelectAll = false) => {
+    setLoading(true); // Show loader
     try {
-      const response = await axios.get(
-        `${baseURL}rfq/events/${eventId}/event_vendors/${vendorId}/send_reminder?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
+      const url = isSelectAll
+        ? `${baseURL}rfq/events/${eventId}/event_vendors/vendor_reminder?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&select_all=true`
+        : `${baseURL}rfq/events/${eventId}/event_vendors/${vendorIds[0]}/send_reminder?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
-      if (response.status === 200) {
-        // Mark the button as clicked
-        participants[index].clicked = true;
-        setShowDeliveryStatsModal((prev) => !prev); // Trigger re-render
-        toast.success("Reminder sent successfully!"); // Success message
+      const config = isSelectAll
+        ? { headers: { Accept: "application/json" } }
+        : {};
+
+      const response = await axios.get(url, config);
+
+      if (response.status === 200 || response.status === 204) {
+        if (isSelectAll) {
+          toast.success("Reminders sent successfully to all vendors!");
+          setParticipants((prev) =>
+            prev.map((participant) => ({
+              ...participant,
+              clicked: true,
+            }))
+          );
+          setShowDeliveryStatsModal(false);
+        } else {
+          toast.success("Reminder sent successfully!");
+          setParticipants((prev) =>
+            prev.map((participant) =>
+              participant.id === vendorIds[0]
+                ? { ...participant, clicked: true }
+                : participant
+            )
+          );
+        }
       }
     } catch (error) {
       console.error("Error sending reminder:", error);
-      toast.error("Failed to send reminder. Please try again."); // Failure message
+      toast.error("Failed to send reminder. Please try again.");
+    } finally {
+      setLoading(false); // Hide loader
+    }
+  };
+
+  const handleSendReminderToAll = async () => {
+    const allVendorIds = participants.map((participant) => participant.id);
+    if (allVendorIds.length > 0) {
+      await handleSendReminder(allVendorIds, true);
+    } else {
+      toast.info("No vendors available to send reminders.");
     }
   };
 
@@ -537,6 +575,24 @@ export default function ResponseTab({ isCounterOffer }) {
         <ResponseVendor />
       ) : (
         <FullScreen handle={handle}>
+          {loading ? (
+            <>
+            <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Loading...</p>
+              </div>
+            </>
+          ) : (
+
           <div className="">
             <div
               style={{
@@ -915,66 +971,65 @@ export default function ResponseTab({ isCounterOffer }) {
                 })()}
 
                 {(() => {
-  const extractedChargeData =
-    eventVendors?.flatMap((vendor) => {
-      const charges = vendor?.bids?.[0]?.extra?.charges || [];
-      return charges.map((charge) => ({
-        charge_id: charge.charge_id,
-        amount: Number(charge.amount || 0),
-        realisedAmount: Number(charge.realised_amount || 0),
-        taxDetails: charge.taxes_and_charges || [],
-      }));
-    }) || [];
+                  const extractedChargeData =
+                    eventVendors?.flatMap((vendor) => {
+                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
+                      return charges.map((charge) => ({
+                        charge_id: charge.charge_id,
+                        amount: Number(charge.amount || 0),
+                        realisedAmount: Number(charge.realised_amount || 0),
+                        taxDetails: charge.taxes_and_charges || [],
+                      }));
+                    }) || [];
 
-  const handleChargesTaxModalOpen = (taxDetails) => {
-    setShowChargesTaxModal(true);
-    setChargesTaxModalData(taxDetails);
-  };
+                  const handleChargesTaxModalOpen = (taxDetails) => {
+                    setShowChargesTaxModal(true);
+                    setChargesTaxModalData(taxDetails);
+                  };
 
-  const renderAccordion = (title, chargeId) => {
-    const data = extractedChargeData.filter(
-      (c) => c.charge_id === chargeId
-    );
+                  const renderAccordion = (title, chargeId) => {
+                    const data = extractedChargeData.filter(
+                      (c) => c.charge_id === chargeId
+                    );
 
-    if (data.length === 0) return null;
+                    if (data.length === 0) return null;
 
-    return (
-      <Accordion
-        key={chargeId}
-        title={title}
-        isDefault={true}
-        tableColumn={[
-          { label: "Amount", key: "amount" },
-          { label: "Realised Amount", key: "realisedAmount" },
-          { label: "Tax Details", key: "taxDetails" },
-        ]}
-        tableData={data.map((charge) => ({
-          amount: charge.amount || "-",
-          realisedAmount: charge.realisedAmount || "-",
-          taxDetails: (
-            <button
-              className="purple-btn2"
-              onClick={() =>
-                handleChargesTaxModalOpen(charge.taxDetails)
-              }
-            >
-              View Tax
-            </button>
-          ),
-        }))}
-      />
-    );
-  };
+                    return (
+                      <Accordion
+                        key={chargeId}
+                        title={title}
+                        isDefault={true}
+                        tableColumn={[
+                          { label: "Amount", key: "amount" },
+                          { label: "Realised Amount", key: "realisedAmount" },
+                          { label: "Tax Details", key: "taxDetails" },
+                        ]}
+                        tableData={data.map((charge) => ({
+                          amount: charge.amount || "-",
+                          realisedAmount: charge.realisedAmount || "-",
+                          taxDetails: (
+                            <button
+                              className="purple-btn2"
+                              onClick={() =>
+                                handleChargesTaxModalOpen(charge.taxDetails)
+                              }
+                            >
+                              View Tax
+                            </button>
+                          ),
+                        }))}
+                      />
+                    );
+                  };
 
-  const accordions = [
-    renderAccordion("Handling Charges", 2),
-    renderAccordion("Other Charges", 4),
-    renderAccordion("Freight Charges", 5),
-  ].filter(Boolean); // remove nulls
+                  const accordions = [
+                    renderAccordion("Handling Charges", 2),
+                    renderAccordion("Other Charges", 4),
+                    renderAccordion("Freight Charges", 5),
+                  ].filter(Boolean); // remove nulls
 
-  return accordions.length > 0 ? <>{accordions}</> : null;
-})()}
-
+                  return accordions.length > 0 ? <>{accordions}</> : null;
+                })()}
               </>
             ) : (
               <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
@@ -982,6 +1037,7 @@ export default function ResponseTab({ isCounterOffer }) {
               </h4>
             )}
           </div>
+          )}
         </FullScreen>
       )}
 
@@ -1340,13 +1396,23 @@ export default function ResponseTab({ isCounterOffer }) {
         modalType={true}
       >
         <div>
+          <div className="d-flex justify-content-end mb-3">
+            <button
+              className="purple-btn1"
+              onClick={handleSendReminderToAll}
+              disabled={loading} // Disable button during API call
+            >
+              Send Reminder to All
+            </button>
+          </div>
           {participants?.map((item, index) => (
             <div key={item.id}>
               <div className="d-flex justify-content-between align-items-center">
                 <p className="mb-0">{item.full_name}</p>
                 <button
                   className={item.clicked ? "purple-btn2" : "purple-btn1"} // Toggle class
-                  onClick={() => handleSendReminder(item.id, index)} // Call API on click
+                  onClick={() => handleSendReminder([item.id])} // Call API on click
+                  disabled={loading} // Disable button during API call
                 >
                   {item.clicked ? "Reminder Sent" : "Send Reminder"}
                 </button>

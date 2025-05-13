@@ -117,20 +117,15 @@ const EventScheduleModal = ({
 
   const handleEndTimeChange = (e) => {
     const selectedTime = e.target.value;
-    const currentTime = new Date();
-    currentTime.setMinutes(currentTime.getMinutes() + 30);
-    const minEndTime = currentTime.toTimeString().split(" ")[0].substring(0, 5);
-
-    const deliveryDateTime = new Date(`${formattedDeliveryDate}T23:59`);
     const selectedDateTime = new Date(`${endDate}T${selectedTime}`);
+    const laterDateTime = new Date(`${laterDate}T${laterTime}`);
 
-    // if (endDate === currentTime.toISOString().split("T")[0] && selectedTime < minEndTime) {
-    //   toast.warning("End time must be at least 30 minutes after the current time.");
-    // } else if (selectedDateTime > deliveryDateTime) {
-    //   toast.warning("End time cannot exceed the delivery date and time.");
-    // } else {
+    if (endDate === laterDate && selectedDateTime <= laterDateTime) {
+      toast.info("End time must be after the selected later date and time.");
+      return;
+    }
+
     setEndTime(selectedTime);
-    // }
   };
 
   const handleEvaluationChange = (value) => {
@@ -216,6 +211,7 @@ const EventScheduleModal = ({
                   type="date"
                   className="form-control"
                   value={laterDate}
+                  min={new Date().toISOString().split("T")[0]} // Restrict to today or future dates
                   onChange={(e) => setLaterDate(e.target.value)}
                 />
               </div>
@@ -224,6 +220,11 @@ const EventScheduleModal = ({
                   type="time"
                   className="form-control"
                   value={laterTime}
+                  min={
+                    laterDate === new Date().toISOString().split("T")[0]
+                      ? new Date().toTimeString().split(" ")[0].substring(0, 5) // Restrict to current or future time if today
+                      : undefined
+                  }
                   onChange={(e) => setLaterTime(e.target.value)}
                 />
               </div>
@@ -240,7 +241,7 @@ const EventScheduleModal = ({
               className="form-control"
               value={endDate}
               onChange={handleEndDateChange}
-              min={new Date().toISOString().split("T")[0]}
+              min={laterDate || new Date().toISOString().split("T")[0]} // Restrict to laterDate or today
               max={formattedDeliveryDate}
             />
           </div>
@@ -250,6 +251,11 @@ const EventScheduleModal = ({
               className="form-control"
               value={endTime}
               onChange={handleEndTimeChange}
+              min={
+                endDate === laterDate
+                  ? laterTime || "00:00" // Restrict to laterTime if endDate matches laterDate
+                  : undefined
+              }
             />
           </div>
         </div>

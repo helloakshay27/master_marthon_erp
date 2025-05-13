@@ -3463,7 +3463,7 @@ export default function VendorDetails() {
                                   <table className="w-100 table">
                                     <thead>
                                       <tr>
-                                        <th className="text-start">Sr.No.</th>
+                                        {/* <th className="text-start">Sr.No.</th> */}
                                         <th className="text-start">
                                           Buyer Name
                                         </th>
@@ -3473,12 +3473,12 @@ export default function VendorDetails() {
                                     </thead>
                                     <tbody>
                                       <tr>
-                                        <td
+                                        {/* <td
                                           className="text-start"
                                           // style={{ color: "#777777" }}
                                         >
                                           1
-                                        </td>
+                                        </td> */}
                                         <td
                                           className="text-start"
                                           // style={{ color: "#777777" }}
@@ -3883,6 +3883,7 @@ export default function VendorDetails() {
                                           overflow: "hidden",
                                           textOverflow: "ellipsis",
                                           whiteSpace: "normal",
+                                          textTransform: "capitalize",
                                         }}
                                       >
                                         {item.value}
@@ -4303,6 +4304,7 @@ export default function VendorDetails() {
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                                 borderColor: "#ffbb96",
+                                textTransform: "capitalize",
                               }}
                             >
                               {data1?.event_type_detail?.event_type}

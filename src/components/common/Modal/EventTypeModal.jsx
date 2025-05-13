@@ -676,18 +676,20 @@ const EventTypeModal = ({
                 </div>
               </div>
             )}
-            <div className="d-flex align-items-center gap-2 my-3">
-              <input
-                type="checkbox"
-                checked={dynamicExtension[1]}
-                onChange={(e) =>
-                  handleDynamicExtensionChange(1, e.target.checked)
-                }
-              />
-              <div className="ant-col ant-form-item-label">
-                Dynamic Event Extension
+            {localEventType === "auction" && (
+              <div className="d-flex align-items-center gap-2 my-3">
+                <input
+                  type="checkbox"
+                  checked={dynamicExtension[1]}
+                  onChange={(e) =>
+                    handleDynamicExtensionChange(1, e.target.checked)
+                  }
+                />
+                <div className="ant-col ant-form-item-label">
+                  Dynamic Event Extension
+                </div>
               </div>
-            </div>
+            )}
             {dynamicExtension[1] && (
               <>
                 <label htmlFor="Datepicker">
