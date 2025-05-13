@@ -360,12 +360,12 @@ export default function EditEvent() {
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
-            name: vendor.full_name || vendor.organization_name || "N/A",
-            email: vendor.email || "N/A",
-            organisation: vendor.organization_name || "N/A",
-            phone: vendor.contact_number || vendor.mobile || "N/A",
-            city: vendor.city_id || "N/A",
-            tags: vendor.tags || "N/A",
+            name: vendor.full_name || vendor.organization_name || "-",
+            email: vendor.email || "-",
+            organisation: vendor.organization_name || "-",
+            phone: vendor.contact_number || vendor.mobile || "-",
+            city: vendor.city_id || "-",
+            tags: vendor.tags || "-",
             pms_inventory_type_id: vendor.pms_inventory_type_id,
           }));
 
@@ -402,12 +402,12 @@ export default function EditEvent() {
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
-            name: vendor.full_name || vendor.organization_name || "N/A",
-            email: vendor.email || "N/A",
-            organisation: vendor.organization_name || "N/A",
-            phone: vendor.contact_number || vendor.mobile || "N/A",
-            city: vendor.city_id || "N/A",
-            tags: vendor.tags || "N/A",
+            name: vendor.full_name || vendor.organization_name || "-",
+            email: vendor.email || "-",
+            organisation: vendor.organization_name || "-",
+            phone: vendor.contact_number || vendor.mobile || "-",
+            city: vendor.city_id || "-",
+            tags: vendor.tags || "-",
           }));
 
           totalPages = data?.pagination?.total_pages || 1;
@@ -1232,12 +1232,12 @@ export default function EditEvent() {
     if (eventDetails?.event_vendors?.length > 0) {
       const existingVendors = eventDetails.event_vendors.map((vendor) => ({
         id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "N/A",
-        email: vendor.email || "N/A",
-        organisation: vendor.organization_name || "N/A",
-        phone: vendor.contact_number || vendor.mobile || "N/A",
-        city: vendor.city_id || "N/A",
-        tags: vendor.tags || "N/A",
+        name: vendor.full_name || vendor.organization_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
         pms_supplier_id: vendor.pms_supplier_id,
       }));
     }
@@ -1675,10 +1675,10 @@ export default function EditEvent() {
                         }
                         return (
                           <tr key={idx}>
-                            <td>{item.comment || "N/A"}</td>
-                            <td>{item.remark || "N/A"}</td>
-                            <td>{item.status || "N/A"}</td>
-                            <td>{item.created_by_name || "N/A"}</td>
+                            <td>{item.comment || "-"}</td>
+                            <td>{item.remark || "-"}</td>
+                            <td>{item.status || "-"}</td>
+                            <td>{item.created_by_name || "-"}</td>
                           </tr>
                         );
                       })}
@@ -1801,12 +1801,12 @@ export default function EditEvent() {
                                   const vendors = Array.isArray(data.vendors) ? data.vendors : [];
                                   const formattedData = vendors.map((vendor) => ({
                                     id: vendor.id,
-                                    name: vendor.full_name || vendor.organization_name || "N/A",
-                                    email: vendor.email || "N/A",
-                                    organisation: vendor.organization_name || "N/A",
-                                    phone: vendor.contact_number || vendor.mobile || "N/A",
-                                    city: vendor.city_id || "N/A",
-                                    tags: vendor.tags || "N/A",
+                                    name: vendor.full_name || vendor.organization_name || "-",
+                                    email: vendor.email || "-",
+                                    organisation: vendor.organization_name || "-",
+                                    phone: vendor.contact_number || vendor.mobile || "-",
+                                    city: vendor.city_id || "-",
+                                    tags: vendor.tags || "-",
                                     pms_inventory_type_id: vendor.pms_inventory_type_id,
                                   }));
                                   setFilteredTableData(formattedData); // Reset to the full data
@@ -1846,16 +1846,16 @@ export default function EditEvent() {
                                       name:
                                         vendor.full_name ||
                                         vendor.organization_name ||
-                                        "N/A",
-                                      email: vendor.email || "N/A",
+                                        "-",
+                                      email: vendor.email || "-",
                                       organisation:
-                                        vendor.organization_name || "N/A",
+                                        vendor.organization_name || "-",
                                       phone:
                                         vendor.contact_number ||
                                         vendor.mobile ||
-                                        "N/A",
-                                      city: vendor.city_id || "N/A",
-                                      tags: vendor.tags || "N/A",
+                                        "-",
+                                      city: vendor.city_id || "-",
+                                      tags: vendor.tags || "-",
                                       pms_inventory_type_id:
                                         vendor.pms_inventory_type_id,
                                     })
@@ -1878,16 +1878,16 @@ export default function EditEvent() {
                                       name:
                                         vendor.full_name ||
                                         vendor.organization_name ||
-                                        "N/A",
-                                      email: vendor.email || "N/A",
+                                        "-",
+                                      email: vendor.email || "-",
                                       organisation:
-                                        vendor.organization_name || "N/A",
+                                        vendor.organization_name || "-",
                                       phone:
                                         vendor.contact_number ||
                                         vendor.mobile ||
-                                        "N/A",
-                                      city: vendor.city_id || "N/A",
-                                      tags: vendor.tags || "N/A",
+                                        "-",
+                                      city: vendor.city_id || "-",
+                                      tags: vendor.tags || "-",
                                       pms_inventory_type_id:
                                         vendor.pms_inventory_type_id,
                                     })

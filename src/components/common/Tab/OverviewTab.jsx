@@ -243,7 +243,7 @@ export default function OverviewTab({
       return Object.fromEntries(
         Object.entries(log).map(([key, value]) => [
           key,
-          value === null ? "N/A" : value,
+          value === null ? "-" : value,
         ])
       );
     });
