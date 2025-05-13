@@ -13,14 +13,13 @@ import { useNavigate } from "react-router-dom";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
-  const [selectPOModal, setselectPOModal] = useState(false);
+
   const [selectGRNModal, setselectGRNModal] = useState(false);
-  const [attachOneModal, setattachOneModal] = useState(false);
-  const [attachTwoModal, setattachTwoModal] = useState(false);
+
   const [attachThreeModal, setattachThreeModal] = useState(false);
   const navigate = useNavigate();
-  const [creditNoteAmount, setCreditNoteAmount] = useState(null);
 
+  // calculation for tax details table
   const [rows, setRows] = useState([
     {
       id: 1,
@@ -107,12 +106,6 @@ const BillBookingCreate = () => {
   const [deductionRows, setDeductionRows] = useState([
     // { id: 1, type: "", charges: "", inclusive: false, amount: 0.0 },
   ]);
-  // const addDeductionRow = () => {
-  //   setDeductionRows((prevRows) => [
-  //     ...prevRows,
-  //     { id: prevRows.length + 1, type: "", charges: "", inclusive: false, amount: 0.0 },
-  //   ]);
-  // };
 
   const [deductionTypes, setDeductionTypes] = useState([]); // State to store tax types
 
@@ -213,83 +206,115 @@ const BillBookingCreate = () => {
     setactionDetails(!actionDetails);
   };
   //   modal
-  const openSelectPOModal = () => {
-    setselectPOModal(true);
-    // Fetch all POs without company filter
-    fetchPurchaseOrders();
-  };
+
   // const closeSelectPOModal = () => setselectPOModal(false);
 
   const openSelectGRNModal = () => setselectGRNModal(true);
   const closeSelectGRNModal = () => setselectGRNModal(false);
 
-  const openAttachOneModal = () => setattachOneModal(true);
-  const closeAttachOneModal = () => setattachOneModal(false);
-
-  const openAttachTwoModal = () => setattachTwoModal(true);
-  const closeAttachTwoModal = () => setattachTwoModal(false);
-
-  const openAttachThreeModal = () => setattachThreeModal(true);
   const closeAttachThreeModal = () => setattachThreeModal(false);
 
-  const [charges, setCharges] = useState([
-    { id: 1, type: "SGCT", amount: 270, inclusive: false },
-    { id: 2, type: "CGST", amount: 270, inclusive: false },
-  ]);
-
-  const [deductions, setDeductions] = useState([
-    { id: 1, type: "TDS", amount: 30 },
-  ]);
-
-  // Function to add a new charge row
-  const addCharge = () => {
-    setCharges([
-      ...charges,
-      { id: Date.now(), type: "", amount: 0, inclusive: false },
-    ]);
-  };
-
-  // Function to remove a charge row
-  const removeCharge = (id) => {
-    setCharges(charges.filter((charge) => charge.id !== id));
-  };
-
-  // Function to add a new deduction row
-  const addDeduction = () => {
-    setDeductions([...deductions, { id: Date.now(), type: "", amount: 0 }]);
-  };
-
-  // Function to remove a deduction row
-  const removeDeduction = (id) => {
-    setDeductions(deductions.filter((deduction) => deduction.id !== id));
-  };
-
-  // const [rows, setRows] = useState([
-  //   { id: 1, type: "TDS 1", charges: "100", inclusive: false, amount: 50.0 },
-  // ]);
   const [showRows, setShowRows] = useState(true);
 
+  // company project subproject api
+
+  const [companies, setCompanies] = useState([]);
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  // const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  // const [wingsOptions, setWingsOptions] = useState([]);
+
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+        // setData(response.data); // Set the data from the API to state
+        setLoading(false); // Update the loading state
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+    setProjects([]); // Reset projects
+    setSiteOptions([]); // Reset site options
+
+    // Reset selected PO and related form data
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  //   console.log("selected company:",selectedCompany)
+  //   console.log("selected  prj...",projects)
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+    // setSelectedWing(null); // Reset wing selection
+    setSiteOptions([]); // Reset site options
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  //   console.log("selected prj:",selectedProject)
+  //   console.log("selected sub prj...",siteOptions)
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
   // Add New Row
-  const handleAddRow = () => {
-    setRows((prevRows) => [...prevRows, newRow]);
-  };
-
-  // Delete Row
-  const handleDeleteRow = (id) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  };
-
-  // Toggle Rows
-  const toggleRows = () => {
-    setShowRows((prev) => !prev);
-  };
-
-  const closeSelectPOModal = () => {
-    console.log("Close button clicked");
-    setselectPOModal(false);
-  };
 
   // Add new state variables for API data
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -328,211 +353,137 @@ const BillBookingCreate = () => {
     status: "draft",
   });
 
-  const [filterParams, setFilterParams] = useState({
-    startDate: "",
-    endDate: "",
-    poType: "",
-    poNumber: "",
-    selectedPOIds: [], // Ensure this is initialized as an empty array
-  });
+  const [billEntryOptions, setBillEntryOptions] = useState([]);
+  const [selectedBillEntry, setSelectedBillEntry] = useState(null);
+  // ...existing code...
+  const [supplierName, setSupplierName] = useState("");
+  // ...existing code...
 
-  const [pagination, setPagination] = useState({
-    current_page: 1,
-    next_page: 2,
-    prev_page: null,
-    total_pages: 10,
-    total_count: 46,
-  });
-
-  const [pageSize, setPageSize] = useState(10); // Set default page size to 10
-
-  const handlePageChange = (page) => {
-    setPagination((prev) => ({
-      ...prev,
-      current_page: page,
-    }));
-
-    // Fetch data for the new page with current filters
-    fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      {
-        ...filterParams,
-        page: page,
-        pageSize: 10,
-      }
-    );
-  };
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const startPage = Math.max(1, pagination.current_page - 2);
-    const endPage = Math.min(
-      pagination.total_pages,
-      pagination.current_page + 2
-    );
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
-
-  const fetchPurchaseOrders = async (
-    companyId,
-    projectId,
-    siteId,
-    filters = {
-      startDate: "",
-      endDate: "",
-      poType: "",
-      poNumber: "",
-      selectedPOIds: [],
-      supplierId: "",
-      page: 1,
-      pageSize: 10,
-    }
-  ) => {
-    try {
-      setLoading(true);
-      let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-
-      // Add company filter only if company is selected
-      if (companyId) {
-        url += `&q[company_id_eq]=${companyId}`;
-      }
-
-      // Only add project and site filters if they are provided
-      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
-      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
-
-      // Add other filters if they are provided
-      if (filters?.supplierId)
-        url += `&q[supplier_id_eq]=${filters.supplierId}`;
-      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
-      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
-      if (filters?.poType) url += `&q[po_type_eq]=${filters.poType}`;
-
-      // Only add selectedPOIds filter if we're not changing pages
-      if (filters?.selectedPOIds?.length > 0 && !filters.page) {
-        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
-      }
-
-      // Always add pagination parameters
-      url += `&page=${filters.page || 1}`;
-      url += `&per_page=10`;
-
-      const response = await axios.get(url);
-      setPurchaseOrders(response.data.purchase_orders);
-
-      // Update pagination state with server response
-      if (response.data.pagination) {
-        setPagination({
-          current_page: response.data.pagination.current_page,
-          next_page: response.data.pagination.next_page,
-          prev_page: response.data.pagination.prev_page,
-          total_pages: response.data.pagination.total_pages,
-          total_count: response.data.pagination.total_count,
-        });
-      }
-    } catch (err) {
-      setError("Failed to fetch purchase orders");
-      console.error("Error fetching purchase orders:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle search button click
-  const handleSearch = () => {
-    if (!selectedCompany) {
-      alert("Please select a company first");
-      return;
-    }
-
-    // Reset to first page when applying filters
-    setPagination((prev) => ({
-      ...prev,
-      current_page: 1,
-    }));
-
-    fetchPurchaseOrders(
-      selectedCompany.value,
-      selectedProject?.value, // Pass project only on search
-      selectedSite?.value, // Pass site only on search
-      {
-        startDate: filterParams.startDate,
-        endDate: filterParams.endDate,
-        poType: filterParams.poType,
-        selectedPOIds: filterParams.selectedPOIds,
-        supplierId: selectedSupplier?.value || "",
-        page: 1,
-        pageSize: 10,
-      }
-    );
-  };
-
-  // Handle reset button click
-  const handleReset = () => {
-    setFilterParams({
-      startDate: "",
-      endDate: "",
-      poType: "",
-      poNumber: "",
-      selectedPOIds: [],
-    });
-
-    // Reset selections
-    setSelectedPO(null);
-    setSelectedSupplier(null);
-
-    // Fetch all POs for the selected company
-    if (selectedCompany) {
-      fetchPurchaseOrders(
-        selectedCompany.value,
-        selectedProject?.value,
-        selectedSite?.value
-      );
-    }
-  };
-
-  // Fetch purchase orders on component mount
   useEffect(() => {
-    fetchPurchaseOrders();
+    const fetchBillEntries = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        if (response.data && Array.isArray(response.data.be_list)) {
+          setBillEntryOptions(
+            response.data.be_list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching bill entries:", error);
+      }
+    };
+    fetchBillEntries();
   }, []);
 
-  // Handle PO selection
-  const handlePOSelect = (po) => {
-    setSelectedPO(po);
-    setFilterParams((prev) => ({
-      ...prev,
-      selectedPOIds: [po.id],
-    }));
-    setFormData((prev) => ({
-      ...prev,
-      poNumber: po.po_number,
-      poDate: po.po_date,
-      poValue: po.total_value,
-      gstin: po.gstin,
-      pan: po.pan,
-    }));
+  // ...existing imports...
+  // Add this useEffect after your billEntryOptions and selectedBillEntry state
 
-    // Reset GRN-related state when a different PO is selected
-    setSelectedGRN(null);
-    setSelectedGRNs([]);
-    setFormData((prev) => ({
-      ...prev,
-      baseCost: 0,
-      netTaxes: 0,
-      netCharges: 0,
-      allInclusiveCost: 0,
-      charges: [],
-      deductions: [],
-    }));
+  useEffect(() => {
+    if (selectedBillEntry && selectedBillEntry.value) {
+      const fetchBillEntryDetails = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          const data = response.data;
 
-    closeSelectPOModal();
-  };
+          setFormData((prev) => ({
+            ...prev,
+            poNumber: data.po_number || data.purchase_order?.po_number || "",
+            poValue: data.purchase_order?.total_value || "",
+            gstin: data.gstin || "",
+            pan: data.pan_no || "",
+            pms_supplier_id: data.pms_supplier_id || null, // <-- Add this line
+          }));
+          setSupplierName(data.pms_supplier || "");
+
+          // Fetch PO GRN details using purchase_order.id
+          if (data.purchase_order?.id) {
+            const grnResponse = await axios.get(
+              `https://marathon.lockated.com/purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&per_page=10&q[id_in]=${data.purchase_order.id}`
+            );
+
+            // Set the selected PO with GRN materials
+            const poWithGrn = {
+              ...data.purchase_order,
+              grn_materials:
+                grnResponse.data.purchase_orders[0]?.grn_materials || [],
+              gstin: data.gstin,
+              pan: data.pan_no,
+            };
+            setSelectedPO(poWithGrn);
+
+            // Reset selected GRNs instead of auto-selecting them
+            setSelectedGRNs([]);
+          } else {
+            setSelectedPO({
+              id: data.purchase_order?.id,
+              po_number: data.purchase_order?.po_number,
+              po_date: data.purchase_order?.po_date,
+              total_value: data.purchase_order?.total_value,
+              po_type: data.purchase_order?.po_type,
+              gstin: data.gstin,
+              pan: data.pan_no,
+              grn_materials: [],
+            });
+            setSelectedGRNs([]);
+          }
+        } catch (error) {
+          console.error("Error fetching bill entry or PO GRN details:", error);
+        }
+      };
+      fetchBillEntryDetails();
+    }
+  }, [selectedBillEntry]);
+
+  useEffect(() => {
+    if (!selectedBillEntry) {
+      setFormData((prev) => ({
+        ...prev,
+        poNumber: "",
+        poDate: "",
+        poValue: "",
+        gstin: "",
+        pan: "",
+        invoiceNumber: "",
+        invoiceDate: "",
+        invoiceAmount: "",
+        baseCost: "",
+        netTaxes: "",
+        netCharges: "",
+        allInclusiveCost: "",
+        charges: [],
+        deductions: [],
+        typeOfCertificate: "",
+        departmentId: "",
+        otherDeductions: "",
+        otherDeductionRemarks: "",
+        otherAdditions: "",
+        otherAdditionRemarks: "",
+        retentionPercentage: "",
+        retentionAmount: "",
+        remark: "",
+        payeeName: "",
+        paymentMode: "",
+        paymentDueDate: "",
+        attachments: [],
+        currentAdvanceDeduction: "",
+        status: "draft",
+      }));
+      setSupplierName("");
+      setSelectedPO(null);
+      setSelectedGRN(null);
+      setSelectedGRNs([]);
+      setPendingAdvances([]);
+      setCreditNotes([]);
+      setDebitNotes([]);
+    }
+  }, [selectedBillEntry]);
 
   // Handle GRN selection
   const handleGRNSelect = (grn) => {
@@ -562,184 +513,13 @@ const BillBookingCreate = () => {
 
   // Handle GRN submission
   const handleGRNSubmit = () => {
-    setSelectedGRN(selectedGRNs[0]); // Set the first selected GRN as the main selected GRN
+    // setSelectedGRN(selectedGRNs[0]); // Set the first selected GRN as the main selected GRN
     closeSelectGRNModal();
-  };
-
-  // Render PO table in modal
-  const renderPOTable = () => {
-    if (purchaseOrders.length === 0) {
-      return (
-        <div className="tbl-container mx-3 mt-3">
-          <p className="text-center mt-3">No purchase orders found.</p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <div className="tbl-container mx-3 mt-3">
-          <table className="w-100">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" />
-                </th>
-                <th className="text-start">Sr.No</th>
-                <th className="text-start">PO Number</th>
-                <th className="text-start">PO Date</th>
-                <th className="text-start">PO Value</th>
-                <th className="text-start">PO Type</th>
-                <th className="text-start">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseOrders.map((po, index) => (
-                <tr key={po.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedPO?.id === po.id}
-                      onChange={() => handlePOSelect(po)}
-                    />
-                  </td>
-                  <td className="text-start">{index + 1}</td>
-                  <td className="text-start">{po.po_number}</td>
-                  <td className="text-start">{po.po_date}</td>
-                  <td className="text-start">{po.total_value}</td>
-                  <td className="text-start">{po.po_type}</td>
-                  <td>
-                    <button
-                      className="btn btn-light p-0 border-0"
-                      onClick={() => handlePOSelect(po)}
-                    >
-                      Select
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-          <ul className="pagination justify-content-center d-flex">
-            {/* First Button */}
-            <li
-              className={`page-item ${
-                pagination.current_page === 1 ? "disabled" : ""
-              }`}
-            >
-              <button className="page-link" onClick={() => handlePageChange(1)}>
-                First
-              </button>
-            </li>
-
-            {/* Previous Button */}
-            <li
-              className={`page-item ${
-                pagination.current_page === 1 ? "disabled" : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.current_page - 1)}
-                disabled={pagination.current_page === 1}
-              >
-                Prev
-              </button>
-            </li>
-
-            {/* Ellipsis before first page numbers if needed */}
-            {pagination.current_page > 5 && (
-              <li className="page-item disabled">
-                <span className="page-link">...</span>
-              </li>
-            )}
-
-            {/* Dynamic Page Numbers */}
-            {getPageNumbers().map((pageNumber) => (
-              <li
-                key={pageNumber}
-                className={`page-item ${
-                  pagination.current_page === pageNumber ? "active" : ""
-                }`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange(pageNumber)}
-                >
-                  {pageNumber}
-                </button>
-              </li>
-            ))}
-
-            {/* Ellipsis after last page numbers if needed */}
-            {pagination.current_page + 4 < pagination.total_pages && (
-              <li className="page-item disabled">
-                <span className="page-link">...</span>
-              </li>
-            )}
-
-            {/* Next Button */}
-            <li
-              className={`page-item ${
-                pagination.current_page === pagination.total_pages
-                  ? "disabled"
-                  : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.current_page + 1)}
-                disabled={pagination.current_page === pagination.total_pages}
-              >
-                Next
-              </button>
-            </li>
-
-            {/* Last Button */}
-            <li
-              className={`page-item ${
-                pagination.current_page === pagination.total_pages
-                  ? "disabled"
-                  : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.total_pages)}
-                disabled={pagination.current_page === pagination.total_pages}
-              >
-                Last
-              </button>
-            </li>
-          </ul>
-
-          {/* Showing entries count */}
-          <div>
-            <p>
-              Showing{" "}
-              {Math.min(
-                (pagination.current_page - 1) * pageSize + 1 || 1,
-                pagination.total_count
-              )}{" "}
-              to{" "}
-              {Math.min(
-                pagination.current_page * pageSize,
-                pagination.total_count
-              )}{" "}
-              of {pagination.total_count} entries
-            </p>
-          </div>
-        </div>
-      </>
-    );
   };
 
   // Render GRN table in modal
   const renderGRNTable = () => {
-    if (!selectedPO) return null;
+    if (!selectedPO || !Array.isArray(selectedPO.grn_materials)) return null;
 
     return (
       <div className="tbl-container mx-3 mt-3">
@@ -795,112 +575,6 @@ const BillBookingCreate = () => {
     );
   };
 
-  const [companies, setCompanies] = useState([]);
-  const companyOptions = companies.map((company) => ({
-    value: company.id,
-    label: company.company_name,
-  }));
-
-  const [projects, setProjects] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedSite, setSelectedSite] = useState(null);
-  // const [selectedWing, setSelectedWing] = useState(null);
-  const [siteOptions, setSiteOptions] = useState([]);
-  // const [wingsOptions, setWingsOptions] = useState([]);
-
-  // Fetch company data on component mount
-  useEffect(() => {
-    axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((response) => {
-        setCompanies(response.data.companies);
-        // setData(response.data); // Set the data from the API to state
-        setLoading(false); // Update the loading state
-      })
-      .catch((error) => {
-        console.error("Error fetching company data:", error);
-        setLoading(false);
-      });
-  }, []);
-
-  // Handle company selection
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
-    // setSelectedWing(null); // Reset wing selection
-    setProjects([]); // Reset projects
-    setSiteOptions([]); // Reset site options
-    // setWingsOptions([]); // Reset wings options
-
-    // Reset selected PO and related form data
-    setSelectedPO(null);
-    setFormData((prev) => ({
-      ...prev,
-      poNumber: "",
-      poDate: "",
-      poValue: "",
-      gstin: "",
-      pan: "",
-    }));
-
-    if (selectedOption) {
-      fetchPurchaseOrders(selectedOption.value);
-
-      // Find the selected company from the list
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedOption.value
-      );
-      setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
-          value: prj.id,
-          label: prj.name,
-        }))
-      );
-    }
-  };
-
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
-
-  // Handle project selection
-  const handleProjectChange = (selectedOption) => {
-    setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
-    // setSelectedWing(null); // Reset wing selection
-    setSiteOptions([]); // Reset site options
-    // setWingsOptions([]); // Reset wings options
-
-    if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects.find(
-        (project) => project.id === selectedOption.value
-      );
-
-      // Set site options based on selected project
-      setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
-    }
-  };
-
-  //   console.log("selected prj:",selectedProject)
-  //   console.log("selected sub prj...",siteOptions)
-
-  // Handle site selection
-  const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption);
-  };
-
   // Add PO Type options
   const poTypeOptions = [
     { value: "Domestic", label: "Domestic" },
@@ -921,31 +595,6 @@ const BillBookingCreate = () => {
   ];
 
   const [selectedEInvoice, setSelectedEInvoice] = useState(null);
-
-  const [suppliers, setSuppliers] = useState([]);
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
-
-  // Add this useEffect to fetch suppliers
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        setSuppliers(response.data);
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-      }
-    };
-
-    fetchSuppliers();
-  }, []);
-
-  // Convert suppliers data to options format
-  const supplierOptions = suppliers.map((supplier) => ({
-    value: supplier.id,
-    label: supplier.organization_name,
-  }));
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1046,7 +695,7 @@ const BillBookingCreate = () => {
           company_id: selectedCompany?.value || null,
           site_id: selectedSite?.value || null,
           project_id: selectedProject?.value || null,
-          pms_supplier_id: selectedSupplier?.value || null,
+          pms_supplier_id: formData.pms_supplier_id || null,
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
           inventory_date: formData.invoiceDate,
@@ -1332,6 +981,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
+                      <span> *</span>
                       <SingleSelector
                         options={companyOptions}
                         className="form-control form-select"
@@ -1343,6 +993,7 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4">
                     <label htmlFor="event-no-select">Project</label>
+                    <span> *</span>
                     <div className="form-group">
                       <SingleSelector
                         options={projects}
@@ -1355,6 +1006,7 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4">
                     <label htmlFor="event-no-select"> SubProject</label>
+                    <span> *</span>
                     <div className="form-group">
                       <SingleSelector
                         options={siteOptions}
@@ -1365,15 +1017,35 @@ const BillBookingCreate = () => {
                     </div>
                   </div>
 
+                  <div className="col-md-4 mt-2">
+                    <label htmlFor="event-no-select">Bill Entries</label>
+                    <span> *</span>
+                    <div className="form-group">
+                      <SingleSelector
+                        options={billEntryOptions}
+                        onChange={setSelectedBillEntry}
+                        value={selectedBillEntry}
+                        placeholder="Select Bill Entry"
+                      />
+                    </div>
+                  </div>
+
                   <div className="col-md-4  mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
-                      <SingleSelector
+                      {/* <SingleSelector
                         options={supplierOptions}
                         className="form-control form-select"
-                        value={selectedSupplier}
-                        onChange={(selected) => setSelectedSupplier(selected)}
+                        // value={selectedSupplier}
+                        // onChange={(selected) => setSelectedSupplier(selected)}
                         placeholder="Select Supplier"
+                        
+                      /> */}
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={supplierName}
+                        disabled
                       />
                     </div>
                   </div>
@@ -1394,47 +1066,17 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3 mt-2">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Number</label>
-                      {/* <SingleSelector
-                        options={purchaseOrders.map((po) => ({
-                          value: po.id,
-                          label: po.po_number,
-                        }))}
-                        className="form-control form-select"
-                        value={
-                          selectedPO
-                            ? {
-                                value: selectedPO.id,
-                                label: selectedPO.po_number,
-                              }
-                            : null
-                        }
-                        onChange={(selected) => {
-                          const selectedPO = purchaseOrders.find(
-                            (po) => po.id === selected.value
-                          );
-                          if (selectedPO) {
-                            handlePOSelect(selectedPO);
-                          }
-                        }}
-                      /> */}
+
                       <input
                         className="form-control"
                         type="text"
-                        value={selectedPO?.po_number || ""}
+                        value={formData.poNumber}
                         disabled
                       />
                     </div>
-                  </div>
-                  <div
-                    className="col-md-1 pt-4"
-                    data-bs-toggle="modal"
-                    data-bs-target="#selectModal"
-                    onClick={openSelectPOModal}
-                  >
-                    <p className="mt-3 text-decoration-underline">Select</p>
                   </div>
 
                   <div className="d-flex justify-content-between mt-3 me-2">
@@ -1580,16 +1222,6 @@ const BillBookingCreate = () => {
                       ></SingleSelector>
                     </div>
                   </div>
-
-                  {/* <div className="col-md-4 mt-3">
-                    <div className="form-group">
-                      <label>Department</label>
-                      <SingleSelector
-                        options={companyOptions}
-                        className="form-control form-select"
-                      ></SingleSelector>
-                    </div>
-                  </div> */}
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">GRN Details</h5>
@@ -2673,297 +2305,7 @@ const BillBookingCreate = () => {
       </div>
 
       {/* modal */}
-      <Modal
-        centered
-        size="lg"
-        show={selectPOModal}
-        onHide={closeSelectPOModal}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Select PO</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <div className="d-flex justify-content-between mt-3 me-2">
-              <h5 className=" ">Category of PO</h5>
-            </div>
-            <div className="radio-buttons d-flex align-items-center gap-4">
-              <div className="form-check">
-                <button
-                  className="border-0 "
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal2"
-                >
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="radio1"
-                  />
-                </button>
-                <label className="form-check-label" htmlFor="yesRadio">
-                  Material
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="radio1"
-                  id="noRadio"
-                />
-                <label className="form-check-label" htmlFor="noRadio">
-                  Asset
-                </label>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Project</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                    value={selectedProject?.label || ""}
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Sub Project</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    value={selectedSite?.label || ""}
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                    disabled
-                  />
-                </div>
-              </div>
-
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Supplier</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    value={selectedSupplier?.label || ""}
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Start Date</label>
-                  <input
-                    className="form-control"
-                    type="date"
-                    value={filterParams.startDate}
-                    onChange={(e) =>
-                      setFilterParams((prev) => ({
-                        ...prev,
-                        startDate: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO End Date</label>
-                  <input
-                    className="form-control"
-                    type="date"
-                    value={filterParams.endDate}
-                    onChange={(e) =>
-                      setFilterParams((prev) => ({
-                        ...prev,
-                        endDate: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Type</label>
-                  <SingleSelector
-                    options={poTypeOptions}
-                    className="form-control form-select"
-                    value={
-                      filterParams.poType
-                        ? {
-                            value: filterParams.poType,
-                            label: filterParams.poType,
-                          }
-                        : null
-                    }
-                    onChange={(selected) =>
-                      setFilterParams((prev) => ({
-                        ...prev,
-                        poType: selected ? selected.value : "",
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              {/* <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Number</label>
-                  <SingleSelector
-                    options={purchaseOrders.map((po) => ({
-                      value: po.id,
-                      label: po.po_number,
-                    }))}
-                    className="form-control form-select"
-                    value={
-                      selectedPO
-                        ? {
-                            value: selectedPO.id,
-                            label: selectedPO.po_number,
-                          }
-                        : null
-                    }
-                    onChange={(selected) => 
-                      {
-                      const selectedPO = purchaseOrders.find(
-                        (po) => po.id === selected.value
-                      );
-                      if (selectedPO) {
-                        setSelectedPO(selectedPO);
-                        setFilterParams((prev) => ({
-                          ...prev,
-                          selectedPOIds: [selectedPO.id],
-                        }));
-                        setFormData((prev) => ({
-                          ...prev,
-                          poNumber: selectedPO.po_number,
-                          poDate: selectedPO.po_date,
-                          poValue: selectedPO.total_value,
-                          gstin: selectedPO.gstin,
-                          pan: selectedPO.pan,
-                        }));
-                      }
-
-                    }}
-                  />
-                </div>
-              </div> */}
-              {/* <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Number</label>
-                  <SingleSelector
-                    
-                    options={purchaseOrders.map((po) => ({
-                      value: po.id,
-                      label: po.po_number,
-                    }))}
-                    className="form-control form-select"
-                    value={
-                      filterParams.selectedPOIds.length > 0
-                        ? {
-                            value: filterParams.selectedPOIds[0],
-                            label:
-                              purchaseOrders.find(
-                                (po) => po.id === filterParams.selectedPOIds[0]
-                              )?.po_number || "",
-                          }
-                        : null
-                    }
-                    onChange={(selected) =>
-                      setFilterParams((prev) => ({
-                        ...prev,
-                        selectedPOIds: selected ? [selected.value] : [],
-                      }))
-                    }
-                    placeholder="Select PO Number"
-                  />
-                </div>
-              </div> */}
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>PO Number</label>
-                  <MultiSelector
-                    options={purchaseOrders.map((po) => ({
-                      value: po.id,
-                      label: po.po_number,
-                    }))}
-                    value={filterParams.selectedPOIds.map((id) => {
-                      const po = purchaseOrders.find((po) => po.id === id);
-                      return po ? { value: po.id, label: po.po_number } : null;
-                    })}
-                    onChange={(selected) =>
-                      setFilterParams((prev) => ({
-                        ...prev,
-                        selectedPOIds: selected
-                          ? selected.map((item) => item.value)
-                          : [],
-                      }))
-                    }
-                    placeholder="Select PO Numbers"
-                    isDisabled={false}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="row mt-2 justify-content-center">
-              <div className="col-md-3">
-                <button className="purple-btn2 w-100" onClick={handleSearch}>
-                  Search
-                </button>
-              </div>
-              {/* <div className="col-md-3">
-                <button
-                  className="purple-btn2 w-100"
-                  onClick={() => {
-                    const allPOIds = purchaseOrders.map((po) => po.id);
-                    setFilterParams((prev) => ({
-                      ...prev,
-                      selectedPOIds: allPOIds,
-                    }));
-                  }}
-                >
-                  Select All
-                </button>
-              </div> */}
-              <div className="col-md-3">
-                <button className="purple-btn1 w-100" onClick={handleReset}>
-                  Reset
-                </button>
-              </div>
-              <div className="col-md-3">
-                <button
-                  className="purple-btn1 w-100"
-                  onClick={closeSelectPOModal}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-            {renderPOTable()}
-          </div>
-
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-2">
-              <button
-                className="purple-btn1 w-100"
-                fdprocessedid="u33pye"
-                onClick={closeSelectPOModal}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-
+      {/* 
       {/*  */}
       <Modal
         centered
@@ -3017,319 +2359,6 @@ const BillBookingCreate = () => {
       </Modal>
 
       {/*  */}
-      <Modal
-        centered
-        size="lg"
-        show={attachOneModal}
-        onHide={closeAttachOneModal}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Attach Other Document</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <div className="d-flex justify-content-between mt-3 me-2">
-              <h5 className=" ">Latest Documents</h5>
-              <div
-                className="card-tools d-flex"
-                data-bs-toggle="modal"
-                data-bs-target="#exampleModal"
-              >
-                <button
-                  className="purple-btn2 rounded-3"
-                  data-bs-toggle="modal"
-                  data-bs-dismiss="modal"
-                  data-bs-target="#secModal"
-                  fdprocessedid="xn3e6n"
-                  // onClick={openAttachTwoModal}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={20}
-                    height={20}
-                    fill="currentColor"
-                    className="bi bi-plus"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                  </svg>
-                  <span>Attach</span>
-                </button>
-              </div>
-            </div>
-            <div className="tbl-container px-0">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>Sr.No.</th>
-                    <th>Document Name</th>
-                    <th>Attachment Name</th>
-                    <th>Upload Date</th>
-                    <th>Uploaded By</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>MTC</td>
-                    <td>Material test Cert 1.pdf</td>
-                    <td>01-03-2024</td>
-                    <td>vendor user</td>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#comments-modal"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className=" mt-3 me-2">
-              <h5 className=" ">Document Attachment History</h5>
-            </div>
-            <div className="tbl-container px-0">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>Sr.No.</th>
-                    <th>Document Name</th>
-                    <th>Attachment Name</th>
-                    <th>Upload Date</th>
-                    <th>Uploaded By</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>MTC</td>
-                    <td>Material test Cert 1.pdf</td>
-                    <td>01-03-2024</td>
-                    <td>vendor user</td>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#comments-modal"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-4">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-                Close
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal
-        centered
-        size="lg"
-        show={attachTwoModal}
-        onHide={closeAttachOneModal}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Attach Other Document</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            {/* Document Name Input */}
-            <div className="mb-3">
-              <label htmlFor="documentName" className="form-label">
-                Document Name
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="documentName"
-                placeholder="Enter document name"
-              />
-            </div>
-
-            {/* File Upload Field */}
-            <div className="mb-3">
-              <label htmlFor="fileUpload" className="form-label">
-                Choose File
-              </label>
-              <input type="file" className="form-control" id="fileUpload" />
-            </div>
-
-            {/* Submit & Cancel Buttons */}
-            <div className="row mt-3 justify-content-center">
-              <div className="col-md-4">
-                <button className="purple-btn2 w-100">Submit</button>
-              </div>
-              <div className="col-md-4">
-                <button
-                  className="purple-btn1 w-100"
-                  onClick={closeAttachTwoModal}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      {/*  */}
-      {/* <Modal
-        centered
-        size="lg"
-        show={attachTwoModal}
-        onHide={closeAttachTwoModal}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Attach Other Document</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>PO Number</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>GRN Number</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Delivery Challan No</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Amount (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Certified Till Date (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>All Inclusive Cost (INR)</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-          </div>
-          <div className=" mt-3 me-2">
-            <h5 className=" ">GRN Details</h5>
-          </div>
-          <div className="tbl-container mx-3 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Material Name</th>
-                  <th>Material GRN Amount</th>
-                  <th>Certified Till Date</th>
-                  <th>Base cost</th>
-                  <th>Net Taxes</th>
-                  <th>Net Charges</th>
-                  <th>Qty</th>
-                  <th>All Inclusive Cost</th>
-                  <th>Taxes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-
-                  <td>
-                    <button
-                      className=" btn text-decoration-underline"
-                      data-bs-toggle="modal"
-                      data-bs-target="#taxesModal"
-                      onClick={openAttachThreeModal}
-                    >
-                      Taxes
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-4">
-              <button className="purple-btn2 w-100" fdprocessedid="u33pye">
-                Submit
-              </button>
-            </div>
-            <div className="col-md-4">
-              <button className="purple-btn1 w-100" fdprocessedid="af5l5g">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal> */}
 
       {/*  */}
       <Modal
