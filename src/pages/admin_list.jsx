@@ -73,6 +73,7 @@ export default function adminList() {
     material_type: [],
     locations: [],
   });
+  const [counts, setCounts] = useState("");
   const [isMyEvent, setIsMyEvent] = useState(false);
   const [error, setError] = useState("");
   const pageSize = 10;
@@ -183,6 +184,40 @@ export default function adminList() {
     fetchFilterOptions();
   }, []);
 
+
+  const fetchEventCounts = async () => {
+    setLoading(true); // Start loader
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
+      const response = await axios.get(
+        `${baseURL}rfq/events/event_counts`,
+        {
+          params: {
+            page: 1,
+            token: token,
+          },
+        }
+      );
+
+      // Assuming the response contains counts for all, live, and history events
+      setCounts(
+        response?.data || {
+          all: 0,
+          live: 0,
+          history: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Error fetching event counts:", error);
+      setError("Failed to fetch event counts");
+    }
+  };
+
+  useEffect(() => {
+    fetchEventCounts();
+  }, []);
   const fetchEvents = async (page = 1) => {
     setLoading(true); // Set loading to true at the start
     try {
@@ -543,7 +578,7 @@ export default function adminList() {
                       >
                         <h4 className="content-box-title">All Events</h4>
                         <p className="content-box-sub">
-                          {allEventsData.pagination?.total_count || 0}
+                          {counts?.all_events || 0}
                         </p>
                       </div>
                     </div>
@@ -565,7 +600,7 @@ export default function adminList() {
                       >
                         <h4 className="content-box-title">Live Events</h4>
                         <p className="content-box-sub">
-                          {liveEvents.pagination?.total_count}
+                          {counts?.live_events || 0}
                         </p>
                       </div>
                     </div>
@@ -587,7 +622,7 @@ export default function adminList() {
                       >
                         <h4 className="content-box-title">History Events</h4>
                         <p className="content-box-sub">
-                          {historyEvents.pagination?.total_count}{" "}
+                          {counts?.history_events || 0}
                         </p>
                       </div>
                     </div>
