@@ -1949,6 +1949,7 @@ console.log("sub item in delete case:,", boqSubItems)
                                     // value={unitOfMeasures.find(option => option.value === material.uom_id)||selectedUnit2}
                                     // value={unitOfMeasures.find(option => option.value === material.uom_id) || selectedUnit2}
                                     placeholder={`Select UOM`} // Dynamic placeholder
+                                    isDisabled={material?.hasOwnProperty('can_delete')}
                                   />
                                 </td>
                                 {/* <td>   */}

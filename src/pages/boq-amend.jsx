@@ -2987,6 +2987,7 @@ const BoqAmend = () => {
                                                                                     }
                                                                                     value={selectedUnit2[index]}
                                                                                     placeholder={`Select UOM`}
+                                                                                    isDisabled={material?.hasOwnProperty('can_delete')}
                                                                                 />
                                                                             </td>
                                                                             <td style={{ width: "200px" }}>
