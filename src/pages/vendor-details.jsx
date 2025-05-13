@@ -861,8 +861,7 @@ export default function VendorDetails() {
 
     const freightData = processFreightData(currentBid);
     setFreightData(freightData);
-    console.log("current:-",currentBid);
-    
+
     const previousData = currentBid.bid_materials.map((material) => ({
       bidId: material.bid_id,
       eventMaterialId: material.event_material_id,
@@ -889,12 +888,12 @@ export default function VendorDetails() {
       pmsColour: material.event_material.pms_colour_name,
       genericInfo: material.event_material.generic_info_name,
       extra_data: material.extra_data || {}, // Include extra_data
-      addition_bid_material_tax_details: material.addition_bid_material_tax_details || [],
-    deduction_bid_material_tax_details: material.deduction_bid_material_tax_details || [],
-  }));
-    console.log(previousData, "previousData");
+      addition_bid_material_tax_details:
+        material.addition_bid_material_tax_details || [],
+      deduction_bid_material_tax_details:
+        material.deduction_bid_material_tax_details || [],
+    }));
     setData(previousData);
-    console.log("data in api:-", data)
     setGrossTotal(currentBid.gross_total);
     setCounterData(currentBid.counter_bids?.length || 0);
     setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
@@ -1541,215 +1540,218 @@ export default function VendorDetails() {
   };
 
   const handleDecline = async () => {
-  const payload = { status: "rejected" };
+    const payload = { status: "rejected" };
 
-  // Set loading state to true
-  setAcceptLoader(true);
+    // Set loading state to true
+    setAcceptLoader(true);
 
-  try {
-    const response = await fetch(
-      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    if (response.ok) {
-      console.log("Counter offer declined");
-
-      // Retrieve the first bid data again (to restore it)
-      const bidResponse = await axios.get(
-        `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+    try {
+      const response = await fetch(
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
       );
-      const bids = bidResponse.data.bids;
 
-      if (bids.length > 0) {
-        const firstBid = bids[currentIndex];
+      if (response.ok) {
+        console.log("Counter offer declined");
 
-        // Process Freight Data (Optional)
-        const processFreightData = (bid) => [
-          {
-            label: "Freight Charge",
-            value: { firstBid: bid.freight_charge_amount || "" },
-          },
-          {
-            label: "GST on Freight",
-            value: { firstBid: bid.gst_on_freight || "" },
-          },
-          {
-            label: "Realised Freight",
-            value: { firstBid: bid.realised_freight_charge_amount || "" },
-          },
-          {
-            label: "Warranty Clause *",
-            value: { firstBid: bid.warranty_clause || "" },
-          },
-          {
-            label: "Payment Terms *",
-            value: { firstBid: bid.payment_terms || "" },
-          },
-          {
-            label: "Loading / Unloading *",
-            value: { firstBid: bid.loading_unloading_clause || "" },
-          },
-        ];
+        // Retrieve the first bid data again (to restore it)
+        const bidResponse = await axios.get(
+          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+        );
+        const bids = bidResponse.data.bids;
 
-        const freightData = processFreightData(firstBid);
-        setFreightData(freightData);
+        if (bids.length > 0) {
+          const firstBid = bids[currentIndex];
 
-        // Map bid_materials to previousData format
-        const previousData = firstBid.bid_materials.map((material) => ({
-          bidId: material.bid_id,
-          eventMaterialId: material.event_material_id,
-          descriptionOfItem: material.material_name,
-          varient: material.material_type,
-          quantity: material.event_material.quantity,
-          quantityAvail: material.quantity_available,
-          price: material.price,
-          section: material.material_type,
-          subSection: material.inventory_sub_type,
-          discount: material.discount,
-          realisedDiscount: material.realised_discount,
-          gst: material.gst,
-          realisedGst: material.realised_gst,
-          total: material.total_amount,
-          location: material.event_material.location,
-          vendorRemark: material.vendor_remark,
-          landedAmount: material.landed_amount,
-        }));
+          // Process Freight Data (Optional)
+          const processFreightData = (bid) => [
+            {
+              label: "Freight Charge",
+              value: { firstBid: bid.freight_charge_amount || "" },
+            },
+            {
+              label: "GST on Freight",
+              value: { firstBid: bid.gst_on_freight || "" },
+            },
+            {
+              label: "Realised Freight",
+              value: { firstBid: bid.realised_freight_charge_amount || "" },
+            },
+            {
+              label: "Warranty Clause *",
+              value: { firstBid: bid.warranty_clause || "" },
+            },
+            {
+              label: "Payment Terms *",
+              value: { firstBid: bid.payment_terms || "" },
+            },
+            {
+              label: "Loading / Unloading *",
+              value: { firstBid: bid.loading_unloading_clause || "" },
+            },
+          ];
 
-        setPreviousData(previousData);
+          const freightData = processFreightData(firstBid);
+          setFreightData(freightData);
 
-        // Assuming updatedData comes from the response or API
-        const responseData = await response.json();
-        const updatedData = responseData.updatedData || [];
+          // Map bid_materials to previousData format
+          const previousData = firstBid.bid_materials.map((material) => ({
+            bidId: material.bid_id,
+            eventMaterialId: material.event_material_id,
+            descriptionOfItem: material.material_name,
+            varient: material.material_type,
+            quantity: material.event_material.quantity,
+            quantityAvail: material.quantity_available,
+            price: material.price,
+            section: material.material_type,
+            subSection: material.inventory_sub_type,
+            discount: material.discount,
+            realisedDiscount: material.realised_discount,
+            gst: material.gst,
+            realisedGst: material.realised_gst,
+            total: material.total_amount,
+            location: material.event_material.location,
+            vendorRemark: material.vendor_remark,
+            landedAmount: material.landed_amount,
+          }));
 
-        // Set data based on the presence of updatedData
-        setData(updatedData.length > 0 ? updatedData : previousData);
+          setPreviousData(previousData);
+
+          // Assuming updatedData comes from the response or API
+          const responseData = await response.json();
+          const updatedData = responseData.updatedData || [];
+
+          // Set data based on the presence of updatedData
+          setData(updatedData.length > 0 ? updatedData : previousData);
+        } else {
+          console.error("No bids found in API response.");
+        }
+
+        setCounterData(0);
       } else {
-        console.error("No bids found in API response.");
+        console.error("Failed to decline counter offer");
       }
-
-      setCounterData(0);
-    } else {
-      console.error("Failed to decline counter offer");
+    } catch (error) {
+      console.error("Error declining counter offer:", error);
+    } finally {
+      // Set loading state to false
+      setAcceptLoader(false);
     }
-  } catch (error) {
-    console.error("Error declining counter offer:", error);
-  } finally {
-    // Set loading state to false
-    setAcceptLoader(false);
-  }
-};
+  };
 
   const handleAccept = async () => {
-  const payload = { status: "accepted" };
+    const payload = { status: "accepted" };
 
-  // Set loading state to true
-  setAcceptLoader(true);
+    // Set loading state to true
+    setAcceptLoader(true);
 
-  try {
-    // API call to update status
-    const response = await fetch(
-      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    if (response.ok) {
-      // Fetch bids
-      const bidResponse = await axios.get(
-        `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+    try {
+      // API call to update status
+      const response = await fetch(
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
       );
 
-      const bids = bidResponse.data.bids;
+      if (response.ok) {
+        // Fetch bids
+        const bidResponse = await axios.get(
+          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+        );
 
-      if (bids.length > 0) {
-        const firstBid = bids[currentIndex];
+        const bids = bidResponse.data.bids;
 
-        // Process Freight Data (Optional)
-        const processFreightData = (bid) => [
-          {
-            label: "Freight Charge",
-            value: { firstBid: bid.freight_charge_amount || "" },
-          },
-          {
-            label: "GST on Freight",
-            value: { firstBid: bid.gst_on_freight || "" },
-          },
-          {
-            label: "Realised Freight",
-            value: { firstBid: bid.realised_freight_charge_amount || "" },
-          },
-          {
-            label: "Warranty Clause *",
-            value: { firstBid: bid.warranty_clause || "" },
-          },
-          {
-            label: "Payment Terms *",
-            value: { firstBid: bid.payment_terms || "" },
-          },
-          {
-            label: "Loading / Unloading *",
-            value: { firstBid: bid.loading_unloading_clause || "" },
-          },
-        ];
+        if (bids.length > 0) {
+          const firstBid = bids[currentIndex];
 
-        const freightData = processFreightData(firstBid);
-        setFreightData(freightData);
+          // Process Freight Data (Optional)
+          const processFreightData = (bid) => [
+            {
+              label: "Freight Charge",
+              value: { firstBid: bid.freight_charge_amount || "" },
+            },
+            {
+              label: "GST on Freight",
+              value: { firstBid: bid.gst_on_freight || "" },
+            },
+            {
+              label: "Realised Freight",
+              value: { firstBid: bid.realised_freight_charge_amount || "" },
+            },
+            {
+              label: "Warranty Clause *",
+              value: { firstBid: bid.warranty_clause || "" },
+            },
+            {
+              label: "Payment Terms *",
+              value: { firstBid: bid.payment_terms || "" },
+            },
+            {
+              label: "Loading / Unloading *",
+              value: { firstBid: bid.loading_unloading_clause || "" },
+            },
+          ];
 
-        // Map bid_materials to previousData format
-        const previousData = firstBid.bid_materials.map((material) => ({
-          bidId: material.bid_id,
-          eventMaterialId: material.event_material_id,
-          descriptionOfItem: material.material_name,
-          varient: material.material_type,
-          quantity: material.event_material.quantity,
-          quantityAvail: material.quantity_available,
-          price: material.price,
-          section: material.material_type,
-          subSection: material.inventory_sub_type,
-          discount: material.discount,
-          realisedDiscount: material.realised_discount,
-          gst: material.gst,
-          realisedGst: material.realised_gst,
-          total: material.total_amount,
-          location: material.event_material.location,
-          vendorRemark: material.vendor_remark,
-          landedAmount: material.landed_amount,
-        }));
+          const freightData = processFreightData(firstBid);
+          setFreightData(freightData);
 
-        setPreviousData(previousData);
+          // Map bid_materials to previousData format
+          const previousData = firstBid.bid_materials.map((material) => ({
+            bidId: material.bid_id,
+            eventMaterialId: material.event_material_id,
+            descriptionOfItem: material.material_name,
+            varient: material.material_type,
+            quantity: material.event_material.quantity,
+            quantityAvail: material.quantity_available,
+            price: material.price,
+            section: material.material_type,
+            subSection: material.inventory_sub_type,
+            discount: material.discount,
+            realisedDiscount: material.realised_discount,
+            gst: material.gst,
+            realisedGst: material.realised_gst,
+            total: material.total_amount,
+            location: material.event_material.location,
+            vendorRemark: material.vendor_remark,
+            landedAmount: material.landed_amount,
+          }));
 
-        // Assuming updatedData comes from the response or API
-        const responseData = await response.json();
-        const updatedData = responseData.updatedData || [];
+          setPreviousData(previousData);
 
-        // Set data based on the presence of updatedData
-        setData(updatedData.length > 0 ? updatedData : previousData);
+          // Assuming updatedData comes from the response or API
+          const responseData = await response.json();
+          const updatedData = responseData.updatedData || [];
+
+          // Set data based on the presence of updatedData
+          setData(updatedData.length > 0 ? updatedData : previousData);
+        } else {
+          console.error("No bids found in API response.");
+        }
+
+        setCounterData(0); // Reset counter data
       } else {
-        console.error("No bids found in API response.");
+        const errorData = await response.json();
+        console.error(
+          "Failed to accept counter offer. Error response:",
+          errorData
+        );
       }
-
-      setCounterData(0); // Reset counter data
-    } else {
-      const errorData = await response.json();
-      console.error("Failed to accept counter offer. Error response:", errorData);
+    } catch (error) {
+      console.error("Error during API call:", error);
+    } finally {
+      // Set loading state to false
+      setAcceptLoader(false);
     }
-  } catch (error) {
-    console.error("Error during API call:", error);
-  } finally {
-    // Set loading state to false
-    setAcceptLoader(false);
-  }
-};
+  };
 
   const [linkedEventData, setLinkedEventData] = useState([]);
 
@@ -2150,90 +2152,91 @@ export default function VendorDetails() {
   const mergedColumns = [...defaultColumns, ...bidTemplate];
 
   useEffect(() => {
-  if (data.length > 0) {
-    const updatedTaxRateData = data.map((selectedRow, index) => {
-      // Use existing tax details from data unless updated in taxRateData
-      const existingRow = taxRateData[index] || {};
-      const quantityAvail =
-        parseFloat(selectedRow.quantityAvail || 0) > 0
-          ? parseFloat(selectedRow.quantityAvail)
-          : parseFloat(selectedRow.quantity || 0);
+    if (data.length > 0) {
+      const updatedTaxRateData = data.map((selectedRow, index) => {
+        // Use existing tax details from data unless updated in taxRateData
+        const existingRow = taxRateData[index] || {};
+        const quantityAvail =
+          parseFloat(selectedRow.quantityAvail || 0) > 0
+            ? parseFloat(selectedRow.quantityAvail)
+            : parseFloat(selectedRow.quantity || 0);
 
-      const price = parseFloat(selectedRow.price || 0);
-      const discount = parseFloat(selectedRow.discount || 0);
-      const total = price * quantityAvail;
-      const discountAmount = (total * discount) / 100;
-      const afterDiscountValue = total - discountAmount;
+        const price = parseFloat(selectedRow.price || 0);
+        const discount = parseFloat(selectedRow.discount || 0);
+        const total = price * quantityAvail;
+        const discountAmount = (total * discount) / 100;
+        const afterDiscountValue = total - discountAmount;
 
-      // Use addition and deduction tax details from `data` unless updated in `taxRateData`
-      const additionTaxDetails = (
-        taxRateData[index]?.addition_bid_material_tax_details ||
-        selectedRow.addition_bid_material_tax_details ||
-        []
-      ).map((tax) => {
-        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
-        const amount = tax.inclusive
-          ? 0
-          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
-        return { ...tax, amount };
+        // Use addition and deduction tax details from `data` unless updated in `taxRateData`
+        const additionTaxDetails = (
+          taxRateData[index]?.addition_bid_material_tax_details ||
+          selectedRow.addition_bid_material_tax_details ||
+          []
+        ).map((tax) => {
+          const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+          const amount = tax.inclusive
+            ? 0
+            : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+          return { ...tax, amount };
+        });
+
+        const deductionTaxDetails = (
+          taxRateData[index]?.deduction_bid_material_tax_details ||
+          selectedRow.deduction_bid_material_tax_details ||
+          []
+        ).map((tax) => {
+          const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+          const amount = tax.inclusive
+            ? 0
+            : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+          return { ...tax, amount };
+        });
+
+        const additionTaxTotal = additionTaxDetails.reduce(
+          (sum, tax) => sum + parseFloat(tax.amount || 0),
+          0
+        );
+        const deductionTaxTotal = deductionTaxDetails.reduce(
+          (sum, tax) => sum + parseFloat(tax.amount || 0),
+          0
+        );
+        const netCost =
+          afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+
+        return {
+          ...existingRow,
+          material: selectedRow.section || "",
+          ratePerNos: selectedRow.price || "",
+          totalPoQty: quantityAvail.toString(),
+          discount: selectedRow.discount || "",
+          materialCost: selectedRow.price || "",
+          discountRate: discountAmount.toFixed(2),
+          afterDiscountValue: afterDiscountValue.toFixed(2),
+          remark: selectedRow.vendorRemark || "",
+          addition_bid_material_tax_details: additionTaxDetails,
+          deduction_bid_material_tax_details: deductionTaxDetails,
+          netCost: netCost.toFixed(2),
+        };
       });
 
-      const deductionTaxDetails = (
-        taxRateData[index]?.deduction_bid_material_tax_details ||
-        selectedRow.deduction_bid_material_tax_details ||
-        []
-      ).map((tax) => {
-        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
-        const amount = tax.inclusive
-          ? 0
-          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
-        return { ...tax, amount };
-      });
+      setTaxRateData(updatedTaxRateData);
 
-      const additionTaxTotal = additionTaxDetails.reduce(
-        (sum, tax) => sum + parseFloat(tax.amount || 0),
-        0
-      );
-      const deductionTaxTotal = deductionTaxDetails.reduce(
-        (sum, tax) => sum + parseFloat(tax.amount || 0),
-        0
-      );
-      const netCost = afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+      const updatedData = data.map((row, index) => ({
+        ...row,
+        addition_bid_material_tax_details:
+          updatedTaxRateData[index]?.addition_bid_material_tax_details ||
+          row.addition_bid_material_tax_details ||
+          [],
+        deduction_bid_material_tax_details:
+          updatedTaxRateData[index]?.deduction_bid_material_tax_details ||
+          row.deduction_bid_material_tax_details ||
+          [],
+      }));
+      setData(updatedData);
 
-      return {
-        ...existingRow,
-        material: selectedRow.section || "",
-        ratePerNos: selectedRow.price || "",
-        totalPoQty: quantityAvail.toString(),
-        discount: selectedRow.discount || "",
-        materialCost: selectedRow.price || "",
-        discountRate: discountAmount.toFixed(2),
-        afterDiscountValue: afterDiscountValue.toFixed(2),
-        remark: selectedRow.vendorRemark || "",
-        addition_bid_material_tax_details: additionTaxDetails,
-        deduction_bid_material_tax_details: deductionTaxDetails,
-        netCost: netCost.toFixed(2),
-      };
-    });
-
-    setTaxRateData(updatedTaxRateData);
-
-    const updatedData = data.map((row, index) => ({
-      ...row,
-      addition_bid_material_tax_details:
-        updatedTaxRateData[index]?.addition_bid_material_tax_details ||
-        row.addition_bid_material_tax_details ||
-        [],
-      deduction_bid_material_tax_details:
-        updatedTaxRateData[index]?.deduction_bid_material_tax_details ||
-        row.deduction_bid_material_tax_details ||
-        [],
-    }));
-    setData(updatedData);
-
-    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-  }
-}, [data, taxRateData]);
+      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+    }
+  }, [data, taxRateData]);
 
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
@@ -4274,73 +4277,49 @@ export default function VendorDetails() {
                   //   // height: "100vh"
                 }}
               >
-                {acceptLoader ? (<>
-                <div className="loader-container">
-                <div className="lds-ring">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </div>
-                <p>Loading...</p>
-              </div>
-                </>): (
-
-                <div className="card mx-3 p-4 mt-3 pb-4 mb-2 ">
-                  <div className="d-flex flex-row-reverse">
-                    <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1 ">
-                      {/* {event.endsIn ? ( */}
-
-                      <div className="d-flex align-items-center gap-1 ">
-                        <ClockIcon />
-                        <p className="mb-0 eventList-p1">Ends In</p>
+                {acceptLoader ? (
+                  <>
+                    <div className="loader-container">
+                      <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
                       </div>
-                      <span>{timeRemaining}</span>
-                      <div className="d-flex align-items-center gap-2">
-                        <i className="bi bi-hourglass-split"></i>
-                        {/* <p className="mb-0 eventList-p1">Bid Approves In</p> */}
-                      </div>
-                      {/* )} */}
+                      <p>Loading...</p>
                     </div>
-                  </div>
-                  <div className="card p-2 m-1">
-                    <div className="card-header4">
-                      <div className="d-flex justify-content-between align-items-center ">
-                        <div className="d-flex justify-content-between">
-                          {/* <pre>{JSON.stringify(additionalColumns, null, 2)}</pre>
+                  </>
+                ) : (
+                  <div className="card mx-3 p-4 mt-3 pb-4 mb-2 ">
+                    <div className="d-flex flex-row-reverse">
+                      <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1 ">
+                        {/* {event.endsIn ? ( */}
+
+                        <div className="d-flex align-items-center gap-1 ">
+                          <ClockIcon />
+                          <p className="mb-0 eventList-p1">Ends In</p>
+                        </div>
+                        <span>{timeRemaining}</span>
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-hourglass-split"></i>
+                          {/* <p className="mb-0 eventList-p1">Bid Approves In</p> */}
+                        </div>
+                        {/* )} */}
+                      </div>
+                    </div>
+                    <div className="card p-2 m-1">
+                      <div className="card-header4">
+                        <div className="d-flex justify-content-between align-items-center ">
+                          <div className="d-flex justify-content-between">
+                            {/* <pre>{JSON.stringify(additionalColumns, null, 2)}</pre>
                         <pre>{JSON.stringify(bidTemplate, null, 2)}</pre> */}
 
-                          <h4>
-                            Submission Sheet.
-                            <span
-                              style={{
-                                backgroundColor: "#fff2e8",
-                                color: "#8b0203",
-                                padding: "5px 10px",
-                                borderRadius: "5px",
-                                marginLeft: "25px",
-                                fontSize: "0.85rem",
-                                fontWeight: "bold",
-                                borderColor: "#ffbb96",
-                                textTransform: "capitalize",
-                              }}
-                            >
-                              {data1?.event_type_detail?.event_type}
-                            </span>
-                          </h4>
-                          {isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted ? (
-                            <></>
-                          ) : (
-                            data1?.event_type_detail?.event_type ===
-                              "auction" && (
+                            <h4>
+                              Submission Sheet.
                               <span
                                 style={{
                                   backgroundColor: "#fff2e8",
@@ -4351,191 +4330,219 @@ export default function VendorDetails() {
                                   fontSize: "0.85rem",
                                   fontWeight: "bold",
                                   borderColor: "#ffbb96",
+                                  textTransform: "capitalize",
                                 }}
                               >
-                                {data1?.event_type_detail
-                                  ?.event_configuration === "rank_based"
-                                  ? `Rank: ${bids[0]?.rank ?? "-"}`
-                                  : `Price: ₹${bids[0]?.min_price ?? "-"}`}
+                                {data1?.event_type_detail?.event_type}
                               </span>
-                            )
-                          )}
-                        </div>
+                            </h4>
+                            {isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted ? (
+                              <></>
+                            ) : (
+                              data1?.event_type_detail?.event_type ===
+                                "auction" && (
+                                <span
+                                  style={{
+                                    backgroundColor: "#fff2e8",
+                                    color: "#8b0203",
+                                    padding: "5px 10px",
+                                    borderRadius: "5px",
+                                    marginLeft: "25px",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "bold",
+                                    borderColor: "#ffbb96",
+                                  }}
+                                >
+                                  {data1?.event_type_detail
+                                    ?.event_configuration === "rank_based"
+                                    ? `Rank: ${bids[0]?.rank ?? "-"}`
+                                    : `Price: ₹${bids[0]?.min_price ?? "-"}`}
+                                </span>
+                              )
+                            )}
+                          </div>
 
-                        <button
-                          className="purple-btn2"
-                          onClick={() => handleAllTaxModal()}
-                        >
-                          <span className="align-text-top">All Taxes</span>
-                          {/* {console.log("data:---", data)
-                          } */}
-                        </button>
-                      </div>
-                    </div>
-
-                    {counterData > 0 && (
-                      <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
-                        <div className="">
-                          <p>Counter Offer</p>
-                          <p>
-                            A counter is pending on your bid. You cannot ake any
-                            further changes to your bid untill your resolve the
-                            counter offer
-                          </p>
-                        </div>
-                        <div className="d-flex">
-                          <button
-                            className="purple-btn1"
-                            onClick={handleDecline}
-                          >
-                            Decline
-                          </button>
                           <button
                             className="purple-btn2"
-                            onClick={handleAccept}
+                            onClick={() => handleAllTaxModal()}
                           >
-                            Accept Offer
+                            <span className="align-text-top">All Taxes</span>
+                            {/* {console.log("data:---", data)
+                          } */}
                           </button>
                         </div>
                       </div>
-                    )}
 
-                    <div className="card-body">
-                      <div style={tableContainerStyle}>
-                        <Table
-                          columns={[
-                            { label: "Sr No", key: "srNo" },
-                            {
-                              label: "Material Name",
-                              key: "descriptionOfItem",
-                            },
-                            { label: "Material Type", key: "section" },
-                            { label: "Material Sub Type", key: "subSection" },
-                            { label: "UOM", key: "unit" },
-                            { label: "Brand", key: "pmsBrand" },
-                            { label: "Colour", key: "pmsColour" },
-                            { label: "Generic Info", key: "genericInfo" },
-                            { label: "Delivery Location", key: "location" },
-                            { label: "Quantity Requested", key: "quantity" },
-                            {
-                              label: "Quantity Available *",
-                              key: "quantityAvail",
-                            },
-                            { label: "Price *", key: "price" },
-                            { label: "Realised Price *", key: "realisedPrice" },
-                            { label: "Discount %*", key: "discount" },
-                            {
-                              label: "Realised Discount",
-                              key: "realisedDiscount",
-                            },
-                            { label: "Landed Amount", key: "landedAmount" },
-                            { label: "Total", key: "total" },
-                            {
-                              label: "Participant Attachment",
-                              key: "attachment",
-                            },
-                            { label: "Vendor Remark", key: "vendorRemark" },
-                            { label: "Tax Rate", key: "taxRate" },
-                            ...additionalColumns, // Dynamically add extra columns
-                          ]}
-                          data={data}
-                          customRender={{
-                            realisedPrice: (cell, rowIndex) => {
-                              return (
-                                <input
-                                  value={cell || "-"}
-                                  disabled={true}
-                                  className="form-control"
-                                  readonly
-                                />
-                              );
-                            },
-                            taxRate: (cell, rowIndex) => (
-                              <button
-                                className="purple-btn2"
-                                onClick={() => handleOpenModal(rowIndex)}
-                              >
-                                <span className="align-text-top">Select</span>
-                                {/* {console.log("data:---", data)
+                      {counterData > 0 && (
+                        <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
+                          <div className="">
+                            <p>Counter Offer</p>
+                            <p>
+                              A counter is pending on your bid. You cannot ake
+                              any further changes to your bid untill your
+                              resolve the counter offer
+                            </p>
+                          </div>
+                          <div className="d-flex">
+                            <button
+                              className="purple-btn1"
+                              onClick={handleDecline}
+                            >
+                              Decline
+                            </button>
+                            <button
+                              className="purple-btn2"
+                              onClick={handleAccept}
+                            >
+                              Accept Offer
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="card-body">
+                        <div style={tableContainerStyle}>
+                          <Table
+                            columns={[
+                              { label: "Sr No", key: "srNo" },
+                              {
+                                label: "Material Name",
+                                key: "descriptionOfItem",
+                              },
+                              { label: "Material Type", key: "section" },
+                              { label: "Material Sub Type", key: "subSection" },
+                              { label: "UOM", key: "unit" },
+                              { label: "Brand", key: "pmsBrand" },
+                              { label: "Colour", key: "pmsColour" },
+                              { label: "Generic Info", key: "genericInfo" },
+                              { label: "Delivery Location", key: "location" },
+                              { label: "Quantity Requested", key: "quantity" },
+                              {
+                                label: "Quantity Available *",
+                                key: "quantityAvail",
+                              },
+                              { label: "Price *", key: "price" },
+                              {
+                                label: "Realised Price *",
+                                key: "realisedPrice",
+                              },
+                              { label: "Discount %*", key: "discount" },
+                              {
+                                label: "Realised Discount",
+                                key: "realisedDiscount",
+                              },
+                              { label: "Landed Amount", key: "landedAmount" },
+                              { label: "Total", key: "total" },
+                              {
+                                label: "Participant Attachment",
+                                key: "attachment",
+                              },
+                              { label: "Vendor Remark", key: "vendorRemark" },
+                              { label: "Tax Rate", key: "taxRate" },
+                              ...additionalColumns, // Dynamically add extra columns
+                            ]}
+                            data={data}
+                            customRender={{
+                              realisedPrice: (cell, rowIndex) => {
+                                return (
+                                  <input
+                                    value={cell || "-"}
+                                    disabled={true}
+                                    className="form-control"
+                                    readonly
+                                  />
+                                );
+                              },
+                              taxRate: (cell, rowIndex) => (
+                                <button
+                                  className="purple-btn2"
+                                  onClick={() => handleOpenModal(rowIndex)}
+                                >
+                                  <span className="align-text-top">Select</span>
+                                  {/* {console.log("data:---", data)
                                 } */}
-                              </button>
-                            ),
-                            pmsBrand: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={true}
-                              />
-                            ),
-                            pmsColour: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={true}
-                              />
-                            ),
-                            genericInfo: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={true}
-                              />
-                            ),
-                            descriptionOfItem: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={true}
-                              />
-                            ),
+                                </button>
+                              ),
+                              pmsBrand: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={true}
+                                />
+                              ),
+                              pmsColour: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={true}
+                                />
+                              ),
+                              genericInfo: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={true}
+                                />
+                              ),
+                              descriptionOfItem: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={true}
+                                />
+                              ),
 
-                            varient: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
+                              varient: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled={isBid}
+                                />
+                              ),
 
-                            section: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled
-                              />
-                            ),
+                              section: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
 
-                            subSection: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled
-                              />
-                            ),
-                            unit: (cell, rowIndex) => (
-                              <>
-                                {/* <SelectBox
+                              subSection: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  value={cell}
+                                  readOnly
+                                  style={otherColumnsStyle}
+                                  disabled
+                                />
+                              ),
+                              unit: (cell, rowIndex) => (
+                                <>
+                                  {/* <SelectBox
                                 isDisableFirstOption={true}
                                 options={unitMeasure}
                                 defaultValue={cell}
@@ -4545,6 +4552,19 @@ export default function VendorDetails() {
                                 style={otherColumnsStyle} // Other columns are scrollable
                                 disabled={isBid}
                                 /> */}
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={cell}
+                                    readOnly
+                                    style={otherColumnsStyle}
+                                    disabled={true}
+                                  />
+                                  {/* <p>{cell}</p> */}
+                                </>
+                              ),
+
+                              location: (cell, rowIndex) => (
                                 <input
                                   className="form-control"
                                   type="text"
@@ -4553,866 +4573,861 @@ export default function VendorDetails() {
                                   style={otherColumnsStyle}
                                   disabled={true}
                                 />
-                                {/* <p>{cell}</p> */}
-                              </>
-                            ),
-
-                            location: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="text"
-                                value={cell}
-                                readOnly
-                                style={otherColumnsStyle}
-                                disabled={true}
-                              />
-                            ),
-                            quantity: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="number"
-                                min="0"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e.target.value,
-                                    rowIndex,
-                                    "quantity"
-                                  )
-                                }
-                                placeholder="Enter Quantity"
-                                disabled={true}
-                                style={otherColumnsStyle}
-                              />
-                            ),
-
-                            price: (cell, rowIndex) => {
-                              const previousPrice =
-                                previousData[rowIndex]?.price || cell; // Fallback to `cell` if `previousData` is undefined
-                              const updatedPrice =
-                                updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
-
-                              const showArrow =
-                                counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
-
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousPrice}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedPrice}
-                                  </span>
-
-                                  {/* <span>→{updatedDiscount}</span> */}
-                                </div>
-                              ) : counterData ? (
-                                // Show updated price if `counterData` exists but no change in value
-                                <span>{updatedPrice}</span>
-                              ) : (
-                                // If no `counterData`, provide an editable input
+                              ),
+                              quantity: (cell, rowIndex) => (
                                 <input
                                   className="form-control"
                                   type="number"
                                   min="0"
-                                  value={previousPrice}
+                                  value={cell}
                                   onChange={(e) =>
                                     handleInputChange(
                                       e.target.value,
                                       rowIndex,
-                                      "price"
+                                      "quantity"
                                     )
                                   }
+                                  placeholder="Enter Quantity"
+                                  disabled={true}
                                   style={otherColumnsStyle}
-                                  disabled={isBid}
                                 />
-                              );
-                            },
-                            discount: (cell, rowIndex) => {
-                              const previousDiscount =
-                                previousData[rowIndex]?.discount || cell;
-                              const updatedDiscount =
-                                updatedData[rowIndex]?.discount ||
-                                previousDiscount;
-                              const showArrow =
-                                counterData &&
-                                previousDiscount !== updatedDiscount;
+                              ),
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
+                              price: (cell, rowIndex) => {
+                                const previousPrice =
+                                  previousData[rowIndex]?.price || cell; // Fallback to `cell` if `previousData` is undefined
+                                const updatedPrice =
+                                  updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
+
+                                const showArrow =
+                                  counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
+
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
                                     style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
+                                      display: "flex",
+                                      alignItems: "center",
                                     }}
                                   >
-                                    {previousDiscount}%
-                                  </span>
-
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
                                     >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
+                                      ₹{previousPrice}
+                                    </span>
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        data-icon="arrow-right"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+                                        marginEnd: "",
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
 
-                                      // Rounded edges for the badge
-                                      // Make text bold
+                                        // Rounded edges for the badge
+                                        // Make text bold
+                                      }}
+                                    >
+                                      ₹{updatedPrice}
+                                    </span>
+
+                                    {/* <span>→{updatedDiscount}</span> */}
+                                  </div>
+                                ) : counterData ? (
+                                  // Show updated price if `counterData` exists but no change in value
+                                  <span>{updatedPrice}</span>
+                                ) : (
+                                  // If no `counterData`, provide an editable input
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    min="0"
+                                    value={previousPrice}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "price"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+                              discount: (cell, rowIndex) => {
+                                const previousDiscount =
+                                  previousData[rowIndex]?.discount || cell;
+                                const updatedDiscount =
+                                  updatedData[rowIndex]?.discount ||
+                                  previousDiscount;
+                                const showArrow =
+                                  counterData &&
+                                  previousDiscount !== updatedDiscount;
+
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
                                     }}
                                   >
-                                    {updatedDiscount}%
-                                  </span>
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      {previousDiscount}%
+                                    </span>
 
-                                  {/* <span>→{updatedDiscount}</span> */}
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedDiscount}</span>
-                              ) : (
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        data-icon="arrow-right"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+                                        marginEnd: "",
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
+
+                                        // Rounded edges for the badge
+                                        // Make text bold
+                                      }}
+                                    >
+                                      {updatedDiscount}%
+                                    </span>
+
+                                    {/* <span>→{updatedDiscount}</span> */}
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedDiscount}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    min="0"
+                                    value={previousDiscount}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "discount"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+                              rate: (cell, rowIndex) => (
                                 <input
                                   className="form-control"
                                   type="number"
                                   min="0"
-                                  value={previousDiscount}
+                                  value={cell}
                                   onChange={(e) =>
                                     handleInputChange(
                                       e.target.value,
                                       rowIndex,
-                                      "discount"
+                                      "rate"
                                     )
                                   }
+                                  placeholder="Enter Discount"
                                   style={otherColumnsStyle}
                                   disabled={isBid}
                                 />
-                              );
-                            },
-                            rate: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="number"
-                                min="0"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e.target.value,
-                                    rowIndex,
-                                    "rate"
-                                  )
-                                }
-                                placeholder="Enter Discount"
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
+                              ),
 
-                            gst: (cell, rowIndex) => {
-                              const previousGst =
-                                previousData[rowIndex]?.gst || cell;
-                              const updatedGst =
-                                updatedData[rowIndex]?.gst || previousGst;
-                              const showArrow =
-                                counterData && previousGst !== updatedGst;
+                              gst: (cell, rowIndex) => {
+                                const previousGst =
+                                  previousData[rowIndex]?.gst || cell;
+                                const updatedGst =
+                                  updatedData[rowIndex]?.gst || previousGst;
+                                const showArrow =
+                                  counterData && previousGst !== updatedGst;
 
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
                                     style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
+                                      display: "flex",
+                                      alignItems: "center",
                                     }}
                                   >
-                                    {previousGst}%
-                                  </span>
-                                  {/* <span style={{ marginRight: "5px" }}>→</span>
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      {previousGst}%
+                                    </span>
+                                    {/* <span style={{ marginRight: "5px" }}>→</span>
                                   <span>{updatedGst}</span> */}
 
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        data-icon="arrow-right"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+                                        marginEnd: "",
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
+                                      }}
                                     >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
-                                    }}
-                                  >
-                                    {updatedGst}%
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedGst}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousGst}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "gst"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-
-                            quantityAvail: (cell, rowIndex) => {
-                              const row = data[rowIndex];
-                              const quantityRequested =
-                                parseFloat(row.quantity) || 0;
-                              const quantityAvail = row.quantityAvail ?? ""; // editable input
-                              const price = parseFloat(row.price) || 0;
-
-                              const handleQuantityChange = (e) => {
-                                const value = parseFloat(e.target.value) || 0;
-
-                                if (value > quantityRequested) {
-                                  toast.error(
-                                    "The quantity available value cannot be greater than the quantity requested."
-                                  );
-                                  return;
-                                }
-
-                                handleInputChange(
-                                  value,
-                                  rowIndex,
-                                  "quantityAvail"
+                                      {updatedGst}%
+                                    </span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedGst}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={previousGst}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "gst"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
                                 );
-                              };
+                              },
 
-                              const showArrow =
-                                counterData &&
-                                (previousData[rowIndex]?.quantityAvail ??
-                                  "") !==
-                                  (updatedData[rowIndex]?.quantityAvail ?? "");
-
-                              return showArrow ? (
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    {previousData[rowIndex]?.quantityAvail ||
-                                      quantityRequested}
-                                  </span>
-                                  <span className="me-2">
-                                    <svg
-                                      viewBox="64 64 896 896"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253",
-                                      padding: "4px 10px",
-                                      borderRadius: "5px",
-                                      color: "white",
-                                      lineHeight: "1",
-                                    }}
-                                  >
-                                    {updatedData[rowIndex]?.quantityAvail ||
-                                      quantityAvail}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{quantityAvail}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={
-                                    quantityAvail !== "" &&
-                                    quantityAvail !== undefined
-                                      ? quantityAvail
-                                      : quantityRequested
-                                  }
-                                  onChange={handleQuantityChange}
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-                            landedAmount: (cell, rowIndex) => {
-                              const previousLandedAmount =
-                                previousData[rowIndex]?.landedAmount || cell;
-                              const updatedLandedAmount =
-                                updatedData[rowIndex]?.landedAmount ||
-                                previousLandedAmount;
-                              const showArrow =
-                                counterData &&
-                                previousLandedAmount !== updatedLandedAmount;
-
-                              return showArrow ? (
-                                <div
-                                  className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                    }}
-                                  >
-                                    {previousLandedAmount}
-                                  </span>
-                                  <span style={{ marginRight: "5px" }}>→</span>
-                                  <span>{updatedLandedAmount}</span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedLandedAmount}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousLandedAmount}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "landedAmount"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-
-                            realisedDiscount: (cell, rowIndex) => {
-                              const previousRealisedDiscount =
-                                previousData[rowIndex]?.realisedDiscount ||
-                                cell;
-                              const updatedRealisedDiscount =
-                                updatedData[rowIndex]?.realisedDiscount ||
-                                previousRealisedDiscount;
-                              const showArrow =
-                                counterData &&
-                                previousRealisedDiscount !==
-                                  updatedRealisedDiscount;
-
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousRealisedDiscount}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedRealisedDiscount}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedRealisedDiscount}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousRealisedDiscount}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "realisedDiscount"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-
-                            realisedGst: (cell, rowIndex) => {
-                              const previousRealisedGst =
-                                previousData[rowIndex]?.realisedGst || cell;
-                              const updatedRealisedGst =
-                                updatedData[rowIndex]?.realisedGst ||
-                                previousRealisedGst;
-                              const showArrow =
-                                counterData &&
-                                previousRealisedGst !== updatedRealisedGst;
-
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousRealisedGst}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-                                      marginEnd: "",
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedRealisedGst}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedRealisedGst}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousRealisedGst}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "realisedGst"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-
-                            total: (cell, rowIndex) => {
-                              const previousTotal =
-                                previousData[rowIndex]?.total || cell;
-                              const updatedTotal =
-                                updatedData[rowIndex]?.total || previousTotal;
-                              const showArrow =
-                                counterData && previousTotal !== updatedTotal;
-
-                              return showArrow ? (
-                                <div
-                                  // className="form-control"
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    maxWidth: "120%",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      textDecoration: "line-through",
-                                      marginRight: "5px",
-                                      color: "gray",
-                                    }}
-                                  >
-                                    ₹{previousTotal}
-                                  </span>
-                                  <span className="me-2">
-                                    {" "}
-                                    <svg
-                                      className="me-2"
-                                      viewBox="64 64 896 896"
-                                      focusable="false"
-                                      class=""
-                                      data-icon="arrow-right"
-                                      width="1em"
-                                      height="1em"
-                                      fill="currentColor"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                                    </svg>
-                                  </span>
-                                  <span
-                                    style={{
-                                      backgroundColor: "#b45253", // Yellow background
-                                      padding: "4px 10px", // Add padding to resemble a badge
-                                      borderRadius: "5px",
-
-                                      // color:"#7c2d12",
-                                      lineHeight: "1",
-                                      color: "white",
-
-                                      // Rounded edges for the badge
-                                      // Make text bold
-                                    }}
-                                  >
-                                    ₹{updatedTotal}
-                                  </span>
-                                </div>
-                              ) : counterData ? (
-                                <span>{updatedTotal}</span>
-                              ) : (
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  value={previousTotal}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e.target.value,
-                                      rowIndex,
-                                      "total"
-                                    )
-                                  }
-                                  style={otherColumnsStyle}
-                                  disabled={isBid}
-                                />
-                              );
-                            },
-
-                            vendorRemark: (cell, rowIndex) => (
-                              <textarea
-                                className="form-control"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e.target.value,
-                                    rowIndex,
-                                    "vendorRemark"
-                                  )
-                                }
-                                placeholder="Enter Vendor Remark"
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
-
-                            bestAmount: (cell, rowIndex) => {
-                              const quantity =
-                                parseFloat(data[rowIndex].quantityAvail) || 0;
-                              const rate = parseFloat(data[rowIndex].rate) || 0;
-                              const totalAmount = quantity * rate;
-
-                              return (
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={totalAmount.toFixed(2)}
-                                  readOnly
-                                  style={otherColumnsStyle}
-                                />
-                              );
-                            },
-                            attachment: (cell, rowIndex) => (
-                              <input
-                                className="form-control"
-                                type="file"
-                                onChange={(e) => {
-                                  const file = e.target.files[0];
-                                  if (file) {
-                                    const updatedData = [...data];
-                                    updatedData[rowIndex].attachment = file;
-                                    setData(updatedData);
-                                  }
-                                }}
-                                style={otherColumnsStyle}
-                                disabled={isBid}
-                              />
-                            ),
-                            amount: (_, rowIndex) => {
-                              const quantity =
-                                parseFloat(data[rowIndex].quantityAvail) || 0;
-                              const rate = parseFloat(data[rowIndex].rate) || 0;
-                              const totalAmount = quantity * rate;
-
-                              return (
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={totalAmount.toFixed(2)}
-                                  readOnlyn
-                                  style={otherColumsStyle}
-                                />
-                              );
-                            },
-                            // ...additionalColumns.reduce((acc, col) => {
-                            //   acc[col.key] = (cell, rowIndex) => {
-                            //     const row = data[rowIndex]; // Correctly reference the row
-                            //     const extraData =
-                            //       row?.extra_data?.[col.key] || {
-                            //         value: "",
-                            //         readonly: false,
-                            //       }; // Ensure extra_data is initialized
-                            //     console.log("row", row, "extraData", extraData);
-                            //     return (
-                            //       <input
-                            //         value={extraData.value || ""
-                            //           } // Use the value conditionally
-                            //         className="form-control"
-                            //         onChange={(e) => {
-                            //           // if (revisedBid) {
-                            //             // Update the value in extra_data immutably
-                            //             setData((prevData) => {
-                            //               const updatedData = prevData.map(
-                            //                 (item, index) => {
-                            //                   if (index === rowIndex) {
-                            //                     const updatedRow = { ...item };
-                            //                     if (!updatedRow.extra_data) {
-                            //                       updatedRow.extra_data = {};
-                            //                     }
-                            //                     updatedRow.extra_data[col.key] =
-                            //                       {
-                            //                         ...updatedRow.extra_data[
-                            //                           col.key
-                            //                         ],
-                            //                         value: e.target.value,
-                            //                       };
-                            //                     return updatedRow;
-                            //                   }
-                            //                   return item;
-                            //                 }
-                            //               );
-                            //               return updatedData;
-                            //             });
-
-                            //         }}
-                            //         onFocus={(e) => e.target.select()} // Ensure the input remains focused
-                            //         readOnly={!revisedBid} // Make input read-only if not revisedBid
-                            //       />
-                            //     );
-                            //   };
-                            //   return acc;
-                            // }, {}),
-                            // ...additionalColumns.reduce((acc, col) => {
-                            //   acc[col.key] = (cell, rowIndex) => {
-                            //     const row = data[rowIndex]; // Correctly reference the row
-                            //     const extraData = row?.extra_data?.[col.key] || { value: "", readonly: false }; // Ensure extra_data is initialized
-                            //     return (
-                            //       <input
-                            //         value={typeof extraData === "object" ? extraData.value || "" : extraData || ""}
-                            //         className="form-control"
-                            //         onChange={(e) => {
-                            //           // Update the value in extra_data immutably
-                            //           setData((prevData) => {
-                            //             const updatedData = prevData.map((item, index) => {
-                            //               if (index === rowIndex) {
-                            //                 const updatedRow = { ...item };
-                            //                 if (!updatedRow.extra_data) {
-                            //                   updatedRow.extra_data = {};
-                            //                 }
-                            //                 updatedRow.extra_data[col.key] = {
-                            //                   ...updatedRow.extra_data[col.key],
-                            //                   value: e.target.value,
-                            //                 };
-                            //                 return updatedRow;
-                            //               }
-                            //               return item;
-                            //             });
-                            //             return updatedData;
-                            //           });
-                            //         }}
-                            //         onFocus={(e) => e.target.select()}
-                            //       />
-                            //     );
-                            //   };
-                            //   return acc;
-                            // }, {}),
-                            ...additionalColumns.reduce((acc, col) => {
-                              acc[col.key] = (cell, rowIndex) => {
+                              quantityAvail: (cell, rowIndex) => {
                                 const row = data[rowIndex];
+                                const quantityRequested =
+                                  parseFloat(row.quantity) || 0;
+                                const quantityAvail = row.quantityAvail ?? ""; // editable input
+                                const price = parseFloat(row.price) || 0;
 
-                                // Determine the correct key to use from extra_data
-                                const currentKey =
-                                  row?.extra_data?.[col.label] !== undefined
-                                    ? col.label
-                                    : col.value &&
-                                      row?.extra_data?.[col.value] !== undefined
-                                    ? col.value
-                                    : col.key;
+                                const handleQuantityChange = (e) => {
+                                  const value = parseFloat(e.target.value) || 0;
 
-                                const revisedBid = row?.revised_bid;
-                                const extraData = row?.extra_data?.[currentKey];
-                                // console.log("row", row, "extraData", extraData);
+                                  if (value > quantityRequested) {
+                                    toast.error(
+                                      "The quantity available value cannot be greater than the quantity requested."
+                                    );
+                                    return;
+                                  }
 
-                                // Determine value and readonly safely
-                                const inputValue =
-                                  typeof extraData === "object"
-                                    ? extraData.value ?? ""
-                                    : extraData ?? "";
-                                const isReadOnly =
-                                  typeof extraData === "object"
-                                    ? extraData.readonly ?? false
-                                    : false;
+                                  handleInputChange(
+                                    value,
+                                    rowIndex,
+                                    "quantityAvail"
+                                  );
+                                };
+
+                                const showArrow =
+                                  counterData &&
+                                  (previousData[rowIndex]?.quantityAvail ??
+                                    "") !==
+                                    (updatedData[rowIndex]?.quantityAvail ??
+                                      "");
+
+                                return showArrow ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      {previousData[rowIndex]?.quantityAvail ||
+                                        quantityRequested}
+                                    </span>
+                                    <span className="me-2">
+                                      <svg
+                                        viewBox="64 64 896 896"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253",
+                                        padding: "4px 10px",
+                                        borderRadius: "5px",
+                                        color: "white",
+                                        lineHeight: "1",
+                                      }}
+                                    >
+                                      {updatedData[rowIndex]?.quantityAvail ||
+                                        quantityAvail}
+                                    </span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{quantityAvail}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={
+                                      quantityAvail !== "" &&
+                                      quantityAvail !== undefined
+                                        ? quantityAvail
+                                        : quantityRequested
+                                    }
+                                    onChange={handleQuantityChange}
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+                              landedAmount: (cell, rowIndex) => {
+                                const previousLandedAmount =
+                                  previousData[rowIndex]?.landedAmount || cell;
+                                const updatedLandedAmount =
+                                  updatedData[rowIndex]?.landedAmount ||
+                                  previousLandedAmount;
+                                const showArrow =
+                                  counterData &&
+                                  previousLandedAmount !== updatedLandedAmount;
+
+                                return showArrow ? (
+                                  <div
+                                    className="form-control"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                      }}
+                                    >
+                                      {previousLandedAmount}
+                                    </span>
+                                    <span style={{ marginRight: "5px" }}>
+                                      →
+                                    </span>
+                                    <span>{updatedLandedAmount}</span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedLandedAmount}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={previousLandedAmount}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "landedAmount"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+
+                              realisedDiscount: (cell, rowIndex) => {
+                                const previousRealisedDiscount =
+                                  previousData[rowIndex]?.realisedDiscount ||
+                                  cell;
+                                const updatedRealisedDiscount =
+                                  updatedData[rowIndex]?.realisedDiscount ||
+                                  previousRealisedDiscount;
+                                const showArrow =
+                                  counterData &&
+                                  previousRealisedDiscount !==
+                                    updatedRealisedDiscount;
+
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      ₹{previousRealisedDiscount}
+                                    </span>
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        data-icon="arrow-right"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+                                        marginEnd: "",
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
+
+                                        // Rounded edges for the badge
+                                        // Make text bold
+                                      }}
+                                    >
+                                      ₹{updatedRealisedDiscount}
+                                    </span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedRealisedDiscount}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={previousRealisedDiscount}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "realisedDiscount"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+
+                              realisedGst: (cell, rowIndex) => {
+                                const previousRealisedGst =
+                                  previousData[rowIndex]?.realisedGst || cell;
+                                const updatedRealisedGst =
+                                  updatedData[rowIndex]?.realisedGst ||
+                                  previousRealisedGst;
+                                const showArrow =
+                                  counterData &&
+                                  previousRealisedGst !== updatedRealisedGst;
+
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      ₹{previousRealisedGst}
+                                    </span>
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+                                        marginEnd: "",
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
+
+                                        // Rounded edges for the badge
+                                        // Make text bold
+                                      }}
+                                    >
+                                      ₹{updatedRealisedGst}
+                                    </span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedRealisedGst}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={previousRealisedGst}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "realisedGst"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+
+                              total: (cell, rowIndex) => {
+                                const previousTotal =
+                                  previousData[rowIndex]?.total || cell;
+                                const updatedTotal =
+                                  updatedData[rowIndex]?.total || previousTotal;
+                                const showArrow =
+                                  counterData && previousTotal !== updatedTotal;
+
+                                return showArrow ? (
+                                  <div
+                                    // className="form-control"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      maxWidth: "120%",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        textDecoration: "line-through",
+                                        marginRight: "5px",
+                                        color: "gray",
+                                      }}
+                                    >
+                                      ₹{previousTotal}
+                                    </span>
+                                    <span className="me-2">
+                                      {" "}
+                                      <svg
+                                        className="me-2"
+                                        viewBox="64 64 896 896"
+                                        focusable="false"
+                                        class=""
+                                        data-icon="arrow-right"
+                                        width="1em"
+                                        height="1em"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                      </svg>
+                                    </span>
+                                    <span
+                                      style={{
+                                        backgroundColor: "#b45253", // Yellow background
+                                        padding: "4px 10px", // Add padding to resemble a badge
+                                        borderRadius: "5px",
+
+                                        // color:"#7c2d12",
+                                        lineHeight: "1",
+                                        color: "white",
+
+                                        // Rounded edges for the badge
+                                        // Make text bold
+                                      }}
+                                    >
+                                      ₹{updatedTotal}
+                                    </span>
+                                  </div>
+                                ) : counterData ? (
+                                  <span>{updatedTotal}</span>
+                                ) : (
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    value={previousTotal}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e.target.value,
+                                        rowIndex,
+                                        "total"
+                                      )
+                                    }
+                                    style={otherColumnsStyle}
+                                    disabled={isBid}
+                                  />
+                                );
+                              },
+
+                              vendorRemark: (cell, rowIndex) => (
+                                <textarea
+                                  className="form-control"
+                                  value={cell}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e.target.value,
+                                      rowIndex,
+                                      "vendorRemark"
+                                    )
+                                  }
+                                  placeholder="Enter Vendor Remark"
+                                  style={otherColumnsStyle}
+                                  disabled={isBid}
+                                />
+                              ),
+
+                              bestAmount: (cell, rowIndex) => {
+                                const quantity =
+                                  parseFloat(data[rowIndex].quantityAvail) || 0;
+                                const rate =
+                                  parseFloat(data[rowIndex].rate) || 0;
+                                const totalAmount = quantity * rate;
 
                                 return (
                                   <input
-                                    value={inputValue}
                                     className="form-control"
-                                    readOnly={isReadOnly}
-                                    onChange={(e) => {
-                                      const newValue = e.target.value;
-                                      setData((prevData) =>
-                                        prevData.map((item, index) => {
-                                          if (index === rowIndex) {
-                                            const updatedRow = { ...item };
-                                            if (!updatedRow.extra_data)
-                                              updatedRow.extra_data = {};
+                                    type="text"
+                                    value={totalAmount.toFixed(2)}
+                                    readOnly
+                                    style={otherColumnsStyle}
+                                  />
+                                );
+                              },
+                              attachment: (cell, rowIndex) => (
+                                <input
+                                  className="form-control"
+                                  type="file"
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                      const updatedData = [...data];
+                                      updatedData[rowIndex].attachment = file;
+                                      setData(updatedData);
+                                    }
+                                  }}
+                                  style={otherColumnsStyle}
+                                  disabled={isBid}
+                                />
+                              ),
+                              amount: (_, rowIndex) => {
+                                const quantity =
+                                  parseFloat(data[rowIndex].quantityAvail) || 0;
+                                const rate =
+                                  parseFloat(data[rowIndex].rate) || 0;
+                                const totalAmount = quantity * rate;
 
-                                            updatedRow.extra_data[currentKey] =
-                                              {
+                                return (
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={totalAmount.toFixed(2)}
+                                    readOnlyn
+                                    style={otherColumsStyle}
+                                  />
+                                );
+                              },
+                              // ...additionalColumns.reduce((acc, col) => {
+                              //   acc[col.key] = (cell, rowIndex) => {
+                              //     const row = data[rowIndex]; // Correctly reference the row
+                              //     const extraData =
+                              //       row?.extra_data?.[col.key] || {
+                              //         value: "",
+                              //         readonly: false,
+                              //       }; // Ensure extra_data is initialized
+                              //     console.log("row", row, "extraData", extraData);
+                              //     return (
+                              //       <input
+                              //         value={extraData.value || ""
+                              //           } // Use the value conditionally
+                              //         className="form-control"
+                              //         onChange={(e) => {
+                              //           // if (revisedBid) {
+                              //             // Update the value in extra_data immutably
+                              //             setData((prevData) => {
+                              //               const updatedData = prevData.map(
+                              //                 (item, index) => {
+                              //                   if (index === rowIndex) {
+                              //                     const updatedRow = { ...item };
+                              //                     if (!updatedRow.extra_data) {
+                              //                       updatedRow.extra_data = {};
+                              //                     }
+                              //                     updatedRow.extra_data[col.key] =
+                              //                       {
+                              //                         ...updatedRow.extra_data[
+                              //                           col.key
+                              //                         ],
+                              //                         value: e.target.value,
+                              //                       };
+                              //                     return updatedRow;
+                              //                   }
+                              //                   return item;
+                              //                 }
+                              //               );
+                              //               return updatedData;
+                              //             });
+
+                              //         }}
+                              //         onFocus={(e) => e.target.select()} // Ensure the input remains focused
+                              //         readOnly={!revisedBid} // Make input read-only if not revisedBid
+                              //       />
+                              //     );
+                              //   };
+                              //   return acc;
+                              // }, {}),
+                              // ...additionalColumns.reduce((acc, col) => {
+                              //   acc[col.key] = (cell, rowIndex) => {
+                              //     const row = data[rowIndex]; // Correctly reference the row
+                              //     const extraData = row?.extra_data?.[col.key] || { value: "", readonly: false }; // Ensure extra_data is initialized
+                              //     return (
+                              //       <input
+                              //         value={typeof extraData === "object" ? extraData.value || "" : extraData || ""}
+                              //         className="form-control"
+                              //         onChange={(e) => {
+                              //           // Update the value in extra_data immutably
+                              //           setData((prevData) => {
+                              //             const updatedData = prevData.map((item, index) => {
+                              //               if (index === rowIndex) {
+                              //                 const updatedRow = { ...item };
+                              //                 if (!updatedRow.extra_data) {
+                              //                   updatedRow.extra_data = {};
+                              //                 }
+                              //                 updatedRow.extra_data[col.key] = {
+                              //                   ...updatedRow.extra_data[col.key],
+                              //                   value: e.target.value,
+                              //                 };
+                              //                 return updatedRow;
+                              //               }
+                              //               return item;
+                              //             });
+                              //             return updatedData;
+                              //           });
+                              //         }}
+                              //         onFocus={(e) => e.target.select()}
+                              //       />
+                              //     );
+                              //   };
+                              //   return acc;
+                              // }, {}),
+                              ...additionalColumns.reduce((acc, col) => {
+                                acc[col.key] = (cell, rowIndex) => {
+                                  const row = data[rowIndex];
+
+                                  // Determine the correct key to use from extra_data
+                                  const currentKey =
+                                    row?.extra_data?.[col.label] !== undefined
+                                      ? col.label
+                                      : col.value &&
+                                        row?.extra_data?.[col.value] !==
+                                          undefined
+                                      ? col.value
+                                      : col.key;
+
+                                  const revisedBid = row?.revised_bid;
+                                  const extraData =
+                                    row?.extra_data?.[currentKey];
+                                  // console.log("row", row, "extraData", extraData);
+
+                                  // Determine value and readonly safely
+                                  const inputValue =
+                                    typeof extraData === "object"
+                                      ? extraData.value ?? ""
+                                      : extraData ?? "";
+                                  const isReadOnly =
+                                    typeof extraData === "object"
+                                      ? extraData.readonly ?? false
+                                      : false;
+
+                                  return (
+                                    <input
+                                      value={inputValue}
+                                      className="form-control"
+                                      readOnly={isReadOnly}
+                                      onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        setData((prevData) =>
+                                          prevData.map((item, index) => {
+                                            if (index === rowIndex) {
+                                              const updatedRow = { ...item };
+                                              if (!updatedRow.extra_data)
+                                                updatedRow.extra_data = {};
+
+                                              updatedRow.extra_data[
+                                                currentKey
+                                              ] = {
                                                 ...(typeof updatedRow
                                                   .extra_data[currentKey] ===
                                                 "object"
@@ -5423,320 +5438,330 @@ export default function VendorDetails() {
                                                 value: newValue,
                                               };
 
-                                            return updatedRow;
-                                          }
-                                          return item;
-                                        })
-                                      );
-                                    }}
-                                    onFocus={(e) => e.target.select()}
-                                  />
-                                );
-                              };
-                              return acc;
-                            }, {}),
-                          }}
-                        />
-                      </div>
-                      <div className="d-flex justify-content-end align-items-start gap-3 w-100">
-                        <div className="d-flex flex-column align-items-end w-100">
-                          <ShortDataTable
-                            data={bidTemplate}
-                            editable={true}
-                            onValueChange={(updated) =>
-                              setShortTableData(updated)
-                            }
-                          />
-                          <button
-                            className="purple-btn2 mt-2"
-                            onClick={handleOpenOtherChargesModal}
-                          >
-                            Other Charges
-                          </button>
-                          <ChargesDataTable
-                            data={chargesData}
-                            showOtherChargesModal={showOtherChargesModal}
-                            handleCloseOtherChargesModal={
-                              handleCloseOtherChargesModal
-                            }
-                            setGrossTotal={setGrossTotal}
-                            grossTotal={grossTotal}
-                            calculateGrossTotal={calculateGrossTotal}
-                            editable={true}
-                            onValueChange={(updated) => {
-                              setChargesData(updated);
+                                              return updatedRow;
+                                            }
+                                            return item;
+                                          })
+                                        );
+                                      }}
+                                      onFocus={(e) => e.target.select()}
+                                    />
+                                  );
+                                };
+                                return acc;
+                              }, {}),
                             }}
                           />
                         </div>
-                      </div>
-
-                      {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
-
-                      <div className="d-flex justify-content-end mt-2 mx-2">
-                        <h5>
-                          <strong>Gross Total:</strong> ₹
-                          {Number(grossTotal || 0).toFixed(2)}
-                        </h5>
-                      </div>
-                      {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
-                    </div>
-                  </div>
-
-                  <hr
-                    style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
-                  />
-
-                  <div style={{ marginTop: "10px" }}>
-                    {/* bid button */}
-
-                    {revisedBid && (
-                      <div className="d-flex justify-content-center align-items-center">
-                        <div className="d-flex align-items-center">
-                          {/* Decrement button (Previous bid) */}
-                          <button
-                            className="me-2 mb-3"
-                            onClick={decrement}
-                            style={{
-                              border: "none",
-                              background: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
+                        <div className="d-flex justify-content-end align-items-start gap-3 w-100">
+                          <div className="d-flex flex-column align-items-end w-100">
+                            <ShortDataTable
+                              data={bidTemplate}
+                              editable={true}
+                              onValueChange={(updated) =>
+                                setShortTableData(updated)
+                              }
+                            />
+                            <button
+                              className="purple-btn2 mt-2"
+                              onClick={handleOpenOtherChargesModal}
                             >
-                              <path
-                                d="M18 4l-12 8l12 8"
-                                fill="rgb(139, 2, 3)"
-                              />
-                            </svg>
-                          </button>
-
-                          {/* Scrollable buttons container with dynamic width */}
-                          <div
-                            className="scrollmenu"
-                            style={{
-                              backgroundColor: "white",
-                              overflowX: "auto",
-                              whiteSpace: "nowrap",
-                              paddingBottom: "10px", // Space for scrollbar
-                              width:
-                                bids.length <= 2
-                                  ? `${bids.length * 120}px`
-                                  : "350px", // Dynamic width for 1 or 2 bids
-                              margin: "0 auto", // Center the container horizontally
-                            }}
-                          >
-                            {bids.length > 0 &&
-                              bids.map((_, index) => {
-                                // For the first button, show "Current Bid"
-                                const buttonName =
-                                  index === 0
-                                    ? "Current Bid"
-                                    : index === bids.length - 1
-                                    ? "Initial Bid" // The last button shows "Initial Bid"
-                                    : `${getOrdinalInText(
-                                        bids.length - index
-                                      )} Bid`; // Use the ordinal word for other buttons
-
-                                return (
-                                  <a
-                                    key={index}
-                                    href={`#bid-${index + 1}`}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setCurrentIndex(index); // Update current index on click
-                                    }}
-                                    style={{
-                                      display: "inline-block",
-                                      color:
-                                        index === currentIndex
-                                          ? "white"
-                                          : "#8b0203",
-                                      textAlign: "center",
-                                      padding: "10px",
-                                      textDecoration: "none",
-                                      backgroundColor:
-                                        index === currentIndex
-                                          ? "#8b0203"
-                                          : "white", // Active button color
-                                      borderRadius: "4px",
-                                      marginRight: "10px",
-                                      border: `1px solid #8b0203`,
-                                      transition: "background-color 0.3s ease",
-                                    }}
-                                    className={
-                                      index === currentIndex ? "active" : ""
-                                    }
-                                  >
-                                    {buttonName}
-                                  </a>
-                                );
-                              })}
+                              Other Charges
+                            </button>
+                            <ChargesDataTable
+                              data={chargesData}
+                              showOtherChargesModal={showOtherChargesModal}
+                              handleCloseOtherChargesModal={
+                                handleCloseOtherChargesModal
+                              }
+                              setGrossTotal={setGrossTotal}
+                              grossTotal={grossTotal}
+                              calculateGrossTotal={calculateGrossTotal}
+                              editable={true}
+                              onValueChange={(updated) => {
+                                setChargesData(updated);
+                              }}
+                            />
                           </div>
-
-                          {/* Increment button (Next bid) */}
-                          <button
-                            className="mb-3"
-                            onClick={increment}
-                            style={{
-                              border: "none",
-                              background: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
-                            >
-                              <path d="M6 4l12 8l-12 8" fill="rgb(139, 2, 3)" />
-                            </svg>
-                          </button>
                         </div>
+
+                        {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
+
+                        <div className="d-flex justify-content-end mt-2 mx-2">
+                          <h5>
+                            <strong>Gross Total:</strong> ₹
+                            {Number(grossTotal || 0).toFixed(2)}
+                          </h5>
+                        </div>
+                        {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
                       </div>
-                    )}
-
-                    {/* Heading and Subtext */}
-
-                    <hr
-                      style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
-                    />
-                    {/* Remarks Section */}
-                    <div
-                      className="mb-3 d-flex align-items-center pt-2 "
-                      style={{ gap: "200px" }}
-                    >
-                      <label
-                        className=" head-material"
-                        style={{
-                          minWidth: "250px",
-                          marginRight: "10px",
-                          marginBottom: "0",
-                          fontSize: "16px",
-                        }}
-                      >
-                        Remarks
-                      </label>
-                      {/* Textarea */}
-                      <textarea
-                        className="form-control"
-                        placeholder="Enter remarks"
-                        rows="3"
-                        style={{ maxWidth: "300px", flex: "1" }}
-                        value={remark} // Bind to state
-                        onChange={(e) => setRemark(e.target.value)} // Update state on input
-                      >
-                        test for haven infoline
-                      </textarea>
                     </div>
 
                     <hr
                       style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
                     />
-                    {/* Terms and Conditions */}
 
-                    <div style={{ marginTop: "30px" }}>
-                      <h5 className="fw-bold head-material">
-                        Terms and Conditions
-                      </h5>
-                      <p className="head-material  text-muted ">
-                        Please find below the terms and conditions associated
-                        with the orders
-                      </p>
-                      <ul
-                        className="head-material  "
-                        style={{ fontSize: "13px", marginLeft: "0px" }}
-                      >
-                        {terms.map((term) => (
-                          <li key={term.id} className="mb-3 mt-3">
-                            {term.condition}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      {/* bid button */}
 
-                    <div className=" d-flex justify-content-end">
-                      {loading && (
-                        <div className="loader-container">
-                          <div className="lds-ring">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                      {revisedBid && (
+                        <div className="d-flex justify-content-center align-items-center">
+                          <div className="d-flex align-items-center">
+                            {/* Decrement button (Previous bid) */}
+                            <button
+                              className="me-2 mb-3"
+                              onClick={decrement}
+                              style={{
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                              >
+                                <path
+                                  d="M18 4l-12 8l12 8"
+                                  fill="rgb(139, 2, 3)"
+                                />
+                              </svg>
+                            </button>
+
+                            {/* Scrollable buttons container with dynamic width */}
+                            <div
+                              className="scrollmenu"
+                              style={{
+                                backgroundColor: "white",
+                                overflowX: "auto",
+                                whiteSpace: "nowrap",
+                                paddingBottom: "10px", // Space for scrollbar
+                                width:
+                                  bids.length <= 2
+                                    ? `${bids.length * 120}px`
+                                    : "350px", // Dynamic width for 1 or 2 bids
+                                margin: "0 auto", // Center the container horizontally
+                              }}
+                            >
+                              {bids.length > 0 &&
+                                bids.map((_, index) => {
+                                  // For the first button, show "Current Bid"
+                                  const buttonName =
+                                    index === 0
+                                      ? "Current Bid"
+                                      : index === bids.length - 1
+                                      ? "Initial Bid" // The last button shows "Initial Bid"
+                                      : `${getOrdinalInText(
+                                          bids.length - index
+                                        )} Bid`; // Use the ordinal word for other buttons
+
+                                  return (
+                                    <a
+                                      key={index}
+                                      href={`#bid-${index + 1}`}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        setCurrentIndex(index); // Update current index on click
+                                      }}
+                                      style={{
+                                        display: "inline-block",
+                                        color:
+                                          index === currentIndex
+                                            ? "white"
+                                            : "#8b0203",
+                                        textAlign: "center",
+                                        padding: "10px",
+                                        textDecoration: "none",
+                                        backgroundColor:
+                                          index === currentIndex
+                                            ? "#8b0203"
+                                            : "white", // Active button color
+                                        borderRadius: "4px",
+                                        marginRight: "10px",
+                                        border: `1px solid #8b0203`,
+                                        transition:
+                                          "background-color 0.3s ease",
+                                      }}
+                                      className={
+                                        index === currentIndex ? "active" : ""
+                                      }
+                                    >
+                                      {buttonName}
+                                    </a>
+                                  );
+                                })}
+                            </div>
+
+                            {/* Increment button (Next bid) */}
+                            <button
+                              className="mb-3"
+                              onClick={increment}
+                              style={{
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                              >
+                                <path
+                                  d="M6 4l12 8l-12 8"
+                                  fill="rgb(139, 2, 3)"
+                                />
+                              </svg>
+                            </button>
                           </div>
-                          <p>Submitting your bid...</p>
                         </div>
                       )}
 
-                      <button
-                        onClick={revisedBid ? handleReviseBid : handleSubmit}
-                        disabled={
-                          isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 || // Disable if it's not the Current Bid
-                          submitted
-                        }
-                        className={`button ${
-                          isBid ||
-                          loading ||
-                          counterData > 0 ||
-                          currentIndex !== 0 ||
-                          submitted
-                            ? "disabled-btn"
-                            : "button-enabled"
-                        }`}
+                      {/* Heading and Subtext */}
+
+                      <hr
                         style={{
-                          backgroundColor:
-                            isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
-                              ? "#ccc"
-                              : "#8b0203",
-                          color:
-                            isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
-                              ? "#666"
-                              : "#fff",
-                          border:
-                            isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
-                              ? "1px solid #aaa"
-                              : "1px solid #8b0203",
-                          cursor:
-                            isBid ||
-                            loading ||
-                            counterData > 0 ||
-                            currentIndex !== 0 ||
-                            submitted
-                              ? "not-allowed"
-                              : "pointer",
-                          padding: "10px 20px",
-                          borderRadius: "5px",
+                          borderTop: "2px solid #ccc",
+                          margin: "20px 0",
                         }}
+                      />
+                      {/* Remarks Section */}
+                      <div
+                        className="mb-3 d-flex align-items-center pt-2 "
+                        style={{ gap: "200px" }}
                       >
-                        {revisedBid ? "Revise Bid" : "Create Bid"}
-                      </button>
+                        <label
+                          className=" head-material"
+                          style={{
+                            minWidth: "250px",
+                            marginRight: "10px",
+                            marginBottom: "0",
+                            fontSize: "16px",
+                          }}
+                        >
+                          Remarks
+                        </label>
+                        {/* Textarea */}
+                        <textarea
+                          className="form-control"
+                          placeholder="Enter remarks"
+                          rows="3"
+                          style={{ maxWidth: "300px", flex: "1" }}
+                          value={remark} // Bind to state
+                          onChange={(e) => setRemark(e.target.value)} // Update state on input
+                        >
+                          test for haven infoline
+                        </textarea>
+                      </div>
+
+                      <hr
+                        style={{
+                          borderTop: "2px solid #ccc",
+                          margin: "20px 0",
+                        }}
+                      />
+                      {/* Terms and Conditions */}
+
+                      <div style={{ marginTop: "30px" }}>
+                        <h5 className="fw-bold head-material">
+                          Terms and Conditions
+                        </h5>
+                        <p className="head-material  text-muted ">
+                          Please find below the terms and conditions associated
+                          with the orders
+                        </p>
+                        <ul
+                          className="head-material  "
+                          style={{ fontSize: "13px", marginLeft: "0px" }}
+                        >
+                          {terms.map((term) => (
+                            <li key={term.id} className="mb-3 mt-3">
+                              {term.condition}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className=" d-flex justify-content-end">
+                        {loading && (
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Submitting your bid...</p>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={revisedBid ? handleReviseBid : handleSubmit}
+                          disabled={
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 || // Disable if it's not the Current Bid
+                            submitted
+                          }
+                          className={`button ${
+                            isBid ||
+                            loading ||
+                            counterData > 0 ||
+                            currentIndex !== 0 ||
+                            submitted
+                              ? "disabled-btn"
+                              : "button-enabled"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              isBid ||
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
+                                ? "#ccc"
+                                : "#8b0203",
+                            color:
+                              isBid ||
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
+                                ? "#666"
+                                : "#fff",
+                            border:
+                              isBid ||
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
+                                ? "1px solid #aaa"
+                                : "1px solid #8b0203",
+                            cursor:
+                              isBid ||
+                              loading ||
+                              counterData > 0 ||
+                              currentIndex !== 0 ||
+                              submitted
+                                ? "not-allowed"
+                                : "pointer",
+                            padding: "10px 20px",
+                            borderRadius: "5px",
+                          }}
+                        >
+                          {revisedBid ? "Revise Bid" : "Create Bid"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
                 )}
               </div>
             </div>
@@ -5802,7 +5827,6 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    {/* {console.log("parent", matchedTaxNames)} */}
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details.map(
@@ -5829,8 +5853,9 @@ export default function VendorDetails() {
                                 );
                               }}
                               className="custom-select"
+                              isDisableFirstOption={true}
                               disabledOptions={(
-                                taxRateData[
+                                parentTaxRateData[
                                   tableId
                                 ]?.addition_bid_material_tax_details?.reduce(
                                   (acc, item) => {
@@ -5841,17 +5866,26 @@ export default function VendorDetails() {
                                     const taxType = item.taxChargeType;
 
                                     // Disable CGST and IGST if CGST is selected
-                                    if (taxType === "CGST") {
+                                    if (
+                                      taxType === "CGST" ||
+                                      matchedOption?.value === "CGST"
+                                    ) {
                                       acc.push("CGST", "IGST");
                                     }
 
                                     // Disable SGST and IGST if SGST is selected
-                                    if (taxType === "SGST") {
+                                    if (
+                                      taxType === "SGST" ||
+                                      matchedOption?.value === "SGST"
+                                    ) {
                                       acc.push("SGST", "IGST");
                                     }
 
                                     // Disable CGST and SGST if IGST is selected
-                                    if (taxType === "IGST") {
+                                    if (
+                                      taxType === "IGST" ||
+                                      matchedOption?.value === "IGST"
+                                    ) {
                                       acc.push("CGST", "SGST");
                                     }
 
@@ -5892,7 +5926,6 @@ export default function VendorDetails() {
                               <option value="18%">18%</option>
                               <option value="28%">28%</option>
                             </select>
-                            {/* <p>{item?.taxChargePerUom || item?.tax_percentage}</p> */}
                           </td>
 
                           <td className="text-center">
@@ -6253,6 +6286,7 @@ export default function VendorDetails() {
                                   (option) => option.id === item.resource_id
                                 )?.value
                               }
+                              isDisableFirstOption={true}
                               onChange={(value) => {
                                 const selectedOption = taxOptions.find(
                                   (option) => option.value === value
@@ -6280,17 +6314,26 @@ export default function VendorDetails() {
                                     const taxType = item.taxChargeType;
 
                                     // Disable CGST and IGST if CGST is selected
-                                    if (taxType === "CGST") {
+                                    if (
+                                      taxType === "CGST" ||
+                                      matchedOption?.value === "CGST"
+                                    ) {
                                       acc.push("CGST", "IGST");
                                     }
 
                                     // Disable SGST and IGST if SGST is selected
-                                    if (taxType === "SGST") {
+                                    if (
+                                      taxType === "SGST" ||
+                                      matchedOption?.value === "SGST"
+                                    ) {
                                       acc.push("SGST", "IGST");
                                     }
 
                                     // Disable CGST and SGST if IGST is selected
-                                    if (taxType === "IGST") {
+                                    if (
+                                      taxType === "IGST" ||
+                                      matchedOption?.value === "IGST"
+                                    ) {
                                       acc.push("CGST", "SGST");
                                     }
 
