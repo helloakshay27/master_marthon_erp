@@ -50,7 +50,9 @@ export default function VendorListPage() {
 
   const [eoiEvents, setEoiEvents] = useState({ events: [], pagination: {} });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+    const [suggestionLoading, setSuggestionLoading] = useState(false);
+    const [filterLoading, setFilterLoading] = useState(false);
   const [filters, setFilters] = useState({
     created_by_id_in: "",
     event_type_detail_award_scheme_in: "",
@@ -133,7 +135,7 @@ export default function VendorListPage() {
   };
 
   const fetchFilterOptions = async () => {
-    setLoading(true);
+    setFilterLoading(true);
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
@@ -165,7 +167,7 @@ export default function VendorListPage() {
       console.error("Error fetching filter options:", err);
       setError(err.response?.data?.message || "Failed to fetch filter options");
     } finally {
-      setLoading(false);
+      setFilterLoading(false);
     }
   };
 
@@ -313,10 +315,6 @@ export default function VendorListPage() {
     fetchEvents();
   }, [activeTab, vendorId]);
 
-  setTimeout(() => {
-    setLoading(false);
-  }, 500);
-
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
       fetchEvents(newPage);
@@ -401,7 +399,7 @@ export default function VendorListPage() {
       return;
     }
 
-    setLoading(true);
+    setSuggestionLoading(true);
     setError("");
     try {
       const response = await axios.get(
@@ -439,7 +437,7 @@ export default function VendorListPage() {
       console.error("Error fetching search results:", error);
       setError("Unable to fetch search results. Please try again later.");
     } finally {
-      setLoading(false);
+      setSuggestionLoading(false);
     }
   };
 
@@ -575,79 +573,8 @@ export default function VendorListPage() {
             </div>
 
             <div className="material-boxes mt-3">
-              <div className="container-fluid">
-                {/* <div className="row separteinto5 justify-content-left">
-                  <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("all")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "all"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "all" ? "#de7008" : "#fff",
-                        color: activeTab === "all" ? "white" : "black", // Adjust text color for better contrast
-                      }}
-                    >
-                      <h4 className="content-box-title">All Events</h4>
-                      <p className="content-box-sub">
-                        {allEventsData.pagination?.total_count || 0}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("live")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "live"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "live" ? "#de7008" : "#fff",
-                        color: activeTab === "live" ? "white" : "black", // Adjust text color for better contrast
-                      }}
-                    >
-                      <h4 className="content-box-title">Live Events</h4>
-                      <p className="content-box-sub">
-                        {liveEvents.pagination?.total_count}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("history")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "history"
-                            ? "2px solid #007bff"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "history" ? "#de7008" : "#fff",
-                        color: "black",
-                      }}
-                    >
-                      <h4 className="content-box-title">History Events</h4>
-                      <p className="content-box-sub">
-                        {historyEvents.pagination?.total_count}{" "}
-                      </p>
-                    </div>
-                  </div>
-                </div> */}
-
-                <div className="row separteinto5 justify-content-center">
-                  <div className="col-md-2 text-center">
-                    {loading && (
-                      <div className="loader-container">
+              {loading || filterLoading || suggestionLoading ? (
+                <div className="loader-container">
                         <div className="lds-ring">
                           <div></div>
                           <div></div>
@@ -660,582 +587,655 @@ export default function VendorListPage() {
                         </div>
                         <p>loading..</p>
                       </div>
-                    )}
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("all")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "all"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "all" ? " #8b0203" : "#fff",
-
-                        color: activeTab === "all" ? "white" : "black",
-                      }}
-                    >
-                      <h4 className="content-box-title">All Events</h4>
-                      <p className="content-box-sub">
-                        {allEventsData.pagination?.total_count || 0}
-                      </p>
+              ) : (
+                
+                <div className="container-fluid">
+                  {/* <div className="row separteinto5 justify-content-left">
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("all")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "all"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "all" ? "#de7008" : "#fff",
+                          color: activeTab === "all" ? "white" : "black", // Adjust text color for better contrast
+                        }}
+                      >
+                        <h4 className="content-box-title">All Events</h4>
+                        <p className="content-box-sub">
+                          {allEventsData.pagination?.total_count || 0}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("live")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "live"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "live" ? " #8b0203" : "#fff",
-                        color: activeTab === "live" ? "white" : "black",
-                      }}
-                    >
-                      <h4 className="content-box-title">Live Events</h4>
-                      <p className="content-box-sub">
-                        {liveEvents.pagination?.total_count}
-                      </p>
+  
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("live")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "live"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "live" ? "#de7008" : "#fff",
+                          color: activeTab === "live" ? "white" : "black", // Adjust text color for better contrast
+                        }}
+                      >
+                        <h4 className="content-box-title">Live Events</h4>
+                        <p className="content-box-sub">
+                          {liveEvents.pagination?.total_count}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("history")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "history"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "history" ? " #8b0203" : "#fff",
-                        color: activeTab === "history" ? "white" : "black",
-                      }}
-                    >
-                      <h4 className="content-box-title">History Events</h4>
-                      <p className="content-box-sub">
-                        {historyEvents.pagination?.total_count || 0}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* <div className="col-md-2 text-center">
-                    <div
-                      className="content-box"
-                      onClick={() => handleTabChange("eoi")}
-                      style={{
-                        cursor: "pointer",
-                        border:
-                          activeTab === "eoi"
-                            ? "2px solid orange"
-                            : "1px solid #ccc",
-                        backgroundColor:
-                          activeTab === "eoi" ? " #8b0203" : "#fff",
-                        color: activeTab === "eoi" ? "white" : "black",
-                      }}
-                    >
-                      <h4 className="content-box-title">EOI Events</h4>
-                      <p className="content-box-sub">
-                        {eoiEvents.pagination?.total_count || 0}
-                      </p>
+  
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("history")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "history"
+                              ? "2px solid #007bff"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "history" ? "#de7008" : "#fff",
+                          color: "black",
+                        }}
+                      >
+                        <h4 className="content-box-title">History Events</h4>
+                        <p className="content-box-sub">
+                          {historyEvents.pagination?.total_count}{" "}
+                        </p>
+                      </div>
                     </div>
                   </div> */}
-                </div>
-
-                <div className="card mt-4 pb-4">
-                  <CollapsibleCard title="Quick Filter">
-                    <form onSubmit={handleSubmit}>
-                      {error && (
-                        <div className="alert alert-danger">{error}</div>
-                      )}
-                      {loading && (
-                        <div
-                          className="spinner-border text-primary"
-                          role="status"
-                        ></div>
-                      )}
-
-                      <div className="row my-2 align-items-end">
-                        {/* Event Title */}
-                        <div className="col-md-2">
-                          <label htmlFor="event-title-select">
-                            Event Title
-                          </label>
-                          <Select
-                            id="event-title-select"
-                            options={filterOptions.event_titles}
-                            onChange={(option) =>
-                              handleFilterChange(
-                                "title_in",
-                                option?.value || ""
-                              )
-                            }
-                            value={
-                              filters.title_in
-                                ? filterOptions.event_titles.find(
-                                    (opt) => opt.value === filters.title_in
-                                  )
-                                : null
-                            }
-                            placeholder="Select Title"
-                            isClearable
-                            classNamePrefix="select-dropdown" // This applies the CSS class
-                            menuPlacement="auto"
-                            menuPortalTarget={document.body} // Fixes overlapping issue
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                          />
-                        </div>
-
-                        {/* Event Number */}
-                        <div className="col-md-2">
-                          <label htmlFor="event-no-select">Event Number</label>
-                          <Select
-                            id="event-no-select"
-                            options={filterOptions.event_numbers}
-                            onChange={(option) =>
-                              handleFilterChange(
-                                "event_no_cont",
-                                option?.value || ""
-                              )
-                            }
-                            value={
-                              filters.event_no_cont
-                                ? filterOptions.event_numbers.find(
-                                    (opt) => opt.value === filters.event_no_cont
-                                  )
-                                : null
-                            }
-                            placeholder="Select No"
-                            isClearable
-                            classNamePrefix="select-dropdown" // This applies the CSS class
-                            menuPlacement="auto"
-                            menuPortalTarget={document.body} // Fixes overlapping issue
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                          />
-                        </div>
-
-                        {/* Status */}
-                        <div className="col-md-2">
-                          <label htmlFor="status-select">Status</label>
-                          <Select
-                            id="status-select"
-                            options={filterOptions.statuses}
-                            onChange={(option) =>
-                              handleFilterChange(
-                                "status_in",
-                                option?.value || ""
-                              )
-                            }
-                            value={
-                              filters.status_in
-                                ? filterOptions.statuses.find(
-                                    (opt) => opt.value === filters.status_in
-                                  )
-                                : null
-                            }
-                            placeholder="Select Status"
-                            isClearable
-                            classNamePrefix="select-dropdown" // This applies the CSS class
-                            menuPlacement="auto"
-                            menuPortalTarget={document.body} // Fixes overlapping issue
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                          />
-                        </div>
-
-                        {/* Created By */}
-                        <div className="col-md-2">
-                          <label htmlFor="created-by-select">Created By</label>
-                          <Select
-                            id="created-by-select"
-                            options={filterOptions.creaters}
-                            onChange={(option) =>
-                              handleFilterChange(
-                                "created_by_id_in",
-                                option?.value || ""
-                              )
-                            }
-                            value={
-                              filters.created_by_id_in
-                                ? filterOptions.creaters.find(
-                                    (opt) =>
-                                      opt.value === filters.created_by_id_in
-                                  )
-                                : null
-                            }
-                            placeholder="Select Creator"
-                            isClearable
-                            classNamePrefix="select-dropdown" // This applies the CSS class
-                            menuPlacement="auto"
-                            menuPortalTarget={document.body} // Fixes overlapping issue
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                          />
-                        </div>
-                        <button type="submit" className="col-md-1 purple-btn2">
-                          Go{" "}
-                        </button>
+  
+                  <div className="row separteinto5 justify-content-center">
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("all")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "all"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "all" ? " #8b0203" : "#fff",
+  
+                          color: activeTab === "all" ? "white" : "black",
+                        }}
+                      >
+                        <h4 className="content-box-title">All Events</h4>
+                        <p className="content-box-sub">
+                          {allEventsData.pagination?.total_count || 0}
+                        </p>
                       </div>
-                    </form>
-                  </CollapsibleCard>
-
-                  <div className="d-flex mt-3 align-items-end px-3">
-                    <div className="col-md-6 position-relative">
-                      <form onSubmit={handleSearchSubmit}>
-                        <div className="input-group">
-                          <input
-                            type="search"
-                            id="searchInput"
-                            className="tbl-search form-control"
-                            placeholder="Type your keywords here"
-                            value={searchQuery}
-                            onChange={handleInputChange}
-                            onFocus={() => setIsSuggestionsVisible(true)}
-                            onBlur={() =>
-                              setTimeout(
-                                () => setIsSuggestionsVisible(false),
-                                200
-                              )
-                            }
-                          />
-
-                          <div className="input-group-append">
-                            <button
-                              type="sumbit"
-                              className="btn btn-md btn-default"
-                            >
-                              <SearchIcon />
-                            </button>
+                    </div>
+  
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("live")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "live"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "live" ? " #8b0203" : "#fff",
+                          color: activeTab === "live" ? "white" : "black",
+                        }}
+                      >
+                        <h4 className="content-box-title">Live Events</h4>
+                        <p className="content-box-sub">
+                          {liveEvents.pagination?.total_count}
+                        </p>
+                      </div>
+                    </div>
+  
+                    <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("history")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "history"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "history" ? " #8b0203" : "#fff",
+                          color: activeTab === "history" ? "white" : "black",
+                        }}
+                      >
+                        <h4 className="content-box-title">History Events</h4>
+                        <p className="content-box-sub">
+                          {historyEvents.pagination?.total_count || 0}
+                        </p>
+                      </div>
+                    </div>
+  
+                    {/* <div className="col-md-2 text-center">
+                      <div
+                        className="content-box"
+                        onClick={() => handleTabChange("eoi")}
+                        style={{
+                          cursor: "pointer",
+                          border:
+                            activeTab === "eoi"
+                              ? "2px solid orange"
+                              : "1px solid #ccc",
+                          backgroundColor:
+                            activeTab === "eoi" ? " #8b0203" : "#fff",
+                          color: activeTab === "eoi" ? "white" : "black",
+                        }}
+                      >
+                        <h4 className="content-box-title">EOI Events</h4>
+                        <p className="content-box-sub">
+                          {eoiEvents.pagination?.total_count || 0}
+                        </p>
+                      </div>
+                    </div> */}
+                  </div>
+  
+                  <div className="card mt-4 pb-4">
+                    <CollapsibleCard title="Quick Filter">
+                      <form onSubmit={handleSubmit}>
+                        {error && (
+                          <div className="alert alert-danger">{error}</div>
+                        )}
+                        {loading && (
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                          ></div>
+                        )}
+  
+                        <div className="row my-2 align-items-end">
+                          {/* Event Title */}
+                          <div className="col-md-2">
+                            <label htmlFor="event-title-select">
+                              Event Title
+                            </label>
+                            <Select
+                              id="event-title-select"
+                              options={filterOptions.event_titles}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "title_in",
+                                  option?.value || ""
+                                )
+                              }
+                              value={
+                                filters.title_in
+                                  ? filterOptions.event_titles.find(
+                                      (opt) => opt.value === filters.title_in
+                                    )
+                                  : null
+                              }
+                              placeholder="Select Title"
+                              isClearable
+                              classNamePrefix="select-dropdown" // This applies the CSS class
+                              menuPlacement="auto"
+                              menuPortalTarget={document.body} // Fixes overlapping issue
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
+                            />
                           </div>
+  
+                          {/* Event Number */}
+                          <div className="col-md-2">
+                            <label htmlFor="event-no-select">Event Number</label>
+                            <Select
+                              id="event-no-select"
+                              options={filterOptions.event_numbers}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "event_no_cont",
+                                  option?.value || ""
+                                )
+                              }
+                              value={
+                                filters.event_no_cont
+                                  ? filterOptions.event_numbers.find(
+                                      (opt) => opt.value === filters.event_no_cont
+                                    )
+                                  : null
+                              }
+                              placeholder="Select No"
+                              isClearable
+                              classNamePrefix="select-dropdown" // This applies the CSS class
+                              menuPlacement="auto"
+                              menuPortalTarget={document.body} // Fixes overlapping issue
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
+                            />
+                          </div>
+  
+                          {/* Status */}
+                          <div className="col-md-2">
+                            <label htmlFor="status-select">Status</label>
+                            <Select
+                              id="status-select"
+                              options={filterOptions.statuses}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "status_in",
+                                  option?.value || ""
+                                )
+                              }
+                              value={
+                                filters.status_in
+                                  ? filterOptions.statuses.find(
+                                      (opt) => opt.value === filters.status_in
+                                    )
+                                  : null
+                              }
+                              placeholder="Select Status"
+                              isClearable
+                              classNamePrefix="select-dropdown" // This applies the CSS class
+                              menuPlacement="auto"
+                              menuPortalTarget={document.body} // Fixes overlapping issue
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
+                            />
+                          </div>
+  
+                          {/* Created By */}
+                          <div className="col-md-2">
+                            <label htmlFor="created-by-select">Created By</label>
+                            <Select
+                              id="created-by-select"
+                              options={filterOptions.creaters}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "created_by_id_in",
+                                  option?.value || ""
+                                )
+                              }
+                              value={
+                                filters.created_by_id_in
+                                  ? filterOptions.creaters.find(
+                                      (opt) =>
+                                        opt.value === filters.created_by_id_in
+                                    )
+                                  : null
+                              }
+                              placeholder="Select Creator"
+                              isClearable
+                              classNamePrefix="select-dropdown" // This applies the CSS class
+                              menuPlacement="auto"
+                              menuPortalTarget={document.body} // Fixes overlapping issue
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
+                            />
+                          </div>
+                          <button type="submit" className="col-md-1 purple-btn2">
+                            Go{" "}
+                          </button>
                         </div>
                       </form>
-                      {isSuggestionsVisible && suggestions.length > 0 && (
-                        <ul className="suggestions-list">
-                          {suggestions.map((suggestion) => (
-                            <li
-                              key={suggestion.id} // Use unique identifier if available
-                              className="suggestion-item"
-                              onClick={() => handleSuggestionClick(suggestion)}
-                            >
-                              {suggestion.event_title}{" "}
-                              {/* Display event title */}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {loading && <p>Loading suggestions...</p>}
-                      {error && <p className="error-message">{error}</p>}
-                    </div>
-
-                    <div className="col-md-6">
-                      <div className="row justify-content-end">
-                        <div className="col-md-5">
-                          <div className="row justify-content-end px-3">
-                            <div className="col-md-3">
+                    </CollapsibleCard>
+  
+                    <div className="d-flex mt-3 align-items-end px-3">
+                      <div className="col-md-6 position-relative">
+                        <form onSubmit={handleSearchSubmit}>
+                          <div className="input-group">
+                            <input
+                              type="search"
+                              id="searchInput"
+                              className="tbl-search form-control"
+                              placeholder="Type your keywords here"
+                              value={searchQuery}
+                              onChange={handleInputChange}
+                              onFocus={() => setIsSuggestionsVisible(true)}
+                              onBlur={() =>
+                                setTimeout(
+                                  () => setIsSuggestionsVisible(false),
+                                  200
+                                )
+                              }
+                            />
+  
+                            <div className="input-group-append">
                               <button
-                                style={{ color: " #8b0203" }}
-                                className="btn btn-md"
-                                onClick={handleModalShow}
+                                type="sumbit"
+                                className="btn btn-md btn-default"
                               >
-                                <FilterIcon />
+                                <SearchIcon />
                               </button>
                             </div>
-                            {/* <div className="col-md-3">
-                                <button
-                                  style={{ color: "#de7008" }}
-                                  type="submit"
-                                  className="btn btn-md"
-                                >
-                                  <StarIcon />
-                                </button>
-                              </div> */}
-                            {/* <div className="col-md-3">
-                                <button
-                                  style={{ color: "#de7008" }}
-                                  id="downloadButton"
-                                  type="submit"
-                                  className="btn btn-md"
-                                >
-                                  <DownloadIcon />
-                                </button>
-                              </div> */}
-                            {/* <div className="col-md-3">
-                                <button
-                                  style={{ color: "#de7008" }}
-                                  type="submit"
-                                  className="btn btn-md"
-                                  onClick={handleSettingModalShow}
-                                >
-                                  <SettingIcon
-                                    color={"#de7008"}
-                                    style={{ width: "23px", height: "23px" }}
-                                  />
-                                </button>
-                              </div> */}
                           </div>
-                        </div>
-                        <div className="col-md-4">
-                          {/* <button
-                            className="purple-btn2"
-                            onClick={() => navigate("/create-event")}
-                          >
-                            <span className="material-symbols-outlined align-text-top">
-                              add
-                            </span>
-                            New Event
-                          </button> */}
+                        </form>
+                        {isSuggestionsVisible && suggestions.length > 0 && (
+                          <ul className="suggestions-list">
+                            {suggestions.map((suggestion) => (
+                              <li
+                                key={suggestion.id} // Use unique identifier if available
+                                className="suggestion-item"
+                                onClick={() => handleSuggestionClick(suggestion)}
+                              >
+                                {suggestion.event_title}{" "}
+                                {/* Display event title */}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {loading && <p>Loading suggestions...</p>}
+                        {error && <p className="error-message">{error}</p>}
+                      </div>
+  
+                      <div className="col-md-6">
+                        <div className="row justify-content-end">
+                          <div className="col-md-5">
+                            <div className="row justify-content-end px-3">
+                              <div className="col-md-3">
+                                <button
+                                  style={{ color: " #8b0203" }}
+                                  className="btn btn-md"
+                                  onClick={handleModalShow}
+                                >
+                                  <FilterIcon />
+                                </button>
+                              </div>
+                              {/* <div className="col-md-3">
+                                  <button
+                                    style={{ color: "#de7008" }}
+                                    type="submit"
+                                    className="btn btn-md"
+                                  >
+                                    <StarIcon />
+                                  </button>
+                                </div> */}
+                              {/* <div className="col-md-3">
+                                  <button
+                                    style={{ color: "#de7008" }}
+                                    id="downloadButton"
+                                    type="submit"
+                                    className="btn btn-md"
+                                  >
+                                    <DownloadIcon />
+                                  </button>
+                                </div> */}
+                              {/* <div className="col-md-3">
+                                  <button
+                                    style={{ color: "#de7008" }}
+                                    type="submit"
+                                    className="btn btn-md"
+                                    onClick={handleSettingModalShow}
+                                  >
+                                    <SettingIcon
+                                      color={"#de7008"}
+                                      style={{ width: "23px", height: "23px" }}
+                                    />
+                                  </button>
+                                </div> */}
+                            </div>
+                          </div>
+                          <div className="col-md-4">
+                            {/* <button
+                              className="purple-btn2"
+                              onClick={() => navigate("/create-event")}
+                            >
+                              <span className="material-symbols-outlined align-text-top">
+                                add
+                              </span>
+                              New Event
+                            </button> */}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="tbl-container mt-3 px-3">
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          {eventProjectColumns.map((column) => (
-                            <th key={column.key}>{column.label}</th>
-                          ))}
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {eventsToDisplay.length === 0 ? (
+                    <div className="tbl-container mt-3 px-3">
+                      <table className="w-100">
+                        <thead>
                           <tr>
-                            <td colSpan="9">No events found.</td>
+                            {eventProjectColumns.map((column) => (
+                              <th key={column.key}>{column.label}</th>
+                            ))}
                           </tr>
-                        ) : (
-                          eventsToDisplay.map((event, index) => (
-                            <tr key={index}>
-                              <td>
-                                {(pagination.current_page - 1) * 10 + index + 1}
-                              </td>
-                              <td>{event.event_title || "N/A"}</td>
-                              <td>{event.event_no || "N/A"}</td>
-                              <td>
-                                {event.event_schedule?.start_time ? (
-                                  <FormatDate
-                                    timestamp={event.event_schedule?.start_time}
-                                  />
-                                ) : (
-                                  "N/A"
-                                )}
-                              </td>
-
-                              <td>
-                                {event.event_schedule?.end_time ? (
-                                  <FormatDate
-                                    timestamp={event.event_schedule?.end_time}
-                                  />
-                                ) : (
-                                  "N/A"
-                                )}
-                              </td>
-                              <td>
-                                {event.created_at ? (
-                                  <FormatDate timestamp={event.created_at} />
-                                ) : (
-                                  "N/A"
-                                )}
-                              </td>
-                              <td>{event.created_by || "N/A"}</td>
-                              <td>
-                                {event.event_type_detail?.event_type || "N/A"}
-                              </td>
-                              <td>
-                                {event.event_type_detail?.event_configuration ||
-                                  "N/A"}
-                              </td>
-                              <td>{event.status || "N/A"}</td>
-                              <td>
-                                <button
-                                  className="btn "
-                                  onClick={() =>
-                                    navigate(`/user-list/${event.id}`)
-                                  }
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    class="bi bi-eye"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
-                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                  </svg>{" "}
-                                </button>
-
-                                {/* <button
-                                  className="btn "
-                                  onClick={() => {
-                                    // Check if the event is an EOI (when event_type_detail is null or if the status is indicative of EOI)
-                                    if (
-                                      event.event_type_detail?.event_type ===
-                                        "eoi" ||
-                                      !event.event_type_detail?.event_type
-                                    ) {
-                                      // If event_type is 'eoi' or missing, navigate to the EOI details page
-                                      navigate(
-                                        `/eoi-details/${event.event_id}?eoi_id=${event.id}`
-                                      );
-                                      // If event_type_detail is null or it explicitly mentions 'eoi', navigate to the EOI details page
-                                      navigate(
-                                        `/eoi-details/${event.event_id}?eoi_id=${event.id}`
-                                      );
-                                    } else {
-                                      // For Live, All, History, navigate to the user list page
-                                      navigate(`/user-list/${event.id}`);
-                                    }
-                                  }}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    className="bi bi-eye"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
-                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                  </svg>{" "}
-                                </button> */}
-                              </td>
+                        </thead>
+  
+                        <tbody>
+                          {eventsToDisplay.length === 0 ? (
+                            <tr>
+                              <td colSpan="9">No events found.</td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                    <ul className="pagination justify-content-center d-flex">
-                      {/* First Button */}
-                      <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(1)}
-                        >
-                          First
-                        </button>
-                      </li>
-
-                      {/* Previous Button */}
-                      <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() =>
-                            handlePageChange(pagination.current_page - 1)
-                          }
-                          disabled={pagination.current_page === 1}
-                        >
-                          Prev
-                        </button>
-                      </li>
-
-                      {/* Dynamic Page Numbers */}
-                      {pageNumbers.map((pageNumber) => (
+                          ) : (
+                            eventsToDisplay.map((event, index) => (
+                              <tr key={index}>
+                                <td>
+                                  {(pagination.current_page - 1) * 10 + index + 1}
+                                </td>
+                                <td>{event.event_title || "N/A"}</td>
+                                <td>{event.event_no || "N/A"}</td>
+                                <td>
+                                  {event.event_schedule?.start_time ? (
+                                    <FormatDate
+                                      timestamp={event.event_schedule?.start_time}
+                                    />
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+  
+                                <td>
+                                  {event.event_schedule?.end_time ? (
+                                    <FormatDate
+                                      timestamp={event.event_schedule?.end_time}
+                                    />
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+                                <td>
+                                  {event.created_at ? (
+                                    <FormatDate timestamp={event.created_at} />
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+                                <td>{event.created_by || "N/A"}</td>
+                                <td>
+                                  {event.event_type_detail?.event_type || "N/A"}
+                                </td>
+                                <td>
+                                  {event.event_type_detail?.event_configuration ||
+                                    "N/A"}
+                                </td>
+                                <td>{event.status || "N/A"}</td>
+                                <td>
+                                  <button
+                                    className="btn "
+                                    onClick={() =>
+                                      navigate(`/user-list/${event.id}`)
+                                    }
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      fill="currentColor"
+                                      class="bi bi-eye"
+                                      viewBox="0 0 16 16"
+                                    >
+                                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+                                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                    </svg>{" "}
+                                  </button>
+  
+                                  {/* <button
+                                    className="btn "
+                                    onClick={() => {
+                                      // Check if the event is an EOI (when event_type_detail is null or if the status is indicative of EOI)
+                                      if (
+                                        event.event_type_detail?.event_type ===
+                                          "eoi" ||
+                                        !event.event_type_detail?.event_type
+                                      ) {
+                                        // If event_type is 'eoi' or missing, navigate to the EOI details page
+                                        navigate(
+                                          `/eoi-details/${event.event_id}?eoi_id=${event.id}`
+                                        );
+                                        // If event_type_detail is null or it explicitly mentions 'eoi', navigate to the EOI details page
+                                        navigate(
+                                          `/eoi-details/${event.event_id}?eoi_id=${event.id}`
+                                        );
+                                      } else {
+                                        // For Live, All, History, navigate to the user list page
+                                        navigate(`/user-list/${event.id}`);
+                                      }
+                                    }}
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      fill="currentColor"
+                                      className="bi bi-eye"
+                                      viewBox="0 0 16 16"
+                                    >
+                                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+                                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+                                    </svg>{" "}
+                                  </button> */}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                      <ul className="pagination justify-content-center d-flex">
+                        {/* First Button */}
                         <li
-                          key={pageNumber}
                           className={`page-item ${
-                            pagination.current_page === pageNumber
-                              ? "active"
+                            pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(1)}
+                          >
+                            First
+                          </button>
+                        </li>
+  
+                        {/* Previous Button */}
+                        <li
+                          className={`page-item ${
+                            pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(pagination.current_page - 1)
+                            }
+                            disabled={pagination.current_page === 1}
+                          >
+                            Prev
+                          </button>
+                        </li>
+  
+                        {/* Dynamic Page Numbers */}
+                        {pageNumbers.map((pageNumber) => (
+                          <li
+                            key={pageNumber}
+                            className={`page-item ${
+                              pagination.current_page === pageNumber
+                                ? "active"
+                                : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(pageNumber)}
+                            >
+                              {pageNumber}
+                            </button>
+                          </li>
+                        ))}
+  
+                        {/* Next Button */}
+                        <li
+                          className={`page-item ${
+                            pagination.current_page === pagination.total_pages
+                              ? "disabled"
                               : ""
                           }`}
                         >
                           <button
                             className="page-link"
-                            onClick={() => handlePageChange(pageNumber)}
+                            onClick={() =>
+                              handlePageChange(pagination.current_page + 1)
+                            }
+                            disabled={
+                              pagination.current_page === pagination.total_pages
+                            }
                           >
-                            {pageNumber}
+                            Next
                           </button>
                         </li>
-                      ))}
-
-                      {/* Next Button */}
-                      <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() =>
-                            handlePageChange(pagination.current_page + 1)
-                          }
-                          disabled={
+  
+                        {/* Last Button */}
+                        <li
+                          className={`page-item ${
                             pagination.current_page === pagination.total_pages
-                          }
+                              ? "disabled"
+                              : ""
+                          }`}
                         >
-                          Next
-                        </button>
-                      </li>
-
-                      {/* Last Button */}
-                      <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() =>
-                            handlePageChange(pagination.total_pages)
-                          }
-                          disabled={
-                            pagination.current_page === pagination.total_pages
-                          }
-                        >
-                          Last
-                        </button>
-                      </li>
-                    </ul>
-
-                    {/* Showing entries count */}
-                    <div>
-                      <p>
-                        Showing{" "}
-                        {Math.min(
-                          (pagination.current_page - 1) * pageSize + 1 || 1,
-                          pagination.total_count
-                        )}{" "}
-                        to{" "}
-                        {Math.min(
-                          pagination.current_page * pageSize,
-                          pagination.total_count
-                        )}{" "}
-                        of {pagination.total_count} entries
-                      </p>
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(pagination.total_pages)
+                            }
+                            disabled={
+                              pagination.current_page === pagination.total_pages
+                            }
+                          >
+                            Last
+                          </button>
+                        </li>
+                      </ul>
+  
+                      {/* Showing entries count */}
+                      <div>
+                        <p>
+                          Showing{" "}
+                          {Math.min(
+                            (pagination.current_page - 1) * pageSize + 1 || 1,
+                            pagination.total_count
+                          )}{" "}
+                          to{" "}
+                          {Math.min(
+                            pagination.current_page * pageSize,
+                            pagination.total_count
+                          )}{" "}
+                          of {pagination.total_count} entries
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <LayoutModal show={settingShow} onHide={handleSettingClose} />
 

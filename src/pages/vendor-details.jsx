@@ -3289,6 +3289,7 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
+                                          style={{ textTransform: "capitalize" }}
                                           // style={{ color: "#777777" }}
                                         >
                                           {data1.status}
