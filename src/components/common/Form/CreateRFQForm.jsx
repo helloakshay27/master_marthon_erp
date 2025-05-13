@@ -1156,30 +1156,36 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "rate") {
-      return (
-        <input
-  className="form-control"
-  type="text"
-  inputMode="numeric"
-  value={fieldValue}
-  onWheel={(e) => e.target.blur()}
-  onKeyDown={(e) => {
-    if (!/^\d$/.test(e.key) && !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
-      e.preventDefault();
-    }
-  }}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    handleInputChange(value, rowIndex, fieldName, sectionIndex);
+  return (
+    <input
+      className="form-control"
+      type="text"
+      inputMode="decimal"
+      value={fieldValue}
+      onWheel={(e) => e.target.blur()}
+      onKeyDown={(e) => {
+        if (
+          !/^\d$/.test(e.key) &&
+          !["Backspace", "ArrowLeft", "ArrowRight", "Tab", ".", "Delete"].includes(e.key)
+        ) {
+          e.preventDefault();
+        }
+      }}
+      onChange={(e) => {
+        let value = e.target.value;
 
-    const rate = parseFloat(value) || 0;
-    const quantity = parseFloat(sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0) || 0;
-    handleInputChange((rate * quantity).toFixed(2), rowIndex, "amount", sectionIndex);
-  }}
-/>
+        // Allow only numbers and a single decimal point
+        if (/^\d*\.?\d{0,2}$/.test(value)) {
+          handleInputChange(value, rowIndex, fieldName, sectionIndex);
 
-      );
-    }
+          const rate = parseFloat(value) || 0;
+          const quantity = parseFloat(sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0) || 0;
+          handleInputChange((rate * quantity).toFixed(2), rowIndex, "amount", sectionIndex);
+        }
+      }}
+    />
+  );
+}
 
     if (fieldName === "amount") {
       return (
