@@ -365,108 +365,115 @@ export default function CounterOffer() {
   }, [bidCounterData]);
 
   const handleMaterialInputChange = (e, field, index) => {
-    const value = parseFloat(e.target.value) || 0;
-    const updatedMaterials = [...formData.bid_materials];
+  let value = e.target.value; // Keep the value as a string initially
+  const updatedMaterials = [...formData.bid_materials];
 
-    if (field === "quantity_available") {
-      const quantityRequested =
-        parseFloat(updatedMaterials[index].quantity_requested) || 0;
-      if (value > quantityRequested) {
-        toast.error("Quantity available cannot exceed quantity requested.");
-        return;
-      }
+  if (field === "quantity_available") {
+    const quantityRequested =
+      parseFloat(updatedMaterials[index].quantity_requested) || 0;
+    const numericValue = parseFloat(value) || 0;
+
+    if (numericValue > quantityRequested) {
+      toast.error("Quantity available cannot exceed quantity requested.");
+      return;
+    }
+  }
+
+  if (field === "price") {
+    const originalPrice = updatedMaterials[index].originalPrice; // Use stored original price
+    const numericValue = parseFloat(value) || 0;
+
+    if (numericValue > originalPrice) {
+      toast.error("Price cannot be higher than the original value.");
+      return;
     }
 
-    if (field === "price") {
-      const originalPrice = updatedMaterials[index].originalPrice; // Use stored original price
-      console.log("originalPrice", originalPrice, "value", value);
+    updatedMaterials[index].price = value; // Update the price as a string
+  }
 
-      if (value > originalPrice) {
-        toast.error("Price cannot be higher than the original value.");
-        return;
-      }
+  if (field === "discount") {
+    const originalDiscount =
+      parseFloat(bidCounterData?.bid_materials[index]?.discount) || 0;
+    const numericValue = parseFloat(value) || 0;
 
-      updatedMaterials[index].price = value; // Update the price
+    if (numericValue < originalDiscount) {
+      toast.error("Discount cannot be lower than already existed value.");
+      return;
     }
+    updatedMaterials[index].allowDiscountIncrease =
+      numericValue >= originalDiscount;
+  }
 
-    if (field === "discount") {
-      const originalDiscount =
-        parseFloat(bidCounterData?.bid_materials[index]?.discount) || 0;
+  updatedMaterials[index][field] = value; // Update the field as a string
 
-      if (value < originalDiscount) {
-        toast.error("Discount cannot be lower than already existed value.");
-        return;
-      }
-      updatedMaterials[index].allowDiscountIncrease = value >= originalDiscount;
-    }
+  // Perform calculations only if the value is a valid number
+  const price = parseFloat(updatedMaterials[index].price) || 0;
+  const quantityAvail =
+    parseFloat(updatedMaterials[index].quantity_available) || 0;
+  const discount = parseFloat(updatedMaterials[index].discount) || 0;
+  const gst = parseFloat(updatedMaterials[index].gst) || 0;
 
-    updatedMaterials[index][field] = value;
+  const total = price * quantityAvail;
 
-    const price = parseFloat(updatedMaterials[index].price) || 0;
-    const quantityAvail =
-      parseFloat(updatedMaterials[index].quantity_available) || 0;
-    const discount = parseFloat(updatedMaterials[index].discount) || 0;
-    const gst = parseFloat(updatedMaterials[index].gst) || 0;
+  const realisedDiscount = (total * discount) / 100;
+  const realisedPrice = price - (price * discount) / 100; // Calculate realised price
 
-    const total = price * quantityAvail;
+  const landedAmount = total - realisedDiscount;
+  let realisedGst = 0;
+  if (gst > 0) {
+    realisedGst = (landedAmount * gst) / 100;
+  }
 
-    const realisedDiscount = (total * discount) / 100;
-    const realisedPrice = price - (price * discount) / 100; // Calculate realised price
+  const finalTotal = landedAmount + realisedGst;
 
-    const landedAmount = total - realisedDiscount;
-    let realisedGst = 0;
-    if (gst > 0) {
-      realisedGst = (landedAmount * gst) / 100;
-    }
+  updatedMaterials[index].realised_discount = realisedDiscount.toFixed(2);
+  updatedMaterials[index].realised_price = realisedPrice.toFixed(2); // Set realised price
+  updatedMaterials[index].landed_amount = landedAmount.toFixed(2);
+  updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
+  updatedMaterials[index].total_amount = finalTotal.toFixed(2);
 
-    const finalTotal = landedAmount + realisedGst;
+  // Recalculate addition and deduction tax percentages
+  const baseAmount = parseFloat(updatedMaterials[index].total_amount) || 0;
 
-    updatedMaterials[index].realised_discount = realisedDiscount.toFixed(2);
-    updatedMaterials[index].realised_price = realisedPrice.toFixed(2); // Set realised price
-    updatedMaterials[index].landed_amount = landedAmount.toFixed(2);
-    updatedMaterials[index].realised_gst = realisedGst.toFixed(2);
-    updatedMaterials[index].total_amount = finalTotal.toFixed(2);
+  updatedMaterials[index].addition_bid_material_tax_details?.forEach((item) => {
+    const percentage = parseFloat(item.taxChargePerUom) || 0;
+    item.amount = item.inclusive
+      ? (baseAmount * percentage) / (100 + percentage)
+      : (baseAmount * percentage) / 100;
+  });
 
-    // Recalculate addition and deduction tax percentages
-    const baseAmount = parseFloat(updatedMaterials[index].total_amount) || 0;
-
-    updatedMaterials[index].addition_bid_material_tax_details?.forEach((item) => {
+  updatedMaterials[index].deduction_bid_material_tax_details?.forEach(
+    (item) => {
       const percentage = parseFloat(item.taxChargePerUom) || 0;
       item.amount = item.inclusive
         ? (baseAmount * percentage) / (100 + percentage)
         : (baseAmount * percentage) / 100;
-    });
-
-    updatedMaterials[index].deduction_bid_material_tax_details?.forEach((item) => {
-      const percentage = parseFloat(item.taxChargePerUom) || 0;
-      item.amount = item.inclusive
-        ? (baseAmount * percentage) / (100 + percentage)
-        : (baseAmount * percentage) / 100;
-    });
-
-    // Disable price if discount is modified, and vice versa
-    if (field === "price") {
-      updatedMaterials[index].disableDiscount = true;
-      updatedMaterials[index].disablePrice = false;
-    } else if (field === "discount") {
-      updatedMaterials[index].disablePrice = true;
-      updatedMaterials[index].disableDiscount = false;
     }
+  );
 
-    const newSumTotal = updatedMaterials.reduce(
-      (acc, item) => acc + (parseFloat(item.total_amount) || 0),
-      0
-    );
+  // Disable price if discount is modified, and vice versa
+  if (field === "price") {
+    updatedMaterials[index].disableDiscount = true;
+    updatedMaterials[index].disablePrice = false;
+  } else if (field === "discount") {
+    updatedMaterials[index].disablePrice = true;
+    updatedMaterials[index].disableDiscount = false;
+  }
 
-    if (newSumTotal !== sumTotal) {
-      setSumTotal(newSumTotal); // Only update sumTotal if it has changed
-    }
+  const newSumTotal = updatedMaterials.reduce(
+    (acc, item) => acc + (parseFloat(item.total_amount) || 0),
+    0
+  );
 
-    setFormData({
-      ...formData,
-      bid_materials: updatedMaterials,
-    });
-  };
+  if (newSumTotal !== sumTotal) {
+    setSumTotal(newSumTotal); // Only update sumTotal if it has changed
+  }
+
+  setFormData({
+    ...formData,
+    bid_materials: updatedMaterials,
+  });
+};
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -823,16 +830,31 @@ export default function CounterOffer() {
       );
 
       const price = (
-        <input
-          type="number"
-          min="0"
-          className="form-control"
-          style={{ width: "auto" }}
-          value={item.price}
-          onChange={(e) => handleMaterialInputChange(e, "price", index)}
-          disabled={item.disablePrice}
-        />
-      );
+  <input
+    type="text"
+    className="form-control"
+    style={{ width: "auto" }}
+    value={item.price}
+    onChange={(e) => {
+      let value = e.target.value;
+
+      // Allow only numbers and a single decimal point with up to two decimal places
+      if (/^\d*\.?\d{0,2}$/.test(value)) {
+        handleMaterialInputChange(e, "price", index);
+      }
+    }}
+    onKeyDown={(e) => {
+      if (
+        !/^\d$/.test(e.key) &&
+        !["Backspace", "ArrowLeft", "ArrowRight", "Tab", ".", "Delete"].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+    }}
+    onWheel={(e) => e.target.blur()} // Prevent accidental value changes on scroll
+    disabled={item.disablePrice}
+  />
+);
 
       const totalAmount = (
         <input
