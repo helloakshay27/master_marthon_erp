@@ -9,17 +9,18 @@ import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
 
   // Static data for SingleSelector (this will be replaced by API data later)
-  const companyOptions = [
-    { value: "company1", label: "Company 1" },
-    { value: "company2", label: "Company 2" },
-    { value: "company3", label: "Company 3" },
-  ];
+  // const companyOptions = [
+  //   { value: "company1", label: "Company 1" },
+  //   { value: "company2", label: "Company 2" },
+  //   { value: "company3", label: "Company 3" },
+  // ];
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -54,10 +55,12 @@ const BillVerificationList = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://marathon.lockated.com/bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setBillEntries(response.data.bill_entries);
       setMeta(response.data.meta)
+      setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
     } catch (err) {
       setError("Failed to fetch bill entries");
       console.error("Error fetching bill entries:", err);
@@ -79,6 +82,127 @@ const BillVerificationList = () => {
       setCurrentPage(pageNumber);
     }
   };
+
+  //company quick filter 
+  
+    const [companies, setCompanies] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
+    const [selectedProject, setSelectedProject] = useState(null);
+    const [selectedSite, setSelectedSite] = useState(null);
+    // const [selectedWing, setSelectedWing] = useState(null);
+    const [siteOptions, setSiteOptions] = useState([]);
+    // const [wingsOptions, setWingsOptions] = useState([]);
+  
+    // Fetch company data on component mount
+    useEffect(() => {
+      axios
+        .get(
+          `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          setCompanies(response.data.companies);
+        })
+        .catch((error) => {
+          console.error("Error fetching company data:", error);
+        });
+    }, []);
+
+    // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    setSelectedProject(null); // Reset project selection
+    setSelectedSite(null); // Reset site selection
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+   // Handle project selection
+   const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection
+
+    if (selectedOption) {
+      // Find the selected project from the list of projects of the selected company
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+
+      // Set site options based on selected project
+      setSiteOptions(
+        selectedProjectData?.pms_sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        })) || []
+      );
+    }
+  };
+
+  // Handle site selection
+    const handleSiteChange = (selectedOption) => {
+      setSelectedSite(selectedOption);
+    };
+  
+    // Map companies to options for the dropdown
+    const companyOptions = companies.map((company) => ({
+      value: company.id,
+      label: company.company_name,
+    }));
+    // filter
+    const fetchFilteredData = () => {
+      const companyId = selectedCompany?.value || "";
+      const projectId = selectedProject?.value || "";
+      const siteId = selectedSite?.value || "";
+      const search = searchKeyword || "";
+      console.log("ids filter:", companyId, projectId, siteId)
+      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+  
+      // console.log("url:",url)
+      axios
+        .get(url)
+        .then((response) => {
+          setBillEntries(response.data.bill_entries);
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+          setMeta(response.data.meta)
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered data:", error);
+        });
+    };
+    const handleReset = () => {
+      // Clear selected filters
+      setSelectedCompany(null);
+      setSelectedProject(null);
+      setSelectedSite(null);
+  
+      // Fetch unfiltered data
+      axios
+        .get(`${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        .then((response) => {
+          setBillEntries(response.data.bill_entries);
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+          setMeta(response.data.meta)
+        })
+        .catch((error) => {
+          console.error("Error resetting data:", error);
+        });
+    };
+  
 
   if (loading) {
     return <p>Loading...</p>;
@@ -161,7 +285,7 @@ const BillVerificationList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
-                    <p className="content-box-sub">{""}</p>
+                    <p className="content-box-sub">{"0"}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -172,7 +296,7 @@ const BillVerificationList = () => {
                     <h4 className="content-box-title fw-semibold">
                       Received for Verification
                     </h4>
-                    <p className="content-box-sub"></p>
+                    <p className="content-box-sub">0</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -181,7 +305,7 @@ const BillVerificationList = () => {
                     data-tab="self-overdue"
                   >
                     <h4 className="content-box-title fw-semibold">Verified</h4>
-                    <p className="content-box-sub"></p>
+                    <p className="content-box-sub">0</p>
                   </div>
                 </div>
               </div>
@@ -190,65 +314,73 @@ const BillVerificationList = () => {
           <div className="tab-content1 active mb-5" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
-              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-                <div className="row">
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Company <span>*</span>
-                      </label>
-
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Project<span>*</span>
-                      </label>
-
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Sub-Project <span>*</span>
-                      </label>
-                      {/* Pass static data as options */}
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>
-                        Last Created <span>*</span>
-                      </label>
-
-                      <SingleSelector
-                        options={companyOptions}
-                        selectedValue={selectedValue} // Passing selected value to SingleSelector
-                        onChange={handleChange} // Handle change event
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2 m-0">Go</button>
-                  </div>
-                </div>
-              </CollapsibleCard>
+              
+                 <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
+                              <div className="row">
+                                <div className="col-md-3">
+                                  <div className="form-group">
+                                    <label>Company</label>
+              
+                                    <SingleSelector
+                                      options={companyOptions}
+                                      onChange={handleCompanyChange}
+                                      value={selectedCompany}
+                                      placeholder={`Select Company`}
+                                    />
+                                    {/* {validationErrors.company && (
+                                      <span className="text-danger">{validationErrors.company}</span>
+                                    )} */}
+                                  </div>
+                                </div>
+                                <div className="col-md-3">
+                                  <div className="form-group">
+                                    <label>Project</label>
+              
+                                    <SingleSelector
+                                      options={projects}
+                                      onChange={handleProjectChange}
+                                      value={selectedProject}
+                                      placeholder={`Select Project`}
+                                    />
+                                    {/* {validationErrors.project && (
+                                      <span className="text-danger">{validationErrors.project}</span>
+                                    )} */}
+                                  </div>
+                                </div>
+                                <div className="col-md-3">
+                                  <div className="form-group">
+                                    <label>Sub-Project</label>
+                                    {/* Pass static data as options */}
+                                    <SingleSelector
+                                      options={siteOptions}
+                                      onChange={handleSiteChange}
+                                      value={selectedSite}
+                                      placeholder={`Select Sub-project`} // Dynamic placeholder
+                                    />
+                                    {/* {validationErrors.site && (
+                                      <span className="text-danger">{validationErrors.site}</span>
+                                    )} */}
+                                  </div>
+                                </div>
+                                <div className="col-md-1 mt-4 d-flex justify-content-center">
+                                  <button
+                                    className="purple-btn2"
+                                    onClick={fetchFilteredData}
+              
+                                  >
+                                    Go
+                                  </button>
+                                </div>
+                                <div className="col-md-1 mt-4 d-flex justify-content-center">
+                                  <button
+                                    className="purple-btn2"
+                                    onClick={handleReset}
+                                  >
+                                    Reset
+                                  </button>
+                                </div>
+                              </div>
+                            </CollapsibleCard>
 
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
                 <div className="card-body mt-0 pt-0">
@@ -410,7 +542,8 @@ const BillVerificationList = () => {
                           <Link
                             to={`/bill-verification-details/${entry.id}`}
                             className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                            {index + 1}
+                            {/* {index + 1} */}
+                            {(currentPage - 1) * itemsPerPage + index + 1}
                           </Link>
                         </td>
                         {/* <td className="text-start" /> */}

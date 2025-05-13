@@ -3,7 +3,11 @@ import { EnvelopeIcon, ParticipantsIcon, ShowIcon, Table } from "../..";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../../../confi/apiDomain";
-import { auditLogColumns, specificationColumns, deliveryColumns } from "../../../constant/data";
+import {
+  auditLogColumns,
+  specificationColumns,
+  deliveryColumns,
+} from "../../../constant/data";
 
 export default function OverviewTab({
   handleParticipants,
@@ -54,8 +58,6 @@ export default function OverviewTab({
   const handleAuditLog = () => {
     setAuditLog(!auditLog);
   };
-
- 
 
   const participants = [
     {
@@ -600,7 +602,7 @@ export default function OverviewTab({
                         className="total-activity col-md-3 my-3"
                         key={item.id}
                       >
-                        <p>{item.label}</p>
+                        <p>{item.label} :</p>
                         <p
                           id={item.id}
                           style={{
@@ -647,11 +649,15 @@ export default function OverviewTab({
           </a>
           {orderDetails && (
             <div id="order-details" className="mx-5">
-              <div className="card card-body p-4">
-                <p>Event Title</p>
-                <p>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
-                <p>Event Description</p>
-                <p>{overviewData.event_description}</p>
+              <div className="card card-body d-flex p-4">
+                <div className="d-flex">
+                  <p>Event Title : </p>{" "}
+                  <p style={{marginLeft:'5px'}}>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
+                </div>
+                <div className="d-flex">
+                  <p>Event Description :</p>{" "}
+                  <p style={{marginLeft:'5px'}}>{overviewData.event_description}</p>
+                </div>
               </div>
             </div>
           )}
@@ -728,27 +734,33 @@ export default function OverviewTab({
               <div className="card card-body p-4">
                 {specificationData?.length > 0 ? (
                   <table className="tbl-container w-100">
-                                                      <thead>
-                                                        <tr>
-                                                          {specificationColumns.map((col, index) => (
-                                                            <th key={index} style={{ textAlign: "center !important" }}>
-                                                              {col.label}
-                                                            </th>
-                                                          ))}
-                                                        </tr>
-                                                      </thead>
-                                                      <tbody>
-                                                        {specificationData.map((row, rowIndex) => (
-                                                          <tr key={rowIndex}>
-                                                            {specificationColumns.map((col, colIndex) => (
-                                                              <td key={colIndex} style={{ textAlign: "center !important" }}>
-                                                                {row[col.key]}
-                                                              </td>
-                                                            ))}
-                                                          </tr>
-                                                        ))}
-                                                      </tbody>
-                                                    </table>
+                    <thead>
+                      <tr>
+                        {specificationColumns.map((col, index) => (
+                          <th
+                            key={index}
+                            style={{ textAlign: "center !important" }}
+                          >
+                            {col.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {specificationData.map((row, rowIndex) => (
+                        <tr key={rowIndex}>
+                          {specificationColumns.map((col, colIndex) => (
+                            <td
+                              key={colIndex}
+                              style={{ textAlign: "center !important" }}
+                            >
+                              {row[col.key]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 ) : (
                   <p className="text-center mt-4">
                     No Dynamic Details available for this event.
@@ -795,15 +807,15 @@ export default function OverviewTab({
               <div className="card card-body p-4">
                 {auditLogData?.length > 0 ? (
                   <Table
-                  columns={[
-                    { label: "Sr No", key: "srNo" }, // Add serial number column
-                    ...auditLogColumns,
-                  ]}
-                  data={auditLogData.map((item, index) => ({
-                    ...item,
-                    srNo: index + 1, // Add serial number to each row
-                  }))}
-                />
+                    columns={[
+                      { label: "Sr No", key: "srNo" }, // Add serial number column
+                      ...auditLogColumns,
+                    ]}
+                    data={auditLogData.map((item, index) => ({
+                      ...item,
+                      srNo: index + 1, // Add serial number to each row
+                    }))}
+                  />
                 ) : (
                   <p className="text-center mt-4">
                     No Audit Log available for this event.
