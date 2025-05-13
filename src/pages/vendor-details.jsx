@@ -704,207 +704,209 @@ export default function VendorDetails() {
   // const nextBid = currentIndex < bids.length - 1 ? currentIndex + 1 : "No bid";
 
   const fetchEventData = async () => {
-  try {
-    // Step 1: Fetch the initial API to get `revised_bid`
-    const initialResponse = await axios.get(
-      `${baseURL}/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
-    );
-
-    const initialData = initialResponse.data;
-    const eventMaterials = initialData.event_materials || [];
-    const revisedBid = initialData.revised_bid;
-
-    // Step 0: Store the revised bid in state
-    setRevisedBid(revisedBid);
-
-    // Step 1: Collect all unique keys from extra_data
-    const uniqueAdditionalColumns = new Set();
-
-    eventMaterials.forEach((item) => {
-      const extraKeys = Object.keys(item.extra_data || {});
-      extraKeys.forEach((key) => {
-        uniqueAdditionalColumns.add(key);
-      });
-    });
-
-    // Step 2: Convert keys to array of { key, label } objects
-    const additionalColumns = Array.from(uniqueAdditionalColumns).map((key) => ({
-      key,
-      label: key
-        .replace(/_/g, " ") // Convert snake_case to space
-        .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space in camelCase
-        .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize each word
-    }));
-
-    // Set the additional columns in state
-    setAdditionalColumns(additionalColumns);
-
-    if (!revisedBid) {
-      const processedData = eventMaterials.map((item) => {
-        const flatExtraData = Object.entries(item.extra_data || {}).reduce(
-          (acc, [key, valObj]) => {
-            acc[key] = valObj?.value || "";
-            return acc;
-          },
-          {}
-        );
-        const bidMaterial = item.bid_materials?.[0];
-
-        // Map the row data
-        const rowData = {
-          pmsBrand: item.pms_brand_name,
-          pmsColour: item.pms_colour_name,
-          genericInfo: item.generic_info_name,
-          eventMaterialId: item.id,
-          descriptionOfItem: item.inventory_name,
-          quantity: item.quantity,
-          quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-          unit: item.uom_name || item.unit,
-          location: item.location,
-          rate: item.rate || "", // Placeholder if rate is not available
-          section: item.material_type,
-          subSection: item.inventory_sub_type,
-          amount: item.amount,
-          totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
-          attachment: null, // Placeholder for attachment
-          varient: item.material_type, // Use extracted material_type
-          extra_data: flatExtraData,
-          revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
-        };
-
-        // Add `extra` data dynamically to the row
-        additionalColumns.forEach((col) => {
-          rowData[col.key] = bidMaterial?.extra_data?.[col.key] || ""; // Add extra column data
-        });
-
-        return rowData;
-      });
-
-      setData(processedData);
-    } else {
-      // Step 2: Fetch the bid data if `revised_bid` is true
-      const bidResponse = await axios.get(
-        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+    try {
+      // Step 1: Fetch the initial API to get `revised_bid`
+      const initialResponse = await axios.get(
+        `${baseURL}/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
       );
 
-      const bids = bidResponse.data.bids;
-      setBids(bids); // Store all bids in state
+      const initialData = initialResponse.data;
+      const eventMaterials = initialData.event_materials || [];
+      const revisedBid = initialData.revised_bid;
 
-      // Set initial data for the first bid
-      if (bids.length > 0) {
-        updateDataForCurrentIndex(bids, 0); // Initialize with the first bid
+      // Step 0: Store the revised bid in state
+      setRevisedBid(revisedBid);
+
+      // Step 1: Collect all unique keys from extra_data
+      const uniqueAdditionalColumns = new Set();
+
+      eventMaterials.forEach((item) => {
+        const extraKeys = Object.keys(item.extra_data || {});
+        extraKeys.forEach((key) => {
+          uniqueAdditionalColumns.add(key);
+        });
+      });
+
+      // Step 2: Convert keys to array of { key, label } objects
+      const additionalColumns = Array.from(uniqueAdditionalColumns).map(
+        (key) => ({
+          key,
+          label: key
+            .replace(/_/g, " ") // Convert snake_case to space
+            .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space in camelCase
+            .replace(/\b\w/g, (char) => char.toUpperCase()), // Capitalize each word
+        })
+      );
+
+      // Set the additional columns in state
+      setAdditionalColumns(additionalColumns);
+
+      if (!revisedBid) {
+        const processedData = eventMaterials.map((item) => {
+          const flatExtraData = Object.entries(item.extra_data || {}).reduce(
+            (acc, [key, valObj]) => {
+              acc[key] = valObj?.value || "";
+              return acc;
+            },
+            {}
+          );
+          const bidMaterial = item.bid_materials?.[0];
+
+          // Map the row data
+          const rowData = {
+            pmsBrand: item.pms_brand_name,
+            pmsColour: item.pms_colour_name,
+            genericInfo: item.generic_info_name,
+            eventMaterialId: item.id,
+            descriptionOfItem: item.inventory_name,
+            quantity: item.quantity,
+            quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
+            unit: item.uom_name || item.unit,
+            location: item.location,
+            rate: item.rate || "", // Placeholder if rate is not available
+            section: item.material_type,
+            subSection: item.inventory_sub_type,
+            amount: item.amount,
+            totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
+            attachment: null, // Placeholder for attachment
+            varient: item.material_type, // Use extracted material_type
+            extra_data: flatExtraData,
+            revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
+          };
+
+          // Add `extra` data dynamically to the row
+          additionalColumns.forEach((col) => {
+            rowData[col.key] = bidMaterial?.extra_data?.[col.key] || ""; // Add extra column data
+          });
+
+          return rowData;
+        });
+
+        setData(processedData);
+      } else {
+        // Step 2: Fetch the bid data if `revised_bid` is true
+        const bidResponse = await axios.get(
+          `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+        );
+
+        const bids = bidResponse.data.bids;
+        setBids(bids); // Store all bids in state
+
+        // Set initial data for the first bid
+        if (bids.length > 0) {
+          updateDataForCurrentIndex(bids, 0); // Initialize with the first bid
+        }
       }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-};
-
-// Function to update data based on the current index
-const updateDataForCurrentIndex = (bids, index) => {
-  const currentBid = bids[index];
-
-  if (!currentBid) return;
-
-  const processFreightData = (bid) => {
-    const counterBid = bid.counter_bids?.[currentIndex]; // Check if counter bid exists
-
-    // Process data with both first bid and counter bid
-    return [
-      {
-        label: "Freight Charge",
-        value: {
-          firstBid: bid.freight_charge_amount || "",
-          counterBid: counterBid?.freight_charge_amount || "",
-        },
-      },
-      {
-        label: "GST on Freight",
-        value: {
-          firstBid: bid.gst_on_freight || "",
-          counterBid: counterBid?.gst_on_freight || "",
-        },
-      },
-      {
-        label: "Realised Freight",
-        value: {
-          firstBid: bid.realised_freight_charge_amount || "",
-          counterBid: counterBid?.realised_freight_charge_amount || "",
-        },
-      },
-      {
-        label: "Warranty Clause *",
-        value: {
-          firstBid: bid.warranty_clause || "",
-          counterBid: counterBid?.warranty_clause || "",
-        },
-      },
-      {
-        label: "Payment Terms *",
-        value: {
-          firstBid: bid.payment_terms || "",
-          counterBid: counterBid?.payment_terms || "",
-        },
-      },
-      {
-        label: "Loading / Unloading *",
-        value: {
-          firstBid: bid.loading_unloading_clause || "",
-          counterBid: counterBid?.loading_unloading_clause || "",
-        },
-      },
-    ];
   };
 
-  const freightData = processFreightData(currentBid);
-  setFreightData(freightData);
+  // Function to update data based on the current index
+  const updateDataForCurrentIndex = (bids, index) => {
+    const currentBid = bids[index];
 
-  const previousData = currentBid.bid_materials.map((material) => ({
-    bidId: material.bid_id,
-    eventMaterialId: material.event_material_id,
-    descriptionOfItem: material.material_name,
-    varient: material.material_type,
-    quantity: material.event_material.quantity,
-    quantityAvail: material.quantity_available,
-    price: material.price,
-    discount: material.discount,
-    section: material.event_material.material_type,
-    subSection: material.event_material.inventory_sub_type,
-    realisedDiscount: material.realised_discount,
-    gst: material.gst,
-    realisedGst: material.realised_gst,
-    total: material.total_amount,
-    unit:
-      material.event_material.uom_name ||
-      material.event_material.uom ||
-      material.event_material.unit,
-    location: material.event_material.location,
-    vendorRemark: material.vendor_remark,
-    landedAmount: material.landed_amount,
-    pmsBrand: material.event_material.pms_brand_name,
-    pmsColour: material.event_material.pms_colour_name,
-    genericInfo: material.event_material.generic_info_name,
-    extra_data: material.extra_data || {}, // Include extra_data
-  }));
+    if (!currentBid) return;
 
-  setData(previousData);
-  setGrossTotal(currentBid.gross_total);
-  setCounterData(currentBid.counter_bids?.length || 0);
-  setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
-  setBidIds(currentBid.id);
-};
+    const processFreightData = (bid) => {
+      const counterBid = bid.counter_bids?.[currentIndex]; // Check if counter bid exists
 
-// Effect to fetch data only once
-useEffect(() => {
-  fetchEventData();
-}, [eventId]);
+      // Process data with both first bid and counter bid
+      return [
+        {
+          label: "Freight Charge",
+          value: {
+            firstBid: bid.freight_charge_amount || "",
+            counterBid: counterBid?.freight_charge_amount || "",
+          },
+        },
+        {
+          label: "GST on Freight",
+          value: {
+            firstBid: bid.gst_on_freight || "",
+            counterBid: counterBid?.gst_on_freight || "",
+          },
+        },
+        {
+          label: "Realised Freight",
+          value: {
+            firstBid: bid.realised_freight_charge_amount || "",
+            counterBid: counterBid?.realised_freight_charge_amount || "",
+          },
+        },
+        {
+          label: "Warranty Clause *",
+          value: {
+            firstBid: bid.warranty_clause || "",
+            counterBid: counterBid?.warranty_clause || "",
+          },
+        },
+        {
+          label: "Payment Terms *",
+          value: {
+            firstBid: bid.payment_terms || "",
+            counterBid: counterBid?.payment_terms || "",
+          },
+        },
+        {
+          label: "Loading / Unloading *",
+          value: {
+            firstBid: bid.loading_unloading_clause || "",
+            counterBid: counterBid?.loading_unloading_clause || "",
+          },
+        },
+      ];
+    };
 
-// Effect to update data when currentIndex changes
-useEffect(() => {
-  if (bids.length > 0) {
-    updateDataForCurrentIndex(bids, currentIndex);
-  }
-}, [currentIndex, bids]);
+    const freightData = processFreightData(currentBid);
+    setFreightData(freightData);
+
+    const previousData = currentBid.bid_materials.map((material) => ({
+      bidId: material.bid_id,
+      eventMaterialId: material.event_material_id,
+      descriptionOfItem: material.material_name,
+      varient: material.material_type,
+      quantity: material.event_material.quantity,
+      quantityAvail: material.quantity_available,
+      price: material.price,
+      discount: material.discount,
+      section: material.event_material.material_type,
+      subSection: material.event_material.inventory_sub_type,
+      realisedDiscount: material.realised_discount,
+      gst: material.gst,
+      realisedGst: material.realised_gst,
+      total: material.total_amount,
+      unit:
+        material.event_material.uom_name ||
+        material.event_material.uom ||
+        material.event_material.unit,
+      location: material.event_material.location,
+      vendorRemark: material.vendor_remark,
+      landedAmount: material.landed_amount,
+      pmsBrand: material.event_material.pms_brand_name,
+      pmsColour: material.event_material.pms_colour_name,
+      genericInfo: material.event_material.generic_info_name,
+      extra_data: material.extra_data || {}, // Include extra_data
+    }));
+
+    setData(previousData);
+    setGrossTotal(currentBid.gross_total);
+    setCounterData(currentBid.counter_bids?.length || 0);
+    setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
+    setBidIds(currentBid.id);
+  };
+
+  // Effect to fetch data only once
+  useEffect(() => {
+    fetchEventData();
+  }, [eventId]);
+
+  // Effect to update data when currentIndex changes
+  useEffect(() => {
+    if (bids.length > 0) {
+      updateDataForCurrentIndex(bids, currentIndex);
+    }
+  }, [currentIndex, bids]);
 
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
@@ -1878,7 +1880,7 @@ useEffect(() => {
           return Object.fromEntries(
             Object.entries(log).map(([key, value]) => [
               key,
-              value === null ? "N/A" : value,
+              value === null ? "-" : value,
             ])
           );
         });
@@ -2004,12 +2006,12 @@ useEffect(() => {
           },
           {
             label: "Warranty Clause",
-            value: latestBid.warranty_clause || "N/A",
+            value: latestBid.warranty_clause || "-",
           },
-          { label: "Payment Terms", value: latestBid.payment_terms || "N/A" },
+          { label: "Payment Terms", value: latestBid.payment_terms || "-" },
           {
             label: "Loading/Unloading Clause",
-            value: latestBid.loading_unloading_clause || "N/A",
+            value: latestBid.loading_unloading_clause || "-",
           },
         ];
 
@@ -2098,12 +2100,12 @@ useEffect(() => {
         },
         {
           label: "Warranty Clause",
-          value: selectedBid.warranty_clause || "N/A",
+          value: selectedBid.warranty_clause || "-",
         },
-        { label: "Payment Terms", value: selectedBid.payment_terms || "N/A" },
+        { label: "Payment Terms", value: selectedBid.payment_terms || "-" },
         {
           label: "Loading/Unloading Clause",
-          value: selectedBid.loading_unloading_clause || "N/A",
+          value: selectedBid.loading_unloading_clause || "-",
         },
       ]);
 
@@ -2807,7 +2809,7 @@ useEffect(() => {
                               //   key: "attachment",
                               // },
                               { label: "Price", key: "price" },
-                              { label: "Discount", key: "discount" },
+                              { label: "Discount %", key: "discount" },
                               { label: "GST", key: "gst" },
                               { label: "Landed Amount", key: "landedAmount" },
                               { label: "Vendor Remark", key: "vendorRemark" },
@@ -3166,7 +3168,7 @@ useEffect(() => {
                     className="item-label rounded-circle bg-light me-2 d-flex justify-content-center align-items-center"
                     style={{ width: "35px", height: "35px" }}
                   >
-                    {/* {remarkItem.event_vendor?.full_name?.[0]?.toUpperCase() || "N/A"} */}
+                    {/* {remarkItem.event_vendor?.full_name?.[0]?.toUpperCase() || "-"} */}
                   </div>
                   <div className="priceTrends-list-child go-shadow-k p-3 rounded-2">
                     <p className="eventList-p2 mb-0 fw-bold">
@@ -3269,9 +3271,6 @@ useEffect(() => {
                                         <th className="text-start">
                                           Bidding Ends At
                                         </th>
-                                        <th className="text-start">
-                                          Delivary date
-                                        </th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -3305,7 +3304,7 @@ useEffect(() => {
                                               }
                                             />
                                           ) : (
-                                            "N/A"
+                                            "-"
                                           )}
                                         </td>
                                         <td
@@ -3319,14 +3318,8 @@ useEffect(() => {
                                               }
                                             />
                                           ) : (
-                                            "N/A"
+                                            "-"
                                           )}
-                                        </td>
-                                        <td
-                                          className="text-start"
-                                          // style={{ color: "#777777" }}
-                                        >
-                                          {Delivarydate}
                                         </td>
                                       </tr>
                                     </tbody>
@@ -3562,7 +3555,7 @@ useEffect(() => {
                                   fontWeight: "normal",
                                 }}
                               >
-                                Line Items
+                                Material Sheet
                               </span>
                             </div>
                           </a>
@@ -3578,6 +3571,7 @@ useEffect(() => {
                                   <table className="w-100 table">
                                     <thead>
                                       <tr>
+                                        {/* Render existing columns */}
                                         <th className="text-start">Sr.No.</th>
                                         <th className="text-start">
                                           Material Type
@@ -3590,9 +3584,6 @@ useEffect(() => {
                                         </th>
                                         <th className="text-start">Quantity</th>
                                         <th className="text-start">UOM</th>
-                                        {/* <th className="text-start">
-                                          Material Type
-                                        </th> */}
                                         <th className="text-start">Location</th>
                                         <th className="text-start">Rate</th>
                                         <th className="text-start">Amount</th>
@@ -3601,88 +3592,78 @@ useEffect(() => {
                                         <th className="text-start">
                                           Generic Info
                                         </th>
-                                        {/* <th className="text-start">
-                                          Material Type 
-                                        </th>
-                                        <th className="text-start">
-                                          Material Sub Type
-                                        </th> */}
+
+                                        {/* Dynamically render extra_data columns */}
+                                        {data1.event_materials[0]?.extra_data &&
+                                          Object.keys(
+                                            data1.event_materials[0].extra_data
+                                          ).map((key) => (
+                                            <th
+                                              key={key}
+                                              className="text-start"
+                                            >
+                                              {key
+                                                .replace(/_/g, " ")
+                                                .toUpperCase()}
+                                            </th>
+                                          ))}
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {data1.event_materials.map(
                                         (data, index) => (
                                           <tr key={data.id}>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            {/* Render existing data */}
+                                            <td className="text-start">
                                               {index + 1}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.material_type}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.inventory_sub_type}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.inventory_name}
                                             </td>
-                                            {/* <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
-                                              {data.material_type}
-                                            </td> */}
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.quantity}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.uom_name}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.location}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.rate}
                                             </td>
-                                            <td
-                                              className="text-start"
-                                              // style={{ color: "#777777" }}
-                                            >
+                                            <td className="text-start">
                                               {data.amount}
                                             </td>
-                                            <td>
-                                              {data.brand?.brand_name || "N/A"}
+                                            <td className="text-start">
+                                              {data.pms_brand_name || "-"}
                                             </td>
-                                            <td>
-                                              {data.colour?.colour || "N/A"}
+                                            <td className="text-start">
+                                              {data.pms_colour_name || "-"}
                                             </td>
-                                            <td>
-                                              {data.generic_info
-                                                ?.generic_info || "N/A"}
+                                            <td className="text-start">
+                                              {data.generic_info_name || "-"}
                                             </td>
+
+                                            {/* Dynamically render extra_data values */}
+                                            {data.extra_data &&
+                                              Object.keys(data.extra_data).map(
+                                                (key) => (
+                                                  <td
+                                                    key={key}
+                                                    className="text-start"
+                                                  >
+                                                    {data.extra_data[key]
+                                                      ?.value || "-"}
+                                                  </td>
+                                                )
+                                              )}
                                           </tr>
                                         )
                                       )}
@@ -4346,8 +4327,8 @@ useEffect(() => {
                               >
                                 {data1?.event_type_detail
                                   ?.event_configuration === "rank_based"
-                                  ? `Rank: ${bids[0]?.rank ?? "N/A"}`
-                                  : `Price: ₹${bids[0]?.min_price ?? "N/A"}`}
+                                  ? `Rank: ${bids[0]?.rank ?? "-"}`
+                                  : `Price: ₹${bids[0]?.min_price ?? "-"}`}
                               </span>
                             )
                           )}
@@ -4414,7 +4395,7 @@ useEffect(() => {
                             },
                             { label: "Price *", key: "price" },
                             { label: "Realised Price *", key: "realisedPrice" },
-                            { label: "Discount *", key: "discount" },
+                            { label: "Discount %*", key: "discount" },
                             {
                               label: "Realised Discount",
                               key: "realisedDiscount",
@@ -4434,7 +4415,7 @@ useEffect(() => {
                             realisedPrice: (cell, rowIndex) => {
                               return (
                                 <input
-                                  value={cell || "N/A"}
+                                  value={cell || "-"}
                                   disabled={true}
                                   className="form-control"
                                   readonly
@@ -5820,41 +5801,46 @@ useEffect(() => {
                               }}
                               className="custom-select"
                               disabledOptions={(
-  taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
-    (acc, item) => {
-      const matchedOption = taxOptions.find(
-        (option) => option.id === item.resource_id
-      );
+                                taxRateData[
+                                  tableId
+                                ]?.addition_bid_material_tax_details?.reduce(
+                                  (acc, item) => {
+                                    const matchedOption = taxOptions.find(
+                                      (option) => option.id === item.resource_id
+                                    );
 
-      const taxType = item.taxChargeType;
+                                    const taxType = item.taxChargeType;
 
-      // Disable CGST and IGST if CGST is selected
-      if (taxType === "CGST") {
-        acc.push("CGST", "IGST");
-      }
+                                    // Disable CGST and IGST if CGST is selected
+                                    if (taxType === "CGST") {
+                                      acc.push("CGST", "IGST");
+                                    }
 
-      // Disable SGST and IGST if SGST is selected
-      if (taxType === "SGST") {
-        acc.push("SGST", "IGST");
-      }
+                                    // Disable SGST and IGST if SGST is selected
+                                    if (taxType === "SGST") {
+                                      acc.push("SGST", "IGST");
+                                    }
 
-      // Disable CGST and SGST if IGST is selected
-      if (taxType === "IGST") {
-        acc.push("CGST", "SGST");
-      }
+                                    // Disable CGST and SGST if IGST is selected
+                                    if (taxType === "IGST") {
+                                      acc.push("CGST", "SGST");
+                                    }
 
-      // Add taxType or matched option value as fallback
-      if (taxType) {
-        acc.push(taxType);
-      } else if (matchedOption?.value) {
-        acc.push(matchedOption.value);
-      }
+                                    // Add taxType or matched option value as fallback
+                                    if (taxType) {
+                                      acc.push(taxType);
+                                    } else if (matchedOption?.value) {
+                                      acc.push(matchedOption.value);
+                                    }
 
-      return acc;
-    },
-    []
-  ) || []
-).filter((value, index, self) => self.indexOf(value) === index)}
+                                    return acc;
+                                  },
+                                  []
+                                ) || []
+                              ).filter(
+                                (value, index, self) =>
+                                  self.indexOf(value) === index
+                              )}
                             />
                           </td>
 
@@ -6254,41 +6240,46 @@ useEffect(() => {
                               }}
                               className="custom-select"
                               disabledOptions={(
-  taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
-    (acc, item) => {
-      const matchedOption = taxOptions.find(
-        (option) => option.id === item.resource_id
-      );
+                                taxRateData[
+                                  tableId
+                                ]?.addition_bid_material_tax_details?.reduce(
+                                  (acc, item) => {
+                                    const matchedOption = taxOptions.find(
+                                      (option) => option.id === item.resource_id
+                                    );
 
-      const taxType = item.taxChargeType;
+                                    const taxType = item.taxChargeType;
 
-      // Disable CGST and IGST if CGST is selected
-      if (taxType === "CGST") {
-        acc.push("CGST", "IGST");
-      }
+                                    // Disable CGST and IGST if CGST is selected
+                                    if (taxType === "CGST") {
+                                      acc.push("CGST", "IGST");
+                                    }
 
-      // Disable SGST and IGST if SGST is selected
-      if (taxType === "SGST") {
-        acc.push("SGST", "IGST");
-      }
+                                    // Disable SGST and IGST if SGST is selected
+                                    if (taxType === "SGST") {
+                                      acc.push("SGST", "IGST");
+                                    }
 
-      // Disable CGST and SGST if IGST is selected
-      if (taxType === "IGST") {
-        acc.push("CGST", "SGST");
-      }
+                                    // Disable CGST and SGST if IGST is selected
+                                    if (taxType === "IGST") {
+                                      acc.push("CGST", "SGST");
+                                    }
 
-      // Add taxType or matched option value as fallback
-      if (taxType) {
-        acc.push(taxType);
-      } else if (matchedOption?.value) {
-        acc.push(matchedOption.value);
-      }
+                                    // Add taxType or matched option value as fallback
+                                    if (taxType) {
+                                      acc.push(taxType);
+                                    } else if (matchedOption?.value) {
+                                      acc.push(matchedOption.value);
+                                    }
 
-      return acc;
-    },
-    []
-  ) || []
-).filter((value, index, self) => self.indexOf(value) === index)}
+                                    return acc;
+                                  },
+                                  []
+                                ) || []
+                              ).filter(
+                                (value, index, self) =>
+                                  self.indexOf(value) === index
+                              )}
                             />
                           </td>
 

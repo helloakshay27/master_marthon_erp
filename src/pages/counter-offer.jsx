@@ -711,7 +711,7 @@ export default function CounterOffer() {
     { label: "Quantity Available", key: "quantityAvailable" },
     { label: "Price", key: "price" },
     { label: "Realised Price", key: "realisedPrice" },
-    { label: "Discount", key: "discount" },
+    { label: "Discount %", key: "discount" },
     { label: "Realised Discount", key: "realisedDiscount" },
     { label: "Landed Amount", key: "landedAmount" },
     { label: "Total Amount", key: "totalAmount" },
