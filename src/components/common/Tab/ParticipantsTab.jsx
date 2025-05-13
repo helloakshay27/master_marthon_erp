@@ -21,6 +21,7 @@ export default function ParticipantsTab({ id }) {
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isInvite, setIsInvite] = useState(false);
   const [isVendorLoading, setIsVendorLoading] = useState(false);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [resetSelectedRows, setResetSelectedRows] = useState(false);
@@ -135,12 +136,12 @@ export default function ParticipantsTab({ id }) {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
-    setIsLoading(true); // Start loader
+    setIsInvite(true); // Start loader
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       setIsSubmitting(false);
-      setIsLoading(false); // Stop loader
+      setIsInvite(false); // Stop loader
       return;
     }
 
@@ -182,7 +183,7 @@ export default function ParticipantsTab({ id }) {
       });
     } finally {
       setIsSubmitting(false);
-      setIsLoading(false); // Stop loader
+      setIsInvite(false); // Stop loader
     }
   };
 
@@ -195,6 +196,10 @@ export default function ParticipantsTab({ id }) {
     setSelectedRows([]);
     setResetSelectedRows(true);
   };
+
+  console.log("totalParticipantPages", totalParticipantPages);
+  console.log("currentParticipantPage", currentParticipantPage);
+  
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -551,7 +556,23 @@ export default function ParticipantsTab({ id }) {
           </button>
         </div>
         {vendorData?.length > 0 ? (
-          !isVendorLoading || !isLoading ? (
+          isInvite ? (
+            <>
+              <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Loading...</p>
+              </div>
+            </>
+          ) : (
             <div className="tbl-container">
               <table className="w-100">
                 <thead>
@@ -582,23 +603,7 @@ export default function ParticipantsTab({ id }) {
                 </tbody>
               </table>
             </div>
-          ) : (
-            <>
-              <div className="loader-container">
-                <div className="lds-ring">
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                  <div></div>
-                </div>
-                <p>Loading...</p>
-              </div>
-            </>
-          )
+          ) 
         ) : (
           <div className="text-center mt-4">No data found</div>
         )}
