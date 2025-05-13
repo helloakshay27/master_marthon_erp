@@ -54,6 +54,7 @@ export default function VendorDetails() {
   const [specification, setSpecification] = useState(false);
   const [auditLogData, setAuditLogData] = useState([]);
   const [auditLog, setAuditLog] = useState(false);
+  const [acceptLoader, setAcceptLoader] = useState(false);
   const handledeliverySchedule = () => {
     setDeliverySchedule(!deliverySchedule);
   };
@@ -1540,218 +1541,215 @@ export default function VendorDetails() {
   };
 
   const handleDecline = async () => {
-    const payload = { status: "rejected" };
-    try {
-      const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+  const payload = { status: "rejected" };
 
-      if (response.ok) {
-        // console.log("Counter offer declined");
+  // Set loading state to true
+  setAcceptLoader(true);
 
-        // Retrieve the first bid data again (to restore it)
-        const bidResponse = await axios.get(
-          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
-        );
-        const bids = bidResponse.data.bids;
-
-        if (bids.length > 0) {
-          const firstBid = bids[currentIndex];
-          // console.log("First bid data:", firstBid);
-
-          // Process Freight Data (Optional)
-          const processFreightData = (bid) => [
-            {
-              label: "Freight Charge",
-              value: { firstBid: bid.freight_charge_amount || "" },
-            },
-            {
-              label: "GST on Freight",
-              value: { firstBid: bid.gst_on_freight || "" },
-            },
-            {
-              label: "Realised Freight",
-              value: { firstBid: bid.realised_freight_charge_amount || "" },
-            },
-            {
-              label: "Warranty Clause *",
-              value: { firstBid: bid.warranty_clause || "" },
-            },
-            {
-              label: "Payment Terms *",
-              value: { firstBid: bid.payment_terms || "" },
-            },
-            {
-              label: "Loading / Unloading *",
-              value: { firstBid: bid.loading_unloading_clause || "" },
-            },
-          ];
-
-          const freightData = processFreightData(firstBid);
-          setFreightData(freightData);
-
-          // Map bid_materials to previousData format
-          const previousData = firstBid.bid_materials.map((material) => ({
-            bidId: material.bid_id,
-            eventMaterialId: material.event_material_id,
-            descriptionOfItem: material.material_name,
-            varient: material.material_type,
-            quantity: material.event_material.quantity,
-            quantityAvail: material.quantity_available,
-            price: material.price,
-            section: material.material_type,
-            subSection: material.inventory_sub_type,
-            discount: material.discount,
-            realisedDiscount: material.realised_discount,
-            gst: material.gst,
-            realisedGst: material.realised_gst,
-            total: material.total_amount,
-            location: material.event_material.location,
-            vendorRemark: material.vendor_remark,
-            landedAmount: material.landed_amount,
-          }));
-
-          // console.log("Previous data:", previousData);
-          setPreviousData(previousData);
-
-          // Assuming updatedData comes from the response or API
-          const responseData = await response.json();
-          const updatedData = responseData.updatedData || [];
-          // console.log("Updated data:", updatedData);
-
-          // Set data based on the presence of updatedData
-          setData(updatedData.length > 0 ? updatedData : previousData);
-        } else {
-          console.error("No bids found in API response.");
-        }
-
-        setCounterData(0);
-      } else {
-        console.error("Failed to decline counter offer");
+  try {
+    const response = await fetch(
+      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       }
-    } catch (error) {
-      console.error("Error declining counter offer:", error);
+    );
+
+    if (response.ok) {
+      console.log("Counter offer declined");
+
+      // Retrieve the first bid data again (to restore it)
+      const bidResponse = await axios.get(
+        `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+      );
+      const bids = bidResponse.data.bids;
+
+      if (bids.length > 0) {
+        const firstBid = bids[currentIndex];
+
+        // Process Freight Data (Optional)
+        const processFreightData = (bid) => [
+          {
+            label: "Freight Charge",
+            value: { firstBid: bid.freight_charge_amount || "" },
+          },
+          {
+            label: "GST on Freight",
+            value: { firstBid: bid.gst_on_freight || "" },
+          },
+          {
+            label: "Realised Freight",
+            value: { firstBid: bid.realised_freight_charge_amount || "" },
+          },
+          {
+            label: "Warranty Clause *",
+            value: { firstBid: bid.warranty_clause || "" },
+          },
+          {
+            label: "Payment Terms *",
+            value: { firstBid: bid.payment_terms || "" },
+          },
+          {
+            label: "Loading / Unloading *",
+            value: { firstBid: bid.loading_unloading_clause || "" },
+          },
+        ];
+
+        const freightData = processFreightData(firstBid);
+        setFreightData(freightData);
+
+        // Map bid_materials to previousData format
+        const previousData = firstBid.bid_materials.map((material) => ({
+          bidId: material.bid_id,
+          eventMaterialId: material.event_material_id,
+          descriptionOfItem: material.material_name,
+          varient: material.material_type,
+          quantity: material.event_material.quantity,
+          quantityAvail: material.quantity_available,
+          price: material.price,
+          section: material.material_type,
+          subSection: material.inventory_sub_type,
+          discount: material.discount,
+          realisedDiscount: material.realised_discount,
+          gst: material.gst,
+          realisedGst: material.realised_gst,
+          total: material.total_amount,
+          location: material.event_material.location,
+          vendorRemark: material.vendor_remark,
+          landedAmount: material.landed_amount,
+        }));
+
+        setPreviousData(previousData);
+
+        // Assuming updatedData comes from the response or API
+        const responseData = await response.json();
+        const updatedData = responseData.updatedData || [];
+
+        // Set data based on the presence of updatedData
+        setData(updatedData.length > 0 ? updatedData : previousData);
+      } else {
+        console.error("No bids found in API response.");
+      }
+
+      setCounterData(0);
+    } else {
+      console.error("Failed to decline counter offer");
     }
-  };
+  } catch (error) {
+    console.error("Error declining counter offer:", error);
+  } finally {
+    // Set loading state to false
+    setAcceptLoader(false);
+  }
+};
 
   const handleAccept = async () => {
-    const payload = { status: "accepted" };
+  const payload = { status: "accepted" };
 
-    // console.log("Payload being sent:", payload);
+  // Set loading state to true
+  setAcceptLoader(true);
 
-    try {
-      // API call to update status
-      const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
+  try {
+    // API call to update status
+    const response = await fetch(
+      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.ok) {
+      // Fetch bids
+      const bidResponse = await axios.get(
+        `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
       );
 
-      // console.log("Response from API:", response);
+      const bids = bidResponse.data.bids;
 
-      if (response.ok) {
-        // console.log("Counter offer accepted");
+      if (bids.length > 0) {
+        const firstBid = bids[currentIndex];
 
-        // Fetch bids
-        const bidResponse = await axios.get(
-          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
-        );
+        // Process Freight Data (Optional)
+        const processFreightData = (bid) => [
+          {
+            label: "Freight Charge",
+            value: { firstBid: bid.freight_charge_amount || "" },
+          },
+          {
+            label: "GST on Freight",
+            value: { firstBid: bid.gst_on_freight || "" },
+          },
+          {
+            label: "Realised Freight",
+            value: { firstBid: bid.realised_freight_charge_amount || "" },
+          },
+          {
+            label: "Warranty Clause *",
+            value: { firstBid: bid.warranty_clause || "" },
+          },
+          {
+            label: "Payment Terms *",
+            value: { firstBid: bid.payment_terms || "" },
+          },
+          {
+            label: "Loading / Unloading *",
+            value: { firstBid: bid.loading_unloading_clause || "" },
+          },
+        ];
 
-        const bids = bidResponse.data.bids;
-        // console.log("Bids array:", bids);
+        const freightData = processFreightData(firstBid);
+        setFreightData(freightData);
 
-        if (bids.length > 0) {
-          const firstBid = bids[currentIndex];
-          // console.log("First bid data:", firstBid);
+        // Map bid_materials to previousData format
+        const previousData = firstBid.bid_materials.map((material) => ({
+          bidId: material.bid_id,
+          eventMaterialId: material.event_material_id,
+          descriptionOfItem: material.material_name,
+          varient: material.material_type,
+          quantity: material.event_material.quantity,
+          quantityAvail: material.quantity_available,
+          price: material.price,
+          section: material.material_type,
+          subSection: material.inventory_sub_type,
+          discount: material.discount,
+          realisedDiscount: material.realised_discount,
+          gst: material.gst,
+          realisedGst: material.realised_gst,
+          total: material.total_amount,
+          location: material.event_material.location,
+          vendorRemark: material.vendor_remark,
+          landedAmount: material.landed_amount,
+        }));
 
-          // Process Freight Data (Optional)
-          const processFreightData = (bid) => [
-            {
-              label: "Freight Charge",
-              value: { firstBid: bid.freight_charge_amount || "" },
-            },
-            {
-              label: "GST on Freight",
-              value: { firstBid: bid.gst_on_freight || "" },
-            },
-            {
-              label: "Realised Freight",
-              value: { firstBid: bid.realised_freight_charge_amount || "" },
-            },
-            {
-              label: "Warranty Clause *",
-              value: { firstBid: bid.warranty_clause || "" },
-            },
-            {
-              label: "Payment Terms *",
-              value: { firstBid: bid.payment_terms || "" },
-            },
-            {
-              label: "Loading / Unloading *",
-              value: { firstBid: bid.loading_unloading_clause || "" },
-            },
-          ];
+        setPreviousData(previousData);
 
-          const freightData = processFreightData(firstBid);
-          setFreightData(freightData);
+        // Assuming updatedData comes from the response or API
+        const responseData = await response.json();
+        const updatedData = responseData.updatedData || [];
 
-          // Map bid_materials to previousData format
-          const previousData = firstBid.bid_materials.map((material) => ({
-            bidId: material.bid_id,
-            eventMaterialId: material.event_material_id,
-            descriptionOfItem: material.material_name,
-            varient: material.material_type,
-            quantity: material.event_material.quantity,
-            quantityAvail: material.quantity_available,
-            price: material.price,
-            section: material.material_type,
-            subSection: material.inventory_sub_type,
-            discount: material.discount,
-            realisedDiscount: material.realised_discount,
-            gst: material.gst,
-            realisedGst: material.realised_gst,
-            total: material.total_amount,
-            location: material.event_material.location,
-            vendorRemark: material.vendor_remark,
-            landedAmount: material.landed_amount,
-          }));
-
-          // console.log("Previous data:", previousData);
-          setPreviousData(previousData);
-
-          // Assuming updatedData comes from the response or API
-          const responseData = await response.json();
-          const updatedData = responseData.updatedData || [];
-          // console.log("Updated data:", updatedData);
-
-          // Set data based on the presence of updatedData
-          setData(updatedData.length > 0 ? updatedData : previousData);
-        } else {
-          console.error("No bids found in API response.");
-        }
-
-        setCounterData(0); // Reset counter data
+        // Set data based on the presence of updatedData
+        setData(updatedData.length > 0 ? updatedData : previousData);
       } else {
-        const errorData = await response.json();
-        console.error(
-          "Failed to accept counter offer. Error response:",
-          errorData
-        );
+        console.error("No bids found in API response.");
       }
-    } catch (error) {
-      console.error("Error during API call:", error);
+
+      setCounterData(0); // Reset counter data
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to accept counter offer. Error response:", errorData);
     }
-  };
+  } catch (error) {
+    console.error("Error during API call:", error);
+  } finally {
+    // Set loading state to false
+    setAcceptLoader(false);
+  }
+};
 
   const [linkedEventData, setLinkedEventData] = useState([]);
 
@@ -4276,6 +4274,22 @@ export default function VendorDetails() {
                   //   // height: "100vh"
                 }}
               >
+                {acceptLoader ? (<>
+                <div className="loader-container">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+                <p>Loading...</p>
+              </div>
+                </>): (
+
                 <div className="card mx-3 p-4 mt-3 pb-4 mb-2 ">
                   <div className="d-flex flex-row-reverse">
                     <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1 ">
@@ -5723,6 +5737,7 @@ export default function VendorDetails() {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           </div>
