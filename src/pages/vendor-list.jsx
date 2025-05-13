@@ -51,8 +51,8 @@ export default function VendorListPage() {
   const [eoiEvents, setEoiEvents] = useState({ events: [], pagination: {} });
 
   const [loading, setLoading] = useState(false);
-    const [suggestionLoading, setSuggestionLoading] = useState(false);
-    const [filterLoading, setFilterLoading] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [filters, setFilters] = useState({
     created_by_id_in: "",
     event_type_detail_award_scheme_in: "",
@@ -174,9 +174,43 @@ export default function VendorListPage() {
   useEffect(() => {
     fetchFilterOptions();
   }, []);
+  const [counts, setCounts] = useState("");
 
   const token = new URLSearchParams(window.location.search).get("token");
 
+  const fetchEventCounts = async () => {
+    setLoading(true); // Start loader
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
+      const response = await axios.get(
+        `${baseURL}rfq/events/event_counts`,
+        {
+          params: {
+            page: 1,
+            token: token,
+          },
+        }
+      );
+
+      // Assuming the response contains counts for all, live, and history events
+      setCounts(
+        response?.data || {
+          all: 0,
+          live: 0,
+          history: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Error fetching event counts:", error);
+      setError("Failed to fetch event counts");
+    }
+  };
+
+  useEffect(() => {
+    fetchEventCounts();
+  }, []);
   const fetchEvents = async (page = 1) => {
     setLoading(true);
     try {
@@ -208,101 +242,81 @@ export default function VendorListPage() {
         }),
       };
 
-      const liveEventsUrl = `${baseURL}/rfq/events/live_events`;
-      const pastEventsUrl = `${baseURL}/rfq/events/past_events`;
-      const allEventsUrl = `${baseURL}/rfq/events`;
+      let eventsUrl;
 
-      const eoiUrl = `${baseURL}/rfq/events/eois`;
+      switch (activeTab) {
+        case "live":
+          eventsUrl = `${baseURL}/rfq/events/live_events`;
+          break;
+        case "history":
+          eventsUrl = `${baseURL}/rfq/events/past_events`;
+          break;
+        case "all":
+          eventsUrl = `${baseURL}/rfq/events`;
+          break;
+        case "eoi":
+          eventsUrl = `${baseURL}/rfq/events/eois`;
+        default:
+          eventsUrl = `${baseURL}/rfq/events`;
+      }
 
-      const [liveResponse, historyResponse, allResponse, eoiResponse] =
-        await Promise.all([
-          axios.get(liveEventsUrl, {
-            params: {
-              token: token,
-              page: page,
-              event_vendor_id: vendorId,
-              ...queryFilters,
-            },
-          }),
-          axios.get(pastEventsUrl, {
-            params: {
-              token: token,
-              page: page,
-              event_vendor_id: vendorId,
-              ...queryFilters,
-            },
-          }),
-          axios.get(allEventsUrl, {
-            params: {
-              token: token,
-              page: page,
-              event_vendor_id: vendorId,
-              ...queryFilters,
-            },
-          }),
-          axios.get(eoiUrl, {
-            params: {
-              token: token,
-              page: page,
-              vendor_id_in: vendorId,
-              ...queryFilters,
-            },
-          }),
-        ]);
-
-      // console.log("EOI API Response:", eoiResponse.data);
-      // console.log("EOI API Request Params:", {
-      //   token,
-      //   page,
-      //   vendor_id_in: vendorId,
-      //   ...queryFilters,
-      // });
-
-      // Set state for live events with pagination
-
-      // Map EOI response to desired format
-      const mappedEoiEvents = eoiResponse.data.expression_of_interests.map(
-        (eoi) => ({
-          id: eoi.id,
-          event_id: eoi.event.id,
-          status: eoi.status,
-          event_title: eoi.event.event_title,
-          event_no: eoi.event.event_no,
-          start_time: eoi.event.start_time,
-          end_time: eoi.event.end_time,
-          created_at: eoi.event.created_at,
-          created_by: eoi.event.created_by,
-          event_type: eoi.event.event_type_detail?.event_type || "N/A",
-          event_configuration:
-            eoi.event.event_type_detail?.event_configuration || "N/A",
-          vendor_name: eoi.vendor?.full_name || "N/A",
-          vendor_status: eoi.vendor?.status || "N/A",
-        })
-      );
-
-      setLiveEvents({
-        events: liveResponse.data.events || [],
-        pagination: liveResponse.data.pagination || {},
+      const response = await axios.get(eventsUrl, {
+        params: {
+          token: token,
+          page: page,
+          event_vendor_id: vendorId,
+          ...queryFilters,
+        },
       });
 
-      // Set state for history events with pagination
-      setHistoryEvents({
-        events: historyResponse.data.events || [],
-        pagination: historyResponse.data.pagination || {},
-      });
+      //  const mappedEoiEvents = response.data.expression_of_interests?.map(
+      //   (eoi) => ({
+      //     id: eoi.id,
+      //     event_id: eoi.event.id,
+      //     status: eoi.status,
+      //     event_title: eoi.event.event_title,
+      //     event_no: eoi.event.event_no,
+      //     start_time: eoi.event.start_time,
+      //     end_time: eoi.event.end_time,
+      //     created_at: eoi.event.created_at,
+      //     created_by: eoi.event.created_by,
+      //     event_type: eoi.event.event_type_detail?.event_type || "N/A",
+      //     event_configuration:
+      //       eoi.event.event_type_detail?.event_configuration || "N/A",
+      //     vendor_name: eoi.vendor?.full_name || "N/A",
+      //     vendor_status: eoi.vendor?.status || "N/A",
+      //   })
+      // );
 
-      // Set state for all events with pagination
-      setAllEventsData({
-        events: allResponse.data.events || [],
-        pagination: allResponse.data.pagination || {},
-      });
-      console.log("EOI API Response:", eoiResponse.data);
-
-      setEoiEvents({
-        // events: eoiResponse.data.events || [],
-        events: mappedEoiEvents || [],
-        pagination: eoiResponse.data.pagination || {},
-      });
+      switch (activeTab) {
+        case "live":
+          setLiveEvents({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        case "history":
+          setHistoryEvents({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        case "all":
+          setAllEventsData({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        // case "eoi":
+        //   setEoiEvents({
+        //     events: mappedEoiEvents || [],
+        //     pagination: response.data.pagination || {},
+        //   });
+        //   break;
+          
+        default:
+          break;
+      }
     } catch (error) {
       console.error("Error fetching event data:", error);
       setError(error.response?.data?.message || "Failed to fetch events");
@@ -575,20 +589,20 @@ export default function VendorListPage() {
             <div className="material-boxes mt-3">
               {loading || filterLoading || suggestionLoading ? (
                 <div className="loader-container">
-                        <div className="lds-ring">
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                        </div>
-                        <p>loading..</p>
-                      </div>
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>loading..</p>
+                </div>
               ) : (
-                
+
                 <div className="container-fluid">
                   {/* <div className="row separteinto5 justify-content-left">
                     <div className="col-md-2 text-center">
@@ -657,7 +671,7 @@ export default function VendorListPage() {
                       </div>
                     </div>
                   </div> */}
-  
+
                   <div className="row separteinto5 justify-content-center">
                     <div className="col-md-2 text-center">
                       <div
@@ -671,17 +685,17 @@ export default function VendorListPage() {
                               : "1px solid #ccc",
                           backgroundColor:
                             activeTab === "all" ? " #8b0203" : "#fff",
-  
+
                           color: activeTab === "all" ? "white" : "black",
                         }}
                       >
                         <h4 className="content-box-title">All Events</h4>
                         <p className="content-box-sub">
-                          {allEventsData.pagination?.total_count || 0}
+                          {counts?.all_events || 0}
                         </p>
                       </div>
                     </div>
-  
+
                     <div className="col-md-2 text-center">
                       <div
                         className="content-box"
@@ -699,11 +713,11 @@ export default function VendorListPage() {
                       >
                         <h4 className="content-box-title">Live Events</h4>
                         <p className="content-box-sub">
-                          {liveEvents.pagination?.total_count}
+                          {counts?.live_events || 0}
                         </p>
                       </div>
                     </div>
-  
+
                     <div className="col-md-2 text-center">
                       <div
                         className="content-box"
@@ -721,11 +735,11 @@ export default function VendorListPage() {
                       >
                         <h4 className="content-box-title">History Events</h4>
                         <p className="content-box-sub">
-                          {historyEvents.pagination?.total_count || 0}
+                          {counts?.history_events || 0}
                         </p>
                       </div>
                     </div>
-  
+
                     {/* <div className="col-md-2 text-center">
                       <div
                         className="content-box"
@@ -748,7 +762,7 @@ export default function VendorListPage() {
                       </div>
                     </div> */}
                   </div>
-  
+
                   <div className="card mt-4 pb-4">
                     <CollapsibleCard title="Quick Filter">
                       <form onSubmit={handleSubmit}>
@@ -761,7 +775,7 @@ export default function VendorListPage() {
                             role="status"
                           ></div>
                         )}
-  
+
                         <div className="row my-2 align-items-end">
                           {/* Event Title */}
                           <div className="col-md-2">
@@ -780,8 +794,8 @@ export default function VendorListPage() {
                               value={
                                 filters.title_in
                                   ? filterOptions.event_titles.find(
-                                      (opt) => opt.value === filters.title_in
-                                    )
+                                    (opt) => opt.value === filters.title_in
+                                  )
                                   : null
                               }
                               placeholder="Select Title"
@@ -794,7 +808,7 @@ export default function VendorListPage() {
                               }}
                             />
                           </div>
-  
+
                           {/* Event Number */}
                           <div className="col-md-2">
                             <label htmlFor="event-no-select">Event Number</label>
@@ -810,8 +824,8 @@ export default function VendorListPage() {
                               value={
                                 filters.event_no_cont
                                   ? filterOptions.event_numbers.find(
-                                      (opt) => opt.value === filters.event_no_cont
-                                    )
+                                    (opt) => opt.value === filters.event_no_cont
+                                  )
                                   : null
                               }
                               placeholder="Select No"
@@ -824,7 +838,7 @@ export default function VendorListPage() {
                               }}
                             />
                           </div>
-  
+
                           {/* Status */}
                           <div className="col-md-2">
                             <label htmlFor="status-select">Status</label>
@@ -840,8 +854,8 @@ export default function VendorListPage() {
                               value={
                                 filters.status_in
                                   ? filterOptions.statuses.find(
-                                      (opt) => opt.value === filters.status_in
-                                    )
+                                    (opt) => opt.value === filters.status_in
+                                  )
                                   : null
                               }
                               placeholder="Select Status"
@@ -854,7 +868,7 @@ export default function VendorListPage() {
                               }}
                             />
                           </div>
-  
+
                           {/* Created By */}
                           <div className="col-md-2">
                             <label htmlFor="created-by-select">Created By</label>
@@ -870,9 +884,9 @@ export default function VendorListPage() {
                               value={
                                 filters.created_by_id_in
                                   ? filterOptions.creaters.find(
-                                      (opt) =>
-                                        opt.value === filters.created_by_id_in
-                                    )
+                                    (opt) =>
+                                      opt.value === filters.created_by_id_in
+                                  )
                                   : null
                               }
                               placeholder="Select Creator"
@@ -891,7 +905,7 @@ export default function VendorListPage() {
                         </div>
                       </form>
                     </CollapsibleCard>
-  
+
                     <div className="d-flex mt-3 align-items-end px-3">
                       <div className="col-md-6 position-relative">
                         <form onSubmit={handleSearchSubmit}>
@@ -911,7 +925,7 @@ export default function VendorListPage() {
                                 )
                               }
                             />
-  
+
                             <div className="input-group-append">
                               <button
                                 type="sumbit"
@@ -939,7 +953,7 @@ export default function VendorListPage() {
                         {loading && <p>Loading suggestions...</p>}
                         {error && <p className="error-message">{error}</p>}
                       </div>
-  
+
                       <div className="col-md-6">
                         <div className="row justify-content-end">
                           <div className="col-md-5">
@@ -1010,7 +1024,7 @@ export default function VendorListPage() {
                             ))}
                           </tr>
                         </thead>
-  
+
                         <tbody>
                           {eventsToDisplay.length === 0 ? (
                             <tr>
@@ -1033,7 +1047,7 @@ export default function VendorListPage() {
                                     "N/A"
                                   )}
                                 </td>
-  
+
                                 <td>
                                   {event.event_schedule?.end_time ? (
                                     <FormatDate
@@ -1078,7 +1092,7 @@ export default function VendorListPage() {
                                       <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
                                     </svg>{" "}
                                   </button>
-  
+
                                   {/* <button
                                     className="btn "
                                     onClick={() => {
@@ -1125,9 +1139,8 @@ export default function VendorListPage() {
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1136,12 +1149,11 @@ export default function VendorListPage() {
                             First
                           </button>
                         </li>
-  
+
                         {/* Previous Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1153,16 +1165,15 @@ export default function VendorListPage() {
                             Prev
                           </button>
                         </li>
-  
+
                         {/* Dynamic Page Numbers */}
                         {pageNumbers.map((pageNumber) => (
                           <li
                             key={pageNumber}
-                            className={`page-item ${
-                              pagination.current_page === pageNumber
-                                ? "active"
-                                : ""
-                            }`}
+                            className={`page-item ${pagination.current_page === pageNumber
+                              ? "active"
+                              : ""
+                              }`}
                           >
                             <button
                               className="page-link"
@@ -1172,14 +1183,13 @@ export default function VendorListPage() {
                             </button>
                           </li>
                         ))}
-  
+
                         {/* Next Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === pagination.total_pages
-                              ? "disabled"
-                              : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1193,14 +1203,13 @@ export default function VendorListPage() {
                             Next
                           </button>
                         </li>
-  
+
                         {/* Last Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === pagination.total_pages
-                              ? "disabled"
-                              : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1215,7 +1224,7 @@ export default function VendorListPage() {
                           </button>
                         </li>
                       </ul>
-  
+
                       {/* Showing entries count */}
                       <div>
                         <p>
